@@ -59,10 +59,7 @@ public class HazelcastCore implements EventListener {
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
     public final static String INSTANCE_GROUP_ATTRIBUTE = "GLASSFISH_INSTANCE_GROUP";
     private static HazelcastCore theCore;
-    
-    private static MulticastConfiguration overrideConfiguration;
 
-    
     private HazelcastInstance theInstance;
 
     private CachingProvider hazelcastCachingProvider;
@@ -85,10 +82,6 @@ public class HazelcastCore implements EventListener {
     
     public static HazelcastCore getCore() {
         return theCore;
-    }
-    
-    public static void setMulticastOverride(MulticastConfiguration config){
-        overrideConfiguration = config;
     }
 
     @PostConstruct
@@ -116,7 +109,7 @@ public class HazelcastCore implements EventListener {
         } else if (event.is(EventTypes.SERVER_READY)) {
             if (enabled) {
                 bindToJNDI();
-            }    
+            }
         } else if (event.is(EventTypes.SERVER_STARTUP)) {
             if ((Boolean.valueOf(configuration.getEnabled()))) {
                 enabled = true;
@@ -149,12 +142,6 @@ public class HazelcastCore implements EventListener {
         String hazelcastFilePath = "";
         URL serverConfigURL;
         try {
-            if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null) {
-                XmlConfigBuilder builder = new XmlConfigBuilder(overrideConfiguration.getAlternateConfigFile().toURL());
-                config = builder.build();
-                config.setClassLoader(clh.getCommonClassLoader());
-                return config;
-            }
             serverConfigURL = new URL(context.getServerConfigURL());
             File serverConfigFile = new File(serverConfigURL.getPath());
             hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
@@ -174,36 +161,16 @@ public class HazelcastCore implements EventListener {
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 config.getNetworkConfig().setPortAutoIncrement(true);
                 mcConfig.setEnabled(true);                // check Payara micro overrides
-                if (overrideConfiguration != null) {
-                    mcConfig.setMulticastGroup(overrideConfiguration.getMulticastGroup());
-                    mcConfig.setMulticastPort(overrideConfiguration.getMulticastPort());
-                    config.getNetworkConfig().setPort(overrideConfiguration.getStartPort());
-                    if (overrideConfiguration.getMemberName() != null) {
-                        memberName = overrideConfiguration.getMemberName();
-                    }
-                    
-                    if (overrideConfiguration.getMemberGroup() != null) {
-                        memberGroup = overrideConfiguration.getMemberGroup();
-                    }
-                    
-                    config.setLiteMember(overrideConfiguration.isLite());
-                    config.setLicenseKey(overrideConfiguration.getLicenseKey());
-                    // set group config
-                    GroupConfig gc = config.getGroupConfig();
-                    gc.setName(overrideConfiguration.getClusterGroupName());
-                    gc.setPassword(overrideConfiguration.getClusterGroupPassword());
-                    
-                } else {
-                   mcConfig.setMulticastGroup(configuration.getMulticastGroup());
-                   mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
-                   config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
-                   config.setLicenseKey(configuration.getLicenseKey());
-                   config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
-                   // set group config
-                   GroupConfig gc = config.getGroupConfig();
-                   gc.setName(configuration.getClusterGroupName());
-                   gc.setPassword(configuration.getClusterGroupPassword());
-                }
+
+                mcConfig.setMulticastGroup(configuration.getMulticastGroup());
+                mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
+                config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
+                config.setLicenseKey(configuration.getLicenseKey());
+                config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
+                // set group config
+                GroupConfig gc = config.getGroupConfig();
+                gc.setName(configuration.getClusterGroupName());
+                gc.setPassword(configuration.getClusterGroupPassword());
 
                 // build the configuration
                 config.setProperty("hazelcast.jmx", "true");
@@ -228,7 +195,7 @@ public class HazelcastCore implements EventListener {
         }
     }
 
-    private void bootstrapHazelcast() { 
+    private void bootstrapHazelcast() {
         Config config = buildConfiguration();
         theInstance = Hazelcast.newHazelcastInstance(config);
         if (memberName == null) {
@@ -272,6 +239,5 @@ public class HazelcastCore implements EventListener {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
 
 }

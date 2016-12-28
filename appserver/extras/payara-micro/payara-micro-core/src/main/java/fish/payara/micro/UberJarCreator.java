@@ -39,6 +39,7 @@
  */
 package fish.payara.micro;
 
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -84,8 +85,7 @@ public class UberJarCreator {
     private File alternateHZConfigFile;
     private File preBootCommands;
     private File postBootCommands;
-    
-    
+
     private static final Logger LOGGER = Logger.getLogger(UberJarCreator.class.getName());
 
     UberJarCreator(String fileName) {
@@ -127,7 +127,7 @@ public class UberJarCreator {
     public void setPostBootCommands(File postBootCommands) {
         this.postBootCommands = postBootCommands;
     }
-    
+
     public void addRuntimeJar(File jar) {
         runtimeJars.add(jar);
     }
@@ -178,30 +178,36 @@ public class UberJarCreator {
             Enumeration<JarEntry> entries = jFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                JarEntry newEntry = new JarEntry(entry.getName());
-                if (entry.getName().endsWith("jar") || entry.getName().endsWith("rar")) {
-                    newEntry.setMethod(JarEntry.STORED);
-                    newEntry.setSize(entry.getSize());
-                    newEntry.setCrc(entry.getCrc());
-                    newEntry.setCompressedSize(entry.getCompressedSize());
-                }
-                jos.putNextEntry(newEntry);
-                InputStream is = jFile.getInputStream(entry);
-                if (entry.toString().contains("MICRO-INF/domain/logging.properties") && (loggingPropertiesFile != null)) {
-                    is = new FileInputStream(loggingPropertiesFile);
-                } else if (entry.toString().contains("MICRO-INF/post-boot-commands.txt") && (postBootCommands != null)) {
-                    is = new FileInputStream(postBootCommands);                    
-                } else if (entry.toString().contains("MICRO-INF/pre-boot-commands.txt") && (preBootCommands != null)) {
-                    is = new FileInputStream(preBootCommands);                    
-                }
 
-                byte[] buffer = new byte[4096];
-                int bytesRead = 0;
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    jos.write(buffer, 0, bytesRead);
-                }
+                if (entry.getName().contains("MICRO-INF/domain/") && domainDir != null) {
+                    // skip the entry as we will add later
+                } else {
+                    JarEntry newEntry = new JarEntry(entry.getName());
+                    if (entry.getName().endsWith("jar") || entry.getName().endsWith("rar")) {
+                        newEntry.setMethod(JarEntry.STORED);
+                        newEntry.setSize(entry.getSize());
+                        newEntry.setCrc(entry.getCrc());
+                        newEntry.setCompressedSize(entry.getCompressedSize());
+                    }
+                    jos.putNextEntry(newEntry);
+                    InputStream is = jFile.getInputStream(entry);
+                    if (entry.toString().contains("MICRO-INF/domain/logging.properties") && (loggingPropertiesFile != null)) {
+                        is = new FileInputStream(loggingPropertiesFile);
+                    } else if (entry.toString().contains("MICRO-INF/post-boot-commands.txt") && (postBootCommands != null)) {
+                        is = new FileInputStream(postBootCommands);
+                    } else if (entry.toString().contains("MICRO-INF/pre-boot-commands.txt") && (preBootCommands != null)) {
+                        is = new FileInputStream(preBootCommands);
+                    } else if (entry.toString().contains("MICRO-INF/domain/domain.xml") && (domainXML != null)) {
+                        is = new FileInputStream(domainXML);
+                    }
 
-                is.close();
+                    byte[] buffer = new byte[4096];
+                    int bytesRead = 0;
+                    while ((bytesRead = is.read(buffer)) != -1) {
+                        jos.write(buffer, 0, bytesRead);
+                    }
+                    is.close();
+                }
                 jos.flush();
                 jos.closeEntry();
             }
@@ -210,17 +216,9 @@ public class UberJarCreator {
                 for (File deployment : deployments) {
                     JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
                     jos.putNextEntry(deploymentEntry);
-                    try (FileInputStream fis = new FileInputStream(deployment)) {
-                        byte[] buffer = new byte[4096];
-                        int bytesRead = 0;
-                        while ((bytesRead = fis.read(buffer)) != -1) {
-                            jos.write(buffer, 0, bytesRead);
-                        }
-                        jos.flush();
-                        jos.closeEntry();
-                    } catch (IOException ioe) {
-                        LOGGER.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
-                    }
+                    Files.copy(deployment, jos);
+                    jos.flush();
+                    jos.closeEntry();
                 }
             }
 
@@ -229,17 +227,10 @@ public class UberJarCreator {
                     if (deployment.isFile()) {
                         JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
                         jos.putNextEntry(deploymentEntry);
-                        try (FileInputStream fis = new FileInputStream(deployment)) {
-                            byte[] buffer = new byte[4096];
-                            int bytesRead = 0;
-                            while ((bytesRead = fis.read(buffer)) != -1) {
-                                jos.write(buffer, 0, bytesRead);
-                            }
-                            jos.flush();
-                            jos.closeEntry();
-                        } catch (IOException ioe) {
-                            LOGGER.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
-                        }
+                        Files.copy(deployment, jos);
+                        jos.flush();
+                        jos.closeEntry();
+
                     }
                 }
             }
@@ -270,40 +261,49 @@ public class UberJarCreator {
             jos.flush();
             jos.closeEntry();
 
-            // add the alternate domain.xml file if present
-            if (domainXML != null && domainXML.isFile() && domainXML.canRead()) {
-                try (InputStream is = new FileInputStream(domainXML)) {
-                    JarEntry domainXml = new JarEntry("MICRO-INF/domain/domain.xml");
-                    jos.putNextEntry(domainXml);
-                    byte[] buffer = new byte[4096];
-                    int bytesRead = 0;
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        jos.write(buffer, 0, bytesRead);
-                    }
-                    jos.flush();
-                    jos.closeEntry();
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING, "Error adding alternative domain.xml to the Uber Jar Skipping...", ioe);
-                }
-            }
-
             // add the alternate hazelcast config to the uberJar
             if (alternateHZConfigFile != null) {
-                try (InputStream is = alternateHZConfigFile.toURL().openStream()) {
-                    JarEntry domainXml = new JarEntry("MICRO-INF/domain/hzconfig.xml");
-                    jos.putNextEntry(domainXml);
-                    byte[] buffer = new byte[4096];
-                    int bytesRead = 0;
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        jos.write(buffer, 0, bytesRead);
-                    }
-                    jos.flush();
-                    jos.closeEntry();
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING, "Error adding alternative hzconfig.xml to the Uber Jar Skipping...", ioe);
-                }
+                JarEntry hzXml = new JarEntry("MICRO-INF/domain/hzconfig.xml");
+                jos.putNextEntry(hzXml);
+                Files.copy(alternateHZConfigFile, jos);
+                jos.flush();
+                jos.closeEntry();
+
             }
 
+            if (domainDir != null) {
+                // package up all files in the domain dir but remember to override if specified
+                JarEntry domainEntry = new JarEntry("MICRO-INF/domain/");
+                jos.putNextEntry(domainEntry);
+                // we only care about the config directory
+                File configDir = new File(domainDir,"config");
+                for (File domainFile : configDir.listFiles()) {
+                    if (domainFile.isFile()) {
+                        JarEntry configEntry = new JarEntry("MICRO-INF/domain/" + domainFile.getName());
+                        jos.putNextEntry(configEntry);
+                        
+                        if (domainFile.getName().equals("domain.xml") && domainXML != null) {
+                            domainFile = domainXML;
+                        } else if (domainFile.getName().equals("logging.properties") && (loggingPropertiesFile != null)) {
+                            domainFile = loggingPropertiesFile;
+                        }
+                        Files.copy(domainFile, jos);
+                        jos.flush();
+                        jos.closeEntry();
+                    } else if (domainFile.isDirectory() && domainFile.getName().equals("branding")) {
+                        JarEntry brandingEntry = new JarEntry("MICRO-INF/domain/branding/");
+                        jos.putNextEntry(brandingEntry);
+                        for (File brandingFile : domainFile.listFiles()) {
+                            JarEntry brandingFileEntry = new JarEntry("MICRO-INF/domain/branding/" + brandingFile.getName());
+                            jos.putNextEntry(brandingFileEntry);
+                            Files.copy(brandingFile, jos);
+                            jos.flush();
+                            jos.closeEntry();
+                        }
+                    }
+
+                }
+            }
             LOGGER.info("Built Uber Jar " + outputFile.getAbsolutePath() + " in " + (System.currentTimeMillis() - start) + " (ms)");
 
         } catch (IOException ex) {

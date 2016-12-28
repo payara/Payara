@@ -239,15 +239,15 @@ class RuntimeDirectory {
     }
 
     void setDomainXML(File alternateDomainXML) throws IOException {
-        Files.copy(alternateDomainXML.toPath(), directory.toPath().resolve("domain.xml"),StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(alternateDomainXML.toPath(), configDir.toPath().resolve("domain.xml"),StandardCopyOption.REPLACE_EXISTING);
     }
     
     void setDomainXML(InputStream alternateDomainXML) throws IOException {
-        Files.copy(alternateDomainXML, directory.toPath().resolve("domain.xml"),StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(alternateDomainXML, configDir.toPath().resolve("domain.xml"),StandardCopyOption.REPLACE_EXISTING);
     }
     
     void setLoggingProperties(File alternativeFile) throws IOException {
-        Files.copy(alternativeFile.toPath(), directory.toPath().resolve("logging.properties"),StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(alternativeFile.toPath(), configDir.toPath().resolve("logging.properties"),StandardCopyOption.REPLACE_EXISTING);
     }
     
     File getLoggingProperties() {
@@ -260,6 +260,12 @@ class RuntimeDirectory {
 
     File getDomainXML() {
         return configDir.toPath().resolve("domain.xml").toFile();
+    }
+
+    void setHZConfigFile(File alternateHZConfigFile) throws IOException {
+        if (alternateHZConfigFile.canRead()) {
+            Files.copy(alternateHZConfigFile.toPath(), configDir.toPath().resolve(alternateHZConfigFile.getName()),StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
 }

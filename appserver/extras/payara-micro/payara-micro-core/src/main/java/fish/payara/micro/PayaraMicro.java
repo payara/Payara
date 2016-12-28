@@ -1617,7 +1617,7 @@ public class PayaraMicro {
             }
 
             if (alternateHZConfigFile != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile.getName()));
             }
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.lite=" + liteMember));
 
@@ -1879,8 +1879,7 @@ public class PayaraMicro {
         if (preBootFileName != null) {
             creator.setPreBootCommands(new File(preBootFileName));
         }
-        
-        
+                
         if (logPropertiesFile) {
             creator.setLoggingPropertiesFile(new File(userLogPropertiesFile));
         }
@@ -2103,6 +2102,10 @@ public class PayaraMicro {
             try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(applicationDomainXml)) {
                 runtimeDir.setDomainXML(is);
             }
+        }
+        
+        if (alternateHZConfigFile != null) {
+            runtimeDir.setHZConfigFile(alternateHZConfigFile);
         }
     }
 
