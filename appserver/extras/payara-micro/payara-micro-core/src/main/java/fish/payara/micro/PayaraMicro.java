@@ -1867,7 +1867,20 @@ public class PayaraMicro {
 
     private void packageUberJar() {
 
-        UberJarCreator creator = new UberJarCreator(rootDir, uberJar);
+        UberJarCreator creator = new UberJarCreator(uberJar);
+        if (rootDir != null) {
+            creator.setDomainDir(rootDir);
+        }
+        
+        if (postBootFileName != null) {
+            creator.setPostBootCommands(new File(postBootFileName));
+        }
+        
+        if (preBootFileName != null) {
+            creator.setPreBootCommands(new File(preBootFileName));
+        }
+        
+        
         if (logPropertiesFile) {
             creator.setLoggingPropertiesFile(new File(userLogPropertiesFile));
         }

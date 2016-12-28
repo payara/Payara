@@ -57,7 +57,6 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.embeddable.GlassFishException;
 
 /**
  *
@@ -71,7 +70,7 @@ public class UberJarCreator {
     private String mainClassName;
     private final List<File> runtimeJars = new LinkedList<>();
     private final List<File> domainFiles = new LinkedList<>();
-    private final File domainDir;
+    private File domainDir;
     private final List<File> libs = new LinkedList<>();
     private final List<File> classes = new LinkedList<>();
     private final List<File> deployments = new LinkedList<>();
@@ -83,17 +82,18 @@ public class UberJarCreator {
     private File loggingPropertiesFile;
     private File domainXML;
     private File alternateHZConfigFile;
+    private File preBootCommands;
+    private File postBootCommands;
     
     
     private static final Logger LOGGER = Logger.getLogger(UberJarCreator.class.getName());
 
-    UberJarCreator(String domainDir, String fileName) {
-        this(new File(domainDir), new File(fileName));
+    UberJarCreator(String fileName) {
+        this(new File(fileName));
     }
 
-    UberJarCreator(File domainDir, File filename) {
+    UberJarCreator(File filename) {
         outputFile = filename;
-        this.domainDir = domainDir;
     }
 
     public void setOutputFile(File outputFile) {
@@ -116,6 +116,18 @@ public class UberJarCreator {
         this.deploymentDir = deploymentDir;
     }
 
+    public void setDomainDir(File domainDir) {
+        this.domainDir = domainDir;
+    }
+
+    public void setPreBootCommands(File preBootCommands) {
+        this.preBootCommands = preBootCommands;
+    }
+
+    public void setPostBootCommands(File postBootCommands) {
+        this.postBootCommands = postBootCommands;
+    }
+    
     public void addRuntimeJar(File jar) {
         runtimeJars.add(jar);
     }
@@ -167,14 +179,20 @@ public class UberJarCreator {
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
                 JarEntry newEntry = new JarEntry(entry.getName());
-                newEntry.setMethod(JarEntry.STORED);
-                newEntry.setSize(entry.getSize());
-                newEntry.setCrc(entry.getCrc());
-                newEntry.setCompressedSize(entry.getCompressedSize());
+                if (entry.getName().endsWith("jar") || entry.getName().endsWith("rar")) {
+                    newEntry.setMethod(JarEntry.STORED);
+                    newEntry.setSize(entry.getSize());
+                    newEntry.setCrc(entry.getCrc());
+                    newEntry.setCompressedSize(entry.getCompressedSize());
+                }
                 jos.putNextEntry(newEntry);
                 InputStream is = jFile.getInputStream(entry);
                 if (entry.toString().contains("MICRO-INF/domain/logging.properties") && (loggingPropertiesFile != null)) {
                     is = new FileInputStream(loggingPropertiesFile);
+                } else if (entry.toString().contains("MICRO-INF/post-boot-commands.txt") && (postBootCommands != null)) {
+                    is = new FileInputStream(postBootCommands);                    
+                } else if (entry.toString().contains("MICRO-INF/pre-boot-commands.txt") && (preBootCommands != null)) {
+                    is = new FileInputStream(preBootCommands);                    
                 }
 
                 byte[] buffer = new byte[4096];
