@@ -67,7 +67,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarOutputStream;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;

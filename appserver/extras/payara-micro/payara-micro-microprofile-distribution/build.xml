@@ -140,6 +140,9 @@
             </fileset>
         </delete>
         <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="Payara Microprofile"/>  
+        <copy todir="${domaindir}">
+            <fileset file="domain.xml"/>
+        </copy>  
      </target>
      
     <target name="addSchemas" >
@@ -191,8 +194,8 @@
                 <include name="*.jks"/>
             </fileset>
         </copy>       
-    </target>
-      
+    </target>   
+    
     
     <target name="finalClean">
         <delete dir="${runtimedir}/payara41"/>
