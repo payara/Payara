@@ -37,6 +37,26 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-jms-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-hipchat-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-slack-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-email-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
