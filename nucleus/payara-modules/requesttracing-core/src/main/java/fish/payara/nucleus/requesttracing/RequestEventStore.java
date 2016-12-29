@@ -23,7 +23,7 @@ import java.util.UUID;
 /**
  * @author mertcaliskan
  *
- * Stores all request events that are being traced down by {@link fish.payara.nucleus.requesttracing.interceptor.PayaraServletContainerInterceptor} in linked list placed in a thread local.
+ * Stores all request events  in a thread local that are being traced.
  * The start of the trace is marked with {@link EventType#TRACE_START} and the end of the trace is marked with {@link EventType#TRACE_END}.
  * All the request events placed in between are marked with a conversation id, which is the id of request event with type {@link EventType#TRACE_START}.
  */
@@ -66,7 +66,6 @@ public class RequestEventStore {
     }
 
     UUID getConversationID() {
-        UUID result = null;
         RequestTrace rt = eventStore.get();
         return rt.getConversationID();
     }
