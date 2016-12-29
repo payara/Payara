@@ -38,19 +38,13 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
-/**
- * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
- */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+import java.lang.annotation.*;
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+/**
+ * Created by mertcaliskan
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface NotifierConfigurationType {
+    NotifierType type();
 }

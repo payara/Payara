@@ -36,21 +36,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.requesttracing;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.LogNotificationEvent;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class LogNotificationEventFactory extends NotificationEventFactory<LogNotificationEvent> {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.LOG, this);
+    }
+
+    public LogNotificationEvent buildNotificationEvent(long elapsedTime, String requestEventStr) {
+        LogNotificationEvent event = new LogNotificationEvent();
+        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setLevel(Level.INFO);
+        event.setMessage(requestEventStr);
+
+        return event;
+    }
 }

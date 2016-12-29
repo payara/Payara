@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,21 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.domain.execoptions;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.config.support.Singleton;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class NotifierConfigurationExecutionOptionsFactoryStore {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    private Map<NotifierType, NotifierConfigurationExecutionOptionsFactory> factoryStore =
+            new HashMap<NotifierType, NotifierConfigurationExecutionOptionsFactory>();
+
+    public NotifierConfigurationExecutionOptionsFactory get(NotifierType type) {
+        return factoryStore.get(type);
+    }
+
+    public void register(NotifierType type, NotifierConfigurationExecutionOptionsFactory factory) {
+        factoryStore.put(type, factory);
+    }
 }

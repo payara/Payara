@@ -15,25 +15,32 @@ package fish.payara.nucleus.notification;
 
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.execoptions.NotificationExecutionOptions;
-import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
 import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactory;
-import fish.payara.nucleus.notification.service.LogNotifierService;
+import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactoryStore;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -62,18 +69,12 @@ public class NotificationService implements EventListener {
     private NotificationEventBus notificationEventBus;
 
     @Inject
-    private NotifierConfigurationExecutionOptionsFactory executionOptionsFactory;
+    private NotifierConfigurationExecutionOptionsFactoryStore factoryStore;
 
     private NotificationExecutionOptions executionOptions = new NotificationExecutionOptions();
 
     @PostConstruct
     void postConstruct() {
-        if (configuration != null) {
-            executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
-            for (NotifierConfiguration notifierConfiguration : configuration.getNotifierConfigurationList()) {
-                executionOptions.addNotifierConfigurationExecutionOption(executionOptionsFactory.build(notifierConfiguration));
-            }
-        }
         events.register(this);
     }
 
@@ -84,6 +85,24 @@ public class NotificationService implements EventListener {
     }
 
     private void bootstrapNotificationService() {
+        if (configuration != null) {
+            executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
+
+            for (NotifierConfiguration notifierConfiguration : configuration.getNotifierConfigurationList()) {
+                NotifierType type = null;
+                try {
+                    ConfigView view = ConfigSupport.getImpl(notifierConfiguration);
+                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+                    type = annotation.type();
+                    executionOptions.addNotifierConfigurationExecutionOption(factoryStore.get(type).build(notifierConfiguration));
+                } catch (UnsupportedEncodingException e) {
+                    logger.log(Level.SEVERE, "Notifier configuration with type " + type
+                            + " cannot be configured due to encoding problems in configuration parameters", e);
+                    e.printStackTrace();
+                }
+            }
+        }
+
         if (executionOptions.isEnabled()) {
             logger.info("Payara Notification Service Started with configuration: " + executionOptions);
         }

@@ -36,21 +36,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.service.hipchat;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.NoSuchElementException;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+public class HipchatMessageQueueTest {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    HipchatMessageQueue queue;
+
+    @Before
+    public void setup() {
+        queue = new HipchatMessageQueue();
+    }
+
+    @Test
+    public void messageSentToQueueSuccessfully() {
+        queue.addHipchatMessage(new HipchatMessage("hello world"));
+
+        assertThat(queue.size(), is(1));
+    }
+    @Test
+    public void messageSentAndRetrievedSuccessfully() {
+        queue.addHipchatMessage(new HipchatMessage("hello world"));
+        HipchatMessage message = queue.getHipchatMessage();
+
+        assertThat(message.getMessage(), is("hello world"));
+        assertThat(queue.size(), is(0));
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void emptyQueueThrowsException() {
+        assertThat(queue.size(), is(0));
+        queue.getHipchatMessage();
+    }
+
 }

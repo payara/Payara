@@ -36,21 +36,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.domain.execoptions;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+public class HipchatNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    private String roomName;
+    private String token;
+
+    HipchatNotifierConfigurationExecutionOptions() {
+        super(NotifierType.HIPCHAT);
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    @Override
+    public String toString() {
+        return "HipchatNotifierConfigurationExecutionOptions{" +
+                "roomName='" + roomName + '\'' +
+                ", token='" + token + '\'' +
+                '}';
+    }
 }

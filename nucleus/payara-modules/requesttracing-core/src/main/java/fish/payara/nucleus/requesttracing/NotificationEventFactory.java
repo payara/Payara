@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,21 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.requesttracing;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import org.jvnet.hk2.annotations.Contract;
+
+import javax.inject.Inject;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+@Contract
+public abstract class NotificationEventFactory<E extends NotificationEvent> {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    @Inject
+    NotificationEventFactoryStore store;
+
+    protected void registerEventFactory(NotifierType type, NotificationEventFactory notificationEventFactory) {
+        getStore().register(type, notificationEventFactory);
+    }
+
+    public abstract E buildNotificationEvent(long elapsedTime, String requestEventStr);
+
+    public NotificationEventFactoryStore getStore() {
+        return store;
+    }
 }

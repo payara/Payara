@@ -38,19 +38,26 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
-/**
- * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
- */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+import java.beans.PropertyVetoException;
+
+/**
+ * Configuration class with the aim to configure hipchat notification specific parameters.
+ * This configuration is only being used by notification services.
+ *
+ * @author mertcaliskan
+ */
+@Configured
+@NotifierConfigurationType(type = NotifierType.HIPCHAT)
+public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+
+    @Attribute
+    String getRoomName();
+    void setRoomName(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getToken();
+    void setToken(String value) throws PropertyVetoException;
 }

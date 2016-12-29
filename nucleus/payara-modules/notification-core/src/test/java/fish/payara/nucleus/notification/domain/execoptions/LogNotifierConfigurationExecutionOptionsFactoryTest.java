@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,21 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.domain.execoptions;
+
+import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+@RunWith(MockitoJUnitRunner.class)
+public class LogNotifierConfigurationExecutionOptionsFactoryTest {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    @Mock
+    NotifierConfigurationExecutionOptionsFactoryStore factoryStore;
+
+    @InjectMocks
+    LogNotifierConfigurationExecutionOptionsFactoryMock factory = new LogNotifierConfigurationExecutionOptionsFactoryMock();
+
+    @Test
+    public void notifierConfigurationExecutionOptionBuildsSuccessfullyForLog() {
+        LogNotifierConfiguration logNotifierConfiguration = mock(LogNotifierConfiguration.class);
+        when(logNotifierConfiguration.getEnabled()).thenReturn("true");
+
+        LogNotifierConfigurationExecutionOptions executionOptions = factory.build(logNotifierConfiguration);
+
+        assertThat(executionOptions.getNotifierType(), is(NotifierType.LOG));
+        assertThat(executionOptions.isEnabled(), is(true));
+    }
+}
+
+class LogNotifierConfigurationExecutionOptionsFactoryMock extends LogNotifierConfigurationExecutionOptionsFactory {
+
+    public NotifierConfigurationExecutionOptionsFactoryStore getStore() {
+        return mock(NotifierConfigurationExecutionOptionsFactoryStore.class);
+    }
 }

@@ -36,21 +36,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.service.hipchat;
 
 /**
- * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
+ * Created by mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+public class HipchatMessage {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    private String message;
+
+    public HipchatMessage(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public String toString() {
+        return "HipchatMessage{" +
+                "message='" + message + '\'' +
+                '}';
+    }
 }
