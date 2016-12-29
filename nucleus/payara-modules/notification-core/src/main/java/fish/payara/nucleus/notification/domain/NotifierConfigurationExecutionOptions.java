@@ -11,7 +11,7 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.notification.domain.execoptions;
+package fish.payara.nucleus.notification.domain;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
 
@@ -25,11 +25,11 @@ public abstract class NotifierConfigurationExecutionOptions {
     private NotifierType notifierType;
     private boolean enabled;
 
-    NotifierConfigurationExecutionOptions(NotifierType notifierType) {
+    public NotifierConfigurationExecutionOptions(NotifierType notifierType) {
         this.notifierType = notifierType;
     }
 
-    NotifierType getNotifierType() {
+    public NotifierType getNotifierType() {
         return notifierType;
     }
 

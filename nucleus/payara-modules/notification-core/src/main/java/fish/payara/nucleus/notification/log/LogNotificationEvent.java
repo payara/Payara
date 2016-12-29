@@ -11,7 +11,9 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.notification.domain;
+package fish.payara.nucleus.notification.log;
+
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 
 import java.util.Arrays;
 import java.util.logging.Level;

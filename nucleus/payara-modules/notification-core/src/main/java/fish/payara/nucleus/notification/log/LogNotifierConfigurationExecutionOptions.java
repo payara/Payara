@@ -11,18 +11,19 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.notification.domain.execoptions;
+package fish.payara.nucleus.notification.log;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
- * @author mertcaliskan
- *
  * Holds configuration for server log specific notifier. It instantiates itself with {@link NotifierType#LOG}.
+ *
+ * @author mertcaliskan
  */
 public class LogNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    LogNotifierConfigurationExecutionOptions() {
+    public LogNotifierConfigurationExecutionOptions() {
         super(NotifierType.LOG);
     }
 }
