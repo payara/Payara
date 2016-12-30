@@ -41,6 +41,8 @@ package fish.payara.micro.options;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -52,7 +54,7 @@ import java.util.Set;
  */
 public class RuntimeOptions {
 
-    private Map<RUNTIME_OPTION, String> options;
+    private Map<RUNTIME_OPTION, List<String>> options;
     static ResourceBundle bundle = ResourceBundle.getBundle("commandoptions");
 
     public static void printHelp() {
@@ -68,7 +70,7 @@ public class RuntimeOptions {
         return options.keySet();
     }
     
-    public String getOption(RUNTIME_OPTION option) {
+    public List<String> getOption(RUNTIME_OPTION option) {
         return options.get(option);
     }
     
@@ -90,7 +92,12 @@ public class RuntimeOptions {
                         }
                         option.validate(value);
                     }
-                    options.put(option, value);
+                    List<String> values = options.get(option);
+                    if (values == null) {
+                        values = new LinkedList<String>();
+                        options.put(option, values);
+                    }
+                    values.add(value);
                 } catch (IllegalArgumentException iae) {
                     throw new ValidationException(MessageFormat.format(bundle.getString("notValidArgument"),arg));
                 } catch (IndexOutOfBoundsException ex) {

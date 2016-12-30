@@ -20,6 +20,7 @@ package fish.payara.appserver.micro.services.data;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ModuleInfo;
@@ -34,7 +35,7 @@ public class ApplicationDescriptor implements Serializable {
     private final String name;
     private final String libraries;
     private final boolean isJavaEE;
-    private final List<String> modules;
+    private final List<ModuleDescriptor> modules;
 
     public ApplicationDescriptor(ApplicationInfo info) {
         
@@ -44,7 +45,7 @@ public class ApplicationDescriptor implements Serializable {
         Collection<ModuleInfo> moduleInfos = info.getModuleInfos();
         modules = new ArrayList<>(moduleInfos.size());
         for (ModuleInfo moduleInfo : moduleInfos) {
-            modules.add(moduleInfo.getName());
+            modules.add(new ModuleDescriptor(moduleInfo));
         }
     }
 
@@ -73,12 +74,24 @@ public class ApplicationDescriptor implements Serializable {
     public boolean isJavaEE() {
         return isJavaEE;
     }
+    
+    /**
+     * Return the module descriptors
+     * @return 
+     */
+    public List<ModuleDescriptor> getModuleDescriptors() {
+        return modules;
+    }
 
     /**
-     * @return the modules
+     * @return the module names
      */
     public List<String> getModules() {
-        return modules;
+        List<String> moduleNames = new ArrayList<>(modules.size());
+        for (ModuleDescriptor descriptor : modules) {
+            moduleNames.add(descriptor.getName());
+        }
+        return moduleNames;
     }
   
     

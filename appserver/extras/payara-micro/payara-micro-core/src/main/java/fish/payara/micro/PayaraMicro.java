@@ -79,6 +79,8 @@ import fish.payara.micro.util.NameGenerator;
 import fish.payara.nucleus.events.HazelcastEvents;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.server.logging.ODLLogFormatter;
+import fish.payara.appserver.micro.services.data.ApplicationDescriptor;
+import fish.payara.appserver.micro.services.data.InstanceDescriptor;
 import fish.payara.micro.boot.BootCommands;
 import fish.payara.micro.options.RUNTIME_OPTION;
 import fish.payara.micro.options.ValidationException;
@@ -955,7 +957,7 @@ public class PayaraMicro {
             postBootActions();
 
             long end = System.currentTimeMillis();
-            LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), end - start});
+            dumpFinalStatus(end - start);
             return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
@@ -1018,213 +1020,215 @@ public class PayaraMicro {
         }
 
         for (RUNTIME_OPTION option : options.getOptions()) {
-            String value = options.getOption(option);
-            switch (option) {
-                case port: {
-                    httpPort = Integer.parseInt(value);
-                    break;
-                }
-                case sslport: {
-                    sslPort = Integer.parseInt(value);
-                    break;
-                }
-                case version: {
-                    printVersion();
-                    System.exit(1);
-                    break;
-                }
-                case maxhttpthreads: {
-                    maxHttpThreads = Integer.parseInt(value);
-                    break;
-                }
-                case minhttpthreads: {
-                    minHttpThreads = Integer.parseInt(value);
-                    break;
-                }
-                case mcaddress:
-                    hzMulticastGroup = value;
-                    break;
-                case clustername:
-                    hzClusterName = value;
-                    break;
-                case clusterpassword:
-                    hzClusterPassword = value;
-                    break;
-                case mcport: {
-                    hzPort = Integer.parseInt(value);
-                    break;
-                }
-                case startport:
-                    hzStartPort = Integer.parseInt(value);
-                    break;
-                case name:
-                    instanceName = value;
-                    break;
-                case deploymentdir:
-                case deploydir:
-                    deploymentRoot = new File(value);
-                    break;
-                case rootdir:
-                    rootDir = new File(value);
-                    break;
-                case deploy:
-                    File deployment = new File(value);
-                    if (deployments == null) {
-                        deployments = new LinkedList<>();
+            List<String> values = options.getOption(option);
+            for (String value : values) {
+                switch (option) {
+                    case port: {
+                        httpPort = Integer.parseInt(value);
+                        break;
                     }
-                    deployments.add(deployment);
-                    break;
-                case domainconfig:
-                    alternateDomainXML = new File(value);
-                    break;
-                case nocluster:
-                    noCluster = true;
-                    break;
-                case lite:
-                    liteMember = true;
-                    break;
-                case hzconfigfile:
-                    alternateHZConfigFile = new File(value);
-                    break;
-                case autobindhttp:
-                    autoBindHttp = true;
-                    break;
-                case autobindssl:
-                    autoBindSsl = true;
-                    break;
-                case autobindrange:
-                    autoBindRange = Integer.parseInt(value);
-                    break;
-                case enablehealthcheck:
-                    enableHealthCheck = Boolean.valueOf(value);
-                    break;
-                case deployfromgav:
-                    if (GAVs == null) {
-                        GAVs = new LinkedList<>();
+                    case sslport: {
+                        sslPort = Integer.parseInt(value);
+                        break;
                     }
-                    GAVs.add(value);
-                    break;
-                case additionalrepository:
-                    try {
-                        // If there isn't a trailing /, add one
-                        if (!value.endsWith("/")) {
-                            value = value + "/";
-                            repositoryURLs.add(new URL(value + "/"));
-                        } else {
-                            repositoryURLs.add(new URL(value));
+                    case version: {
+                        printVersion();
+                        System.exit(1);
+                        break;
+                    }
+                    case maxhttpthreads: {
+                        maxHttpThreads = Integer.parseInt(value);
+                        break;
+                    }
+                    case minhttpthreads: {
+                        minHttpThreads = Integer.parseInt(value);
+                        break;
+                    }
+                    case mcaddress:
+                        hzMulticastGroup = value;
+                        break;
+                    case clustername:
+                        hzClusterName = value;
+                        break;
+                    case clusterpassword:
+                        hzClusterPassword = value;
+                        break;
+                    case mcport: {
+                        hzPort = Integer.parseInt(value);
+                        break;
+                    }
+                    case startport:
+                        hzStartPort = Integer.parseInt(value);
+                        break;
+                    case name:
+                        instanceName = value;
+                        break;
+                    case deploymentdir:
+                    case deploydir:
+                        deploymentRoot = new File(value);
+                        break;
+                    case rootdir:
+                        rootDir = new File(value);
+                        break;
+                    case deploy:
+                        File deployment = new File(value);
+                        if (deployments == null) {
+                            deployments = new LinkedList<>();
                         }
-                    } catch (MalformedURLException ex) {
-                        LOGGER.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", value);
+                        deployments.add(deployment);
+                        break;
+                    case domainconfig:
+                        alternateDomainXML = new File(value);
+                        break;
+                    case nocluster:
+                        noCluster = true;
+                        break;
+                    case lite:
+                        liteMember = true;
+                        break;
+                    case hzconfigfile:
+                        alternateHZConfigFile = new File(value);
+                        break;
+                    case autobindhttp:
+                        autoBindHttp = true;
+                        break;
+                    case autobindssl:
+                        autoBindSsl = true;
+                        break;
+                    case autobindrange:
+                        autoBindRange = Integer.parseInt(value);
+                        break;
+                    case enablehealthcheck:
+                        enableHealthCheck = Boolean.valueOf(value);
+                        break;
+                    case deployfromgav:
+                        if (GAVs == null) {
+                            GAVs = new LinkedList<>();
+                        }
+                        GAVs.add(value);
+                        break;
+                    case additionalrepository:
+                        try {
+                            // If there isn't a trailing /, add one
+                            if (!value.endsWith("/")) {
+                                value = value + "/";
+                                repositoryURLs.add(new URL(value + "/"));
+                            } else {
+                                repositoryURLs.add(new URL(value));
+                            }
+                        } catch (MalformedURLException ex) {
+                            LOGGER.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", value);
+                        }
+                        break;
+                    case outputuberjar:
+                        uberJar = new File(value);
+                        break;
+                    case systemproperties: {
+                        File propertiesFile = new File(value);
+                        setSystemProperties(propertiesFile);
                     }
                     break;
-                case outputuberjar:
-                    uberJar = new File(value);
-                    break;
-                case systemproperties: {
-                    File propertiesFile = new File(value);
-                    setSystemProperties(propertiesFile);
-                }
-                break;
-                case disablephonehome:
-                    disablePhoneHome = true;
-                    break;
-                case enablerequesttracing:
-                    enableRequestTracing = true;
-                    // Check if a value has actually been given
-                    // Split strings from numbers
-                    String[] requestTracing = value.split("(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
-                    // If valid, there should be no more than 2 entries
-                    if (requestTracing.length <= 2) {
-                        // If the first entry is a number
-                        if (requestTracing[0].matches("\\d+")) {
-                            try {
-                                requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
-                            } catch (NumberFormatException e) {
-                                LOGGER.log(Level.WARNING, "{0} is not a valid request tracing "
-                                        + "threshold value", requestTracing[0]);
-                                throw e;
-                            }
-                            // If there is a second entry, and it's a String
-                            if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
-                                String parsedUnit = parseRequestTracingUnit(requestTracing[1]);
+                    case disablephonehome:
+                        disablePhoneHome = true;
+                        break;
+                    case enablerequesttracing:
+                        enableRequestTracing = true;
+                        // Check if a value has actually been given
+                        // Split strings from numbers
+                        String[] requestTracing = value.split("(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
+                        // If valid, there should be no more than 2 entries
+                        if (requestTracing.length <= 2) {
+                            // If the first entry is a number
+                            if (requestTracing[0].matches("\\d+")) {
+                                try {
+                                    requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
+                                } catch (NumberFormatException e) {
+                                    LOGGER.log(Level.WARNING, "{0} is not a valid request tracing "
+                                            + "threshold value", requestTracing[0]);
+                                    throw e;
+                                }
+                                // If there is a second entry, and it's a String
+                                if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
+                                    String parsedUnit = parseRequestTracingUnit(requestTracing[1]);
+                                    try {
+                                        TimeUnit.valueOf(parsedUnit.toUpperCase());
+                                        requestTracingThresholdUnit = parsedUnit.toUpperCase();
+                                    } catch (IllegalArgumentException e) {
+                                        LOGGER.log(Level.WARNING, "{0} is not a valid request "
+                                                + "tracing threshold unit", requestTracing[1]);
+                                        throw e;
+                                    }
+                                } // If there is a second entry, and it's not a String
+                                else if (requestTracing.length == 2 && !requestTracing[1].matches("\\D+")) {
+                                    throw new IllegalArgumentException();
+                                }
+                            } // If the first entry is a String
+                            else if (requestTracing[0].matches("\\D+")) {
+                                String parsedUnit = parseRequestTracingUnit(requestTracing[0]);
                                 try {
                                     TimeUnit.valueOf(parsedUnit.toUpperCase());
                                     requestTracingThresholdUnit = parsedUnit.toUpperCase();
                                 } catch (IllegalArgumentException e) {
                                     LOGGER.log(Level.WARNING, "{0} is not a valid request "
-                                            + "tracing threshold unit", requestTracing[1]);
+                                            + "tracing threshold unit", requestTracing[0]);
                                     throw e;
                                 }
-                            } // If there is a second entry, and it's not a String
-                            else if (requestTracing.length == 2 && !requestTracing[1].matches("\\D+")) {
-                                throw new IllegalArgumentException();
+                                // There shouldn't be a second entry
+                                if (requestTracing.length == 2) {
+                                    throw new IllegalArgumentException();
+                                }
                             }
-                        } // If the first entry is a String
-                        else if (requestTracing[0].matches("\\D+")) {
-                            String parsedUnit = parseRequestTracingUnit(requestTracing[0]);
-                            try {
-                                TimeUnit.valueOf(parsedUnit.toUpperCase());
-                                requestTracingThresholdUnit = parsedUnit.toUpperCase();
-                            } catch (IllegalArgumentException e) {
-                                LOGGER.log(Level.WARNING, "{0} is not a valid request "
-                                        + "tracing threshold unit", requestTracing[0]);
-                                throw e;
-                            }
-                            // There shouldn't be a second entry
-                            if (requestTracing.length == 2) {
-                                throw new IllegalArgumentException();
-                            }
+                        } else {
+                            throw new IllegalArgumentException();
                         }
-                    } else {
-                        throw new IllegalArgumentException();
-                    }
-                    break;
-                case requesttracingthresholdunit:
-                    try {
-                        String parsedUnit = parseRequestTracingUnit(value);
-                        TimeUnit.valueOf(parsedUnit.toUpperCase());
-                        requestTracingThresholdUnit = parsedUnit.toUpperCase();
-                    } catch (IllegalArgumentException e) {
-                        LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdUnit",
-                                value);
-                        throw e;
-                    }
-                    break;
-                case requesttracingthresholdvalue:
-                    try {
-                        requestTracingThresholdValue = Long.parseLong(value);
-                    } catch (NumberFormatException e) {
-                        LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdValue",
-                                value);
-                        throw e;
-                    }
-                    break;
-                case help:
-                    RuntimeOptions.printHelp();
-                    System.exit(1);
-                    break;
-                case logtofile:
-                    setUserLogFile(value);
-                    break;
-                case accesslog:
-                    File file = new File(value);
-                    setAccessLogDir(file.getAbsolutePath());
-                    break;
-                case accesslogformat:
-                    setAccessLogFormat(value);
-                    break;
-                case logproperties:
-                    setLogPropertiesFile(new File(value));
-                    break;
-                case logo:
-                    generateLogo = true;
-                    break;
-                case postbootcommandfile:
-                    postBootFileName = value;
-                    break;
-                case prebootcommandfile:
-                    preBootFileName = value;
-                    break;
+                        break;
+                    case requesttracingthresholdunit:
+                        try {
+                            String parsedUnit = parseRequestTracingUnit(value);
+                            TimeUnit.valueOf(parsedUnit.toUpperCase());
+                            requestTracingThresholdUnit = parsedUnit.toUpperCase();
+                        } catch (IllegalArgumentException e) {
+                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdUnit",
+                                    value);
+                            throw e;
+                        }
+                        break;
+                    case requesttracingthresholdvalue:
+                        try {
+                            requestTracingThresholdValue = Long.parseLong(value);
+                        } catch (NumberFormatException e) {
+                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdValue",
+                                    value);
+                            throw e;
+                        }
+                        break;
+                    case help:
+                        RuntimeOptions.printHelp();
+                        System.exit(1);
+                        break;
+                    case logtofile:
+                        setUserLogFile(value);
+                        break;
+                    case accesslog:
+                        File file = new File(value);
+                        setAccessLogDir(file.getAbsolutePath());
+                        break;
+                    case accesslogformat:
+                        setAccessLogFormat(value);
+                        break;
+                    case logproperties:
+                        setLogPropertiesFile(new File(value));
+                        break;
+                    case logo:
+                        generateLogo = true;
+                        break;
+                    case postbootcommandfile:
+                        postBootFileName = value;
+                        break;
+                    case prebootcommandfile:
+                        preBootFileName = value;
+                        break;
+                }
             }
         }
 
@@ -1375,10 +1379,6 @@ public class PayaraMicro {
     }
 
     private void postBootActions() throws GlassFishException {
-        if (generateLogo) {
-            generateLogo();
-        }
-
         if (enableRequestTracing) {
             RequestTracingService requestTracing = gf.getService(RequestTracingService.class);
             requestTracing.getExecutionOptions().setEnabled(true);
@@ -1870,15 +1870,15 @@ public class PayaraMicro {
         if (rootDir != null) {
             creator.setDomainDir(rootDir);
         }
-        
+
         if (postBootFileName != null) {
             creator.setPostBootCommands(new File(postBootFileName));
         }
-        
+
         if (preBootFileName != null) {
             creator.setPreBootCommands(new File(preBootFileName));
         }
-                
+
         if (logPropertiesFile) {
             creator.setLoggingPropertiesFile(new File(userLogPropertiesFile));
         }
@@ -2102,7 +2102,7 @@ public class PayaraMicro {
                 runtimeDir.setDomainXML(is);
             }
         }
-        
+
         if (alternateHZConfigFile != null) {
             runtimeDir.setHZConfigFile(alternateHZConfigFile);
         }
@@ -2131,6 +2131,22 @@ public class PayaraMicro {
         if (enableHealthCheck) {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.health-check-service-configuration.enabled=true"));
         }
+    }
+
+    private void dumpFinalStatus(long bootTime) {
+        InstanceDescriptor id = getRuntime().getLocalDescriptor();
+        LOGGER.log(Level.INFO, id.toString());
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nPayara Micro URLs\n");
+        List<URL> urls = id.getApplicationURLS();
+        for (URL url : urls) {
+            sb.append(url.toString()).append('\n');
+        }
+        LOGGER.log(Level.INFO, sb.toString());
+        if (generateLogo) {
+            generateLogo();
+        }
+        LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), bootTime});
     }
 
 }

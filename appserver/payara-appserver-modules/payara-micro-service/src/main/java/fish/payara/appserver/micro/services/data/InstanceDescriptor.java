@@ -19,22 +19,28 @@ package fish.payara.appserver.micro.services.data;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.internal.data.ApplicationInfo;
 
 /**
- * 
+ *
  * @author steve
  */
 public class InstanceDescriptor implements Serializable {
+
     private static final long serialVersionUID = 1L;
-    
+
     private final String memberUUID;
     private String instanceName;
     private List<Integer> httpPorts;
@@ -58,16 +64,16 @@ public class InstanceDescriptor implements Serializable {
         if (deployedApplications == null) {
             deployedApplications = new HashMap<>(3);
         }
-        
+
         ApplicationDescriptor ad = new ApplicationDescriptor(info);
         deployedApplications.put(ad.getName(), ad);
     }
-    
+
     public void addApplication(ApplicationDescriptor descriptor) {
         if (deployedApplications == null) {
             deployedApplications = new HashMap<>(3);
         }
-        
+
         deployedApplications.put(descriptor.getName(), descriptor);
     }
 
@@ -78,7 +84,7 @@ public class InstanceDescriptor implements Serializable {
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }
-    
+
     /**
      * @return the memberUUID
      */
@@ -98,11 +104,6 @@ public class InstanceDescriptor implements Serializable {
      */
     public void addHttpPort(int httpPort) {
         httpPorts.add(httpPort);
-    }
-
-    @Override
-    public String toString() {
-        return "InstanceDescriptor{" + "memberUUID=" + memberUUID + ", httpPorts=" + httpPorts + ", httpsPorts=" + httpsPorts + ", hostName=" + hostName + ", deployedApplications=" + deployedApplications + '}';
     }
 
     /**
@@ -153,14 +154,15 @@ public class InstanceDescriptor implements Serializable {
 
     /**
      * Overrides equals purely based on the UUID value
+     *
      * @param obj
-     * @return 
+     * @return
      */
     @Override
     public boolean equals(Object obj) {
         boolean result = false;
         if (InstanceDescriptor.class.isInstance(obj)) {
-            InstanceDescriptor descriptor = (InstanceDescriptor)obj;
+            InstanceDescriptor descriptor = (InstanceDescriptor) obj;
             result = this.memberUUID.equals(descriptor.memberUUID);
         }
         return result;
@@ -168,92 +170,171 @@ public class InstanceDescriptor implements Serializable {
 
     /**
      * Overrides hashcode based purely on the UUID hashcode
-     * @return 
+     *
+     * @return
      */
     @Override
     public int hashCode() {
         return memberUUID.hashCode();
     }
-    
+
     /**
-     * Checks whether or not this instance is described as a Lite Hazelcast member
+     * Checks whether or not this instance is described as a Lite Hazelcast
+     * member
+     *
      * @return true if this instance describes a Hazelcast Lite member
      */
     public boolean isLiteMember() {
         return liteMember;
     }
-    
+
     /**
      * Sets whether or not this descriptor describes a Hazelcast Lite member
-     * @param isLiteMember true if this descriptor describes a Hazelcast Lite member
+     *
+     * @param isLiteMember true if this descriptor describes a Hazelcast Lite
+     * member
      */
     public void setLiteMember(boolean isLiteMember) {
         liteMember = isLiteMember;
     }
-    
+
     /**
      * Checks whether or not this descriptor describes a Payara Micro instance
+     *
      * @return true if this descriptor describes a Payara Micro instances
      */
     public boolean isMicroInstance() {
         return instanceType.equals("MICRO");
     }
-    
+
     /**
-     * Checks whether or not this descriptor describes a Payara Server instance or the DAS
-     * @return true if this descriptor describes a Payara Server instance or the DAS
+     * Checks whether or not this descriptor describes a Payara Server instance
+     * or the DAS
+     *
+     * @return true if this descriptor describes a Payara Server instance or the
+     * DAS
      */
     public boolean isPayaraInstance() {
         return (instanceType.equals("DAS") || instanceType.equals("INSTANCE"));
     }
-    
+
     /**
      * Sets what instance type this descriptor describes
-     * @param instanceType the instance type that this descriptor should describe
+     *
+     * @param instanceType the instance type that this descriptor should
+     * describe
      */
     public void setInstanceType(String instanceType) {
         this.instanceType = instanceType;
     }
-    
+
     /**
      * Gets the instance type that this descriptor describes
+     *
      * @return the instance type that this descriptor describes
      */
     public String getInstanceType() {
         return instanceType;
     }
-    
+
     /**
      * Sets the Hazelcast port number for this instance descriptor
+     *
      * @param hazelcastPort the port number in use by Hazelcast
      */
     public void setHazelcastPort(int hazelcastPort) {
         this.hazelcastPort = hazelcastPort;
     }
-    
+
     /**
      * Gets the Hazelcast port number of this instance descriptor
+     *
      * @return the port number in use by Hazelcast
      */
     public int getHazelcastPort() {
         return hazelcastPort;
     }
-    
+
     /**
      * Sets the admin port number for this instance descriptor
+     *
      * @param adminPort the admin port number in use by this instance
      */
     public void setAdminPort(int adminPort) {
         this.adminPort = adminPort;
     }
-    
+
     /**
      * Gets the admin port number for this instance descriptor
+     *
      * @return the admin port number in use by this instance
      */
     public int getAdminPort() {
         return adminPort;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nInstance Configuration\n");
+        sb.append("Host: ").append(hostName.getCanonicalHostName()).append('\n');
+        sb.append("HTTP Port(s): ");
+        for (Integer port : getHttpPorts()) {
+            sb.append(port).append(' ');
+        }
+        sb.append('\n');
+        sb.append("HTTPS Port(s): ");
+        for (Integer port : getHttpsPorts()) {
+            sb.append(port).append(' ');
+        }
+        sb.append('\n');
+        sb.append("Instance Name: ").append(instanceName).append('\n');
+        if (memberUUID != null) {
+            sb.append("Hazelcast Member UUID ").append(this.memberUUID).append('\n');
+        }
+        for (ApplicationDescriptor ad : getDeployedApplications()) {
+            sb.append("Deployed: ");
+            sb.append(ad.getName()).append(" ( ");
+            for (ModuleDescriptor md : ad.getModuleDescriptors()) {
+                sb.append(md.getName()).append(' ').append(md.getType()).append(' ');
+                if (md.getContextRoot() != null) {
+                    sb.append(md.getContextRoot()).append(' ');
+                }
+            }
+            sb.append(")\n");
+            String libraries = ad.getLibraries();
+            if (libraries != null) {
+                sb.append(' ').append(ad.getLibraries());
+            }
+        }
+        sb.append('\n');
+        return sb.toString();
+    }
+
+    public List<URL> getApplicationURLS() {
+        LinkedList<URL> result = new LinkedList<>();
+        for (Map.Entry<String, ApplicationDescriptor> ai : deployedApplications.entrySet()) {
+            for (ModuleDescriptor moduleDescriptor : ai.getValue().getModuleDescriptors()) {
+                String contextRoot = moduleDescriptor.getContextRoot();
+                if (contextRoot != null) {
+                    for (Integer httpPort : httpPorts) {
+                        try {
+                            result.add(new URL("http", hostName.getCanonicalHostName(), httpPort, contextRoot));
+                        } catch (MalformedURLException ex) {
+                            // ignore
+                        }
+                    }
+                    for (Integer httpsPort : httpsPorts) {
+                        try {
+                            result.add(new URL("https", hostName.getCanonicalHostName(), httpsPort, contextRoot));
+                        } catch (MalformedURLException ex) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     
     /**
      * Gets the instance group name
