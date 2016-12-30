@@ -29,8 +29,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.internal.data.ApplicationInfo;
 
 /**
@@ -43,8 +41,8 @@ public class InstanceDescriptor implements Serializable {
 
     private final String memberUUID;
     private String instanceName;
-    private List<Integer> httpPorts;
-    private List<Integer> httpsPorts;
+    private final List<Integer> httpPorts;
+    private final List<Integer> httpsPorts;
     private InetAddress hostName;
     private Map<String, ApplicationDescriptor> deployedApplications;
     private boolean liteMember;
