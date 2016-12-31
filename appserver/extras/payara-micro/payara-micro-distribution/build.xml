@@ -109,6 +109,14 @@
 	<delete file="${runtimedir}/shoal-gms-api.jar"/>
 	<delete file="${runtimedir}/load-balancer-admin.jar"/>
 	<delete file="${runtimedir}/gf-load-balancer-connector.jar"/>
+	<delete file="${runtimedir}/notification-jms-core.jar"/>
+	<delete file="${runtimedir}/notification-email-core.jar"/>
+	<delete file="${runtimedir}/notification-hipchat-core.jar"/>
+	<delete file="${runtimedir}/notification-slack-core.jar"/>
+	<delete file="${runtimedir}/notification-snmp-core.jar"/>
+	<delete file="${runtimedir}/notification-xmpp-core.jar"/>
+	<delete file="${runtimedir}/notification-xmpp-core.jar"/>
+	<delete file="${runtimedir}/org.apache.servicemix.bundles.xpp3.jar"/>
 	<delete file="${runtimedir}/backup.jar"/>
 	<delete file="${runtimedir}/ant.jar" failonerror="false"/>
 	<delete verbose="true" failonerror="false">
@@ -121,6 +129,8 @@
 	  <fileset dir="${runtimedir}" includes="**/weld-se-core.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/derbyLocale*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/jxmpp*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/smack*.jar"/>
 	</delete>
 	<delete file="${runtimedir}/autostart/osgi-cdi.jar" failonerror="false"/>
      </target>

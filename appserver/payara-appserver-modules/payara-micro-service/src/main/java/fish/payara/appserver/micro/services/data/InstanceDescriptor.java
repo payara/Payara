@@ -311,22 +311,24 @@ public class InstanceDescriptor implements Serializable {
 
     public List<URL> getApplicationURLS() {
         LinkedList<URL> result = new LinkedList<>();
-        for (Map.Entry<String, ApplicationDescriptor> ai : deployedApplications.entrySet()) {
-            for (ModuleDescriptor moduleDescriptor : ai.getValue().getModuleDescriptors()) {
-                String contextRoot = moduleDescriptor.getContextRoot();
-                if (contextRoot != null) {
-                    for (Integer httpPort : httpPorts) {
-                        try {
-                            result.add(new URL("http", hostName.getCanonicalHostName(), httpPort, contextRoot));
-                        } catch (MalformedURLException ex) {
-                            // ignore
+        if (deployedApplications != null) {
+            for (Map.Entry<String, ApplicationDescriptor> ai : deployedApplications.entrySet()) {
+                for (ModuleDescriptor moduleDescriptor : ai.getValue().getModuleDescriptors()) {
+                    String contextRoot = moduleDescriptor.getContextRoot();
+                    if (contextRoot != null) {
+                        for (Integer httpPort : httpPorts) {
+                            try {
+                                result.add(new URL("http", hostName.getCanonicalHostName(), httpPort, contextRoot));
+                            } catch (MalformedURLException ex) {
+                                // ignore
+                            }
                         }
-                    }
-                    for (Integer httpsPort : httpsPorts) {
-                        try {
-                            result.add(new URL("https", hostName.getCanonicalHostName(), httpsPort, contextRoot));
-                        } catch (MalformedURLException ex) {
-                            // ignore
+                        for (Integer httpsPort : httpsPorts) {
+                            try {
+                                result.add(new URL("https", hostName.getCanonicalHostName(), httpsPort, contextRoot));
+                            } catch (MalformedURLException ex) {
+                                // ignore
+                            }
                         }
                     }
                 }

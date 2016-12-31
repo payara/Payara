@@ -102,6 +102,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             </request-tracing-service-configuration>
             <notification-service-configuration enabled="true">
                 <log-notifier-configuration enabled="true"></log-notifier-configuration>
+                <eventbus-notifier-configuration enabled="false"></eventbus-notifier-configuration>
             </notification-service-configuration>
             <availability-service availability-enabled="true" >
                 <web-container-availability availability-enabled="true" persistence-scope="modified-session" sso-failover-enabled="true" persistence-type="hazelcast"></web-container-availability>

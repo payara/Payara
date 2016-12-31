@@ -69,6 +69,8 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
     <configs>
         <config name="server-config">
             <health-check-service-configuration enabled="false">
+                <log-notifier enabled="true"/>
+                <eventbus-notifier enabled="false"/>
                 <cpu-usage-checker unit="MINUTES" name="CPU" time="1" enabled="true" />
                 <machine-memory-usage-checker unit="MINUTES" name="MMEM" time="3" enabled="true" />
                 <heap-memory-usage-checker unit="MINUTES" name="HEAP" time="3" enabled="true" />
@@ -158,6 +160,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             </request-tracing-service-configuration>
             <notification-service-configuration enabled="true">
                 <log-notifier-configuration enabled="true"></log-notifier-configuration>
+                <eventbus-notifier-configuration enabled="false"></eventbus-notifier-configuration>
             </notification-service-configuration>
             <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
             <availability-service availability-enabled="true" >

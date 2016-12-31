@@ -2056,25 +2056,25 @@ public class PayaraMicro {
             props.load(input);
             StringBuilder output = new StringBuilder();
             if (props.getProperty("product_name").isEmpty() == false) {
-                output.append(props.getProperty("product_name") + " ");
+                output.append(props.getProperty("product_name")).append(" ");
             }
             if (props.getProperty("major_version").isEmpty() == false) {
-                output.append(props.getProperty("major_version") + ".");
+                output.append(props.getProperty("major_version")).append(".");
             }
             if (props.getProperty("minor_version").isEmpty() == false) {
-                output.append(props.getProperty("minor_version") + ".");
+                output.append(props.getProperty("minor_version")).append(".");
             }
             if (props.getProperty("update_version").isEmpty() == false) {
-                output.append(props.getProperty("update_version") + ".");
+                output.append(props.getProperty("update_version")).append(".");
             }
             if (props.getProperty("payara_version").isEmpty() == false) {
                 output.append(props.getProperty("payara_version"));
             }
             if (props.getProperty("payara_update_version").isEmpty() == false) {
-                output.append("." + props.getProperty("payara_update_version"));
+                output.append(".").append(props.getProperty("payara_update_version"));
             }
             if (props.getProperty("build_id").isEmpty() == false) {
-                output.append(" Build Number " + props.getProperty("build_id"));
+                output.append(" Build Number ").append(props.getProperty("build_id"));
             }
 
             System.err.println(output.toString());
