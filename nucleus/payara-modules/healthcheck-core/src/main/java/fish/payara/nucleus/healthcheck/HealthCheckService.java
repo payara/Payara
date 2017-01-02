@@ -74,6 +74,9 @@ public class HealthCheckService implements EventListener {
     @Inject
     private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
 
+    @Inject
+    private HistoricHealthCheckEventStore healthCheckEventStore;
+
     private List<NotifierExecutionOptions> notifierExecutionOptionsList = new ArrayList<>();
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -81,6 +84,8 @@ public class HealthCheckService implements EventListener {
     private ScheduledExecutorService executor;
     private final Map<String, HealthCheckTask> registeredTasks = new HashMap<String, HealthCheckTask>();
     private boolean enabled;
+    private boolean historicalTraceEnabled;
+    private Integer historicalTraceStoreSize;
 
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_SHUTDOWN) && executor != null) {
@@ -98,10 +103,20 @@ public class HealthCheckService implements EventListener {
     @PostConstruct
     void postConstruct() {
         events.register(this);
-
         configuration = habitat.getService(HealthCheckServiceConfiguration.class);
-        if (configuration != null && Boolean.parseBoolean(configuration.getEnabled())) {
-            enabled = true;
+
+        if (configuration != null) {
+            if (Boolean.parseBoolean(configuration.getEnabled())) {
+                enabled = true;
+            }
+            historicalTraceEnabled = Boolean.valueOf(configuration.getHistoricalTraceEnabled());
+            String historicalTraceStoreSizeConfig = configuration.getHistoricalTraceStoreSize();
+            if (historicalTraceStoreSizeConfig != null) {
+                this.historicalTraceStoreSize = Integer.parseInt(historicalTraceStoreSizeConfig);
+            }
+            if (historicalTraceEnabled) {
+                healthCheckEventStore.initialize(historicalTraceStoreSize);
+            }
         }
     }
 
@@ -182,6 +197,22 @@ public class HealthCheckService implements EventListener {
     
     public void setConfiguration(HealthCheckServiceConfiguration configuration) {
         this.configuration = configuration;
+    }
+
+    public boolean isHistoricalTraceEnabled() {
+        return historicalTraceEnabled;
+    }
+
+    public void setHistoricalTraceEnabled(boolean historicalTraceEnabled) {
+        this.historicalTraceEnabled = historicalTraceEnabled;
+    }
+
+    public Integer getHistoricalTraceStoreSize() {
+        return historicalTraceStoreSize;
+    }
+
+    public void setHistoricalTraceStoreSize(Integer historicalTraceStoreSize) {
+        this.historicalTraceStoreSize = historicalTraceStoreSize;
     }
 
     public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
