@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.core.deployment;
 
@@ -46,13 +47,10 @@ import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.*;
 import com.sun.enterprise.deployment.deploy.shared.DeploymentPlanArchive;
 import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import com.sun.enterprise.deployment.deploy.shared.Util;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.common.HTMLActionReporter;
@@ -78,14 +76,11 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PreDestroy;
 import org.xml.sax.SAXParseException;
 
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -183,6 +178,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
             application.setAppName(name);
             application.setClassLoader(cl);
+            application.setRoleMapper(null);
 
             if (application.isVirtual()) {
                 ModuleDescriptor md = application.getStandaloneBundleDescriptor().getModuleDescriptor();
