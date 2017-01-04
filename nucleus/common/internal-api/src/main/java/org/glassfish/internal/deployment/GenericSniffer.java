@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -61,7 +62,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.lang.annotation.Annotation;
 import javax.xml.stream.events.StartDocument;
 
@@ -101,6 +101,9 @@ public abstract class GenericSniffer implements Sniffer {
         ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {
             return false;
+        }
+        if(archiveType != null) {
+            context.getSource().setExtraData(ArchiveType.class, archiveType);
         }
         return handles(context.getSource());
     }
