@@ -315,7 +315,7 @@ public class GlobalTID extends Object {
             }
         }
 
-        // Add in the formatId and branch qualifier length.
+        // Add in the formatId
 
         hashCode += realTID.formatID;
 
