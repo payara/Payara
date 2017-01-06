@@ -316,6 +316,14 @@ public final class JSPCompiler {
             } else if ("ignoreJspFragmentErrors".equals(pName)) {
                 jspc.setIgnoreJspFragmentErrors(
                     Boolean.valueOf(pValue).booleanValue());
+            } else if ("compilerSourceVM".equals(pName)) {
+                jspc.setCompilerSourceVM(pValue);
+            } else if ("compilerTargetVM".equals(pName)) {
+                jspc.setCompilerTargetVM(pValue);
+            } else if ("ignoreJspFragmentErrors".equals(pName)) {
+                jspc.setIgnoreJspFragmentErrors(Boolean.valueOf(pValue));
+            } else if ("trimSpaces".equals(pName)) {
+                jspc.setTrimSpaces(Boolean.valueOf(pValue));
             }
         }
 
