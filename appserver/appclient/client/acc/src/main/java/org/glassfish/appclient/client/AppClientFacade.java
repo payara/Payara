@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package org.glassfish.appclient.client;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.deployment.node.SaxParserHandlerBundled;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
+import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.BufferedInputStream;
@@ -184,13 +185,16 @@ public class AppClientFacade {
     }
 
     public static void prepareACC(String agentArgsText, Instrumentation inst) throws UserError, MalformedURLException, URISyntaxException, JAXBException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, Exception {
-        JavaVersion javaVersion = new JavaVersion();
-        if (javaVersion.asInt() < 16) {
+        int minor = JDK.getMinor();
+        int major = JDK.getMajor();
+        if (major<9) {
+            if (minor < 6) {
             throw new UserError(localStrings.getLocalString(
                     stringsAnchor,
                     "main.badVersion",
                     "Current Java version {0} is too low; {1} or later required",
-                    new Object[] {javaVersion.versionString, "1.6"}));
+                    new Object[] {System.getProperty("java.version"), "1.6"}));
+            }
         }
 
         /*
