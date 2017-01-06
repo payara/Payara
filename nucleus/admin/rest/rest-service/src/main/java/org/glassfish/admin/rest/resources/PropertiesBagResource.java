@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -55,7 +54,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.admin.rest.utils.ResourceUtil;
@@ -65,7 +63,7 @@ import org.glassfish.admin.rest.results.GetResultList;
 import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -169,6 +167,7 @@ public class PropertiesBagResource extends AbstractResource {
     protected ActionReportResult clearThenSaveProperties(List<Map<String, String>> properties) {
         RestActionReporter ar = new RestActionReporter();
         ar.setActionDescription("property");
+        TranslatedConfigView.doSubstitution.set(Boolean.FALSE);
         try {
             Map<String, Property> existing = getExistingProperties();
             deleteMissingProperties(existing, properties);
