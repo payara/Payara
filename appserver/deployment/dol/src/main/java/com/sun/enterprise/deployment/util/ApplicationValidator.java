@@ -91,6 +91,7 @@ public class ApplicationValidator extends ComponentValidator
     final String JNDI_COMP = "java:comp";
     final String JNDI_MODULE = "java:module";
     final String JNDI_APP = "java:app";
+    private final String EJB_LEVEL = "EJBLevel:";
 
     private boolean allUniqueResource = true;
 
@@ -589,14 +590,15 @@ public class ApplicationValidator extends ComponentValidator
                     }
                 }
 
-                Vector vectorScope = commonResourceValidator.getScope();
+                @SuppressWarnings("unchecked")
+                Vector<String> vectorScope = commonResourceValidator.getScope();
                 if (vectorScope != null) {
                     vectorScope.add(scope);
                 }
                 commonResourceValidator.setScope(vectorScope);
                 allResourceDescriptors.put(name, commonResourceValidator);
             } else {
-                Vector<String> vectorScope = new Vector<String>();
+                Vector<String> vectorScope = new Vector<>();
                 vectorScope.add(scope);
                 allResourceDescriptors.put(name, new CommonResourceValidator(descriptor, name, vectorScope));
             }
@@ -709,9 +711,13 @@ public class ApplicationValidator extends ComponentValidator
                     otherElements = otherElements.substring(0, otherElements.indexOf("#"));
                 }
                 if (firstElement.equals(otherElements)) {
+                    boolean fail = !firstElement.startsWith(EJB_LEVEL);
                     inValidJndiName = jndiName;
-                    DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0004:Deployment failed due to the conflict occur for jndi-name: {0} for application: {1}",
+                    DOLUtils.getDefaultLogger().log(fail? Level.SEVERE : Level.FINE, "DEP0004:Deployment failed due to the conflict occur for jndi-name: {0} for application: {1}",
                         new Object[] { jndiName, application.getAppName() });
+                    if(fail) {
+                        return false;
+                    }
                 }
             }
         }

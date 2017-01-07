@@ -41,6 +41,10 @@
 
 package com.sun.gjc.common;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -107,9 +111,10 @@ public class DataSourceSpec implements java.io.Serializable {
     public static final int MODULENAME = 47;
     public static final int SLOWSQLLOGTHRESHOLD = 48;
     public static final int LOGJDBCCALLS = 49;
-    
 
-    private ConcurrentHashMap<Integer, String> details = new ConcurrentHashMap<Integer, String>();
+    private static final long serialVersionUID = 1L;
+
+    private final ConcurrentHashMap<Integer, String> details = new ConcurrentIgnoredHashMap(URL);
 
     /**
      * Set the property.
@@ -141,6 +146,7 @@ public class DataSourceSpec implements java.io.Serializable {
      *
      * @param obj Instance of <code>DataSourceSpec</code> object.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof DataSourceSpec) {
             return this.details.equals(((DataSourceSpec) obj).details);
@@ -153,7 +159,74 @@ public class DataSourceSpec implements java.io.Serializable {
      *
      * @return hashCode of this object.
      */
+    @Override
     public int hashCode() {
         return this.details.hashCode();
+    }
+
+
+    /**
+     * If any keys don't exist from the other side, ignore the differences,
+     * as specified by the ignoredList
+     */
+    private static class ConcurrentIgnoredHashMap extends ConcurrentHashMap<Integer, String>
+    {
+        public ConcurrentIgnoredHashMap(Integer... ignoredList) {
+            this.ignoredList = Arrays.asList(ignoredList);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if(!(o instanceof ConcurrentIgnoredHashMap)) {
+                return false;
+            }
+            ConcurrentIgnoredHashMap rhs = (ConcurrentIgnoredHashMap)o;
+            if(checkIgnoredKeys(rhs) == Containment.ONE_CONTAINS) {
+                return makeIgnoredMap(this).equals(makeIgnoredMap(rhs));
+            } else {
+                return super.equals(rhs);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            if(checkIgnoredKeys(null) != Containment.NONE_CONTAIN) {
+                return makeIgnoredMap(this).hashCode();
+            }
+            else {
+                return super.hashCode();
+            }
+        }
+
+        private Map<Integer, String> makeIgnoredMap(ConcurrentIgnoredHashMap map) {
+            Map<Integer, String> rv = new HashMap<>(map);
+            for(Integer ignoredValue : ignoredList) {
+                rv.remove(ignoredValue);
+            }
+            return rv;
+        }
+
+        private Containment checkIgnoredKeys(ConcurrentIgnoredHashMap rhs) {
+            for(Integer ignoredValue : ignoredList) {
+                int numContainment = 0;
+                if(containsKey(ignoredValue)) {
+                    ++numContainment;
+                }
+                if(rhs != null && rhs.containsKey(ignoredValue)) {
+                    ++numContainment;
+                }
+                if(numContainment > 0) {
+                    return numContainment > 1? Containment.BOTH_CONTAIN : Containment.ONE_CONTAINS;
+                }
+            }
+            return Containment.NONE_CONTAIN;
+        }
+
+
+        private enum Containment { NONE_CONTAIN, ONE_CONTAINS, BOTH_CONTAIN };
+
+
+        private final List<Integer> ignoredList;
+        private static final long serialVersionUID = 1L;
     }
 }
