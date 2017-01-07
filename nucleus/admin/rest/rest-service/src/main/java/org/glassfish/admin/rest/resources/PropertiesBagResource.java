@@ -167,7 +167,6 @@ public class PropertiesBagResource extends AbstractResource {
     protected ActionReportResult clearThenSaveProperties(List<Map<String, String>> properties) {
         RestActionReporter ar = new RestActionReporter();
         ar.setActionDescription("property");
-        TranslatedConfigView.doSubstitution.set(Boolean.FALSE);
         try {
             TranslatedConfigView.doSubstitution.set(Boolean.FALSE);
             Map<String, Property> existing = getExistingProperties();
