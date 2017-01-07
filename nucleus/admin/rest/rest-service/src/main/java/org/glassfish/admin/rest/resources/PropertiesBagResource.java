@@ -169,6 +169,7 @@ public class PropertiesBagResource extends AbstractResource {
         ar.setActionDescription("property");
         TranslatedConfigView.doSubstitution.set(Boolean.FALSE);
         try {
+            TranslatedConfigView.doSubstitution.set(Boolean.FALSE);
             Map<String, Property> existing = getExistingProperties();
             deleteMissingProperties(existing, properties);
             Map<String, String> data = new LinkedHashMap<String, String>();
@@ -218,6 +219,9 @@ public class PropertiesBagResource extends AbstractResource {
             } else {
                 throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
             }
+        }
+        finally {
+            TranslatedConfigView.doSubstitution.set(Boolean.TRUE);
         }
 
         return new ActionReportResult("properties", ar, new OptionsResult(Util.getResourceName(uriInfo)));
