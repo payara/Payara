@@ -54,12 +54,13 @@
  * @author byron.nevins@sun.com
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.web.jsp;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.web.InitializationParameter;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.jasper.JspC;
 import org.glassfish.deployment.common.DeploymentException;
@@ -316,6 +317,14 @@ public final class JSPCompiler {
             } else if ("ignoreJspFragmentErrors".equals(pName)) {
                 jspc.setIgnoreJspFragmentErrors(
                     Boolean.valueOf(pValue).booleanValue());
+            } else if ("compilerSourceVM".equals(pName)) {
+                jspc.setCompilerSourceVM(pValue);
+            } else if ("compilerTargetVM".equals(pName)) {
+                jspc.setCompilerTargetVM(pValue);
+            } else if ("ignoreJspFragmentErrors".equals(pName)) {
+                jspc.setIgnoreJspFragmentErrors(Boolean.valueOf(pValue));
+            } else if ("trimSpaces".equals(pName)) {
+                jspc.setTrimSpaces(Boolean.valueOf(pValue));
             }
         }
 
