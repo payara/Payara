@@ -60,7 +60,6 @@ import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -1729,7 +1728,7 @@ public class Application extends CommonResourceBundleDescriptor
             input = input.replaceAll("(\\?|\\*)", ".$1");
             input = input.replaceFirst("\\.jar$", "");
             if(StringUtils.ok(libDir)) {
-                input = String.format("^%s%c%s(-.*)?\\.jar$", libDir, File.separatorChar, input);
+                input = String.format("^%s/%s(-.*)?\\.jar$", libDir, input);
             }
             return Pattern.compile(input, Pattern.CASE_INSENSITIVE);
         }
