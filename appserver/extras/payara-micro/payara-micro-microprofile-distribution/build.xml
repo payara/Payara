@@ -219,7 +219,8 @@
         <jar basedir="${stagedir}" destfile="${finaljar}" compress="false">
         <manifest>
                 <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
-                <attribute name="Main-Class" value="fish.payara.payaramicro.boot.PayaraMicroLauncher"/>
+                <attribute name="Main-Class" value="fish.payara.micro.PayaraMicro"/>
+                <attribute name="Start-Class" value="fish.payara.micro.impl.PayaraMicroImpl"/>
         </manifest>
         </jar>    
     </target> 
