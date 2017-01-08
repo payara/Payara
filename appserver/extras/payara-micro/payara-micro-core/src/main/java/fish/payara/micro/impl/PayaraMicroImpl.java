@@ -86,6 +86,7 @@ import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.runtime.BootCommands;
 import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.ValidationException;
+import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
@@ -2187,7 +2188,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void dumpFinalStatus(long bootTime) {
-/*        InstanceDescriptor id = getRuntime().getLocalDescriptor();
+        InstanceDescriptor id = getRuntime().getLocalDescriptor();
         LOGGER.log(Level.INFO, id.toString());
         StringBuilder sb = new StringBuilder();
         sb.append("\nPayara Micro URLs\n");
@@ -2198,7 +2199,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         LOGGER.log(Level.INFO, sb.toString());
         if (generateLogo) {
             generateLogo();
-        }*/
+        }
         LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), bootTime});
     }
 
