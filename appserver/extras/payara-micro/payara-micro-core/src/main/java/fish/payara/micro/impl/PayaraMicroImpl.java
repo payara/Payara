@@ -2210,7 +2210,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void dumpFinalStatus(long bootTime) {
-        InstanceDescriptor id = getRuntime().getLocalDescriptor();
+/*        InstanceDescriptor id = getRuntime().getLocalDescriptor();
         LOGGER.log(Level.INFO, id.toString());
         StringBuilder sb = new StringBuilder();
         sb.append("\nPayara Micro URLs\n");
@@ -2221,7 +2221,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         LOGGER.log(Level.INFO, sb.toString());
         if (generateLogo) {
             generateLogo();
-        }
+        }*/
         LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), bootTime});
     }
 

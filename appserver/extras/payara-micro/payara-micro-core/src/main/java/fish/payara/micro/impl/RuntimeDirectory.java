@@ -123,7 +123,7 @@ class RuntimeDirectory {
         configDir.mkdirs();
 
         // Get our configuration files
-        CodeSource src = PayaraMicro.class
+        CodeSource src = PayaraMicroImpl.class
                 .getProtectionDomain().getCodeSource();
         if (src != null) {
             // find the root jar
