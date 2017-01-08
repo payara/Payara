@@ -50,7 +50,8 @@
     <version>4.1.1.171-SNAPSHOT</version>
   </parent>
   
-  <artifactId>payara-micro-distribution</artifactId>
+  <groupId>fish.payara.extras</groupId>
+  <artifactId>payara-micro</artifactId>
   <version>4.1.1.171-SNAPSHOT</version>
   <name>Payara Micro Distribution</name>
   <packaging>jar</packaging>
@@ -313,6 +314,7 @@
             <artifactId>payara-micro-core</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- Add Payara Micro Services -->
         <dependency>
@@ -320,6 +322,7 @@
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- Add Boot classes -->
         <dependency>
@@ -327,6 +330,7 @@
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
             <type>jar</type>            
+            <optional>true</optional>
         </dependency>    
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
@@ -334,6 +338,7 @@
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- Add JBatch -->
         <dependency>
@@ -341,42 +346,47 @@
             <artifactId>glassfish-batch-connector</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>
             <artifactId>glassfish-batch-commands</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>
             <artifactId>payara-jbatch</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- Add Concurrency -->
         <dependency>
             <groupId>javax.enterprise.concurrent</groupId>
             <artifactId>javax.enterprise.concurrent-api</artifactId>
-            <version>1.0</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.enterprise.concurrent</artifactId>
-            <version>1.0</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.concurrent</groupId>
             <artifactId>concurrent-connector</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>        
         <dependency>
             <groupId>org.glassfish.main.concurrent</groupId>
             <artifactId>concurrent-impl</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency> 
         <!-- Add Hazelcast EJB Timer Store -->
         <dependency>
@@ -384,12 +394,14 @@
             <artifactId>hazelcast-ejb-timer</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- PAYARA-1081 -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
             <version>${jackson.version}</version>
+            <optional>true</optional>
         </dependency>
       </dependencies>
     <profiles>
