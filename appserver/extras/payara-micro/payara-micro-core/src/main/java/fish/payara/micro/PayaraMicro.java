@@ -1682,7 +1682,7 @@ public class PayaraMicro {
             logger.info("No META-INF/deploy directory");
         }
 
-        logger.log(Level.INFO, "Deployed {0} archives", deploymentCount);
+        logger.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
 
     private void addShutdownHook() {
