@@ -17,8 +17,10 @@
  */
 package fish.payara.appserver.micro.services;
 
+import fish.payara.micro.event.PayaraClusteredCDIEvent;
 import fish.payara.cdi.jsr107.impl.PayaraValueHolder;
-import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
+import fish.payara.micro.data.InstanceDescriptor;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Properties;
@@ -27,7 +29,7 @@ import java.util.Properties;
  *
  * @author steve
  */
-public class PayaraClusteredCDIEvent implements Serializable {
+public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
 
     private static final long serialVersionUID = 1L;
     private InstanceDescriptor id;
@@ -35,15 +37,16 @@ public class PayaraClusteredCDIEvent implements Serializable {
     private PayaraValueHolder payload;
     private Properties props;
 
-    public PayaraClusteredCDIEvent(InstanceDescriptor id, Serializable payload) throws IOException {
+    public PayaraClusteredCDIEventImpl(InstanceDescriptor id, Serializable payload) throws IOException {
         this.id = id;
         this.payload = new PayaraValueHolder(payload);
     }
 
-    public PayaraClusteredCDIEvent(InstanceDescriptor id) {
+    public PayaraClusteredCDIEventImpl(InstanceDescriptor id) {
         this.id = id;
     }
 
+    @Override
     public InstanceDescriptor getInstanceDescriptor() {
         return id;
     }
@@ -52,14 +55,17 @@ public class PayaraClusteredCDIEvent implements Serializable {
         id = localDescriptor;
     }
 
+    @Override
     public InstanceDescriptor getId() {
         return id;
     }
 
+    @Override
     public void setId(InstanceDescriptor id) {
         this.id = id;
     }
     
+    @Override
     public Serializable getPayload() throws IOException, ClassNotFoundException {
         if (payload != null) {
             return (Serializable) payload.getValue();
@@ -67,18 +73,22 @@ public class PayaraClusteredCDIEvent implements Serializable {
         return null;
     }
 
+    @Override
     public boolean isLoopBack() {
         return loopBack;
     }
 
+    @Override
     public void setLoopBack(boolean loopBack) {
         this.loopBack = loopBack;
     }
 
+    @Override
     public Properties getProperties() {
         return props;
     }
     
+    @Override
     public void setProperty(String name, String value) {
         if (props == null) {
             props = new Properties();
@@ -86,6 +96,7 @@ public class PayaraClusteredCDIEvent implements Serializable {
         props.setProperty(name, value);
     }
     
+    @Override
     public String getProperty(String name) {
         String result = null;
         if (props!= null) {
@@ -94,6 +105,7 @@ public class PayaraClusteredCDIEvent implements Serializable {
         return result;
     }
 
+    @Override
     public String getProperty(String name, String defaultValue) {
         String result = null;
         if (props!= null) {

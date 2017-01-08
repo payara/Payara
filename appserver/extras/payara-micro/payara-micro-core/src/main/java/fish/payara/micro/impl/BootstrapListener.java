@@ -17,8 +17,9 @@
  */
 package fish.payara.micro.impl;
 
-import fish.payara.appserver.micro.services.PayaraClusterListener;
-import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import fish.payara.micro.event.PayaraClusterListener;
+import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
+import fish.payara.micro.data.InstanceDescriptor;
 
 /**
  * Package level class that adapts the PayaraMicroRuntime so that callback methods

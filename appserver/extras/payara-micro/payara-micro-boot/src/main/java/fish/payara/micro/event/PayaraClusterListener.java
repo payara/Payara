@@ -15,9 +15,10 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.appserver.micro.services;
+package fish.payara.micro.event;
 
-import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import fish.payara.micro.data.InstanceDescriptor;
+
 
 /**
  *

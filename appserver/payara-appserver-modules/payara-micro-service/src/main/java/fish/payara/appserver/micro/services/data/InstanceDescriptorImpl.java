@@ -17,7 +17,9 @@
  */
 package fish.payara.appserver.micro.services.data;
 
-import java.io.Serializable;
+import fish.payara.micro.data.ModuleDescriptor;
+import fish.payara.micro.data.ApplicationDescriptor;
+import fish.payara.micro.data.InstanceDescriptor;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,7 +37,7 @@ import org.glassfish.internal.data.ApplicationInfo;
  *
  * @author steve
  */
-public class InstanceDescriptor implements Serializable {
+public class InstanceDescriptorImpl implements InstanceDescriptor {
 
     private static final long serialVersionUID = 1L;
 
@@ -51,7 +53,7 @@ public class InstanceDescriptor implements Serializable {
     private int adminPort;
     private String instanceGroup;
 
-    public InstanceDescriptor(String UUID) throws UnknownHostException {
+    public InstanceDescriptorImpl(String UUID) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
         memberUUID = UUID;
         httpPorts = new ArrayList<>();
@@ -63,10 +65,11 @@ public class InstanceDescriptor implements Serializable {
             deployedApplications = new HashMap<>(3);
         }
 
-        ApplicationDescriptor ad = new ApplicationDescriptor(info);
+        ApplicationDescriptorImpl ad = new ApplicationDescriptorImpl(info);
         deployedApplications.put(ad.getName(), ad);
     }
 
+    @Override
     public void addApplication(ApplicationDescriptor descriptor) {
         if (deployedApplications == null) {
             deployedApplications = new HashMap<>(3);
@@ -75,10 +78,12 @@ public class InstanceDescriptor implements Serializable {
         deployedApplications.put(descriptor.getName(), descriptor);
     }
 
+    @Override
     public String getInstanceName() {
         return instanceName;
     }
 
+    @Override
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }
@@ -86,6 +91,7 @@ public class InstanceDescriptor implements Serializable {
     /**
      * @return the memberUUID
      */
+    @Override
     public String getMemberUUID() {
         return memberUUID;
     }
@@ -93,6 +99,7 @@ public class InstanceDescriptor implements Serializable {
     /**
      * @return the httpPorts
      */
+    @Override
     public List<Integer> getHttpPorts() {
         return httpPorts;
     }
@@ -100,6 +107,7 @@ public class InstanceDescriptor implements Serializable {
     /**
      * @param httpPort the httpPort to add
      */
+    @Override
     public void addHttpPort(int httpPort) {
         httpPorts.add(httpPort);
     }
@@ -107,6 +115,7 @@ public class InstanceDescriptor implements Serializable {
     /**
      * @return the hostName
      */
+    @Override
     public InetAddress getHostName() {
         return hostName;
     }
@@ -114,6 +123,7 @@ public class InstanceDescriptor implements Serializable {
     /**
      * @param hostName the hostName to set
      */
+    @Override
     public void setHostName(InetAddress hostName) {
         this.hostName = hostName;
     }
@@ -121,6 +131,7 @@ public class InstanceDescriptor implements Serializable {
     /**
      * @return the deployedApplications
      */
+    @Override
     public Collection<ApplicationDescriptor> getDeployedApplications() {
         if (deployedApplications == null) {
             return new HashSet<>();
@@ -131,6 +142,7 @@ public class InstanceDescriptor implements Serializable {
     /**
      * @return the httpsPorts
      */
+    @Override
     public List<Integer> getHttpsPorts() {
         return httpsPorts;
     }
@@ -138,11 +150,13 @@ public class InstanceDescriptor implements Serializable {
     /**
      * @param httpsPort the httpsPort to add
      */
+    @Override
     public void addHttpsPort(int httpsPort) {
         httpsPorts.add(httpsPort);
     }
 
-    public void removeApplication(ApplicationInfo applicationInfo) {
+    @Override
+    public void removeApplication(ApplicationDescriptor applicationInfo) {
         if (deployedApplications == null) {
             deployedApplications = new HashMap<>(3);
         }
@@ -159,8 +173,8 @@ public class InstanceDescriptor implements Serializable {
     @Override
     public boolean equals(Object obj) {
         boolean result = false;
-        if (InstanceDescriptor.class.isInstance(obj)) {
-            InstanceDescriptor descriptor = (InstanceDescriptor) obj;
+        if (InstanceDescriptorImpl.class.isInstance(obj)) {
+            InstanceDescriptorImpl descriptor = (InstanceDescriptorImpl) obj;
             result = this.memberUUID.equals(descriptor.memberUUID);
         }
         return result;
@@ -182,6 +196,7 @@ public class InstanceDescriptor implements Serializable {
      *
      * @return true if this instance describes a Hazelcast Lite member
      */
+    @Override
     public boolean isLiteMember() {
         return liteMember;
     }
@@ -192,6 +207,7 @@ public class InstanceDescriptor implements Serializable {
      * @param isLiteMember true if this descriptor describes a Hazelcast Lite
      * member
      */
+    @Override
     public void setLiteMember(boolean isLiteMember) {
         liteMember = isLiteMember;
     }
@@ -201,6 +217,7 @@ public class InstanceDescriptor implements Serializable {
      *
      * @return true if this descriptor describes a Payara Micro instances
      */
+    @Override
     public boolean isMicroInstance() {
         return instanceType.equals("MICRO");
     }
@@ -212,6 +229,7 @@ public class InstanceDescriptor implements Serializable {
      * @return true if this descriptor describes a Payara Server instance or the
      * DAS
      */
+    @Override
     public boolean isPayaraInstance() {
         return (instanceType.equals("DAS") || instanceType.equals("INSTANCE"));
     }
@@ -222,6 +240,7 @@ public class InstanceDescriptor implements Serializable {
      * @param instanceType the instance type that this descriptor should
      * describe
      */
+    @Override
     public void setInstanceType(String instanceType) {
         this.instanceType = instanceType;
     }
@@ -231,6 +250,7 @@ public class InstanceDescriptor implements Serializable {
      *
      * @return the instance type that this descriptor describes
      */
+    @Override
     public String getInstanceType() {
         return instanceType;
     }
@@ -240,6 +260,7 @@ public class InstanceDescriptor implements Serializable {
      *
      * @param hazelcastPort the port number in use by Hazelcast
      */
+    @Override
     public void setHazelcastPort(int hazelcastPort) {
         this.hazelcastPort = hazelcastPort;
     }
@@ -249,6 +270,7 @@ public class InstanceDescriptor implements Serializable {
      *
      * @return the port number in use by Hazelcast
      */
+    @Override
     public int getHazelcastPort() {
         return hazelcastPort;
     }
@@ -258,6 +280,7 @@ public class InstanceDescriptor implements Serializable {
      *
      * @param adminPort the admin port number in use by this instance
      */
+    @Override
     public void setAdminPort(int adminPort) {
         this.adminPort = adminPort;
     }
@@ -267,6 +290,7 @@ public class InstanceDescriptor implements Serializable {
      *
      * @return the admin port number in use by this instance
      */
+    @Override
     public int getAdminPort() {
         return adminPort;
     }
@@ -309,6 +333,7 @@ public class InstanceDescriptor implements Serializable {
         return sb.toString();
     }
 
+    @Override
     public List<URL> getApplicationURLS() {
         LinkedList<URL> result = new LinkedList<>();
         if (deployedApplications != null) {
@@ -351,4 +376,5 @@ public class InstanceDescriptor implements Serializable {
     public void setInstanceGroup(String instanceGroup) {
         this.instanceGroup = instanceGroup;
     }
+
 }

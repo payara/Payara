@@ -37,37 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.appserver.micro.services.data;
+package fish.payara.micro.data;
 
 import java.io.Serializable;
-import org.glassfish.internal.data.ModuleInfo;
 
 /**
  *
  * @author steve
  */
-public class ModuleDescriptor implements Serializable {
-    
-    private String name;
-    private String contextRoot;
-    private String type;
+public interface ModuleDescriptor extends Serializable {
 
-    public ModuleDescriptor(ModuleInfo info) {
-        this.name = info.getName();
-        this.contextRoot = info.getModuleProps().getProperty("context-root");
-        this.type = info.getModuleProps().getProperty("archiveType");
-    }
+    public String getContextRoot();
 
-    public String getName() {
-        return name;
-    }
+    public String getName();
 
-    public String getContextRoot() {
-        return contextRoot;
-    }
-
-    public String getType() {
-        return type;
-    }
+    public String getType();
     
 }

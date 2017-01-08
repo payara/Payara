@@ -39,8 +39,9 @@
  */
 package fish.payara.micro.cdi;
 
-import fish.payara.appserver.micro.services.CDIEventListener;
-import fish.payara.appserver.micro.services.PayaraClusteredCDIEvent;
+import fish.payara.appserver.micro.services.PayaraClusteredCDIEventImpl;
+import fish.payara.micro.event.CDIEventListener;
+import fish.payara.micro.event.PayaraClusteredCDIEvent;
 import fish.payara.appserver.micro.services.PayaraInstance;
 import java.io.IOException;
 import java.io.Serializable;
@@ -52,11 +53,9 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.EventMetadata;
-import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -191,7 +190,7 @@ public class ClusteredCDIEventBus implements CDIEventListener {
                     instanceName = outboundattn.instanceName();
                 }
             }
-            clusteredEvent = new PayaraClusteredCDIEvent(runtime.getLocalDescriptor(), event);
+            clusteredEvent = new PayaraClusteredCDIEventImpl(runtime.getLocalDescriptor(), event);
             clusteredEvent.setLoopBack(loopBack);
             clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
             clusteredEvent.setProperty(INSTANCE_PROPERTY, instanceName);

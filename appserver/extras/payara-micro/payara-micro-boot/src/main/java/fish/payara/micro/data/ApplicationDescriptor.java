@@ -37,14 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.appserver.micro.services;
+package fish.payara.micro.data;
+
+import fish.payara.micro.data.ModuleDescriptor;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  *
  * @author steve
  */
-public interface CDIEventListener {
-    
-    public void eventReceived(PayaraClusteredCDIEvent event);
-    
+public interface ApplicationDescriptor extends Serializable {
+
+    /**
+     * @return the libraries
+     */
+    public String getLibraries();
+
+    /**
+     * Return the module descriptors
+     * @return
+     */
+    public List<ModuleDescriptor> getModuleDescriptors();
+
+    /**
+     * @return the module names
+     */
+    public List<String> getModules();
+
+    /**
+     * @return the name
+     */
+    public String getName();
+
+    /**
+     * @return the isJavaEE
+     */
+    public boolean isJavaEE();
+
 }

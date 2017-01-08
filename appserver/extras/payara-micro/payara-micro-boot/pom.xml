@@ -49,5 +49,5 @@
     </parent>
     <artifactId>payara-micro-boot</artifactId>
     <description>Payara Micro Boot</description>
-    <packaging>jar</packaging>
+    <packaging>glassfish-jar</packaging>
 </project>

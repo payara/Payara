@@ -17,27 +17,27 @@
  */
 package fish.payara.appserver.micro.services.command;
 
-import java.io.Serializable;
+import fish.payara.micro.ClusterCommandResult;
 import org.glassfish.embeddable.CommandResult;
 
 /**
  *
  * @author steve
  */
-public class ClusterCommandResult implements CommandResult, Serializable {
+public class ClusterCommandResultImpl implements ClusterCommandResult {
     private static final long serialVersionUID = 1L;
     
-    private final ExitStatus status;
+    private final ClusterCommandResult.ExitStatus status;
     private final String output;
     private final Throwable failureCause;
     
-    public ClusterCommandResult(CommandResult result) {
-        status = result.getExitStatus();
+    public ClusterCommandResultImpl(CommandResult result) {
+        status = ClusterCommandResult.ExitStatus.valueOf(result.getExitStatus().name());
         output = result.getOutput();
         failureCause = result.getFailureCause();
     }
 
-    public ClusterCommandResult(ExitStatus status, String output, Throwable failureCause) {
+    public ClusterCommandResultImpl(ExitStatus status, String output, Throwable failureCause) {
         this.status = status;
         this.output = output;
         this.failureCause = failureCause;
@@ -47,7 +47,7 @@ public class ClusterCommandResult implements CommandResult, Serializable {
     public ExitStatus getExitStatus() {
         return status;
     }
-
+    
     @Override
     public String getOutput() {
         return output;

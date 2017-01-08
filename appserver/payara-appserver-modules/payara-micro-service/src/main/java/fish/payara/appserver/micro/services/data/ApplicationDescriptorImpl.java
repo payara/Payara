@@ -17,10 +17,10 @@
  */
 package fish.payara.appserver.micro.services.data;
 
-import java.io.Serializable;
+import fish.payara.micro.data.ModuleDescriptor;
+import fish.payara.micro.data.ApplicationDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ModuleInfo;
@@ -29,7 +29,7 @@ import org.glassfish.internal.data.ModuleInfo;
  *
  * @author steve
  */
-public class ApplicationDescriptor implements Serializable {
+public class ApplicationDescriptorImpl implements ApplicationDescriptor {
     private static final long serialVersionUID = 1L;
     
     private final String name;
@@ -37,7 +37,7 @@ public class ApplicationDescriptor implements Serializable {
     private final boolean isJavaEE;
     private final List<ModuleDescriptor> modules;
 
-    public ApplicationDescriptor(ApplicationInfo info) {
+    public ApplicationDescriptorImpl(ApplicationInfo info) {
         
         name = info.getName();
         libraries = info.getLibraries();
@@ -45,7 +45,7 @@ public class ApplicationDescriptor implements Serializable {
         Collection<ModuleInfo> moduleInfos = info.getModuleInfos();
         modules = new ArrayList<>(moduleInfos.size());
         for (ModuleInfo moduleInfo : moduleInfos) {
-            modules.add(new ModuleDescriptor(moduleInfo));
+            modules.add(new ModuleDescriptorImpl(moduleInfo));
         }
     }
 
@@ -57,6 +57,7 @@ public class ApplicationDescriptor implements Serializable {
     /**
      * @return the name
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -64,6 +65,7 @@ public class ApplicationDescriptor implements Serializable {
     /**
      * @return the libraries
      */
+    @Override
     public String getLibraries() {
         return libraries;
     }
@@ -71,6 +73,7 @@ public class ApplicationDescriptor implements Serializable {
     /**
      * @return the isJavaEE
      */
+    @Override
     public boolean isJavaEE() {
         return isJavaEE;
     }
@@ -79,6 +82,7 @@ public class ApplicationDescriptor implements Serializable {
      * Return the module descriptors
      * @return 
      */
+    @Override
     public List<ModuleDescriptor> getModuleDescriptors() {
         return modules;
     }
@@ -86,6 +90,7 @@ public class ApplicationDescriptor implements Serializable {
     /**
      * @return the module names
      */
+    @Override
     public List<String> getModules() {
         List<String> moduleNames = new ArrayList<>(modules.size());
         for (ModuleDescriptor descriptor : modules) {

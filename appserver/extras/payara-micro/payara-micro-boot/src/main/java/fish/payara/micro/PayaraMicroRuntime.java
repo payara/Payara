@@ -44,6 +44,10 @@ package fish.payara.micro;
 //import fish.payara.appserver.micro.services.PayaraClusteredCDIEvent;
 //import fish.payara.appserver.micro.services.command.ClusterCommandResult;
 //import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import fish.payara.micro.event.PayaraClusteredCDIEvent;
+import fish.payara.micro.event.PayaraClusterListener;
+import fish.payara.micro.event.CDIEventListener;
+import fish.payara.micro.data.InstanceDescriptor;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -58,9 +62,9 @@ import java.util.concurrent.Future;
  */
 public interface PayaraMicroRuntime {
 
-    //void addCDIEventListener(CDIEventListener listener);
+    public void addCDIEventListener(CDIEventListener listener);
 
-    //void addClusterListener(PayaraClusterListener listener);
+    public void addClusterListener(PayaraClusterListener listener);
 
     /**
      * Deploy from an InputStream which can load the Java EE archive
@@ -69,7 +73,7 @@ public interface PayaraMicroRuntime {
      * @param is InputStream to load the war through
      * @return true if deployment was successful
      */
-    boolean deploy(String name, String contextRoot, InputStream is);
+    public boolean deploy(String name, String contextRoot, InputStream is);
 
     /**
      * Deploy from an InputStream which can load the Java EE archive
@@ -77,7 +81,7 @@ public interface PayaraMicroRuntime {
      * @param is InputStream to load the war through
      * @return true if deployment was successful
      */
-    boolean deploy(String name, InputStream is);
+    public boolean deploy(String name, InputStream is);
 
     /**
      * Deploys a new archive to a running Payara Micro instance
@@ -86,40 +90,40 @@ public interface PayaraMicroRuntime {
      * @param war A File object representing the archive to deploy, it can be an exploded directory
      * @return
      */
-    boolean deploy(String name, String contextRoot, File war);
+    public boolean deploy(String name, String contextRoot, File war);
 
     /**
      *  Deploys a new archive to a running Payara Micro instance
      * @param war A File object representing the archive to deploy, it can be an exploded directory
      * @return true if the file deployed successfully
      */
-    boolean deploy(File war);
+    public boolean deploy(File war);
 
     /**
      * Returns a collection if instance descriptors for all the Payara Micros in the cluster
      * @return
      */
-    //Collection<InstanceDescriptor> getClusteredPayaras();
+    public Collection<InstanceDescriptor> getClusteredPayaras();
 
     /**
      * Returns the names of the deployed applications
      * @return a collection of names or null if there was a problem
      */
-    Collection<String> getDeployedApplicationNames();
+    public Collection<String> getDeployedApplicationNames();
 
     /**
      * Returns the instance name
      * @return
      */
-    String getInstanceName();
+    public String getInstanceName();
 
-    //InstanceDescriptor getLocalDescriptor();
+    public InstanceDescriptor getLocalDescriptor();
 
-    //void publishCDIEvent(PayaraClusteredCDIEvent event);
+    public void publishCDIEvent(PayaraClusteredCDIEvent event);
 
-   // void removeCDIEventListener(CDIEventListener listener);
+    public void removeCDIEventListener(CDIEventListener listener);
 
-    //void removeClusterListener(PayaraClusterListener listener);
+    public void removeClusterListener(PayaraClusterListener listener);
 
     /**
      * Runs an asadmin command on all members of the Payara Micro Cluster
@@ -129,7 +133,7 @@ public interface PayaraMicroRuntime {
      * @param args The parameters to the command
      * @return
      */
-    //Map<InstanceDescriptor, Future<ClusterCommandResult>> run(String command, String... args);
+    public Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> run(String command, String... args);
 
     /**
      * Runs an asadmin command on specified  members of the Payara Micro Cluster
@@ -139,7 +143,7 @@ public interface PayaraMicroRuntime {
      * @param args The parameters to the command
      * @return
      */
-    //Map<InstanceDescriptor, Future<ClusterCommandResult>> run(Collection<InstanceDescriptor> members, String command, String... args);
+    public Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> run(Collection<InstanceDescriptor> members, String command, String... args);
 
     /**
      * Runs a Callable object on all members of the Payara Micro Cluster
@@ -149,7 +153,7 @@ public interface PayaraMicroRuntime {
      * @param callable The Callable object to run
      * @return
      */
-    //<T extends Serializable> Map<InstanceDescriptor, Future<T>> run(Callable<T> callable);
+    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run(Callable<T> callable);
 
     /**
      * Runs a Callable object on specified members of the Payara Micro Cluster
@@ -160,19 +164,19 @@ public interface PayaraMicroRuntime {
      * @param callable The Callable object to run
      * @return
      */
-    //<T extends Serializable> Map<InstanceDescriptor, Future<T>> run(Collection<InstanceDescriptor> members, Callable<T> callable);
+    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run(Collection<InstanceDescriptor> members, Callable<T> callable);
 
     /**
      * Stops and then shuts down the Payara Micro Server
      *
      * @throws BootstrapException
      */
-    void shutdown() throws BootstrapException;
+    public void shutdown() throws BootstrapException;
 
     /**
      * Undeploys the named application
      * @param name Name of the application to undeploy
      */
-    void undeploy(String name);
+    public void undeploy(String name);
     
 }

@@ -19,12 +19,13 @@ package fish.payara.micro.impl;
 
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
-import fish.payara.appserver.micro.services.CDIEventListener;
-import fish.payara.appserver.micro.services.PayaraClusterListener;
-import fish.payara.appserver.micro.services.PayaraClusteredCDIEvent;
+import fish.payara.micro.event.CDIEventListener;
+import fish.payara.micro.event.PayaraClusterListener;
 import fish.payara.appserver.micro.services.PayaraInstance;
-import fish.payara.appserver.micro.services.command.ClusterCommandResult;
-import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
+import fish.payara.micro.ClusterCommandResult;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.micro.event.PayaraClusteredCDIEvent;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -107,10 +108,10 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
      * Returns a collection if instance descriptors for all the Payara Micros in the cluster
      * @return 
      */
-    //@Override
-    //public Collection<InstanceDescriptor> getClusteredPayaras() {
-    //    return instanceService.getClusteredPayaras();
-    //}
+    @Override
+    public Collection<InstanceDescriptor> getClusteredPayaras() {
+        return instanceService.getClusteredPayaras();
+    }
     
     /**
      * Returns the names of the deployed applications
@@ -135,13 +136,13 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
      * @param args The parameters to the command
      * @return 
      */
-/*    @Override
-    public Map<InstanceDescriptor, Future<ClusterCommandResult>> run (String command, String... args ) {
+    @Override
+    public Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> run (String command, String... args ) {
         
         // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
         
-        Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(command, args);
-        Map<InstanceDescriptor, Future<ClusterCommandResult>> result = new HashMap<>(commandResult.size());
+        Map<String,Future<ClusterCommandResultImpl>> commandResult = instanceService.executeClusteredASAdmin(command, args);
+        Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
         for (String uuid : commandResult.keySet()) {
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
@@ -150,7 +151,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         }
         return result;
     }
-    */
+
    
      /**
      * Runs an asadmin command on specified  members of the Payara Micro Cluster
@@ -160,16 +161,16 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
      * @param args The parameters to the command
      * @return 
      */
-/*    @Override
-    public Map<InstanceDescriptor, Future<ClusterCommandResult>> run (Collection<InstanceDescriptor> members, String command, String... args ) {
+    @Override
+    public Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> run (Collection<InstanceDescriptor> members, String command, String... args ) {
         
         HashSet<String> memberUUIDs = new HashSet<>(members.size());
         for (InstanceDescriptor member : members) {
             memberUUIDs.add(member.getMemberUUID());
         }
         
-        Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(memberUUIDs,command, args);
-        Map<InstanceDescriptor, Future<ClusterCommandResult>> result = new HashMap<>(commandResult.size());
+        Map<String,Future<ClusterCommandResultImpl>> commandResult = instanceService.executeClusteredASAdmin(memberUUIDs,command, args);
+        Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
         for (String uuid : commandResult.keySet()) {
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
@@ -178,7 +179,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         }
         return result;
     }
-*/    
+   
         /**
      * Runs a Callable object on all members of the Payara Micro Cluster
      * Functionally equivalent to the run method on ClusterCommandRunner passing in
@@ -187,7 +188,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
      * @param callable The Callable object to run
      * @return 
      */
-/*    @Override
+    @Override
     public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Callable<T> callable) {
         
         // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
@@ -202,7 +203,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         }
         return result;
     }
-*/    
+    
     /**
      * Runs a Callable object on specified members of the Payara Micro Cluster
      * Functionally equivalent to the run method on ClusterCommandRunner passing in
@@ -212,7 +213,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
      * @param callable The Callable object to run
      * @return 
      */
-/*    @Override
+    @Override
     public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Collection<InstanceDescriptor> members, Callable<T> callable) {
         
         HashSet<String> memberUUIDs = new HashSet<>(members.size());
@@ -230,7 +231,6 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         }
         return result;
     }
-    */
         /**
      * Deploy from an InputStream which can load the Java EE archive
      * @param name The name of the deployment
@@ -330,7 +330,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         }
     }
     
-/*    @Override
+    @Override
     public void removeClusterListener(PayaraClusterListener listener) {
         listeners.remove(listener);
     }
@@ -360,7 +360,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
     public void removeCDIEventListener(CDIEventListener listener) {
         this.instanceService.removeCDIListener(listener);
     }
-*/
+
     private void checkState() {
         try {
             if (!(runtime.getStatus().equals(Status.STARTED))) {
