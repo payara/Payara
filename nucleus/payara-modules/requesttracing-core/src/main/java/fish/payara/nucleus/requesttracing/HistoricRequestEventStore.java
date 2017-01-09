@@ -81,12 +81,13 @@ public class HistoricRequestEventStore {
             String instanceName = serverEnv.getInstanceName();
             IMap<String, SortedSet<HistoricRequestEvent>> map
                     = instance.getMap(HISTORIC_REQUEST_EVENT_STORE);
-            SortedSet<HistoricRequestEvent> instanceHistoricStore = map.get(instanceName);
-            if (instanceHistoricStore == null) {
-                map.put(instanceName, historicStore);
-            }
-            else {
-                historicStore = instanceHistoricStore;
+            if (map != null) {
+                SortedSet<HistoricRequestEvent> instanceHistoricStore = map.get(instanceName);
+                if (instanceHistoricStore == null) {
+                    map.put(instanceName, historicStore);
+                } else {
+                    historicStore = instanceHistoricStore;
+                }
             }
         }
     }
