@@ -18,6 +18,7 @@
  */
 package fish.payara.micro;
 
+import com.hazelcast.core.Member;
 import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
@@ -35,7 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -59,6 +59,8 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
+import fish.payara.micro.util.NameGenerator;
+import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -69,9 +71,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -96,7 +100,7 @@ public class PayaraMicro {
     private int sslPort = Integer.MIN_VALUE;
     private int maxHttpThreads = Integer.MIN_VALUE;
     private int minHttpThreads = Integer.MIN_VALUE;
-    private String instanceName = UUID.randomUUID().toString();
+    private String instanceName;
     private File rootDir;
     private File deploymentRoot;
     private File alternateDomainXML;
@@ -137,6 +141,8 @@ public class PayaraMicro {
     private boolean enableRequestTracing = false;
     private String requestTracingThresholdUnit = "SECONDS";
     private long requestTracingThresholdValue = 30;
+    private String instanceGroup = "MicroShoal";
+    private boolean nameIsGenerated = true;   
     
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -443,7 +449,7 @@ public class PayaraMicro {
 
     /**
      * Sets the logical instance name for this PayaraMicro server within the
-     * server cluster If this is not set a UUID is generated
+     * server cluster If this is not set a name is generated
      *
      * @param instanceName The logical server name
      * @return
@@ -453,6 +459,7 @@ public class PayaraMicro {
         if (isRunning()) {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
+        nameIsGenerated = false;
         this.instanceName = instanceName;
         return this;
     }
@@ -848,6 +855,24 @@ public class PayaraMicro {
     }
 
     /**
+     * Gets the name of the instance group
+     * @return The name of the instance group
+     */
+    public String getInstanceGroup() {
+        return instanceGroup;
+    }
+    
+    /**
+     * Sets the instance group name
+     * @param instanceGroup The instance group name
+     * @return 
+     */
+    public PayaraMicro setInstanceGroup(String instanceGroup) {
+        this.instanceGroup = instanceGroup;
+        return this;
+    }
+    
+    /**
      * Boots the Payara Micro Server. All parameters are checked at this point
      *
      * @return An instance of PayaraMicroRuntime that can be used to access the
@@ -861,10 +886,11 @@ public class PayaraMicro {
         if (isRunning()) {
             throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
         }
-
+        
         // check hazelcast cluster overrides
         MulticastConfiguration mc = new MulticastConfiguration();
         mc.setMemberName(instanceName);
+        mc.setMemberGroup(instanceGroup);
         if (hzPort > Integer.MIN_VALUE) {
             mc.setMulticastPort(hzPort);
         }
@@ -1116,6 +1142,36 @@ public class PayaraMicro {
             long end = System.currentTimeMillis();
             logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
 
+            // Check the generated name is unique
+            if (nameIsGenerated) {
+                HazelcastCore hazelcast = gf.getService(HazelcastCore.class);
+                Set<Member> clusterMembers = hazelcast.getInstance().getCluster().getMembers();
+                
+                // If the instance name was generated, we need to compile a list of all the instance names in use within 
+                // the instance group, excluding this local instance
+                List<String> takenNames = new ArrayList<>();
+                for (Member member : clusterMembers) {
+                    if (member != hazelcast.getInstance().getCluster().getLocalMember() && 
+                            member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(
+                                    instanceGroup)) {
+                        takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
+                    }
+                }
+
+                // If our generated name is already in use within the instance group, either generate a new one or set the 
+                // name to this instance's UUID if there are no more unique generated options left
+                if (takenNames.contains(instanceName)) {
+                    NameGenerator nameGenerator = new NameGenerator();
+                    instanceName = nameGenerator.generateUniqueName(takenNames, 
+                            hazelcast.getInstance().getCluster().getLocalMember().getUuid());
+                    hazelcast.getInstance().getCluster().getLocalMember().setStringAttribute(
+                            HazelcastCore.INSTANCE_ATTRIBUTE, instanceName);
+                    // Fire off an event so that the instance descriptor in the Payara Micro Service can update itself
+                    Events events = gf.getService(Events.class);
+                    events.send(new EventListener.Event(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE));
+                }
+            }
+
             return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
@@ -1150,6 +1206,10 @@ public class PayaraMicro {
     }
 
     private PayaraMicro() {
+        // Initialise a random instance name
+        NameGenerator nameGenerator = new NameGenerator();
+        instanceName = nameGenerator.generateName();
+        
         try {
             repositoryURLs = new LinkedList<>();
             repositoryURLs.add(new URL(defaultMavenRepository));
@@ -1300,7 +1360,12 @@ public class PayaraMicro {
                         i++;
                         break;
                     case "--name":
+                        nameIsGenerated = false;
                         instanceName = args[i + 1];
+                        i++;
+                        break;
+                    case "--instanceGroup":
+                        instanceGroup = args[i + 1];
                         i++;
                         break;
                     case "--deploymentDir":
@@ -1521,6 +1586,7 @@ public class PayaraMicro {
                                 + "  --clusterPassword <cluster-password> sets the Cluster Group Password\n"
                                 + "  --startPort <cluster-start-port-number> sets the cluster start port number\n"
                                 + "  --name <instance-name> sets the instance name\n"
+                                + "  --instanceGroup <instance-group-name> Sets the name of the instance group\n"
                                 + "  --rootDir <directory-path> Sets the root configuration directory and saves the configuration across restarts\n"
                                 + "  --deploymentDir <directory-path> if set to a valid directory all war files in this directory will be deployed\n"
                                 + "  --deploy <file-path> specifies a war file to deploy\n"
@@ -2052,6 +2118,12 @@ public class PayaraMicro {
         String name = System.getProperty("payaramicro.name");
         if (name != null && !name.isEmpty()) {
             instanceName = name;
+            nameIsGenerated = false;
+        }
+        
+        String instanceGroupName = System.getProperty("payaramicro.instanceGroup");
+        if (instanceGroupName != null && !instanceGroupName.isEmpty()) {
+            instanceGroup = instanceGroupName;
         }
     }
 
@@ -2172,6 +2244,7 @@ public class PayaraMicro {
             }
 
             props.setProperty("payaramicro.name", instanceName);
+            props.setProperty("payaramicro.instanceGroup", instanceGroup);
 
             if (rootDir != null) {
                 props.setProperty("payaramicro.rootDir", rootDir.getAbsolutePath());
