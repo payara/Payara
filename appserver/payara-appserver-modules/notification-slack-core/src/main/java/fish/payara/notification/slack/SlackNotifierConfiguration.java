@@ -56,15 +56,15 @@ import java.beans.PropertyVetoException;
 @NotifierConfigurationType(type = NotifierType.SLACK)
 public interface SlackNotifierConfiguration extends NotifierConfiguration {
 
-    @Attribute
+    @Attribute(required = true)
     String getToken1();
     void setToken1(String value) throws PropertyVetoException;
 
-    @Attribute
+    @Attribute(required = true)
     String getToken2();
     void setToken2(String value) throws PropertyVetoException;
 
-    @Attribute
+    @Attribute(required = true)
     String getToken3();
     void setToken3(String value) throws PropertyVetoException;
 }
