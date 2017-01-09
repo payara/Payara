@@ -80,12 +80,14 @@ public class HistoricHealthCheckEventStore {
             String instanceName = serverEnv.getInstanceName();
             IMap<String, SortedSet<HistoricHealthCheckEvent>> map
                     = instance.getMap(HISTORIC_HEALTHCHECK_EVENT_STORE);
-            SortedSet<HistoricHealthCheckEvent> instanceHistoricStore = map.get(instanceName);
-            if (instanceHistoricStore == null) {
-                map.put(instanceName, historicStore);
-            }
-            else {
-                historicStore = instanceHistoricStore;
+            if (map != null) {
+                SortedSet<HistoricHealthCheckEvent> instanceHistoricStore = map.get(instanceName);
+                if (instanceHistoricStore == null) {
+                    map.put(instanceName, historicStore);
+                }
+                else {
+                    historicStore = instanceHistoricStore;
+                }
             }
         }
     }
