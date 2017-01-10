@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -826,7 +826,7 @@ public final class StandardServer
             try {
                 oname=new ObjectName( "Catalina:type=Server");
             } catch (Exception e) {
-                String msg = MessageFormat.format(LogFacade.ERROR_REGISTERING, e.toString());
+                String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_REGISTERING), e.toString());
                 log.log(Level.SEVERE, msg, e);
             }
         }

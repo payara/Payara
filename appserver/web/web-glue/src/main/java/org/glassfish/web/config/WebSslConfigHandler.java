@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,18 +75,18 @@ public class WebSslConfigHandler implements SslConfigHandler {
         try {
             if (listener == null) {
                 report.setMessage(
-                        rb.getString(
-                                MessageFormat.format(
-                                        LogFacade.CREATE_SSL_HTTP_NOT_FOUND, command.listenerId)));
+                        MessageFormat.format(
+                                rb.getString(LogFacade.CREATE_SSL_HTTP_NOT_FOUND),
+                                        command.listenerId));
                 httpProtocol = command.findOrCreateProtocol(command.listenerId);
             } else {
                 httpProtocol = listener.findHttpProtocol();
                 Ssl ssl = httpProtocol.getSsl();
                 if (ssl != null) {
                     report.setMessage(
-                            rb.getString(
-                                    MessageFormat.format(
-                                            LogFacade.CREATE_SSL_HTTP_ALREADY_EXISTS, command.listenerId)));
+                            MessageFormat.format(
+                                    rb.getString(LogFacade.CREATE_SSL_HTTP_ALREADY_EXISTS),
+                                            command.listenerId));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 }
@@ -115,8 +115,8 @@ public class WebSslConfigHandler implements SslConfigHandler {
 
         if (networkListener == null) {
             report.setMessage(
-                    rb.getString(
-                            MessageFormat.format(LogFacade.DELETE_SSL_HTTP_LISTENER_NOT_FOUND, command.listenerId)));
+                    MessageFormat.format(
+                            rb.getString(LogFacade.DELETE_SSL_HTTP_LISTENER_NOT_FOUND), command.listenerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -124,8 +124,8 @@ public class WebSslConfigHandler implements SslConfigHandler {
         Protocol protocol = networkListener.findHttpProtocol();
         if (protocol.getSsl() == null) {
             report.setMessage(
-                    rb.getString(
-                            MessageFormat.format(LogFacade.DELETE_SSL_ELEMENT_DOES_NOT_EXIST, command.listenerId)));
+                    MessageFormat.format(
+                            rb.getString(LogFacade.DELETE_SSL_ELEMENT_DOES_NOT_EXIST), command.listenerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }

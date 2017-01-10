@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -804,7 +804,7 @@ public final class ApplicationDispatcher
                 if (reqFacHelper != null) {
                     reqFacHelper.incrementDispatchDepth();
                     if (reqFacHelper.isMaxDispatchDepthReached()) {
-                        String msg = MessageFormat.format(LogFacade.MAX_DISPATCH_DEPTH_REACHED,
+                        String msg = MessageFormat.format(rb.getString(LogFacade.MAX_DISPATCH_DEPTH_REACHED),
                                                           new Object[]{Integer.valueOf(Request.getMaxDispatchDepth())});
                         throw new ServletException(msg);
                     }
