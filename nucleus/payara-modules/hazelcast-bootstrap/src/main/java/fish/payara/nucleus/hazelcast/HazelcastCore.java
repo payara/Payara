@@ -44,6 +44,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 
@@ -78,6 +79,9 @@ public class HazelcastCore implements EventListener {
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HazelcastRuntimeConfiguration configuration;
+
+    @Inject
+    private ClassLoaderHierarchy clh;
     
     public static HazelcastCore getCore() {
         return theCore;
@@ -148,6 +152,7 @@ public class HazelcastCore implements EventListener {
             if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null) {
                 XmlConfigBuilder builder = new XmlConfigBuilder(overrideConfiguration.getAlternateConfigFile().toURL());
                 config = builder.build();
+                config.setClassLoader(clh.getCommonClassLoader());
                 return config;
             }
             serverConfigURL = new URL(context.getServerConfigURL());
@@ -160,8 +165,10 @@ public class HazelcastCore implements EventListener {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not find configuration file {0} using default configuration", hazelcastFilePath);
                     config = new Config();
                 }
+                config.setClassLoader(clh.getCommonClassLoader());
             } else { // there is no config override
-                
+                config.setClassLoader(clh.getCommonClassLoader());
+
                 memberName = context.getInstanceName();
                 memberGroup = context.getConfigBean().getConfigRef();
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
@@ -200,7 +207,6 @@ public class HazelcastCore implements EventListener {
 
                 // build the configuration
                 config.setProperty("hazelcast.jmx", "true");
-
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Unable to parse server config URL", ex);
