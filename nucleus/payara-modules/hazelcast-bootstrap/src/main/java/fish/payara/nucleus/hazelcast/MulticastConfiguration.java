@@ -17,7 +17,6 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import java.io.File;
 import java.net.URI;
 
 /**
@@ -34,15 +33,17 @@ public class MulticastConfiguration {
     private String clusterGroupName = "development";
     private String clusterGroupPassword = "D3v3l0pm3nt";
     private String licenseKey;
+    private String memberGroup;
 
     public MulticastConfiguration() {
     }
 
-    public MulticastConfiguration(String multicastGroup, int multicastPort, int startPort, String memberName, URI alternateConfigurationFile, String licenseKey) {
+    public MulticastConfiguration(String multicastGroup, int multicastPort, int startPort, String memberName, String memberGroup, URI alternateConfigurationFile, String licenseKey) {
         this.multicastGroup = multicastGroup;
         this.multicastPort = multicastPort;
         this.startPort = startPort;
         this.memberName = memberName;
+        this.memberGroup = memberGroup;
         this.alternateConfigFile = alternateConfigurationFile;
         this.licenseKey = licenseKey;
     }
@@ -119,5 +120,11 @@ public class MulticastConfiguration {
         this.clusterGroupPassword = clusterGroupPassword;
     }
 
+    public String getMemberGroup() {
+        return memberGroup;
+    }
     
+    public void setMemberGroup(String memberGroup) {
+        this.memberGroup = memberGroup;
+    }
 }

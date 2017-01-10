@@ -45,6 +45,7 @@ public class InstanceDescriptor implements Serializable {
     private String instanceType;
     private int hazelcastPort;
     private int adminPort;
+    private String instanceGroup;
 
     public InstanceDescriptor(String UUID) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
@@ -252,5 +253,21 @@ public class InstanceDescriptor implements Serializable {
      */
     public int getAdminPort() {
         return adminPort;
+    }
+    
+    /**
+     * Gets the instance group name
+     * @return The instance group name
+     */
+    public String getInstanceGroup() {
+        return instanceGroup;
+    }
+    
+    /**
+     * Sets the instance group name
+     * @param instanceGroup The instance group name
+     */
+    public void setInstanceGroup(String instanceGroup) {
+        this.instanceGroup = instanceGroup;
     }
 }

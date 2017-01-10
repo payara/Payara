@@ -56,6 +56,7 @@ import org.jvnet.hk2.annotations.Service;
 public class HazelcastCore implements EventListener {
 
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
+    public final static String INSTANCE_GROUP_ATTRIBUTE = "GLASSFISH_INSTANCE_GROUP";
     private static HazelcastCore theCore;
     
     private static MulticastConfiguration overrideConfiguration;
@@ -66,6 +67,7 @@ public class HazelcastCore implements EventListener {
     private CachingProvider hazelcastCachingProvider;
     private boolean enabled;
     private String memberName;
+    private String memberGroup;
 
     @Inject
     Events events;
@@ -161,6 +163,7 @@ public class HazelcastCore implements EventListener {
             } else { // there is no config override
                 
                 memberName = context.getInstanceName();
+                memberGroup = context.getConfigBean().getConfigRef();
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 config.getNetworkConfig().setPortAutoIncrement(true);
                 mcConfig.setEnabled(true);                // check Payara micro overrides
@@ -171,6 +174,11 @@ public class HazelcastCore implements EventListener {
                     if (overrideConfiguration.getMemberName() != null) {
                         memberName = overrideConfiguration.getMemberName();
                     }
+                    
+                    if (overrideConfiguration.getMemberGroup() != null) {
+                        memberGroup = overrideConfiguration.getMemberGroup();
+                    }
+                    
                     config.setLiteMember(overrideConfiguration.isLite());
                     config.setLicenseKey(overrideConfiguration.getLicenseKey());
                     // set group config
@@ -220,7 +228,11 @@ public class HazelcastCore implements EventListener {
         if (memberName == null) {
             memberName = context.getInstanceName();
         }
+        if (memberGroup == null) {
+            memberGroup = context.getConfigBean().getConfigRef();
+        }
         theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
+        theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
         hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
         events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
     }
