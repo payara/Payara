@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1797,7 +1797,7 @@ public class DefaultServlet
                     long len = f.length();
                     byte b[] = new byte[(int)len]; /* danger! */
                     if (len != fis.read(b)) {
-                        throw new IOException(MessageFormat.format(LogFacade.READ_FILE_EXCEPTION, f.getAbsolutePath()));
+                        throw new IOException(MessageFormat.format(rb.getString(LogFacade.READ_FILE_EXCEPTION), f.getAbsolutePath()));
                     }
                     return new StreamSource(new ByteArrayInputStream(b));
                 } finally {
@@ -2677,20 +2677,20 @@ public class DefaultServlet
         public InputSource resolveEntity(String publicId, String systemId)
                 throws SAXException, IOException {
             throw new SAXException(
-                    MessageFormat.format(LogFacade.BLOCK_EXTERNAL_ENTITY, publicId, systemId));
+                    MessageFormat.format(rb.getString(LogFacade.BLOCK_EXTERNAL_ENTITY), publicId, systemId));
         }
 
         public InputSource getExternalSubset(String name, String baseURI)
                 throws SAXException, IOException {
             throw new SAXException(
-                    MessageFormat.format(LogFacade.BLOCK_EXTERNAL_SUBSET, name, baseURI));
+                    MessageFormat.format(rb.getString(LogFacade.BLOCK_EXTERNAL_SUBSET), name, baseURI));
         }
 
         public InputSource resolveEntity(String name, String publicId,
                 String baseURI, String systemId) throws SAXException,
                 IOException {
             throw new SAXException(
-                    MessageFormat.format(LogFacade.BLOCK_EXTERNAL_ENTITY2,
+                    MessageFormat.format(rb.getString(LogFacade.BLOCK_EXTERNAL_ENTITY2),
                     name, publicId, baseURI, systemId));
         }
     }

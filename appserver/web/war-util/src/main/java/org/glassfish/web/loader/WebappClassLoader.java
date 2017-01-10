@@ -1110,7 +1110,7 @@ public class WebappClassLoader
                         getString(LogFacade.UNSUPPORTED_VERSION, name, getJavaVersion()));
             } catch(AccessControlException ace) {
                 if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, LogFacade.FIND_CLASS_INTERNAL_SECURITY_EXCEPTION, new Object[]{ace.getMessage(), ace});
+                    logger.log(Level.WARNING, LogFacade.FIND_CLASS_INTERNAL_SECURITY_EXCEPTION, new Object[]{name, ace.getMessage()});
                 }
                 throw new ClassNotFoundException(name, ace);
             } catch(RuntimeException rex) {
@@ -1126,8 +1126,7 @@ public class WebappClassLoader
                     clazz = super.findClass(name);
                 } catch(AccessControlException ace) {
                     if (logger.isLoggable(Level.WARNING)) {
-                        String msg = MessageFormat.format(
-                                LogFacade.FIND_CLASS_INTERNAL_SECURITY_EXCEPTION,
+                        String msg = getString(LogFacade.FIND_CLASS_INTERNAL_SECURITY_EXCEPTION,
                                 new Object[]{name, ace.getMessage()});
                         logger.log(Level.WARNING, msg, ace);
                     }
@@ -1575,7 +1574,7 @@ public class WebappClassLoader
                 try {
                     securityManager.checkPackageAccess(name.substring(0,i));
                 } catch (SecurityException se) {
-                    String error = MessageFormat.format(LogFacade.SECURITY_EXCEPTION, name);
+                    String error = getString(LogFacade.SECURITY_EXCEPTION, name);
                     if (logger.isLoggable(Level.INFO)) {
                         logger.log(Level.INFO, error, se);
                     }

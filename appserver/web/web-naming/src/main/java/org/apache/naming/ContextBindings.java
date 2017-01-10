@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -202,8 +202,8 @@ public class ContextBindings {
             Context context = contextNameBindings.get(name);
             if (context == null)
                 throw new NamingException(
-                        rb.getString(
-                                MessageFormat.format(LogFacade.UNKNOWN_CONTEXT, name)));
+                        MessageFormat.format(
+                                rb.getString(LogFacade.UNKNOWN_CONTEXT), name));
             threadBindings.put(Thread.currentThread(), context);
             threadNameBindings.put(Thread.currentThread(), name);
         }
@@ -305,8 +305,8 @@ public class ContextBindings {
             Context context = contextNameBindings.get(name);
             if (context == null)
                 throw new NamingException(
-                        rb.getString(
-                                MessageFormat.format(LogFacade.UNKNOWN_CONTEXT, name)));
+                        MessageFormat.format(
+                                rb.getString(LogFacade.UNKNOWN_CONTEXT), name));
             clBindings.put(classLoader, context);
             clNameBindings.put(classLoader, name);
         }
