@@ -360,6 +360,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
             }
         }
         return result;
+    }
     
     /**
      * Gets the instance group name

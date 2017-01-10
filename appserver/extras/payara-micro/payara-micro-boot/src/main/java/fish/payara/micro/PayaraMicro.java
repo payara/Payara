@@ -263,6 +263,26 @@ public class PayaraMicro {
         wrappee.setHzClusterPassword(hzClusterPassword);
         return this;
     }
+    
+    /**
+     * Gets the name of the instance group
+     *
+     * @return The name of the instance group
+     */
+    public String getInstanceGroup() {
+        return wrappee.getInstanceGroup();
+    }
+
+    /**
+     * Sets the instance group name
+     *
+     * @param instanceGroup The instance group name
+     * @return
+     */
+    public PayaraMicro setInstanceGroup(String instanceGroup) {
+        wrappee.setInstanceGroup(instanceGroup);
+        return this;
+    }
 
     public PayaraMicro setInstanceName(String instanceName) {
         wrappee.setInstanceName(instanceName);

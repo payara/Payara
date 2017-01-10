@@ -473,6 +473,21 @@ public interface PayaraMicroBoot {
      * @return
      */
     PayaraMicroBoot setUserLogFile(String fileName);
+    
+    /**
+     * Sets the instance group name
+     *
+     * @param instanceGroup The instance group name
+     * @return
+     */
+    PayaraMicroBoot setInstanceGroup(String groupName);
+    
+    /**
+     * Gets the name of the instance group
+     *
+     * @return The name of the instance group
+     */
+    String getInstanceGroup();
 
     /**
      * Stops and then shutsdown the Payara Micro Server

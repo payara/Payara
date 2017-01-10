@@ -183,5 +183,14 @@ public interface InstanceDescriptor extends Serializable {
      * member
      */
     public void setLiteMember(boolean isLiteMember);
-    
+
+    public String getInstanceGroup();
+
+    /**
+     * Sets the instance group name
+     *
+     * @param instanceGroup The instance group name
+     */
+    public void setInstanceGroup(String instanceGroup);
+
 }

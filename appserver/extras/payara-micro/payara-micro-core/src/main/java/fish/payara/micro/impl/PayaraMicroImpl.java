@@ -76,22 +76,26 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
 import fish.payara.micro.util.NameGenerator;
-import fish.payara.nucleus.events.HazelcastEvents;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.server.logging.ODLLogFormatter;
-import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
-import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
 import fish.payara.micro.PayaraMicroRuntime;
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.runtime.BootCommands;
 import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.nucleus.events.HazelcastEvents;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.lang.reflect.Member;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -157,7 +161,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String requestTracingThresholdUnit = "SECONDS";
     private long requestTracingThresholdValue = 30;
     private String instanceGroup = "MicroShoal";
-    private boolean nameIsGenerated = true;   
+    private boolean nameIsGenerated = true;
     private String preBootFileName;
     private String postBootFileName;
     private RuntimeDirectory runtimeDir = null;
@@ -928,22 +932,24 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     /**
      * Gets the name of the instance group
+     *
      * @return The name of the instance group
      */
     public String getInstanceGroup() {
         return instanceGroup;
     }
-    
+
     /**
      * Sets the instance group name
+     *
      * @param instanceGroup The instance group name
-     * @return 
+     * @return
      */
     public PayaraMicroImpl setInstanceGroup(String instanceGroup) {
         this.instanceGroup = instanceGroup;
         return this;
     }
-    
+
     /**
      * Boots the Payara Micro Server. All parameters are checked at this point
      *
@@ -1039,7 +1045,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public void shutdown() throws BootstrapException {
         if (!isRunning()) {
- 
+
             throw new IllegalStateException("Payara Micro is not running");
         }
         runtime.shutdown();
@@ -1116,6 +1122,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case name:
                         instanceName = value;
+                        nameIsGenerated = false;
+                        break;
+                    case instancegroup:
+                        instanceGroup = value;
                         break;
                     case deploymentdir:
                     case deploydir:
@@ -1445,6 +1455,37 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 requestTracing.getExecutionOptions().setThresholdValue(requestTracingThresholdValue);
             }
         }
+
+        // Check the generated name is unique
+        if (nameIsGenerated) {
+            HazelcastCore hazelcast = gf.getService(HazelcastCore.class);
+            Set<com.hazelcast.core.Member> clusterMembers = hazelcast.getInstance().getCluster().getMembers();
+
+            // If the instance name was generated, we need to compile a list of all the instance names in use within 
+            // the instance group, excluding this local instance
+            List<String> takenNames = new ArrayList<>();
+            for (com.hazelcast.core.Member member : clusterMembers) {
+                if (member != hazelcast.getInstance().getCluster().getLocalMember()
+                        && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(
+                                instanceGroup)) {
+                    takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
+                }
+            }
+
+            // If our generated name is already in use within the instance group, either generate a new one or set the 
+            // name to this instance's UUID if there are no more unique generated options left
+            if (takenNames.contains(instanceName)) {
+                NameGenerator nameGenerator = new NameGenerator();
+                instanceName = nameGenerator.generateUniqueName(takenNames,
+                        hazelcast.getInstance().getCluster().getLocalMember().getUuid());
+                hazelcast.getInstance().getCluster().getLocalMember().setStringAttribute(
+                        HazelcastCore.INSTANCE_ATTRIBUTE, instanceName);
+                // Fire off an event so that the instance descriptor in the Payara Micro Service can update itself
+                Events events = gf.getService(Events.class);
+                events.send(new EventListener.Event(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE));
+            }
+        }
+
     }
 
     private void resetLogging() {
@@ -1911,7 +1952,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             instanceName = name;
             nameIsGenerated = false;
         }
-        
+
         String instanceGroupName = System.getProperty("payaramicro.instanceGroup");
         if (instanceGroupName != null && !instanceGroupName.isEmpty()) {
             instanceGroup = instanceGroupName;
@@ -1970,9 +2011,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (hzPort != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.mcPort", Integer.toString(hzPort));
         }
-            props.setProperty("payaramicro.name", instanceName);
-            props.setProperty("payaramicro.instanceGroup", instanceGroup);
-            
+        props.setProperty("payaramicro.name", instanceName);
+        props.setProperty("payaramicro.instanceGroup", instanceGroup);
+
         if (hzStartPort != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.startPort", Integer.toString(hzStartPort));
         }
