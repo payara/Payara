@@ -45,6 +45,7 @@ package com.sun.enterprise.v3.services.impl.monitor.stats;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.glassfish.external.probe.provider.annotations.ProbeListener;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.statistics.CountStatistic;
@@ -54,7 +55,6 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
-import org.glassfish.grizzly.threadpool.AbstractThreadPool;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 /**
@@ -75,7 +75,6 @@ public class ThreadPoolStatsProvider implements StatsProvider {
     protected final CountStatisticImpl currentThreadCount = new CountStatisticImpl("CurrentThreadCount", "count", "Provides the number of request processing threads currently in the listener thread pool");
     protected final CountStatisticImpl currentThreadsBusy = new CountStatisticImpl("CurrentThreadsBusy", "count", "Provides the number of request processing threads currently in use in the listener thread pool serving requests");
 
-    protected volatile AbstractThreadPool threadPool;
     protected volatile ThreadPoolConfig threadPoolConfig;
     
     // We need to keep track of the thread pool names for calculating the global values
@@ -125,6 +124,7 @@ public class ThreadPoolStatsProvider implements StatsProvider {
     @ManagedAttribute(id = "currentthreadcount")
     @Description("Provides the number of request processing threads currently in the listener thread pool")
     public CountStatistic getCurrentThreadCount() {
+        countThreadsInThreadPool();
         return currentThreadCount;
     }
 
@@ -151,28 +151,6 @@ public class ThreadPoolStatsProvider implements StatsProvider {
 
         if (name.equals(monitoringId)) {
             coreThreadsCount.setCount(coreNumberOfThreads);
-        }
-    }
-
-    @ProbeListener("glassfish:kernel:thread-pool:threadAllocatedEvent")
-    public void threadAllocatedEvent(
-            @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPool") AbstractThreadPool threadPool,
-            @ProbeParam("threadId") long threadId) {
-
-        if (name.equals(monitoringId)) {
-            currentThreadCount.setCount(threadPool.getSize());
-        }
-    }
-
-    @ProbeListener("glassfish:kernel:thread-pool:threadReleasedEvent")
-    public void threadReleasedEvent(
-            @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPool") AbstractThreadPool threadPool,
-            @ProbeParam("threadId") long threadId) {
-
-        if (name.equals(monitoringId)) {
-            currentThreadCount.setCount(threadPool.getSize());
         }
     }
 
@@ -214,5 +192,25 @@ public class ThreadPoolStatsProvider implements StatsProvider {
     
     public void unregisterThreadPool(String name) {
         threadPoolNames.remove(name);
+    }
+    
+    /**
+     * Counts the threads in the given thread pool by querying the JVM.
+     * @param threadPoolName The name of the thread pool to count the threads of
+     */
+    private void countThreadsInThreadPool() {     
+        // Set to 0 as we want to reset them
+        currentThreadCount.setCount(0);
+        
+        // Get all the threads currently in the JVM
+        Set<Thread> threads = Thread.getAllStackTraces().keySet();
+        
+        // Count only the threads for this thread pool
+        for (Thread thread : threads) {
+            String threadName = thread.getName();
+            if (thread.isAlive() && threadName.contains(this.name + "(")) {
+                currentThreadCount.increment();
+            }
+        }
     }
 }

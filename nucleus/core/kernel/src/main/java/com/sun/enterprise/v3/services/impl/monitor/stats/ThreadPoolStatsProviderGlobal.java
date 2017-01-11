@@ -51,7 +51,6 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
-import org.glassfish.grizzly.threadpool.AbstractThreadPool;
 
 /**
  * Server wide Thread Pool statistics
