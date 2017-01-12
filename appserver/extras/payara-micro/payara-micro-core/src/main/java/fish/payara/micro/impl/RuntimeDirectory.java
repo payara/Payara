@@ -121,10 +121,6 @@ class RuntimeDirectory {
         if (src != null) {
             // find the root jar
             String jars[] = src.getLocation().toURI().getSchemeSpecificPart().split("!");
-            System.out.println("Jars is " + jars);
-            for (String jar : jars) {
-                System.out.println(jar);
-            }
             File file = new File(new URI(jars[0]));
 
             JarFile jar = new JarFile(file);

@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -62,7 +63,12 @@ public class RuntimeOptions {
         for (RUNTIME_OPTION option : RUNTIME_OPTION.values()) {
             System.err.print("--" + option.name());
             System.err.print(' ');
-            System.err.println(bundle.getString(option.name()));
+            try {
+                System.err.println(bundle.getString(option.name()));
+            } catch (MissingResourceException mre){
+                //ignore as there is no description for this option
+                System.err.println();
+            }
         }
     }
     
