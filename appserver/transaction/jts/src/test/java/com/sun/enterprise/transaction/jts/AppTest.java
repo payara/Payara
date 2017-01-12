@@ -1584,7 +1584,7 @@ public class AppTest extends TestCase {
     public void testCoordinatorDeadlock() {
         System.out.println("**=================Testing Deadlock ===>");
         final boolean[] deadlockFlag = new boolean[1];
-        final int DEADLOCK_TIMEOUT = 10;//ms
+        final int DEADLOCK_TIMEOUT = 5;
         try {
             t.begin();
             final Transaction tx = t.getTransaction();
