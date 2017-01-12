@@ -53,10 +53,6 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public class MicroGlassFish implements GlassFish {
     
-    public static final String PREBOOT_FILE_PROP="micro.preboot.command.file";
-    public static final String POSTBOOT_FILE_PROP="micro.postboot.command.file";
-    
-
     private final ModuleStartup kernel;
     private final ServiceLocator habitat;
     private Status status = Status.INIT;

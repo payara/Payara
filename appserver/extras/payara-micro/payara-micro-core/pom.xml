@@ -67,18 +67,6 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>hazelcast-bootstrap</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>phonehome-bootstrap</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.appserver.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>

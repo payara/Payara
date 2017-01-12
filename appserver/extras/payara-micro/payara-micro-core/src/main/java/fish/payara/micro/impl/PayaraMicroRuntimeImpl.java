@@ -59,13 +59,12 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
     private final String instanceName;
     private final HashSet<PayaraClusterListener> listeners;
 
-    PayaraMicroRuntimeImpl(String instanceName, GlassFish runtime) {
+    PayaraMicroRuntimeImpl(GlassFish runtime) {
         this.runtime = runtime;
-        this.instanceName = instanceName;
         this.listeners = new HashSet<>(10);
         try {
             instanceService = runtime.getService(PayaraInstance.class, "payara-instance");
-            instanceService.setInstanceName(instanceName);
+            instanceName = instanceService.getInstanceName();
             instanceService.addBootstrapListener(new BootstrapListener(this));
         } catch (GlassFishException ex) {
             throw new IllegalStateException("Unable to retrieve the embedded Payara Micro HK2 service. Something bad has happened", ex);
@@ -74,8 +73,8 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
     
     private GlassFishRuntime gfRuntime;
     
-    PayaraMicroRuntimeImpl(String instanceName, GlassFish instance, GlassFishRuntime gfRuntime) {
-        this(instanceName, instance);
+    PayaraMicroRuntimeImpl(GlassFish instance, GlassFishRuntime gfRuntime) {
+        this(instance);
         this.gfRuntime = gfRuntime;
     }
     

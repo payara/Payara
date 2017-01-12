@@ -25,7 +25,6 @@ import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
 import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
-import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.micro.event.PayaraClusteredCDIEvent;
 import fish.payara.nucleus.cluster.PayaraCluster;
@@ -188,6 +187,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
     @SuppressWarnings({"unchecked"})
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
+            initialiseInstanceDescriptor();
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, me);
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
@@ -297,13 +297,14 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         
         // Get the Hazelcast specific information
         if (hazelcast.isEnabled()) {
-            instanceName = hazelcast.getInstance().getCluster().getLocalMember().getStringAttribute(
-                    HazelcastCore.INSTANCE_ATTRIBUTE);
-            instanceGroup = hazelcast.getInstance().getCluster().getLocalMember().getStringAttribute(
-                    HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
-            myCurrentID = hazelcast.getInstance().getCluster().getLocalMember().getUuid();
-            liteMember = hazelcast.getInstance().getCluster().getLocalMember().isLiteMember();
-            hazelcastPort = hazelcast.getInstance().getCluster().getLocalMember().getSocketAddress().getPort();
+            instanceName = hazelcast.getMemberName();
+            instanceGroup = hazelcast.getMemberGroup();
+            myCurrentID = hazelcast.getUUID();
+            liteMember = hazelcast.isLite();
+            hazelcastPort = hazelcast.getPort();
+        } else {
+            instanceName = "payara-micro";
+            instanceGroup = "no-cluster";
         }
         
         // Get this instance's runtime type

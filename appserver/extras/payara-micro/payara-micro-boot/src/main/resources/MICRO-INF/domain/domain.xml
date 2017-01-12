@@ -153,7 +153,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             </security-service>
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
             </transaction-service>
-            <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
+            <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" generate-names="true"></hazelcast-runtime-configuration>
             <phone-home-runtime-configuration></phone-home-runtime-configuration>
             <request-tracing-service-configuration>
                 <log-notifier></log-notifier>

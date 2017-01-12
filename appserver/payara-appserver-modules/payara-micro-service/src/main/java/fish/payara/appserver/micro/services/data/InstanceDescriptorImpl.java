@@ -311,6 +311,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         }
         sb.append('\n');
         sb.append("Instance Name: ").append(instanceName).append('\n');
+        sb.append("Instance Group: ").append(instanceGroup).append('\n');
         if (memberUUID != null) {
             sb.append("Hazelcast Member UUID ").append(this.memberUUID).append('\n');
         }
