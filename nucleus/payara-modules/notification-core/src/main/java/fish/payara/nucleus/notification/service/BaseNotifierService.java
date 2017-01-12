@@ -45,8 +45,10 @@ import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -76,6 +78,18 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
     private Class<C> notifierType;
     private Class<NC> notifierConfigType;
 
+    public abstract void bootstrap();
+    public abstract void shutdown();
+
+    public void event(Event event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            bootstrap();
+        }
+        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+            shutdown();
+        }
+    }
+
     @PostConstruct
     void postConstruct() {
         events.register(this);
@@ -85,9 +99,7 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
         this.type = type;
         this.notifierType = notifierType;
         this.notifierConfigType = notifierConfigType;
-        if (notificationService.getExecutionOptions().isNotifierServiceEnabled(type)){
-            eventBus.register(service);
-        }
+        eventBus.register(service);
     }
 
     public abstract void handleNotification(E event);
@@ -106,5 +118,9 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
 
     public NotifierConfigurationExecutionOptions getNotifierConfigurationExecutionOptions() {
         return notificationService.getExecutionOptions().getNotifierConfigurationExecutionOptionsList().get(type);
+    }
+
+    protected void reset(BaseNotifierService service) {
+        eventBus.unregister(service);
     }
 }

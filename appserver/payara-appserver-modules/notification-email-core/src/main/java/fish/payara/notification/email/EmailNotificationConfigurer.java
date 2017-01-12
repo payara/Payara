@@ -36,43 +36,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.email;
 
-import com.google.common.collect.EvictingQueue;
-import fish.payara.nucleus.notification.NotificationService;
-import org.jvnet.hk2.annotations.Contract;
+import com.google.common.base.Strings;
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import java.util.Queue;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-@Contract
-public abstract class MessageQueue<M extends Message> {
+@Service(name = "notification-email-configure")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "notification-email-configure",
+                description = "Configures Email Notification Service")
+})
+public class EmailNotificationConfigurer extends BaseNotificationConfigurer<EmailNotifierConfiguration, EmailNotifierService> {
 
-    @Inject
-    private NotificationService notificationService;
+    @Param(name = "jndiName")
+    private String jndiName;
 
-    private Queue<M> messageQueue = EvictingQueue.create(200);
+    @Param(name = "to")
+    private String to;
 
-    public synchronized void addMessage(M message) {
-        messageQueue.add(message);
-    }
+    protected void applyValues(EmailNotifierConfiguration configuration) throws PropertyVetoException {
+        if(this.enabled != null) {
+            configuration.enabled(this.enabled);
+        }
 
-    public synchronized M getMessage() {
-        return messageQueue.remove();
-    }
-
-    public synchronized int size() {
-        return messageQueue.size();
-    }
-
-    public void resetQueue() {
-        messageQueue.clear();
-    }
-
-    protected NotificationService getNotificationService() {
-        return notificationService;
+        if(!Strings.isNullOrEmpty(jndiName)) {
+            configuration.setJndiName(jndiName);
+        }
+        if(!Strings.isNullOrEmpty(to)) {
+            configuration.setTo(to);
+        }
     }
 }

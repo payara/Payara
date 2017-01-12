@@ -36,43 +36,58 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.slack;
 
-import com.google.common.collect.EvictingQueue;
-import fish.payara.nucleus.notification.NotificationService;
-import org.jvnet.hk2.annotations.Contract;
+import com.google.common.base.Strings;
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import java.util.Queue;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-@Contract
-public abstract class MessageQueue<M extends Message> {
+@Service(name = "notification-slack-configure")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "notification-slack-configure",
+                description = "Configures Slack Notification Service")
+})
+public class SlackNotificationConfigurer extends BaseNotificationConfigurer<SlackNotifierConfiguration, SlackNotifierService> {
 
-    @Inject
-    private NotificationService notificationService;
+    @Param(name = "token1")
+    private String token1;
 
-    private Queue<M> messageQueue = EvictingQueue.create(200);
+    @Param(name = "token2")
+    private String token2;
 
-    public synchronized void addMessage(M message) {
-        messageQueue.add(message);
-    }
+    @Param(name = "token3")
+    private String token3;
 
-    public synchronized M getMessage() {
-        return messageQueue.remove();
-    }
+    protected void applyValues(SlackNotifierConfiguration configuration) throws PropertyVetoException {
+        if(this.enabled != null) {
+            configuration.enabled(this.enabled);
+        }
 
-    public synchronized int size() {
-        return messageQueue.size();
-    }
-
-    public void resetQueue() {
-        messageQueue.clear();
-    }
-
-    protected NotificationService getNotificationService() {
-        return notificationService;
+        if(!Strings.isNullOrEmpty(token1)) {
+            configuration.setToken1(token1);
+        }
+        if(!Strings.isNullOrEmpty(token2)) {
+            configuration.setToken2(token2);
+        }
+        if(!Strings.isNullOrEmpty(token3)) {
+            configuration.setToken3(token3);
+        }
     }
 }

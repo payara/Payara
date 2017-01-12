@@ -36,43 +36,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.nucleus.notification.log;
 
-import com.google.common.collect.EvictingQueue;
+import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.notification.NotificationService;
-import org.jvnet.hk2.annotations.Contract;
+import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.Queue;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-@Contract
-public abstract class MessageQueue<M extends Message> {
+@Service(name = "notification-log-configure")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@I18n("notification.log.configure")
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "notification-log-configure",
+                description = "Configures Log Notification Service")
+})
+public class LogNotificationConfigurer extends BaseNotificationConfigurer<LogNotifierConfiguration, LogNotifierService> implements AdminCommand {
 
-    @Inject
-    private NotificationService notificationService;
-
-    private Queue<M> messageQueue = EvictingQueue.create(200);
-
-    public synchronized void addMessage(M message) {
-        messageQueue.add(message);
+    @Override
+    public void execute(AdminCommandContext context) {
+        super.execute(context);
     }
 
-    public synchronized M getMessage() {
-        return messageQueue.remove();
-    }
-
-    public synchronized int size() {
-        return messageQueue.size();
-    }
-
-    public void resetQueue() {
-        messageQueue.clear();
-    }
-
-    protected NotificationService getNotificationService() {
-        return notificationService;
+    protected void applyValues(LogNotifierConfiguration configuration) throws PropertyVetoException {
+        if(this.enabled != null) {
+            configuration.enabled(this.enabled);
+        }
     }
 }
