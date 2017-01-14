@@ -47,6 +47,7 @@
         <artifactId>payara-micro-parent</artifactId>
         <version>4.1.1.171-SNAPSHOT</version>
     </parent>
+    <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-boot</artifactId>
     <description>Payara Micro Boot</description>
     <packaging>glassfish-jar</packaging>

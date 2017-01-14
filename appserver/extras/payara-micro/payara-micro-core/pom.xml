@@ -6,6 +6,7 @@
         <artifactId>payara-micro-parent</artifactId>
         <version>4.1.1.171-SNAPSHOT</version>
     </parent>
+    <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-core</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara Micro Edition Core</name>
@@ -67,13 +68,13 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>fish.payara.appserver.micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

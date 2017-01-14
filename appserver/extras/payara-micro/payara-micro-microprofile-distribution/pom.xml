@@ -832,28 +832,28 @@
           </dependency>
         <!-- Add Payara Micro Core -->
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-core</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <!-- Add Boot classes -->
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
             <type>jar</type>            
         </dependency>  
         <!-- Add Payara Micro Services -->
         <dependency>
-            <groupId>fish.payara.appserver.micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
-            <groupId>fish.payara.appserver.micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
