@@ -46,22 +46,10 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- *
- * @author steve
+ * Class describing an instance of Payara
+ * @author Steve Millidge
  */
 public interface InstanceDescriptor extends Serializable {
-
-    public void addApplication(ApplicationDescriptor descriptor);
-
-    /**
-     * @param httpPort the httpPort to add
-     */
-    public void addHttpPort(int httpPort);
-
-    /**
-     * @param httpsPort the httpsPort to add
-     */
-    public void addHttpsPort(int httpsPort);
 
     /**
      * Overrides equals purely based on the UUID value
@@ -145,52 +133,11 @@ public interface InstanceDescriptor extends Serializable {
      */
     public boolean isPayaraInstance();
 
-    public void removeApplication(ApplicationDescriptor applicationInfo);
 
     /**
-     * Sets the admin port number for this instance descriptor
-     *
-     * @param adminPort the admin port number in use by this instance
+     * Returns the instance group name of the instance
+     * @return 
      */
-    public void setAdminPort(int adminPort);
-
-    /**
-     * Sets the Hazelcast port number for this instance descriptor
-     *
-     * @param hazelcastPort the port number in use by Hazelcast
-     */
-    public void setHazelcastPort(int hazelcastPort);
-
-    /**
-     * @param hostName the hostName to set
-     */
-    public void setHostName(InetAddress hostName);
-
-    public void setInstanceName(String instanceName);
-
-    /**
-     * Sets what instance type this descriptor describes
-     *
-     * @param instanceType the instance type that this descriptor should
-     * describe
-     */
-    public void setInstanceType(String instanceType);
-
-    /**
-     * Sets whether or not this descriptor describes a Hazelcast Lite member
-     *
-     * @param isLiteMember true if this descriptor describes a Hazelcast Lite
-     * member
-     */
-    public void setLiteMember(boolean isLiteMember);
-
     public String getInstanceGroup();
-
-    /**
-     * Sets the instance group name
-     *
-     * @param instanceGroup The instance group name
-     */
-    public void setInstanceGroup(String instanceGroup);
 
 }

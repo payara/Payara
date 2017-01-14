@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi;
+package fish.payara.micro.cdi.extension;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -57,7 +57,7 @@ public class PayaraMicroCDIExtension implements Extension {
         AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
         bbd.addAnnotatedType(at);
         
-        AnnotatedType<ClusteredCDIEventBus> at3 = bm.createAnnotatedType(ClusteredCDIEventBus.class);
+        AnnotatedType<ClusteredCDIEventBusImpl> at3 = bm.createAnnotatedType(ClusteredCDIEventBusImpl.class);
         bbd.addAnnotatedType(at3);
 
     }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi;
+package fish.payara.micro.cdi.extension;
 
 import fish.payara.appserver.micro.services.PayaraInstance;
 import javax.enterprise.inject.Produces;

@@ -46,7 +46,7 @@ import org.glassfish.embeddable.CommandRunner;
 /**
  * Simple class for holding an asadmin command representation for using during
  * pre and post boot
- * @author steve
+ * @author Steve Millidge
  */
 public class BootCommand {
     

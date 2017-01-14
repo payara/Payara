@@ -44,34 +44,34 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- *
- * @author steve
+ * Provides information describing a deployed application
+ * @author Steve Millidge
  */
 public interface ApplicationDescriptor extends Serializable {
 
     /**
-     * @return the libraries
+     * @return the libraries deployed in the application
      */
     public String getLibraries();
 
     /**
-     * Return the module descriptors
+     * Return the module descriptors for modules within the application
      * @return
      */
     public List<ModuleDescriptor> getModuleDescriptors();
 
     /**
-     * @return the module names
+     * @return the module names of the application modules
      */
     public List<String> getModules();
 
     /**
-     * @return the name
+     * @return the name of the application
      */
     public String getName();
 
     /**
-     * @return the isJavaEE
+     * @return true if the application is a JavaEE application
      */
     public boolean isJavaEE();
 

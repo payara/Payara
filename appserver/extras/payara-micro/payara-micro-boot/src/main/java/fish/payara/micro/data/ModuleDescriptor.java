@@ -42,15 +42,27 @@ package fish.payara.micro.data;
 import java.io.Serializable;
 
 /**
- *
- * @author steve
+ * Describes an application module
+ * @author Steve Millidge
  */
 public interface ModuleDescriptor extends Serializable {
 
+    /**
+     * Returns the context root of the application if any
+     * @return 
+     */
     public String getContextRoot();
 
+    /**
+     * Returns the name of the module
+     * @return 
+     */
     public String getName();
 
+    /**
+     * Returns the type of the module e.g. war
+     * @return 
+     */
     public String getType();
     
 }

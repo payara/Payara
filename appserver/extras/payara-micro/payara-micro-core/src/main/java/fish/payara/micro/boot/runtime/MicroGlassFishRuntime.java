@@ -58,19 +58,21 @@ import org.glassfish.hk2.utilities.DuplicatePostProcessor;
 
 /**
  *
- * @author steve
+ * @author Steve Millidge
  */
 public class MicroGlassFishRuntime extends GlassFishRuntime {
     
     ModulesRegistry registry;
     ServiceLocator habitat;
+    MicroGlassFish gf;
 
     MicroGlassFishRuntime() {
      }
 
     @Override
     public void shutdown() throws GlassFishException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        gf.dispose();
+        shutdownInternal();
     }
 
     @Override
@@ -94,7 +96,8 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
         registry.populateServiceLocator("default", habitat, Arrays.asList(new EmbeddedInhabitantsParser(), new DuplicatePostProcessor()));
         registry.populateConfig(habitat);
         ModuleStartup kernel = habitat.getService(ModuleStartup.class);
-        return new MicroGlassFish(kernel, habitat, glassfishProperties.getProperties());
+        gf = new MicroGlassFish(kernel, habitat, glassfishProperties.getProperties());
+        return gf;
     }
     
 }

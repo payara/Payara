@@ -69,7 +69,6 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         deployedApplications.put(ad.getName(), ad);
     }
 
-    @Override
     public void addApplication(ApplicationDescriptor descriptor) {
         if (deployedApplications == null) {
             deployedApplications = new HashMap<>(3);
@@ -83,7 +82,6 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         return instanceName;
     }
 
-    @Override
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }
@@ -107,7 +105,6 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     /**
      * @param httpPort the httpPort to add
      */
-    @Override
     public void addHttpPort(int httpPort) {
         httpPorts.add(httpPort);
     }
@@ -123,7 +120,6 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     /**
      * @param hostName the hostName to set
      */
-    @Override
     public void setHostName(InetAddress hostName) {
         this.hostName = hostName;
     }
@@ -150,12 +146,10 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     /**
      * @param httpsPort the httpsPort to add
      */
-    @Override
     public void addHttpsPort(int httpsPort) {
         httpsPorts.add(httpsPort);
     }
 
-    @Override
     public void removeApplication(ApplicationDescriptor applicationInfo) {
         if (deployedApplications == null) {
             deployedApplications = new HashMap<>(3);
@@ -207,7 +201,6 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      * @param isLiteMember true if this descriptor describes a Hazelcast Lite
      * member
      */
-    @Override
     public void setLiteMember(boolean isLiteMember) {
         liteMember = isLiteMember;
     }
@@ -240,7 +233,6 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      * @param instanceType the instance type that this descriptor should
      * describe
      */
-    @Override
     public void setInstanceType(String instanceType) {
         this.instanceType = instanceType;
     }
@@ -260,7 +252,6 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      *
      * @param hazelcastPort the port number in use by Hazelcast
      */
-    @Override
     public void setHazelcastPort(int hazelcastPort) {
         this.hazelcastPort = hazelcastPort;
     }
@@ -280,7 +271,6 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      *
      * @param adminPort the admin port number in use by this instance
      */
-    @Override
     public void setAdminPort(int adminPort) {
         this.adminPort = adminPort;
     }

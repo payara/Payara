@@ -1976,14 +1976,17 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (hzPort != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.mcPort", Integer.toString(hzPort));
         }
-        props.setProperty("payaramicro.name", instanceName);
-        props.setProperty("payaramicro.instanceGroup", instanceGroup);
+        if (instanceName != null) {        
+            props.setProperty("payaramicro.name", instanceName);
+        }
+        
+        if (instanceGroup != null) {
+            props.setProperty("payaramicro.instanceGroup", instanceGroup);
+        }
 
         if (hzStartPort != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.startPort", Integer.toString(hzStartPort));
         }
-
-        props.setProperty("payaramicro.name", instanceName);
 
         if (rootDir != null) {
             props.setProperty("payaramicro.rootDir", rootDir.getAbsolutePath());

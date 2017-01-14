@@ -55,7 +55,7 @@ import org.glassfish.embeddable.CommandRunner;
 /**
  * Class to hold a list of Boot Commands for execution
  *
- * @author steve
+ * @author Steve Millidge
  */
 public class BootCommands {
 

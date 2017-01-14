@@ -45,29 +45,77 @@ import java.io.Serializable;
 import java.util.Properties;
 
 /**
- *
- * @author steve
+ * Interface that classes must implement to be used as Clustered Events
+ * 
+ * @author Steve Millidge
  */
 public interface PayaraClusteredCDIEvent extends Serializable {
 
+    /**
+     * Return the Instance Descriptor of the sender
+     * @return 
+     */
     InstanceDescriptor getId();
 
+    /**
+     * Returns the Instance Descriptor of the Sender
+     * @return 
+     */
     InstanceDescriptor getInstanceDescriptor();
 
+    /**
+     * Returns the Payload of the object. This should be deserialized before
+     * being returned
+     * @return
+     * @throws IOException If a problem occurs during Deserialization
+     * @throws ClassNotFoundException If a problem occurs during Deserialization
+     */
     Serializable getPayload() throws IOException, ClassNotFoundException;
 
+    /**
+     * Returns the set of properties in the event
+     * @return 
+     */
     Properties getProperties();
 
+    /**
+     * Returns the property value with the specified name
+     * @param name Name of the property to return
+     * @return 
+     */
     String getProperty(String name);
 
+    /**
+     * Returns the property value with the specified name
+     * @param name Name of the property to return
+     * @param defaultValue Value to be returned if the property is not present
+     * @return 
+     */
     String getProperty(String name, String defaultValue);
 
+    /**
+     * Returns true if the event was sent from the same JVM
+     * @return 
+     */
     boolean isLoopBack();
 
+    /**
+     * Set the Intstance Descriptor
+     * @param id 
+     */
     void setId(InstanceDescriptor id);
 
+    /**
+     * Set to true if the event should be sent to listeners in the same JVM
+     * @param loopBack 
+     */
     void setLoopBack(boolean loopBack);
 
+    /**
+     * Sets a property in the event
+     * @param name Name of the property
+     * @param value THe value of the property
+     */
     void setProperty(String name, String value);
     
 }

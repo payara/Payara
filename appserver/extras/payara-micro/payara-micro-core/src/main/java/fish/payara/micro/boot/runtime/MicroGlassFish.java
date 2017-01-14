@@ -49,12 +49,12 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  *
- * @author steve
+ * @author Steve Millidge
  */
 public class MicroGlassFish implements GlassFish {
     
-    private final ModuleStartup kernel;
-    private final ServiceLocator habitat;
+    private ModuleStartup kernel;
+    private ServiceLocator habitat;
     private Status status = Status.INIT;
 
     MicroGlassFish(ModuleStartup kernel, ServiceLocator habitat, Properties glassfishProperties) throws GlassFishException {
@@ -78,6 +78,8 @@ public class MicroGlassFish implements GlassFish {
 
     @Override
     public void dispose() throws GlassFishException {
+        kernel = null;
+        habitat = null;
         status = Status.DISPOSED;
     }
 

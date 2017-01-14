@@ -100,7 +100,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
     private String instanceName;
     private String instanceGroup;
 
-    private InstanceDescriptor me;
+    private InstanceDescriptorImpl me;
     
     @Inject
     private ServerEnvironment environment;

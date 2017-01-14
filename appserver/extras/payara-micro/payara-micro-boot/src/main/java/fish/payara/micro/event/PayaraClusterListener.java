@@ -21,8 +21,8 @@ import fish.payara.micro.data.InstanceDescriptor;
 
 
 /**
- *
- * @author steve
+ * Interface for classes that want to be notified about changes to the cluster
+ * @author Steve Millidge 
  */
 public interface PayaraClusterListener {
     

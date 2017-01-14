@@ -40,11 +40,15 @@
 package fish.payara.micro.event;
 
 /**
- *
- * @author steve
+ * Interface to implement if the class wished to receive Clustered Events
+ * @author Steve Millidge
  */
 public interface CDIEventListener {
     
+    /**
+     * Method called when an Event is sent
+     * @param event The event
+     */
     public void eventReceived(PayaraClusteredCDIEvent event);
     
 }
