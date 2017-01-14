@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -37,33 +36,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.xmpp;
+package fish.payara.nucleus.healthcheck.admin.notifier;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
+
+
+import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.notification.configuration.XmppNotifier;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class XmppNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<XmppNotifier> {
+@Service(name = "healthcheck-xmpp-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "healthcheck-xmpp-notifier-configure",
+                description = "Configures XMPP Notifier for HealthCheck Service")
+})
+public class XmppHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierConfigurer<XmppNotifier> {
 
-    @PostConstruct
-    void postConstruct() {
-        register(NotifierType.XMPP, this);
-    }
-
-    public NotifierExecutionOptions build(XmppNotifier notifier) {
-        XmppNotifierExecutionOptions executionOptions = new XmppNotifierExecutionOptions();
-        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
-        return executionOptions;
+    @Override
+    protected void applyValues(XmppNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
     }
 }

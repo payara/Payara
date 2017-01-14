@@ -36,17 +36,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.email;
+package fish.payara.nucleus.healthcheck.admin.notifier;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Configured;
+
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.notification.configuration.HipchatNotifier;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.EMAIL)
-public interface EmailNotifier extends Notifier {
+@Service(name = "healthcheck-hipchat-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "healthcheck-hipchat-notifier-configure",
+                description = "Configures Hipchat Notifier for HealthCheck Service")
+})
+public class HipchatHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierConfigurer<HipchatNotifier> {
+
+    @Override
+    protected void applyValues(HipchatNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
+    }
 }

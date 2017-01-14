@@ -36,20 +36,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.jms;
+package fish.payara.nucleus.healthcheck.admin.notifier;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Configured;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.notification.configuration.EmailNotifier;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.beans.PropertyVetoException;
 
 /**
- * Configuration class for attaching JMS notification mechanism into.
- * Health check and Request tracing services enables the use of JMS notification mechanism with this notifier enabler.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.JMS)
-public interface JmsNotifier extends Notifier {
+@Service(name = "healthcheck-email-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "healthcheck-email-notifier-configure",
+                description = "Configures Email Notifier for HealthCheck Service")
+})
+ public class EmailHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierConfigurer<EmailNotifier> {
+
+    @Override
+    protected void applyValues(EmailNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
+    }
 }

@@ -40,6 +40,7 @@ package fish.payara.notification.jms;
 
 import com.google.common.base.Strings;
 import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.notification.configuration.JmsNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
@@ -50,7 +51,6 @@ import org.jvnet.hk2.annotations.Service;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.Queue;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

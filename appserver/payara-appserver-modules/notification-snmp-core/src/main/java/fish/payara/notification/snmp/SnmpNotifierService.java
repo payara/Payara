@@ -42,6 +42,7 @@ package fish.payara.notification.snmp;
 import com.google.common.eventbus.Subscribe;
 import fish.payara.notification.snmp.exception.InvalidSnmpVersion;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.configuration.SnmpNotifier;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventTypes;

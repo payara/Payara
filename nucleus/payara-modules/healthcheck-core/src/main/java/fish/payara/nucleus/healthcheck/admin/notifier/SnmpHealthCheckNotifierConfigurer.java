@@ -36,20 +36,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.snmp;
+package fish.payara.nucleus.healthcheck.admin.notifier;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Configured;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.notification.configuration.SnmpNotifier;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.beans.PropertyVetoException;
 
 /**
- * Configuration class for attaching snmp notification mechanism into.
- * Health check and Request tracing services enables the use of snmp notification mechanism with this notifier configuration.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.SNMP)
-public interface SnmpNotifier extends Notifier {
+@Service(name = "healthcheck-snmp-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "healthcheck-snmp-notifier-configure",
+                description = "Configures SNMP Notifier for HealthCheck Service")
+})
+public class SnmpHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierConfigurer<SnmpNotifier> {
+
+    @Override
+    protected void applyValues(SnmpNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
+    }
 }
