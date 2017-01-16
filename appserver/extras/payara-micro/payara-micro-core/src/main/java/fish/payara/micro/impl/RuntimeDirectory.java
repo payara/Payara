@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.impl;
 
+import fish.payara.micro.PayaraMicro;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,15 +78,21 @@ class RuntimeDirectory {
      * Default constructor unpacks into a temporary directory
      */
     RuntimeDirectory() throws IOException, URISyntaxException {
-        String tmpDir = System.getProperty("glassfish.embedded.tmpdir");
-        if (tmpDir == null) {
-            tmpDir = System.getProperty("java.io.tmpdir");
+        // check if we have exploded our runtime
+        String runTimeDir = System.getProperty("fish.payara.micro.tmpdir");
+        if (runTimeDir == null) {
+            String tmpDir = System.getProperty("glassfish.embedded.tmpdir");
+            if (tmpDir == null) {
+                tmpDir = System.getProperty("java.io.tmpdir");
+            }
+            directory = File.createTempFile("payaramicro-", "tmp", new File(tmpDir));
+            if (!directory.delete() || !directory.mkdir()) { // convert the file into a directory.
+                throw new IOException("cannot create directory: " + directory.getAbsolutePath());
+            }
+            directory.deleteOnExit();
+        } else {
+            directory = new File(runTimeDir);
         }
-        directory = File.createTempFile("payaramicro-", "tmp", new File(tmpDir));
-        if (!directory.delete() || !directory.mkdir()) { // convert the file into a directory.
-            throw new IOException("cannot create directory: " + directory.getAbsolutePath());
-        }
-        directory.deleteOnExit();
         setSystemProperties();
         unpackRuntime();
     }
@@ -116,12 +123,12 @@ class RuntimeDirectory {
         configDir.mkdirs();
 
         // Get our configuration files
-        CodeSource src = PayaraMicroImpl.class
+        CodeSource src = PayaraMicro.class
                 .getProtectionDomain().getCodeSource();
         if (src != null) {
             // find the root jar
             String jars[] = src.getLocation().toURI().getSchemeSpecificPart().split("!");
-            File file = new File(new URI(jars[0]));
+            File file = new File(jars[0]);
 
             JarFile jar = new JarFile(file);
             Enumeration<JarEntry> entries = jar.entries();

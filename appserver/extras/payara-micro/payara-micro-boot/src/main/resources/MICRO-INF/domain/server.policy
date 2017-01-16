@@ -42,6 +42,10 @@ grant codeBase "${fish.payara.micro.BootJar}" {
     permission java.security.AllPermission;
 };
 
+grant codeBase "file://${fish.payara.micro.UnpackDir}/-" {
+    permission java.security.AllPermission;
+};
+
 grant codeBase "file:${com.sun.aas.javaRoot}/../lib/tools.jar" {
     permission java.security.AllPermission;
 };

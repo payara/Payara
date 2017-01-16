@@ -1281,6 +1281,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case prebootcommandfile:
                         preBootFileName = value;
                         break;
+                    default:
+                        break;
                 }
             }
         }

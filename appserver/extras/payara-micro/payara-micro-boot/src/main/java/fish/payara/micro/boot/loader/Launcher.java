@@ -44,9 +44,30 @@ public abstract class Launcher {
 	 * @throws Exception if the application fails to launch
 	 */
 	protected void launch(String[] args) throws Exception {
-		ClassLoader classLoader = createClassLoader(getClassPathArchives());
+            boolean explode = true;
+            String unpackDir = null;
+            for (int i = 0; i < args.length; i++) {
+                if ("--nested".equals(args[i].toLowerCase())) {
+                    explode = false;
+                } else if ("--unpackdir".equals(args[i].toLowerCase()) || "--rootdir".equals(args[i].toLowerCase())) {
+                    if (args.length >= (i+1)) {
+                        unpackDir = args[i+1];
+                    }
+                }
+            }
+            
+            ClassLoader classLoader;
+            if (!explode) {
+                classLoader = createClassLoader(getClassPathArchives());
                 fish.payara.micro.boot.loader.jar.JarFile.registerUrlProtocolHandler();
-                launch(args, getMainClass(), classLoader);
+            } else {
+                    if (unpackDir != null) {
+                        classLoader = new ExplodedURLClassloader(new File(unpackDir));
+                    } else {
+                        classLoader = new ExplodedURLClassloader();
+                    }
+            }
+            launch(args, getMainClass(), classLoader);
 	}
 
 	/**
