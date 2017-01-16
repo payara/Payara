@@ -102,20 +102,15 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
 
                     if (!Strings.isNullOrEmpty(executionOptions.getConnectionFactoryName())) {
                         try {
-                            //ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                            //Thread.currentThread().setContextClassLoader(Queue.class.getClassLoader());
-
                             InitialContext ctx = new InitialContext(env);
                             ConnectionFactory connectionFactory =
                                     (ConnectionFactory) ctx.lookup(executionOptions.getConnectionFactoryName());
                             Connection connection = connectionFactory.createConnection();
                             scheduleExecutor(new JmsNotificationRunnable(queue, executionOptions, connection));
-
-                            //Thread.currentThread().setContextClassLoader(cl);
                         }
                         catch (NoInitialContextException e) {
                             if (e.getRootCause() instanceof ClassNotFoundException) {
-                                logger.log(Level.SEVERE, "Context factory class cannot be found on claspath: " + executionOptions.getContextFactoryClass());
+                                logger.log(Level.SEVERE, "Context factory class cannot be found on classpath: " + executionOptions.getContextFactoryClass());
                             }
                         }
                     }
