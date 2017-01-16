@@ -27,6 +27,7 @@ import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -49,6 +50,9 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
 
     @Inject
     private NotificationEventFactoryStore eventFactoryStore;
+
+    @Inject
+    private HistoricHealthCheckEventStore healthCheckEventStore;
 
     protected O options;
     protected Class<C> checkerType;
@@ -137,13 +141,18 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     }
 
     public void sendNotification(Level level, String message, Object[] parameters) {
+        String userMessage = "Health Check notification with severity level: " + level.getName();
+
         for (NotifierExecutionOptions notifierExecutionOptions : healthCheckService.getNotifierExecutionOptionsList()) {
             if (notifierExecutionOptions.isEnabled()) {
                 NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                String userMessage = "Health Check notification with severity level: " + level.getName();
                 NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(level, userMessage, message, parameters);
                 notificationService.notify(notificationEvent);
             }
+        }
+
+        if (healthCheckService.isHistoricalTraceEnabled()) {
+            healthCheckEventStore.addTrace(new Date().getTime(), level, userMessage, message, parameters);
         }
     }
 }
