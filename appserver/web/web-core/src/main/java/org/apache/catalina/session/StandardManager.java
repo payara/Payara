@@ -549,7 +549,6 @@ public class StandardManager
                 int n = count.intValue();
                 if (log.isLoggable(Level.FINE))
                     log.log(Level.FINE, "Loading " + n + " persisted sessions");
-                StandardSession.threadContextManager.set(this);
                 for (int i = 0; i < n; i++) {
                     StandardSession session =
                         StandardSession.deserialize(ois, this);
@@ -584,7 +583,6 @@ public class StandardManager
                 }
                 throw e;
             } finally {
-                StandardSession.threadContextManager.remove();
                 // Close the input stream
                 try {
                     if (ois != null) {

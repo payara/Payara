@@ -318,9 +318,9 @@ public class StandardSession
      * The Manager with which this Session is associated.
      */
     protected transient Manager manager = null;
-    static final transient ThreadLocal<ManagerBase> threadContextManager
+    protected static final transient ThreadLocal<Manager> threadContextManager
             = new ThreadLocal<>();
-    private transient Cache<Object, Object> checkedSerializableObjects = buildSerializableCache();
+    private transient Cache<Object, Boolean> checkedSerializableObjects = buildSerializableCache();
 
     /**
      * The context with which this Session is associated.
@@ -1279,16 +1279,23 @@ public class StandardSession
 
         StandardSession result = null;
 
-        Object obj = ois.readObject();
-        if (obj instanceof StandardSession) {
-            // New format following standard serialization
-            result = (StandardSession) obj;
-        } else {
-            // Old format, obj is an instance of Long and contains the
-            // session's creation time
-            result = (StandardSession) manager.createEmptySession();
-            result.setCreationTime(((Long) obj).longValue());
-            result.readRemainingObject(ois);
+        try {
+            threadContextManager.set(manager);
+
+            Object obj = ois.readObject();
+            if (obj instanceof StandardSession) {
+                // New format following standard serialization
+                result = (StandardSession) obj;
+            } else {
+                // Old format, obj is an instance of Long and contains the
+                // session's creation time
+                result = (StandardSession) manager.createEmptySession();
+                result.setCreationTime(((Long) obj).longValue());
+                result.readRemainingObject(ois);
+            }
+        }
+        finally {
+            threadContextManager.remove();
         }
 
         return result;
@@ -2097,7 +2104,7 @@ public class StandardSession
                         value = stream.readObject();
                         ManagerBase mgr = (ManagerBase) getManager();
                         if (mgr == null) {
-                            mgr = threadContextManager.get();
+                            mgr = (ManagerBase)threadContextManager.get();
                         }
                         value = mgr.createObjectInputStream(new ByteArrayInputStream((byte[]) value)).readObject();
                         break;
@@ -2219,22 +2226,27 @@ public class StandardSession
             //following is replacement code from Hercules
             try {
                 Object val = saveValues.get(i);
-                if(checkedSerializableObjects.getIfPresent(val) == null) {
-                    ManagerBase manager = (ManagerBase)getManager();
+                Boolean serSuccess = checkedSerializableObjects.getIfPresent(val);
+                if(serSuccess == null) {
+                    ManagerBase mgr = (ManagerBase)getManager();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    try (ObjectOutputStream oos = manager.createObjectOutputStream(baos)) {
+                    try (ObjectOutputStream oos = mgr.createObjectOutputStream(baos)) {
                         // need to write the object to temporary buffer,
                         // so main stream doesn't get corrupted in case of partial
                         // object write and NotSerializedException
+                        checkedSerializableObjects.put(val, false);
                         oos.writeObject(val);
                         oos.flush();
                         stream.writeObject(SEPARATE_BUFFER_SERIALIZATION);
                         stream.writeObject(baos.toByteArray());
                     }
-                    checkedSerializableObjects.put(val, val);
+                    checkedSerializableObjects.put(val, true);
+                }
+                else if(serSuccess == true) {
+                    stream.writeObject(val);
                 }
                 else {
-                    stream.writeObject(val);
+                    stream.writeObject(NOT_SERIALIZED);
                 }
 
                 if (debug >= 2)
@@ -2453,7 +2465,7 @@ public class StandardSession
         }
     }
 
-    private static Cache<Object, Object> buildSerializableCache() {
+    private static Cache<Object, Boolean> buildSerializableCache() {
         return CacheBuilder.newBuilder().softValues()
                 .maximumSize(Integer.getInteger(StandardSession.class.getName() + ".identityCacheSize", 100))
                 .build();
