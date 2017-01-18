@@ -598,36 +598,6 @@ public class StandardManager
     }
 
     /**
-     * create appropriate object input stream with appropriate class loading
-     * @param is
-     * @return stream
-     * @throws IOException
-     */
-    ObjectInputStream createObjectInputStream(InputStream is) throws IOException {
-        if (container != null) {
-            return ((StandardContext) container).createObjectInputStream(is);
-        } else {
-            return new ObjectInputStream(is);
-        }
-    }
-
-    /**
-     * create appropriate object output stream with appropriate class loading
-     * @param os
-     * @return stream
-     * @throws IOException
-     */
-    ObjectOutputStream createObjectOutputStream(OutputStream os) throws IOException {
-
-        if (container != null) {
-            return ((StandardContext) container).createObjectOutputStream(
-                    new BufferedOutputStream(os));
-        } else {
-            return new ObjectOutputStream(new BufferedOutputStream(os));
-        }
-    }
-
-    /**
      * Save any currently active sessions in the appropriate persistence
      * mechanism, if any.  If persistence is not supported, this method
      * returns without doing anything.

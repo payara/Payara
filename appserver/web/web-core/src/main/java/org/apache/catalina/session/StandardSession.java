@@ -2220,9 +2220,9 @@ public class StandardSession
             try {
                 Object val = saveValues.get(i);
                 if(checkedSerializableObjects.getIfPresent(val) == null) {
-                    StandardManager sm = (StandardManager)getManager();
+                    ManagerBase manager = (ManagerBase)getManager();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    try (ObjectOutputStream oos = sm.createObjectOutputStream(baos)) {
+                    try (ObjectOutputStream oos = manager.createObjectOutputStream(baos)) {
                         // need to write the object to temporary buffer,
                         // so main stream doesn't get corrupted in case of partial
                         // object write and NotSerializedException
