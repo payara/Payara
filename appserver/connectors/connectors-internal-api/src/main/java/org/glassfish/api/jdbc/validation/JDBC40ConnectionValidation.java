@@ -54,18 +54,19 @@ import java.sql.SQLException;
  * @author Shalini M
  */
 public class JDBC40ConnectionValidation implements ConnectionValidation {
-
     
     /**
      * Check for validity of <code>java.sql.Connection</code>
      *
      * @param con       <code>java.sql.Connection</code>to be validated
-     * @throws SQLException if the connection is not valid
+     * @param statementTimeout The time in seconds to wait for the query to complete
+     * @return True if connection is valid
      */
-    public boolean isConnectionValid(Connection con) {
+    @Override
+    public boolean isConnectionValid(Connection con, int statementTimeout) {
         boolean isValid = false;
         try {
-            isValid = con.isValid(0);
+            isValid = con.isValid(statementTimeout);
         } catch (SQLException sqle) {
             isValid = false;
         } 
