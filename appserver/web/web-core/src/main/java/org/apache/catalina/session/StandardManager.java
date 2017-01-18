@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -525,11 +526,7 @@ public class StandardManager
         ObjectInputStream ois = null;
         try {
             BufferedInputStream bis = new BufferedInputStream(is);
-            if (container != null) {
-                ois = ((StandardContext)container).createObjectInputStream(bis);
-            } else {
-                ois = new ObjectInputStream(bis);
-            }
+            ois = createObjectInputStream(bis);
         } catch (IOException ioe) {
             String msg = MessageFormat.format(rb.getString(LOADING_PERSISTED_SESSION_IO_EXCEPTION),
                                               ioe);
@@ -552,6 +549,7 @@ public class StandardManager
                 int n = count.intValue();
                 if (log.isLoggable(Level.FINE))
                     log.log(Level.FINE, "Loading " + n + " persisted sessions");
+                StandardSession.threadContextManager.set(this);
                 for (int i = 0; i < n; i++) {
                     StandardSession session =
                         StandardSession.deserialize(ois, this);
@@ -586,6 +584,7 @@ public class StandardManager
                 }
                 throw e;
             } finally {
+                StandardSession.threadContextManager.remove();
                 // Close the input stream
                 try {
                     if (ois != null) {
@@ -598,6 +597,35 @@ public class StandardManager
         }
     }
 
+    /**
+     * create appropriate object input stream with appropriate class loading
+     * @param is
+     * @return stream
+     * @throws IOException
+     */
+    ObjectInputStream createObjectInputStream(InputStream is) throws IOException {
+        if (container != null) {
+            return ((StandardContext) container).createObjectInputStream(is);
+        } else {
+            return new ObjectInputStream(is);
+        }
+    }
+
+    /**
+     * create appropriate object output stream with appropriate class loading
+     * @param os
+     * @return stream
+     * @throws IOException
+     */
+    ObjectOutputStream createObjectOutputStream(OutputStream os) throws IOException {
+
+        if (container != null) {
+            return ((StandardContext) container).createObjectOutputStream(
+                    new BufferedOutputStream(os));
+        } else {
+            return new ObjectOutputStream(new BufferedOutputStream(os));
+        }
+    }
 
     /**
      * Save any currently active sessions in the appropriate persistence
@@ -715,12 +743,7 @@ public class StandardManager
             throws IOException {
         ObjectOutputStream oos = null;
         try {
-            if (container != null) {
-                oos = ((StandardContext) container).createObjectOutputStream(
-                        new BufferedOutputStream(os));
-            } else {
-                oos = new ObjectOutputStream(new BufferedOutputStream(os));
-            }
+            oos = createObjectOutputStream(os);
         } catch (IOException e) {
             String msg = MessageFormat.format(rb.getString(SAVING_PERSISTED_SESSION_IO_EXCEPTION),
                                               e);
