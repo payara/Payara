@@ -318,7 +318,7 @@ public class StandardSession
      * The Manager with which this Session is associated.
      */
     protected transient Manager manager = null;
-    static final transient ThreadLocal<Manager> threadContextManager
+    static final transient ThreadLocal<ManagerBase> threadContextManager
             = new ThreadLocal<>();
     private transient Cache<Object, Object> checkedSerializableObjects = buildSerializableCache();
 
@@ -2095,11 +2095,11 @@ public class StandardSession
                     case SEPARATE_BUFFER_SERIALIZATION:
                     {
                         value = stream.readObject();
-                        StandardManager sm = (StandardManager) getManager();
-                        if (sm == null) {
-                            sm = (StandardManager) threadContextManager.get();
+                        ManagerBase mgr = (ManagerBase) getManager();
+                        if (mgr == null) {
+                            mgr = threadContextManager.get();
                         }
-                        value = sm.createObjectInputStream(new ByteArrayInputStream((byte[]) value)).readObject();
+                        value = mgr.createObjectInputStream(new ByteArrayInputStream((byte[]) value)).readObject();
                         break;
                     }
                 }
