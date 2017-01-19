@@ -2224,9 +2224,9 @@ public class StandardSession
              */ 
             
             //following is replacement code from Hercules
+            Object val = saveValues.get(i);
+            Boolean serSuccess = checkedSerializableObjects.getIfPresent(val);
             try {
-                Object val = saveValues.get(i);
-                Boolean serSuccess = checkedSerializableObjects.getIfPresent(val);
                 if(serSuccess == null) {
                     ManagerBase mgr = (ManagerBase)getManager();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -2252,7 +2252,9 @@ public class StandardSession
                 if (debug >= 2)
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value '" + saveValues.get(i) + "'");
-            } catch (NotSerializableException e) {
+            } catch (IOException e) {
+                if((e instanceof NotSerializableException) || (e.getCause() instanceof NotSerializableException)
+                        && (serSuccess != true)) {
                 String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
                                                   new Object[] {saveNames.get(i), id});
                 log(msg, Level.WARNING);
@@ -2260,18 +2262,11 @@ public class StandardSession
                 if (debug >= 2)
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value NOT_SERIALIZED");
-            } catch (IOException ioe) {
-		if ( ioe.getCause() instanceof NotSerializableException ) {
-                String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
-                                                  new Object[] {saveNames.get(i), id});
-                	log(msg, ioe);
-                	stream.writeObject(NOT_SERIALIZED);
-                	if (debug >= 2)
-                    		log("  storing attribute '" + saveNames.get(i) +
-                        	"' with value NOT_SERIALIZED");
-		} else 
-			throw ioe;
-	    }
+                }
+                else {
+                    throw e;
+                }
+            }
             //end HERCULES:mod
         }
 
