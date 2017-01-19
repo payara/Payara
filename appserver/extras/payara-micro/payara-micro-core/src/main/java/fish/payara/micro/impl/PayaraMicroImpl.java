@@ -1416,7 +1416,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             LOGGER.info("No META-INF/deploy directory");
         }
 
-        logger.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
+        LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
 
     private void addShutdownHook() {
