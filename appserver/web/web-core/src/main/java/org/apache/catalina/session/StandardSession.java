@@ -2253,8 +2253,8 @@ public class StandardSession
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value '" + saveValues.get(i) + "'");
             } catch (IOException e) {
-                if((e instanceof NotSerializableException) || (e.getCause() instanceof NotSerializableException)
-                        && (serSuccess != true)) {
+                if((e instanceof NotSerializableException || e.getCause() instanceof NotSerializableException)
+                        && serSuccess != true) {
                 String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
                                                   new Object[] {saveNames.get(i), id});
                 log(msg, Level.WARNING);

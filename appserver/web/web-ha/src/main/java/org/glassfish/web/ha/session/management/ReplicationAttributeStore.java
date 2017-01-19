@@ -405,14 +405,16 @@ public class ReplicationAttributeStore extends ReplicationStore {
         }
     }
     
-    private CompositeMetadata createCompositeMetadata(ModifiedAttributeHASession modAttrSession) {
+    private CompositeMetadata createCompositeMetadata(ModifiedAttributeHASession modAttrSession) throws IOException {
         
         byte[] trunkState = null;
         if (!modAttrSession.isNew()) {
             try {
                 trunkState = this.getByteArray(modAttrSession);
             } catch(IOException ex) {
-                //no op
+                if(ex instanceof NotSerializableException) {
+                    throw ex;
+                }
             }
         }
         if(_logger.isLoggable(Level.FINE)) {
