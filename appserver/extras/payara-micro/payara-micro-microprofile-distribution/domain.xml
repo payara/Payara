@@ -64,8 +64,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
     <configs>
         <config name="server-config">
             <http-service access-logging-enabled="false">
-                <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%"></access-log>
-                <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
+                <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%" rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" ></access-log>
                 <virtual-server id="server" access-logging-enabled="false" access-log="" network-listeners="http-listener, https-listener"></virtual-server>
             </http-service>   
             <admin-service system-jmx-connector-name="system">

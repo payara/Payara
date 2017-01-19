@@ -78,8 +78,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
                 <garbage-collector-checker unit="MINUTES" name="GC" time="5" enabled="true" />
             </health-check-service-configuration>
             <http-service access-logging-enabled="false">
-                <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%"></access-log>
-                <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
+                <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%" rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd"></access-log>
                 <virtual-server id="server" access-logging-enabled="false" access-log="" network-listeners="http-listener, https-listener"></virtual-server>
             </http-service>
             <iiop-service>
@@ -156,7 +155,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" generate-names="true"></hazelcast-runtime-configuration>
             <phone-home-runtime-configuration></phone-home-runtime-configuration>
             <request-tracing-service-configuration>
-                <log-notifier></log-notifier>
+                <log-notifier enabled="true"></log-notifier>
             </request-tracing-service-configuration>
             <notification-service-configuration enabled="true">
                 <log-notifier-configuration enabled="true"></log-notifier-configuration>

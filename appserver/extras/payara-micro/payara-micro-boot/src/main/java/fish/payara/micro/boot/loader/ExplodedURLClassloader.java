@@ -47,6 +47,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
@@ -105,7 +106,7 @@ public class ExplodedURLClassloader extends URLClassLoader {
         // sets the system property used in the server.policy file for permissions
         System.setProperty("fish.payara.micro.UnpackDir", explodedDir.getAbsolutePath());
 
-        // Get our configuration files
+        // Get our jar files
         CodeSource src = ExplodedURLClassloader.class
                 .getProtectionDomain().getCodeSource();
         if (src != null) {
@@ -132,15 +133,13 @@ public class ExplodedURLClassloader extends URLClassLoader {
                         }
                         super.addURL(outputFile.getAbsoluteFile().toURI().toURL());
 
-                        // only unpack if an existing file is not there
-                        if (!outputFile.exists()) {
-                            if (entry.isDirectory()) {
-                                outputFile.mkdirs();
-                            } else {
-                                // write out the conifugration file
-                                try (InputStream is = jar.getInputStream(entry)) {
-                                    Files.copy(is, outputFile.toPath());
-                                }
+
+                        if (entry.isDirectory()) {
+                            outputFile.mkdirs();
+                        } else {
+                            // write out the jar file
+                            try (InputStream is = jar.getInputStream(entry)) {
+                                Files.copy(is, outputFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
                             }
                         }
                     }

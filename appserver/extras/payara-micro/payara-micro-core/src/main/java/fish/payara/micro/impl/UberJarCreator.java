@@ -277,6 +277,9 @@ public class UberJarCreator {
                 jos.putNextEntry(domainEntry);
                 // we only care about the config directory
                 File configDir = new File(domainDir,"config");
+                if (!configDir.exists()) {
+                    throw new IOException("Config directory is not in the root directory please check " +domainDir.getAbsolutePath() + " contains a valid domain");
+                }
                 for (File domainFile : configDir.listFiles()) {
                     if (domainFile.isFile()) {
                         JarEntry configEntry = new JarEntry("MICRO-INF/domain/" + domainFile.getName());

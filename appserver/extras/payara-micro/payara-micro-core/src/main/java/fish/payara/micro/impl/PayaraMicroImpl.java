@@ -951,7 +951,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      */
     @Override
     public PayaraMicroRuntime bootStrap() throws BootstrapException {
-
         // First check whether we are already running
         if (isRunning()) {
             throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
@@ -1114,6 +1113,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         instanceName = value;
                         break;
                     case instancegroup:
+                    case group:
                         instanceGroup = value;
                         break;
                     case deploymentdir:
@@ -1188,51 +1188,53 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         enableRequestTracing = true;
                         // Check if a value has actually been given
                         // Split strings from numbers
-                        String[] requestTracing = value.split("(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
-                        // If valid, there should be no more than 2 entries
-                        if (requestTracing.length <= 2) {
-                            // If the first entry is a number
-                            if (requestTracing[0].matches("\\d+")) {
-                                try {
-                                    requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
-                                } catch (NumberFormatException e) {
-                                    LOGGER.log(Level.WARNING, "{0} is not a valid request tracing "
-                                            + "threshold value", requestTracing[0]);
-                                    throw e;
-                                }
-                                // If there is a second entry, and it's a String
-                                if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
-                                    String parsedUnit = parseRequestTracingUnit(requestTracing[1]);
+                        if (value != null) {
+                            String[] requestTracing = value.split("(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
+                            // If valid, there should be no more than 2 entries
+                            if (requestTracing.length <= 2) {
+                                // If the first entry is a number
+                                if (requestTracing[0].matches("\\d+")) {
+                                    try {
+                                        requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
+                                    } catch (NumberFormatException e) {
+                                        LOGGER.log(Level.WARNING, "{0} is not a valid request tracing "
+                                                + "threshold value", requestTracing[0]);
+                                        throw e;
+                                    }
+                                    // If there is a second entry, and it's a String
+                                    if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
+                                        String parsedUnit = parseRequestTracingUnit(requestTracing[1]);
+                                        try {
+                                            TimeUnit.valueOf(parsedUnit.toUpperCase());
+                                            requestTracingThresholdUnit = parsedUnit.toUpperCase();
+                                        } catch (IllegalArgumentException e) {
+                                            LOGGER.log(Level.WARNING, "{0} is not a valid request "
+                                                    + "tracing threshold unit", requestTracing[1]);
+                                            throw e;
+                                        }
+                                    } // If there is a second entry, and it's not a String
+                                    else if (requestTracing.length == 2 && !requestTracing[1].matches("\\D+")) {
+                                        throw new IllegalArgumentException();
+                                    }
+                                } // If the first entry is a String
+                                else if (requestTracing[0].matches("\\D+")) {
+                                    String parsedUnit = parseRequestTracingUnit(requestTracing[0]);
                                     try {
                                         TimeUnit.valueOf(parsedUnit.toUpperCase());
                                         requestTracingThresholdUnit = parsedUnit.toUpperCase();
                                     } catch (IllegalArgumentException e) {
                                         LOGGER.log(Level.WARNING, "{0} is not a valid request "
-                                                + "tracing threshold unit", requestTracing[1]);
+                                                + "tracing threshold unit", requestTracing[0]);
                                         throw e;
                                     }
-                                } // If there is a second entry, and it's not a String
-                                else if (requestTracing.length == 2 && !requestTracing[1].matches("\\D+")) {
-                                    throw new IllegalArgumentException();
+                                    // There shouldn't be a second entry
+                                    if (requestTracing.length == 2) {
+                                        throw new IllegalArgumentException();
+                                    }
                                 }
-                            } // If the first entry is a String
-                            else if (requestTracing[0].matches("\\D+")) {
-                                String parsedUnit = parseRequestTracingUnit(requestTracing[0]);
-                                try {
-                                    TimeUnit.valueOf(parsedUnit.toUpperCase());
-                                    requestTracingThresholdUnit = parsedUnit.toUpperCase();
-                                } catch (IllegalArgumentException e) {
-                                    LOGGER.log(Level.WARNING, "{0} is not a valid request "
-                                            + "tracing threshold unit", requestTracing[0]);
-                                    throw e;
-                                }
-                                // There shouldn't be a second entry
-                                if (requestTracing.length == 2) {
-                                    throw new IllegalArgumentException();
-                                }
+                            } else {
+                                throw new IllegalArgumentException();
                             }
-                        } else {
-                            throw new IllegalArgumentException();
                         }
                         break;
                     case requesttracingthresholdunit:
@@ -1403,7 +1405,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                     deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
                             "true", "--contextroot",
-                            contextRoot, "--name", file.getName(), "--force=true");
+                            contextRoot, "--name", file.getName(), "--force","true");
                     deploymentCount++;
                 }
             } catch (IOException ioe) {
@@ -1544,7 +1546,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.virtual-server.server.access-log=" + userAccessLogDirectory));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.virtual-server.server.access-logging-enabled=true"));
             if (enableAccessLogFormat) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.ttp-service.access-log.format=" + accessLogFormat));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.access-log.format=" + accessLogFormat));
             }
         }
     }
@@ -1647,6 +1649,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private void configurePhoneHome() {
         if (disablePhoneHome == true) {
+            LOGGER.info("Disabled Phone Home");
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.phone-home-runtime-configuration.enabled=false"));
         }
     }
