@@ -1221,12 +1221,8 @@ public abstract class PersistentManagerBase
         } catch (ClassNotFoundException | ClassCastException e) {
             String msg = MessageFormat.format(rb.getString(DESERILIZING_SESSION_EXCEPTION),
                                               new Object[] {id, e});
-            if(e instanceof ClassCastException) {
-                log.warning(msg);
-                return null;
-            }
-            log.log(Level.SEVERE, msg);
-            throw new IllegalStateException(msg);
+            log.log(Level.WARNING, msg);
+            return null;
         }
 
         if (session == null)
