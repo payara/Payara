@@ -59,7 +59,7 @@ import java.util.logging.Logger;
 @PerLookup
 @I18n("requesttracing.configure.notifier")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "requesttracing-configure-notifier",
             description = "Enables/Disables Notifier Specified With Name")

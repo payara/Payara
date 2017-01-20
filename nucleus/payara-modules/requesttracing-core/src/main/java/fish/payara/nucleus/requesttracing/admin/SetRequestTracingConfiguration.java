@@ -22,6 +22,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+
+import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -52,7 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @I18n("set.requesttracing.configuration")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "set-requesttracing-configuration",
             description = "Set Request Tracing Services Configuration")

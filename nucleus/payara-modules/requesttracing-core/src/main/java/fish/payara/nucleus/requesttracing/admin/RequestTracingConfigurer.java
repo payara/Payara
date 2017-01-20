@@ -57,7 +57,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 @PerLookup
 @I18n("requesttracing.configure")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "requesttracing-configure",
             description = "Enables/Disables Request Tracing Service")
