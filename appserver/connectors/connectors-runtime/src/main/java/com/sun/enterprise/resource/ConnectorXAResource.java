@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource;
 
@@ -119,12 +120,12 @@ public class ConnectorXAResource implements XAResource {
 
     public void commit(Xid xid, boolean onePhase) throws XAException {
         try {
-            ResourceHandle handle = getResourceHandle();
+            ResourceHandle handle = getResourceHandleAndBeginTxIfNeeded();
             ManagedConnection mc = (ManagedConnection) handle.getResource();
             mc.getLocalTransaction().commit();
         } catch (Exception ex) {
             handleResourceException(ex);
-        }finally{
+        } finally{
             resetAssociation();
             resetAssociatedTransaction();
         }
@@ -133,7 +134,7 @@ public class ConnectorXAResource implements XAResource {
 
     public void start(Xid xid, int flags) throws XAException {
         try {
-            ResourceHandle handle = getResourceHandle();
+            ResourceHandle handle = getResourceHandleAndBeginTxIfNeeded();
             if (!localHandle_.equals(handle)) {
                 ManagedConnection mc = (ManagedConnection) handle.getResource();
                 mc.associateConnection(userHandle);
@@ -156,7 +157,7 @@ public class ConnectorXAResource implements XAResource {
             _logger.log(Level.FINE, "connection_sharing_end");
         }
         try {
-            ResourceHandle handleInTransaction = getResourceHandle();
+            ResourceHandle handleInTransaction = getResourceHandleAndBeginTxIfNeeded();
             if (!localHandle_.equals(handleInTransaction)) {
                 LocalTxConnectionEventListener l = (LocalTxConnectionEventListener) handleInTransaction.getListener();
 
@@ -208,7 +209,7 @@ public class ConnectorXAResource implements XAResource {
     
     public void rollback(Xid xid) throws XAException {
         try {
-	    ResourceHandle handle = getResourceHandle();
+	    ResourceHandle handle = getResourceHandleAndBeginTxIfNeeded();
 	    ManagedConnection mc = (ManagedConnection) handle.getResource();
             mc.getLocalTransaction().rollback();
         } catch (Exception ex) {
@@ -227,7 +228,15 @@ public class ConnectorXAResource implements XAResource {
         listenerTable.remove(mc);
     }
 
-    private ResourceHandle getResourceHandle() throws PoolingException {
+    private ResourceHandle getResourceHandleAndBeginTxIfNeeded() throws PoolingException {
+        return getResourceHandle(true);
+    }
+
+    private ResourceHandle getResourceHandleForFinalize() throws PoolingException {
+        return getResourceHandle(false);
+    }
+
+    private ResourceHandle getResourceHandle(boolean beginTxIfNeeded) throws PoolingException {
         try {
             ResourceHandle h = null;
             JavaEETransaction j2eetran = getCurrentTransaction();
@@ -237,13 +246,13 @@ public class ConnectorXAResource implements XAResource {
                 h = (ResourceHandle)j2eetran.getNonXAResource();
             //make sure that if local-tx resource is set as 'unshareable', only one resource
             //can be acquired. If the resource in question is not the one in transaction, fail
-            if(!localHandle_.isShareable()){
+            if (!localHandle_.isShareable()){
                    if(h != localHandle_){
                         throw new ResourceAllocationException("Cannot use more than one local-tx resource in unshareable scope");
                     }
                 }
             }
-            if (h.getResourceState().isUnenlisted()) {
+            if (beginTxIfNeeded && h.getResourceState().isUnenlisted()) {
                 ManagedConnection mc = (ManagedConnection) h.getResource();
                 // begin the local transaction if first time
                 // this ManagedConnection is used in this JTA transaction
@@ -263,7 +272,7 @@ public class ConnectorXAResource implements XAResource {
 
     private void resetAssociation() throws XAException{
         try {
-        ResourceHandle handle = getResourceHandle();
+            ResourceHandle handle = getResourceHandleForFinalize();
 
             LocalTxConnectionEventListener l = (LocalTxConnectionEventListener)handle.getListener();
             //Get all associated Handles and reset their ManagedConnection association.
