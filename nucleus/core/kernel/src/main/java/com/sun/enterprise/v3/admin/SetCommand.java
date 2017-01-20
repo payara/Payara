@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -370,7 +371,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                     ConfigSupport.createAndSet((ConfigBean) parentNode, Property.class, attributes);
                     success(context, targetName, value);
                     runLegacyChecks(context);
-                    if (targetService.isThisDAS() && !replicateSetCommand(context, targetName, value))
+                    if (targetService.isThisDAS() && !replicateSetCommand(context, target, value))
                         return false;
                     return true;
                 } catch (TransactionFailure transactionFailure) {
@@ -495,7 +496,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
             return false;
         }
-        if (targetService.isThisDAS() && !replicateSetCommand(context, targetName, value))
+        if (targetService.isThisDAS() && !replicateSetCommand(context, target, value))
             return false;
         return true;
     }
