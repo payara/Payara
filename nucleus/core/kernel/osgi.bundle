@@ -48,6 +48,8 @@
                         com.sun.enterprise.v3.common; \
                         com.sun.enterprise.v3.server; \
                         com.sun.enterprise.v3.services.impl; \
+                        com.sun.enterprise.v3.services.impl.monitor; \
+                        com.sun.enterprise.v3.services.impl.monitor.stats; \
                         org.glassfish.kernel.embedded; \
                         org.glassfish.kernel.event; version=${project.osgi.version}
 
