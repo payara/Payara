@@ -79,11 +79,5 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
-            <artifactId>payara-micro-boot</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
     </dependencies>
 </project>

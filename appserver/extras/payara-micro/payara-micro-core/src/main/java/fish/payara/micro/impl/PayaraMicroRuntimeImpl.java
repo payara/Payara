@@ -202,7 +202,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         }
         return result;
     }
-*/    
+    
     /**
      * Runs a Callable object on specified members of the Payara Micro Cluster
      * Functionally equivalent to the run method on ClusterCommandRunner passing in
@@ -359,7 +359,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
     public void removeCDIEventListener(CDIEventListener listener) {
         this.instanceService.removeCDIListener(listener);
     }
-*/
+
     private void checkState() {
         try {
             if (!(runtime.getStatus().equals(Status.STARTED))) {
