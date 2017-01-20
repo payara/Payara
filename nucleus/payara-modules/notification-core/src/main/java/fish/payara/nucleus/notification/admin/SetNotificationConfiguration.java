@@ -9,6 +9,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
 import javax.inject.Inject;
+
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -39,7 +41,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @I18n("set.notification.configuration")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = NotificationServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "set-notification-configuration",
             description = "Set notification Services Configuration")
