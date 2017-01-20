@@ -39,7 +39,7 @@
 package fish.payara.nucleus.healthcheck.admin.notifier;
 
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.EmailNotifier;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
@@ -60,7 +60,7 @@ import java.beans.PropertyVetoException;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
+        @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
                 path = "healthcheck-email-notifier-configure",
                 description = "Configures Email Notifier for HealthCheck Service")

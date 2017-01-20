@@ -39,11 +39,12 @@
 package fish.payara.nucleus.healthcheck.admin.notifier;
 
 
-
-import com.sun.enterprise.config.serverbeans.Domain;
-import fish.payara.nucleus.healthcheck.admin.notifier.BaseHealthCheckNotifierConfigurer;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.notification.log.LogNotifier;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -59,7 +60,7 @@ import java.beans.PropertyVetoException;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
+        @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
                 path = "healthcheck-log-notifier-configure",
                 description = "Configures Log Notifier for HealthCheck Service")

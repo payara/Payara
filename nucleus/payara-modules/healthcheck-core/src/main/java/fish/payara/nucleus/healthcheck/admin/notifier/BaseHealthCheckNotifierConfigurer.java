@@ -64,7 +64,7 @@ import java.util.logging.Logger;
 /**
  * @author mertcaliskan
  */
-public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier>  implements AdminCommand {
+public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> implements AdminCommand {
 
     @Inject
     protected Target targetUtil;
