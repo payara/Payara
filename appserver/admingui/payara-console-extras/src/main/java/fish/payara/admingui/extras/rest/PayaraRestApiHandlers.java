@@ -103,7 +103,9 @@ public class PayaraRestApiHandlers
     @Handler(id = "py.sendAsadminCommandToSelectedInstances", input = {
                 @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
                 @HandlerInput(name = "rows", type = List.class, required = true),
-                @HandlerInput(name = "command", type = String.class, required = true),
+                @HandlerInput(name = "command", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = "result", type = String.class)
             })
     public static void sendAsadminCommandToSelectedInstances(HandlerContext handlerCtx) {
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
@@ -151,6 +153,7 @@ public class PayaraRestApiHandlers
                 attrsMap.put("explicitTarget", ipAddress + ":" + hazelcastPort + ":" + instanceName);
                 attrsMap.put("command", command);
                 attrsMap.put("id", parameters);
+                attrsMap.put("logOutput", "true");
 
                 try{
                     RestUtil.restRequest(endpoint, attrsMap, "POST", handlerCtx, false, true);

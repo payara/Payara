@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
@@ -57,7 +58,6 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
-import org.jboss.logging.Logger;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -77,7 +77,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
 
     public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";    
     
-    private static final Logger logger = Logger.getLogger(PayaraInstance.class);
+    private static final Logger logger = Logger.getLogger(PayaraInstance.class.getName());
 
     @Inject
     private PayaraCluster cluster;
@@ -386,7 +386,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }  
         } catch (UnknownHostException ex) {
-            java.util.logging.Logger.getLogger(PayaraInstance.class.getName()).log(Level.SEVERE, 
+            logger.log(Level.SEVERE, 
                     "Could not find local hostname", ex);
         }
     }
