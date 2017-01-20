@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -386,8 +386,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }  
         } catch (UnknownHostException ex) {
-            logger.log(Level.SEVERE, 
-                    "Could not find local hostname", ex);
+            logger.log(Level.SEVERE, "Could not find local hostname", ex);
         }
     }
     

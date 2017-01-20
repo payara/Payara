@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -130,13 +130,20 @@ public class SendAsadminCommand implements AdminCommand
                         switch (commandResult.getExitStatus())
                         {
                             case SUCCESS:
+                                // Only get the success messages if we've asked for them
                                 if (verbose || logOutput) {
-                                    String output = commandResult.getOutput();
-                                    String[] outputComponents = output.split(commandResult.getExitStatus().name());
+                                    // We only want to get the message, not the formatter name or exit code
+                                    String rawOutput = commandResult.getOutput();
+                                    String[] outputComponents = rawOutput.split(commandResult.getExitStatus().name());
+                                    String output = outputComponents.length > 1 ? outputComponents[1] : rawOutput;
+                                    
+                                    // Box the name and add it to the output to help split up the individual responses, 
+                                    // since the success messages don't inherently provide information about what instance 
+                                    // the command was run on
+                                    String boxedInstanceName = boxInstanceName(output);
                                     successMessages.add("\n" 
-                                            + boxInstanceName(
-                                                    targetInstanceDescriptors.get(result.getKey()).getInstanceName())
-                                            + "\n" + (outputComponents.length > 1 ? outputComponents[1] : output));
+                                            + targetInstanceDescriptors.get(result.getKey()).getInstanceName() + "\n" 
+                                            + boxedInstanceName);
                                 }
                                 
                                 break;
@@ -168,16 +175,22 @@ public class SendAsadminCommand implements AdminCommand
                 switch (actionReport.getActionExitCode()) {
                     case SUCCESS:
                         actionReport.setMessage("Command executed successfully");
+                        
+                        // Skip if neither verbose or logOutput were selected
                         if (verbose || logOutput) {
                             String output = "";
+                            
+                            // Combine the success messages into one String
                             for (String successMessage : successMessages) {
                                 output += "\n" + successMessage;
                             }
                             
+                            // Only print out the messages if verbose was chosen
                             if (verbose) {
                                 actionReport.setMessage(output);
                             }
 
+                            // Only log the messages if logOutput was chosen
                             if (logOutput) {
                                 Logger.getLogger(SendAsadminCommand.class.getName()).log(Level.INFO, output);
                             }
@@ -207,6 +220,11 @@ public class SendAsadminCommand implements AdminCommand
         }
     }
 
+    /**
+     * Surrounds the provided instance name with a box to help dientify log outputs.
+     * @param instanceName The instance name to be boxed
+     * @return A String containing the boxed instance name
+     */
     private String boxInstanceName(String instanceName) {
         String paddedInstanceName = "";
         final int boxSize = instanceName.length() + 6;
@@ -260,7 +278,7 @@ public class SendAsadminCommand implements AdminCommand
     /**
      * Gets the GUIDs of the instances in the cluster that match the targets specified by the --targets option
      * @param targets The targets to match
-     * @return A list containing the GUIDS of all matching instances
+     * @return A map of the target instance GUIDs and their respective InstanceDescriptors
      */
     private Map<String, InstanceDescriptor> getTargetInstanceDescriptors(String targets) {
         Map<String, InstanceDescriptor> targetInstanceDescriptors = new HashMap<>();
@@ -350,7 +368,7 @@ public class SendAsadminCommand implements AdminCommand
     /**
      * Gets the GUIDs of the instances in the cluster that match the targets specified by the --explicitTarget option
      * @param explicitTargets The explicit targets
-     * @return A list containing the GUIDs of the matched targets
+     * @return A map of the target instance GUIDs and their respective InstanceDescriptors
      */
     private Map<String, InstanceDescriptor> getExplicitTargetInstanceDescriptors(String[] explicitTargets) {
         Map<String, InstanceDescriptor> targetInstanceDescriptors = new HashMap<>();
