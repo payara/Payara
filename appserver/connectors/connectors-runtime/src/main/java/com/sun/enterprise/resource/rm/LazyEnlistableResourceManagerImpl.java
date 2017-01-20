@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource.rm;
 
@@ -150,14 +149,14 @@ public class LazyEnlistableResourceManagerImpl extends ResourceManagerImpl {
                     h.setEnlistmentSuspended(true);
             } catch( Exception e ) {
                 //In the rare cases where enlistResource throws exception, we
-    	        //should report the resource to the pool as bad
+    	        //should return the resource to the pool
                     PoolManager mgr = ConnectorRuntime.getRuntime().getPoolManager();
-    	            mgr.putbackBadResourceToPool(h);
+    	            mgr.putbackDirectToPool( h, h.getResourceSpec().getPoolInfo());
                     _logger.log(Level.WARNING,
                                 "poolmgr.err_enlisting_res_in_getconn", h
                                 .getResourceSpec().getPoolInfo());
     	        if (_logger.isLoggable(Level.FINE) ) {
-    	            _logger.fine("rm.enlistResource threw Exception. Evicting resource from pool");
+    	            _logger.fine("rm.enlistResource threw Exception. Returning resource to pool");
     	        }
     	        //and rethrow the exception
     	        throw new ResourceException( e );
