@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 /*
  * ModifiedAttributeHASession.java
@@ -50,6 +51,7 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.util.Enumerator;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,7 +65,7 @@ public class ModifiedAttributeHASession extends BaseHASession {
     
     private static final Logger _logger = HAStoreBase._logger;
 
-    private transient Map<String, SessionAttributeState> _attributeStates = new HashMap<String, SessionAttributeState>();
+    private transient Map<String, SessionAttributeState> _attributeStates = new ConcurrentHashMap<>();
     private transient boolean _dirtyFlag = false;
     
     
@@ -145,7 +147,7 @@ public class ModifiedAttributeHASession extends BaseHASession {
      */     
     void clearAttributeStates() {
         if(_attributeStates == null) {
-            _attributeStates = new HashMap<String, SessionAttributeState>();
+            _attributeStates = new ConcurrentHashMap<>();
         }
         _attributeStates.clear();
     }
