@@ -40,6 +40,7 @@
 package fish.payara.notification.hipchat;
 
 import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.notification.configuration.HipchatNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;

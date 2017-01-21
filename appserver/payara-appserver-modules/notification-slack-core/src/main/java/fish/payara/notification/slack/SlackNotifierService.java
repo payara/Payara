@@ -41,6 +41,7 @@ package fish.payara.notification.slack;
 
 import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.configuration.SlackNotifier;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventTypes;

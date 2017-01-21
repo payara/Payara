@@ -40,6 +40,7 @@
 package fish.payara.notification.snmp;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.configuration.SnmpNotifier;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import org.glassfish.api.StartupRunLevel;

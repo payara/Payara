@@ -67,6 +67,9 @@ public class RequestTracingExecutionOptions {
     public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
         getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
     }
+    public void resetNotifierExecutionOptions() {
+        getNotifierExecutionOptionsList().clear();
+    }
 
     public boolean isEnabled() {
         return enabled;
