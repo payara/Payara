@@ -42,6 +42,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.requesttracing.HistoricRequestEventStore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.domain.HistoricRequestEvent;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
 import org.glassfish.api.ActionReport;
@@ -66,7 +67,7 @@ import javax.inject.Inject;
 @PerLookup
 @I18n("requesttracing.configure")
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
+        @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
                 path = "list-historic-requesttraces",
                 description = "List slowest request traces stored historically.")

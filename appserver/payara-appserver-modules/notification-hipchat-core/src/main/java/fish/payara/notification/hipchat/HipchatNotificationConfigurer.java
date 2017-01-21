@@ -36,43 +36,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.hipchat;
 
-import com.google.common.collect.EvictingQueue;
-import fish.payara.nucleus.notification.NotificationService;
-import org.jvnet.hk2.annotations.Contract;
+import com.google.common.base.Strings;
+import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import java.util.Queue;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-@Contract
-public abstract class MessageQueue<M extends Message> {
+@Service(name = "notification-hipchat-configure")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "notification-hipchat-configure",
+                description = "Configures Hipchat Notification Service")
+})
+public class HipchatNotificationConfigurer extends BaseNotificationConfigurer<HipchatNotifierConfiguration, HipchatNotifierService> {
 
-    @Inject
-    private NotificationService notificationService;
+    @Param(name = "roomName")
+    private String roomName;
 
-    private Queue<M> messageQueue = EvictingQueue.create(200);
+    @Param(name = "token")
+    private String token;
 
-    public synchronized void addMessage(M message) {
-        messageQueue.add(message);
-    }
+    protected void applyValues(HipchatNotifierConfiguration configuration) throws PropertyVetoException {
+        if(this.enabled != null) {
+            configuration.enabled(this.enabled);
+        }
 
-    public synchronized M getMessage() {
-        return messageQueue.remove();
-    }
+        if(!Strings.isNullOrEmpty(roomName)) {
+            configuration.setRoomName(roomName);
+        }
 
-    public synchronized int size() {
-        return messageQueue.size();
-    }
-
-    public void resetQueue() {
-        messageQueue.clear();
-    }
-
-    protected NotificationService getNotificationService() {
-        return notificationService;
+        if(!Strings.isNullOrEmpty(token)) {
+            configuration.setToken(token);
+        }
     }
 }

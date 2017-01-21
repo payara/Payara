@@ -43,14 +43,12 @@ import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.Queue;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -71,64 +69,70 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
 
     private static final Logger logger = Logger.getLogger(JmsNotifierService.class.getCanonicalName());
 
+    private JmsNotifierConfigurationExecutionOptions executionOptions;
+
     JmsNotifierService() {
         super("jms-message-consumer-");
     }
 
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.JMS, JmsNotifier.class, JmsNotifierConfiguration.class, this);
+    @Override
+    public void bootstrap() {
+        register(NotifierType.JMS, JmsNotifier.class, JmsNotifierConfiguration.class, this);
 
-            try {
-                JmsNotifierConfigurationExecutionOptions executionOptions =
-                        (JmsNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+        try {
+            executionOptions = (JmsNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-                if (executionOptions != null) {
-                    initializeExecutor();
+            if (executionOptions != null) {
+                initializeExecutor();
 
-                    final Properties env = new Properties();
-                    if (!Strings.isNullOrEmpty(executionOptions.getContextFactoryClass())) {
-                        env.put(Context.INITIAL_CONTEXT_FACTORY, executionOptions.getContextFactoryClass());
+                final Properties env = new Properties();
+                if (!Strings.isNullOrEmpty(executionOptions.getContextFactoryClass())) {
+                    env.put(Context.INITIAL_CONTEXT_FACTORY, executionOptions.getContextFactoryClass());
+                }
+                if (!Strings.isNullOrEmpty(executionOptions.getUrl())) {
+                    env.put(Context.PROVIDER_URL, executionOptions.getUrl());
+                }
+                if (!Strings.isNullOrEmpty(executionOptions.getUsername())) {
+                    env.put(Context.SECURITY_PRINCIPAL, executionOptions.getUsername());
+                }
+                if (!Strings.isNullOrEmpty(executionOptions.getPassword())) {
+                    env.put(Context.SECURITY_CREDENTIALS, executionOptions.getPassword());
+                }
+                if (!Strings.isNullOrEmpty(executionOptions.getConnectionFactoryName())) {
+                    try {
+                        InitialContext ctx = new InitialContext(env);
+                        ConnectionFactory connectionFactory =
+                                (ConnectionFactory) ctx.lookup(executionOptions.getConnectionFactoryName());
+                        Connection connection = connectionFactory.createConnection();
+                        scheduleExecutor(new JmsNotificationRunnable(queue, executionOptions, connection));
                     }
-                    if (!Strings.isNullOrEmpty(executionOptions.getUrl())) {
-                        env.put(Context.PROVIDER_URL, executionOptions.getUrl());
-                    }
-                    if (!Strings.isNullOrEmpty(executionOptions.getUsername())) {
-                        env.put(Context.SECURITY_PRINCIPAL, executionOptions.getUsername());
-                    }
-                    if (!Strings.isNullOrEmpty(executionOptions.getPassword())) {
-                        env.put(Context.SECURITY_CREDENTIALS, executionOptions.getPassword());
-                    }
-
-                    if (!Strings.isNullOrEmpty(executionOptions.getConnectionFactoryName())) {
-                        try {
-                            InitialContext ctx = new InitialContext(env);
-                            ConnectionFactory connectionFactory =
-                                    (ConnectionFactory) ctx.lookup(executionOptions.getConnectionFactoryName());
-                            Connection connection = connectionFactory.createConnection();
-                            scheduleExecutor(new JmsNotificationRunnable(queue, executionOptions, connection));
-                        }
-                        catch (NoInitialContextException e) {
-                            if (e.getRootCause() instanceof ClassNotFoundException) {
-                                logger.log(Level.SEVERE, "Context factory class cannot be found on classpath: " + executionOptions.getContextFactoryClass());
-                            }
+                    catch (NoInitialContextException e) {
+                        if (e.getRootCause() instanceof ClassNotFoundException) {
+                            logger.log(Level.SEVERE, "Context factory class cannot be found on classpath: " + executionOptions.getContextFactoryClass());
                         }
                     }
                 }
             }
-            catch (NamingException e) {
-                logger.log(Level.SEVERE, "Cannot lookup JMS resources", e);
-            } catch (JMSException e) {
-                logger.log(Level.SEVERE, "Cannot create JMS connection", e);
-
-            }
         }
+        catch (NamingException e) {
+            logger.log(Level.SEVERE, "Cannot lookup JMS resources", e);
+        } catch (JMSException e) {
+            logger.log(Level.SEVERE, "Cannot create JMS connection", e);
+
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        super.reset();
     }
 
     @Override
     @Subscribe
     public void handleNotification(JmsNotificationEvent event) {
-        JmsMessage message = new JmsMessage(event.getUserMessage() + "\n" + event.getMessage());
-        queue.addMessage(message);
+        if (executionOptions.isEnabled()) {
+            JmsMessage message = new JmsMessage(event.getUserMessage() + "\n" + event.getMessage());
+            queue.addMessage(message);
+        }
     }
 }

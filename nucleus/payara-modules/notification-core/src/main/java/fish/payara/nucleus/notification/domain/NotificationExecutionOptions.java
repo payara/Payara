@@ -52,8 +52,14 @@ public class NotificationExecutionOptions {
 
     public boolean isNotifierServiceEnabled(NotifierType notifierType) {
         NotifierConfigurationExecutionOptions executionOptions = notifierConfigurationExecutionOptionsList.get(notifierType);
-        return executionOptions != null && executionOptions.isEnabled();
+        return isNotifierServiceDefined(notifierType) && executionOptions.isEnabled();
     }
+
+    public boolean isNotifierServiceDefined(NotifierType notifierType) {
+        NotifierConfigurationExecutionOptions executionOptions = notifierConfigurationExecutionOptionsList.get(notifierType);
+        return executionOptions != null;
+    }
+
 
     @Override
     public String toString() {

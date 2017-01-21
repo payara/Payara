@@ -63,7 +63,7 @@ import java.util.logging.Logger;
 @PerLookup
 @I18n("notification.configure.notifier")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = NotificationServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "notification-configure-notifier",
             description = "Enables/Disables Notifier Specified With Name")
