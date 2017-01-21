@@ -131,7 +131,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean enableAccessLogFormat = false;
     private boolean logPropertiesFile = false;
     private String userLogPropertiesFile = "";
-    private int autoBindRange = 5;
+    private int autoBindRange = 50;
     private String bootImage = "MICRO-INF/domain/boot.txt";
     private String applicationDomainXml;
     private boolean enableHealthCheck = false;
