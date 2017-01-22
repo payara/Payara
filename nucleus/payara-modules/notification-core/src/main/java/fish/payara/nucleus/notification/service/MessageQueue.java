@@ -68,6 +68,10 @@ public abstract class MessageQueue<M extends Message> {
         return messageQueue.size();
     }
 
+    public void resetQueue() {
+        messageQueue.clear();
+    }
+
     protected NotificationService getNotificationService() {
         return notificationService;
     }

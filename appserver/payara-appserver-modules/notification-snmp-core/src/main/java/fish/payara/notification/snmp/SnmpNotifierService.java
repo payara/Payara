@@ -42,6 +42,7 @@ package fish.payara.notification.snmp;
 import com.google.common.eventbus.Subscribe;
 import fish.payara.notification.snmp.exception.InvalidSnmpVersion;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.configuration.SnmpNotifier;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventTypes;
@@ -57,6 +58,7 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.snmp4j.util.DefaultPDUFactory;
 
 import java.io.IOException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,46 +78,58 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
     private static final String version1  = "v1";
     private static final String version2c = "v2c";
     private Snmp snmp;
+    private SnmpNotifierConfigurationExecutionOptions execOptions;
 
     SnmpNotifierService() {
         super("snmp-message-consumer-");
     }
 
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.SNMP, SnmpNotifier.class, SnmpNotifierConfiguration.class, this);
-            SnmpNotifierConfigurationExecutionOptions execOptions = (SnmpNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+    @Override
+    @Subscribe
+    public void handleNotification(SnmpNotificationEvent event) {
+        if (execOptions.isEnabled()) {
+            SnmpMessage message = new SnmpMessage(event.getUserMessage() + "\n" + event.getMessage());
+            queue.addMessage(message);
+        }
+    }
 
-            if (execOptions != null) {
-                try {
-                    TransportMapping transport = new DefaultUdpTransportMapping();
-                    snmp = new Snmp(transport);
-                    CommunityTarget cTarget = new CommunityTarget();
+    @Override
+    public void bootstrap() {
+        register(NotifierType.SNMP, SnmpNotifier.class, SnmpNotifierConfiguration.class, this);
+        execOptions = (SnmpNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-                    cTarget.setCommunity(new OctetString(execOptions.getCommunity()));
-                    int snmpVersion = decideOnSnmpVersion(execOptions.getVersion());
-                    cTarget.setVersion(snmpVersion);
-                    cTarget.setAddress(new UdpAddress(execOptions.getHost() + ADDRESS_SEPARATOR + execOptions.getPort()));
+        if (execOptions != null) {
+            try {
+                TransportMapping transport = new DefaultUdpTransportMapping();
+                snmp = new Snmp(transport);
+                CommunityTarget cTarget = new CommunityTarget();
 
-                    initializeExecutor();
-                    scheduleExecutor(new SnmpNotificationRunnable(queue, execOptions, snmp, cTarget, snmpVersion));
-                }
-                catch (IOException e) {
-                    logger.log(Level.SEVERE, "Error occurred while creating UDP transport", e);
-                }
-                catch (InvalidSnmpVersion invalidSnmpVersion) {
-                    logger.log(Level.SEVERE, "Error occurred while configuring SNMP version: " + invalidSnmpVersion.getMessage());
-                }
+                cTarget.setCommunity(new OctetString(execOptions.getCommunity()));
+                int snmpVersion = decideOnSnmpVersion(execOptions.getVersion());
+                cTarget.setVersion(snmpVersion);
+                cTarget.setAddress(new UdpAddress(execOptions.getHost() + ADDRESS_SEPARATOR + execOptions.getPort()));
+
+                initializeExecutor();
+                scheduledFuture = scheduleExecutor(new SnmpNotificationRunnable(queue, execOptions, snmp, cTarget, snmpVersion));
+            }
+            catch (IOException e) {
+                logger.log(Level.SEVERE, "Error occurred while creating UDP transport", e);
+            }
+            catch (InvalidSnmpVersion invalidSnmpVersion) {
+                logger.log(Level.SEVERE, "Error occurred while configuring SNMP version: " + invalidSnmpVersion.getMessage());
             }
         }
-        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
-            if (snmp != null) {
-                try {
-                    snmp.close();
-                }
-                catch (IOException e) {
-                    logger.log(Level.SEVERE, "Error occurred while closing SNMP connection", e);
-                }
+    }
+
+    @Override
+    public void shutdown() {
+        super.reset();
+        if (snmp != null) {
+            try {
+                snmp.close();
+            }
+            catch (IOException e) {
+                logger.log(Level.SEVERE, "Error occurred while closing SNMP connection", e);
             }
         }
     }
@@ -129,12 +143,5 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
             default:
                 throw new InvalidSnmpVersion(version);
         }
-    }
-
-    @Override
-    @Subscribe
-    public void handleNotification(SnmpNotificationEvent event) {
-        SnmpMessage message = new SnmpMessage(event.getUserMessage() + "\n" + event.getMessage());
-        queue.addMessage(message);
     }
 }

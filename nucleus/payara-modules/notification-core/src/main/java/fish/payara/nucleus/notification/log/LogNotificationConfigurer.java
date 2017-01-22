@@ -36,20 +36,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.xmpp;
+package fish.payara.nucleus.notification.log;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Configured;
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.beans.PropertyVetoException;
 
 /**
- * Configuration class for attaching XMPP notification mechanism into.
- * Health check and Request tracing services enables the use of XMPP notification mechanism with this notifier configuration.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.XMPP)
-public interface XmppNotifier extends Notifier {
+@Service(name = "notification-log-configure")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@I18n("notification.log.configure")
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "notification-log-configure",
+                description = "Configures Log Notification Service")
+})
+public class LogNotificationConfigurer extends BaseNotificationConfigurer<LogNotifierConfiguration, LogNotifierService> implements AdminCommand {
+
+    @Override
+    public void execute(AdminCommandContext context) {
+        super.execute(context);
+    }
+
+    protected void applyValues(LogNotifierConfiguration configuration) throws PropertyVetoException {
+        if(this.enabled != null) {
+            configuration.enabled(this.enabled);
+        }
+    }
 }

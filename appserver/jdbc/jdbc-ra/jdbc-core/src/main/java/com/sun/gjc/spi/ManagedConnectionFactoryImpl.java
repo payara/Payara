@@ -345,10 +345,16 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                     + "the connection is null");
         }
         
+        // The timeout defaults to -1, which isn't actually a valid setting for the timeout
+        int statementTimeout = Integer.valueOf(getStatementTimeout());
+        if (statementTimeout == -1) {
+            statementTimeout = 0;
+        }
+        
         try {
             Class validationClass = Thread.currentThread().getContextClassLoader().loadClass(validationClassName);
             ConnectionValidation valClass = (ConnectionValidation) validationClass.newInstance();
-            isValid = valClass.isConnectionValid(con);
+            isValid = valClass.isConnectionValid(con, statementTimeout);
         } catch (Exception e) {
             _logger.log(Level.INFO, "jdbc.exc_custom_validation", validationClassName);
             throw new ResourceException(e);
@@ -437,9 +443,18 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
 
         java.sql.PreparedStatement stmt = null;
         java.sql.ResultSet rs = null;
+        
+        final String statement = "SELECT COUNT(*) FROM " + tableName;
+        int statementTimeout = Integer.valueOf(getStatementTimeout());
+        
+        // The timeout defaults to -1, which isn't actually a valid setting for the timeout
+        if (statementTimeout == -1) {
+            statementTimeout = 0;
+        }
+        
         try {
-            final String statement = "SELECT COUNT(*) FROM " + tableName;
             stmt = con.prepareStatement(statement);
+            stmt.setQueryTimeout(statementTimeout);
             rs = stmt.executeQuery();
         } catch (Exception sqle) {
             _logger.log(Level.INFO, "jdbc.exc_table_validation", tableName);

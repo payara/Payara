@@ -60,7 +60,7 @@ import org.jvnet.hk2.annotations.Service;
 @ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = NotificationServiceConfiguration.class,
             opType = RestEndpoint.OpType.GET,
             path = "get-notification-configuration",
             description = "List Notification Configuration")

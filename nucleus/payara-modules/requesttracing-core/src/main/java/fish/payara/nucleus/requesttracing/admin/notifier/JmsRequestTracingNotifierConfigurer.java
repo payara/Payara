@@ -36,20 +36,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.jms;
+package fish.payara.nucleus.requesttracing.admin.notifier;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Configured;
+
+import fish.payara.nucleus.notification.configuration.JmsNotifier;
+import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.beans.PropertyVetoException;
 
 /**
- * Configuration class for attaching JMS notification mechanism into.
- * Health check and Request tracing services enables the use of JMS notification mechanism with this notifier enabler.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.JMS)
-public interface JmsNotifier extends Notifier {
+@Service(name = "requesttracing-jms-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "requesttracing-jms-notifier-configure",
+                description = "Configures JMS Notifier for RequestTracing Service")
+})
+public class JmsRequestTracingNotifierConfigurer extends BaseRequestTracingNotifierConfigurer<JmsNotifier> {
+
+    @Override
+    protected void applyValues(JmsNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
+    }
 }

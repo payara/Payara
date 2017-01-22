@@ -40,6 +40,7 @@
 package fish.payara.notification.xmpp;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.configuration.XmppNotifier;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import org.glassfish.api.StartupRunLevel;

@@ -39,6 +39,7 @@
  */
 package fish.payara.notification.eventbus;
 
+import fish.payara.nucleus.notification.configuration.EventbusNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;

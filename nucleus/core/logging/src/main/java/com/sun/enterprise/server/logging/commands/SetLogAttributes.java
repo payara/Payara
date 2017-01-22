@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -171,6 +171,11 @@ public class SetLogAttributes implements AdminCommand {
                             try {
                                 validateAttributeValue(att_name, att_value);
                             } catch (Exception e) {
+                                // Add in additional error message information if present
+                                if (e.getMessage() != null) {
+                                    report.setMessage(e.getMessage() + "\n");
+                                }
+                                
                                 break;
                             }
                             m.put(att_name, att_value);
@@ -183,7 +188,7 @@ public class SetLogAttributes implements AdminCommand {
                     }
 
                     if (!vlAttribute) {
-                        report.setMessage(localStrings.getLocalString("set.log.attribute.invalid",
+                        report.appendMessage(localStrings.getLocalString("set.log.attribute.invalid",
                                 "Invalid logging attribute name {0} or value {1}.", att_name, att_value));
                         invalidAttribute = true;
                         break;
@@ -240,12 +245,13 @@ public class SetLogAttributes implements AdminCommand {
         if (attr_name.equals(ROTATION_LIMIT_IN_BYTES)) {
             int rotationSizeLimit = Integer.parseInt(attr_value);
             if (rotationSizeLimit != GFFileHandler.DISABLE_LOG_FILE_ROTATION_VALUE && rotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Value must be greater than " 
+                        + GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE + ".");
             }
         } else if (attr_name.equals(ROTATION_TIMELIMIT_IN_MINUTES)) {
             int rotationTimeLimit = Integer.parseInt(attr_value);
             if (rotationTimeLimit < 0) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Value must be greater than 0.");
             }
         }
     }

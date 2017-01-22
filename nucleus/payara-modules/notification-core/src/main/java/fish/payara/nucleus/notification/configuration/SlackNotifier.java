@@ -36,17 +36,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.email;
+package fish.payara.nucleus.notification.configuration;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
 import org.jvnet.hk2.config.Configured;
 
 /**
+ * Configuration class for attaching slack notification mechanism into.
+ * Health check and Request tracing services enables the use of slack notification mechanism with this notifier configuration.
+ *
  * @author mertcaliskan
  */
 @Configured
-@NotifierConfigurationType(type = NotifierType.EMAIL)
-public interface EmailNotifier extends Notifier {
+@NotifierConfigurationType(type = NotifierType.SLACK)
+public interface SlackNotifier extends Notifier {
 }

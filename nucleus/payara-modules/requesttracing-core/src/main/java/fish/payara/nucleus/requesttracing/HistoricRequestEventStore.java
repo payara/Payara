@@ -38,10 +38,10 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import com.google.common.collect.Sets;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.nucleus.notification.domain.BoundedTreeSet;
 import fish.payara.nucleus.requesttracing.domain.HistoricRequestEvent;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
@@ -50,7 +50,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collections;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Stores historic request traces with descending elapsed time. Comparator is implemented on {@link HistoricRequestEvent}
@@ -81,12 +80,13 @@ public class HistoricRequestEventStore {
             String instanceName = serverEnv.getInstanceName();
             IMap<String, SortedSet<HistoricRequestEvent>> map
                     = instance.getMap(HISTORIC_REQUEST_EVENT_STORE);
-            SortedSet<HistoricRequestEvent> instanceHistoricStore = map.get(instanceName);
-            if (instanceHistoricStore == null) {
-                map.put(instanceName, historicStore);
-            }
-            else {
-                historicStore = instanceHistoricStore;
+            if (map != null) {
+                SortedSet<HistoricRequestEvent> instanceHistoricStore = map.get(instanceName);
+                if (instanceHistoricStore == null) {
+                    map.put(instanceName, historicStore);
+                } else {
+                    historicStore = instanceHistoricStore;
+                }
             }
         }
     }
@@ -98,40 +98,21 @@ public class HistoricRequestEventStore {
     public HistoricRequestEvent[] getTraces() {
         HistoricRequestEvent[] emptyArray = new HistoricRequestEvent[0];
         if (historicStore != null) {
-            return (HistoricRequestEvent[]) historicStore.toArray(emptyArray);
+            return historicStore.toArray(emptyArray);
         }
         return emptyArray;
     }
 
     public HistoricRequestEvent[] getTraces(Integer limit) {
         HistoricRequestEvent[] result;
-        HistoricRequestEvent[] historicRequestEvents = historicStore.toArray(new HistoricRequestEvent[0]);
-        if (limit < historicRequestEvents.length) {
+        HistoricRequestEvent[] historicEvents = historicStore.toArray(new HistoricRequestEvent[historicStore.size()]);
+        if (limit < historicEvents.length) {
             result = new HistoricRequestEvent[limit];
-            System.arraycopy(historicRequestEvents, 0, result, 0, limit);
+            System.arraycopy(historicEvents, 0, result, 0, limit);
         }
         else {
-            result = historicRequestEvents;
+            result = historicEvents;
         }
         return result;
-    }
-}
-
-class BoundedTreeSet<N extends Comparable> extends TreeSet<N> {
-
-    private final int maxSize;
-
-    BoundedTreeSet(int maxSize) {
-        super();
-        this.maxSize = maxSize;
-    }
-
-    public boolean add(N n) {
-        super.add(n);
-
-        if(size() > maxSize) {
-            remove(last());
-        }
-        return true;
     }
 }

@@ -67,7 +67,7 @@ public class NotificationService implements EventListener {
     @Inject
     private NotifierConfigurationExecutionOptionsFactoryStore factoryStore;
 
-    private NotificationExecutionOptions executionOptions = new NotificationExecutionOptions();
+    private NotificationExecutionOptions executionOptions;
 
     @PostConstruct
     void postConstruct() {
@@ -80,8 +80,9 @@ public class NotificationService implements EventListener {
         }
     }
 
-    private void bootstrapNotificationService() {
+    public void bootstrapNotificationService() {
         if (configuration != null) {
+            executionOptions = new NotificationExecutionOptions();
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
 
             for (NotifierConfiguration notifierConfiguration : configuration.getNotifierConfigurationList()) {
@@ -94,13 +95,12 @@ public class NotificationService implements EventListener {
                 } catch (UnsupportedEncodingException e) {
                     logger.log(Level.SEVERE, "Notifier configuration with type " + type
                             + " cannot be configured due to encoding problems in configuration parameters", e);
-                    e.printStackTrace();
                 }
             }
         }
 
         if (executionOptions.isEnabled()) {
-            logger.info("Payara Notification Service Started with configuration: " + executionOptions);
+            logger.info("Payara Notification Service bootstrapped with configuration: " + executionOptions);
         }
     }
 

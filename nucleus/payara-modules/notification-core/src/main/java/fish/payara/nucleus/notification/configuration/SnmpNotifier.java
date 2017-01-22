@@ -36,11 +36,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.snmp;
+package fish.payara.nucleus.notification.configuration;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
 import org.jvnet.hk2.config.Configured;
 
 /**

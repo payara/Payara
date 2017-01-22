@@ -39,6 +39,7 @@
  */
 package fish.payara.notification.email;
 
+import fish.payara.nucleus.notification.configuration.EmailNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
