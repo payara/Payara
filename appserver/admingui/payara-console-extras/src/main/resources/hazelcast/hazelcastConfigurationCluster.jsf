@@ -113,6 +113,9 @@
     <sun:property id="liteProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
         <sun:checkbox id="lite" selected="#{pageSession.valueMap['lite']}" selectedValue="true" />
     </sun:property>
+    <sun:property id="hostawareProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.hostaware}"  helpText="$resource{i18nhc.hazelcast.configuration.hostawareHelp}">
+        <sun:checkbox id="hostaware" selected="#{pageSession.valueMap['hostAwareParitioning']}" selectedValue="true" />
+    </sun:property>
 </sun:propertySheetSection>
 
 <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />

@@ -73,6 +73,11 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "payara/CachingProvider")
     String getCachingProviderJNDIName();
     public void setCachingProviderJNDIName(String value);
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getHostAwareParitioning();
+    public void setHostAwareParitioning(String value);
+
     
     @Attribute(defaultValue = "")
     String getLicenseKey();

@@ -22,6 +22,7 @@ import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.PartitionGroupConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -206,6 +207,12 @@ public class HazelcastCore implements EventListener {
                 }
 
                 // build the configuration
+                if ("true".equals(configuration.getHostAwareParitioning())) {
+                    PartitionGroupConfig partitionGroupConfig = config.getPartitionGroupConfig();
+                    partitionGroupConfig.setEnabled(enabled);
+                    partitionGroupConfig.setGroupType(PartitionGroupConfig.MemberGroupType.HOST_AWARE);
+                }
+                            
                 config.setProperty("hazelcast.jmx", "true");
             }
         } catch (MalformedURLException ex) {
