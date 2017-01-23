@@ -18,8 +18,9 @@ package fish.payara.appserver.micro.services.asadmin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.appserver.micro.services.PayaraInstance;
-import fish.payara.appserver.micro.services.command.ClusterCommandResult;
-import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
+import fish.payara.micro.ClusterCommandResult;
+import fish.payara.micro.data.InstanceDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,9 @@ import org.glassfish.embeddable.CommandResult;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-/**
+/**{
+        this.instanceGroup = instanceGroup;
+    }
  * Sends an asadmin command to members of the Domain Hazelcast Cluster
  * @author Andrew Pielage
  */
@@ -105,17 +108,17 @@ public class SendAsadminCommand implements AdminCommand
             }
             
             // Run the asadmin command against the targets (or all instances if no targets given)          
-            Map<String, Future<ClusterCommandResult>> results = payaraMicro.executeClusteredASAdmin(targetInstanceGuids, 
+            Map<String, Future<ClusterCommandResultImpl>> results = payaraMicro.executeClusteredASAdmin(targetInstanceGuids, 
                     command, parameters);
             
             // Check the command results for any failures
             if (results != null) {
                 List<String> warningMessages = new ArrayList<>();
                 List<String> failureMessages = new ArrayList<>();
-                for (Future<ClusterCommandResult> result : results.values()) {
+                for (Future<ClusterCommandResultImpl> result : results.values()) {
                     try
                     {
-                        CommandResult commandResult = result.get();
+                        ClusterCommandResultImpl commandResult = result.get();
                         switch (commandResult.getExitStatus())
                         {
                             case WARNING:
@@ -172,7 +175,7 @@ public class SendAsadminCommand implements AdminCommand
      * @param commandResult input
      * @return readable error message from command result
      */
-    private String processException(CommandResult commandResult) {
+    private String processException(ClusterCommandResultImpl commandResult) {
         String msg = commandResult.getOutput();
         String[] msgs = msg.split(commandResult.getExitStatus().name());
         return msgs.length > 1? msgs[1] : commandResult.getFailureCause().getMessage();

@@ -17,7 +17,8 @@
  */
 package fish.payara.appserver.micro.services;
 
-import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
+import fish.payara.micro.data.InstanceDescriptor;
 import java.io.Serializable;
 
 /**

@@ -22,7 +22,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
-import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import fish.payara.nucleus.events.HazelcastEvents;
@@ -30,6 +29,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -59,10 +61,7 @@ public class HazelcastCore implements EventListener {
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
     public final static String INSTANCE_GROUP_ATTRIBUTE = "GLASSFISH_INSTANCE_GROUP";
     private static HazelcastCore theCore;
-    
-    private static MulticastConfiguration overrideConfiguration;
 
-    
     private HazelcastInstance theInstance;
 
     private CachingProvider hazelcastCachingProvider;
@@ -75,6 +74,9 @@ public class HazelcastCore implements EventListener {
 
     @Inject
     ServerContext context;
+    
+    @Inject
+    ServerEnvironment env;
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -86,15 +88,27 @@ public class HazelcastCore implements EventListener {
     public static HazelcastCore getCore() {
         return theCore;
     }
-    
-    public static void setMulticastOverride(MulticastConfiguration config){
-        overrideConfiguration = config;
-    }
 
     @PostConstruct
     public void postConstruct() {
         theCore = this;
         events.register(this);
+    }
+    
+    public String getMemberName() {
+        return memberName;
+    }
+    
+    public String getMemberGroup() {
+        return memberGroup;
+    }
+    
+    public String getUUID() {
+        return theInstance.getCluster().getLocalMember().getUuid();
+    }
+    
+    public boolean isLite() {
+        return theInstance.getCluster().getLocalMember().isLiteMember();
     }
 
     public HazelcastInstance getInstance() {
@@ -116,7 +130,7 @@ public class HazelcastCore implements EventListener {
         } else if (event.is(EventTypes.SERVER_READY)) {
             if (enabled) {
                 bindToJNDI();
-            }    
+            }
         } else if (event.is(EventTypes.SERVER_STARTUP)) {
             if ((Boolean.valueOf(configuration.getEnabled()))) {
                 enabled = true;
@@ -149,12 +163,6 @@ public class HazelcastCore implements EventListener {
         String hazelcastFilePath = "";
         URL serverConfigURL;
         try {
-            if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null) {
-                XmlConfigBuilder builder = new XmlConfigBuilder(overrideConfiguration.getAlternateConfigFile().toURL());
-                config = builder.build();
-                config.setClassLoader(clh.getCommonClassLoader());
-                return config;
-            }
             serverConfigURL = new URL(context.getServerConfigURL());
             File serverConfigFile = new File(serverConfigURL.getPath());
             hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
@@ -168,42 +176,19 @@ public class HazelcastCore implements EventListener {
                 config.setClassLoader(clh.getCommonClassLoader());
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
-
-                memberName = context.getInstanceName();
-                memberGroup = context.getConfigBean().getConfigRef();
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 config.getNetworkConfig().setPortAutoIncrement(true);
                 mcConfig.setEnabled(true);                // check Payara micro overrides
-                if (overrideConfiguration != null) {
-                    mcConfig.setMulticastGroup(overrideConfiguration.getMulticastGroup());
-                    mcConfig.setMulticastPort(overrideConfiguration.getMulticastPort());
-                    config.getNetworkConfig().setPort(overrideConfiguration.getStartPort());
-                    if (overrideConfiguration.getMemberName() != null) {
-                        memberName = overrideConfiguration.getMemberName();
-                    }
-                    
-                    if (overrideConfiguration.getMemberGroup() != null) {
-                        memberGroup = overrideConfiguration.getMemberGroup();
-                    }
-                    
-                    config.setLiteMember(overrideConfiguration.isLite());
-                    config.setLicenseKey(overrideConfiguration.getLicenseKey());
-                    // set group config
-                    GroupConfig gc = config.getGroupConfig();
-                    gc.setName(overrideConfiguration.getClusterGroupName());
-                    gc.setPassword(overrideConfiguration.getClusterGroupPassword());
-                    
-                } else {
-                   mcConfig.setMulticastGroup(configuration.getMulticastGroup());
-                   mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
-                   config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
-                   config.setLicenseKey(configuration.getLicenseKey());
-                   config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
-                   // set group config
-                   GroupConfig gc = config.getGroupConfig();
-                   gc.setName(configuration.getClusterGroupName());
-                   gc.setPassword(configuration.getClusterGroupPassword());
-                }
+
+                mcConfig.setMulticastGroup(configuration.getMulticastGroup());
+                mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
+                config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
+                config.setLicenseKey(configuration.getLicenseKey());
+                config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
+                // set group config
+                GroupConfig gc = config.getGroupConfig();
+                gc.setName(configuration.getClusterGroupName());
+                gc.setPassword(configuration.getClusterGroupPassword());
 
                 // build the configuration
                 config.setProperty("hazelcast.jmx", "true");
@@ -228,15 +213,47 @@ public class HazelcastCore implements EventListener {
         }
     }
 
-    private void bootstrapHazelcast() { 
+    private void bootstrapHazelcast() {
         Config config = buildConfiguration();
         theInstance = Hazelcast.newHazelcastInstance(config);
-        if (memberName == null) {
-            memberName = context.getInstanceName();
+        if (env.isMicro()){
+            memberName = configuration.getMemberName();
+            memberGroup = configuration.getMemberGroup();
+            if (Boolean.valueOf(configuration.getGenerateNames())  || memberName == null) {
+                NameGenerator gen = new NameGenerator();
+                memberName = gen.generateName();
+                Set<com.hazelcast.core.Member> clusterMembers = theInstance.getCluster().getMembers();
+
+                // If the instance name was generated, we need to compile a list of all the instance names in use within 
+                // the instance group, excluding this local instance
+                List<String> takenNames = new ArrayList<>();
+                for (com.hazelcast.core.Member member : clusterMembers) {
+                    if (member != theInstance.getCluster().getLocalMember()
+                            && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(
+                                    memberGroup)) {
+                        takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
+                    }
+                }
+
+                // If our generated name is already in use within the instance group, either generate a new one or set the 
+                // name to this instance's UUID if there are no more unique generated options left
+                if (takenNames.contains(memberName)) {
+                    memberName = gen.generateUniqueName(takenNames,
+                            theInstance.getCluster().getLocalMember().getUuid());
+                    theInstance.getCluster().getLocalMember().setStringAttribute(
+                            HazelcastCore.INSTANCE_ATTRIBUTE, memberName);
+                }
+            }                
+        } else { 
+            if (memberName == null) {
+                memberName = context.getInstanceName();
+            }
+            if (memberGroup == null) {
+                memberGroup = context.getConfigBean().getConfigRef();
+            }
         }
-        if (memberGroup == null) {
-            memberGroup = context.getConfigBean().getConfigRef();
-        }
+        
+        
         theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
         theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
         hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
@@ -273,5 +290,8 @@ public class HazelcastCore implements EventListener {
         }
     }
 
+    public int getPort() {
+        return theInstance.getCluster().getLocalMember().getSocketAddress().getPort();
+    }
 
 }
