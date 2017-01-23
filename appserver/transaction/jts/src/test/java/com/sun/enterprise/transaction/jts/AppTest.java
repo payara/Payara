@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.transaction.jts;
 
@@ -68,6 +69,12 @@ import com.sun.enterprise.resource.allocator.ResourceAllocator;
 import com.sun.enterprise.resource.pool.PoolManagerImpl;
 
 import com.sun.logging.LogDomains;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import static junit.framework.Assert.fail;
 
 /**
  * Unit test for simple App.
@@ -1573,6 +1580,84 @@ public class AppTest extends TestCase {
                 assert (false);
             }
         }
+    }
+    
+    public void testCoordinatorDeadlock() {
+        System.out.println("**=================Testing Deadlock ===>");
+        final boolean[] deadlockFlag = new boolean[1];
+        final int DEADLOCK_TIMEOUT = 5;
+        try {
+            t.begin();
+            final Transaction tx = t.getTransaction();
+            TestResource theResource = new TestResource(tx);
+            TestResource theResource1 = new TestResource(tx);
+            final TestResource theResource2 = new TestResource(tx);
+
+            System.out.println("**Registering Synchronization ....");
+            Synchronization sync = new Synchronization() {
+                @Override
+                public void beforeCompletion() {
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    Future future = executor.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                t.enlistResource(tx, new TestResourceHandle(theResource2));
+                                t.delistResource(tx, new TestResourceHandle(theResource2), XAResource.TMSUCCESS);
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                assert (false);
+                            }
+                        }
+                    });
+
+                    try {
+                        future.get(DEADLOCK_TIMEOUT, TimeUnit.SECONDS);
+                    } catch (TimeoutException ex) {
+                        future.cancel(true);
+                        deadlockFlag[0] = true;
+                        throw new AssertionError("Deadlock detected");//rollback transaction
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        assert (false);
+                    } finally {
+                        executor.shutdownNow();
+                    }
+                }
+
+                @Override
+                public void afterCompletion(int status) {
+                }
+            };
+            tx.registerSynchronization(sync);
+
+            t.enlistResource(tx, new TestResourceHandle(theResource));
+            t.enlistResource(tx, new TestResourceHandle(theResource1));
+            t.delistResource(tx, new TestResourceHandle(theResource), XAResource.TMSUCCESS);
+            t.delistResource(tx, new TestResourceHandle(theResource1), XAResource.TMSUCCESS);
+            t.commit();
+
+            String status = JavaEETransactionManagerSimplified.getStatusAsString(tx.getStatus());
+            System.out.println("**Status after commit: " + status + " <===");
+            assert (theResource.prepareStatusOK());
+            assert (theResource1.prepareStatusOK());
+            assert (theResource2.prepareStatusOK());
+            assert (theResource.commitStatusOK());
+            assert (theResource1.commitStatusOK());
+            assert (theResource2.commitStatusOK());
+
+        } catch (RollbackException ex) {
+            System.out.println("**Caught RollbackException <===");
+            if (deadlockFlag[0]) {
+                System.out.println("Deadlock detected");
+                fail("Deadlock detected");
+            }
+            assert (false);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            assert (false);
+        }
+        System.out.println("**=================End Deadlock check ===>");
     }
 
     private UserTransaction createUtx() throws javax.naming.NamingException {

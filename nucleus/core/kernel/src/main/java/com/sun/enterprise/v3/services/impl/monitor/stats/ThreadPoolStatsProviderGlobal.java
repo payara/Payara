@@ -42,12 +42,11 @@
 
 package com.sun.enterprise.v3.services.impl.monitor.stats;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import org.glassfish.external.probe.provider.annotations.ProbeListener;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.statistics.CountStatistic;
+import org.glassfish.external.statistics.annotations.Reset;
 import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
@@ -74,20 +73,11 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
         countThreadsInThreadPools();
         return currentThreadCount;
     }
-
-    @ManagedAttribute(id = "currentthreadsbusy")
-    @Description("Provides the number of request processing threads currently in use in the listener thread pool serving requests.")
-    @Override
-    public CountStatistic getCurrentThreadsBusy() {
-        countThreadsInThreadPools();
-        return currentThreadsBusy;
-    }
     
     @ProbeListener("glassfish:kernel:thread-pool:setMaxThreadsEvent")
     @Override
     public void setMaxThreadsEvent(
             @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
             @ProbeParam("maxNumberOfThreads") int maxNumberOfThreads) {
 
         maxThreadsCount.setCount(maxNumberOfThreads);
@@ -97,20 +87,31 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
     @Override
     public void setCoreThreadsEvent(
             @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
             @ProbeParam("coreNumberOfThreads") int coreNumberOfThreads) {
 
         coreThreadsCount.setCount(coreNumberOfThreads);
     }
-
+    
+    @ProbeListener("glassfish:kernel:thread-pool:threadDispatchedFromPoolEvent")
+    @Override
+    public void threadDispatchedFromPoolEvent(
+            @ProbeParam("monitoringId") String monitoringId,
+            @ProbeParam("threadId") long threadId) {
+        currentThreadsBusy.increment();
+    }
+    
     @ProbeListener("glassfish:kernel:thread-pool:threadReturnedToPoolEvent")
     @Override
     public void threadReturnedToPoolEvent(
             @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
             @ProbeParam("threadId") long threadId) {
 
         totalExecutedTasksCount.increment();
+        
+        // Stop it from decrementing to negative values
+        if (currentThreadsBusy.getCount() > 0) {
+            currentThreadsBusy.decrement();
+        }
     }
     
     /**
@@ -120,28 +121,33 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
     private void countThreadsInThreadPools() {     
         // Set to 0 as we want to reset them
         currentThreadCount.setCount(0);
-        currentThreadsBusy.setCount(0);
         
         // Get all the threads currently in the JVM
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
         
-        // If multiple listeners use the same thread pool, you will get 
-        // duplicate named threads, so we want to filter these out
-        List<String> alreadyCounted = new ArrayList<>();
         for (Thread thread : threads) {
             String threadName = thread.getName();
             for (String threadPoolName : threadPoolNames) {
-                if (thread.isAlive() && threadName.contains(threadPoolName 
-                        + "(") && !alreadyCounted.contains(threadName)) {
-                    alreadyCounted.add(threadName);
-                    currentThreadCount.increment();
-                    if (thread.getState() == Thread.State.RUNNABLE) {
-                        currentThreadsBusy.increment();
-                    }
-                    
+                if (thread.isAlive() && threadName.contains(threadPoolName + "(")) {
+                    currentThreadCount.increment();                   
                     break;
                 }
             }
         }
+    }
+    
+    public void subtractBusyThreads(long busyThreads) {
+        long busyThreadsCount = currentThreadsBusy.getCount() - busyThreads;
+        if (busyThreadsCount > 0) {
+            currentThreadsBusy.setCount(currentThreadsBusy.getCount() - busyThreads);
+        } else {
+            currentThreadsBusy.setCount(0);
+        }
+    }
+    
+    @Reset
+    @Override
+    public void reset() {
+        // Do nothing
     }
 }
