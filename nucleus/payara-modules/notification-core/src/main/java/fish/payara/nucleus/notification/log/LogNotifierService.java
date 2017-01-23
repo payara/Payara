@@ -32,23 +32,32 @@ import java.util.logging.Logger;
 public class LogNotifierService extends BaseNotifierService<LogNotificationEvent, LogNotifier, LogNotifierConfiguration> {
 
     private Logger logger = Logger.getLogger(LogNotifierService.class.getCanonicalName());
+    LogNotifierConfigurationExecutionOptions execOptions;
 
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.LOG, LogNotifier.class, LogNotifierConfiguration.class, this);
-        }
+    @Override
+    public void bootstrap() {
+        register(NotifierType.LOG, LogNotifier.class, LogNotifierConfiguration.class, this);
+
+        execOptions = (LogNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+    }
+
+    @Override
+    public void shutdown() {
+        reset(this);
     }
 
     @Override
     @Subscribe
     public void handleNotification(LogNotificationEvent event) {
-        if (event.getParameters() != null && event.getParameters().length > 0) {
-            String formattedText = MessageFormat.format(event.getMessage(), event.getParameters());
-            logger.log(event.getLevel(), event.getUserMessage() != null ?
-                    event.getUserMessage() + " - " + formattedText : formattedText);
-        } else {
-            logger.log(event.getLevel(), event.getUserMessage() != null ?
-                    event.getUserMessage() + " - " + event.getMessage() : event.getMessage());
+        if (execOptions.isEnabled()) {
+            if (event.getParameters() != null && event.getParameters().length > 0) {
+                String formattedText = MessageFormat.format(event.getMessage(), event.getParameters());
+                logger.log(event.getLevel(), event.getUserMessage() != null ?
+                        event.getUserMessage() + " - " + formattedText : formattedText);
+            } else {
+                logger.log(event.getLevel(), event.getUserMessage() != null ?
+                        event.getUserMessage() + " - " + event.getMessage() : event.getMessage());
+            }
         }
     }
 }

@@ -41,6 +41,7 @@ package fish.payara.notification.slack;
 
 import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.configuration.SlackNotifier;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventTypes;
@@ -57,25 +58,32 @@ public class SlackNotifierService extends QueueBasedNotifierService<SlackNotific
         SlackNotifierConfiguration,
         SlackMessageQueue> {
 
+    private SlackNotifierConfigurationExecutionOptions executionOptions;
+
     SlackNotifierService() {
         super("slack-message-consumer-");
-    }
-
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.SLACK, SlackNotifier.class, SlackNotifierConfiguration.class, this);
-
-            initializeExecutor();
-            scheduleExecutor(new SlackNotificationRunnable(queue,
-                    (SlackNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions()));
-        }
-    }
+}
 
     @Override
     @Subscribe
     public void handleNotification(SlackNotificationEvent event) {
-        SlackMessage message = new SlackMessage(event.getUserMessage() + "\n" + event.getMessage());
-        queue.addMessage(message);
+        if (executionOptions.isEnabled()) {
+            SlackMessage message = new SlackMessage(event.getUserMessage() + "\n" + event.getMessage());
+            queue.addMessage(message);
+        }
+    }
 
+    @Override
+    public void bootstrap() {
+        register(NotifierType.SLACK, SlackNotifier.class, SlackNotifierConfiguration.class, this);
+
+        initializeExecutor();
+        executionOptions = (SlackNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+        scheduleExecutor(new SlackNotificationRunnable(queue, executionOptions));
+    }
+
+    @Override
+    public void shutdown() {
+        super.reset();
     }
 }

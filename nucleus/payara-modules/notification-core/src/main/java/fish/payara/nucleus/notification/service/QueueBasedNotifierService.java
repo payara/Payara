@@ -44,11 +44,10 @@ import fish.payara.nucleus.notification.domain.NotificationEvent;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.inject.Inject;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
@@ -65,6 +64,7 @@ public abstract class QueueBasedNotifierService<E extends NotificationEvent,
     private final String prefix;
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private ScheduledExecutorService executor;
+    protected ScheduledFuture scheduledFuture;
 
     public QueueBasedNotifierService(String prefix) {
         this.prefix = prefix;
@@ -78,10 +78,19 @@ public abstract class QueueBasedNotifierService<E extends NotificationEvent,
         });
     }
 
-    protected void scheduleExecutor(NotificationRunnable notificationRunnable) {
-        executor.scheduleWithFixedDelay(notificationRunnable,
+    protected ScheduledFuture scheduleExecutor(NotificationRunnable notificationRunnable) {
+        return executor.scheduleWithFixedDelay(notificationRunnable,
                 0,
                 500,
                 TimeUnit.MILLISECONDS);
+    }
+
+    protected void reset() {
+        super.reset(this);
+        queue.resetQueue();
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(true);
+        }
+        initializeExecutor();
     }
 }

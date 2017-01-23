@@ -57,14 +57,12 @@ import org.glassfish.hk2.api.ServiceLocator;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = NotificationServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "notification-configure",
             description = "Enables/Disables Notification Service")
 })
 public class NotificationConfigurer implements AdminCommand {
-
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotificationConfigurer.class);
 
     @Inject
     NotificationService service;

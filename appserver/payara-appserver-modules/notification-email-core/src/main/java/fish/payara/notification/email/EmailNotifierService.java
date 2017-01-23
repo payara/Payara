@@ -40,6 +40,7 @@
 package fish.payara.notification.email;
 
 import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.notification.configuration.EmailNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
@@ -71,31 +72,37 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
         super("email-message-consumer-");
     }
 
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.EMAIL, EmailNotifier.class, EmailNotifierConfiguration.class, this);
+    @Override
+    @Subscribe
+    public void handleNotification(EmailNotificationEvent event) {
+        if (executionOptions.isEnabled()) {
+            EmailMessage message = new EmailMessage(event.getUserMessage(), event.getMessage());
+            queue.addMessage(message);
+        }
+    }
 
-            executionOptions = (EmailNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-            if(executionOptions != null) {
-                initializeExecutor();
+    @Override
+    public void bootstrap() {
+        register(NotifierType.EMAIL, EmailNotifier.class, EmailNotifierConfiguration.class, this);
 
-                try {
-                    InitialContext context = new InitialContext();
-                    Session session = (Session) context.lookup(executionOptions.getJndiName());
-                    scheduleExecutor(new EmailNotificationRunnable(queue, session, executionOptions));
-                }
-                catch (NamingException e) {
-                    logger.log(Level.SEVERE, "Cannot lookup Java Mail session with given JNDI name: "
-                            + executionOptions.getJndiName(), e);
-                }
+        executionOptions = (EmailNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+        if(executionOptions != null) {
+            initializeExecutor();
+
+            try {
+                InitialContext context = new InitialContext();
+                Session session = (Session) context.lookup(executionOptions.getJndiName());
+                scheduleExecutor(new EmailNotificationRunnable(queue, session, executionOptions));
+            }
+            catch (NamingException e) {
+                logger.log(Level.SEVERE, "Cannot lookup Java Mail session with given JNDI name: "
+                        + executionOptions.getJndiName(), e);
             }
         }
     }
 
     @Override
-    @Subscribe
-    public void handleNotification(EmailNotificationEvent event) {
-        EmailMessage message = new EmailMessage(event.getUserMessage(), event.getMessage());
-        queue.addMessage(message);
+    public void shutdown() {
+        super.reset();
     }
 }

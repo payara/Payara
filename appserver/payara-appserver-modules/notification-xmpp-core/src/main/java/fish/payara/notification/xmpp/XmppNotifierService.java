@@ -41,6 +41,7 @@ package fish.payara.notification.xmpp;
 
 import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.configuration.XmppNotifier;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventTypes;
@@ -68,61 +69,65 @@ public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificat
 
     private static Logger logger = Logger.getLogger(XmppNotifierService.class.getCanonicalName());
     private XMPPTCPConnection connection;
+    private XmppNotifierConfigurationExecutionOptions executionOptions;
 
     XmppNotifierService() {
         super("xmpp-message-consumer-");
     }
 
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.XMPP, XmppNotifier.class, XmppNotifierConfiguration.class, this);
+    @Override
+    public void bootstrap() {
+        register(NotifierType.XMPP, XmppNotifier.class, XmppNotifierConfiguration.class, this);
 
-            try {
-                XmppNotifierConfigurationExecutionOptions executionOptions =
-                        (XmppNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+        try {
+            executionOptions = (XmppNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-                if (executionOptions != null) {
-                    initializeExecutor();
+            if (executionOptions != null) {
+                initializeExecutor();
 
-                    XMPPTCPConnectionConfiguration configuration = XMPPTCPConnectionConfiguration.builder()
-                            .setSecurityMode(executionOptions.getSecurityDisabled() ?
-                                    ConnectionConfiguration.SecurityMode.disabled :
-                                    ConnectionConfiguration.SecurityMode.required)
-                            .setServiceName(executionOptions.getServiceName())
-                            .setHost(executionOptions.getHost())
-                            .setPort(executionOptions.getPort())
-                            .build();
-                    connection = new XMPPTCPConnection(configuration);
-                    connection.connect();
-                    if (executionOptions.getUsername() != null && executionOptions.getPassword() != null) {
-                        connection.login(executionOptions.getUsername(), executionOptions.getPassword());
-                    } else {
-                        connection.login();
-                    }
-                    scheduleExecutor(new XmppNotificationRunnable(queue, executionOptions, connection));
+                XMPPTCPConnectionConfiguration configuration = XMPPTCPConnectionConfiguration.builder()
+                        .setSecurityMode(executionOptions.getSecurityDisabled() ?
+                                ConnectionConfiguration.SecurityMode.disabled :
+                                ConnectionConfiguration.SecurityMode.required)
+                        .setServiceName(executionOptions.getServiceName())
+                        .setHost(executionOptions.getHost())
+                        .setPort(executionOptions.getPort())
+                        .build();
+                connection = new XMPPTCPConnection(configuration);
+                connection.connect();
+                if (executionOptions.getUsername() != null && executionOptions.getPassword() != null) {
+                    connection.login(executionOptions.getUsername(), executionOptions.getPassword());
+                } else {
+                    connection.login();
                 }
-            }
-            catch (XMPPException e) {
-                logger.log(Level.SEVERE, "Error occurred on XMPP protocol level while connecting host", e);
-            }
-            catch (SmackException e) {
-                logger.log(Level.SEVERE, "Error occurred on Smack protocol level while connecting host", e);
-            }
-            catch (IOException e) {
-                logger.log(Level.SEVERE, "IO Error occurred while connecting host", e);
+                scheduleExecutor(new XmppNotificationRunnable(queue, executionOptions, connection));
             }
         }
-        if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
-            if (connection != null) {
-                connection.disconnect();
-            }
+        catch (XMPPException e) {
+            logger.log(Level.SEVERE, "Error occurred on XMPP protocol level while connecting host", e);
+        }
+        catch (SmackException e) {
+            logger.log(Level.SEVERE, "Error occurred on Smack protocol level while connecting host", e);
+        }
+        catch (IOException e) {
+            logger.log(Level.SEVERE, "IO Error occurred while connecting host", e);
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        super.reset();
+        if (connection != null) {
+            connection.disconnect();
         }
     }
 
     @Override
     @Subscribe
     public void handleNotification(XmppNotificationEvent event) {
-        XmppMessage message = new XmppMessage(event.getUserMessage() + "\n" + event.getMessage());
-        queue.addMessage(message);
+        if (executionOptions.isEnabled()) {
+            XmppMessage message = new XmppMessage(event.getUserMessage() + "\n" + event.getMessage());
+            queue.addMessage(message);
+        }
     }
 }

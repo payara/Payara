@@ -42,6 +42,7 @@ package fish.payara.notification.eventbus;
 import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.EventBus;
+import fish.payara.nucleus.notification.configuration.EventbusNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
@@ -70,18 +71,24 @@ public class EventbusNotifierService extends QueueBasedNotifierService<EventbusN
         super("eventbus-message-consumer-");
     }
 
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.EVENTBUS, EventbusNotifier.class, EventbusNotifierConfiguration.class, this);
-
-            executionOptions = (EventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+    @Override
+    @Subscribe
+    public void handleNotification(EventbusNotificationEvent event) {
+        if(executionOptions.isEnabled()) {
+            EventbusMessage message = new EventbusMessage(event.getUserMessage(), event.getMessage());
+            eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
         }
     }
 
     @Override
-    @Subscribe
-    public void handleNotification(EventbusNotificationEvent event) {
-        EventbusMessage message = new EventbusMessage(event.getUserMessage(), event.getMessage());
-        eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
+    public void bootstrap() {
+        register(NotifierType.EVENTBUS, EventbusNotifier.class, EventbusNotifierConfiguration.class, this);
+
+        executionOptions = (EventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+    }
+
+    @Override
+    public void shutdown() {
+        super.reset();
     }
 }

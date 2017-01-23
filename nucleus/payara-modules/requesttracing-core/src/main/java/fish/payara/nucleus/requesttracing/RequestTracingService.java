@@ -48,6 +48,7 @@ import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.domain.EventType;
@@ -67,6 +68,8 @@ import org.jvnet.hk2.config.ConfigView;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -109,7 +112,7 @@ public class RequestTracingService implements EventListener {
     NotificationEventFactoryStore eventFactoryStore;
 
     @Inject
-    NotifierExecutionOptionsFactoryStore execOptionsFactoryStore;
+    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
 
     private RequestTracingExecutionOptions executionOptions = new RequestTracingExecutionOptions();
 
@@ -133,11 +136,7 @@ public class RequestTracingService implements EventListener {
             executionOptions.setHistoricalTraceEnabled(Boolean.parseBoolean(configuration.getHistoricalTraceEnabled()));
             executionOptions.setHistoricalTraceStoreSize(Integer.parseInt(configuration.getHistoricalTraceStoreSize()));
 
-            for (Notifier notifier : configuration.getNotifierList()) {
-                ConfigView view = ConfigSupport.getImpl(notifier);
-                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                executionOptions.addNotifierExecutionOption(execOptionsFactoryStore.get(annotation.type()).build(notifier));
-            }
+            bootstrapNotifierList();
         }
 
         if (executionOptions != null && executionOptions.isEnabled()) {
@@ -146,6 +145,21 @@ public class RequestTracingService implements EventListener {
             }
 
             logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
+        }
+    }
+
+    public void bootstrapNotifierList() {
+        executionOptions.resetNotifierExecutionOptions();
+        for (Notifier notifier : configuration.getNotifierList()) {
+            ConfigView view = ConfigSupport.getImpl(notifier);
+            NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+            executionOptions.addNotifierExecutionOption(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+        }
+        if (executionOptions.getNotifierExecutionOptionsList().isEmpty()) {
+            // Add logging execution options by default
+            LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
+            logNotifierExecutionOptions.setEnabled(true);
+            executionOptions.addNotifierExecutionOption(logNotifierExecutionOptions);
         }
     }
 

@@ -46,9 +46,20 @@ public interface HazelcastRuntimeConfiguration
     String getMulticastGroup();
     public void setMulticastGroup(String value);
     
+    
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getGenerateNames();
+    public void setGenerateNames(String value);
+
+    
     @Attribute(defaultValue = "payara")
     String getMemberName();
     public void setMemberName(String value);
+
+    @Attribute(defaultValue = "MicroShoal")
+    String getMemberGroup();
+    public void setMemberGroup(String value);
+
     
     @Attribute(defaultValue = "development")
     String getClusterGroupName();

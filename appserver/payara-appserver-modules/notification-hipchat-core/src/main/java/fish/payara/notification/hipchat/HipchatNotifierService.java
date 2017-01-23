@@ -40,6 +40,7 @@
 package fish.payara.notification.hipchat;
 
 import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.notification.configuration.HipchatNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
@@ -57,24 +58,32 @@ public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNot
         HipchatNotifierConfiguration,
         HipchatMessageQueue> {
 
+    HipchatNotifierConfigurationExecutionOptions executionOptions;
+
     HipchatNotifierService() {
         super("hipchat-message-consumer-");
-    }
-
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
-
-            initializeExecutor();
-            scheduleExecutor(new HipchatNotificationRunnable(queue,
-                    (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions()));
-        }
     }
 
     @Override
     @Subscribe
     public void handleNotification(HipchatNotificationEvent event) {
-        HipchatMessage message = new HipchatMessage(event.getUserMessage() + "\n" + event.getMessage());
-        queue.addMessage(message);
+        if (executionOptions.isEnabled()) {
+            HipchatMessage message = new HipchatMessage(event.getUserMessage() + "\n" + event.getMessage());
+            queue.addMessage(message);
+        }
+    }
+
+    @Override
+    public void bootstrap() {
+        register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
+
+        initializeExecutor();
+        executionOptions = (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+        scheduleExecutor(new HipchatNotificationRunnable(queue, executionOptions));
+    }
+
+    @Override
+    public void shutdown() {
+        super.reset();
     }
 }

@@ -1218,11 +1218,11 @@ public abstract class PersistentManagerBase
                      session = store.load(id);
                 }
             }   
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | ClassCastException e) {
             String msg = MessageFormat.format(rb.getString(DESERILIZING_SESSION_EXCEPTION),
                                               new Object[] {id, e});
-            log.log(Level.SEVERE, msg);
-            throw new IllegalStateException(msg);
+            log.log(Level.WARNING, msg);
+            return null;
         }
 
         if (session == null)

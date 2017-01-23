@@ -57,5 +57,5 @@ public interface Notifier extends ConfigBeanProxy {
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+    void enabled(Boolean value) throws PropertyVetoException;
 }

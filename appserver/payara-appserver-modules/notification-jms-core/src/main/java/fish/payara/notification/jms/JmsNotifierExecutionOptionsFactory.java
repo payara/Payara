@@ -39,6 +39,7 @@
  */
 package fish.payara.notification.jms;
 
+import fish.payara.nucleus.notification.configuration.JmsNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
