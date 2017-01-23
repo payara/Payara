@@ -193,7 +193,7 @@ public class HazelcastCore implements EventListener {
                 gc.setPassword(configuration.getClusterGroupPassword());
 
                 // build the configuration
-                if ("true".equals(configuration.getHostAwareParitioning())) {
+                if ("true".equals(configuration.getHostAwarePartitioning())) {
                     PartitionGroupConfig partitionGroupConfig = config.getPartitionGroupConfig();
                     partitionGroupConfig.setEnabled(enabled);
                     partitionGroupConfig.setGroupType(PartitionGroupConfig.MemberGroupType.HOST_AWARE);

@@ -164,7 +164,7 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         }
                         
                         if (hostawarePartitioning != null) {
-                            hazelcastRuntimeConfigurationProxy.setHostAwareParitioning(hostawarePartitioning.toString());
+                            hazelcastRuntimeConfigurationProxy.setHostAwarePartitioning(hostawarePartitioning.toString());
                         }
                         
                         if (hzClusterName != null) {
