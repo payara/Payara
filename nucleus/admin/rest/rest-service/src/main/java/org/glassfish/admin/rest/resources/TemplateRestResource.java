@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -240,10 +240,12 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
             data = ResourceUtil.translateCamelCasedNamesToXMLNames(data);
             RestActionReporter ar = Util.applyChanges(data, uriInfo, getSubject());
             if (ar.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
-                throwError(Status.BAD_REQUEST, "Could not apply changes" + ar.getMessage()); // i18n
+                throwError(Status.BAD_REQUEST, "Could not apply changes:  " + ar.getMessage()); // i18n
             }
 
             return ar;
+        } catch(WebApplicationException wae) {
+           throw wae;
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
         }
@@ -640,6 +642,6 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     protected Response handleError(final Status error, final String message) throws WebApplicationException {
         //TODO better error handling.
 //                return Response.status(400).entity(ResourceUtil.getActionReportResult(ar, "Could not apply changes" + ar.getMessage(), requestHeaders, uriInfo)).build();
-        return Response.status(error).entity(message).build();
+        return Response.status(error).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders, uriInfo)).build();
     }
 }
