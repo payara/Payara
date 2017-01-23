@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014,2015,2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2014,2015,2016,2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -22,6 +22,8 @@ import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.PartitionGroupConfig;
+import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import fish.payara.nucleus.events.HazelcastEvents;
@@ -191,6 +193,12 @@ public class HazelcastCore implements EventListener {
                 gc.setPassword(configuration.getClusterGroupPassword());
 
                 // build the configuration
+                if ("true".equals(configuration.getHostAwareParitioning())) {
+                    PartitionGroupConfig partitionGroupConfig = config.getPartitionGroupConfig();
+                    partitionGroupConfig.setEnabled(enabled);
+                    partitionGroupConfig.setGroupType(PartitionGroupConfig.MemberGroupType.HOST_AWARE);
+                }
+                            
                 config.setProperty("hazelcast.jmx", "true");
             }
         } catch (MalformedURLException ex) {
