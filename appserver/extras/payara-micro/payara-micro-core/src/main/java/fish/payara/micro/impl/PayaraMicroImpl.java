@@ -122,6 +122,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private GlassFish gf;
     private PayaraMicroRuntimeImpl runtime;
     private boolean noCluster = false;
+    private boolean hostAware = false;
     private boolean autoBindHttp = false;
     private boolean autoBindSsl = false;
     private boolean liteMember = false;
@@ -1102,6 +1103,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case clusterpassword:
                         hzClusterPassword = value;
                         break;
+                    case hostaware: {
+                        hostAware = true;
+                        break;
+                    }
                     case mcport: {
                         hzPort = Integer.parseInt(value);
                         break;
@@ -1692,7 +1697,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             
             if (instanceGroup != null) {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.member-group=" + instanceGroup));
-            }
+            }            
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
         }
     }
 
@@ -1900,6 +1906,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         httpPort = Integer.getInteger("payaramicro.port", Integer.MIN_VALUE);
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
         hzPort = Integer.getInteger("payaramicro.mcPort", Integer.MIN_VALUE);
+        hostAware = Boolean.getBoolean("payaramicro.hostAware");
         hzStartPort = Integer.getInteger("payaramicro.startPort", Integer.MIN_VALUE);
         hzClusterName = System.getProperty("payaramicro.clusterName");
         hzClusterPassword = System.getProperty("payaramicro.clusterPassword");
@@ -2032,6 +2039,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.enableAccessLogFormat", Boolean.toString(enableAccessLogFormat));
         props.setProperty("payaramicro.logPropertiesFile", Boolean.toString(logPropertiesFile));
         props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
+        props.setProperty("payaramicro.hostAware", Boolean.toString(hostAware));
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
 
         if (httpPort != Integer.MIN_VALUE) {
