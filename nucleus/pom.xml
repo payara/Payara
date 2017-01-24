@@ -218,7 +218,7 @@
         <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>3.1</asm.version>
+        <asm.version>5.0.3</asm.version>
         <shoal.version>1.7.0-M1</shoal.version>
         <ha-api.version>3.1.8</ha-api.version>
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
@@ -978,7 +978,7 @@
                 <version>1.0</version>
             </dependency>
             <dependency>
-                <groupId>asm</groupId>
+                <groupId>org.ow2.asm</groupId>
                 <artifactId>asm-commons</artifactId>
                 <version>${asm.version}</version>
             </dependency>
