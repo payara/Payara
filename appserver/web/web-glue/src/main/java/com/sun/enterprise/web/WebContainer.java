@@ -888,7 +888,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             DeploymentContext dc = (DeploymentContext)event.hook();
             try {
                 // Fix https://github.com/payara/Payara/issues/315
-                componentEnvManager.unbindFromComponentNamespace(dc.getModuleMetaData(WebBundleDescriptor.class));
+                WebBundleDescriptor wbd = dc.getModuleMetaData(WebBundleDescriptor.class);
+                if(wbd != null) {
+                    componentEnvManager.unbindFromComponentNamespace(wbd);
+                }
             } catch (NamingException ex) {
                 logger.log(Level.SEVERE, EXCEPTION_DURING_DESTROY, ex);
             }
