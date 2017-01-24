@@ -89,6 +89,12 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
 
+    @Param(name = "historicalTraceEnabled", optional = true, defaultValue = "false")
+    private Boolean historicalTraceEnabled;
+
+    @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
+    private Integer historicalTraceStoreSize;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -109,7 +115,13 @@ public class HealthCheckConfigurer implements AdminCommand {
                             PropertyVetoException, TransactionFailure {
                         if (enabled != null) {
                             healthCheckServiceConfigurationProxy.enabled(enabled.toString());
-                            }
+                        }
+                        if (historicalTraceEnabled != null) {
+                            healthCheckServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                        }
+                        if (historicalTraceStoreSize != null) {
+                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return healthCheckServiceConfigurationProxy;
                     }
@@ -126,12 +138,23 @@ public class HealthCheckConfigurer implements AdminCommand {
         if (dynamic) {
             if (server.isDas()) {
                 if (targetUtil.getConfig(target).isDas()) {
-                    service.setEnabled(enabled);
+                    configureDynamically();
                 }
             } else {
                 // apply as not the DAS so implicitly it is for us
-                service.setEnabled(enabled);
+                configureDynamically();
             }
+        }
+    }
+
+    private void configureDynamically() {
+        service.setEnabled(enabled);
+
+        if (historicalTraceEnabled != null) {
+            service.setHistoricalTraceEnabled(historicalTraceEnabled);
+        }
+        if (historicalTraceStoreSize != null) {
+            service.setHistoricalTraceStoreSize(historicalTraceStoreSize);
         }
     }
 }
