@@ -127,11 +127,11 @@ public class NotificationConfigurer implements AdminCommand {
         if (dynamic) {
             if (server.isDas()) {
                 if (targetUtil.getConfig(target).isDas()) {
-                    service.getExecutionOptions().setEnabled(enabled);
+                    service.bootstrapNotificationService();
                 }
             } else {
                 // apply as not the DAS so implicitly it is for us
-                service.getExecutionOptions().setEnabled(enabled);
+                service.bootstrapNotificationService();
             }
         }
     }

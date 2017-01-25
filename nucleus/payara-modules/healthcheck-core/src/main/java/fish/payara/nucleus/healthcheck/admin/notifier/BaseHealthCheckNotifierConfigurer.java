@@ -152,6 +152,6 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
     }
 
     protected void configureDynamically() {
-        healthCheckService.bootstrapNotifierList();
+        healthCheckService.reboot();
     }
 }
