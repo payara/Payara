@@ -86,8 +86,8 @@ public interface HazelcastRuntimeConfiguration
     public void setCachingProviderJNDIName(String value);
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getHostAwareParitioning();
-    public void setHostAwareParitioning(String value);
+    String getHostAwarePartitioning();
+    public void setHostAwarePartitioning(String value);
 
     
     @Attribute(defaultValue = "")

@@ -86,7 +86,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         values[7] = runtimeConfiguration.getClusterGroupName();
         values[8] = runtimeConfiguration.getClusterGroupPassword();
         values[9] = runtimeConfiguration.getLicenseKey();
-        values[10] = runtimeConfiguration.getHostAwareParitioning();
+        values[10] = runtimeConfiguration.getHostAwarePartitioning();
         columnFormatter.addRow(values);
         
         Map<String, Object> map = new HashMap<>(10);
