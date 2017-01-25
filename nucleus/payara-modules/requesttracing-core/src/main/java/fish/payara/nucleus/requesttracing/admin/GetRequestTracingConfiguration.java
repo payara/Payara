@@ -44,6 +44,7 @@ import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Admin command to list Request Tracing Configuration
@@ -103,6 +104,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
                 }
             });
 
+            Properties extraProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {
                 Notifier notifier = configuration.getNotifierByType(serviceHandle.getService().getNotifierType());
                 if (notifier != null && notifierClassList.contains(resolveNotifierClass(notifier))) {
@@ -110,11 +112,23 @@ public class GetRequestTracingConfiguration implements AdminCommand {
                     values[0] = configuration.getEnabled();
                     values[1] = configuration.getThresholdUnit();
                     values[2] = configuration.getThresholdValue();
-                    values[3] = serviceHandle.getActiveDescriptor().getName();
+                    String serviceName = serviceHandle.getActiveDescriptor().getName();
+                    values[3] = serviceName;
                     values[4] = notifier.getEnabled();
                     columnFormatter.addRow(values);
+
+                    Map<String, Object> map = new HashMap<String, Object>(5);
+
+                    map.put("enabled", values[0]);
+                    map.put("thresholdUnit", values[1]);
+                    map.put("thresholdValue", values[2]);
+                    map.put("notifierName", values[3]);
+                    map.put("notifierEnabled", values[4]);
+
+                    extraProps.put("getRequesttracingConfiguration-" + serviceName, map);
                 }
             }
+            mainActionReport.setExtraProperties(extraProps);
             mainActionReport.setMessage(columnFormatter.toString());
         }
 

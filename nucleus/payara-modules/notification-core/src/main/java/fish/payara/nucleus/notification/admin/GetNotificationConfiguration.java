@@ -40,7 +40,10 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Admin command to list Notification Configuration
@@ -97,16 +100,26 @@ public class GetNotificationConfiguration implements AdminCommand {
                 }
             });
 
+            Properties extraProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {
                 NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(serviceHandle.getService().getNotifierConfigType());
                 if (notifierConfigurationClassList.contains(resolveNotifierConfigurationClass(notifierConfiguration))) {
                     Object values[] = new Object[3];
                     values[0] = notificationServiceConfiguration.getEnabled();
                     values[1] = notifierConfiguration.getEnabled();
-                    values[2] = serviceHandle.getActiveDescriptor().getName();
+                    String serviceName = serviceHandle.getActiveDescriptor().getName();
+                    values[2] = serviceName;
                     columnFormatter.addRow(values);
+
+                    Map<String, Object> map = new HashMap<>(3);
+                    map.put("enabled", values[0]);
+                    map.put("notifierEnabled", values[1]);
+                    map.put("notifierName", values[2]);
+
+                    extraProps.put("getNotificationConfiguration-" + serviceName, map);
                 }
             }
+            mainActionReport.setExtraProperties(extraProps);
             mainActionReport.setMessage(columnFormatter.toString());
         }
 
