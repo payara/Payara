@@ -49,7 +49,7 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
     @Override
     @Subscribe
     public void handleNotification(LogNotificationEvent event) {
-        if (execOptions.isEnabled()) {
+        if (execOptions != null && execOptions.isEnabled()) {
             if (event.getParameters() != null && event.getParameters().length > 0) {
                 String formattedText = MessageFormat.format(event.getMessage(), event.getParameters());
                 logger.log(event.getLevel(), event.getUserMessage() != null ?

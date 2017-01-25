@@ -18,15 +18,14 @@
 
 package fish.payara.nucleus.requesttracing.admin;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.notification.log.LogNotifier;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-import java.util.HashMap;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -38,11 +37,13 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Admin command to list Request Tracing Configuration
@@ -64,6 +65,7 @@ import java.util.Properties;
             description = "List Request Tracing Configuration")
 })
 public class GetRequestTracingConfiguration implements AdminCommand {
+
     @Inject
     ServiceLocator habitat;
 
@@ -84,40 +86,43 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         }
 
         ActionReport mainActionReport = context.getActionReport();
-
-
         RequestTracingServiceConfiguration configuration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
-        List<ServiceHandle<BaseNotifierService>> allNotifierHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
+        List<ServiceHandle<BaseNotifierService>> allServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
         String headers[] = {"Enabled", "ThresholdUnit", "ThresholdValue", "Notifier Name", "Notifier Enabled"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[5];
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getThresholdUnit();
-        values[2] = configuration.getThresholdValue();
 
-        for (ServiceHandle<BaseNotifierService> notifierHandle : allNotifierHandles) {
-            Notifier notifier = configuration.getNotifierByType(notifierHandle.getService().getNotifierType());
-
-            if (notifier instanceof LogNotifier) {
-                LogNotifier logNotifier = (LogNotifier) notifier;
-                values[3] = notifierHandle.getActiveDescriptor().getName();
-                values[4] = logNotifier.getEnabled();
-            }
+        if (configuration.getNotifierList().isEmpty()) {
+            mainActionReport.setMessage("No notifier defined");
         }
-        columnFormatter.addRow(values);
+        else {
+            List<Class<Notifier>> notifierClassList = Lists.transform(configuration.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
+                @Override
+                public Class<Notifier> apply(Notifier input) {
+                    return resolveNotifierClass(input);
+                }
+            });
 
-        Map<String, Object> map = new HashMap<String, Object>(5);
-        Properties extraProps = new Properties();
-        map.put("enabled", values[0]);
-        map.put("thresholdUnit", values[1]);
-        map.put("thresholdValue", values[2]);
-        map.put("notifierName", values[3]);
-        map.put("notifierEnabled", values[4]);
-        
-        extraProps.put("getRequesttracingConfiguration", map);
-        mainActionReport.setExtraProperties(extraProps);
-        mainActionReport.setMessage(columnFormatter.toString());
+            for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {
+                Notifier notifier = configuration.getNotifierByType(serviceHandle.getService().getNotifierType());
+                if (notifier != null && notifierClassList.contains(resolveNotifierClass(notifier))) {
+                    Object values[] = new Object[5];
+                    values[0] = configuration.getEnabled();
+                    values[1] = configuration.getThresholdUnit();
+                    values[2] = configuration.getThresholdValue();
+                    values[3] = serviceHandle.getActiveDescriptor().getName();
+                    values[4] = notifier.getEnabled();
+                    columnFormatter.addRow(values);
+                }
+            }
+            mainActionReport.setMessage(columnFormatter.toString());
+        }
+
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+
+    private Class<Notifier> resolveNotifierClass(Notifier input) {
+        ConfigView view = ConfigSupport.getImpl(input);
+        return view.getProxyType();
     }
 }
