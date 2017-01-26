@@ -1,0 +1,79 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2017 Payara Foundation and/or its affiliates. 
+ All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nn" bundle="fish.payara.admingui.extras.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="Slack Notification Configuration"  >
+<!define name="content">
+<event>
+    <!beforeCreate 
+        getRequestValue(key="configName" value="#{pageSession.configName}" );
+        createMap(result="#{pageSession.attrsMap}")
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
+        gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/get-slack-notifier-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+    /> 
+</event>
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+#include "/payaraExtras/notification/notificationConfigTabs.inc"
+    <sun:title id="propertyContentPage" title="Slack Notifier Configuration" helpText="Enable and configure a Slack notifier" >
+        <!facet pageButtonsTop>
+            <sun:panelGroup id="topButtons">
+                <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                    <!command
+                        mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                        prepareSuccessfulMsg();
+                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-slack-configure" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                        />
+                </sun:button>
+            </sun:panelGroup>
+        </facet>
+    </sun:title>
+
+    <sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+        <sun:propertySheetSection id="slackNotifierProperties">
+            <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.enabled}"  helpText="$resource{i18nn.notification.configuration.enabledHelp}">
+                <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="token1Prop" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="Token 1"  helpText="Slack Token 1">
+                <sun:textField id="token1Field" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['token1']}" />
+            </sun:property>
+            <sun:property id="token2Prop" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="Token 2"  helpText="Slack Token 2">
+                <sun:textField id="token2Field" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['token2']}" />
+            </sun:property>
+            <sun:property id="token3Prop" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="Token 3"  helpText="Slack Token 3">
+                <sun:textField id="token3Field" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['token3']}" />
+            </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
+</sun:form>
+</define>
+</composition>

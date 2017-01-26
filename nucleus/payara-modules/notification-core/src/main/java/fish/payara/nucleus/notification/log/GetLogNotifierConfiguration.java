@@ -42,6 +42,7 @@ package fish.payara.nucleus.notification.log;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.Map;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -58,7 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
+                opType = RestEndpoint.OpType.GET,
                 path = "get-log-notifier-configuration",
                 description = "Lists Log Notifier Configuration")
 })
@@ -74,5 +75,10 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
+    }
+
+    @Override
+    protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration nc) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

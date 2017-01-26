@@ -42,6 +42,9 @@ package fish.payara.notification.slack;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -58,7 +61,7 @@ import org.jvnet.hk2.annotations.Service;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
+                opType = RestEndpoint.OpType.GET,
                 path = "get-slack-notifier-configuration",
                 description = "Lists Slack Notifier Configuration")
 })
@@ -77,5 +80,17 @@ public class GetSlackNotifierConfiguration extends BaseGetNotifierConfiguration<
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
+    }
+    
+    @Override
+    protected Map<String, Object> getNotifierConfiguration(SlackNotifierConfiguration configuration) {
+        Map<String, Object> map = new HashMap<>(4);
+        
+        map.put("enabled", configuration.getEnabled());
+        map.put("token1", configuration.getToken1());
+        map.put("token2", configuration.getToken2());
+        map.put("token3", configuration.getToken3());
+        
+        return map;
     }
 }

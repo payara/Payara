@@ -39,8 +39,8 @@
 package fish.payara.notification.slack;
 
 import com.google.common.base.Strings;
-import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
@@ -59,7 +59,7 @@ import java.beans.PropertyVetoException;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
                 path = "notification-slack-configure",
                 description = "Configures Slack Notification Service")
