@@ -20,17 +20,16 @@
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
-    setResourceBundle(key="i18nsn" bundle="fish.payara.admingui.notifier.slack.Strings");
+    setResourceBundle(key="i18nhn" bundle="fish.payara.admingui.notifier.hipchat.Strings");
     />
-<!composition template="/templates/default.layout"  guiTitle="Slack Notification Configuration"  >
+<!composition template="/templates/default.layout"  guiTitle="HipChat Notification Configuration"  >
 <!define name="content">
 <event>
     <!beforeCreate 
         getRequestValue(key="configName" value="#{pageSession.configName}" );
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
-        gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/get-slack-notifier-configuration?target=#{pageSession.configName}"  
-                method="GET" result="#{requestScope.resp}");
+        gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/get-hipchat-notifier-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
@@ -43,8 +42,8 @@
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
 #include "/payaraExtras/notification/notificationConfigTabs.inc"
-    <sun:title id="propertyContentPage" title="$resource{i18nsn.notifier.slack.configuration.pageTitle}" 
-               helpText="$resource{i18nsn.notifier.slack.configuration.pageHelpText}" >
+    <sun:title id="propertyContentPage" title="$resource{i18nhn.notifier.hipchat.configuration.pageTitle}" 
+               helpText="$resource{i18nhn.notifier.hipchat.configuration.pageHelpText}" >
         <!facet pageButtonsTop>
             <sun:panelGroup id="topButtons">
                 <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
@@ -52,7 +51,7 @@
                     <!command
                         mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                         prepareSuccessfulMsg();
-                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-slack-configure" 
+                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-hipchat-configure" 
                                 attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                         />
                 </sun:button>
@@ -62,29 +61,23 @@
 
     <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-        <sun:propertySheetSection id="slackNotifierProperties">
+        <sun:propertySheetSection id="hipchatNotifierProperties">
             <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsn.notifier.slack.configuration.enabledLabel}"  
-                          helpText="$resource{i18nsn.notifier.slack.configuration.enabledLabelHelpText}">
+                          label="$resource{i18nhn.notifier.hipchat.configuration.enabledLabel}"  
+                          helpText="$resource{i18nhn.notifier.hipchat.configuration.enabledLabelHelpText}">
                 <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
             </sun:property>
-            <sun:property id="token1Prop" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsn.notifier.slack.configuration.token1Label}"  
-                          helpText="$resource{i18nsn.notifier.slack.configuration.token1LabelHelpText}">
-                <sun:textField id="token1Field" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['token1']}" />
+            <sun:property id="roomNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nhn.notifier.hipchat.configuration.roomNameLabel}"  
+                          helpText="$resource{i18nhn.notifier.hipchat.configuration.roomNameLabelHelpText}">
+                <sun:textField id="roomName" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['roomName']}" />
             </sun:property>
-            <sun:property id="token2Prop" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsn.notifier.slack.configuration.token2Label}"  
-                          helpText="$resource{i18nsn.notifier.slack.configuration.token2LabelHelpText}">
-                <sun:textField id="token2Field" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['token2']}" />
-            </sun:property>
-            <sun:property id="token3Prop" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsn.notifier.slack.configuration.token3Label}"  
-                          helpText="$resource{i18nsn.notifier.slack.configuration.token3LabelHelpText}">
-                <sun:textField id="token3Field" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['token3']}" />
+            <sun:property id="tokenProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nhn.notifier.hipchat.configuration.tokenLabel}"  
+                          helpText="$resource{i18nhn.notifier.hipchat.configuration.tokenLabelHelpText}">
+                <sun:textField id="tokenField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['token']}" />
             </sun:property>
         </sun:propertySheetSection>
     </sun:propertySheet>
