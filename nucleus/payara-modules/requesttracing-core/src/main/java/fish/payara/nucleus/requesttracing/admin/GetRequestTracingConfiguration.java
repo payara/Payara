@@ -24,6 +24,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import org.glassfish.api.ActionReport;
@@ -107,25 +108,29 @@ public class GetRequestTracingConfiguration implements AdminCommand {
             Properties extraProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {
                 Notifier notifier = configuration.getNotifierByType(serviceHandle.getService().getNotifierType());
-                if (notifier != null && notifierClassList.contains(resolveNotifierClass(notifier))) {
-                    Object values[] = new Object[5];
-                    values[0] = configuration.getEnabled();
-                    values[1] = configuration.getThresholdUnit();
-                    values[2] = configuration.getThresholdValue();
-                    String serviceName = serviceHandle.getActiveDescriptor().getName();
-                    values[3] = serviceName;
-                    values[4] = notifier.getEnabled();
-                    columnFormatter.addRow(values);
+                if (notifier != null) {
+                    ConfigView view = ConfigSupport.getImpl(notifier);
+                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
 
-                    Map<String, Object> map = new HashMap<String, Object>(5);
+                    if (notifierClassList.contains(view.<Notifier>getProxyType())) {
+                        Object values[] = new Object[5];
+                        values[0] = configuration.getEnabled();
+                        values[1] = configuration.getThresholdUnit();
+                        values[2] = configuration.getThresholdValue();
+                        values[3] = serviceHandle.getActiveDescriptor().getName();
+                        values[4] = notifier.getEnabled();
+                        columnFormatter.addRow(values);
 
-                    map.put("enabled", values[0]);
-                    map.put("thresholdUnit", values[1]);
-                    map.put("thresholdValue", values[2]);
-                    map.put("notifierName", values[3]);
-                    map.put("notifierEnabled", values[4]);
+                        Map<String, Object> map = new HashMap<String, Object>(5);
 
-                    extraProps.put("getRequesttracingConfiguration-" + serviceName, map);
+                        map.put("enabled", values[0]);
+                        map.put("thresholdUnit", values[1]);
+                        map.put("thresholdValue", values[2]);
+                        map.put("notifierName", values[3]);
+                        map.put("notifierEnabled", values[4]);
+
+                        extraProps.put("getRequesttracingConfiguration" + annotation.type(), map);
+                    }
                 }
             }
             mainActionReport.setExtraProperties(extraProps);

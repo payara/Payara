@@ -24,6 +24,7 @@ import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -103,20 +104,26 @@ public class GetNotificationConfiguration implements AdminCommand {
             Properties extraProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {
                 NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(serviceHandle.getService().getNotifierConfigType());
-                if (notifierConfigurationClassList.contains(resolveNotifierConfigurationClass(notifierConfiguration))) {
-                    Object values[] = new Object[3];
-                    values[0] = notificationServiceConfiguration.getEnabled();
-                    values[1] = notifierConfiguration.getEnabled();
-                    String serviceName = serviceHandle.getActiveDescriptor().getName();
-                    values[2] = serviceName;
-                    columnFormatter.addRow(values);
 
-                    Map<String, Object> map = new HashMap<>(3);
-                    map.put("enabled", values[0]);
-                    map.put("notifierEnabled", values[1]);
-                    map.put("notifierName", values[2]);
+                if (notifierConfiguration != null) {
+                    ConfigView view = ConfigSupport.getImpl(notifierConfiguration);
+                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
 
-                    extraProps.put("getNotificationConfiguration-" + serviceName, map);
+                    if (notifierConfigurationClassList.contains(view.<NotifierConfiguration>getProxyType())) {
+
+                        Object values[] = new Object[3];
+                        values[0] = notificationServiceConfiguration.getEnabled();
+                        values[1] = notifierConfiguration.getEnabled();
+                        values[2] = serviceHandle.getActiveDescriptor().getName();
+                        columnFormatter.addRow(values);
+
+                        Map<String, Object> map = new HashMap<>(3);
+                        map.put("enabled", values[0]);
+                        map.put("notifierEnabled", values[1]);
+                        map.put("notifierName", values[2]);
+
+                        extraProps.put("getNotificationConfiguration" + annotation.type(), map);
+                    }
                 }
             }
             mainActionReport.setExtraProperties(extraProps);
