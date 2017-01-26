@@ -22,7 +22,7 @@
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
     setResourceBundle(key="i18nhn" bundle="fish.payara.admingui.notifier.hipchat.Strings");
     />
-<!composition template="/templates/default.layout"  guiTitle="HipChat Notification Configuration"  >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nhn.notifier.hipchat.configuration.pageTitle}"  >
 <!define name="content">
 <event>
     <!beforeCreate 

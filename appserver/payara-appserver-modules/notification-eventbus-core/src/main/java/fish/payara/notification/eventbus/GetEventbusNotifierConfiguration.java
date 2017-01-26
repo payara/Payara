@@ -42,6 +42,7 @@ package fish.payara.notification.eventbus;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
@@ -79,7 +80,12 @@ public class GetEventbusNotifierConfiguration extends BaseGetNotifierConfigurati
     }
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(EventbusNotifierConfiguration nc) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    protected Map<String, Object> getNotifierConfiguration(EventbusNotifierConfiguration configuration) {
+        Map<String, Object> map = new HashMap<>(2);
+        
+        map.put("enabled", configuration.getEnabled());
+        map.put("topicName", configuration.getTopicName());
+        
+        return map;
     }
 }

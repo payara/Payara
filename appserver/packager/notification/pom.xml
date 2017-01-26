@@ -118,6 +118,12 @@
            <version>${project.version}</version>
            <optional>true</optional>
         </dependency>
+        <dependency>
+           <groupId>fish.payara.admingui</groupId>
+           <artifactId>eventbus-notifier-console-plugin</artifactId>
+           <version>${project.version}</version>
+           <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
 
