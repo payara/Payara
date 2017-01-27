@@ -51,6 +51,9 @@ import org.glassfish.internal.api.Target;
 
 import javax.inject.Inject;
 import java.lang.reflect.ParameterizedType;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author mertcaliskan
@@ -85,16 +88,24 @@ public abstract class BaseGetNotifierConfiguration<NC> implements AdminCommand {
         NC nc = configuration.getNotifierConfigurationByType(notifierConfigurationClass);
 
         String message;
+        Properties extraProps = new Properties();
+        Map<String, Object> configMap;
         if (nc == null) {
             message = "Notifier Configuration is not defined";
+            configMap = new HashMap<>();
         }
         else {
             message = listConfiguration(nc);
+            configMap = getNotifierConfiguration(nc);
         }
         mainActionReport.setMessage(message);
-
+        extraProps.put("notifierConfiguration", configMap);
+        mainActionReport.setExtraProperties(extraProps);
+        
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
     protected abstract String listConfiguration(NC nc);
+    
+    protected abstract Map<String, Object> getNotifierConfiguration(NC nc);
 }

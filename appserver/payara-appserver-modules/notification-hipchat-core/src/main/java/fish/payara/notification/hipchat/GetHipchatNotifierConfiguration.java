@@ -42,6 +42,8 @@ package fish.payara.notification.hipchat;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.HashMap;
+import java.util.Map;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -58,7 +60,7 @@ import org.jvnet.hk2.annotations.Service;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
+                opType = RestEndpoint.OpType.GET,
                 path = "get-hipchat-notifier-configuration",
                 description = "Lists Hipchat Notifier Configuration")
 })
@@ -76,5 +78,16 @@ public class GetHipchatNotifierConfiguration extends BaseGetNotifierConfiguratio
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
+    }
+
+    @Override
+    protected Map<String, Object> getNotifierConfiguration(HipchatNotifierConfiguration configuration) {
+        Map<String, Object> map = new HashMap<>(3);
+        
+        map.put("enabled", configuration.getEnabled());
+        map.put("roomName", configuration.getRoomName());
+        map.put("token", configuration.getToken());
+        
+        return map;
     }
 }

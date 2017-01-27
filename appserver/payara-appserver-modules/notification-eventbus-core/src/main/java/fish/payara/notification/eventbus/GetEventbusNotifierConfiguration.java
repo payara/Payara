@@ -42,6 +42,8 @@ package fish.payara.notification.eventbus;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.HashMap;
+import java.util.Map;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -58,7 +60,7 @@ import org.jvnet.hk2.annotations.Service;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
+                opType = RestEndpoint.OpType.GET,
                 path = "get-eventbus-notifier-configuration",
                 description = "Lists Eventbus Notifier Configuration")
 })
@@ -75,5 +77,15 @@ public class GetEventbusNotifierConfiguration extends BaseGetNotifierConfigurati
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
+    }
+
+    @Override
+    protected Map<String, Object> getNotifierConfiguration(EventbusNotifierConfiguration configuration) {
+        Map<String, Object> map = new HashMap<>(2);
+        
+        map.put("enabled", configuration.getEnabled());
+        map.put("topicName", configuration.getTopicName());
+        
+        return map;
     }
 }
