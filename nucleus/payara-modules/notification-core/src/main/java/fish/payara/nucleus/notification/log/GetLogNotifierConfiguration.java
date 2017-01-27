@@ -42,6 +42,7 @@ package fish.payara.nucleus.notification.log;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
@@ -78,7 +79,11 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
     }
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration nc) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration configuration) {
+        Map<String, Object> map = new HashMap<>(1);
+        
+        map.put("enabled", configuration.getEnabled());
+        
+        return map;
     }
 }
