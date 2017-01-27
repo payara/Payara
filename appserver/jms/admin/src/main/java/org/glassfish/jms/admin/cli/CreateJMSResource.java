@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -230,11 +230,14 @@ public class CreateJMSResource implements AdminCommand {
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
 
                 //rollback the connection pool ONLY if we created it...
-                  if (createdPool)
-	   	  	         commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport, context.getSubject()).parameters(populateConnectionPoolParameters()).execute();
-
-
-                    return;
+                  if (createdPool) {
+                      ParameterMap paramsForRollback = new ParameterMap();
+                      paramsForRollback.set(DEFAULT_OPERAND, jndiNameForConnectionPool);
+                      commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport, context.getSubject())
+                              .parameters(paramsForRollback)
+                              .execute();   
+                  }
+                  return;
               }
       } else if (resourceType.equals(TOPIC) ||
                     resourceType.equals(QUEUE))
