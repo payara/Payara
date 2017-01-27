@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -19,14 +19,15 @@ package fish.payara.appserver.micro.services.asadmin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.appserver.micro.services.PayaraInstance;
 import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
-import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -42,7 +43,6 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.embeddable.CommandResult;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -81,6 +81,12 @@ public class SendAsadminCommand implements AdminCommand
     @Param(name = "explicitTarget", optional = true, multiple = true)
     private String[] explicitTargets;
     
+    @Param(name = "verbose", optional = true)
+    private boolean verbose;
+    
+    @Param(name = "logOutput", optional = true)
+    private boolean logOutput;
+    
     @Override
     public void execute(AdminCommandContext context)
     {
@@ -90,13 +96,13 @@ public class SendAsadminCommand implements AdminCommand
         if (payaraMicro.isClustered())
         {
             // Get the subset of targets if provided, otherwise just get all clustered Micro instances
-            List<String> targetInstanceGuids = getTargetGuids(targets);
+            Map<String, InstanceDescriptor> targetInstanceDescriptors = getTargetInstanceDescriptors(targets);
             
             // Add any explicit targets to our list of target GUIDS
-            targetInstanceGuids.addAll(getExplicitTargetGUIDS(explicitTargets));
+            targetInstanceDescriptors.putAll(getExplicitTargetInstanceDescriptors(explicitTargets));
             
             // If no targets have been found, throw an exception and fail out
-            if (targetInstanceGuids.isEmpty()) {
+            if (targetInstanceDescriptors.isEmpty()) {
                 throw new IllegalArgumentException("No targets match!");
             }
             
@@ -108,31 +114,53 @@ public class SendAsadminCommand implements AdminCommand
             }
             
             // Run the asadmin command against the targets (or all instances if no targets given)          
-            Map<String, Future<ClusterCommandResultImpl>> results = payaraMicro.executeClusteredASAdmin(targetInstanceGuids, 
-                    command, parameters);
+            Map<String, Future<ClusterCommandResultImpl>> results = payaraMicro.executeClusteredASAdmin(
+                    targetInstanceDescriptors.keySet(), command, parameters);
             
             // Check the command results for any failures
             if (results != null) {
+                List<String> successMessages = new ArrayList<>();
                 List<String> warningMessages = new ArrayList<>();
                 List<String> failureMessages = new ArrayList<>();
-                for (Future<ClusterCommandResultImpl> result : results.values()) {
+                
+                for (Map.Entry<String, Future<ClusterCommandResultImpl>> result : results.entrySet()) {
                     try
                     {
-                        ClusterCommandResultImpl commandResult = result.get();
+                        ClusterCommandResultImpl commandResult = result.getValue().get();
                         switch (commandResult.getExitStatus())
                         {
+                            case SUCCESS:
+                                // Only get the success messages if we've asked for them
+                                if (verbose || logOutput) {
+                                    // We only want to get the message, not the formatter name or exit code
+                                    String rawOutput = commandResult.getOutput();
+                                    String[] outputComponents = rawOutput.split(commandResult.getExitStatus().name());
+                                    String output = outputComponents.length > 1 ? outputComponents[1] : rawOutput;
+                                    
+                                    // Box the name and add it to the output to help split up the individual responses, 
+                                    // since the success messages don't inherently provide information about what instance 
+                                    // the command was run on
+                                    String boxedInstanceName = boxInstanceName(output);
+                                    successMessages.add("\n" 
+                                            + targetInstanceDescriptors.get(result.getKey()).getInstanceName() + "\n" 
+                                            + boxedInstanceName);
+                                }
+                                
+                                break;
                             case WARNING:
                                 // If one of the commands has not already failed, set the exit code as WARNING
                                 if (actionReport.getActionExitCode() != ExitCode.FAILURE) {
                                     actionReport.setActionExitCode(ExitCode.WARNING);
                                 }
                                 // We only want to get the message, not the formatter name or exit code
-                                failureMessages.add(processException(commandResult));
+                                failureMessages.add("\n" + targetInstanceDescriptors.get(result.getKey()).getInstanceName()
+                                        + ":" + processException(commandResult));
                                 break;
                             case FAILURE:
                                 actionReport.setActionExitCode(ExitCode.FAILURE);
                                 // We only want to get the message, not the formatter name or exit code
-                                failureMessages.add(processException(commandResult));
+                                failureMessages.add("\n" + targetInstanceDescriptors.get(result.getKey()).getInstanceName()
+                                        + ":\n" + processException(commandResult));
                                 break;
                         }
                     }
@@ -147,6 +175,27 @@ public class SendAsadminCommand implements AdminCommand
                 switch (actionReport.getActionExitCode()) {
                     case SUCCESS:
                         actionReport.setMessage("Command executed successfully");
+                        
+                        // Skip if neither verbose or logOutput were selected
+                        if (verbose || logOutput) {
+                            String output = "";
+                            
+                            // Combine the success messages into one String
+                            for (String successMessage : successMessages) {
+                                output += "\n" + successMessage;
+                            }
+                            
+                            // Only print out the messages if verbose was chosen
+                            if (verbose) {
+                                actionReport.setMessage(output);
+                            }
+
+                            // Only log the messages if logOutput was chosen
+                            if (logOutput) {
+                                Logger.getLogger(SendAsadminCommand.class.getName()).log(Level.INFO, output);
+                            }
+                        }
+                        
                         break;
                     case WARNING:
                         actionReport.setMessage("Command completed with warnings: ");
@@ -172,6 +221,51 @@ public class SendAsadminCommand implements AdminCommand
     }
 
     /**
+     * Surrounds the provided instance name with a box to help dientify log outputs.
+     * @param instanceName The instance name to be boxed
+     * @return A String containing the boxed instance name
+     */
+    private String boxInstanceName(String instanceName) {
+        String paddedInstanceName = "";
+        final int boxSize = instanceName.length() + 6;
+        
+        // Draw the top of the box
+        for (int i = 0; i < boxSize; i++) {
+            if (i == 0 || i == boxSize - 1) {
+                paddedInstanceName += "+";
+            } else {
+                paddedInstanceName += "=";
+            }
+        }
+        
+        // Move to the next line
+        paddedInstanceName += "\n";
+        
+        // Draw the side of the box and add the padding
+        paddedInstanceName += "|  ";
+        
+        // Add the instanceName
+        paddedInstanceName += instanceName;
+        
+        // Add the appending padding and draw the other side of the box
+        paddedInstanceName += "  |";
+                
+        //Move to the next line
+        paddedInstanceName += "\n";
+        
+        // Draw the bottom of the box
+        for (int i = 0; i < boxSize; i++) {
+            if (i == 0 || i == boxSize - 1) {
+                paddedInstanceName += "+";
+            } else {
+                paddedInstanceName += "=";
+            }
+        }
+        
+        return paddedInstanceName;
+    }
+    
+    /**
      * @param commandResult input
      * @return readable error message from command result
      */
@@ -184,10 +278,10 @@ public class SendAsadminCommand implements AdminCommand
     /**
      * Gets the GUIDs of the instances in the cluster that match the targets specified by the --targets option
      * @param targets The targets to match
-     * @return A list containing the GUIDS of all matching instances
+     * @return A map of the target instance GUIDs and their respective InstanceDescriptors
      */
-    private List<String> getTargetGuids(String targets) {
-        List<String> targetInstanceGuids = new ArrayList<>();
+    private Map<String, InstanceDescriptor> getTargetInstanceDescriptors(String targets) {
+        Map<String, InstanceDescriptor> targetInstanceDescriptors = new HashMap<>();
         
         // Get all of the clustered instances
         Set<InstanceDescriptor> instances = payaraMicro.getClusteredPayaras();
@@ -213,13 +307,13 @@ public class SendAsadminCommand implements AdminCommand
                                 if (targetInstance.equals(("*"))) {
                                     // Match everything
                                     if (instance.isMicroInstance()) {
-                                        targetInstanceGuids.add(instance.getMemberUUID());
+                                        targetInstanceDescriptors.put(instance.getMemberUUID(), instance);
                                     }
                                 } else {
                                     // Match on instance name only
                                     if (instance.getInstanceName().equalsIgnoreCase(targetInstance) && 
                                             instance.isMicroInstance()) {
-                                        targetInstanceGuids.add(instance.getMemberUUID());
+                                        targetInstanceDescriptors.put(instance.getMemberUUID(), instance);
                                         break;
                                     }
                                 }   
@@ -227,7 +321,7 @@ public class SendAsadminCommand implements AdminCommand
                                 // Match on group name only
                                 if (instance.getInstanceGroup().equalsIgnoreCase(targetGroup) && 
                                         instance.isMicroInstance()) {
-                                    targetInstanceGuids.add(instance.getMemberUUID());
+                                    targetInstanceDescriptors.put(instance.getMemberUUID(), instance);
                                     break;
                                 }   
                             } else {
@@ -235,7 +329,7 @@ public class SendAsadminCommand implements AdminCommand
                                 if ((instance.getInstanceGroup().equalsIgnoreCase(targetGroup) && 
                                         instance.getInstanceName().equalsIgnoreCase(targetInstance)) && 
                                         instance.isMicroInstance()) {
-                                    targetInstanceGuids.add(instance.getMemberUUID());
+                                    targetInstanceDescriptors.put(instance.getMemberUUID(), instance);
                                     break;
                                 }
                             }
@@ -247,12 +341,12 @@ public class SendAsadminCommand implements AdminCommand
                         // Match everything
                         if (target.equals(("*"))) {
                             if (instance.isMicroInstance()) {
-                                targetInstanceGuids.add(instance.getMemberUUID());
+                                targetInstanceDescriptors.put(instance.getMemberUUID(), instance);
                             }
                         } else {
                             // Match on instance name
                             if (instance.getInstanceName().equalsIgnoreCase(target) && instance.isMicroInstance()) {
-                                targetInstanceGuids.add(instance.getMemberUUID());
+                                targetInstanceDescriptors.put(instance.getMemberUUID(), instance);
                                 break;
                             }
                         }
@@ -263,21 +357,21 @@ public class SendAsadminCommand implements AdminCommand
             for (InstanceDescriptor instance : instances) {
                 // Only send the command to Micro instances
                 if (instance.isMicroInstance()) {
-                    targetInstanceGuids.add(instance.getMemberUUID());
+                    targetInstanceDescriptors.put(instance.getMemberUUID(), instance);
                 }
             }
         }
         
-        return targetInstanceGuids;
+        return targetInstanceDescriptors;
     }
     
     /**
      * Gets the GUIDs of the instances in the cluster that match the targets specified by the --explicitTarget option
      * @param explicitTargets The explicit targets
-     * @return A list containing the GUIDs of the matched targets
+     * @return A map of the target instance GUIDs and their respective InstanceDescriptors
      */
-    private List<String> getExplicitTargetGUIDS(String[] explicitTargets) {
-        List<String> targetGuids = new ArrayList<>();
+    private Map<String, InstanceDescriptor> getExplicitTargetInstanceDescriptors(String[] explicitTargets) {
+        Map<String, InstanceDescriptor> targetInstanceDescriptors = new HashMap<>();
         
         // Get all of the clustered instances
         Set<InstanceDescriptor> instances = payaraMicro.getClusteredPayaras();
@@ -297,7 +391,7 @@ public class SendAsadminCommand implements AdminCommand
                             instance.getHostName().getHostAddress().equals(host)) && 
                             Integer.toString(instance.getHazelcastPort()).equals(portNumber) && 
                             instance.getInstanceName().equalsIgnoreCase(instanceName)) {
-                        targetGuids.add(instance.getMemberUUID());
+                        targetInstanceDescriptors.put(instance.getMemberUUID(), instance);
                         // We've found an instance that matches a target, so remove it from the list and move on to the 
                         // next target
                         instances.remove(instance);
@@ -311,7 +405,7 @@ public class SendAsadminCommand implements AdminCommand
             }
         }
         
-        return targetGuids;
+        return targetInstanceDescriptors;
     }
     
     /**
