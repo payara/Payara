@@ -40,13 +40,11 @@
 package fish.payara.micro.boot.runtime;
 
 import com.sun.enterprise.glassfish.bootstrap.EmbeddedInhabitantsParser;
-import com.sun.enterprise.glassfish.bootstrap.JarUtil;
 import com.sun.enterprise.glassfish.bootstrap.SingleHK2Factory;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.SingleModulesRegistry;
-import java.io.File;
 import java.util.Arrays;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
