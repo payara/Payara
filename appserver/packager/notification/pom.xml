@@ -105,6 +105,13 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+           <groupId>fish.payara.admingui</groupId>
+           <artifactId>slack-notifier-console-plugin</artifactId>
+           <version>${project.version}</version>
+           <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
 

@@ -42,6 +42,7 @@ package fish.payara.notification.email;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.Map;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -58,7 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
+                opType = RestEndpoint.OpType.GET,
                 path = "get-email-notifier-configuration",
                 description = "Lists Email Notifier Configuration")
 })
@@ -76,5 +77,10 @@ public class GetEmailNotifierConfiguration extends BaseGetNotifierConfiguration<
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
+    }
+
+    @Override
+    protected Map<String, Object> getNotifierConfiguration(EmailNotifierConfiguration nc) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
