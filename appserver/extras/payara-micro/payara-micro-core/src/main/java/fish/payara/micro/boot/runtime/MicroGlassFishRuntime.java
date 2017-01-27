@@ -40,11 +40,13 @@
 package fish.payara.micro.boot.runtime;
 
 import com.sun.enterprise.glassfish.bootstrap.EmbeddedInhabitantsParser;
+import com.sun.enterprise.glassfish.bootstrap.JarUtil;
 import com.sun.enterprise.glassfish.bootstrap.SingleHK2Factory;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.SingleModulesRegistry;
+import java.io.File;
 import java.util.Arrays;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
@@ -82,6 +84,11 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
         
         glassfishProperties.setProperty("com.sun.aas.installRoot", System.getProperty("com.sun.aas.instanceRoot"));
         glassfishProperties.setProperty("com.sun.aas.installRootURI", System.getProperty("com.sun.aas.instanceRootURI"));
+        
+        String installRoot = System.getProperty("com.sun.aas.instanceRoot");
+        File file = new File(installRoot);
+        JarUtil.extractRars(file.getAbsolutePath());
+        JarUtil.setEnv(file.getAbsolutePath());
         
         StartupContext context = new StartupContext(glassfishProperties.getProperties());
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
