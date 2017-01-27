@@ -31,7 +31,7 @@
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
         gf.restRequest(endpoint="#{pageSession.NOTIFICATION_CONFIG_URL}/get-notification-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
-        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getNotificationConfiguration}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getNotificationConfigurationLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
