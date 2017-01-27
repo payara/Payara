@@ -85,11 +85,6 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
         glassfishProperties.setProperty("com.sun.aas.installRoot", System.getProperty("com.sun.aas.instanceRoot"));
         glassfishProperties.setProperty("com.sun.aas.installRootURI", System.getProperty("com.sun.aas.instanceRootURI"));
         
-        String installRoot = System.getProperty("com.sun.aas.instanceRoot");
-        File file = new File(installRoot);
-        JarUtil.extractRars(file.getAbsolutePath());
-        JarUtil.setEnv(file.getAbsolutePath());
-        
         StartupContext context = new StartupContext(glassfishProperties.getProperties());
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         SingleHK2Factory.initialize(tccl);
