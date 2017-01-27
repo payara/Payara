@@ -21,6 +21,7 @@
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
     setResourceBundle(key="i18nebn" bundle="fish.payara.admingui.notifier.eventbus.Strings");
+    setResourceBundle(key="i18nn" bundle="fish.payara.admingui.extras.Strings");
     />
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18nebn.notifier.eventbus.configuration.pageTitle}"  >
 <!define name="content">
@@ -33,11 +34,12 @@
                 method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
         
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
+        setPageSessionAttribute(key="dynamic", value="true");
     /> 
 </event>
 <sun:form id="propertyForm">
@@ -51,6 +53,7 @@
                         onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                     <!command
                         mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                        mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                         prepareSuccessfulMsg();
                         gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-eventbus-configure" 
                                 attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
@@ -67,6 +70,11 @@
                           label="$resource{i18nebn.notifier.eventbus.configuration.enabledLabel}"  
                           helpText="$resource{i18nebn.notifier.eventbus.configuration.enabledLabelHelpText}">
                 <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nn.notification.configuration.dynamic}"  
+                          helpText="$resource{i18nn.notification.configuration.notifier.dynamicHelp}">
+                <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
             </sun:property>
             <sun:property id="topicNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nebn.notifier.eventbus.configuration.topicNameLabel}"  
