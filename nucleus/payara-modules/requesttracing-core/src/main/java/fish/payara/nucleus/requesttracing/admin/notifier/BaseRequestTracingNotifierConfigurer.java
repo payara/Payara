@@ -149,6 +149,6 @@ public abstract class BaseRequestTracingNotifierConfigurer<C extends Notifier> i
     }
 
     protected void configureDynamically() {
-        service.bootstrapNotifierList();
+        service.bootstrapRequestTracingService();
     }
 }

@@ -52,12 +52,15 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,16 +71,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
 
 /**
  * @author steve
  */
 @Service(name = "healthcheck-core")
 @RunLevel(StartupRunLevel.VAL)
-public class HealthCheckService implements EventListener {
+public class HealthCheckService implements EventListener, ConfigListener {
 
     private static final Logger logger = Logger.getLogger(HealthCheckService.class.getCanonicalName());
     private static final String PREFIX = "healthcheck-service-";
@@ -95,6 +95,9 @@ public class HealthCheckService implements EventListener {
     
     @Inject
     ServerContext server;
+
+    @Inject
+    Transactions transactions;
 
     @Inject
     private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
@@ -119,6 +122,8 @@ public class HealthCheckService implements EventListener {
         else if (event.is(EventTypes.SERVER_READY)) {
             bootstrapHealthCheck();
         }
+
+        transactions.addListenerForType(HealthCheckServiceConfiguration.class, this);
     }
 
     public void registerCheck(String name, BaseHealthCheck check) {
@@ -163,10 +168,12 @@ public class HealthCheckService implements EventListener {
 
     public void bootstrapNotifierList() {
         notifierExecutionOptionsList = new ArrayList<>();
-        for (Notifier notifier : configuration.getNotifierList()) {
-            ConfigView view = ConfigSupport.getImpl(notifier);
-            NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-            notifierExecutionOptionsList.add(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+        if (configuration.getNotifierList() != null) {
+            for (Notifier notifier : configuration.getNotifierList()) {
+                ConfigView view = ConfigSupport.getImpl(notifier);
+                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+                notifierExecutionOptionsList.add(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+            }
         }
         if (notifierExecutionOptionsList.isEmpty()) {
             // Add logging execution options by default
@@ -247,5 +254,20 @@ public class HealthCheckService implements EventListener {
 
     public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
         return notifierExecutionOptionsList;
+    }
+
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        return ConfigSupport.sortAndDispatch(events, new Changed() {
+
+            @Override
+            public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
+                if(changedType.equals(HealthCheckServiceConfiguration.class)) {
+                    configuration = (HealthCheckServiceConfiguration) changedInstance;
+                }
+                return new NotProcessed("Unimplemented by HealthCheckService");
+            }
+        }, logger);
     }
 }
