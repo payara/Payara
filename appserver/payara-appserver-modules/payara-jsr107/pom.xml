@@ -23,6 +23,21 @@
             </roles>
         </developer>
     </developers>
+
+    <repositories>
+        <repository>
+            <id>payara-snapshots</id>
+            <name>Payara Snapshots</name>
+            <url>https://raw.github.com/payara/Payara_Snapshots/master</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
@@ -35,6 +50,11 @@
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
