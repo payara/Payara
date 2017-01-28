@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.impl;
 
+import com.sun.enterprise.glassfish.bootstrap.JarUtil;
 import fish.payara.micro.PayaraMicro;
 import java.io.File;
 import java.io.IOException;
@@ -161,6 +162,9 @@ class RuntimeDirectory {
 
         // sort out the security properties
         configureSecurity();
+        
+        JarUtil.extractRars(directory.getAbsolutePath());
+        JarUtil.setEnv(directory.getAbsolutePath());
     }
 
     private void setSystemProperties() {
