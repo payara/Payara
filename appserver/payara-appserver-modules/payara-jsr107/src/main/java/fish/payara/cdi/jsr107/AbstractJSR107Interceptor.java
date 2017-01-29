@@ -17,11 +17,23 @@
  */
 package fish.payara.cdi.jsr107;
 
+import fish.payara.nucleus.hazelcast.HazelcastCore;
+
 /**
  *
  * @author steve
  */
 public class AbstractJSR107Interceptor {
+    
+    HazelcastCore hzCore;
+
+    public AbstractJSR107Interceptor() {
+        hzCore = HazelcastCore.getCore();
+    }
+    
+    protected boolean isEnabled() {
+        return hzCore.isEnabled();
+    }
     
     protected boolean shouldIEvict (Class<? extends Throwable>[] evictFor, Class<? extends Throwable>[] noEvictFor, Throwable exception) {
         return shouldICache(evictFor, noEvictFor, exception, false);

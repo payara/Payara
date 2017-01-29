@@ -20,6 +20,7 @@ package fish.payara.cdi.jsr107;
 import fish.payara.cdi.jsr107.impl.NamedCache;
 import com.hazelcast.core.HazelcastInstance;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.logging.Logger;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.annotation.CacheDefaults;
@@ -38,6 +39,8 @@ import javax.enterprise.inject.spi.InjectionPoint;
  */
 public class JSR107Producer {
     
+    private static final Logger logger = Logger.getLogger(JSR107Producer.class.getName());
+    
     public JSR107Producer() {
         hazelcastCore = HazelcastCore.getCore();
     }
@@ -48,19 +51,31 @@ public class JSR107Producer {
     @Produces
     CachingProvider getCachingProvider() {
         // TBD look for scoped Caching Providers in JNDI
+        if (!hazelcastCore.isEnabled()) {
+            logger.warning("Unable to inject CachingProvider as Hazelcast is Disabled");
+            return null;
+        }
         return hazelcastCore.getCachingProvider();
     }
     
     @Dependent
     @Produces
     CacheManager getCacheManager(InjectionPoint point) {
-        CacheManager result = null;
+        if (!hazelcastCore.isEnabled()) {
+            logger.warning("Unable to inject CacheManager as Hazelcast is Disabled");
+            return null;
+        }
+       CacheManager result = null;
         return hazelcastCore.getCachingProvider().getCacheManager();
     }
     
     @Dependent
     @Produces
     HazelcastInstance getHazelcast() {
+        if (!hazelcastCore.isEnabled()) {
+            logger.warning("Unable to inject HazelcastInstance as Hazelcast is Disabled");
+            return null;
+        }
         return hazelcastCore.getInstance();
     }
     
@@ -77,6 +92,10 @@ public class JSR107Producer {
     @Produces
     public <K,V> Cache<K, V> createCache(InjectionPoint ip) {
         Cache<K, V> result;
+        if (!hazelcastCore.isEnabled()) {
+            logger.warning("Unable to inject Cache as Hazelcast is Disabled");
+            return null;
+        }
 
         //determine the cache name first start with the default name
         String cacheName = ip.getMember().getDeclaringClass().getCanonicalName();
