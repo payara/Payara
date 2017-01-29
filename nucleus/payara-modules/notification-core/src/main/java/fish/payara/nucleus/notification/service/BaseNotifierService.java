@@ -117,7 +117,11 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
     }
 
     public NotifierConfigurationExecutionOptions getNotifierConfigurationExecutionOptions() {
-        return notificationService.getExecutionOptions().getNotifierConfigurationExecutionOptionsList().get(type);
+        NotificationExecutionOptions executionOptions = notificationService.getExecutionOptions();
+        if (executionOptions != null) {
+            return executionOptions.getNotifierConfigurationExecutionOptionsList().get(type);
+        }
+        return null;
     }
 
     protected void reset(BaseNotifierService service) {

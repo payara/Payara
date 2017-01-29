@@ -62,14 +62,12 @@ import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
+import org.jvnet.hk2.config.*;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.beans.PropertyChangeEvent;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -81,7 +79,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "requesttracing-service")
 @RunLevel(StartupRunLevel.VAL)
-public class RequestTracingService implements EventListener {
+public class RequestTracingService implements EventListener, ConfigListener {
 
     private static final Logger logger = Logger.getLogger(RequestTracingService.class.getCanonicalName());
 
@@ -98,6 +96,9 @@ public class RequestTracingService implements EventListener {
 
     @Inject
     private Server server;
+
+    @Inject
+    Transactions transactions;
 
     @Inject
     NotificationService notificationService;
@@ -126,9 +127,10 @@ public class RequestTracingService implements EventListener {
         if (event.is(EventTypes.SERVER_READY)) {
             bootstrapRequestTracingService();
         }
+        transactions.addListenerForType(RequestTracingServiceConfiguration.class, this);
     }
 
-    private void bootstrapRequestTracingService() {
+    public void bootstrapRequestTracingService() {
         if (configuration != null) {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
@@ -150,10 +152,12 @@ public class RequestTracingService implements EventListener {
 
     public void bootstrapNotifierList() {
         executionOptions.resetNotifierExecutionOptions();
-        for (Notifier notifier : configuration.getNotifierList()) {
-            ConfigView view = ConfigSupport.getImpl(notifier);
-            NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-            executionOptions.addNotifierExecutionOption(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+        if (configuration.getNotifierList() != null) {
+            for (Notifier notifier : configuration.getNotifierList()) {
+                ConfigView view = ConfigSupport.getImpl(notifier);
+                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+                executionOptions.addNotifierExecutionOption(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+            }
         }
         if (executionOptions.getNotifierExecutionOptionsList().isEmpty()) {
             // Add logging execution options by default
@@ -246,5 +250,19 @@ public class RequestTracingService implements EventListener {
 
     public RequestTracingExecutionOptions getExecutionOptions() {
         return executionOptions;
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        return ConfigSupport.sortAndDispatch(events, new Changed() {
+
+            @Override
+            public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
+                if(changedType.equals(RequestTracingServiceConfiguration.class)) {
+                    configuration = (RequestTracingServiceConfiguration) changedInstance;
+                }
+                return new NotProcessed("Unimplemented by RequestTracingService");
+            }
+        }, logger);
     }
 }

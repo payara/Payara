@@ -47,8 +47,8 @@ import java.beans.PropertyVetoException;
 
 /**
  * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link fish.payara.nucleus.notification.hipchat.HipchatNotifier}
- * and {@link fish.payara.nucleus.notification.slack.SlackNotifier}.
+ * such as {@link LogNotifier}, {@link fish.payara.nucleus.notification.configuration.HipchatNotifier}
+ * and {@link fish.payara.nucleus.notification.configuration.SlackNotifier}.
  *
  * @author mertcaliskan
  */

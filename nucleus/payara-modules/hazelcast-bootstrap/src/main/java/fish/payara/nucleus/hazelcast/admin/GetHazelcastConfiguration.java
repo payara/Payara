@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014-2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2014-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,10 +17,8 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
@@ -75,9 +73,9 @@ public class GetHazelcastConfiguration implements AdminCommand {
         
         HazelcastRuntimeConfiguration runtimeConfiguration = config.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
-        String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member","Cluster Name","Cluster Password", "License Key"};
+        String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member","Cluster Name","Cluster Password", "License Key", "Host Aware Paritioning"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[10];
+        Object values[] = new Object[11];
         values[0] = runtimeConfiguration.getHazelcastConfigurationFile();
         values[1] = runtimeConfiguration.getEnabled();
         values[2] = runtimeConfiguration.getStartPort();
@@ -88,9 +86,10 @@ public class GetHazelcastConfiguration implements AdminCommand {
         values[7] = runtimeConfiguration.getClusterGroupName();
         values[8] = runtimeConfiguration.getClusterGroupPassword();
         values[9] = runtimeConfiguration.getLicenseKey();
+        values[10] = runtimeConfiguration.getHostAwarePartitioning();
         columnFormatter.addRow(values);
         
-        Map<String, Object> map = new HashMap<String,Object>(10);
+        Map<String, Object> map = new HashMap<>(10);
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", values[0]);
         map.put("enabled", values[1]);
@@ -102,6 +101,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("clusterName", values[7]);
         map.put("clusterPassword", values[8]);
         map.put("licenseKey", values[9]);
+        map.put("hostAwareParitioning", values[10]);
         extraProps.put("getHazelcastConfiguration",map);
                 
         actionReport.setExtraProperties(extraProps);

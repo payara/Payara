@@ -141,6 +141,9 @@
         <module>webui-jsf-suntheme-plugin-l10n</module>
         <module>payara-console-extras</module>
         <module>payara-console-extras-l10n</module>
+        <module>slack-notifier-console-plugin</module>
+        <module>hipchat-notifier-console-plugin</module>
+        <module>eventbus-notifier-console-plugin</module>
     </modules>
     <build>
         <plugins>
