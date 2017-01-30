@@ -44,15 +44,11 @@ import fish.payara.nucleus.notification.service.Message;
 /**
  * @author mertcaliskan
  */
-public class SlackMessage implements Message {
+public class SlackMessage extends Message {
 
-    private String text;
-
-    public SlackMessage(String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
+    public SlackMessage(SlackNotificationEvent event, String subject, String message) {
+        this.subject = subject;
+        this.message = message;
+        addIdentifyingInfo(event);
     }
 }

@@ -62,18 +62,18 @@ public class XmppNotificationEventFactory extends NotificationEventFactory<XmppN
         registerEventFactory(NotifierType.XMPP, this);
     }
 
-    public XmppNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        XmppNotificationEvent event = new XmppNotificationEvent();
-        event.setUserMessage(userMessage);
+    public XmppNotificationEvent buildNotificationEvent(String subject, String message) {
+        XmppNotificationEvent event = initializeEvent(new XmppNotificationEvent());
+        event.setSubject(subject);
         event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public XmppNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        XmppNotificationEvent event = new XmppNotificationEvent();
-        event.setUserMessage(userMessage);
+    public XmppNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        XmppNotificationEvent event = initializeEvent(new XmppNotificationEvent());
+        event.setSubject(subject);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

@@ -62,18 +62,18 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
         registerEventFactory(NotifierType.EVENTBUS, this);
     }
 
-    public EventbusNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        EventbusNotificationEvent event = new EventbusNotificationEvent();
-        event.setUserMessage(userMessage);
+    public EventbusNotificationEvent buildNotificationEvent(String subject, String message) {
+        EventbusNotificationEvent event = initializeEvent(new EventbusNotificationEvent());
+        event.setSubject(subject);
         event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public EventbusNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        EventbusNotificationEvent event = new EventbusNotificationEvent();
-        event.setUserMessage(userMessage);
+    public EventbusNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        EventbusNotificationEvent event = initializeEvent(new EventbusNotificationEvent());
+        event.setSubject(subject);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

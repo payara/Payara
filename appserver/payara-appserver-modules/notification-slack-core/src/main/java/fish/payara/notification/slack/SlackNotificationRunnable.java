@@ -75,7 +75,7 @@ public class SlackNotificationRunnable extends NotificationRunnable<SlackMessage
                 SlackMessage message = queue.getMessage();
                 try(OutputStream outputStream = connection.getOutputStream()) {
                     ObjectMapper objectMapper = new ObjectMapper();
-                    objectMapper.writeValue(outputStream, message);
+                    objectMapper.writeValue(outputStream, message.getSubject() + "\n" + message.getMessage());
 
                     if (connection.getResponseCode() != 200) {
                         logger.log(Level.SEVERE,

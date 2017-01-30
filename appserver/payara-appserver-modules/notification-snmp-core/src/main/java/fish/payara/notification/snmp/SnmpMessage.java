@@ -44,15 +44,11 @@ import fish.payara.nucleus.notification.service.Message;
 /**
  * @author mertcaliskan
  */
-public class SnmpMessage implements Message {
+public class SnmpMessage extends Message {
 
-    private String text;
-
-    public SnmpMessage(String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
+    public SnmpMessage(SnmpNotificationEvent event, String subject, String message) {
+        this.subject = subject;
+        this.message = message;
+        addIdentifyingInfo(event);
     }
 }

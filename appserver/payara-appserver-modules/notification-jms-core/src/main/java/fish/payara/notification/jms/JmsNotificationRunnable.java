@@ -68,7 +68,8 @@ public class JmsNotificationRunnable extends NotificationRunnable<JmsMessageQueu
                 Queue jmsQueue = session.createQueue(executionOptions.getQueueName());
                 MessageProducer producer = session.createProducer(jmsQueue);
                 TextMessage message = session.createTextMessage();
-                message.setText(queue.getMessage().getText());
+                JmsMessage jmsMessage = queue.getMessage();
+                message.setText(jmsMessage.getSubject() + "\n" + jmsMessage.getMessage());
                 producer.send(message);
             } catch (JMSException e) {
                 logger.log(Level.SEVERE, "Error occurred while creating session", e);

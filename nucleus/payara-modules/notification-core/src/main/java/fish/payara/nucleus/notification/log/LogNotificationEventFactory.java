@@ -59,9 +59,9 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
         registerEventFactory(NotifierType.LOG, this);
     }
 
-    public LogNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        LogNotificationEvent event = new LogNotificationEvent();
-        event.setUserMessage(userMessage);
+    public LogNotificationEvent buildNotificationEvent(String subject, String message) {
+        LogNotificationEvent event = initializeEvent(new LogNotificationEvent());
+        event.setSubject(subject + ". (" + "host:" + event.getHostName() + ", server:" + event.getServerName() + ", domain:" + event.getDomainName() + ",instance:" + event.getInstanceName() + ")");
         event.setLevel(Level.INFO);
         event.setMessage(message);
 
@@ -69,12 +69,13 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
     }
 
     @Override
-    public LogNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        LogNotificationEvent notificationEvent = new LogNotificationEvent();
-        notificationEvent.setLevel(level);
-        notificationEvent.setMessage(message);
-        notificationEvent.setParameters(parameters);
+    public LogNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        LogNotificationEvent event = initializeEvent(new LogNotificationEvent());
+        event.setLevel(level);
+        event.setSubject(subject + ". (" + "host:" + event.getHostName() + ", server:" + event.getServerName() + ", domain:" + event.getDomainName() + ",instance:" + event.getInstanceName() + ")");
+        event.setMessage(message);
+        event.setParameters(parameters);
 
-        return notificationEvent;
+        return event;
     }
 }

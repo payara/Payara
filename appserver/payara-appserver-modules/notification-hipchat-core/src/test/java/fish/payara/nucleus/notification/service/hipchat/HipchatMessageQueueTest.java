@@ -40,6 +40,7 @@ package fish.payara.nucleus.notification.service.hipchat;
 
 import fish.payara.notification.hipchat.HipchatMessage;
 import fish.payara.notification.hipchat.HipchatMessageQueue;
+import fish.payara.notification.hipchat.HipchatNotificationEvent;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,13 +63,13 @@ public class HipchatMessageQueueTest {
 
     @Test
     public void messageSentToQueueSuccessfully() {
-        queue.addMessage(new HipchatMessage("hello world"));
+        queue.addMessage(new HipchatMessage(new HipchatNotificationEvent(), "subject", "hello world"));
 
         assertThat(queue.size(), is(1));
     }
     @Test
     public void messageSentAndRetrievedSuccessfully() {
-        queue.addMessage(new HipchatMessage("hello world"));
+        queue.addMessage(new HipchatMessage(new HipchatNotificationEvent(), "subject", "hello world"));
         HipchatMessage message = queue.getMessage();
 
         assertThat(message.getMessage(), is("hello world"));

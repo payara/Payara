@@ -61,18 +61,18 @@ public class SnmpNotificationEventFactory extends NotificationEventFactory<SnmpN
         registerEventFactory(NotifierType.SNMP, this);
     }
 
-    public SnmpNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        SnmpNotificationEvent event = new SnmpNotificationEvent();
-        event.setUserMessage(userMessage);
+    public SnmpNotificationEvent buildNotificationEvent(String subject, String message) {
+        SnmpNotificationEvent event = initializeEvent(new SnmpNotificationEvent());
+        event.setSubject(subject);
         event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public SnmpNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        SnmpNotificationEvent event = new SnmpNotificationEvent();
-        event.setUserMessage(userMessage);
+    public SnmpNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        SnmpNotificationEvent event = initializeEvent(new SnmpNotificationEvent());
+        event.setSubject(subject);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

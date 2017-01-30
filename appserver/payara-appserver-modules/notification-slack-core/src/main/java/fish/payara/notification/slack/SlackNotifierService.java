@@ -68,7 +68,7 @@ public class SlackNotifierService extends QueueBasedNotifierService<SlackNotific
     @Subscribe
     public void handleNotification(SlackNotificationEvent event) {
         if (executionOptions.isEnabled()) {
-            SlackMessage message = new SlackMessage(event.getUserMessage() + "\n" + event.getMessage());
+            SlackMessage message = new SlackMessage(event, event.getSubject(), event.getMessage());
             queue.addMessage(message);
         }
     }
