@@ -1,0 +1,110 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2017 Payara Foundation and/or its affiliates. 
+ All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    setResourceBundle(key="i18nsnn" bundle="fish.payara.admingui.notifier.SNMP.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nsnn.notifier.SNMP.configuration.pageTitle}"  >
+<!define name="content">
+<event>
+    <!beforeCreate 
+        getRequestValue(key="configName" value="#{pageSession.configName}" );
+        createMap(result="#{pageSession.attrsMap}")
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
+        gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/get-snmp-notifier-configuration?target=#{pageSession.configName}"  
+                method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+    /> 
+</event>
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+#include "/payaraExtras/notification/notificationConfigTabs.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18nsnn.notifier.SNMP.configuration.pageTitle}" 
+               helpText="$resource{i18nsnn.notifier.SNMP.configuration.pageHelpText}" >
+        <!facet pageButtonsTop>
+            <sun:panelGroup id="topButtons">
+                <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                    <!command
+                        mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                        prepareSuccessfulMsg();
+                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-snmp-configure" 
+                                attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                        />
+                </sun:button>
+            </sun:panelGroup>
+        </facet>
+    </sun:title>
+
+    <sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+        <sun:propertySheetSection id="SNMPNotifierProperties">
+            <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nsnn.notifier.SNMP.configuration.enabledLabel}"  
+                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.enabledLabelHelpText}">
+                <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nsnn.notifier.SNMP.configuration.dynamicLabel}"  
+                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.dynamicLabelHelpText}">
+                <sun:checkbox id="dynamicProp" selected="#{pageSession.dynamicSelected}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="communityProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nsnn.notifier.SNMP.configuration.communityLabel}"  
+                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.communityLabelHelpText}">
+                <sun:textField id="communityField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['community']}" />
+            </sun:property>
+            <sun:property id="oidProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nsnn.notifier.SNMP.configuration.oidLabel}"  
+                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.oidLabelHelpText}">
+                <sun:textField id="oidField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['oid']}" />
+            </sun:property>
+            <sun:property id="versionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nsnn.notifier.SNMP.configuration.versionLabel}"  
+                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.versionLabelHelpText}">
+                <sun:textField id="versionField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['version']}" />
+            </sun:property>
+            <sun:property id="hostProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nsnn.notifier.SNMP.configuration.hostLabel}"  
+                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.hostLabelHelpText}">
+                <sun:textField id="hostField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['host']}" />
+            </sun:property>
+            <sun:property id="portProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nsnn.notifier.SNMP.configuration.portLabel}"  
+                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.portLabelHelpText}">
+                <sun:textField id="portField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['port']}" />
+            </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
+</sun:form>
+</define>
+</composition>
