@@ -43,6 +43,7 @@ import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import java.util.Map;
+import java.util.HashMap;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -80,7 +81,12 @@ public class GetEmailNotifierConfiguration extends BaseGetNotifierConfiguration<
     }
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(EmailNotifierConfiguration nc) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    protected Map<String, Object> getNotifierConfiguration(EmailNotifierConfiguration configuration) {
+    	Map<String, Object> map = new HashMap<>(3);
+    	
+    	map.put("enabled", configuration.getEnabled());
+    	map.put("jndiName", configuration.getJndiName());
+    	map.put("to", configuration.getTo());
+        return map;
     }
 }
