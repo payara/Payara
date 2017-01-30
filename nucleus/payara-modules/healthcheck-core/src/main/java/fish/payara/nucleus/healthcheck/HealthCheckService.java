@@ -38,6 +38,7 @@
  */
 package fish.payara.nucleus.healthcheck;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.notification.configuration.Notifier;
@@ -95,6 +96,9 @@ public class HealthCheckService implements EventListener, ConfigListener {
     
     @Inject
     ServerContext server;
+
+    @Inject
+    ServerEnvironment env;
 
     @Inject
     Transactions transactions;
@@ -256,18 +260,39 @@ public class HealthCheckService implements EventListener, ConfigListener {
         return notifierExecutionOptionsList;
     }
 
-
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
-        return ConfigSupport.sortAndDispatch(events, new Changed() {
-
-            @Override
-            public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
-                if(changedType.equals(HealthCheckServiceConfiguration.class)) {
-                    configuration = (HealthCheckServiceConfiguration) changedInstance;
+        boolean isCurrentInstanceMatchTarget = false;
+        if (env.isInstance()) {
+            isCurrentInstanceMatchTarget = true;
+        }
+        else {
+            for (PropertyChangeEvent pe : events) {
+                ConfigBeanProxy proxy = (ConfigBeanProxy) pe.getSource();
+                while (proxy != null && !(proxy instanceof Config)) {
+                    proxy = proxy.getParent();
                 }
-                return new NotProcessed("Unimplemented by HealthCheckService");
+
+                if (proxy != null && ((Config) proxy).isDas()) {
+                    isCurrentInstanceMatchTarget = true;
+                    break;
+                }
             }
-        }, logger);
+        }
+
+        if (isCurrentInstanceMatchTarget) {
+            return ConfigSupport.sortAndDispatch(events, new Changed() {
+
+                @Override
+                public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
+
+                    if(changedType.equals(HealthCheckServiceConfiguration.class)) {
+                        configuration = (HealthCheckServiceConfiguration) changedInstance;
+                    }
+                    return null;
+                }
+            }, logger);
+        }
+        return null;
     }
 }

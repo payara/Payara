@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.requesttracing;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.nucleus.notification.NotificationService;
@@ -98,6 +99,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
     private Server server;
 
     @Inject
+    ServerEnvironment env;
+
+    @Inject
     Transactions transactions;
 
     @Inject
@@ -133,8 +137,8 @@ public class RequestTracingService implements EventListener, ConfigListener {
     public void bootstrapRequestTracingService() {
         if (configuration != null) {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
-            executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
+            executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
             executionOptions.setHistoricalTraceEnabled(Boolean.parseBoolean(configuration.getHistoricalTraceEnabled()));
             executionOptions.setHistoricalTraceStoreSize(Integer.parseInt(configuration.getHistoricalTraceStoreSize()));
 
@@ -254,15 +258,37 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
-        return ConfigSupport.sortAndDispatch(events, new Changed() {
-
-            @Override
-            public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
-                if(changedType.equals(RequestTracingServiceConfiguration.class)) {
-                    configuration = (RequestTracingServiceConfiguration) changedInstance;
+        boolean isCurrentInstanceMatchTarget = false;
+        if (env.isInstance()) {
+            isCurrentInstanceMatchTarget = true;
+        }
+        else {
+            for (PropertyChangeEvent pe : events) {
+                ConfigBeanProxy proxy = (ConfigBeanProxy) pe.getSource();
+                while (proxy != null && !(proxy instanceof Config)) {
+                    proxy = proxy.getParent();
                 }
-                return new NotProcessed("Unimplemented by RequestTracingService");
+
+                if (proxy != null && ((Config) proxy).isDas()) {
+                    isCurrentInstanceMatchTarget = true;
+                    break;
+                }
             }
-        }, logger);
+        }
+
+        if (isCurrentInstanceMatchTarget) {
+            return ConfigSupport.sortAndDispatch(events, new Changed() {
+
+                @Override
+                public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
+
+                    if(changedType.equals(RequestTracingServiceConfiguration.class)) {
+                        configuration = (RequestTracingServiceConfiguration) changedInstance;
+                    }
+                    return null;
+                }
+            }, logger);
+        }
+        return null;
     }
 }

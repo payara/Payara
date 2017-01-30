@@ -13,12 +13,15 @@
  */
 package fish.payara.nucleus.notification;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationExecutionOptions;
+import fish.payara.nucleus.notification.log.LogNotifier;
+import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 import fish.payara.nucleus.notification.service.NotifierConfigurationExecutionOptionsFactoryStore;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -40,9 +43,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author mertcaliskan
- *
  * Main service class that provides {@link #notify(NotificationEvent)} method used by services, which needs disseminating notifications.
+ *
+ * @author mertcaliskan
  */
 @Service(name = "notification-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -69,6 +72,9 @@ public class NotificationService implements EventListener, ConfigListener {
 
     @Inject
     private NotifierConfigurationExecutionOptionsFactoryStore factoryStore;
+
+    @Inject
+    ServerEnvironment env;
 
     private NotificationExecutionOptions executionOptions;
 
@@ -117,15 +123,37 @@ public class NotificationService implements EventListener, ConfigListener {
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
-        return ConfigSupport.sortAndDispatch(events, new Changed() {
-
-            @Override
-            public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
-                if(changedType.equals(NotificationServiceConfiguration.class)) {
-                    configuration = (NotificationServiceConfiguration) changedInstance;
+        boolean isCurrentInstanceMatchTarget = false;
+        if (env.isInstance()) {
+            isCurrentInstanceMatchTarget = true;
+        }
+        else {
+            for (PropertyChangeEvent pe : events) {
+                ConfigBeanProxy proxy = (ConfigBeanProxy) pe.getSource();
+                while (proxy != null && !(proxy instanceof Config)) {
+                    proxy = proxy.getParent();
                 }
-                return new NotProcessed("Unimplemented by NotificationService");
+
+                if (proxy != null && ((Config) proxy).isDas()) {
+                    isCurrentInstanceMatchTarget = true;
+                    break;
+                }
             }
-        }, logger);
+        }
+
+        if (isCurrentInstanceMatchTarget) {
+            return ConfigSupport.sortAndDispatch(events, new Changed() {
+
+                @Override
+                public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
+
+                    if(changedType.equals(NotificationServiceConfiguration.class)) {
+                        configuration = (NotificationServiceConfiguration) changedInstance;
+                    }
+                    return null;
+                }
+            }, logger);
+        }
+        return null;
     }
 }
