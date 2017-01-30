@@ -218,7 +218,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 });
                 try {
                     bootstrap.startExtensions(deploymentImpl.getExtensions());
-                    bootstrap.startContainer(deploymentImpl.getAppName(), Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
+                    bootstrap.startContainer(deploymentImpl.getAppName() + ".bda", Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
                     bootstrap.startInitialization();
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                     bootstrap.deployBeans();
@@ -514,7 +514,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         DeployCommandParameters dc = context.getCommandParameters(DeployCommandParameters.class);
         deploymentImpl.getServices().add(ExternalConfiguration.class,
-                new ExternalConfigurationImpl(System.getProperty("fish.payara.rollingUpdateDelimiter", ":"),
+                new ExternalConfigurationImpl(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"),
                 dc != null? !dc.isAvailabilityEnabled() : true));
 
         BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
