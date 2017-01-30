@@ -42,6 +42,7 @@ package fish.payara.notification.jms;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
@@ -85,7 +86,17 @@ public class GetJmsNotifierConfiguration extends BaseGetNotifierConfiguration<Jm
     }
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(JmsNotifierConfiguration nc) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    protected Map<String, Object> getNotifierConfiguration(JmsNotifierConfiguration configuration) {
+        Map<String, Object> map = new HashMap<>(4);
+        
+        map.put("enabled", configuration.getEnabled());
+        map.put("contextFactoryClass", configuration.getContextFactoryClass());
+        map.put("connectionFactoryName", configuration.getConnectionFactoryName());
+        map.put("queueName", configuration.getQueueName());
+        map.put("url", configuration.getUrl());
+        map.put("username", configuration.getUsername());
+        map.put("password", configuration.getPassword());
+        
+        return map;
     }
 }
