@@ -146,6 +146,7 @@
         <module>eventbus-notifier-console-plugin</module>
     	<module>email-notifier-console-plugin</module>
         <module>snmp-notifier-console-plugin</module>
+        <module>xmpp-notifier-console-plugin</module>
     </modules>
     <build>
         <plugins>

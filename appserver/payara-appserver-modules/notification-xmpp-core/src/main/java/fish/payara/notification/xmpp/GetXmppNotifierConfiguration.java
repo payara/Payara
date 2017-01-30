@@ -42,6 +42,7 @@ package fish.payara.notification.xmpp;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
@@ -85,7 +86,18 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
     }
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(XmppNotifierConfiguration nc) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    protected Map<String, Object> getNotifierConfiguration(XmppNotifierConfiguration configuration) {
+        Map<String, Object> map = new HashMap<>(8);
+        
+        map.put("enabled", configuration.getEnabled());
+        map.put("hostName", configuration.getHost());
+        map.put("port", configuration.getPort());
+        map.put("serviceName", configuration.getServiceName());
+        map.put("username", configuration.getUsername());
+        map.put("password", configuration.getPassword());
+        map.put("securityDisabled", configuration.getSecurityDisabled());
+        map.put("roomName", configuration.getRoomName());
+        
+        return map;
     }
 }

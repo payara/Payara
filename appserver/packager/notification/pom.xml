@@ -136,6 +136,12 @@
            <version>${project.version}</version>
            <optional>true</optional>
         </dependency>
+        <dependecy>
+           <groupId>fish.payara.admingui</groupId>
+           <artifactId>xmpp-notifier-console-plugin</artifactId>
+           <version>${project.version}</version>
+           <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
 
