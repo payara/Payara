@@ -56,8 +56,8 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+    @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+            opType = RestEndpoint.OpType.POST,
             path = "healthcheck-configure-service",
             description = "Enables/Disables Health Check Service Specified With Name")
 })
@@ -104,7 +104,6 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        final AdminCommandContext theContext = context;
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();

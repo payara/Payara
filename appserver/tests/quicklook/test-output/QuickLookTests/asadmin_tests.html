@@ -1,0 +1,296 @@
+<html>
+<head>
+<title>TestNG:  asadmin_tests</title>
+<link href="../testng.css" rel="stylesheet" type="text/css" />
+<link href="../my-testng.css" rel="stylesheet" type="text/css" />
+
+<style type="text/css">
+.log { display: none;} 
+.stack-trace { display: none;} 
+</style>
+<script type="text/javascript">
+<!--
+function flip(e) {
+  current = e.style.display;
+  if (current == 'block') {
+    e.style.display = 'none';
+  }
+  else {
+    e.style.display = 'block';
+  }
+}
+
+function toggleBox(szDivId)
+{
+  if (document.getElementById) {
+    flip(document.getElementById(szDivId));
+  }
+  else if (document.all) {
+    // this is the way old msie versions work
+    var style2 = document.all[szDivId].style;
+    style2.display = style2.display? "":"block";
+  }
+
+}
+
+function toggleAllBoxes() {
+  if (document.getElementsByTagName) {
+    d = document.getElementsByTagName('div');
+    for (i = 0; i < d.length; i++) {
+      if (d[i].className == 'log') {
+        flip(d[i]);
+      }
+    }
+  }
+}
+
+// -->
+</script>
+
+</head>
+<body>
+<h2 align='center'>asadmin_tests</h2><table border='1' align="center">
+<tr>
+<td>Tests passed/Failed/Skipped:</td><td>11/1/4</td>
+</tr><tr>
+<td>Started on:</td><td>Tue Jan 31 13:40:54 GMT 2017</td>
+</tr>
+<tr><td>Total time:</td><td>0 seconds (391 ms)</td>
+</tr><tr>
+<td>Included groups:</td><td></td>
+</tr><tr>
+<td>Excluded groups:</td><td></td>
+</tr>
+</table><p/>
+<small><i>(Hover the method name to see the test class name)</i></small><p/>
+<table width='100%' border='1' class='invocation-failed'>
+<tr><td colspan='3' align='center'><b>FAILED TESTS</b></td></tr>
+<tr><td><b>Test method</b></td>
+<td width="10%"><b>Time (seconds)</b></td>
+<td width="30%"><b>Exception</b></td>
+</tr>
+<tr>
+<td title='test.admin.JdbcConnectionPoolTests.createPool()'>createPool<br/>
+<a href="#Output-706277948" onClick="toggleBox('Output-706277948');">Show output</a>
+
+<a href="#Output-706277948" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-706277948">
+Attribute exists, name: exit-code value: FAILURE<br/>
+Atrribute does not exist: cause returning null<br/>
+Cause: null<br/>
+</div>
+</td>
+<td>0</td>
+<td><div><pre>java.lang.RuntimeException: null
+	at test.admin.util.GeneralUtils.handleManifestFailure(GeneralUtils.java:141)
+	at test.admin.JdbcConnectionPoolTests.createPool(JdbcConnectionPoolTests.java:76)
+... Removed 22 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace706277948")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace706277948'><pre>java.lang.RuntimeException: null
+	at test.admin.util.GeneralUtils.handleManifestFailure(GeneralUtils.java:141)
+	at test.admin.JdbcConnectionPoolTests.createPool(JdbcConnectionPoolTests.java:76)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.testng.internal.MethodHelper.invokeMethod(MethodHelper.java:604)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:470)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:564)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:830)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:125)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:109)
+	at org.testng.TestRunner.runWorkers(TestRunner.java:678)
+	at org.testng.TestRunner.privateRun(TestRunner.java:624)
+	at org.testng.TestRunner.run(TestRunner.java:495)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:300)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:295)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:275)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:190)
+	at org.testng.TestNG.createAndRunSuiteRunners(TestNG.java:792)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:765)
+	at org.testng.TestNG.run(TestNG.java:699)
+	at org.testng.TestNG.privateMain(TestNG.java:824)
+	at org.testng.TestNG.main(TestNG.java:802)
+</pre></div></td>
+</tr>
+</table><p>
+<table width='100%' border='1' class='invocation-passed'>
+<tr><td colspan='3' align='center'><b>PASSED TESTS</b></td></tr>
+<tr><td><b>Test method</b></td>
+<td width="10%"><b>Time (seconds)</b></td>
+<td width="30%"><b>Exception</b></td>
+</tr>
+<tr>
+<td title='test.admin.JvmOptionTests.createJoe()'>createJoe<br/>
+<a href="#Output-245672235" onClick="toggleBox('Output-245672235');">Show output</a>
+
+<a href="#Output-245672235" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-245672235">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.WebtierTests.createListener()'>createListener<br/>
+<a href="#Output-1688019098" onClick="toggleBox('Output-1688019098');">Show output</a>
+
+<a href="#Output-1688019098" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-1688019098">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: children value: http-listener-1+++++++++;http-listener-2+++++++++;admin-listener++++++++++<br/>
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: exit-code value: SUCCESS<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.WebtierTests.createListenerWithOldParam()'>createListenerWithOldParam<br/>
+<a href="#Output-532445947" onClick="toggleBox('Output-532445947');">Show output</a>
+
+<a href="#Output-532445947" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-532445947">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: children value: http-listener-1+++++++++;http-listener-2+++++++++;admin-listener++++++++++<br/>
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: exit-code value: SUCCESS<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.OsgiAsadminTest.createOsgiListener()'>createOsgiListener<br/>
+<a href="#Output-2114694065" onClick="toggleBox('Output-2114694065');">Show output</a>
+
+<a href="#Output-2114694065" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-2114694065">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: exit-code value: SUCCESS<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.JvmOptionTests.deleteJoe()'>deleteJoe<br/>
+<a href="#Output-431687835" onClick="toggleBox('Output-431687835');">Show output</a>
+
+<a href="#Output-431687835" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-431687835">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.WebtierTests.deleteListener()'>deleteListener<br/>
+<a href="#Output-290658609" onClick="toggleBox('Output-290658609');">Show output</a>
+
+<a href="#Output-290658609" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-290658609">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: exit-code value: SUCCESS<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.WebtierTests.deleteListener2()'>deleteListener2<br/>
+<a href="#Output-1170794006" onClick="toggleBox('Output-1170794006');">Show output</a>
+
+<a href="#Output-1170794006" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-1170794006">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: exit-code value: SUCCESS<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.JvmOptionTests.deletedJoeDoesNotExist()'>deletedJoeDoesNotExist<br/>
+<a href="#Output-1164175787" onClick="toggleBox('Output-1164175787');">Show output</a>
+
+<a href="#Output-1164175787" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-1164175787">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: children value: -XX%3AMaxPermSize%3D192m;-client;-Djava.awt.headless%3Dtrue;-Djdk.corba.allowOutputStreamSubclass%3Dtrue;-Djavax.xml.accessExternalSchema%3Dall;-Djavax.management.builder.initial%3Dcom.sun.enterprise.v3.admin.AppServerMBeanServerBuilder;-XX%3A%2BUnlockDiagnosticVMOptions;-Djava.endorsed.dirs%3D%24%7Bcom.sun.aas.installRoot%7D%2Fmodules%2Fendorsed%24%7Bpath.separator%7D%24%7Bcom.sun.aas.installRoot%7D%2Flib%2Fendorsed;-Djava.security.policy%3D%24%7Bcom.sun.aas.instanceRoot%7D%2Fconfig%2Fserver.policy;-Djava.security.auth.login.config%3D%24%7Bcom.sun.aas.instanceRoot%7D%2Fconfig%2Flogin.conf;-Dcom.sun.enterprise.security.httpsOutboundKeyAlias%3Ds1as;-Xmx512m;-Djavax.net.ssl.keyStore%3D%24%7Bcom.sun.aas.instanceRoot%7D%2Fconfig%2Fkeystore.jks;-Djavax.net.ssl.trustStore%3D%24%7Bcom.sun.aas.instanceRoot%7D%2Fconfig%2Fcacerts.jks;-Djava.ext.dirs%3D%24%7Bcom.sun.aas.javaRoot%7D%2Flib%2Fext%24%7Bpath.separator%7D%24%7Bcom.sun.aas.javaRoot%7D%2Fjre%2Flib%2Fext%24%7Bpath.separator%7D%24%7Bcom.sun.aas.instanceRoot%7D%2Flib%2Fext;-Djdbc.drivers%3Dorg.apache.derby.jdbc.ClientDriver;-DANTLR_USE_DIRECT_CLASS_LOADING%3Dtrue;-Dcom.sun.enterprise.config.config_environment_factory_class%3Dcom.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory;-Dorg.glassfish.additionalOSGiBundlesToStart%3Dorg.apache.felix.shell%2Corg.apache.felix.gogo.runtime%2Corg.apache.felix.gogo.shell%2Corg.apache.felix.gogo.command%2Corg.apache.felix.shell.remote%2Corg.apache.felix.fileinstall;-Dosgi.shell.telnet.port%3D6666;-Dosgi.shell.telnet.maxconn%3D1;-Dosgi.shell.telnet.ip%3D127.0.0.1;-Dgosh.args%3D--nointeractive;-Dfelix.fileinstall.dir%3D%24%7Bcom.sun.aas.installRoot%7D%2Fmodules%2Fautostart%2F;-Dfelix.fileinstall.poll%3D5000;-Dfelix.fileinstall.log.level%3D2;-Dfelix.fileinstall.bundles.new.start%3Dtrue;-Dfelix.fileinstall.bundles.startTransient%3Dtrue;-Dfelix.fileinstall.disableConfigSave%3Dfalse;-XX%3ANewRatio%3D2;-Dcom.ctc.wstx.returnNullForDefaultNamespace%3Dtrue;-Djdk.tls.rejectClientInitiatedRenegotiation%3Dtrue;-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization%3Dfalse;-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER%3Dorg.glassfish.grizzly.memory.HeapMemoryManager<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.JvmOptionTests.ensureCreatedJoeExists()'>ensureCreatedJoeExists<br/>
+<a href="#Output-1012570586" onClick="toggleBox('Output-1012570586');">Show output</a>
+
+<a href="#Output-1012570586" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-1012570586">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: children value: -XX%3AMaxPermSize%3D192m;-client;-Djava.awt.headless%3Dtrue;-Djdk.corba.allowOutputStreamSubclass%3Dtrue;-Djavax.xml.accessExternalSchema%3Dall;-Djavax.management.builder.initial%3Dcom.sun.enterprise.v3.admin.AppServerMBeanServerBuilder;-XX%3A%2BUnlockDiagnosticVMOptions;-Djava.endorsed.dirs%3D%24%7Bcom.sun.aas.installRoot%7D%2Fmodules%2Fendorsed%24%7Bpath.separator%7D%24%7Bcom.sun.aas.installRoot%7D%2Flib%2Fendorsed;-Djava.security.policy%3D%24%7Bcom.sun.aas.instanceRoot%7D%2Fconfig%2Fserver.policy;-Djava.security.auth.login.config%3D%24%7Bcom.sun.aas.instanceRoot%7D%2Fconfig%2Flogin.conf;-Dcom.sun.enterprise.security.httpsOutboundKeyAlias%3Ds1as;-Xmx512m;-Djavax.net.ssl.keyStore%3D%24%7Bcom.sun.aas.instanceRoot%7D%2Fconfig%2Fkeystore.jks;-Djavax.net.ssl.trustStore%3D%24%7Bcom.sun.aas.instanceRoot%7D%2Fconfig%2Fcacerts.jks;-Djava.ext.dirs%3D%24%7Bcom.sun.aas.javaRoot%7D%2Flib%2Fext%24%7Bpath.separator%7D%24%7Bcom.sun.aas.javaRoot%7D%2Fjre%2Flib%2Fext%24%7Bpath.separator%7D%24%7Bcom.sun.aas.instanceRoot%7D%2Flib%2Fext;-Djdbc.drivers%3Dorg.apache.derby.jdbc.ClientDriver;-DANTLR_USE_DIRECT_CLASS_LOADING%3Dtrue;-Dcom.sun.enterprise.config.config_environment_factory_class%3Dcom.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory;-Dorg.glassfish.additionalOSGiBundlesToStart%3Dorg.apache.felix.shell%2Corg.apache.felix.gogo.runtime%2Corg.apache.felix.gogo.shell%2Corg.apache.felix.gogo.command%2Corg.apache.felix.shell.remote%2Corg.apache.felix.fileinstall;-Dosgi.shell.telnet.port%3D6666;-Dosgi.shell.telnet.maxconn%3D1;-Dosgi.shell.telnet.ip%3D127.0.0.1;-Dgosh.args%3D--nointeractive;-Dfelix.fileinstall.dir%3D%24%7Bcom.sun.aas.installRoot%7D%2Fmodules%2Fautostart%2F;-Dfelix.fileinstall.poll%3D5000;-Dfelix.fileinstall.log.level%3D2;-Dfelix.fileinstall.bundles.new.start%3Dtrue;-Dfelix.fileinstall.bundles.startTransient%3Dtrue;-Dfelix.fileinstall.disableConfigSave%3Dfalse;-XX%3ANewRatio%3D2;-Dcom.ctc.wstx.returnNullForDefaultNamespace%3Dtrue;-Djdk.tls.rejectClientInitiatedRenegotiation%3Dtrue;-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization%3Dfalse;-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER%3Dorg.glassfish.grizzly.memory.HeapMemoryManager;-Dname%3D+joe+blo<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.WebtierTests.ensureCreatedListenerExists()'>ensureCreatedListenerExists<br/>
+<a href="#Output-1908923184" onClick="toggleBox('Output-1908923184');">Show output</a>
+
+<a href="#Output-1908923184" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-1908923184">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: children value: http-listener-1+++++++++;http-listener-2+++++++++;admin-listener++++++++++;ls12345+++++++++++++++++<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.WebtierTests.ensureDeletedListenerDoesNotExist()'>ensureDeletedListenerDoesNotExist<br/>
+<a href="#Output-1577213552" onClick="toggleBox('Output-1577213552');">Show output</a>
+
+<a href="#Output-1577213552" onClick="toggleAllBoxes();">Show all outputs</a>
+<div class='log' id="Output-1577213552">
+Attribute exists, name: exit-code value: SUCCESS<br/>
+Attribute exists, name: children value: http-listener-1+++++++++;http-listener-2+++++++++;admin-listener++++++++++<br/>
+</div>
+</td>
+<td>0</td>
+<td></td>
+</tr>
+</table><p>
+<table width='100%' border='1' class='invocation-skipped'>
+<tr><td colspan='3' align='center'><b>SKIPPED TESTS</b></td></tr>
+<tr><td><b>Test method</b></td>
+<td width="10%"><b>Time (seconds)</b></td>
+<td width="30%"><b>Exception</b></td>
+</tr>
+<tr>
+<td title='test.admin.JdbcConnectionPoolTests.deletePool()'>deletePool</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.JdbcConnectionPoolTests.deletedPoolDoesNotExist()'>deletedPoolDoesNotExist</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.JdbcConnectionPoolTests.ensureCreatedPoolExists()'>ensureCreatedPoolExists</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td title='test.admin.JdbcConnectionPoolTests.pingPool()'>pingPool</td>
+<td>0</td>
+<td></td>
+</tr>
+</table><p>
+</body>
+</html>
