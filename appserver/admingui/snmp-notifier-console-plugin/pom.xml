@@ -6,7 +6,7 @@
         <artifactId>admingui</artifactId>
         <version>4.1.1.171-SNAPSHOT</version>
     </parent>
-    <artifactId>SNMP-notifier-console-plugin</artifactId>
+    <artifactId>snmp-notifier-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>SNMP Notifier Console Plugin</name>
         

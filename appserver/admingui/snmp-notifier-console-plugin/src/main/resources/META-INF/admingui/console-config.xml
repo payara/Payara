@@ -17,12 +17,12 @@
 When distributing the software, include this License Header Notice in each
 file and include the License file at packager/legal/LICENSE.txt.
 -->
-<console-config id="SNMPNotifier">
+<console-config id="snmpNotifier">
     <integration-point
-        id="SNMPNotifier"
+        id="snmpNotifier"
         type="fish.payara.admingui:notifierTab"
         priority="40"
         parentId="notificationConfigTabs"
-        content="SNMP/SNMPNotifierTabs.jsf"
+        content="snmp/SNMPNotifierTabs.jsf"
     />
 </console-config>

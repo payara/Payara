@@ -132,7 +132,7 @@
 	</dependency>
 	<dependency>
            <groupId>fish.payara.admingui</groupId>
-           <artifactId>SNMP-notifier-console-plugin</artifactId>
+           <artifactId>snmp-notifier-console-plugin</artifactId>
            <version>${project.version}</version>
            <optional>true</optional>
         </dependency>

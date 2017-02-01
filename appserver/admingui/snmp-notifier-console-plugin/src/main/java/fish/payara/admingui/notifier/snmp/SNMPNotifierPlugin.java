@@ -15,7 +15,7 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.admingui.notifier.SNMP;
+package fish.payara.admingui.notifier.snmp;
 
 import java.net.URL;
 import org.glassfish.api.admingui.ConsoleProvider;
@@ -23,7 +23,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  *
- * @author Andrew Pielage
+ * @author Matt Gill
  */
 @Service
 public class SNMPNotifierPlugin implements ConsoleProvider {

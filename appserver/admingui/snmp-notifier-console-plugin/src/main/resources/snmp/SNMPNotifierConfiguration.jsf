@@ -43,8 +43,8 @@
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
 #include "/payaraExtras/notification/notificationConfigTabs.inc"
-    <sun:title id="propertyContentPage" title="$resource{i18nsnn.notifier.SNMP.configuration.pageTitle}" 
-               helpText="$resource{i18nsnn.notifier.SNMP.configuration.pageHelpText}" >
+    <sun:title id="propertyContentPage" title="$resource{i18nsnn.notifier.snmp.configuration.pageTitle}" 
+               helpText="$resource{i18nsnn.notifier.snmp.configuration.pageHelpText}" >
         <!facet pageButtonsTop>
             <sun:panelGroup id="topButtons">
                 <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
@@ -64,42 +64,42 @@
 #include "/common/shared/configNameSection.inc"
         <sun:propertySheetSection id="SNMPNotifierProperties">
             <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsnn.notifier.SNMP.configuration.enabledLabel}"  
-                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.enabledLabelHelpText}">
+                          label="$resource{i18nsnn.notifier.snmp.configuration.enabledLabel}"  
+                          helpText="$resource{i18nsnn.notifier.snmp.configuration.enabledLabelHelpText}">
                 <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
             </sun:property>
             <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsnn.notifier.SNMP.configuration.dynamicLabel}"  
-                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.dynamicLabelHelpText}">
+                          label="$resource{i18nsnn.notifier.snmp.configuration.dynamicLabel}"  
+                          helpText="$resource{i18nsnn.notifier.snmp.configuration.dynamicLabelHelpText}">
                 <sun:checkbox id="dynamicProp" selected="#{pageSession.dynamicSelected}" selectedValue="true" />
             </sun:property>
             <sun:property id="communityProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsnn.notifier.SNMP.configuration.communityLabel}"  
-                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.communityLabelHelpText}">
+                          label="$resource{i18nsnn.notifier.snmp.configuration.communityLabel}"  
+                          helpText="$resource{i18nsnn.notifier.snmp.configuration.communityLabelHelpText}">
                 <sun:textField id="communityField" columns="$int{75}" maxLength="255" 
                                text="#{pageSession.valueMap['community']}" />
             </sun:property>
             <sun:property id="oidProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsnn.notifier.SNMP.configuration.oidLabel}"  
-                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.oidLabelHelpText}">
+                          label="$resource{i18nsnn.notifier.snmp.configuration.oidLabel}"  
+                          helpText="$resource{i18nsnn.notifier.snmp.configuration.oidLabelHelpText}">
                 <sun:textField id="oidField" columns="$int{75}" maxLength="255" 
                                text="#{pageSession.valueMap['oid']}" />
             </sun:property>
             <sun:property id="versionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsnn.notifier.SNMP.configuration.versionLabel}"  
-                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.versionLabelHelpText}">
+                          label="$resource{i18nsnn.notifier.snmp.configuration.versionLabel}"  
+                          helpText="$resource{i18nsnn.notifier.snmp.configuration.versionLabelHelpText}">
                 <sun:textField id="versionField" columns="$int{75}" maxLength="255" 
                                text="#{pageSession.valueMap['version']}" />
             </sun:property>
             <sun:property id="hostProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsnn.notifier.SNMP.configuration.hostLabel}"  
-                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.hostLabelHelpText}">
+                          label="$resource{i18nsnn.notifier.snmp.configuration.hostLabel}"  
+                          helpText="$resource{i18nsnn.notifier.snmp.configuration.hostLabelHelpText}">
                 <sun:textField id="hostField" columns="$int{75}" maxLength="255" 
                                text="#{pageSession.valueMap['host']}" />
             </sun:property>
             <sun:property id="portProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nsnn.notifier.SNMP.configuration.portLabel}"  
-                          helpText="$resource{i18nsnn.notifier.SNMP.configuration.portLabelHelpText}">
+                          label="$resource{i18nsnn.notifier.snmp.configuration.portLabel}"  
+                          helpText="$resource{i18nsnn.notifier.snmp.configuration.portLabelHelpText}">
                 <sun:textField id="portField" columns="$int{75}" maxLength="255" 
                                text="#{pageSession.valueMap['port']}" />
             </sun:property>
