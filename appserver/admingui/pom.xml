@@ -144,7 +144,8 @@
         <module>slack-notifier-console-plugin</module>
         <module>hipchat-notifier-console-plugin</module>
         <module>eventbus-notifier-console-plugin</module>
-    </modules>
+    	<module>email-notifier-console-plugin</module>
+  </modules>
     <build>
         <plugins>
           <plugin>

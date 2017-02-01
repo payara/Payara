@@ -40,6 +40,10 @@ public class CachePutInterceptor extends AbstractJSR107Interceptor {
 
     @AroundInvoke
     public Object cachePut(InvocationContext ctx) throws Throwable {
+        
+        if (!isEnabled()) {
+            return ctx.proceed();
+        }
 
         CachePut annotation = ctx.getMethod().getAnnotation(CachePut.class);
         PayaraCacheKeyInvocationContext<CachePut> pctx = new PayaraCacheKeyInvocationContext<>(ctx, annotation);
