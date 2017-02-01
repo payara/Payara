@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl.util;
 
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 
 import com.sun.enterprise.container.common.spi.util.GlassFishInputStreamHandler;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactoryWithAppId;
 import com.sun.logging.LogDomains;
 
 import java.io.*;
@@ -64,19 +65,18 @@ import org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory;
 class GlassFishObjectInputStream extends ObjectInputStream
 {
     private ClassLoader appLoader;
-
-	private static Logger _logger = LogDomains.getLogger(GlassFishObjectInputStream.class, LogDomains.JNDI_LOGGER);
-
+    private static Logger _logger = LogDomains.getLogger(GlassFishObjectInputStream.class, LogDomains.JNDI_LOGGER);
     private ObjectInputOutputStreamFactory inputStreamHelper;
-
     private Collection<GlassFishInputStreamHandler> handlers;
+    private final long uniqueId;
 
-    GlassFishObjectInputStream(Collection<GlassFishInputStreamHandler> handlers,  InputStream in, ClassLoader appCl, boolean resolve)
+    GlassFishObjectInputStream(Collection<GlassFishInputStreamHandler> handlers,  InputStream in, ClassLoader appCl, boolean resolve, long uniqueId)
         throws IOException, StreamCorruptedException
     {
         super(in);
         appLoader = appCl;
         this.handlers = handlers;
+        this.uniqueId = uniqueId;
 
         if (resolve) {
             enableResolveObject(resolve);
@@ -92,7 +92,10 @@ class GlassFishObjectInputStream extends ObjectInputStream
     {
     	Object result = obj;
         try {
-            if (obj instanceof SerializableObjectFactory) {
+            if(obj instanceof SerializableObjectFactoryWithAppId) {
+                return ((SerializableObjectFactoryWithAppId) obj).createObject(uniqueId);
+            }
+            else if (obj instanceof SerializableObjectFactory) {
                 return ((SerializableObjectFactory) obj).createObject();
             } else {
             	for (GlassFishInputStreamHandler handler : handlers) {
@@ -156,6 +159,4 @@ class GlassFishObjectInputStream extends ObjectInputStream
 
         return clazz;
     }
-
-
 }

@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactoryWithAppId;
 
 import java.lang.reflect.Method;
 
@@ -155,7 +157,7 @@ public abstract class EJBLocalHomeImpl
     }
 
     public static final class SerializableLocalHome
-        implements SerializableObjectFactory
+        implements SerializableObjectFactoryWithAppId
     {
         private long ejbId;
 
@@ -163,7 +165,13 @@ public abstract class EJBLocalHomeImpl
             this.ejbId = uniqueId;
         }
 
-        public Object createObject()
+        @Override
+        public Object createObject() throws IOException {
+            return createObject(0L);
+        }
+
+        @Override
+        public Object createObject(long appUniqueId)
             throws IOException
         {
             // Return the LocalHome by getting the target container based
@@ -171,7 +179,7 @@ public abstract class EJBLocalHomeImpl
             // LocalHome rather than a LocalBusinessHome since the 
             // LocalBusinessHome is never visible to the application and
             // would never be stored in SFSB state.
-            BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(ejbId);
+            BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(ejbId, appUniqueId);
             return container.getEJBLocalHome();
         }
     }
