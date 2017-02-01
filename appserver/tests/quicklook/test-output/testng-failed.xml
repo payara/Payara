@@ -1,0 +1,24 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite thread-count="5" verbose="2" name="Failed suite [QuickLookTests]" junit="false" annotations="JDK">
+  <parameter name="admin.password" value=""/>
+  <parameter name="admin.console.url" value="http://localhost:4848/"/>
+  <parameter name="admin.user" value="admin"/>
+  <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
+  <parameter name="resources.xml.relative.path" value="resources/resources.xml"/>
+  <test name="asadmin_tests(failed)" junit="false" annotations="JDK">
+    <parameter name="admin.password" value=""/>
+    <parameter name="admin.console.url" value="http://localhost:4848/"/>
+    <parameter name="admin.user" value="admin"/>
+    <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
+    <parameter name="resources.xml.relative.path" value="resources/resources.xml"/>
+    <classes>
+      <class name="test.admin.JdbcConnectionPoolTests">
+        <methods>
+          <include name="createPool"/>
+          <include name="setUpEnvironment"/>
+          <include name="setupEnvironment"/>
+        </methods>
+      </class>
+    </classes>
+  </test>
+</suite>
