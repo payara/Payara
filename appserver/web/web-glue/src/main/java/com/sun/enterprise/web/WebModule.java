@@ -2429,7 +2429,8 @@ public class WebModule extends PwcWebModule implements Context {
     
     @Override
     public long getUniqueId() {
-        return wmInfo.getDescriptor().getApplication().getUniqueId();
+        com.sun.enterprise.deployment.Application app = wmInfo.getDescriptor().getApplication();
+        return app != null? app.getUniqueId() : 0L;
     }
 }
 
