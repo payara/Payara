@@ -78,4 +78,14 @@ public class LogNotificationConfigurer extends BaseNotificationConfigurer<LogNot
             configuration.enabled(this.enabled);
         }
     }
+
+    @Override
+    protected String getHealthCheckNotifierCommandName() {
+        return "healthcheck-log-notifier-configure";
+    }
+
+    @Override
+    protected String getRequestTracingNotifierCommandName() {
+        return "requesttracing-log-notifier-configure";
+    }
 }

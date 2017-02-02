@@ -102,4 +102,14 @@ public class SnmpNotificationConfigurer extends BaseNotificationConfigurer<SnmpN
             configuration.setPort(String.valueOf(port));
         }
     }
+
+    @Override
+    protected String getHealthCheckNotifierCommandName() {
+        return "healthcheck-snmp-notifier-configure";
+    }
+
+    @Override
+    protected String getRequestTracingNotifierCommandName() {
+        return "requesttracing-snmp-notifier-configure";
+    }
 }

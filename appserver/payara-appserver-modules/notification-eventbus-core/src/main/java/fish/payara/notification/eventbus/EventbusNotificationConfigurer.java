@@ -78,4 +78,14 @@ public class EventbusNotificationConfigurer extends BaseNotificationConfigurer<E
             configuration.setTopicName(topicName);
         }
     }
+
+    @Override
+    protected String getHealthCheckNotifierCommandName() {
+        return "healthcheck-eventbus-notifier-configure";
+    }
+
+    @Override
+    protected String getRequestTracingNotifierCommandName() {
+        return "requesttracing-eventbus-notifier-configure";
+    }
 }

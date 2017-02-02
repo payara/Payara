@@ -90,4 +90,14 @@ public class SlackNotificationConfigurer extends BaseNotificationConfigurer<Slac
             configuration.setToken3(token3);
         }
     }
+
+    @Override
+    protected String getHealthCheckNotifierCommandName() {
+        return "healthcheck-slack-notifier-configure";
+    }
+
+    @Override
+    protected String getRequestTracingNotifierCommandName() {
+        return "requesttracing-slack-notifier-configure";
+    }
 }
