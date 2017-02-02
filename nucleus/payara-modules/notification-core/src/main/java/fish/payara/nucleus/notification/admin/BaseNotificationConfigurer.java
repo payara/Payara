@@ -128,7 +128,8 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
                         ParameterMap params = new ParameterMap();
-                        params.add("enabled", Boolean.FALSE.toString());
+                        params.add("enabled", Boolean.TRUE.toString());
+                        params.add("dynamic", Boolean.TRUE.toString());
                         params.add("target", target);
 
                         ActionReport healthCheckSubReport = actionReport.addSubActionsReport();
