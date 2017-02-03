@@ -43,7 +43,6 @@ package com.sun.ejb.containers;
 
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
-import com.sun.enterprise.container.common.spi.util.SerializableObjectFactoryWithAppId;
 
 import java.lang.reflect.Method;
 
@@ -157,17 +156,12 @@ public abstract class EJBLocalHomeImpl
     }
 
     public static final class SerializableLocalHome
-        implements SerializableObjectFactoryWithAppId
+        implements SerializableObjectFactory
     {
         private long ejbId;
 
         public SerializableLocalHome(long uniqueId) {
             this.ejbId = uniqueId;
-        }
-
-        @Override
-        public Object createObject() throws IOException {
-            return createObject(0L);
         }
 
         @Override
@@ -184,4 +178,3 @@ public abstract class EJBLocalHomeImpl
         }
     }
 }
-

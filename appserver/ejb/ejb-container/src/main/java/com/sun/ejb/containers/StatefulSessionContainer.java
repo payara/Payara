@@ -3555,7 +3555,7 @@ public final class StatefulSessionContainer
         }
 
         //Method of SerializableObjectFactory
-        public Object createObject()
+        public Object createObject(long appUniqueId)
                 throws IOException {
 
             return this;
@@ -3598,7 +3598,7 @@ public final class StatefulSessionContainer
         }
 
         //Method of SerializableObjectFactory
-        public Object createObject() throws IOException {
+        public Object createObject(long appUniqueId) throws IOException {
             return this;
         }
     }

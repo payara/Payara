@@ -51,5 +51,5 @@ import java.io.Serializable;
  */
 
 public interface SerializableObjectFactory extends Serializable {
-    public Object createObject() throws java.io.IOException;
+    public Object createObject(long appUniqueId) throws java.io.IOException;
 }

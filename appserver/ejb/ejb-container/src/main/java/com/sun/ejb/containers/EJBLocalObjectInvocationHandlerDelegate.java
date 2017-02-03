@@ -43,7 +43,6 @@ package com.sun.ejb.containers;
 
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
-import com.sun.enterprise.container.common.spi.util.SerializableObjectFactoryWithAppId;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -140,7 +139,7 @@ public class EJBLocalObjectInvocationHandlerDelegate
     }
     
     private static final class SerializableLocalObjectDelegate
-        implements SerializableObjectFactoryWithAppId
+        implements SerializableObjectFactory
     {
         private final long containerId;
         private final String intfClassName;
@@ -155,11 +154,6 @@ public class EJBLocalObjectInvocationHandlerDelegate
             this.primaryKey = primaryKey;
             this.isOptionalLocalBusinessView = isOptionalLocalBusView;
             this.version = version;
-        }
-
-        @Override
-        public Object createObject() throws IOException {
-            return createObject(0L);
         }
 
         @Override

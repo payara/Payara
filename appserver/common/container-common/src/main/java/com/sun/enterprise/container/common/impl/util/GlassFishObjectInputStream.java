@@ -44,7 +44,6 @@ package com.sun.enterprise.container.common.impl.util;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 
 import com.sun.enterprise.container.common.spi.util.GlassFishInputStreamHandler;
-import com.sun.enterprise.container.common.spi.util.SerializableObjectFactoryWithAppId;
 import com.sun.logging.LogDomains;
 
 import java.io.*;
@@ -92,11 +91,8 @@ class GlassFishObjectInputStream extends ObjectInputStream
     {
     	Object result = obj;
         try {
-            if(obj instanceof SerializableObjectFactoryWithAppId) {
-                return ((SerializableObjectFactoryWithAppId) obj).createObject(uniqueId);
-            }
-            else if (obj instanceof SerializableObjectFactory) {
-                return ((SerializableObjectFactory) obj).createObject();
+            if (obj instanceof SerializableObjectFactory) {
+                return ((SerializableObjectFactory) obj).createObject(uniqueId);
             } else {
             	for (GlassFishInputStreamHandler handler : handlers) {
 					Object r = handler.resolveObject(obj);

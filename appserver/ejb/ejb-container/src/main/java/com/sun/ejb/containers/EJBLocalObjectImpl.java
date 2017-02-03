@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -255,11 +256,12 @@ public abstract class EJBLocalObjectImpl
         long getVersion() {
             return version;
         }
-        
-        public Object createObject()
+
+        @Override
+        public Object createObject(long uniqueAppId)
             throws IOException
         {
-            BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
+            BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, uniqueAppId);
                 
             if( localHomeView ) {
                 EJBLocalObjectImpl ejbLocalObjectImpl = 
@@ -278,5 +280,4 @@ public abstract class EJBLocalObjectImpl
         }
 
     }
-
 }
