@@ -113,4 +113,14 @@ public class JmsNotificationConfigurer extends BaseNotificationConfigurer<JmsNot
             configuration.setPassword(password);
         }
     }
+
+    @Override
+    protected String getHealthCheckNotifierCommandName() {
+        return "healthcheck-jms-notifier-configure";
+    }
+
+    @Override
+    protected String getRequestTracingNotifierCommandName() {
+        return "requesttracing-jms-notifier-configure";
+    }
 }

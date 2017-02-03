@@ -44,21 +44,4 @@ import fish.payara.nucleus.notification.domain.NotificationEvent;
  * @author mertcaliskan
  */
 public class XmppNotificationEvent extends NotificationEvent {
-
-    private String message;
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    @Override
-    public String toString() {
-        return "XmppNotificationEvent{" +
-                "message='" + message + '\'' +
-                '}';
-    }
 }

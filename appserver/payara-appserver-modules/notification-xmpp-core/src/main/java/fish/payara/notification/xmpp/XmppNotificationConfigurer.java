@@ -114,4 +114,14 @@ public class XmppNotificationConfigurer extends BaseNotificationConfigurer<XmppN
             configuration.roomName(roomName);
         }
     }
+
+    @Override
+    protected String getHealthCheckNotifierCommandName() {
+        return "healthcheck-xmpp-notifier-configure";
+    }
+
+    @Override
+    protected String getRequestTracingNotifierCommandName() {
+        return "requesttracing-xmpp-notifier-configure";
+    }
 }

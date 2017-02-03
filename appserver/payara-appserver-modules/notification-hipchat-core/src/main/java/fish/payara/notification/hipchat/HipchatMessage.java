@@ -43,16 +43,12 @@ import fish.payara.nucleus.notification.service.Message;
 /**
  * @author mertcaliskan
  */
-public class HipchatMessage implements Message {
+public class HipchatMessage extends Message {
 
-    private String message;
-
-    public HipchatMessage(String message) {
+    public HipchatMessage(HipchatNotificationEvent event, String subject, String message) {
+        this.subject = subject;
         this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
+        addIdentifyingInfo(event);
     }
 
     @Override

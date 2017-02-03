@@ -39,10 +39,27 @@
 package fish.payara.nucleus.notification.service;
 
 
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+
 import java.io.Serializable;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+public abstract class Message implements Serializable {
+
+    protected String subject;
+    protected String message;
+
+    public void addIdentifyingInfo(NotificationEvent event) {
+        this.subject = subject + ". (" + "host:" + event.getHostName() + ", server:" + event.getServerName() + ", domain:" + event.getDomainName() + ",instance:" + event.getInstanceName() + ")";
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

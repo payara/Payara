@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.requesttracing;
 
+import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
@@ -47,6 +48,9 @@ import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
 import fish.payara.nucleus.notification.log.LogNotificationEvent;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -78,6 +82,7 @@ public class RequestTracingServiceMockTest {
 
     @Mock
     NotifierExecutionOptionsFactoryStore execOptionsFactoryStore;
+
 
     @InjectMocks
     RequestTracingServiceMock requestTracingService = new RequestTracingServiceMock();
@@ -117,5 +122,11 @@ class LogNotificationEventFactoryMock extends LogNotificationEventFactory {
     @Override
     public NotificationEventFactoryStore getStore() {
         return mock(NotificationEventFactoryStore.class);
+    }
+
+
+    @Override
+    protected LogNotificationEvent initializeEvent(LogNotificationEvent logNotificationEvent) {
+        return new LogNotificationEvent();
     }
 }

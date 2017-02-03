@@ -26,7 +26,6 @@ import java.util.logging.Level;
 public class LogNotificationEvent extends NotificationEvent {
 
     private Level level;
-    private String message;
     private Object[] parameters;
 
     public Level getLevel() {
@@ -35,14 +34,6 @@ public class LogNotificationEvent extends NotificationEvent {
 
     public void setLevel(Level level) {
         this.level = level;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 
     public Object[] getParameters() {
@@ -57,7 +48,7 @@ public class LogNotificationEvent extends NotificationEvent {
     public String toString() {
         return "LogNotificationEvent{" +
                 "level=" + level +
-                ", message='" + message + '\'' +
+                ", message='" + getMessage() + '\'' +
                 ", parameters=" + Arrays.toString(parameters) +
                 '}';
     }

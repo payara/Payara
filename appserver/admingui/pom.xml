@@ -145,7 +145,8 @@
         <module>hipchat-notifier-console-plugin</module>
         <module>eventbus-notifier-console-plugin</module>
     	<module>email-notifier-console-plugin</module>
-  </modules>
+        <module>snmp-notifier-console-plugin</module>
+    </modules>
     <build>
         <plugins>
           <plugin>

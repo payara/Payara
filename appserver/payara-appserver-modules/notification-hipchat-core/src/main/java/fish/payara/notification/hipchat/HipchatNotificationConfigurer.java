@@ -85,4 +85,14 @@ public class HipchatNotificationConfigurer extends BaseNotificationConfigurer<Hi
             configuration.setToken(token);
         }
     }
+
+    @Override
+    protected String getHealthCheckNotifierCommandName() {
+        return "healthcheck-hipchat-notifier-configure";
+    }
+
+    @Override
+    protected String getRequestTracingNotifierCommandName() {
+        return "requesttracing-hipchat-notifier-configure";
+    }
 }

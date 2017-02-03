@@ -75,7 +75,7 @@ public class EventbusNotifierService extends QueueBasedNotifierService<EventbusN
     @Subscribe
     public void handleNotification(EventbusNotificationEvent event) {
         if(executionOptions.isEnabled()) {
-            EventbusMessage message = new EventbusMessage(event.getUserMessage(), event.getMessage());
+            EventbusMessage message = new EventbusMessage(event, event.getSubject(), event.getMessage());
             eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
         }
     }

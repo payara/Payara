@@ -43,13 +43,12 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -75,6 +74,9 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
     protected ServerEnvironment server;
 
     @Inject
+    private CommandRunner commandRunner;
+
+    @Inject
     protected Logger logger;
 
     @Inject
@@ -95,9 +97,11 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
     private Class<C> notifierConfigurationClass;
 
     protected abstract void applyValues(C c) throws PropertyVetoException;
+    protected abstract String getHealthCheckNotifierCommandName();
+    protected abstract String getRequestTracingNotifierCommandName();
 
     @Override
-    public void execute(AdminCommandContext context) {
+    public void execute(final AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
@@ -111,7 +115,6 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
         notifierConfigurationClass = (Class<C>) genericSuperclass.getActualTypeArguments()[0];
 
         C c = notificationServiceConfiguration.getNotifierConfigurationByType(notifierConfigurationClass);
-        final C[] config = ObjectArrays.newArray(notifierConfigurationClass, 1);
 
         try {
             if (c == null) {
@@ -123,12 +126,34 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
                         applyValues(c);
                         notificationServiceConfigurationProxy.getNotifierConfigurationList().add(c);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+
+                        ParameterMap params = new ParameterMap();
+                        params.add("enabled", Boolean.TRUE.toString());
+                        params.add("dynamic", Boolean.TRUE.toString());
+                        params.add("target", target);
+
+                        ActionReport healthCheckSubReport = actionReport.addSubActionsReport();
+                        CommandRunner.CommandInvocation healthCheckCommandInvocation =
+                                commandRunner.getCommandInvocation(getHealthCheckNotifierCommandName(), healthCheckSubReport, context.getSubject());
+                        healthCheckCommandInvocation.parameters(params);
+                        healthCheckCommandInvocation.execute();
+                        if (healthCheckSubReport.hasFailures()) {
+                            logger.log(Level.SEVERE, "Error occurred while configuring notifier with command: " + getHealthCheckNotifierCommandName());
+                        }
+
+                        ActionReport requestTracingSubReport = actionReport.addSubActionsReport();
+                        CommandRunner.CommandInvocation requestTracingCommandInvocation = commandRunner.getCommandInvocation(getRequestTracingNotifierCommandName(), requestTracingSubReport, context.getSubject());
+                        requestTracingCommandInvocation.parameters(params);
+                        requestTracingCommandInvocation.execute();
+                        if (requestTracingSubReport.hasFailures()) {
+                            logger.log(Level.SEVERE, "Error occurred while configuring notifier with command: " + getRequestTracingNotifierCommandName());
+                        }
+
                         return notificationServiceConfigurationProxy;
                     }
                 }, notificationServiceConfiguration);
             }
             else {
-                config[0] = c;
                 ConfigSupport.apply(new SingleConfigCode<C>() {
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
                         applyValues(cProxy);
@@ -137,7 +162,6 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
                     }
                 }, c);
             }
-
 
             if (dynamic) {
                 if (server.isDas()) {

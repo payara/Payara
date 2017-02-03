@@ -77,6 +77,7 @@ public class XmppNotificationRunnable extends NotificationRunnable<XmppMessageQu
                     }
 
                     Message message = new Message();
+                    message.setSubject(xmppMessage.getSubject());
                     message.setBody(xmppMessage.getMessage());
                     message.setType(Message.Type.groupchat);
 

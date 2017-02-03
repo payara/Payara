@@ -44,7 +44,6 @@ import fish.payara.nucleus.notification.configuration.HipchatNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -68,7 +67,7 @@ public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNot
     @Subscribe
     public void handleNotification(HipchatNotificationEvent event) {
         if (executionOptions != null && executionOptions.isEnabled()) {
-            HipchatMessage message = new HipchatMessage(event.getUserMessage() + "\n" + event.getMessage());
+            HipchatMessage message = new HipchatMessage(event, event.getSubject(), event.getMessage());
             queue.addMessage(message);
         }
     }

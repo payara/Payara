@@ -61,18 +61,18 @@ public class SlackNotificationEventFactory extends NotificationEventFactory<Slac
         registerEventFactory(NotifierType.SLACK, this);
     }
 
-    public SlackNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        SlackNotificationEvent event = new SlackNotificationEvent();
-        event.setUserMessage(userMessage);
+    public SlackNotificationEvent buildNotificationEvent(String subject, String message) {
+        SlackNotificationEvent event = initializeEvent(new SlackNotificationEvent());
+        event.setSubject(subject);
         event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public SlackNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        SlackNotificationEvent event = new SlackNotificationEvent();
-        event.setUserMessage(userMessage);
+    public SlackNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        SlackNotificationEvent event = initializeEvent(new SlackNotificationEvent());
+        event.setSubject(subject);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

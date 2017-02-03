@@ -62,18 +62,18 @@ public class EmailNotificationEventFactory extends NotificationEventFactory<Emai
         registerEventFactory(NotifierType.EMAIL, this);
     }
 
-    public EmailNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        EmailNotificationEvent event = new EmailNotificationEvent();
-        event.setUserMessage(userMessage);
+    public EmailNotificationEvent buildNotificationEvent(String subject, String message) {
+        EmailNotificationEvent event = initializeEvent(new EmailNotificationEvent());
+        event.setSubject(subject);
         event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public EmailNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        EmailNotificationEvent event = new EmailNotificationEvent();
-        event.setUserMessage(userMessage);
+    public EmailNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        EmailNotificationEvent event = initializeEvent(new EmailNotificationEvent());
+        event.setSubject(subject);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

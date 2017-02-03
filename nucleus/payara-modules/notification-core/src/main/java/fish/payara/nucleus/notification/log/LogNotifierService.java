@@ -17,7 +17,6 @@ import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -52,11 +51,11 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
         if (execOptions != null && execOptions.isEnabled()) {
             if (event.getParameters() != null && event.getParameters().length > 0) {
                 String formattedText = MessageFormat.format(event.getMessage(), event.getParameters());
-                logger.log(event.getLevel(), event.getUserMessage() != null ?
-                        event.getUserMessage() + " - " + formattedText : formattedText);
+                logger.log(event.getLevel(), event.getSubject() != null ?
+                        event.getSubject() + " - " + formattedText : formattedText);
             } else {
-                logger.log(event.getLevel(), event.getUserMessage() != null ?
-                        event.getUserMessage() + " - " + event.getMessage() : event.getMessage());
+                logger.log(event.getLevel(), event.getSubject() != null ?
+                        event.getSubject() + " - " + event.getMessage() : event.getMessage());
             }
         }
     }

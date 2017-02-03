@@ -45,13 +45,58 @@ package fish.payara.nucleus.notification.domain;
  */
 public abstract class NotificationEvent {
 
-    private String userMessage;
+    private String serverName;
+    private String hostName;
+    private String domainName;
+    private String instanceName;
+    private String subject;
+    private String message;
 
-    public String getUserMessage() {
-        return userMessage;
+    public String getServerName() {
+        return serverName;
     }
 
-    public void setUserMessage(String userMessage) {
-        this.userMessage = userMessage;
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+
+    public String getDomainName() {
+        return domainName;
+    }
+
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

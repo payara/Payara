@@ -43,22 +43,11 @@ import fish.payara.nucleus.notification.service.Message;
 /**
  * @author mertcaliskan
  */
-public class XmppMessage implements Message {
+public class XmppMessage extends Message {
 
-    private String message;
-
-    public XmppMessage(String message) {
+    public XmppMessage(XmppNotificationEvent event, String subject, String message) {
+        this.subject = subject;
         this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public String toString() {
-        return "XmppMessage{" +
-                "message='" + message + '\'' +
-                '}';
+        addIdentifyingInfo(event);
     }
 }

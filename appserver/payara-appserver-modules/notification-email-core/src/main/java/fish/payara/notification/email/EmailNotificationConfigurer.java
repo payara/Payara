@@ -86,4 +86,14 @@ public class EmailNotificationConfigurer extends BaseNotificationConfigurer<Emai
             configuration.setTo(to);
         }
     }
+
+    @Override
+    protected String getHealthCheckNotifierCommandName() {
+        return "healthcheck-email-notifier-configure";
+    }
+
+    @Override
+    protected String getRequestTracingNotifierCommandName() {
+        return "requesttracing-email-notifier-configure";
+    }
 }

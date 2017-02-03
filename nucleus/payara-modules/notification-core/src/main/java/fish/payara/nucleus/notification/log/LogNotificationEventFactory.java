@@ -59,9 +59,9 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
         registerEventFactory(NotifierType.LOG, this);
     }
 
-    public LogNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        LogNotificationEvent event = new LogNotificationEvent();
-        event.setUserMessage(userMessage);
+    public LogNotificationEvent buildNotificationEvent(String subject, String message) {
+        LogNotificationEvent event = initializeEvent(new LogNotificationEvent());
+        event.setSubject(subject);
         event.setLevel(Level.INFO);
         event.setMessage(message);
 
@@ -69,9 +69,10 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
     }
 
     @Override
-    public LogNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        LogNotificationEvent notificationEvent = new LogNotificationEvent();
+    public LogNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        LogNotificationEvent notificationEvent = initializeEvent(new LogNotificationEvent());
         notificationEvent.setLevel(level);
+        notificationEvent.setSubject(subject);
         notificationEvent.setMessage(message);
         notificationEvent.setParameters(parameters);
 

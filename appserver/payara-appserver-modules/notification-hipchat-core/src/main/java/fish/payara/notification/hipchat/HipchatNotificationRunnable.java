@@ -72,7 +72,7 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
 
                 HipchatMessage message = queue.getMessage();
                 try (OutputStream outputStream = connection.getOutputStream()) {
-                    outputStream.write((message.getMessage().getBytes(Charsets.UTF8_CHARSET)));
+                    outputStream.write((message.getSubject() + "\n" + message.getMessage()).getBytes(Charsets.UTF8_CHARSET));
                     if (connection.getResponseCode() != 204) {
                         logger.log(Level.SEVERE,
                                 "Error occurred while connecting Hipchat. Check your room name and token. HTTP response code",
