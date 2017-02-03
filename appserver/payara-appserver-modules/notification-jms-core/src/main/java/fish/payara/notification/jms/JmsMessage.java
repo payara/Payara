@@ -44,15 +44,11 @@ import fish.payara.nucleus.notification.service.Message;
 /**
  * @author mertcaliskan
  */
-public class JmsMessage implements Message {
+public class JmsMessage extends Message {
 
-    private String text;
-
-    public JmsMessage(String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
+    public JmsMessage(JmsNotificationEvent event, String subject, String message) {
+        this.subject = subject;
+        this.message = message;
+        addIdentifyingInfo(event);
     }
 }

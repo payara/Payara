@@ -43,29 +43,11 @@ import fish.payara.nucleus.notification.service.Message;
 /**
  * @author mertcaliskan
  */
-public class EventbusMessage implements Message {
+public class EventbusMessage extends Message {
 
-    private String subject;
-    private String message;
-
-    public EventbusMessage(String userMessage, String message) {
-        this.subject = userMessage;
-        this.message = message;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
+    public EventbusMessage(EventbusNotificationEvent event, String subject, String message) {
         this.subject = subject;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
         this.message = message;
+        addIdentifyingInfo(event);
     }
 }

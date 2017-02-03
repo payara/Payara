@@ -88,7 +88,7 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
     @Subscribe
     public void handleNotification(SnmpNotificationEvent event) {
         if (execOptions.isEnabled()) {
-            SnmpMessage message = new SnmpMessage(event.getUserMessage() + "\n" + event.getMessage());
+            SnmpMessage message = new SnmpMessage(event, event.getSubject(), event.getMessage());
             queue.addMessage(message);
         }
     }

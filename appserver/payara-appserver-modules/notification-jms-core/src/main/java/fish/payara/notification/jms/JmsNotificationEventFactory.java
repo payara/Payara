@@ -61,18 +61,18 @@ public class JmsNotificationEventFactory extends NotificationEventFactory<JmsNot
         registerEventFactory(NotifierType.JMS, this);
     }
 
-    public JmsNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        JmsNotificationEvent event = new JmsNotificationEvent();
-        event.setUserMessage(userMessage);
+    public JmsNotificationEvent buildNotificationEvent(String subject, String message) {
+        JmsNotificationEvent event = initializeEvent(new JmsNotificationEvent());
+        event.setSubject(subject);
         event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public JmsNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        JmsNotificationEvent event = new JmsNotificationEvent();
-        event.setUserMessage(userMessage);
+    public JmsNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        JmsNotificationEvent event = initializeEvent(new JmsNotificationEvent());
+        event.setSubject(subject);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

@@ -61,18 +61,18 @@ public class HipchatNotificationEventFactory extends NotificationEventFactory<Hi
         registerEventFactory(NotifierType.HIPCHAT, this);
     }
 
-    public HipchatNotificationEvent buildNotificationEvent(String userMessage, String message) {
-        HipchatNotificationEvent event = new HipchatNotificationEvent();
-        event.setUserMessage(userMessage);
+    public HipchatNotificationEvent buildNotificationEvent(String subject, String message) {
+        HipchatNotificationEvent event = initializeEvent(new HipchatNotificationEvent());
+        event.setSubject(subject);
         event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public HipchatNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
-        HipchatNotificationEvent event = new HipchatNotificationEvent();
-        event.setUserMessage(userMessage);
+    public HipchatNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        HipchatNotificationEvent event = initializeEvent(new HipchatNotificationEvent());
+        event.setSubject(subject);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

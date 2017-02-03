@@ -141,18 +141,18 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     }
 
     public void sendNotification(Level level, String message, Object[] parameters) {
-        String userMessage = "Health Check notification with severity level: " + level.getName();
+        String subject = "Health Check notification with severity level: " + level.getName();
 
         for (NotifierExecutionOptions notifierExecutionOptions : healthCheckService.getNotifierExecutionOptionsList()) {
             if (notifierExecutionOptions.isEnabled()) {
                 NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(level, userMessage, message, parameters);
+                NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(level, subject, message, parameters);
                 notificationService.notify(notificationEvent);
             }
         }
 
         if (healthCheckService.isHistoricalTraceEnabled()) {
-            healthCheckEventStore.addTrace(new Date().getTime(), level, userMessage, message, parameters);
+            healthCheckEventStore.addTrace(new Date().getTime(), level, subject, message, parameters);
         }
     }
 }

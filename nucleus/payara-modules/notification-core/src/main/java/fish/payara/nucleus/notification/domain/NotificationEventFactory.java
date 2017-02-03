@@ -39,12 +39,18 @@
  */
 package fish.payara.nucleus.notification.domain;
 
+import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.log.LogNotificationEvent;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.inject.Inject;
+import java.lang.reflect.ParameterizedType;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 
 /**
@@ -56,13 +62,33 @@ public abstract class NotificationEventFactory<E extends NotificationEvent> {
     @Inject
     NotificationEventFactoryStore store;
 
+    @Inject
+    private ServerEnvironment environment;
+
+    @Inject
+    private ServiceLocator habitat;
+
     protected void registerEventFactory(NotifierType type, NotificationEventFactory notificationEventFactory) {
         getStore().register(type, notificationEventFactory);
     }
 
-    public abstract E buildNotificationEvent(String userMessage, String message);
+    protected E initializeEvent(E e) {
+        try {
+            e.setHostName(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException ex) {
+            //No-op
+        }
+        e.setDomainName(environment.getDomainName());
+        e.setInstanceName(environment.getInstanceName());
+        Server server = habitat.getService(Server.class, environment.getInstanceName());
+        e.setServerName(server.getName());
 
-    public abstract E buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters);
+        return e;
+    }
+
+    public abstract E buildNotificationEvent(String subject, String message);
+
+    public abstract E buildNotificationEvent(Level level, String subject, String message, Object[] parameters);
 
     public NotificationEventFactoryStore getStore() {
         return store;

@@ -43,29 +43,11 @@ import fish.payara.nucleus.notification.service.Message;
 /**
  * @author mertcaliskan
  */
-public class EmailMessage implements Message {
+public class EmailMessage extends Message {
 
-    private String subject;
-    private String message;
-
-    public EmailMessage(String userMessage, String message) {
-        this.subject = userMessage;
-        this.message = message;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
+    public EmailMessage(EmailNotificationEvent event, String subject, String message) {
         this.subject = subject;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
         this.message = message;
+        addIdentifyingInfo(event);
     }
 }
