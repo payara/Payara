@@ -108,7 +108,7 @@ public class TranslatedConfigView implements ConfigView {
                 if (getAlias(stringValue, ALIAS_TOKEN) != null) {
                     try{
                         return getRealPasswordFromAlias(stringValue);
-                    } catch (IOException | KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException e) {
+                    } catch (Exception e) {
                         Logger.getAnonymousLogger().severe(
                                 Strings.get("TranslatedConfigView.aliaserror", stringValue, e.getLocalizedMessage()));
                         return stringValue;
