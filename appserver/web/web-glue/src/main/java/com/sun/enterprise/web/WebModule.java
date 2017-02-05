@@ -672,10 +672,14 @@ public class WebModule extends PwcWebModule implements Context {
             webFragmentMap = webBundleDescriptor.getJarNameToWebFragmentNameMap();
         }
 
+        boolean servletInitializersEnabled = true;
+        if (webBundleDescriptor != null) {
+            servletInitializersEnabled = webBundleDescriptor.getServletInitializersEnabled();
+        }
         Iterable<ServletContainerInitializer> allInitializers =
             ServletContainerInitializerUtil.getServletContainerInitializers(
                 webFragmentMap, orderingList, hasOthers,
-                wmInfo.getAppClassLoader(), webBundleDescriptor.getServletInitializersEnabled());
+                wmInfo.getAppClassLoader(), servletInitializersEnabled);
         setServletContainerInitializerInterestList(allInitializers);
 
         DeploymentContext dc = getWebModuleConfig().getDeploymentContext();
