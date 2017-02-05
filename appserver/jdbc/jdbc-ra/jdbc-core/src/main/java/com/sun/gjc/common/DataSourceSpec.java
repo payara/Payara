@@ -114,7 +114,7 @@ public class DataSourceSpec implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final ConcurrentHashMap<Integer, String> details = new ConcurrentIgnoredHashMap(URL);
+    private final ConcurrentHashMap<Integer, String> details = new ConcurrentIgnoredHashMap(URL,LOGJDBCCALLS,SLOWSQLLOGTHRESHOLD, STATEMENTCACHESIZE, NUMBEROFTOPQUERIESTOREPORT,TIMETOKEEPQUERIESINMINUTES, STATEMENTTIMEOUT, PASSWORD);
 
     /**
      * Set the property.
@@ -181,7 +181,8 @@ public class DataSourceSpec implements java.io.Serializable {
                 return false;
             }
             ConcurrentIgnoredHashMap rhs = (ConcurrentIgnoredHashMap)o;
-            if(checkIgnoredKeys(rhs) == Containment.ONE_CONTAINS) {
+            Containment ignoreVals = checkIgnoredKeys(rhs);
+            if( (ignoreVals == Containment.ONE_CONTAINS) ||  (ignoreVals == Containment.BOTH_CONTAIN)) {
                 return makeIgnoredMap(this).equals(makeIgnoredMap(rhs));
             } else {
                 return super.equals(rhs);
