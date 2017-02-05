@@ -114,7 +114,7 @@ public class DataSourceSpec implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final ConcurrentHashMap<Integer, String> details = new ConcurrentIgnoredHashMap(URL,LOGJDBCCALLS,SLOWSQLLOGTHRESHOLD, STATEMENTCACHESIZE, NUMBEROFTOPQUERIESTOREPORT,TIMETOKEEPQUERIESINMINUTES, STATEMENTTIMEOUT);
+    private final ConcurrentHashMap<Integer, String> details = new ConcurrentIgnoredHashMap(URL,LOGJDBCCALLS,SLOWSQLLOGTHRESHOLD, STATEMENTCACHESIZE, NUMBEROFTOPQUERIESTOREPORT,TIMETOKEEPQUERIESINMINUTES, STATEMENTTIMEOUT, PASSWORD);
 
     /**
      * Set the property.
