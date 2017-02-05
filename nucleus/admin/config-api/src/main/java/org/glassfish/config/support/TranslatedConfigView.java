@@ -63,6 +63,10 @@ import java.security.PrivilegedAction;
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
  * into system properties values.
+ * 
+ * Also support translation of Password Aliases
+ * 
+ * Also support translation of Environment Variables
  *
  * @author Jerome Dochez
  */
@@ -71,6 +75,7 @@ public class TranslatedConfigView implements ConfigView {
     final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
+    private static final String ENV_TOKEN = "ENV";
     private static int MAX_SUBSTITUTION_DEPTH = 100;
     public static final ThreadLocal<Boolean> doSubstitution = new ThreadLocal<Boolean>() {
         @Override
@@ -89,8 +94,18 @@ public class TranslatedConfigView implements ConfigView {
             if(doSubstitution.get() == false) {
                 return value;
             }
+            
+            // do environment variable substitution
+            String envName = getAlias(stringValue, ENV_TOKEN);
+            if (envName != null) {
+                String envValue = System.getenv(envName);
+                if (envValue != null) {
+                    return envValue;
+                }
+            }
+            
             if (domainPasswordAliasStore() != null) {
-                if (getAlias(stringValue) != null) {
+                if (getAlias(stringValue, ALIAS_TOKEN) != null) {
                     try{
                         return getRealPasswordFromAlias(stringValue);
                     } catch (Exception e) {
@@ -186,10 +201,10 @@ public class TranslatedConfigView implements ConfigView {
      * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
      * @return The aliasname or null.
      */
-    static public String getAlias(String propName)
+    static public String getAlias(String propName, String token)
     {
        String aliasName=null;
-       String starter = "${" + ALIAS_TOKEN + "="; //no space is allowed in starter
+       String starter = "${" + token + "="; //no space is allowed in starter
        String ender   = "}";
 
        propName = propName.trim();
@@ -209,7 +224,7 @@ public class TranslatedConfigView implements ConfigView {
                KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException,
                UnrecoverableKeyException {
 
-           final String          an = getAlias(at);
+           final String          an = getAlias(at, ALIAS_TOKEN);
            final boolean     exists = domainPasswordAliasStore.containsKey(an);
            if (!exists) {
 
