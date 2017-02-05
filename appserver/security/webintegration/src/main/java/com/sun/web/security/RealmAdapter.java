@@ -1601,12 +1601,14 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      */
     private String getAppContextID(final ServletContext servletContext) {
         if (!servletContext.getVirtualServerName().equals( this.virtualServer.getName())) {
-            _logger.log(Level.WARNING, 
+            // PAYARA-1261 downgrade log messages to INFO as users haven't got a problem
+            _logger.log(Level.INFO, 
                     "Virtual server name from ServletContext: {0} differs from name from virtual.getName(): {1}", 
                     new Object[]{servletContext.getVirtualServerName(), virtualServer.getName()});
         }
         if (!servletContext.getContextPath().equals(webDesc.getContextRoot())) {
-            _logger.log(Level.WARNING, 
+            // PAYARA-1261 downgrade log messages to INFO as users haven't got a problem
+             _logger.log(Level.INFO, 
                     "Context path from ServletContext: {0} differs from path from bundle: {1}", 
                     new Object[]{servletContext.getContextPath(), webDesc.getContextRoot()});
         }
