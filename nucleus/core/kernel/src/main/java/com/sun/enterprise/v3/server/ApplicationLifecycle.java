@@ -1098,7 +1098,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // application, especially the classloaders need to be closed to release file handles
         unload(info, context);
 
-        if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
+        
+        if (report != null && report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
             events.send(new Event(Deployment.UNDEPLOYMENT_SUCCESS, context));
             deploymentLifecycleProbeProvider.applicationUndeployedEvent(appName, getApplicationType(info));
         } else {            
