@@ -1877,7 +1877,10 @@ public class VirtualServer extends StandardHost
                     });
 
                 } else {
-                    _logger.log(Level.SEVERE, PROXY_NULL, new Object[] {listener.getName()});
+                    // check the listener is enabled before spitting out the SEVERE log
+                    if (Boolean.parseBoolean(listener.getEnabled())) {
+                        _logger.log(Level.SEVERE, PROXY_NULL, new Object[] {listener.getName()});
+                    }
                 }
 
             } catch (Exception ex) {
