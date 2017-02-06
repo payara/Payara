@@ -20,9 +20,9 @@
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
-    setResourceBundle(key="i18nsnn" bundle="fish.payara.admingui.notifier.SNMP.Strings");
+    setResourceBundle(key="i18nsnn" bundle="fish.payara.admingui.notifier.snmp.Strings");
     />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nsnn.notifier.SNMP.configuration.pageTitle}"  >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nsnn.notifier.snmp.configuration.pageTitle}"  >
 <!define name="content">
 <event>
     <!beforeCreate 
