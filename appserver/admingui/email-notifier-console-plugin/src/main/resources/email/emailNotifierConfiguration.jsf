@@ -79,13 +79,15 @@
                           label="$resource{i18nemn.notifier.email.configuration.jndiNameLabel}"  
                           helpText="$resource{i18nemn.notifier.email.configuration.jndiNameLabelHelpText}">
                 <sun:textField id="jndiNameField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['jndiName']}" />
+                               text="#{pageSession.valueMap['jndiName']}" styleClass="required"  
+                               required="#{true}"/>
             </sun:property>
             <sun:property id="toProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nemn.notifier.email.configuration.toLabel}"  
                           helpText="$resource{i18nemn.notifier.email.configuration.toLabelHelpText}">
                 <sun:textField id="toNameField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['to']}" />
+                               text="#{pageSession.valueMap['to']}" styleClass="required"  
+                               required="#{true}"/>
             </sun:property>
             
         </sun:propertySheetSection>

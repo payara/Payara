@@ -95,7 +95,8 @@
                           label="$resource{i18nsnn.notifier.snmp.configuration.hostLabel}"  
                           helpText="$resource{i18nsnn.notifier.snmp.configuration.hostLabelHelpText}">
                 <sun:textField id="hostField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['host']}" />
+                               text="#{pageSession.valueMap['host']}" styleClass="required"  
+                               required="#{true}"/>
             </sun:property>
             <sun:property id="portProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nsnn.notifier.snmp.configuration.portLabel}"  

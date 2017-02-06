@@ -79,13 +79,15 @@
                           label="$resource{i18nhn.notifier.hipchat.configuration.roomNameLabel}"  
                           helpText="$resource{i18nhn.notifier.hipchat.configuration.roomNameLabelHelpText}">
                 <sun:textField id="roomName" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['roomName']}" />
+                               text="#{pageSession.valueMap['roomName']}" styleClass="required"  
+                               required="#{true}"/>
             </sun:property>
             <sun:property id="tokenProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nhn.notifier.hipchat.configuration.tokenLabel}"  
                           helpText="$resource{i18nhn.notifier.hipchat.configuration.tokenLabelHelpText}">
                 <sun:textField id="tokenField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['token']}" />
+                               text="#{pageSession.valueMap['token']}" styleClass="required"  
+                               required="#{true}"/>
             </sun:property>
         </sun:propertySheetSection>
     </sun:propertySheet>
