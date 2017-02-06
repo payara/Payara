@@ -87,7 +87,8 @@
                           label="$resource{i18nxn.notifier.xmpp.configuration.hostNameLabel}"  
                           helpText="$resource{i18nxn.notifier.xmpp.configuration.hostNameLabelHelpText}">
                 <sun:textField id="hostField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['hostName']}" />
+                               text="#{pageSession.valueMap['hostName']}" 
+                               styleClass="required"  required="#{true}"/>
             </sun:property>
             <sun:property id="portProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nxn.notifier.xmpp.configuration.portLabel}"  
@@ -99,7 +100,8 @@
                           label="$resource{i18nxn.notifier.xmpp.configuration.serviceNameLabel}"  
                           helpText="$resource{i18nxn.notifier.xmpp.configuration.serviceNameLabelHelpText}">
                 <sun:textField id="serviceNameField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['serviceName']}" />
+                               text="#{pageSession.valueMap['serviceName']}" styleClass="required"  
+                               required="#{true}"/>
             </sun:property>
             <sun:property id="usernameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nxn.notifier.xmpp.configuration.usernameLabel}"  
@@ -110,7 +112,7 @@
             <sun:property id="passwordProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nxn.notifier.xmpp.configuration.passwordLabel}"  
                           helpText="$resource{i18nxn.notifier.xmpp.configuration.passwordLabelHelpText}">
-                <sun:textField id="passwordField" columns="$int{75}" maxLength="255" 
+                <sun:passwordField id="passwordField" columns="$int{75}" maxLength="255" 
                                text="#{pageSession.valueMap['password']}" />
             </sun:property>
             <sun:property id="securityDisabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
@@ -123,7 +125,8 @@
                           label="$resource{i18nxn.notifier.xmpp.configuration.roomNameLabel}"  
                           helpText="$resource{i18nxn.notifier.xmpp.configuration.roomNameLabelHelpText}">
                 <sun:textField id="roomName" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['roomName']}" />
+                               text="#{pageSession.valueMap['roomName']}" styleClass="required"  
+                               required="#{true}"/>
             </sun:property>
         </sun:propertySheetSection>
     </sun:propertySheet>
