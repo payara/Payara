@@ -570,7 +570,7 @@ public final class ApplicationContextFacade
             return (ServletRegistration.Dynamic) doPrivileged(
                     "addJspFile", new Object[] {servletName, jspFile});
         } else {
-            return context.addServlet(servletName, jspFile);
+            return context.addJspFile(servletName, jspFile);
         }
     }
 
