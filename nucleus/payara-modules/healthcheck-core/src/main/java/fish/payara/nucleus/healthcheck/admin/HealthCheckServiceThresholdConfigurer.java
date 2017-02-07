@@ -84,13 +84,13 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
     @Param(name = "serviceName", optional = false)
     private String serviceName;
 
-    @Param(name = "thresholdCritical", optional = true)
+    @Param(name = "thresholdCritical", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL)
     private String thresholdCritical;
 
-    @Param(name = "thresholdWarning", optional = true)
+    @Param(name = "thresholdWarning", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING)
     private String thresholdWarning;
 
-    @Param(name = "thresholdGood", optional = true)
+    @Param(name = "thresholdGood", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD)
     private String thresholdGood;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
@@ -154,52 +154,38 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
                     service.setOptions(service.constructOptions(checker));
                 }
                 if (server.isDas()) {
-                    if (targetUtil.getConfig(target).isDas()) {      
-                        if (thresholdCritical != null) {
-                            service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
-                            actionReport.appendMessage(strings.getLocalString(
-                                    "healthcheck.service.configure.threshold.critical.success",
-                                    "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
-                            actionReport.appendMessage("\n");
-                        }
-                        if (thresholdWarning != null) {
-                            service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
-                            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
-                                    "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
-                            actionReport.appendMessage("\n");
-                        }
-                        if (thresholdGood != null) {
-                            service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
-                            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
-                                    "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
-                            actionReport.appendMessage("\n");
-                        }
+                    if (targetUtil.getConfig(target).isDas()) {
+                        configureDynamically(actionReport, service);
                         healthCheckService.reboot();
                     }
                 } else {
-                    // it implicitly targetted to us as we are not the DAS
+                    // it implicitly targeted to us as we are not the DAS
                     // restart the service
-                    if (thresholdCritical != null) {
-                        service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
-                        actionReport.appendMessage(strings.getLocalString(
-                                "healthcheck.service.configure.threshold.critical.success",
-                                "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
-                        actionReport.appendMessage("\n");
-                    }
-                    if (thresholdWarning != null) {
-                        service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
-                        actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
-                                "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
-                        actionReport.appendMessage("\n");
-                    }
-                    if (thresholdGood != null) {
-                        service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
-                        actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
-                                "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
-                        actionReport.appendMessage("\n");
-                    }
+                    configureDynamically(actionReport, service);
                     healthCheckService.reboot();
                 }
+        }
+    }
+
+    private void configureDynamically(ActionReport actionReport, BaseThresholdHealthCheck service) {
+        if (thresholdCritical != null) {
+            service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
+            actionReport.appendMessage(strings.getLocalString(
+                    "healthcheck.service.configure.threshold.critical.success",
+                    "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
+            actionReport.appendMessage("\n");
+        }
+        if (thresholdWarning != null) {
+            service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
+            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
+                    "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
+            actionReport.appendMessage("\n");
+        }
+        if (thresholdGood != null) {
+            service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
+            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
+                    "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
+            actionReport.appendMessage("\n");
         }
     }
 
