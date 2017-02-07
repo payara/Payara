@@ -21,7 +21,7 @@ file and include the License file at packager/legal/LICENSE.txt.
     <integration-point
         id="healthcheck"
         type="org.glassfish.admingui:navNode"
-        priority="80"
+        priority="90"
         parentId="#{configNameId}"
         content="pluginTreeNodeHealthcheck.jsf"
     />
@@ -29,7 +29,7 @@ file and include the License file at packager/legal/LICENSE.txt.
     <integration-point
         id="healthcheckLink"
         type="org.glassfish.admingui:configuration"
-        priority="80"
+        priority="90"
         parentId="propSheetSection"
         content="healthcheck/healthcheckConfigLink.jsf"
     />

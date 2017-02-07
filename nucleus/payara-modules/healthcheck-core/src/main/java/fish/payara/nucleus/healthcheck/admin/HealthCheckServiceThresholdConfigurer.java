@@ -59,8 +59,8 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
-                opType = RestEndpoint.OpType.GET,
+        @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
                 path = "healthcheck-configure-service-threshold",
                 description = "Configures Health Check Service Notification Threshold Specified With Name")
 })

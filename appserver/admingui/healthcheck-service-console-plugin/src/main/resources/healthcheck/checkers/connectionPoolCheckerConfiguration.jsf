@@ -27,7 +27,7 @@
 
 <event>
     <!beforeCreate
-        getRequestValue(key="config" value="#{pageSession.config}");
+        getRequestValue(key="configName" value="#{pageSession.configName}");
         setSessionAttribute(key="HEALTHCHECK_CONFIG_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/health-check-service-configuration");
 
