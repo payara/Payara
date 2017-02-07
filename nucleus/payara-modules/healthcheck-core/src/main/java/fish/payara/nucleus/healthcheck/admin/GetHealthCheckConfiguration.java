@@ -117,6 +117,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             }
         }
         
+        // Create the extraProps map for the general healthcheck configuration
         Properties mainExtraProps = new Properties();
         Map<String, Object> mainExtraPropsMap = new HashMap<>();
         
@@ -149,6 +150,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[5] = hoggingThreadsChecker.getRetryCount();
                 hoggingThreadsColumnFormatter.addRow(values);
                 
+                // Create the extra props map for a hogging thread checker
                 addHoggingThreadsCheckerExtraProps(hoggingThreadsExtraProps, hoggingThreadsChecker);
             }
             else if (checker instanceof ThresholdDiagnosticsChecker) {
@@ -167,6 +169,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[6] = thresholdGoodProperty != null ? thresholdGoodProperty.getValue() : "-";
                 thresholdDiagnosticsColumnFormatter.addRow(values);
                 
+                // Create the extra props map for a checker with thresholds
                 addThresholdDiagnosticsCheckerExtraProps(thresholdDiagnosticsExtraProps, 
                         thresholdDiagnosticsChecker);
             }
@@ -178,6 +181,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[3] = checker.getUnit();
                 baseColumnFormatter.addRow(values);
                 
+                // Create the extra props map for a base checker
                 addBaseCheckerExtraProps(baseExtraProps, checker);
             }
         }
@@ -232,6 +236,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             thresholdDiagnosticsExtraProps.put("machineMemoryUsage", populateDefaultValuesMap(extraPropsMap));
         }
         
+        // Add the extra props to their respective action reports
         baseActionReport.setExtraProperties(baseExtraProps);
         hoggingThreadsActionReport.setExtraProperties(hoggingThreadsExtraProps);
         thresholdDiagnosticsActionReport.setExtraProperties(thresholdDiagnosticsExtraProps);
@@ -266,6 +271,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("thresholdWarning", thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING).getValue());
         extraPropsMap.put("thresholdGood", thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD).getValue());
         
+        // Could do with improving - downcasting just to identify the type!
         if (thresholdDiagnosticsChecker instanceof ConnectionPoolChecker) {
             thresholdDiagnosticsExtraProps.put("connectionPool", extraPropsMap);
         } else if (thresholdDiagnosticsChecker instanceof CpuUsageChecker) {
@@ -286,6 +292,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("time", checker.getTime());
         extraPropsMap.put("unit", checker.getUnit());
         
+        // Could do with improving - downcasting just to identify the type!
         if (checker instanceof GarbageCollectorChecker) {
             baseExtraProps.put("garbageCollector", extraPropsMap);
         }
@@ -298,7 +305,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("unit", DEFAULT_UNIT);
         
         // Add default properties for hogging threads checker, or add default properties for a thresholdDiagnostics checker
-        // if the checker type isn't a hogging thread or garbage collector checker
+        // if the checker type isn't a hogging thread or garbage collector checker (the only current base checker)
         if (extraPropsMap.containsValue(DEFAULT_HOGGING_THREADS_NAME)) {
             extraPropsMap.put("threshold-percentage", DEFAULT_THRESHOLD_PERCENTAGE);
             extraPropsMap.put("retry-count", DEFAULT_RETRY_COUNT);

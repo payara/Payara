@@ -8,18 +8,11 @@
     </parent>
     <artifactId>healthcheck-service-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-  <version>4.1.1.171-SNAPSHOT</version>
+    <version>4.1.1.171-SNAPSHOT</version>
 
-  <name>Healthcheck Service Console Plugin</name>
+    <name>Healthcheck Service Console Plugin</name>
 
-  <!-- FIXME change it to the project's website -->
-  <url>http://maven.apache.org</url>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-   <build>
+    <build>
         <plugins>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>

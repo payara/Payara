@@ -22,7 +22,7 @@
 <!--  ===================================== Nodes ======================  -->
 <sun:treeNode  id="healthcheck"
     text="$resource{i18nhx.tree.healthcheck}"
-    url="/healthcheck/healthcheck/healthcheckConfiguration.jsf?config=${configName}"
+    url="/healthcheck/healthcheck/healthcheckConfiguration.jsf?configName=${configName}"
     imageURL="/resource/images/healthcheck.png"
     >
     <!beforeCreate

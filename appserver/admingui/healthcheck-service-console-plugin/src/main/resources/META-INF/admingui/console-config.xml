@@ -3,7 +3,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation and/or its affiliates.
+ Copyright (c) 2017 Payara Foundation and/or its affiliates.
  All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
@@ -21,7 +21,7 @@ file and include the License file at packager/legal/LICENSE.txt.
     <integration-point
         id="healthcheck"
         type="org.glassfish.admingui:navNode"
-        priority="80"
+        priority="90"
         parentId="#{configNameId}"
         content="pluginTreeNodeHealthcheck.jsf"
     />
@@ -29,7 +29,7 @@ file and include the License file at packager/legal/LICENSE.txt.
     <integration-point
         id="healthcheckLink"
         type="org.glassfish.admingui:configuration"
-        priority="80"
+        priority="90"
         parentId="propSheetSection"
         content="healthcheck/healthcheckConfigLink.jsf"
     />

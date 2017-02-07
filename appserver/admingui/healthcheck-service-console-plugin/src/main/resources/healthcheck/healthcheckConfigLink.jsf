@@ -20,7 +20,7 @@
 <sun:property>
     <sun:hyperlink 
         toolTip="$resource{i18nhx.tree.healthcheck}"
-        url="/healthcheck/healthcheck/healthcheckConfiguration.jsf?config=#{configName}"
+        url="/healthcheck/healthcheck/healthcheckConfiguration.jsf?configName=#{configName}"
         >
         <sun:image url="/resource/images/healthcheck.png" />
         <sun:staticText text="$resource{i18nhx.tree.healthcheck}" />
