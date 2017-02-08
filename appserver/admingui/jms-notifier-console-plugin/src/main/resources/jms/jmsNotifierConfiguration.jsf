@@ -80,25 +80,29 @@
                           label="$resource{i18njn.notifier.jms.configuration.contextFactoryClassLabel}"  
                           helpText="$resource{i18njn.notifier.jms.configuration.contextFactoryClassLabelHelpText}">
                 <sun:textField id="contextFactoryClassField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['contextFactoryClass']}" />
+                               text="#{pageSession.valueMap['contextFactoryClass']}" styleClass="required"
+                               required="#{true}"/>
             </sun:property>
             <sun:property id="connectionFactoryNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18njn.notifier.jms.configuration.connectionFactoryNameLabel}"  
                           helpText="$resource{i18njn.notifier.jms.configuration.connectionFactoryNameLabelHelpText}">
                 <sun:textField id="connectionFactoryNameField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['connectionFactoryName']}" />
+                               text="#{pageSession.valueMap['connectionFactoryName']}" styleClass="required"
+                               required="#{true}"/>
             </sun:property>
             <sun:property id="queueNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18njn.notifier.jms.configuration.queueNameLabel}"  
                           helpText="$resource{i18njn.notifier.jms.configuration.queueNameLabelHelpText}">
                 <sun:textField id="queueNameField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['queueName']}" />
+                               text="#{pageSession.valueMap['queueName']}" styleClass="required"
+                               required="#{true}"/>
             </sun:property>
             <sun:property id="urlProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18njn.notifier.jms.configuration.urlLabel}"  
                           helpText="$resource{i18njn.notifier.jms.configuration.urlLabelHelpText}">
                 <sun:textField id="urlField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['url']}" />
+                               text="#{pageSession.valueMap['url']}" styleClass="required"
+                               required="#{true}"/>
             </sun:property>
             <sun:property id="usernameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18njn.notifier.jms.configuration.usernameLabel}"  
