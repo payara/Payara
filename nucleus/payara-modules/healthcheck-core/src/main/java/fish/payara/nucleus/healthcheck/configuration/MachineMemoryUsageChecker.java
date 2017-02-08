@@ -22,6 +22,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
+@CheckerConfigurationType(type = CheckerType.MACHINE_MEMORY_USAGE)
 public interface MachineMemoryUsageChecker extends Checker, ThresholdDiagnosticsChecker {
 
  @Attribute(defaultValue = "MEMM")
