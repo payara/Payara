@@ -2,7 +2,7 @@
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 
- Copyright (c) 2018 Payara Foundation. All rights reserved.
+ Copyright (c) 2017 Payara Foundation. All rights reserved.
 
 
  The contents of this file are subject to the terms of the Common Development
@@ -120,7 +120,7 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
         final ActionReport mainActionReport = context.getActionReport();
         final ActionReport checkerConfigureReport = mainActionReport.addSubActionsReport();
         
-
+        // Configure the checker with the provided parameters
         CommandRunner.CommandInvocation checkerConfigureInvocation = commandRunner.getCommandInvocation(
                 "healthcheck-configure-service", checkerConfigureReport, context.getSubject());
         
@@ -136,12 +136,14 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
         checkerConfigureInvocation.parameters(checkerConfigureParameters);
         checkerConfigureInvocation.execute();
         
+        // Only carry on if the first command succeeds
         if (checkerConfigureReport.hasFailures()) {
             mainActionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             checkerConfigureReport.setMessage("Failed to configure checker");
         } else {
             final ActionReport thresholdConfigureReport = mainActionReport.addSubActionsReport();
             
+            // Configure the checker thresholds
             CommandRunner.CommandInvocation thresholdConfigureInvocation = commandRunner.getCommandInvocation(
                 "healthcheck-configure-service-threshold", thresholdConfigureReport, context.getSubject());
         
@@ -156,6 +158,7 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
             thresholdConfigureInvocation.parameters(thresholdConfigureParameters);
             thresholdConfigureInvocation.execute();
             
+            // Check the command result to determine if the whole command succeeds or fails
             if (thresholdConfigureReport.hasFailures()) {
                 mainActionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 checkerConfigureReport.setMessage("Failed to configure thresholds");
