@@ -23,13 +23,9 @@ import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
-import fish.payara.nucleus.healthcheck.configuration.ConnectionPoolChecker;
-import fish.payara.nucleus.healthcheck.configuration.CpuUsageChecker;
-import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
+import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.HeapMemoryUsageChecker;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
-import fish.payara.nucleus.healthcheck.configuration.MachineMemoryUsageChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.util.HashMap;
@@ -50,6 +46,8 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 
 /**
  * @author mertcaliskan
@@ -270,16 +268,25 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("thresholdCritical", thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL).getValue());
         extraPropsMap.put("thresholdWarning", thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING).getValue());
         extraPropsMap.put("thresholdGood", thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD).getValue());
+
+        // Get the checker type
+        ConfigView view = ConfigSupport.getImpl(thresholdDiagnosticsChecker);
+        CheckerConfigurationType annotation = view.getProxyType().getAnnotation(CheckerConfigurationType.class);
         
-        // Could do with improving - downcasting just to identify the type!
-        if (thresholdDiagnosticsChecker instanceof ConnectionPoolChecker) {
-            thresholdDiagnosticsExtraProps.put("connectionPool", extraPropsMap);
-        } else if (thresholdDiagnosticsChecker instanceof CpuUsageChecker) {
-            thresholdDiagnosticsExtraProps.put("cpuUsage", extraPropsMap);
-        } else if (thresholdDiagnosticsChecker instanceof HeapMemoryUsageChecker) {
-            thresholdDiagnosticsExtraProps.put("heapMemoryUsage", extraPropsMap);
-        } else if (thresholdDiagnosticsChecker instanceof MachineMemoryUsageChecker) {
-            thresholdDiagnosticsExtraProps.put("machineMemoryUsage", extraPropsMap);
+        // Add the extraPropsMap as a property with a name matching its checker type
+        switch (annotation.type()) {
+            case CONNECTION_POOL:
+                thresholdDiagnosticsExtraProps.put("connectionPool", extraPropsMap);
+                break;
+            case CPU_USAGE:
+                thresholdDiagnosticsExtraProps.put("cpuUsage", extraPropsMap);
+                break;
+            case HEAP_MEMORY_USAGE:
+                thresholdDiagnosticsExtraProps.put("heapMemoryUsage", extraPropsMap);
+                break;
+            case MACHINE_MEMORY_USAGE:
+                thresholdDiagnosticsExtraProps.put("machineMemoryUsage", extraPropsMap);
+                break;
         }
     }
     
@@ -292,9 +299,15 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("time", checker.getTime());
         extraPropsMap.put("unit", checker.getUnit());
         
-        // Could do with improving - downcasting just to identify the type!
-        if (checker instanceof GarbageCollectorChecker) {
-            baseExtraProps.put("garbageCollector", extraPropsMap);
+        // Get the checker type
+        ConfigView view = ConfigSupport.getImpl(checker);
+        CheckerConfigurationType annotation = view.getProxyType().getAnnotation(CheckerConfigurationType.class);
+        
+        // Add the extraPropsMap as a property with a name matching its checker type
+        switch (annotation.type()) {
+            case GARBAGE_COLLECTOR:
+                baseExtraProps.put("garbageCollector", extraPropsMap);
+                break;
         }
     }
     
