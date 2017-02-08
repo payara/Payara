@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.ee;
 
@@ -312,6 +313,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                 linkName = name;
             }
 
+            linkName = null;  // reset link name
             Set<EjbBundleDescriptor> ejbs = app.getBundleDescriptors(EjbBundleDescriptor.class);
             for (EjbBundleDescriptor ejbd : ejbs) {
                 String name = SecurityUtil.getContextID(ejbd);

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -109,7 +110,6 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.util.Utility;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -2640,7 +2640,7 @@ public final class StatefulSessionContainer
     }
 
     public Object deserializeData(byte[] data) throws Exception {
-        Object o = ejbContainerUtilImpl.getJavaEEIOUtils().deserializeObject(data, true, getClassLoader());
+        Object o = ejbContainerUtilImpl.getJavaEEIOUtils().deserializeObject(data, true, getClassLoader(), getApplicationId());
         if (o instanceof SessionContextImpl) {
             SessionContextImpl ctx = (SessionContextImpl)o;
             Object ejb = ctx.getEJB();
@@ -2651,7 +2651,7 @@ public final class StatefulSessionContainer
             if (ejb instanceof SerializableEJB) {
                 SerializableEJB sejb = (SerializableEJB)ejb;
                 try (ByteArrayInputStream bis = new ByteArrayInputStream(sejb.serializedFields);
-                    ObjectInputStream ois = ejbContainerUtilImpl.getJavaEEIOUtils().createObjectInputStream(bis, true, getClassLoader());) {
+                    ObjectInputStream ois = ejbContainerUtilImpl.getJavaEEIOUtils().createObjectInputStream(bis, true, getClassLoader(), getApplicationId());) {
 
                     ejb = ejbClass.newInstance();
                     EJBUtils.deserializeObjectFields(ejb, ois, o, false);
@@ -3555,7 +3555,7 @@ public final class StatefulSessionContainer
         }
 
         //Method of SerializableObjectFactory
-        public Object createObject()
+        public Object createObject(long appUniqueId)
                 throws IOException {
 
             return this;
@@ -3598,7 +3598,7 @@ public final class StatefulSessionContainer
         }
 
         //Method of SerializableObjectFactory
-        public Object createObject() throws IOException {
+        public Object createObject(long appUniqueId) throws IOException {
             return this;
         }
     }

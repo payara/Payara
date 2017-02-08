@@ -303,7 +303,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
             if (classLoader != null) {
 
                 try {
-                    ois = ioUtils.createObjectInputStream(bis, true, classLoader);
+                    ois = ioUtils.createObjectInputStream(bis, true, classLoader, getUniqueId());
                 } catch (Exception ex) {}
 
             }
@@ -554,7 +554,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
             if (classLoader != null) {
 
                 try {
-                    ois = ioUtils.createObjectInputStream(bis, true, classLoader);
+                    ois = ioUtils.createObjectInputStream(bis, true, classLoader, getUniqueId());
                 } catch (Exception ex) {}
 
             }
@@ -681,7 +681,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
             if (classLoader != null) {
 
                 try {
-                    ois = ioUtils.createObjectInputStream(bis, true, classLoader);
+                    ois = ioUtils.createObjectInputStream(bis, true, classLoader, getUniqueId());
                 } catch (Exception ex) {}
 
             }

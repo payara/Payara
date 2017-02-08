@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,19 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+package org.glassfish.weld.services;
 
-package com.sun.enterprise.container.common.spi.util;
-
-import java.io.Serializable;
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
+import org.jboss.weld.config.ConfigurationKey;
+import org.jboss.weld.configuration.spi.ExternalConfiguration;
 
 /**
- * An interface that creates an Object that was serialized using
- * IndirectlySerializable
- * 
- * @author Mahesh Kannan
+ * Configurator for CDI / Weld
+ *
+ * @author lprimak
  */
+public class ExternalConfigurationImpl implements ExternalConfiguration {
+    /**
+     * configuration properties constructor
+     *
+     * @param rollingUpgradesDelimiter
+     * @param beanIndexOptimization true/false
+     */
+    public ExternalConfigurationImpl(String rollingUpgradesDelimiter, boolean beanIndexOptimization) {
+        propsMap = ImmutableMap.<String, Object>of(ConfigurationKey.ROLLING_UPGRADES_ID_DELIMITER.get(), rollingUpgradesDelimiter,
+                                                   ConfigurationKey.BEAN_IDENTIFIER_INDEX_OPTIMIZATION.get(), beanIndexOptimization);
+    }
 
-public interface SerializableObjectFactory extends Serializable {
-    public Object createObject(long appUniqueId) throws java.io.IOException;
+    @Override
+    public Map<String, Object> getConfigurationProperties() {
+        return propsMap;
+    }
+
+    @Override
+    public void cleanup() {
+        // intentionally left blank
+    }
+
+
+    private final Map<String, Object> propsMap;
 }

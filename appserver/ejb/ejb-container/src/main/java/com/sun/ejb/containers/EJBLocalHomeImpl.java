@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -163,7 +164,8 @@ public abstract class EJBLocalHomeImpl
             this.ejbId = uniqueId;
         }
 
-        public Object createObject()
+        @Override
+        public Object createObject(long appUniqueId)
             throws IOException
         {
             // Return the LocalHome by getting the target container based
@@ -171,9 +173,8 @@ public abstract class EJBLocalHomeImpl
             // LocalHome rather than a LocalBusinessHome since the 
             // LocalBusinessHome is never visible to the application and
             // would never be stored in SFSB state.
-            BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(ejbId);
+            BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(ejbId, appUniqueId);
             return container.getEJBLocalHome();
         }
     }
 }
-

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -64,7 +65,6 @@ import javax.transaction.Synchronization;
 import java.util.Timer;
 import java.util.Vector;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.logging.Logger;
 import org.glassfish.ejb.config.EjbContainer;
 
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
@@ -100,6 +100,7 @@ public interface EjbContainerUtil {
     public  void unregisterContainer(BaseContainer container);
 
     public  BaseContainer getContainer(long id);
+    public  BaseContainer getContainer(long id, long appUniqueId);
 
     public  EjbDescriptor getDescriptor(long id);
 

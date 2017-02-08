@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016-2017] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -755,5 +755,9 @@ public class DeploymentImpl implements CDI11Deployment {
             return null;
         }
         return rarRootBdas.iterator();
+    }
+
+    public String getAppName() {
+        return appName;
     }
 }

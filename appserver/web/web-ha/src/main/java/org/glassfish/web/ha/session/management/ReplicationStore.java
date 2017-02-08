@@ -63,6 +63,7 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
+import org.apache.catalina.core.StandardContext;
 
 /**
  *
@@ -534,6 +535,15 @@ public class ReplicationStore extends HAStoreBase {
         }
     }
 
+    protected long getUniqueId() {
+        long uniqueId = 0L;
+        Container container = this.manager.getContainer();
+        if (container instanceof StandardContext) {
+            StandardContext ctx = (StandardContext) container;
+            uniqueId = ctx.getUniqueId();
+        }
+        return uniqueId;
+    }
 
     public Session getSession(byte[] state,  long version) throws IOException {
         Session _session = null;
@@ -567,7 +577,7 @@ public class ReplicationStore extends HAStoreBase {
 
             if (classLoader != null) {
                 try {
-                    ois = ioUtils.createObjectInputStream(is,true,classLoader);
+                    ois = ioUtils.createObjectInputStream(is, true, classLoader, getUniqueId());
                 } catch (Exception ex) {
                     _logger.log(Level.WARNING, ERROR_CREATING_INPUT_STREAM, ex);
                 }
