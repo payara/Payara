@@ -79,9 +79,6 @@ public class HistoricRequestEventRetriever implements AdminCommand {
     @Inject
     protected Target targetUtil;
 
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    protected Boolean dynamic;
-
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
 
@@ -94,6 +91,9 @@ public class HistoricRequestEventRetriever implements AdminCommand {
     @Inject
     private HistoricRequestEventStore eventStore;
 
+    @Inject
+    ServerEnvironment server;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -105,20 +105,33 @@ public class HistoricRequestEventRetriever implements AdminCommand {
             return;
         }
         else {
-            if (first == null) {
-                first = executionOptions.getHistoricalTraceStoreSize();
+            if (server.isDas()) {
+                if (targetUtil.getConfig(target).isDas()) {
+                    generateReport(actionReport);
+                }
+            } else {
+                // apply as not the DAS so implicitly it is for us
+                generateReport(actionReport);
             }
-            HistoricRequestEvent[] traces = eventStore.getTraces(first);
-
-            ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-            for (HistoricRequestEvent historicRequestEvent : traces) {
-                Object values[] = new Object[2];
-                values[0] = historicRequestEvent.getElapsedTime();
-                values[1] = historicRequestEvent.getMessage();
-                columnFormatter.addRow(values);
-            }
-            actionReport.setMessage(columnFormatter.toString());
-            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
+    }
+
+    private void generateReport(ActionReport actionReport) {
+        RequestTracingExecutionOptions executionOptions = service.getExecutionOptions();
+
+        if (first == null) {
+            first = executionOptions.getHistoricalTraceStoreSize();
+        }
+        HistoricRequestEvent[] traces = eventStore.getTraces(first);
+
+        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
+        for (HistoricRequestEvent historicRequestEvent : traces) {
+            Object values[] = new Object[2];
+            values[0] = historicRequestEvent.getElapsedTime();
+            values[1] = historicRequestEvent.getMessage();
+            columnFormatter.addRow(values);
+        }
+        actionReport.setMessage(columnFormatter.toString());
+        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }

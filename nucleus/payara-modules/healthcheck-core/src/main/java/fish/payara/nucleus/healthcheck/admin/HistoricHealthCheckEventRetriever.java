@@ -80,9 +80,6 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
     @Inject
     protected Target targetUtil;
 
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    protected Boolean dynamic;
-
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
 
@@ -95,6 +92,9 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
     @Inject
     private HistoricHealthCheckEventStore eventStore;
 
+    @Inject
+    ServerEnvironment server;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -105,21 +105,32 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
             return;
         }
         else {
-            if (first == null) {
-                first = service.getHistoricalTraceStoreSize();
+            if (server.isDas()) {
+                if (targetUtil.getConfig(target).isDas()) {
+                    generateReport(actionReport);
+                }
+            } else {
+                // apply as not the DAS so implicitly it is for us
+                generateReport(actionReport);
             }
-            HistoricHealthCheckEvent[] traces = eventStore.getTraces(first);
-
-            ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-            for (HistoricHealthCheckEvent historicHealthCheckEvent : traces) {
-                Object values[] = new Object[2];
-                values[0] = new Date(historicHealthCheckEvent.getOccurringTime());
-                values[1] = constructMessage(historicHealthCheckEvent);
-                columnFormatter.addRow(values);
-            }
-            actionReport.setMessage(columnFormatter.toString());
-            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
+    }
+
+    private void generateReport(ActionReport actionReport) {
+        if (first == null) {
+            first = service.getHistoricalTraceStoreSize();
+        }
+        HistoricHealthCheckEvent[] traces = eventStore.getTraces(first);
+
+        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
+        for (HistoricHealthCheckEvent historicHealthCheckEvent : traces) {
+            Object values[] = new Object[2];
+            values[0] = new Date(historicHealthCheckEvent.getOccurringTime());
+            values[1] = constructMessage(historicHealthCheckEvent);
+            columnFormatter.addRow(values);
+        }
+        actionReport.setMessage(columnFormatter.toString());
+        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
     private String constructMessage(HistoricHealthCheckEvent event) {

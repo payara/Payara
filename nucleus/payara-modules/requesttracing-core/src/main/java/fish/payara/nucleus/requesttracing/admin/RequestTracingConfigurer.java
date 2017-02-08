@@ -184,6 +184,8 @@ public class RequestTracingConfigurer implements AdminCommand {
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.storesize.success",
                     "Request Tracing Historical Trace Store Size is set to {0}.", historicalTraceStoreSize) + "\n");
         }
+
+        service.bootstrapRequestTracingService();
     }
 
     private boolean validate(ActionReport actionReport) {
