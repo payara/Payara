@@ -76,49 +76,49 @@ public class CULoggerInfo {
     @LogMessageInfo(
             message = "Failed to process class {0} with bytecode preprocessor {1}",
             cause = "Unknown",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String preprocessFailed = LOGMSG_PREFIX + "-00001";
 
     @LogMessageInfo(
             message = "Class {0} is being reset to its original state",
             cause = "Unknown",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String resettingOriginal = LOGMSG_PREFIX + "-00002";
 
     @LogMessageInfo(
             message = "Class {0} is being reset to the last successful preprocessor",
             cause = "Unknown",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String resettingLastGood = LOGMSG_PREFIX + "-00003";
 
     @LogMessageInfo(
             message = "The supplied preprocessor class {0} is not an instance of org.glassfish.api.BytecodePreprocessor",
             cause = "Unknown",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String invalidType = LOGMSG_PREFIX + "-00004";
 
     @LogMessageInfo(
             message = "Bytecode preprocessor disabled",
             cause = "Unknown",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String disabled = LOGMSG_PREFIX + "-00005";
 
     @LogMessageInfo(
             message = "Initialization failed for bytecode preprocessor {0}",
             cause = "Unknown",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String failedInit = LOGMSG_PREFIX + "-00006";
 
     @LogMessageInfo(
             message = "Error setting up preprocessor",
             cause = "Unknown",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String setupEx = LOGMSG_PREFIX + "-00007";
 
@@ -138,7 +138,7 @@ public class CULoggerInfo {
     @LogMessageInfo(
             message = "An error occurred while adding URL [{0}] to the EJB class loader. Please check the content of this URL.",
             cause = "An unexpected exception occurred while processing a URL.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String badUrlEntry = LOGMSG_PREFIX + "-00011";
 
@@ -185,14 +185,14 @@ public class CULoggerInfo {
     @LogMessageInfo(
             message = "Error processing file with path {0} in {1}",
             cause = "An unexpected exception occurred while processing a file.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String exceptionProcessingFile = LOGMSG_PREFIX + "-00020";
 
     @LogMessageInfo(
             message = "Error checking for existing of {0} in {1}",
             cause = "An unexpected exception occurred while checking for the existence of a file.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String exceptionCheckingFile = LOGMSG_PREFIX + "-00021";
 
@@ -209,42 +209,42 @@ public class CULoggerInfo {
     @LogMessageInfo(
             message = "Unable to create client data directory: {0}",
             cause = "An unexpected failure occurred while creating the directory for the file.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String errorCreatingDirectory = LOGMSG_PREFIX + "-00024";
 
     @LogMessageInfo(
             message = "Exception in invokeApplicationMain [{0}].",
             cause = "An unexpected exception occurred.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String exceptionInUtility = LOGMSG_PREFIX + "-00025";
 
     @LogMessageInfo(
             message = "The main method signature is invalid.",
             cause = "While invoking a main class, an invalid method was found.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String mainNotValid = LOGMSG_PREFIX + "-00026";
 
     @LogMessageInfo(
             message = "Error while caching the local string manager - package name may be null.",
             cause = "An unexpected exception occurred.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String exceptionCachingStringManager = LOGMSG_PREFIX + "-00027";
 
     @LogMessageInfo(
             message = "Error while constructing the local string manager object.",
             cause = "An unexpected exception occurred.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String exceptionConstructingStringManager = LOGMSG_PREFIX + "-00028";
 
     @LogMessageInfo(
             message = "Error in local string manager - resource bundle is probably missing.",
             cause = "An unexpected exception occurred.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String exceptionResourceBundle = LOGMSG_PREFIX + "-00029";
 
@@ -256,7 +256,7 @@ public class CULoggerInfo {
     @LogMessageInfo(
             message = "Some IOException occurred",
             cause = "An unexpected exception occurred.",
-            action = "Check the system logs and contact Oracle support.",
+            action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
     public static final String exceptionIO = LOGMSG_PREFIX + "-00031";
 
