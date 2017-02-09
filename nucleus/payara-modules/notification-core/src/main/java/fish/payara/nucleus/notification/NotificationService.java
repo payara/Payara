@@ -38,6 +38,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,6 +82,24 @@ public class NotificationService implements EventListener, ConfigListener {
     @PostConstruct
     void postConstruct() {
         events.register(this);
+        configuration = habitat.getService(NotificationServiceConfiguration.class);
+
+        if (configuration != null && configuration.getNotifierConfigurationList() != null && configuration.getNotifierConfigurationList().isEmpty()) {
+            try {
+                ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
+                    @Override
+                    public Object run(final NotificationServiceConfiguration configurationProxy)
+                            throws PropertyVetoException, TransactionFailure {
+                        LogNotifierConfiguration notifierConfiguration = configurationProxy.createChild(LogNotifierConfiguration.class);
+                        configurationProxy.getNotifierConfigurationList().add(notifierConfiguration);
+                        return configurationProxy;
+                    }
+                }, configuration);
+            }
+            catch (TransactionFailure e) {
+                logger.log(Level.SEVERE, "Error occurred while setting initial log notifier configuration", e);
+            }
+        }
     }
 
     public void event(Event event) {

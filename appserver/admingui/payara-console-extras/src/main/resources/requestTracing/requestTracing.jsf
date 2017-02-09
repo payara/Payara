@@ -35,11 +35,10 @@
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
-        setPageSessionAttribute(key="enabledSelected", value="true");
-          setPageSessionAttribute(key="notifierEnabledSelected", value="true");
+            setPageSessionAttribute(key="enabledSelected", value="true");
         }
         if (#{pageSession.valueMap['notifierEnabled']}=true) {
-        setPageSessionAttribute(key="notifierEnabledSelected", value="true");
+            setPageSessionAttribute(key="notifierEnabledSelected", value="true");
         }
         setPageSessionAttribute(key="dynamic", value="true");
         setPageSessionAttribute(key="notifierDynamic", value="true");
@@ -71,7 +70,10 @@
         <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.enabledHelp}">
             <sun:checkbox id="enabledProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true" />
         </sun:property>
-        <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
+      <sun:property id="logNotifierEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.logNotifierEnabled}" helpText="$resource{i18nrt.requestTracing.configuration.logNotifierEnabledHelp}">
+          <sun:checkbox id="logNotifierEnabledLabel" selected="#{pageSession.notifierEnabledSelected}" selectedValue="true" />
+      </sun:property>
+      <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" label="$resource{i18nrt.requestTracing.configuration.dynamic.label}" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
         <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">

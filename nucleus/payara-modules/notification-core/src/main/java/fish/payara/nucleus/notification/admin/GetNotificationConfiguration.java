@@ -87,7 +87,7 @@ public class GetNotificationConfiguration implements AdminCommand {
         NotificationServiceConfiguration configuration = config.getExtensionByType(NotificationServiceConfiguration.class);
         List<ServiceHandle<BaseNotifierService>> allServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
-        String headers[] = {"Enabled", "Notifier Enabled", "Notifier Name"};
+        String headers[] = {"Enabled", "Notifier Enabled"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
 
         if (configuration.getNotifierConfigurationList().isEmpty()) {
@@ -111,16 +111,14 @@ public class GetNotificationConfiguration implements AdminCommand {
 
                     if (notifierConfigurationClassList.contains(view.<NotifierConfiguration>getProxyType())) {
 
-                        Object values[] = new Object[3];
+                        Object values[] = new Object[2];
                         values[0] = notificationServiceConfiguration.getEnabled();
                         values[1] = notifierConfiguration.getEnabled();
-                        values[2] = serviceHandle.getActiveDescriptor().getName();
                         columnFormatter.addRow(values);
 
-                        Map<String, Object> map = new HashMap<>(3);
+                        Map<String, Object> map = new HashMap<>(2);
                         map.put("enabled", values[0]);
                         map.put("notifierEnabled", values[1]);
-                        map.put("notifierName", values[2]);
 
                         extraProps.put("getNotificationConfiguration" + annotation.type(), map);
                     }

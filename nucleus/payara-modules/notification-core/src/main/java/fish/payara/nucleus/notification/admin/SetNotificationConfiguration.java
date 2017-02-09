@@ -63,9 +63,6 @@ public class SetNotificationConfiguration implements AdminCommand {
     @Param(name = "notifierEnabled", optional = false)
     private Boolean notifierEnabled;
 
-    @Param(name = "notifierName", optional = true, defaultValue = "service-log")
-    private String notifierName;
-
     @Inject
     ServiceLocator serviceLocator;
 
@@ -80,26 +77,11 @@ public class SetNotificationConfiguration implements AdminCommand {
             extraProperties = new Properties();
             actionReport.setExtraProperties(extraProperties);
         }
-
-        if (dynamic || enabled) {
-            if (dynamic) {
-                notifierDynamic = true;
-            } else {
-                notifierDynamic = false;
-            }
-            if (enabled) {
-                notifierEnabled = true;
-            } else {
-                notifierEnabled = false;
-            }
-        }
-        enableNotificationConfigureOnTarget(actionReport, theContext, enabled);
-
-        enableNotificationNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
-
+        enableNotificationConfigureOnTarget(actionReport, theContext);
+        enableNotificationNotifierConfigurerOnTarget(actionReport, theContext);
     }
 
-    private void enableNotificationConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+    private void enableNotificationConfigureOnTarget(ActionReport actionReport, AdminCommandContext context) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
@@ -117,17 +99,16 @@ public class SetNotificationConfiguration implements AdminCommand {
         }
     }
 
-    private void enableNotificationNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+    private void enableNotificationNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        inv = runner.getCommandInvocation("notification-configure-notifier", subReport, context.getSubject());
+        inv = runner.getCommandInvocation("notification-log-configure", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());
         params.add("target", target);
-        params.add("notifierName", notifierName);
-        params.add("notifierEnabled", enabled.toString());
+        params.add("enabled", notifierEnabled.toString());
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem

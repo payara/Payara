@@ -49,6 +49,7 @@ import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifier;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
@@ -60,6 +61,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -69,8 +71,10 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -105,6 +109,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
     Transactions transactions;
 
     @Inject
+    private ServiceLocator habitat;
+
+    @Inject
     NotificationService notificationService;
 
     @Inject
@@ -124,6 +131,23 @@ public class RequestTracingService implements EventListener, ConfigListener {
     @PostConstruct
     void postConstruct() {
         events.register(this);
+        configuration = habitat.getService(RequestTracingServiceConfiguration.class);
+        if (configuration != null && configuration.getNotifierList() != null && configuration.getNotifierList().isEmpty()) {
+            try {
+                ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
+                    @Override
+                    public Object run(final RequestTracingServiceConfiguration configurationProxy)
+                            throws PropertyVetoException, TransactionFailure {
+                        LogNotifier notifier = configurationProxy.createChild(LogNotifier.class);
+                        configurationProxy.getNotifierList().add(notifier);
+                        return configurationProxy;
+                    }
+                }, configuration);
+            }
+            catch (TransactionFailure e) {
+                logger.log(Level.SEVERE, "Error occurred while setting initial log notifier", e);
+            }
+        }
     }
 
     @Override

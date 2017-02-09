@@ -82,11 +82,8 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
     private Boolean notifierDynamic;
 
-    @Param(name = "notifierEnabled", optional = false)
+    @Param(name = "notifierEnabled")
     private Boolean notifierEnabled;
-
-    @Param(name = "notifierName", optional = true, defaultValue = "service-log")
-    private String notifierName;
 
     @Inject
     ServiceLocator serviceLocator;
@@ -108,20 +105,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         }
 
         enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
-        if (dynamic || enabled) {
-            if (dynamic) {
-                notifierDynamic = true;
-            } else {
-                notifierDynamic = false;
-            }
-            if (enabled) {
-                notifierEnabled = true;
-            } else {
-                notifierEnabled = false;
-            }
-        }
-
-        enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
+        enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext);
     }
 
     private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
@@ -144,17 +128,16 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         }
     }
 
-    private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+    private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
+        inv = runner.getCommandInvocation("requesttracing-log-notifier-configure", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());
         params.add("target", target);
-        params.add("notifierName", notifierName);
-        params.add("notifierEnabled", enabled.toString());
+        params.add("enabled", notifierEnabled.toString());
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem
