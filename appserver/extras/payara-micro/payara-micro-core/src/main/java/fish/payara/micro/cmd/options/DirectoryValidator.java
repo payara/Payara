@@ -46,33 +46,21 @@ import java.text.MessageFormat;
  *
  * @author steve
  */
-public class DirectoryValidator extends Validator {
+public class DirectoryValidator extends FileItemValidator {
 
-    private final boolean exists;
-    private final boolean writable;
-    private final boolean readable;
 
     public DirectoryValidator(boolean exists, boolean readable, boolean writable) {
-       this.exists = exists;
-       this.readable = readable;
-       this.writable = writable;
+       super(exists,readable,writable);
     }
 
     @Override
     boolean validate(String optionValue) throws ValidationException {
         File file = new File(optionValue);
-        
-        if (exists && !file.exists() && !file.isDirectory()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("directoryDoesNotExist"),optionValue));            
+
+        if (!file.isDirectory()) {
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileIsNotDirectory"),optionValue));
         }
-        
-        if (readable && !file.canRead()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("directoryNotReadable"),optionValue));
-        }
-        
-        if (writable && !file.canWrite()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("directoryNotWritable"),optionValue));            
-        }
+
         return true;
     }
 }
