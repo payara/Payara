@@ -39,49 +39,16 @@
  */
 package fish.payara.micro.cmd.options;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 
 /**
  *
  * @author steve
  */
-public class FileValidator extends Validator {
-    
-    private final boolean exists;
-    private final boolean writable;
-    private final boolean readable;
+public class FileValidator extends FileSystemItemValidator {
 
     public FileValidator(boolean exists, boolean readable, boolean writable) {
-       this.exists = exists;
-       this.readable = readable;
-       this.writable = writable;
+        super(exists, readable, writable, true, false);
     }
-
-    @Override
-    boolean validate(String optionValue) throws ValidationException {
-        File file = new File(optionValue);
-        
-        if (file.isDirectory()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileIsDirectory"),optionValue));
-        }
-        
-        if (exists && !file.exists()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileDoesNotExist"),optionValue));            
-        }
-        
-        if (readable && !file.canRead()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileNotReadable"),optionValue));
-        }
-        
-        if (writable && !file.canWrite()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileNotWritable"),optionValue));            
-        }
-        return true;
-    }
-    
-    
-    
 }
