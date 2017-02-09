@@ -43,6 +43,7 @@ import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.HistoricHealthCheckEvent;
 import fish.payara.nucleus.healthcheck.HistoricHealthCheckEventStore;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -67,8 +68,8 @@ import java.util.Date;
 @PerLookup
 @I18n("requesttracing.configure")
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
-                opType = RestEndpoint.OpType.POST,
+        @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+                opType = RestEndpoint.OpType.GET,
                 path = "list-historic-healthchecks",
                 description = "List latest health checks traces stored historically.")
 })
