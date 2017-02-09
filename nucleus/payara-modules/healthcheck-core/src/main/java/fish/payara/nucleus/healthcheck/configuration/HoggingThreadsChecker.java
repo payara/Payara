@@ -22,6 +22,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
+@CheckerConfigurationType(type = CheckerType.HOGGING_THREADS)
 public interface HoggingThreadsChecker extends Checker {
 
     @Attribute(defaultValue = "HOGT")

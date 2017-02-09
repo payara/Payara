@@ -19,7 +19,6 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -56,8 +55,8 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+    @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+            opType = RestEndpoint.OpType.POST,
             path = "healthcheck-configure",
             description = "Enables/Disables Health Check Service")
 })

@@ -22,6 +22,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
+@CheckerConfigurationType(type = CheckerType.CONNECTION_POOL)
 public interface ConnectionPoolChecker extends Checker, ThresholdDiagnosticsChecker {
 
     @Attribute(defaultValue = "CONP")
