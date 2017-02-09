@@ -17,7 +17,6 @@
  */
 package fish.payara.nucleus.requesttracing.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -85,6 +84,12 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "notifierEnabled")
     private Boolean notifierEnabled;
 
+    @Param(name = "historicalTraceEnabled", optional = true, defaultValue = "false")
+    private Boolean historicalTraceEnabled;
+
+    @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
+    private Integer historicalTraceStoreSize;
+
     @Inject
     ServiceLocator serviceLocator;
 
@@ -120,6 +125,8 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         params.add("dynamic", dynamic.toString());
         params.add("thresholdUnit", unit);
         params.add("thresholdValue", value);
+        params.add("historicalTraceEnabled", historicalTraceEnabled.toString());
+        params.add("historicalTraceStoreSize", historicalTraceStoreSize.toString());
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem
