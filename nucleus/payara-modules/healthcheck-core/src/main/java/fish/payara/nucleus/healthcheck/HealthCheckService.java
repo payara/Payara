@@ -148,9 +148,6 @@ public class HealthCheckService implements EventListener, ConfigListener {
             if (historicalTraceStoreSizeConfig != null) {
                 this.historicalTraceStoreSize = Integer.parseInt(historicalTraceStoreSizeConfig);
             }
-            if (historicalTraceEnabled) {
-                healthCheckEventStore.initialize(historicalTraceStoreSize);
-            }
         }
     }
 
@@ -162,8 +159,11 @@ public class HealthCheckService implements EventListener, ConfigListener {
                 }
             });
             if (enabled) {
-                logger.info("Payara Health Check Service Started.");
                 executeTasks();
+                if (historicalTraceEnabled) {
+                    healthCheckEventStore.initialize(historicalTraceStoreSize);
+                }
+                logger.info("Payara Health Check Service Started.");
             }
 
             bootstrapNotifierList();
