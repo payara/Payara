@@ -40,33 +40,41 @@
 package fish.payara.micro.cmd.options;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 
 /**
- *
- * @author steve
+ * Base class validator for File and Directory Validators. 
+ * This accepts both files and directories but checks they exists.
+ * @author Steve Millidge <Payara Services Limited>
  */
-public class FileValidator extends FileItemValidator {
+public class FileItemValidator extends Validator {
+    
+    private final boolean exists;
+    private final boolean writable;
+    private final boolean readable;
 
-    public FileValidator(boolean exists, boolean readable, boolean writable) {
-       super(exists,readable,writable);
+    public FileItemValidator(boolean exists, boolean readable, boolean writable) {
+       this.exists = exists;
+       this.readable = readable;
+       this.writable = writable;
     }
-
+    
     @Override
     boolean validate(String optionValue) throws ValidationException {
-        
-        super.validate(optionValue);
-        
         File file = new File(optionValue);
-        if (file.isDirectory()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileIsDirectory"),optionValue));
+        
+        if (exists && !file.exists()) {
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileDoesNotExist"),optionValue));            
         }
-
+        
+        if (readable && !file.canRead()) {
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileNotReadable"),optionValue));
+        }
+        
+        if (writable && !file.canWrite()) {
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileNotWritable"),optionValue));            
+        }
         return true;
     }
-    
-    
-    
+
 }
