@@ -72,6 +72,13 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
     
+    private final String garbageCollectorPropertyName = "garbageCollector";
+    private final String cpuUsagePropertyName = "cpuUsage";
+    private final String connectionPoolPropertyName = "connectionPool";
+    private final String heapMemoryUsagePropertyName = "heapMemoryUsage";
+    private final String machineMemoryUsagePropertyName = "machineMemoryUsage";
+    private final String hoggingThreadsPropertyName = "hoggingThreads";
+    
     @Inject
     ServiceLocator habitat;
 
@@ -197,42 +204,17 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             thresholdDiagnosticsActionReport.appendMessage(StringUtils.EOL);
         }
         
-        // Check that properties have been created for each checker, and create a default if not
-        if (!baseExtraProps.containsKey("garbageCollector")) {
-            Map<String, Object> extraPropsMap = new HashMap<>(4);
-            extraPropsMap.put("name", DEFAULT_GARBAGE_COLLECTOR_NAME);
-            baseExtraProps.put("garbageCollector", populateDefaultValuesMap(extraPropsMap));
-        }
-        
-        if (!hoggingThreadsExtraProps.containsKey("hoggingThreads")) {
-            Map<String, Object> extraPropsMap = new HashMap<>(6);
-            extraPropsMap.put("name", DEFAULT_HOGGING_THREADS_NAME);
-            hoggingThreadsExtraProps.put("hoggingThreads", populateDefaultValuesMap(extraPropsMap));
-        }
-        
-        if (!thresholdDiagnosticsExtraProps.containsKey("cpuUsage")) {
-            Map<String, Object> extraPropsMap = new HashMap<>(7);
-            extraPropsMap.put("name", DEFAULT_CPU_USAGE_NAME);
-            thresholdDiagnosticsExtraProps.put("cpuUsage", populateDefaultValuesMap(extraPropsMap));
-        }
-        
-        if (!thresholdDiagnosticsExtraProps.containsKey("connectionPool")) {
-            Map<String, Object> extraPropsMap = new HashMap<>(7);
-            extraPropsMap.put("name", DEFAULT_CONNECTION_POOL_NAME);
-            thresholdDiagnosticsExtraProps.put("connectionPool", populateDefaultValuesMap(extraPropsMap));
-        }
-        
-        if (!thresholdDiagnosticsExtraProps.containsKey("heapMemoryUsage")) {
-            Map<String, Object> extraPropsMap = new HashMap<>(7);
-            extraPropsMap.put("name", DEFAULT_HEAP_MEMORY_USAGE_NAME);
-            thresholdDiagnosticsExtraProps.put("heapMemoryUsage", populateDefaultValuesMap(extraPropsMap));
-        }
-        
-        if (!thresholdDiagnosticsExtraProps.containsKey("machineMemoryUsage")) {
-            Map<String, Object> extraPropsMap = new HashMap<>(7);
-            extraPropsMap.put("name", DEFAULT_MACHINE_MEMORY_USAGE_NAME);
-            thresholdDiagnosticsExtraProps.put("machineMemoryUsage", populateDefaultValuesMap(extraPropsMap));
-        }
+        // Populate the extraProps with defaults for any checker that isn't present
+        baseExtraProps = checkCheckerPropertyPresence(baseExtraProps, garbageCollectorPropertyName);
+        hoggingThreadsExtraProps = checkCheckerPropertyPresence(hoggingThreadsExtraProps, hoggingThreadsPropertyName);
+        thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
+                cpuUsagePropertyName);
+        thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
+                connectionPoolPropertyName);
+        thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
+                heapMemoryUsagePropertyName);
+        thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
+                machineMemoryUsagePropertyName);
         
         // Add the extra props to their respective action reports
         baseActionReport.setExtraProperties(baseExtraProps);
@@ -246,14 +228,14 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             HoggingThreadsChecker hoggingThreadsChecker) {
         Map<String, Object> extraPropsMap = new HashMap<>(6);       
         
-        extraPropsMap.put("name", hoggingThreadsChecker.getName());
+        extraPropsMap.put("checkerName", hoggingThreadsChecker.getName());
         extraPropsMap.put("enabled", hoggingThreadsChecker.getEnabled());
         extraPropsMap.put("time", hoggingThreadsChecker.getTime());
         extraPropsMap.put("unit", hoggingThreadsChecker.getUnit());
         extraPropsMap.put("threshold-percentage", hoggingThreadsChecker.getThresholdPercentage());
         extraPropsMap.put("retry-count", hoggingThreadsChecker.getRetryCount());
         
-        hoggingThreadsExtraProps.put("hoggingThreads", extraPropsMap);
+        hoggingThreadsExtraProps.put(hoggingThreadsPropertyName, extraPropsMap);
     }
     
     private void addThresholdDiagnosticsCheckerExtraProps(Properties thresholdDiagnosticsExtraProps, 
@@ -261,7 +243,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         
         Map<String, Object> extraPropsMap = new HashMap<>(7);       
         
-        extraPropsMap.put("name", thresholdDiagnosticsChecker.getName());
+        extraPropsMap.put("checkerName", thresholdDiagnosticsChecker.getName());
         extraPropsMap.put("enabled", thresholdDiagnosticsChecker.getEnabled());
         extraPropsMap.put("time", thresholdDiagnosticsChecker.getTime());
         extraPropsMap.put("unit", thresholdDiagnosticsChecker.getUnit());
@@ -276,16 +258,16 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         // Add the extraPropsMap as a property with a name matching its checker type
         switch (annotation.type()) {
             case CONNECTION_POOL:
-                thresholdDiagnosticsExtraProps.put("connectionPool", extraPropsMap);
+                thresholdDiagnosticsExtraProps.put(connectionPoolPropertyName, extraPropsMap);
                 break;
             case CPU_USAGE:
-                thresholdDiagnosticsExtraProps.put("cpuUsage", extraPropsMap);
+                thresholdDiagnosticsExtraProps.put(cpuUsagePropertyName, extraPropsMap);
                 break;
             case HEAP_MEMORY_USAGE:
-                thresholdDiagnosticsExtraProps.put("heapMemoryUsage", extraPropsMap);
+                thresholdDiagnosticsExtraProps.put(heapMemoryUsagePropertyName, extraPropsMap);
                 break;
             case MACHINE_MEMORY_USAGE:
-                thresholdDiagnosticsExtraProps.put("machineMemoryUsage", extraPropsMap);
+                thresholdDiagnosticsExtraProps.put(machineMemoryUsagePropertyName, extraPropsMap);
                 break;
         }
     }
@@ -294,7 +276,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             Checker checker) {
         Map<String, Object> extraPropsMap = new HashMap<>(4);       
         
-        extraPropsMap.put("name", checker.getName());
+        extraPropsMap.put("checkerName", checker.getName());
         extraPropsMap.put("enabled", checker.getEnabled());
         extraPropsMap.put("time", checker.getTime());
         extraPropsMap.put("unit", checker.getUnit());
@@ -306,9 +288,50 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         // Add the extraPropsMap as a property with a name matching its checker type
         switch (annotation.type()) {
             case GARBAGE_COLLECTOR:
-                baseExtraProps.put("garbageCollector", extraPropsMap);
+                baseExtraProps.put(garbageCollectorPropertyName, extraPropsMap);
                 break;
         }
+    }
+    
+    private Properties checkCheckerPropertyPresence(Properties extraProps, String checkerName) {
+        // Check that properties have been created for each checker, and create a default if not
+        if (!extraProps.containsKey(checkerName)) {
+            Map<String, Object> extraPropsMap;
+            switch (checkerName) {
+                case garbageCollectorPropertyName:
+                    extraPropsMap = new HashMap<>(4);
+                    extraPropsMap.put("checkerName", DEFAULT_GARBAGE_COLLECTOR_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case hoggingThreadsPropertyName:
+                    extraPropsMap = new HashMap<>(6);
+                    extraPropsMap.put("checkerName", DEFAULT_HOGGING_THREADS_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case cpuUsagePropertyName:
+                    extraPropsMap = new HashMap<>(7);
+                    extraPropsMap.put("checkerName", DEFAULT_CPU_USAGE_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case connectionPoolPropertyName:
+                    extraPropsMap = new HashMap<>(7);
+                    extraPropsMap.put("checkerName", DEFAULT_CONNECTION_POOL_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case heapMemoryUsagePropertyName:
+                    extraPropsMap = new HashMap<>(7);
+                    extraPropsMap.put("checkerName", DEFAULT_HEAP_MEMORY_USAGE_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case machineMemoryUsagePropertyName:
+                    extraPropsMap = new HashMap<>(7);
+                    extraPropsMap.put("checkerName", DEFAULT_MACHINE_MEMORY_USAGE_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+            }
+        }
+        
+        return extraProps;
     }
     
     private Map<String, Object> populateDefaultValuesMap(Map<String, Object> extraPropsMap) {

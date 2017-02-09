@@ -52,7 +52,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.service.configure.checker.with.thresholds")
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE,
         CommandTarget.CONFIG})
 @RestEndpoints({
@@ -94,8 +94,8 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
             acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String unit;
     
-    @Param(name = "name", optional = true)
-    private String name;
+    @Param(name = "checkerName", optional = true)
+    private String checkerName;
     
     @Param(name = "serviceName", optional = false)
     private String serviceName;
@@ -129,7 +129,7 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
         checkerConfigureParameters.add("dynamic", dynamic.toString());
         checkerConfigureParameters.add("time", time);
         checkerConfigureParameters.add("unit", unit);
-        checkerConfigureParameters.add("name", name);
+        checkerConfigureParameters.add("name", checkerName);
         checkerConfigureParameters.add("serviceName", serviceName);
         checkerConfigureParameters.add("target", target);
         
@@ -162,8 +162,6 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
             if (thresholdConfigureReport.hasFailures()) {
                 mainActionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 checkerConfigureReport.setMessage("Failed to configure thresholds");
-            } else {
-                mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
         }
     }

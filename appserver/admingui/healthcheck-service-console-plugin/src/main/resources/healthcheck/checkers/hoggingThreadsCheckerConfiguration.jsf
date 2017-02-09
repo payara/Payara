@@ -28,10 +28,10 @@
 <event>
     <!beforeCreate
         getRequestValue(key="configName" value="#{pageSession.configName}");
-        setSessionAttribute(key="HEALTHCHECK_CONFIG_URL", 
+        setPageSessionAttribute(key="HEALTHCHECK_CONFIG_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/health-check-service-configuration");
 
-        gf.restRequest(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/get-healthcheck-configuration?target=#{pageSession.configName}"  
+        gf.restRequest(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/get-healthcheck-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}");      
         setPageSessionAttribute(key="valueMap", 
                 value="#{requestScope.resp.data.subReports.get(1).extraProperties.hoggingThreads}");
@@ -59,7 +59,7 @@
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/healthcheck-hoggingthreads-configure" 
+                    gf.updateEntity(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/healthcheck-hoggingthreads-configure" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
@@ -82,7 +82,7 @@
         <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.nameLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.nameLabelHelpText}">
-            <sun:textField id="nameField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['name']}"/>
+            <sun:textField id="nameField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['checkerName']}"/>
         </sun:property>
         <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.timeLabel}"  
