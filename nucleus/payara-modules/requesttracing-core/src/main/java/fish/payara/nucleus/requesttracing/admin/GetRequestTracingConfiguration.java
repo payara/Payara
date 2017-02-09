@@ -117,17 +117,15 @@ public class GetRequestTracingConfiguration implements AdminCommand {
                         values[0] = configuration.getEnabled();
                         values[1] = configuration.getThresholdUnit();
                         values[2] = configuration.getThresholdValue();
-                        values[3] = serviceHandle.getActiveDescriptor().getName();
-                        values[4] = notifier.getEnabled();
+                        values[3] = notifier.getEnabled();
                         columnFormatter.addRow(values);
 
-                        Map<String, Object> map = new HashMap<String, Object>(5);
+                        Map<String, Object> map = new HashMap<String, Object>(4);
 
                         map.put("enabled", values[0]);
                         map.put("thresholdUnit", values[1]);
                         map.put("thresholdValue", values[2]);
-                        map.put("notifierName", values[3]);
-                        map.put("notifierEnabled", values[4]);
+                        map.put("notifierEnabled", values[3]);
 
                         extraProps.put("getRequesttracingConfiguration" + annotation.type(), map);
                     }

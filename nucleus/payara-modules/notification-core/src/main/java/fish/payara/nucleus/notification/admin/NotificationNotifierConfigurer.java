@@ -68,6 +68,7 @@ import java.util.logging.Logger;
             path = "notification-configure-notifier",
             description = "Enables/Disables Notifier Specified With Name")
 })
+@Deprecated
 public class NotificationNotifierConfigurer implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotificationNotifierConfigurer.class);

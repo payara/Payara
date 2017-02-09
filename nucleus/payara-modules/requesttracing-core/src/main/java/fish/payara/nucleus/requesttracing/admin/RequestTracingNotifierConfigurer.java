@@ -64,6 +64,7 @@ import java.util.logging.Logger;
             path = "requesttracing-configure-notifier",
             description = "Enables/Disables Notifier Specified With Name")
 })
+@Deprecated
 public class RequestTracingNotifierConfigurer implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurer.class);
