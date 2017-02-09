@@ -117,7 +117,7 @@ public class AMXLoggerInfo {
     @LogMessageInfo(
             message = "AMX ComplianceMonitor thread has unexpectedly quit {0}",
             cause = "A JMX validation thread has unexpectedly terminated due to an exception.",
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String aMXComplianceMonitorThreadquit = LOGMSG_PREFIX + "-00022";
 
@@ -144,14 +144,14 @@ public class AMXLoggerInfo {
     @LogMessageInfo(
             message = "Attribute {0} not found for object {1}",
             cause = "An attempt to resolve an attribute failed.",
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String attributeNotfound = LOGMSG_PREFIX + "-00030";
 
     @LogMessageInfo(
             message = "Can't find child of type {0}",
             cause = "While removing a child, the child was not found.",
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String childNotfound = LOGMSG_PREFIX + "-00031";
 
@@ -168,7 +168,7 @@ public class AMXLoggerInfo {
     @LogMessageInfo(
             message = "Unexpected thread death of AMXConfigLoaderThread",
             cause = "The AMX configuration loader thread received an unexpected exception.",
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String unexpectedDeath = LOGMSG_PREFIX + "-00034";  
     
