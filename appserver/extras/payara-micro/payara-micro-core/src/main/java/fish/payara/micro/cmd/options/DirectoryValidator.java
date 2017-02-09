@@ -43,7 +43,7 @@ import java.io.File;
 import java.text.MessageFormat;
 
 /**
- * @deprecated @author steve
+ * @author steve
  */
 public class DirectoryValidator extends FileSystemItemValidator {
 
