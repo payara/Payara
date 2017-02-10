@@ -125,8 +125,15 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         params.add("dynamic", dynamic.toString());
         params.add("thresholdUnit", unit);
         params.add("thresholdValue", value);
-        params.add("historicalTraceEnabled", historicalTraceEnabled.toString());
-        params.add("historicalTraceStoreSize", historicalTraceStoreSize.toString());
+        
+        if (historicalTraceEnabled != null) {
+            params.add("historicalTraceEnabled", historicalTraceEnabled.toString());
+        }
+        
+        if (historicalTraceStoreSize != null) {
+            params.add("historicalTraceStoreSize", historicalTraceStoreSize.toString());
+        }
+        
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem
