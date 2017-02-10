@@ -49,8 +49,7 @@ import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
 
 /**
- * Annotation to be applied to a Cache @Inject point to define the cache configuration
- * for the Producer to configure the cache
+ * Annotation to be applied to a CDI event @Inject point to send it remotely via CDI event bus. Such events can be observed using the {@link Inbound} qualifier.
  * @author steve
  */
 @Retention(RetentionPolicy.RUNTIME)
