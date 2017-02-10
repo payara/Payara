@@ -108,14 +108,32 @@ public class TranslatedConfigView implements ConfigView {
                     }
                 }
             }
-           
+            
+            String origValue = stringValue;
+            int i = 0;            // Perform Environment variable substitution
+            Matcher m2 = envP.matcher(stringValue);
+
+            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m2.group(2).trim();
+                String newValue = System.getenv(matchValue);
+                if (newValue != null) {
+                    stringValue = m2.replaceFirst(
+                            Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
+                    m2.reset(stringValue);
+                } 
+                i++;     
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getAnonymousLogger().severe(
+                        Strings.get("TranslatedConfigView.badprop", 
+                        i, origValue));
+            }            
 
             // Perform system property substitution in the value
             // The loop limit is imposed to prevent infinite looping to values
             // such as a=${a} or a=foo ${b} and b=bar {$a}
             Matcher m = p.matcher(stringValue);
-            String origValue = stringValue;
-            int i = 0;
+            i = 0;
             while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
                 String matchValue = m.group(2).trim();
                 String newValue = System.getProperty(matchValue);
@@ -131,27 +149,8 @@ public class TranslatedConfigView implements ConfigView {
                         Strings.get("TranslatedConfigView.badprop", 
                         i, origValue));
             }
-            if (!stringValue.equals(origValue))
-                return stringValue;
             
-            // Perform Environment variable substitution
-            Matcher m2 = envP.matcher(stringValue);
-            i = 0;
-            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String matchValue = m2.group(2).trim();
-                String newValue = System.getenv(matchValue);
-                if (newValue != null) {
-                    stringValue = m2.replaceFirst(
-                            Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
-                    m2.reset(stringValue);
-                } 
-                i++;     
-            }
-            if (i >= MAX_SUBSTITUTION_DEPTH) {
-                Logger.getAnonymousLogger().severe(
-                        Strings.get("TranslatedConfigView.badprop", 
-                        i, origValue));
-            } 
+
             return stringValue;
             
         }
