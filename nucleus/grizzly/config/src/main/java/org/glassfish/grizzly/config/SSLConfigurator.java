@@ -391,7 +391,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
         }
         
         // Grizzly 2.3.28 introduced a new method on the base class which must be overridden
-        @Override
         public SSLContext createSSLContext(boolean throwException) {
             return configureSSL();
         }
