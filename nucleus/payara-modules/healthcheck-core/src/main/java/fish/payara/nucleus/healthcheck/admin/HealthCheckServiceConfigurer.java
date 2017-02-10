@@ -42,6 +42,7 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.constraints.Min;
 
 /**
  * Admin command to enable/disable specific health check service given with its
@@ -81,12 +82,16 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     private Boolean enabled;
 
     @Param(name = "time", optional = true)
+    @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "unit", optional = true)
+    @Param(name = "unit", optional = true, 
+            acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String unit;
 
-    @Param(name = "serviceName", optional = false)
+    @Param(name = "serviceName", optional = false, 
+            acceptableValues = "healthcheck-cpu,healthcheck-gc,healthcheck-cpool,healthcheck-heap,healthcheck-threads,"
+                    + "healthcheck-machinemem")
     private String serviceName;
 
     @Param(name = "name", optional = true)

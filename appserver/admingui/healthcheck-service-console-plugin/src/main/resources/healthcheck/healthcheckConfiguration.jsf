@@ -58,7 +58,7 @@
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
@@ -94,7 +94,7 @@
         <sun:property id="historicalTraceStoreSizeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreSizeLabel}"  
                       helpText="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreSizeLabelHelpText}">
-            <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}" maxLength="250" 
+            <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['historicalTraceStoreSize']}"/>
         </sun:property>
     </sun:propertySheetSection>

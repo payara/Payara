@@ -23,6 +23,7 @@ import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -97,16 +98,24 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
     @Param(name = "checkerName", optional = true)
     private String checkerName;
     
-    @Param(name = "serviceName", optional = false)
+    @Param(name = "serviceName", optional = false, 
+            acceptableValues = "healthcheck-cpu,healthcheck-gc,healthcheck-cpool,healthcheck-heap,healthcheck-threads,"
+                    + "healthcheck-machinemem")
     private String serviceName;
 
     @Param(name = "thresholdCritical", optional = true)
+    @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
+    @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String thresholdCritical;
 
     @Param(name = "thresholdWarning", optional = true)
+    @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
+    @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String thresholdWarning;
 
     @Param(name = "thresholdGood", optional = true)
+    @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
+    @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String thresholdGood;
     
     @Inject

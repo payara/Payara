@@ -41,6 +41,7 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.constraints.Min;
 
 /**
  * Admin command to enable/disable all health check services defined in
@@ -92,6 +93,7 @@ public class HealthCheckConfigurer implements AdminCommand {
     private Boolean historicalTraceEnabled;
 
     @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
+    @Min(value = 1, message = "Store size must be greater than 0")
     private Integer historicalTraceStoreSize;
 
     @Override

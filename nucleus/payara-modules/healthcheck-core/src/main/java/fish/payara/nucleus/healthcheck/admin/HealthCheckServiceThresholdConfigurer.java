@@ -46,6 +46,8 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 /**
  * Admin command to enable/disable specific health check service given with its name
@@ -81,16 +83,24 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
     @Inject
     protected Logger logger;
 
-    @Param(name = "serviceName", optional = false)
+    @Param(name = "serviceName", optional = false, 
+            acceptableValues = "healthcheck-cpu,healthcheck-gc,healthcheck-cpool,healthcheck-heap,healthcheck-threads,"
+                    + "healthcheck-machinemem")
     private String serviceName;
 
     @Param(name = "thresholdCritical", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL)
+    @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
+    @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String thresholdCritical;
 
     @Param(name = "thresholdWarning", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING)
+    @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
+    @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String thresholdWarning;
 
     @Param(name = "thresholdGood", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD)
+    @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
+    @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String thresholdGood;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
