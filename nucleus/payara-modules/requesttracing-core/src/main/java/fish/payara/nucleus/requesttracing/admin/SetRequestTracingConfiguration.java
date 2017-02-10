@@ -17,7 +17,6 @@
  */
 package fish.payara.nucleus.requesttracing.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -73,10 +72,10 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
-    @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
+    @Param(name = "thresholdUnit", optional = true)
     private String unit;
 
-    @Param(name = "thresholdValue", optional = true, defaultValue = "30")
+    @Param(name = "thresholdValue", optional = true)
     private String value;
 
     @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
@@ -84,6 +83,12 @@ public class SetRequestTracingConfiguration implements AdminCommand {
 
     @Param(name = "notifierEnabled")
     private Boolean notifierEnabled;
+
+    @Param(name = "historicalTraceEnabled", optional = true)
+    private Boolean historicalTraceEnabled;
+
+    @Param(name = "historicalTraceStoreSize", optional = true)
+    private Integer historicalTraceStoreSize;
 
     @Inject
     ServiceLocator serviceLocator;
@@ -120,6 +125,15 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         params.add("dynamic", dynamic.toString());
         params.add("thresholdUnit", unit);
         params.add("thresholdValue", value);
+        
+        if (historicalTraceEnabled != null) {
+            params.add("historicalTraceEnabled", historicalTraceEnabled.toString());
+        }
+        
+        if (historicalTraceStoreSize != null) {
+            params.add("historicalTraceStoreSize", historicalTraceStoreSize.toString());
+        }
+        
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem

@@ -22,6 +22,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
@@ -86,18 +87,48 @@ public class GetRequestTracingConfiguration implements AdminCommand {
             context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
+        
         ActionReport mainActionReport = context.getActionReport();
         RequestTracingServiceConfiguration configuration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
+        
+        mainActionReport.appendMessage("Request Tracing Service enabled?: " + configuration.getEnabled() + "\n");
+        
+        if (Boolean.parseBoolean(configuration.getEnabled())) {
+            mainActionReport.appendMessage("Historical Tracing Enabled?: " + configuration.getHistoricalTraceEnabled() 
+                    + "\n");
+            if (Boolean.parseBoolean(configuration.getHistoricalTraceEnabled())) {
+                mainActionReport.appendMessage("Historical Tracing Store Size: " 
+                        + configuration.getHistoricalTraceStoreSize() + "\n");
+            }
+        }
+        
+        // Create the extraProps for the general request tracing configuration
+        Properties mainExtraProps = new Properties();
+        Map<String, Object> mainExtraPropsMap = new HashMap<>();
+        
+        mainExtraPropsMap.put("enabled", configuration.getEnabled());
+        mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
+        mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
+        mainExtraPropsMap.put("thresholdUnit", configuration.getThresholdUnit());
+        mainExtraPropsMap.put("thresholdValue", configuration.getThresholdValue());
+        
+        mainExtraProps.put("requestTracingConfiguration", mainExtraPropsMap);
+        mainActionReport.setExtraProperties(mainExtraProps);
+        
+        mainActionReport.appendMessage("Below are the configuration details of each notifier listed by its name.");
+        mainActionReport.appendMessage(StringUtils.EOL);
+        
+        ActionReport notifiersActionReport = mainActionReport.addSubActionsReport();
+                
         List<ServiceHandle<BaseNotifierService>> allServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
-
-        String headers[] = {"Enabled", "ThresholdUnit", "ThresholdValue", "Notifier Name", "Notifier Enabled"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-
+        
         if (configuration.getNotifierList().isEmpty()) {
-            mainActionReport.setMessage("No notifier defined");
+            notifiersActionReport.setMessage("No notifier defined");
         }
         else {
+            String headers[] = {"Notifier Name", "Notifier Enabled"};
+            ColumnFormatter columnFormatter = new ColumnFormatter(headers);
+            
             List<Class<Notifier>> notifierClassList = Lists.transform(configuration.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
                 @Override
                 public Class<Notifier> apply(Notifier input) {
@@ -105,7 +136,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
                 }
             });
 
-            Properties extraProps = new Properties();
+            Properties notifierExtraProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {
                 Notifier notifier = configuration.getNotifierByType(serviceHandle.getService().getNotifierType());
                 if (notifier != null) {
@@ -113,26 +144,22 @@ public class GetRequestTracingConfiguration implements AdminCommand {
                     NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
 
                     if (notifierClassList.contains(view.<Notifier>getProxyType())) {
-                        Object values[] = new Object[5];
-                        values[0] = configuration.getEnabled();
-                        values[1] = configuration.getThresholdUnit();
-                        values[2] = configuration.getThresholdValue();
-                        values[3] = notifier.getEnabled();
+                        Object values[] = new Object[2];
+                        values[0] = serviceHandle.getActiveDescriptor().getName();
+                        values[1] = notifier.getEnabled();
                         columnFormatter.addRow(values);
 
-                        Map<String, Object> map = new HashMap<String, Object>(4);
+                        Map<String, Object> notifierExtraPropsMap = new HashMap<>();
+                        notifierExtraPropsMap.put("notifierName", values[0]);
+                        notifierExtraPropsMap.put("notifierEnabled", values[1]);
 
-                        map.put("enabled", values[0]);
-                        map.put("thresholdUnit", values[1]);
-                        map.put("thresholdValue", values[2]);
-                        map.put("notifierEnabled", values[3]);
-
-                        extraProps.put("getRequesttracingConfiguration" + annotation.type(), map);
+                        notifierExtraProps.put("getRequesttracingConfiguration" + annotation.type(), 
+                                notifierExtraPropsMap);
                     }
                 }
             }
-            mainActionReport.setExtraProperties(extraProps);
-            mainActionReport.setMessage(columnFormatter.toString());
+            
+            notifiersActionReport.setMessage(columnFormatter.toString());
         }
 
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
