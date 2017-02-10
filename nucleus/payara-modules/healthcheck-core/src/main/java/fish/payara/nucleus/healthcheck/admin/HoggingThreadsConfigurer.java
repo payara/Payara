@@ -19,7 +19,6 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -95,7 +94,11 @@ public class HoggingThreadsConfigurer implements AdminCommand {
     private String unit;
     
     @Param(name = "name", optional = true)
+    @Deprecated
     private String name;
+
+    @Param(name = "checkerName", optional = true)
+    private String checkerName;
     
     @Param(name = "threshold-percentage")
     @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
@@ -127,7 +130,12 @@ public class HoggingThreadsConfigurer implements AdminCommand {
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
+        
+        // Warn about deprecated option
+        if (name != null) {
+            actionReport.appendMessage("\n--name parameter is decremented, please begin using the --checkerName option\n");
+        }
+        
         try {
             HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
             HoggingThreadsChecker hoggingThreadConfiguration = healthCheckServiceConfiguration.getCheckerByType(HoggingThreadsChecker.class);
@@ -188,6 +196,11 @@ public class HoggingThreadsConfigurer implements AdminCommand {
         
         if (name != null) {
             checkerProxy.setName(name);
+        }
+        
+        // Take priority over deprecated parameter
+        if (checkerName != null) {
+            checkerProxy.setName(checkerName);
         }
         
         if (time != null) {

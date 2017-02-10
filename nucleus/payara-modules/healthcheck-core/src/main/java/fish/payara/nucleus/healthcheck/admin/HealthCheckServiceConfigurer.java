@@ -95,8 +95,12 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     private String serviceName;
 
     @Param(name = "name", optional = true)
+    @Deprecated
     private String name;
 
+    @Param(name = "checkerName", optional = true)
+    private String checkerName;
+    
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
@@ -125,6 +129,11 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
             return;
         }
 
+        // Warn about deprecated option
+        if (name != null) {
+            actionReport.appendMessage("\n--name parameter is decremented, please begin using the --checkerName option\n");
+        }
+        
         HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         final Checker checker = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
 
@@ -194,6 +203,11 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         }
         if (name != null) {
             checkerProxy.setName(name);
+        }
+        
+        // Take priority over deprecated parameter
+        if (checkerName != null) {
+            checkerProxy.setName(checkerName);
         }
     }
 }
