@@ -87,16 +87,16 @@ public class RequestTracingConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
-    @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
+    @Param(name = "thresholdUnit", optional = true)
     private String unit;
 
-    @Param(name = "thresholdValue", optional = true, defaultValue = "30")
+    @Param(name = "thresholdValue", optional = true)
     private String value;
 
-    @Param(name = "historicalTraceEnabled", optional = true, defaultValue = "false")
+    @Param(name = "historicalTraceEnabled", optional = true)
     private Boolean historicalTraceEnabled;
 
-    @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
+    @Param(name = "historicalTraceStoreSize", optional = true)
     private Integer historicalTraceStoreSize;
 
     @Override
