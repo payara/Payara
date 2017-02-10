@@ -70,20 +70,6 @@ public class AsadminRecorderService implements EventListener {
     void postConstruct() {
         events.register(this);
         asadminRecorderConfiguration = habitat.getService(AsadminRecorderConfiguration.class);
-        
-        if (asadminRecorderConfiguration != null) {
-            try {
-                ConfigSupport.apply(new SingleConfigCode<AsadminRecorderConfiguration>() {
-                    public Object run(AsadminRecorderConfiguration asadminRecorderConfigurationProxy) 
-                            throws PropertyVetoException, TransactionFailure {
-                        return null;
-                    }
-                }, asadminRecorderConfiguration);
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(AsadminRecorderService.class.getName()).log(Level.SEVERE, "Error occurred while "
-                    + "setting up initial Asadmin Recorder Service configuration", ex);
-            }
-        }
     }
     
     @Override
