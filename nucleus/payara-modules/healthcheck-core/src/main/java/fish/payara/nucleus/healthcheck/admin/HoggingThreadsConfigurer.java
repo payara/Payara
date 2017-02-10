@@ -91,19 +91,19 @@ public class HoggingThreadsConfigurer implements AdminCommand {
     @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "unit", optional = true, defaultValue = "SECONDS", acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
+    @Param(name = "unit", optional = true, acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String unit;
     
     @Param(name = "name", optional = true)
     private String name;
     
-    @Param(name = "threshold-percentage", defaultValue = "95")
+    @Param(name = "threshold-percentage")
     @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String threshold;
 
     @Min(value = 1, message = "Retry count must be 1 or more")
-    @Param(name = "retry-count", defaultValue = "3")
+    @Param(name = "retry-count")
     private String retryCount;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
