@@ -90,7 +90,7 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
     @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "unit", optional = true, defaultValue = "MINUTES", 
+    @Param(name = "unit", optional = true,
             acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String unit;
     
