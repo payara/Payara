@@ -89,9 +89,9 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
 
-    @Param(name = "historicalTraceEnabled", optional = true, defaultValue = "false")
+    @Param(name = "historicalTraceEnabled", optional = true)
     private Boolean historicalTraceEnabled;
-
+  
     @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
     @Min(value = 1, message = "Store size must be greater than 0")
     private Integer historicalTraceStoreSize;

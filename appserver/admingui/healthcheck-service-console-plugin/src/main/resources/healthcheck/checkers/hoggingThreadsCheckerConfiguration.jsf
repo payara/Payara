@@ -93,7 +93,8 @@
         <sun:property id="unitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.unitLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.unitLabelHelpText}">
-            <sun:textField id="unitField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['unit']}"/>
+            <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['unit']}" 
+                          labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
         </sun:property>
         <sun:property id="thresholdPercentageProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.hoggingThreads.thresholdPercentageLabel}"  
