@@ -45,6 +45,7 @@ import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifier;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -62,6 +63,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -138,8 +140,23 @@ public class HealthCheckService implements EventListener, ConfigListener {
     void postConstruct() {
         events.register(this);
         configuration = habitat.getService(HealthCheckServiceConfiguration.class);
-
         if (configuration != null) {
+            if (configuration.getNotifierList() != null && configuration.getNotifierList().isEmpty()) {
+                try {
+                    ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
+                        @Override
+                        public Object run(final HealthCheckServiceConfiguration configurationProxy)
+                                throws PropertyVetoException, TransactionFailure {
+                            LogNotifier notifier = configurationProxy.createChild(LogNotifier.class);
+                            configurationProxy.getNotifierList().add(notifier);
+                            return configurationProxy;
+                        }
+                    }, configuration);
+                } catch (TransactionFailure e) {
+                    logger.log(Level.SEVERE, "Error occurred while setting initial log notifier", e);
+                }
+            }
+
             if (Boolean.parseBoolean(configuration.getEnabled())) {
                 enabled = true;
             }
