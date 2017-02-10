@@ -73,6 +73,7 @@ import java.security.PrivilegedAction;
 public class TranslatedConfigView implements ConfigView {
 
     final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
+    final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
     private static final String ENV_TOKEN = "ENV";
@@ -95,15 +96,7 @@ public class TranslatedConfigView implements ConfigView {
                 return value;
             }
             
-            // do environment variable substitution
-            String envName = getAlias(stringValue, ENV_TOKEN);
-            if (envName != null) {
-                String envValue = System.getenv(envName);
-                if (envValue != null) {
-                    return envValue;
-                }
-            }
-            
+           
             if (domainPasswordAliasStore() != null) {
                 if (getAlias(stringValue, ALIAS_TOKEN) != null) {
                     try{
@@ -124,12 +117,13 @@ public class TranslatedConfigView implements ConfigView {
             String origValue = stringValue;
             int i = 0;
             while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String newValue = System.getProperty(m.group(2).trim());
+                String matchValue = m.group(2).trim();
+                String newValue = System.getProperty(matchValue);
                 if (newValue != null) {
                     stringValue = m.replaceFirst(
                             Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));
                     m.reset(stringValue);
-                }
+                } 
                 i++;     
             }
             if (i >= MAX_SUBSTITUTION_DEPTH) {
@@ -137,7 +131,29 @@ public class TranslatedConfigView implements ConfigView {
                         Strings.get("TranslatedConfigView.badprop", 
                         i, origValue));
             }
+            if (!stringValue.equals(origValue))
+                return stringValue;
+            
+            // Perform Environment variable substitution
+            Matcher m2 = envP.matcher(stringValue);
+            i = 0;
+            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m2.group(2).trim();
+                String newValue = System.getenv(matchValue);
+                if (newValue != null) {
+                    stringValue = m2.replaceFirst(
+                            Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
+                    m2.reset(stringValue);
+                } 
+                i++;     
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getAnonymousLogger().severe(
+                        Strings.get("TranslatedConfigView.badprop", 
+                        i, origValue));
+            } 
             return stringValue;
+            
         }
         return value;
     }
