@@ -48,7 +48,7 @@
         <!facet pageButtonsTop>
             <sun:panelGroup id="topButtons">
                 <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                     <!command
                         mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                         prepareSuccessfulMsg();
@@ -101,7 +101,7 @@
             <sun:property id="portProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nsnn.notifier.snmp.configuration.portLabel}"  
                           helpText="$resource{i18nsnn.notifier.snmp.configuration.portLabelHelpText}">
-                <sun:textField id="portField" columns="$int{75}" maxLength="255" 
+                <sun:textField id="portField" columns="$int{75}" maxLength="255" styleClass="port"
                                text="#{pageSession.valueMap['port']}" />
             </sun:property>
         </sun:propertySheetSection>

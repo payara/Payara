@@ -51,6 +51,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import java.beans.PropertyVetoException;
+import javax.validation.constraints.Pattern;
 
 /**
  * @author mertcaliskan
@@ -72,6 +73,7 @@ public class EmailNotificationConfigurer extends BaseNotificationConfigurer<Emai
     private String jndiName;
 
     @Param(name = "to")
+    @Pattern(regexp = "\\S+@\\S+")
     private String to;
 
     protected void applyValues(EmailNotifierConfiguration configuration) throws PropertyVetoException {
