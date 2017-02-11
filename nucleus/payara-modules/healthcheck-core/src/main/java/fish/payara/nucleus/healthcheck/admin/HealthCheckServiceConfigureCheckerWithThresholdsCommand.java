@@ -138,7 +138,7 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
         checkerConfigureParameters.add("dynamic", dynamic.toString());
         checkerConfigureParameters.add("time", time);
         checkerConfigureParameters.add("unit", unit);
-        checkerConfigureParameters.add("name", checkerName);
+        checkerConfigureParameters.add("checkerName", checkerName);
         checkerConfigureParameters.add("serviceName", serviceName);
         checkerConfigureParameters.add("target", target);
         
