@@ -17,12 +17,15 @@
  */
 package fish.payara.nucleus.store;
 
+import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -32,17 +35,18 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-cluster-store")
 @RunLevel(StartupRunLevel.VAL)
-public class ClusteredStore {
+public class ClusteredStore implements EventListener {
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
     
     @Inject
     private HazelcastCore hzCore;
     
+    @Inject
+    private Events events;
+    
     @PostConstruct
     public void postConstruct() {
-        if (hzCore.isEnabled()) {
-            logger.info("Payara Clustered Store Service Enabled");
-        }
+        events.register(this);
     }
     
     public boolean isEnabled() {
@@ -81,6 +85,15 @@ public class ClusteredStore {
             result = (Serializable) hzCore.getInstance().getMap(storeName).get(key);
         }
         return result;
+    }
+
+    @Override
+    public void event(Event event) {
+        if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)){
+            if (hzCore.isEnabled()) {
+                logger.info("Payara Clustered Store Service Enabled");
+            }
+        }
     }
     
 }

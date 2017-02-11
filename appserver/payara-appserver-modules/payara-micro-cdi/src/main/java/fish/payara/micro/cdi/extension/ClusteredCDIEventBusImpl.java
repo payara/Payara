@@ -56,12 +56,14 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Initialized;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.EventMetadata;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.ServletContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
@@ -112,11 +114,39 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @PreDestroy
     void preDestroy() {
         runtime.removeCDIListener(this);
+        capturedClassLoader = null;
+        capturedInvocation = null;
+    }
+    
+    public void onStart(@Observes @Initialized(ApplicationScoped.class) ServletContext init) {
+       initialize();
+       if (runtime.isClustered()) {
+            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized for " + init.getContextPath());
+        }
     }
     
     @Override
     public void initialize() {
-        Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized");
+        
+        // try again
+
+        if (im == null) {
+            im = Globals.getDefaultHabitat().getService(InvocationManager.class);
+        }
+        
+        if (capturedInvocation == null) {
+            capturedInvocation = im.getCurrentInvocation(); 
+        }
+        
+        if (managedExecutorService == null) {
+            try {
+                InitialContext ctx = new InitialContext();
+                managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
+            } catch (NamingException ex) {
+                Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
     }
 
     @Override
