@@ -75,12 +75,11 @@ public class SlackNotificationRunnable extends NotificationRunnable<SlackMessage
                 SlackMessage message = queue.getMessage();
                 try(OutputStream outputStream = connection.getOutputStream()) {
                     ObjectMapper objectMapper = new ObjectMapper();
-                    objectMapper.writeValue(outputStream, message.getSubject() + "\n" + message.getMessage());
+                    objectMapper.writeValue(outputStream, message);
 
                     if (connection.getResponseCode() != 200) {
-                        logger.log(Level.SEVERE,
-                                "Error occurred while connecting Slack. Check your tokens. HTTP response code:",
-                                connection.getResponseCode());
+                        logger.log(Level.SEVERE, "Error occurred while connecting Slack. " +
+                                "Check your tokens. HTTP response code: " + connection.getResponseCode());
                     }
                 }
             }
