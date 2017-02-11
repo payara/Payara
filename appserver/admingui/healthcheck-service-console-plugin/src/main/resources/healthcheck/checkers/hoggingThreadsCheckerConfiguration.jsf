@@ -54,7 +54,7 @@
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
@@ -87,7 +87,8 @@
         <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.timeLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.timeLabelHelpText}">
-            <sun:textField id="timeField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['time']}"/>
+            <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer"
+                           text="#{pageSession.valueMap['time']}"/>
         </sun:property>
         <sun:property id="unitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.unitLabel}"  
@@ -98,13 +99,13 @@
         <sun:property id="thresholdPercentageProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.hoggingThreads.thresholdPercentageLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.hoggingThreads.thresholdPercentageLabelHelpText}">
-            <sun:textField id="thresholdPercentageField" columns="$int{40}" maxLength="250" 
+            <sun:textField id="thresholdPercentageField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['threshold-percentage']}"/>
         </sun:property>
         <sun:property id="retryCountProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.hoggingThreads.retryCountLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.hoggingThreads.retryCountLabelHelpText}">
-            <sun:textField id="retryCountField" columns="$int{40}" maxLength="250" 
+            <sun:textField id="retryCountField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['retry-count']}"/>
         </sun:property>
     </sun:propertySheetSection>

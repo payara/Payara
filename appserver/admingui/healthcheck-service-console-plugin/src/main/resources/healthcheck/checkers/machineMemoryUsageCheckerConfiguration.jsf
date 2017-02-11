@@ -54,7 +54,7 @@
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
@@ -88,7 +88,8 @@
         <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.timeLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.timeLabelHelpText}">
-            <sun:textField id="timeField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['time']}"/>
+            <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer"
+                           text="#{pageSession.valueMap['time']}"/>
         </sun:property>
         <sun:property id="unitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.unitLabel}"  
@@ -99,19 +100,19 @@
         <sun:property id="thresholdGoodProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.thresholdGoodLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.thresholdGoodLabelHelpText}">
-            <sun:textField id="thresholdGoodField" columns="$int{40}" maxLength="250" 
+            <sun:textField id="thresholdGoodField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['thresholdGood']}"/>
         </sun:property>
         <sun:property id="thresholdWarningProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.thresholdWarningLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.thresholdWarningLabelHelpText}">
-            <sun:textField id="thresholdWarningField" columns="$int{40}" maxLength="250" 
+            <sun:textField id="thresholdWarningField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['thresholdWarning']}"/>
         </sun:property>
         <sun:property id="thresholdCriticalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.thresholdCriticalLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.thresholdCriticalLabelHelpText}">
-            <sun:textField id="thresholdCriticalField" columns="$int{40}" maxLength="250" 
+            <sun:textField id="thresholdCriticalField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['thresholdCritical']}"/>
         </sun:property>
     </sun:propertySheetSection>
