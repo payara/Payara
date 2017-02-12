@@ -15,7 +15,7 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.cdi.jsr107.impl;
+package fish.payara.jcache.api;
 
 import java.io.Serializable;
 import java.util.Arrays;

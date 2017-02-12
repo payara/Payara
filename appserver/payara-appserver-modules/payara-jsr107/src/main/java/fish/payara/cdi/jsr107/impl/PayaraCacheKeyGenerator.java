@@ -17,6 +17,7 @@
  */
 package fish.payara.cdi.jsr107.impl;
 
+import fish.payara.jcache.api.PayaraGeneratedCacheKey;
 import java.lang.annotation.Annotation;
 import javax.cache.annotation.CacheKeyGenerator;
 import javax.cache.annotation.CacheKeyInvocationContext;
