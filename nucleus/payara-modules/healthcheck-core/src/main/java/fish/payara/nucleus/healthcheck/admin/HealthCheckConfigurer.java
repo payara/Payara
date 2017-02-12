@@ -86,8 +86,11 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled")
     private Boolean enabled;
+
+    @Param(name = "notifierEnabled", optional = true)
+    private Boolean notifierEnabled;
 
     @Param(name = "historicalTraceEnabled", optional = true)
     private Boolean historicalTraceEnabled;
@@ -146,7 +149,31 @@ public class HealthCheckConfigurer implements AdminCommand {
                 configureDynamically();
             }
         }
+
+        enableLogNotifier(context);
     }
+
+
+    private void enableLogNotifier(AdminCommandContext context) {
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = context.getActionReport().addSubActionsReport();
+
+        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("healthcheck-log-notifier-configure", subReport, context.getSubject());
+
+        ParameterMap params = new ParameterMap();
+        params.add("dynamic", dynamic.toString());
+        params.add("target", target);
+        if (notifierEnabled != null) {
+            params.add("enabled", notifierEnabled.toString());
+        }
+        inv.parameters(params);
+        inv.execute();
+        // swallow the offline warning as it is not a problem
+        if (subReport.hasWarnings()) {
+            subReport.setMessage("");
+        }
+    }
+
 
     private void configureDynamically() {
         service.setEnabled(enabled);

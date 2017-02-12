@@ -18,6 +18,8 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
@@ -29,6 +31,10 @@ import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.util.HashMap;
+
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -71,6 +77,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             "Retry Count"};
     final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
+    final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
     
     private final String garbageCollectorPropertyName = "garbageCollector";
     private final String cpuUsagePropertyName = "cpuUsage";
@@ -106,10 +113,11 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         ColumnFormatter baseColumnFormatter = new ColumnFormatter(baseHeaders);
         ColumnFormatter hoggingThreadsColumnFormatter = new ColumnFormatter(hoggingThreadsHeaders);
         ColumnFormatter thresholdDiagnosticsColumnFormatter = new ColumnFormatter(thresholdDiagnosticsHeaders);
+        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);
 
-        HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration
-                .class);
+        HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         List<ServiceHandle<BaseHealthCheck>> allServiceHandles = habitat.getAllServiceHandles(BaseHealthCheck.class);
+        List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
         mainActionReport.appendMessage("Health Check Service Configuration is enabled?: " + configuration.getEnabled() + "\n");
         
@@ -121,17 +129,51 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                         + configuration.getHistoricalTraceStoreSize() + "\n");
             }
         }
-        
+
         // Create the extraProps map for the general healthcheck configuration
         Properties mainExtraProps = new Properties();
         Map<String, Object> mainExtraPropsMap = new HashMap<>();
-        
+
         mainExtraPropsMap.put("enabled", configuration.getEnabled());
         mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
         mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
         
         mainExtraProps.put("healthcheckConfiguration", mainExtraPropsMap);
         mainActionReport.setExtraProperties(mainExtraProps);
+
+        if (!configuration.getNotifierList().isEmpty()) {
+            List<Class<Notifier>> notifierClassList = Lists.transform(configuration.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
+                @Override
+                public Class<Notifier> apply(Notifier input) {
+                    return resolveNotifierClass(input);
+                }
+            });
+
+            Properties extraProps = new Properties();
+            for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {
+                Notifier notifier = configuration.getNotifierByType(serviceHandle.getService().getNotifierType());
+                if (notifier != null) {
+                    ConfigView view = ConfigSupport.getImpl(notifier);
+                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+
+                    if (notifierClassList.contains(view.<Notifier>getProxyType())) {
+                        Object values[] = new Object[2];
+                        values[0] = annotation.type();
+                        values[1] = notifier.getEnabled();
+                        notifiersColumnFormatter.addRow(values);
+
+                        Map<String, Object> map = new HashMap<>(2);
+                        map.put("notifierName", values[0]);
+                        map.put("notifierEnabled", values[1]);
+
+                        extraProps.put("notifierList" + annotation.type(), map);
+                    }
+                }
+            }
+            mainActionReport.getExtraProperties().putAll(extraProps);
+            mainActionReport.appendMessage(notifiersColumnFormatter.toString());
+            mainActionReport.appendMessage(StringUtils.EOL);
+        }
 
         mainActionReport.appendMessage("Below are the list of configuration details of each checker listed by its name.");
         mainActionReport.appendMessage(StringUtils.EOL);
@@ -280,7 +322,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", checker.getEnabled());
         extraPropsMap.put("time", checker.getTime());
         extraPropsMap.put("unit", checker.getUnit());
-        
+
         // Get the checker type
         ConfigView view = ConfigSupport.getImpl(checker);
         CheckerConfigurationType annotation = view.getProxyType().getAnnotation(CheckerConfigurationType.class);
@@ -352,5 +394,10 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         }
         
         return extraPropsMap;
+    }
+
+    private Class<Notifier> resolveNotifierClass(Notifier input) {
+        ConfigView view = ConfigSupport.getImpl(input);
+        return view.getProxyType();
     }
 }

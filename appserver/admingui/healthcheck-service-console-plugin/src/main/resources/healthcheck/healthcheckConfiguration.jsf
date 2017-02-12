@@ -33,19 +33,21 @@
 
         gf.restRequest(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/get-healthcheck-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}");      
-        setPageSessionAttribute(key="valueMap", 
-                value="#{requestScope.resp.data.extraProperties.healthcheckConfiguration}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.healthcheckConfiguration}");
+        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
                 
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
             setPageSessionAttribute(key="historicalTraceEnabledSelected", value="true");
         }
-        
+        if (#{pageSession.valueNotifierMap['notifierEnabled']}=true) {
+            setPageSessionAttribute(key="notifierEnabledSelected", value="true");
+        }
+
         setPageSessionAttribute(key="dynamic", value="true");
     />
 </event>
@@ -61,6 +63,7 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="notifierEnabled" value="#{pageSession.notifierEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" 
                             value="#{pageSession.historicalTraceEnabledSelected}");
@@ -80,7 +83,12 @@
                       helpText="$resource{i18nhx.healthcheck.configuration.enabledLabelHelpText}">
             <sun:checkbox id="enabledBox" selected="#{pageSession.enabledSelected}" selectedValue="true" />
         </sun:property>
-        <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+        <sun:property id="logNotifierEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18nhx.healthcheck.configuration.logNotifierEnabled}"
+                      helpText="$resource{i18nhx.healthcheck.configuration.logNotifierEnabledHelp}">
+            <sun:checkbox id="logNotifierEnabledLabel" selected="#{pageSession.notifierEnabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                       label="$resource{i18nhx.healthcheck.configuration.dynamicLabel}"  
                       helpText="$resource{i18nhx.healthcheck.configuration.dynamicLabelHelpText}">
             <sun:checkbox id="dynamicBox" selected="#{pageSession.dynamic}" selectedValue="true" />
