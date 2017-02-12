@@ -34,6 +34,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -68,6 +69,7 @@ public class HazelcastCore implements EventListener {
 
     private CachingProvider hazelcastCachingProvider;
     private boolean enabled;
+    private boolean booted=false;
     private String memberName;
     private String memberGroup;
 
@@ -95,29 +97,56 @@ public class HazelcastCore implements EventListener {
     public void postConstruct() {
         theCore = this;
         events.register(this);
+        enabled = Boolean.valueOf(configuration.getEnabled());     
     }
     
     public String getMemberName() {
+        if (enabled && !booted) {
+            bootstrapHazelcast();
+        }
         return memberName;
     }
     
     public String getMemberGroup() {
+        if (enabled && !booted) {
+            bootstrapHazelcast();
+        }
         return memberGroup;
     }
     
     public String getUUID() {
+        if (enabled && !booted) {
+            bootstrapHazelcast();
+        }
+        
+        if (!enabled) {
+            return UUID.randomUUID().toString();
+        }        
         return theInstance.getCluster().getLocalMember().getUuid();
     }
     
     public boolean isLite() {
+        if (enabled && !booted) {
+            bootstrapHazelcast();
+        }
+        
+        if (!enabled) {
+            return false;
+        }
         return theInstance.getCluster().getLocalMember().isLiteMember();
     }
 
     public HazelcastInstance getInstance() {
+        if (enabled && !booted) {
+            bootstrapHazelcast();
+        }
         return theInstance;
     }
 
     public CachingProvider getCachingProvider() {
+        if (enabled && !booted) {
+            bootstrapHazelcast();
+        }
         return hazelcastCachingProvider;
     }
 
@@ -134,8 +163,7 @@ public class HazelcastCore implements EventListener {
                 bindToJNDI();
             }
         } else if (event.is(EventTypes.SERVER_STARTUP)) {
-            if ((Boolean.valueOf(configuration.getEnabled()))) {
-                enabled = true;
+            if (enabled && !booted) {
                 bootstrapHazelcast();
             }
         }
@@ -147,6 +175,7 @@ public class HazelcastCore implements EventListener {
         } else if (this.enabled && !enabled) {
             this.enabled = false;
             shutdownHazelcast();
+            booted = false;
         } else if (!this.enabled && enabled) {
             this.enabled = true;
             bootstrapHazelcast();
@@ -154,6 +183,7 @@ public class HazelcastCore implements EventListener {
         } else if (this.enabled && enabled) {
             // we need to reboot
             shutdownHazelcast();
+            booted =false;
             bootstrapHazelcast();
             bindToJNDI();
         }
@@ -221,51 +251,53 @@ public class HazelcastCore implements EventListener {
         }
     }
 
-    private void bootstrapHazelcast() {
-        Config config = buildConfiguration();
-        theInstance = Hazelcast.newHazelcastInstance(config);
-        if (env.isMicro()){
-            memberName = configuration.getMemberName();
-            memberGroup = configuration.getMemberGroup();
-            if (Boolean.valueOf(configuration.getGenerateNames())  || memberName == null) {
-                NameGenerator gen = new NameGenerator();
-                memberName = gen.generateName();
-                Set<com.hazelcast.core.Member> clusterMembers = theInstance.getCluster().getMembers();
+    private synchronized void bootstrapHazelcast() {
+        if (!booted) {
+            Config config = buildConfiguration();
+            theInstance = Hazelcast.newHazelcastInstance(config);
+            if (env.isMicro()) {
+                memberName = configuration.getMemberName();
+                memberGroup = configuration.getMemberGroup();
+                if (Boolean.valueOf(configuration.getGenerateNames()) || memberName == null) {
+                    NameGenerator gen = new NameGenerator();
+                    memberName = gen.generateName();
+                    Set<com.hazelcast.core.Member> clusterMembers = theInstance.getCluster().getMembers();
 
-                // If the instance name was generated, we need to compile a list of all the instance names in use within 
-                // the instance group, excluding this local instance
-                List<String> takenNames = new ArrayList<>();
-                for (com.hazelcast.core.Member member : clusterMembers) {
-                    if (member != theInstance.getCluster().getLocalMember()
-                            && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(
-                                    memberGroup)) {
-                        takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
+                    // If the instance name was generated, we need to compile a list of all the instance names in use within 
+                    // the instance group, excluding this local instance
+                    List<String> takenNames = new ArrayList<>();
+                    for (com.hazelcast.core.Member member : clusterMembers) {
+                        if (member != theInstance.getCluster().getLocalMember()
+                                && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(
+                                        memberGroup)) {
+                            takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
+                        }
+                    }
+
+                    // If our generated name is already in use within the instance group, either generate a new one or set the 
+                    // name to this instance's UUID if there are no more unique generated options left
+                    if (takenNames.contains(memberName)) {
+                        memberName = gen.generateUniqueName(takenNames,
+                                theInstance.getCluster().getLocalMember().getUuid());
+                        theInstance.getCluster().getLocalMember().setStringAttribute(
+                                HazelcastCore.INSTANCE_ATTRIBUTE, memberName);
                     }
                 }
-
-                // If our generated name is already in use within the instance group, either generate a new one or set the 
-                // name to this instance's UUID if there are no more unique generated options left
-                if (takenNames.contains(memberName)) {
-                    memberName = gen.generateUniqueName(takenNames,
-                            theInstance.getCluster().getLocalMember().getUuid());
-                    theInstance.getCluster().getLocalMember().setStringAttribute(
-                            HazelcastCore.INSTANCE_ATTRIBUTE, memberName);
+            } else {
+                if (memberName == null) {
+                    memberName = context.getInstanceName();
                 }
-            }                
-        } else { 
-            if (memberName == null) {
-                memberName = context.getInstanceName();
+                if (memberGroup == null) {
+                    memberGroup = context.getConfigBean().getConfigRef();
+                }
             }
-            if (memberGroup == null) {
-                memberGroup = context.getConfigBean().getConfigRef();
-            }
+
+            theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
+            theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
+            hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
+            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
         }
-        
-        
-        theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
-        theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
-        hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
-        events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+        booted = true;
     }
 
     private void bindToJNDI() {

@@ -235,6 +235,11 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         // When Hazelcast is bootstrapped, update the instance descriptor with any new information
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
             initialiseInstanceDescriptor();
+            // remove listener first
+            cluster.getEventBus().removeMessageReceiver(INTERNAL_EVENTS_NAME, this);
+            cluster.getEventBus().removeMessageReceiver(CDI_EVENTS_NAME, this);
+            cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
+            cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
         }
         
         // If the generated name had to be changed, update the instance descriptor with the new information
@@ -381,8 +386,6 @@ public class PayaraInstance implements EventListener, MessageReceiver {
             
             // Register the instance descriptor to the cluster if it's enabled
             if (cluster.isEnabled()) {
-                cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
-                cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }  
         } catch (UnknownHostException ex) {
