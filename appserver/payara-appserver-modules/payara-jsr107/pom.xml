@@ -24,20 +24,6 @@
         </developer>
     </developers>
 
-    <repositories>
-        <repository>
-            <id>payara-snapshots</id>
-            <name>Payara Snapshots</name>
-            <url>https://raw.github.com/payara/Payara_Snapshots/master</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
@@ -54,7 +40,7 @@
         <dependency>
             <groupId>fish.payara</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${project.version}</version>
+            <version>4.1.1.171</version>
         </dependency>
     </dependencies>
 </project>
