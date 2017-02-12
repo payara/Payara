@@ -17,6 +17,7 @@
  */
 package fish.payara.nucleus.requesttracing.api;
 
+import fish.payara.requesttracing.api.Traced;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;

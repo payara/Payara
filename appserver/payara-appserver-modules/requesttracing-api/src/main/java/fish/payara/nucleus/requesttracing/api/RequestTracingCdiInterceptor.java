@@ -17,6 +17,7 @@
  */
 package fish.payara.nucleus.requesttracing.api;
 
+import fish.payara.requesttracing.api.Traced;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.internal.api.Globals;
