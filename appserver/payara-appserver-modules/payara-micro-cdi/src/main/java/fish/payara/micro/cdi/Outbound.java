@@ -74,12 +74,12 @@ public @interface Outbound {
     boolean loopBack() default false;
     
     /**
-     * Property to restrict the outbound event to specific named server or micro instances
-     * default is to fire on all server and micro instances.
-     * Set a comma separated list of instance names to restruct the event to firing only
+     * Property to restrict the outbound event to specific named server or micro instances.
+     * Default behavior is to fire on all server and micro instances.
+     * Set one or more instance names to restrict the event to firing only
      * on the specified instances.
      * @return 
      */
     @Nonbinding
-    String instanceName() default "";
+    String[] instanceName() default "";
 }

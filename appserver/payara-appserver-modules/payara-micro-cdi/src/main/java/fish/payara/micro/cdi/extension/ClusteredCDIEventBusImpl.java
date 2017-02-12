@@ -156,7 +156,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         String instanceName = event.getProperty(INSTANCE_PROPERTY);
         if (!(instanceName == null) && !(instanceName.length() == 0) ) {
             // there is an instance name filter
-            String names[] = instanceName.split(",");
+            String names[] = deserializeToArray(instanceName);
             boolean forUs = false;
             String thisInstance = runtime.getInstanceName();
             for (String name : names) {
@@ -215,7 +215,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         try {
             boolean loopBack = false;
             String eventName = "";
-            String instanceName = "";
+            String[] instanceName = new String[0];
             for (Annotation annotation : meta.getQualifiers()) {
                 if (annotation instanceof Outbound) {
                     Outbound outboundattn = (Outbound)annotation;
@@ -227,10 +227,31 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
             clusteredEvent = new PayaraClusteredCDIEventImpl(runtime.getLocalDescriptor(), event);
             clusteredEvent.setLoopBack(loopBack);
             clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
-            clusteredEvent.setProperty(INSTANCE_PROPERTY, instanceName);
+            clusteredEvent.setProperty(INSTANCE_PROPERTY, serializeArray(instanceName));
             runtime.publishCDIEvent(clusteredEvent);
         } catch (IOException ex) {
         }
+    }
+
+    private static final String ITEM_SEPARATOR = ",,,";  // 3 commas in case an instance name contains a comma
+    
+    // the same could be done in one line just with String.join() in JDK8
+    private static String serializeArray(String[] items) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (String name : items) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(ITEM_SEPARATOR);
+            }
+            sb.append(name);
+        }
+        return sb.toString();
+    }
+    
+    private String[] deserializeToArray(String serializedItems) {
+        return serializedItems.split(ITEM_SEPARATOR);
     }
 
 }
