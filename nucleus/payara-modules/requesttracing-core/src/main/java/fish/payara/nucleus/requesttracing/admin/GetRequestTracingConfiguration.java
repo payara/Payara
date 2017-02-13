@@ -155,6 +155,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
 
                         notifierExtraProps.put("getRequesttracingConfiguration" + annotation.type(), 
                                 notifierExtraPropsMap);
+                        notifiersActionReport.setExtraProperties(notifierExtraProps);
                     }
                 }
             }
