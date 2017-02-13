@@ -360,14 +360,20 @@ public class HttpServiceStatsProvider implements PostConstruct {
 
     @ProbeListener("glassfish:web:http-service:dataReceivedEvent")
     public void dataReceivedEvent(
-        @ProbeParam("size") int size) {
-        countBytesReceived.increment(size);
+        @ProbeParam("size") int size,
+        @ProbeParam("hostName") String hostName) {
+        if ((hostName != null) && (hostName.equals(virtualServerName))) {
+            countBytesReceived.increment(size);
+        }
     }
 
     @ProbeListener("glassfish:web:http-service:dataSentEvent")
     public void dataSentEvent(
-        @ProbeParam("size") long size) {
-        countBytesTransmitted.increment(size);
+        @ProbeParam("size") long size,
+        @ProbeParam("hostName") String hostName) {
+        if ((hostName != null) && (hostName.equals(virtualServerName))) {
+            countBytesTransmitted.increment(size);
+        }
     }
 
     @ProbeListener("glassfish:web:http-service:requestStartEvent")

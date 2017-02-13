@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1656,14 +1656,14 @@ public class VirtualServer extends StandardHost
                         @Override
                         public void onReadEvent(Connection connection, Buffer data, int size) {
                             if (requestProbeProvider != null) {
-                                requestProbeProvider.dataReceivedEvent(size);
+                                requestProbeProvider.dataReceivedEvent(size, _id);
                             }
                         }
 
                         @Override
                         public void onWriteEvent(Connection connection, Buffer data, long size) {
                             if (requestProbeProvider != null) {
-                                requestProbeProvider.dataSentEvent(size);
+                                requestProbeProvider.dataSentEvent(size, _id);
                             }
                         }
                     });
