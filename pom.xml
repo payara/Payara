@@ -54,7 +54,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
 	<url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-      <tag>payara-server-4.1.1.171</tag>
+      <tag>payara-blue-4.1.1.171</tag>
   </scm>
     
     <profiles>
