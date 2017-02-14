@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
@@ -81,7 +83,7 @@ public class JMSConnectionFactoryDefinitionsHandler extends AbstractResourceHand
                 if (duplicates.contains(defnName)) {
                     String localString = localStrings.getLocalString(
                             "enterprise.deployment.annotation.handlers.jmsconnectionfactorydefinitionsduplicates",
-                            "@JMSConnectionFactoryDefinition cannot have multiple definitions with same name : '{0}'",
+                            "@JMSConnectionFactoryDefinition cannot have multiple definitions with same name : ''{0}''",
                             defnName);
                     throw new IllegalStateException(localString);
                 } else {

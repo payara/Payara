@@ -56,9 +56,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.sun.enterprise.spi.io.BaseIndirectlySerializable;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
@@ -81,7 +84,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-//end HERCULES:add
 
 
 
@@ -185,6 +187,9 @@ public class StandardSession
      */
     protected static final String NOT_SERIALIZED =
         "___NOT_SERIALIZABLE_EXCEPTION___";
+
+    protected static final String SEPARATE_BUFFER_SERIALIZATION =
+        "___SEPARATE_BUFFER_SERIALIZATION___";
 
     //HERCULES:add
     /**
@@ -313,6 +318,9 @@ public class StandardSession
      * The Manager with which this Session is associated.
      */
     protected transient Manager manager = null;
+    protected static final transient ThreadLocal<Manager> threadContextManager
+            = new ThreadLocal<>();
+    private transient Cache<Object, Boolean> checkedSerializableObjects = buildSerializableCache();
 
     /**
      * The context with which this Session is associated.
@@ -1271,16 +1279,23 @@ public class StandardSession
 
         StandardSession result = null;
 
-        Object obj = ois.readObject();
-        if (obj instanceof StandardSession) {
-            // New format following standard serialization
-            result = (StandardSession) obj;
-        } else {
-            // Old format, obj is an instance of Long and contains the
-            // session's creation time
-            result = (StandardSession) manager.createEmptySession();
-            result.setCreationTime(((Long) obj).longValue());
-            result.readRemainingObject(ois);
+        try {
+            threadContextManager.set(manager);
+
+            Object obj = ois.readObject();
+            if (obj instanceof StandardSession) {
+                // New format following standard serialization
+                result = (StandardSession) obj;
+            } else {
+                // Old format, obj is an instance of Long and contains the
+                // session's creation time
+                result = (StandardSession) manager.createEmptySession();
+                result.setCreationTime(((Long) obj).longValue());
+                result.readRemainingObject(ois);
+            }
+        }
+        finally {
+            threadContextManager.remove();
         }
 
         return result;
@@ -1961,10 +1976,13 @@ public class StandardSession
         throws ClassNotFoundException, IOException {
 
         if (listeners == null) {
-            listeners = new ArrayList<SessionListener>();
+            listeners = new ArrayList<>();
         }
         if (notes == null) {
-            notes = new Hashtable<String, Object>();
+            notes = new Hashtable<>();
+        }
+        if(checkedSerializableObjects == null) {
+            checkedSerializableObjects = buildSerializableCache();
         }
 
         // Deserialize the scalar instance variables (except Manager)
@@ -2077,8 +2095,22 @@ public class StandardSession
         for (int i = 0; i < n; i++) {
             String name = (String) stream.readObject();
             Object value = stream.readObject();
-            if ((value instanceof String) && (value.equals(NOT_SERIALIZED)))
-                continue;
+            if (value instanceof String) {
+                switch((String)value) {
+                    case NOT_SERIALIZED:
+                        continue;
+                    case SEPARATE_BUFFER_SERIALIZATION:
+                    {
+                        value = stream.readObject();
+                        ManagerBase mgr = (ManagerBase) getManager();
+                        if (mgr == null) {
+                            mgr = (ManagerBase)threadContextManager.get();
+                        }
+                        value = mgr.createObjectInputStream(new ByteArrayInputStream((byte[]) value)).readObject();
+                        break;
+                    }
+                }
+            }
             if (debug >= 2)
                 log("  loading attribute '" + name +
                     "' with value '" + value + "'");
@@ -2192,37 +2224,54 @@ public class StandardSession
              */ 
             
             //following is replacement code from Hercules
+            Object val = saveValues.get(i);
+            Boolean serSuccess = checkedSerializableObjects.getIfPresent(val);
             try {
-                stream.writeObject(saveValues.get(i));
+                if(serSuccess == null) {
+                    ManagerBase mgr = (ManagerBase)getManager();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    try (ObjectOutputStream oos = mgr.createObjectOutputStream(baos)) {
+                        // need to write the object to temporary buffer,
+                        // so main stream doesn't get corrupted in case of partial
+                        // object write and NotSerializedException
+                        checkedSerializableObjects.put(val, false);
+                        oos.writeObject(val);
+                        oos.flush();
+                        stream.writeObject(SEPARATE_BUFFER_SERIALIZATION);
+                        stream.writeObject(baos.toByteArray());
+                    }
+                    checkedSerializableObjects.put(val, true);
+                }
+                else if(serSuccess == true) {
+                    stream.writeObject(val);
+                }
+                else {
+                    stream.writeObject(NOT_SERIALIZED);
+                }
+
                 if (debug >= 2)
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value '" + saveValues.get(i) + "'");
-            } catch (NotSerializableException e) {
+            } catch (IOException e) {
+                if((e instanceof NotSerializableException || e.getCause() instanceof NotSerializableException)
+                        && (serSuccess == null || serSuccess == false)) {
                 String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
                                                   new Object[] {saveNames.get(i), id});
-                log(msg, e);
+                log(msg, Level.WARNING);
                 stream.writeObject(NOT_SERIALIZED);
                 if (debug >= 2)
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value NOT_SERIALIZED");
-            } catch (IOException ioe) {
-		if ( ioe.getCause() instanceof NotSerializableException ) {
-                String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
-                                                  new Object[] {saveNames.get(i), id});
-                	log(msg, ioe);
-                	stream.writeObject(NOT_SERIALIZED);
-                	if (debug >= 2)
-                    		log("  storing attribute '" + saveNames.get(i) +
-                        	"' with value NOT_SERIALIZED");
-		} else 
-			throw ioe;
-	    }
+                }
+                else {
+                    throw e;
+                }
+            }
             //end HERCULES:mod
         }
 
         stream.writeObject(sipAppSessionId);
         stream.writeObject(beKey);
-
     }
 
 
@@ -2376,6 +2425,16 @@ public class StandardSession
         }
     }
 
+    /**
+     * Log a message on the Logger associated with our Manager (if any).
+     *
+     * @param message Message to be logged
+     * @param level
+     */
+    protected void log(String message, Level level) {
+        log.log(level, "StandardSession: {0}", message);
+    }
+
 
     /**
      * Returns true if the given value may be serialized, false otherwise.
@@ -2401,6 +2460,11 @@ public class StandardSession
         }
     }
 
+    private static Cache<Object, Boolean> buildSerializableCache() {
+        return CacheBuilder.newBuilder().softValues()
+                .maximumSize(Integer.getInteger(StandardSession.class.getName() + ".identityCacheSize", 100))
+                .build();
+    }
 }
 
 

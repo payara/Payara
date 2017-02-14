@@ -40,6 +40,12 @@ public class CacheRemoveInterceptor extends AbstractJSR107Interceptor {
 
     @AroundInvoke
     public Object cacheRemove(InvocationContext ctx) throws Throwable {
+        
+        if (!isEnabled()) {
+            return ctx.proceed();
+        }
+        
+        
         CacheRemove annotation = ctx.getMethod().getAnnotation(CacheRemove.class);
         PayaraCacheKeyInvocationContext<CacheRemove> pctx = new PayaraCacheKeyInvocationContext<>(ctx, annotation);
 

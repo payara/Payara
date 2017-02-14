@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.javamail.annotation.handler;
 
@@ -88,7 +89,7 @@ public class MailSessionDefinitionsHandler extends AbstractResourceHandler {
                 if (duplicates.contains(defnName)) {
                     String localString = localStrings.getLocalString(
                             "enterprise.deployment.annotation.handlers.mailsessiondefinitionsduplicates",
-                            "@MailSessionDefinitions cannot have multiple definitions with same name : '{0}'",
+                            "@MailSessionDefinitions cannot have multiple definitions with same name : ''{0}''",
                             defnName);
                     throw new IllegalStateException(localString);
                 } else {

@@ -19,7 +19,6 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -42,6 +41,7 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.constraints.Min;
 
 /**
  * Admin command to enable/disable all health check services defined in
@@ -56,8 +56,8 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+    @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+            opType = RestEndpoint.OpType.POST,
             path = "healthcheck-configure",
             description = "Enables/Disables Health Check Service")
 })
@@ -86,8 +86,18 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled")
     private Boolean enabled;
+
+    @Param(name = "notifierEnabled", optional = true)
+    private Boolean notifierEnabled;
+
+    @Param(name = "historicalTraceEnabled", optional = true)
+    private Boolean historicalTraceEnabled;
+  
+    @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
+    @Min(value = 1, message = "Store size must be greater than 0")
+    private Integer historicalTraceStoreSize;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -109,7 +119,13 @@ public class HealthCheckConfigurer implements AdminCommand {
                             PropertyVetoException, TransactionFailure {
                         if (enabled != null) {
                             healthCheckServiceConfigurationProxy.enabled(enabled.toString());
-                            }
+                        }
+                        if (historicalTraceEnabled != null) {
+                            healthCheckServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                        }
+                        if (historicalTraceStoreSize != null) {
+                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return healthCheckServiceConfigurationProxy;
                     }
@@ -126,12 +142,47 @@ public class HealthCheckConfigurer implements AdminCommand {
         if (dynamic) {
             if (server.isDas()) {
                 if (targetUtil.getConfig(target).isDas()) {
-                    service.setEnabled(enabled);
+                    configureDynamically();
                 }
             } else {
                 // apply as not the DAS so implicitly it is for us
-                service.setEnabled(enabled);
+                configureDynamically();
             }
+        }
+
+        enableLogNotifier(context);
+    }
+
+
+    private void enableLogNotifier(AdminCommandContext context) {
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = context.getActionReport().addSubActionsReport();
+
+        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("healthcheck-log-notifier-configure", subReport, context.getSubject());
+
+        ParameterMap params = new ParameterMap();
+        params.add("dynamic", dynamic.toString());
+        params.add("target", target);
+        if (notifierEnabled != null) {
+            params.add("enabled", notifierEnabled.toString());
+        }
+        inv.parameters(params);
+        inv.execute();
+        // swallow the offline warning as it is not a problem
+        if (subReport.hasWarnings()) {
+            subReport.setMessage("");
+        }
+    }
+
+
+    private void configureDynamically() {
+        service.setEnabled(enabled);
+
+        if (historicalTraceEnabled != null) {
+            service.setHistoricalTraceEnabled(historicalTraceEnabled);
+        }
+        if (historicalTraceStoreSize != null) {
+            service.setHistoricalTraceStoreSize(historicalTraceStoreSize);
         }
     }
 }

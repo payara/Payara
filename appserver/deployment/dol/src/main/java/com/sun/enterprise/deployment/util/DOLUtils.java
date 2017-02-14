@@ -41,8 +41,12 @@
 
 package com.sun.enterprise.deployment.util;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -105,6 +109,7 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -161,6 +166,17 @@ public class DOLUtils {
     private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     private static final String ID_SEPARATOR = "_";
+    private static final Set<String> SYSTEM_PACKAGES_ =
+            ImmutableSet.of("com.sun", "org.glassfish", "org.apache.jasper", "fish.payara", "com.ibm.jbatch",
+                            "org.hibernate.validator", "org.jboss.weld", "com.ctc.wstx",
+                            "java", "javax");
+    private static final Set<String> SYSTEM_PACKAGES = ImmutableSet.copyOf(Collections2.transform(SYSTEM_PACKAGES_,
+            new Function<String, String>() {
+        @Override
+        public String apply(String input) {
+            return input + ".";
+        }
+    }));
 
     /** no need to creates new DOLUtils */
     private DOLUtils() {
@@ -873,4 +889,20 @@ public class DOLUtils {
 
     return id;
   }
+
+/**
+ * Supports extreme classloading isolation
+ *
+ * @param application
+ * @param className
+ * @return true if the class is white-listed
+ */
+    public static boolean isWhiteListed(Application application, String className) {
+        for (String packageName : Iterables.concat(application.getWhitelistPackages(), SYSTEM_PACKAGES)) {
+            if (className.startsWith(packageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

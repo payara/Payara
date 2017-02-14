@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -884,11 +884,14 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             loadDefaultWebModulesAfterAllAppsProcessed();
         } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
             isShutdown = true;
-        } else if(event.is(Deployment.DEPLOYMENT_FAILURE)) {
+        } else if(event.is(Deployment.DEPLOYMENT_FAILURE) || event.is(Deployment.UNDEPLOYMENT_FAILURE)) {
             DeploymentContext dc = (DeploymentContext)event.hook();
             try {
                 // Fix https://github.com/payara/Payara/issues/315
-                componentEnvManager.unbindFromComponentNamespace(dc.getModuleMetaData(WebBundleDescriptor.class));
+                WebBundleDescriptor wbd = dc.getModuleMetaData(WebBundleDescriptor.class);
+                if(wbd != null) {
+                    componentEnvManager.unbindFromComponentNamespace(wbd);
+                }
             } catch (NamingException ex) {
                 logger.log(Level.SEVERE, EXCEPTION_DURING_DESTROY, ex);
             }

@@ -41,6 +41,10 @@
 
 package org.glassfish.web.admin.monitor;
 
+import org.glassfish.internal.api.Globals;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
+import com.sun.enterprise.v3.services.impl.monitor.stats.ConnectionQueueStatsProvider;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.external.statistics.CountStatistic;
@@ -198,6 +202,16 @@ public class HttpServiceStatsProvider implements PostConstruct {
     }
 
     public void postConstruct() {
+    }
+
+    private long getInitialOpenConnections(){
+        GrizzlyMonitoring monitoring = Globals.get(GrizzlyService.class).getMonitoring();
+        long initialCount = 0;
+        for (String networkListener : networkListeners) {
+            ConnectionQueueStatsProvider connectionQueueStats = monitoring.getConnectionQueueStatsProvider(networkListener);
+            initialCount += connectionQueueStats.getOpenConnectionsCount().getCount();
+        }
+        return initialCount;
     }
 
     @ManagedAttribute(id="maxtime")
@@ -525,5 +539,8 @@ public class HttpServiceStatsProvider implements PostConstruct {
         this.maxOpenConnections.reset();
         this.method.reset();
         this.uri.reset();
+        
+        //set initial value
+        countOpenConnections.increment(getInitialOpenConnections());
     }
 }

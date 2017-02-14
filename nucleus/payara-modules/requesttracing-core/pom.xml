@@ -67,6 +67,7 @@
                                 <Export-Package>
                                     fish.payara.nucleus.requesttracing,
                                     fish.payara.nucleus.requesttracing.domain,
+                                    fish.payara.nucleus.requesttracing.domain.execoptions,
                                     fish.payara.nucleus.requesttracing.configuration
                                 </Export-Package>
                             </instructions>
@@ -83,6 +84,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>hazelcast-bootstrap</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <version>1.0.4</version>
@@ -97,7 +104,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.2.6</version>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

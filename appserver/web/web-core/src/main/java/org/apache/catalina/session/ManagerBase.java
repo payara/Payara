@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -73,10 +74,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
@@ -1328,5 +1334,35 @@ public abstract class ManagerBase implements Manager {
      */
     public void release() {
         clearSessions();
+    }
+
+    /**
+     * create appropriate object input stream with appropriate class loading
+     * @param is
+     * @return stream
+     * @throws IOException
+     */
+    ObjectInputStream createObjectInputStream(InputStream is) throws IOException {
+        if (container != null) {
+            return ((StandardContext) container).createObjectInputStream(is);
+        } else {
+            return new ObjectInputStream(is);
+        }
+    }
+
+    /**
+     * create appropriate object output stream with appropriate class loading
+     * @param os
+     * @return stream
+     * @throws IOException
+     */
+    ObjectOutputStream createObjectOutputStream(OutputStream os) throws IOException {
+
+        if (container != null) {
+            return ((StandardContext) container).createObjectOutputStream(
+                    new BufferedOutputStream(os));
+        } else {
+            return new ObjectOutputStream(new BufferedOutputStream(os));
+        }
     }
 }

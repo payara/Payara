@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl.util;
 
 import com.sun.logging.LogDomains;
 
-import com.sun.enterprise.util.Utility;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -52,13 +52,9 @@ import org.glassfish.internal.api.Globals;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
 import java.util.Collection;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
@@ -149,7 +145,8 @@ final class SerializableJNDIContext implements SerializableObjectFactory {
 		}
 	}
 
-	public Object createObject() throws IOException {
+        @Override
+	public Object createObject(long appUniqueId) throws IOException {
 		try {
 			if ((name == null) || (name.length() == 0)) {
 				return new InitialContext();

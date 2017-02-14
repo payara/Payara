@@ -1,0 +1,135 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2017 Payara Foundation and/or its affiliates. 
+ All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    setResourceBundle(key="i18nxn" bundle="fish.payara.admingui.notifier.xmpp.Strings");
+    setResourceBundle(key="i18nn" bundle="fish.payara.admingui.extras.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nxn.notifier.xmpp.configuration.pageTitle}"  >
+<!define name="content">
+<event>
+    <!beforeCreate 
+        getRequestValue(key="configName" value="#{pageSession.configName}" );
+        createMap(result="#{pageSession.attrsMap}")
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
+        gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/get-xmpp-notifier-configuration?target=#{pageSession.configName}"  
+                method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "securityDisabled"});
+        
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        
+        if (#{pageSession.valueMap['securityDisabled']}=true) {
+            setPageSessionAttribute(key="securityDisabledSelected", value="true");
+        }
+        
+        setPageSessionAttribute(key="dynamic", value="true");
+    /> 
+</event>
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+#include "/payaraExtras/notification/notificationConfigTabs.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18nxn.notifier.xmpp.configuration.pageTitle}" 
+               helpText="$resource{i18nxn.notifier.xmpp.configuration.pageHelpText}" >
+        <!facet pageButtonsTop>
+            <sun:panelGroup id="topButtons">
+                <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                    <!command
+                        mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                        mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                        mapPut(map="#{pageSession.valueMap}" key="securityDisabled" 
+                                value="#{pageSession.securityDisabledSelected}");
+                        prepareSuccessfulMsg();
+                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-xmpp-configure" 
+                                attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                        />
+                </sun:button>
+            </sun:panelGroup>
+        </facet>
+    </sun:title>
+
+    <sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+        <sun:propertySheetSection id="xmppNotifierProperties">
+            <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.enabledLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.enabledLabelHelpText}">
+                <sun:checkbox id="enabledBox" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nn.notification.configuration.dynamic}"  
+                          helpText="$resource{i18nn.notification.configuration.notifier.dynamicHelp}">
+                <sun:checkbox id="dynamicBox" selected="#{pageSession.dynamic}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="hostNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.hostNameLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.hostNameLabelHelpText}">
+                <sun:textField id="hostField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['hostName']}" 
+                               styleClass="required"  required="#{true}"/>
+            </sun:property>
+            <sun:property id="portProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.portLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.portLabelHelpText}">
+                <sun:textField id="portField" columns="$int{75}" maxLength="255" styleClass="port"
+                               text="#{pageSession.valueMap['port']}" />
+            </sun:property>
+            <sun:property id="serviceNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.serviceNameLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.serviceNameLabelHelpText}">
+                <sun:textField id="serviceNameField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['serviceName']}" styleClass="required"  
+                               required="#{true}"/>
+            </sun:property>
+            <sun:property id="usernameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.usernameLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.usernameLabelHelpText}">
+                <sun:textField id="usernameField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['username']}" />
+            </sun:property>
+            <sun:property id="passwordProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.passwordLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.passwordLabelHelpText}">
+                <sun:passwordField id="passwordField" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['password']}" />
+            </sun:property>
+            <sun:property id="securityDisabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.securityDisabledLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.securityDisabledLabelHelpText}">
+                <sun:checkbox id="securityDisabledBox" selected="#{pageSession.securityDisabledSelected}" 
+                              selectedValue="true" />
+            </sun:property>
+            <sun:property id="roomNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.roomNameLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.roomNameLabelHelpText}">
+                <sun:textField id="roomName" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['roomName']}" styleClass="required"  
+                               required="#{true}"/>
+            </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
+</sun:form>
+</define>
+</composition>

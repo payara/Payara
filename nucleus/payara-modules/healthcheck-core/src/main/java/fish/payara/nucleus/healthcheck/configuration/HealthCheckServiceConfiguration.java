@@ -17,6 +17,7 @@ import fish.payara.nucleus.notification.configuration.Notifier;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.*;
 
+import javax.validation.constraints.Min;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
@@ -30,6 +31,15 @@ public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, Config
     @Attribute(defaultValue="false",dataType=Boolean.class)
     String getEnabled();
     void enabled(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getHistoricalTraceEnabled();
+    void setHistoricalTraceEnabled(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "20", dataType = Integer.class)
+    @Min(value = 0)
+    String getHistoricalTraceStoreSize();
+    void setHistoricalTraceStoreSize(String value) throws PropertyVetoException;
 
     @Element("*")
     List<Checker> getCheckerList();

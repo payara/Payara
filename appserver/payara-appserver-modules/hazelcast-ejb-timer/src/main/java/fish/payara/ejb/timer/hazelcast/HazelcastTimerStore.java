@@ -602,7 +602,9 @@ public class HazelcastTimerStore extends EJBTimerService {
         for (HZTimer timer : timers) {
             EJBTimerSchedule ts = timer.getSchedule();
             if (ts != null && ts.isAutomatic() && schedulesExist) {
-                for (Map.Entry<Method, List<ScheduledTimerDescriptor>> entry : schedules.entrySet()) {
+                Iterator<Map.Entry<Method, List<ScheduledTimerDescriptor>>> schedulesIterator = schedules.entrySet().iterator();
+                while (schedulesIterator.hasNext()){
+                    Map.Entry<Method, List<ScheduledTimerDescriptor>> entry = schedulesIterator.next();
                     Method m = entry.getKey();
                     if (m.getName().equals(ts.getTimerMethodName())
                             && m.getParameterTypes().length == ts.getMethodParamCount()) {
@@ -611,7 +613,7 @@ public class HazelcastTimerStore extends EJBTimerService {
                             logger.log(Level.FINE, "@@@ FOUND existing schedule: "
                                     + ts.getScheduleAsString() + " FOR method: " + m);
                         }
-                        schedules.remove(m);
+                        schedulesIterator.remove();
                     }
                 }
             }

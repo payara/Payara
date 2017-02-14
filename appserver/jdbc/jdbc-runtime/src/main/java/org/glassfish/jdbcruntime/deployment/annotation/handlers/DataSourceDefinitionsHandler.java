@@ -87,7 +87,7 @@ public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
                 if(duplicates.contains(defnName)){
                 String localString = localStrings.getLocalString(
                         "enterprise.deployment.annotation.handlers.datasourcedefinitionsduplicates",
-                        "@DataSourceDefinitions cannot have multiple definitions with same name : '{0}'",
+                        "@DataSourceDefinitions cannot have multiple definitions with same name : ''{0}''",
                         defnName);
                     throw new IllegalStateException(localString);
                     /*

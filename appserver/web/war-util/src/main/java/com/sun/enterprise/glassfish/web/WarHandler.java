@@ -45,6 +45,8 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import com.sun.enterprise.util.StringUtils;
@@ -161,7 +163,7 @@ public class WarHandler extends AbstractArchiveHandler {
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifierValue = null;
         try {
-            WebXmlParser webXmlParser = getWebXmlParser(archive);
+            WebXmlParser webXmlParser = getWebXmlParser(archive, Application.createApplication());
             versionIdentifierValue = webXmlParser.getVersionIdentifier();
         } catch (XMLStreamException e) {
             logger.log(Level.SEVERE, e.getMessage());
@@ -177,11 +179,13 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     @Override
-    public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
+    public ClassLoader getClassLoader(final ClassLoader parent, final DeploymentContext context) {
+        Application applicationTemp = context.getModuleMetaData(Application.class);
+        final Application application = applicationTemp == null? Application.createApplication() : applicationTemp;
         WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
             @Override
             public WebappClassLoader run() {
-                return new WebappClassLoader(parent);
+                return new WebappClassLoader(parent, application);
             }
         });
         try {
@@ -203,7 +207,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 cloader.addRepository(url.toString());
             }
 
-            WebXmlParser webXmlParser = getWebXmlParser(context.getSource());
+            WebXmlParser webXmlParser = getWebXmlParser(context.getSource(), application);
             configureLoaderAttributes(cloader, webXmlParser, base);
             configureLoaderProperties(cloader, webXmlParser, base);
             
@@ -239,7 +243,7 @@ public class WarHandler extends AbstractArchiveHandler {
         return cloader;
     }
 
-    protected WebXmlParser getWebXmlParser(ReadableArchive archive)
+    protected WebXmlParser getWebXmlParser(ReadableArchive archive, Application application)
             throws XMLStreamException, IOException {
 
         WebXmlParser webXmlParser = null;
@@ -249,18 +253,18 @@ public class WarHandler extends AbstractArchiveHandler {
         if (runtimeAltDDFile != null &&
                 "glassfish-web.xml".equals(runtimeAltDDFile.getPath()) &&
                 runtimeAltDDFile.isFile()) {
-            webXmlParser = new GlassFishWebXmlParser(archive);
+            webXmlParser = new GlassFishWebXmlParser(archive, application);
         } else if (!gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
             webXmlParser = new WeblogicXmlParser(archive);
         } else if (archive.exists(GLASSFISH_WEB_XML)) {
-            webXmlParser = new GlassFishWebXmlParser(archive);
+            webXmlParser = new GlassFishWebXmlParser(archive, application);
         } else if (archive.exists(SUN_WEB_XML)) {
-            webXmlParser = new SunWebXmlParser(archive);
+            webXmlParser = new SunWebXmlParser(archive, application);
         } else if (gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
             webXmlParser = new WeblogicXmlParser(archive);
         } else { // default
             if (gfDDOverWLSDD || ignoreWLSDD) {
-                webXmlParser = new GlassFishWebXmlParser(archive);
+                webXmlParser = new GlassFishWebXmlParser(archive, application);
             } else {
                 webXmlParser = new WeblogicXmlParser(archive);
             }
@@ -494,10 +498,12 @@ public class WarHandler extends AbstractArchiveHandler {
         protected String extraClassPath = null;
 
         protected String versionIdentifier = null;
+        protected final Application application;
 
-        WebXmlParser(ReadableArchive archive) 
+        WebXmlParser(ReadableArchive archive, Application application)
                 throws XMLStreamException, IOException {
 
+            this.application = application;
             if (archive.exists(getXmlFileName())) {
                 try (InputStream is = archive.getEntry(getXmlFileName())) {
                     init(is);
@@ -540,11 +546,10 @@ public class WarHandler extends AbstractArchiveHandler {
          * sun-web-app_2_3-0.dtd, and TRUE in the case of
          * sun-web-app_2_4-0.dtd.
          */
-
-        SunWebXmlParser(ReadableArchive archive)
+        SunWebXmlParser(ReadableArchive archive, Application application)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, application);
         }
 
         @Override
@@ -638,6 +643,8 @@ public class WarHandler extends AbstractArchiveHandler {
                         }
                     } else if ("version-identifier".equals(name)) {
                         versionIdentifier = parser.getElementText();
+                    } else if (RuntimeTagNames.PAYARA_WHITELIST_PACKAGE.equals(name)) {
+                        application.addWhitelistPackage(parser.getElementText());
                     } else {
                         skipSubTree(name);
                     }
@@ -651,11 +658,10 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     protected class GlassFishWebXmlParser extends SunWebXmlParser {
-
-        GlassFishWebXmlParser(ReadableArchive archive)
+        GlassFishWebXmlParser(ReadableArchive archive, Application application)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, application);
         }
 
         @Override
@@ -673,7 +679,7 @@ public class WarHandler extends AbstractArchiveHandler {
         WeblogicXmlParser(ReadableArchive archive)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, Application.createApplication());
         }
 
         @Override

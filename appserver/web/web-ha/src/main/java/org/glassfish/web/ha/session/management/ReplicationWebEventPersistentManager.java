@@ -67,9 +67,6 @@ import org.glassfish.hk2.api.PerLookup;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 /**
@@ -133,6 +130,13 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
             _logger.fine("ReplicationWebEventPersistentManager created");
         }
     }
+
+    @Override
+    public void add(Session session) {
+        if(!(session instanceof HANonStorableSession)) {
+            super.add(session);
+        }
+    }
     
     /**
     * called from valve; does the save of session
@@ -141,6 +145,9 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
     *   The session to store
     */    
     public void doValveSave(Session session) {
+        if(session instanceof HANonStorableSession) {
+            return;
+        }
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("in doValveSave");
         }

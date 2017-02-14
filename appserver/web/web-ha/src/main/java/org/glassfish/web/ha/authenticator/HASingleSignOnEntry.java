@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.web.ha.authenticator;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
@@ -182,7 +183,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
       try {
           bais = new ByteArrayInputStream(m.getPrincipalBytes());
           bis = new BufferedInputStream(bais);
-          ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader());
+          ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader(), 0L);
           return (Principal) ois.readObject();
       } catch (Exception ex) {
           throw new IllegalStateException("Could not parse principal from HA-SSO Metadata", ex);

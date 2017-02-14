@@ -72,7 +72,7 @@ public class InternalLoggerInfo {
     @LogMessageInfo(
             message = "Unknown property {0} found unresolving {1}.",
             cause = "No value was found for a property. This indicates a software problem.", 
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String unknownProperty = LOGMSG_PREFIX + "-01002";
 

@@ -350,6 +350,10 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
             }
         } else if (element.getQName().equals("container-initializer-enabled")) {
             descriptor.setServletInitializersEnabled(Boolean.parseBoolean(value));
+        } else if (element.getQName().equals(RuntimeTagNames.PAYARA_WHITELIST_PACKAGE)) {
+            if(descriptor.getApplication() != null) {
+                descriptor.getApplication().addWhitelistPackage(value);
+            }
         } else
             super.setElementValue(element, value);
     }

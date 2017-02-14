@@ -17,11 +17,12 @@
  */
 package fish.payara.nucleus.requesttracing.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+
+import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -52,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @I18n("set.requesttracing.configuration")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "set-requesttracing-configuration",
             description = "Set Request Tracing Services Configuration")
@@ -71,20 +72,23 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
-    @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
+    @Param(name = "thresholdUnit", optional = true)
     private String unit;
 
-    @Param(name = "thresholdValue", optional = true, defaultValue = "30")
+    @Param(name = "thresholdValue", optional = true)
     private String value;
 
     @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
     private Boolean notifierDynamic;
 
-    @Param(name = "notifierEnabled", optional = false)
+    @Param(name = "notifierEnabled")
     private Boolean notifierEnabled;
 
-    @Param(name = "notifierName", optional = true, defaultValue = "service-log")
-    private String notifierName;
+    @Param(name = "historicalTraceEnabled", optional = true)
+    private Boolean historicalTraceEnabled;
+
+    @Param(name = "historicalTraceStoreSize", optional = true)
+    private Integer historicalTraceStoreSize;
 
     @Inject
     ServiceLocator serviceLocator;
@@ -106,20 +110,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         }
 
         enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
-        if (dynamic || enabled) {
-            if (dynamic) {
-                notifierDynamic = true;
-            } else {
-                notifierDynamic = false;
-            }
-            if (enabled) {
-                notifierEnabled = true;
-            } else {
-                notifierEnabled = false;
-            }
-        }
-
-        enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
+        enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext);
     }
 
     private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
@@ -134,6 +125,15 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         params.add("dynamic", dynamic.toString());
         params.add("thresholdUnit", unit);
         params.add("thresholdValue", value);
+        
+        if (historicalTraceEnabled != null) {
+            params.add("historicalTraceEnabled", historicalTraceEnabled.toString());
+        }
+        
+        if (historicalTraceStoreSize != null) {
+            params.add("historicalTraceStoreSize", historicalTraceStoreSize.toString());
+        }
+        
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem
@@ -142,17 +142,16 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         }
     }
 
-    private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+    private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
+        inv = runner.getCommandInvocation("requesttracing-log-notifier-configure", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());
         params.add("target", target);
-        params.add("notifierName", notifierName);
-        params.add("notifierEnabled", enabled.toString());
+        params.add("enabled", notifierEnabled.toString());
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem

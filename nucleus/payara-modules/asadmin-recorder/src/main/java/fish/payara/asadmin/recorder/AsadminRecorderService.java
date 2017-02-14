@@ -17,6 +17,7 @@
  */
 package fish.payara.asadmin.recorder;
 
+import java.beans.PropertyVetoException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -36,9 +37,13 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  *
@@ -56,11 +61,15 @@ public class AsadminRecorderService implements EventListener {
     AsadminRecorderConfiguration asadminRecorderConfiguration;
     
     @Inject
-    Events events; 
+    Events events;
+    
+    @Inject
+    ServiceLocator habitat;
     
     @PostConstruct
     void postConstruct() {
         events.register(this);
+        asadminRecorderConfiguration = habitat.getService(AsadminRecorderConfiguration.class);
     }
     
     @Override

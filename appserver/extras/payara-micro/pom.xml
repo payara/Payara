@@ -11,47 +11,9 @@
     <packaging>pom</packaging>
     <name>Payara Micro Parent</name>
     <modules>
-        <module>payara-micro-cdi</module>
         <module>payara-micro-core</module>
+        <module>payara-micro-boot</module>
+        <module>payara-micro-distribution</module>
+        <module>payara-micro-microprofile-distribution</module>
     </modules>
-    
-    <profiles>
-        <!-- Profile to build Payara Micro -->
-        <profile>
-            <id>BuildMicro</id>
-            <activation>
-                <property>
-                    <name>BuildMicro</name>
-                </property>
-            </activation>
-            <modules>
-                <module>payara-micro-distribution</module>
-            </modules>
-        </profile>
-        <!-- Profile to build Payara MicroProfile -->
-        <profile>
-            <id>BuildMicroProfile</id>
-            <activation>
-                <property>
-                    <name>BuildMicroProfile</name>
-                </property>
-            </activation>
-            <modules>
-                <module>payara-micro-microprofile-distribution</module>
-            </modules>
-        </profile>
-        <!-- Profile to build Embedded and Micro distributions -->
-        <profile>
-            <id>BuildExtras</id>
-            <activation>
-                <property>
-                    <name>BuildExtras</name>
-                </property>
-            </activation>
-            <modules>
-                <module>payara-micro-distribution</module>
-                <module>payara-micro-microprofile-distribution</module>
-            </modules>
-        </profile>
-     </profiles>
 </project>

@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,11 +17,16 @@
  */
 package fish.payara.appserver.micro.services;
 
+import fish.payara.micro.event.PayaraClusterListener;
+import fish.payara.micro.event.CDIEventListener;
 import com.sun.enterprise.deployment.Application;
 import fish.payara.appserver.micro.services.command.AsAdminCallable;
-import fish.payara.appserver.micro.services.command.ClusterCommandResult;
-import fish.payara.appserver.micro.services.data.ApplicationDescriptor;
-import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
+import fish.payara.micro.data.ApplicationDescriptor;
+import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
+import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.micro.event.PayaraClusteredCDIEvent;
 import fish.payara.nucleus.cluster.PayaraCluster;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.MessageReceiver;
@@ -38,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
@@ -52,7 +58,6 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
-import org.jboss.logging.Logger;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -72,7 +77,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
 
     public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";    
     
-    private static final Logger logger = Logger.getLogger(PayaraInstance.class);
+    private static final Logger logger = Logger.getLogger(PayaraInstance.class.getName());
 
     @Inject
     private PayaraCluster cluster;
@@ -93,8 +98,9 @@ public class PayaraInstance implements EventListener, MessageReceiver {
     private String myCurrentID;
 
     private String instanceName;
+    private String instanceGroup;
 
-    private InstanceDescriptor me;
+    private InstanceDescriptorImpl me;
     
     @Inject
     private ServerEnvironment environment;
@@ -119,19 +125,19 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         return cluster.getExecService().runCallable(callable);
     }
 
-    public ClusterCommandResult executeLocalAsAdmin(String command, String... parameters) {
-        return new ClusterCommandResult(commandRunner.run(command, parameters));
+    public ClusterCommandResultImpl executeLocalAsAdmin(String command, String... parameters) {
+        return new ClusterCommandResultImpl(commandRunner.run(command, parameters));
     }
 
-    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters) {
+    public Map<String, Future<ClusterCommandResultImpl>> executeClusteredASAdmin(String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
-        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(callable);
+        Map<String, Future<ClusterCommandResultImpl>> result = cluster.getExecService().runCallable(callable);
         return result;
     }
 
-    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
+    public Map<String, Future<ClusterCommandResultImpl>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
-        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(memberGUIDs, callable);
+        Map<String, Future<ClusterCommandResultImpl>> result = cluster.getExecService().runCallable(memberGUIDs, callable);
         return result;
     }
 
@@ -152,8 +158,8 @@ public class PayaraInstance implements EventListener, MessageReceiver {
                     break;
             }
 
-        } else if (msg.getPayload() instanceof PayaraClusteredCDIEvent) {
-            PayaraClusteredCDIEvent cast = PayaraClusteredCDIEvent.class.cast(msg.getPayload());
+        } else if (msg.getPayload() instanceof PayaraClusteredCDIEventImpl) {
+            PayaraClusteredCDIEventImpl cast = PayaraClusteredCDIEventImpl.class.cast(msg.getPayload());
             for (CDIEventListener myListener : myCDIListeners) {
                 if (!cast.isLoopBack() && cast.getInstanceDescriptor().getMemberUUID().equals(myCurrentID)) {
                     // ignore this message as it is a loopback
@@ -181,6 +187,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
     @SuppressWarnings({"unchecked"})
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
+            initialiseInstanceDescriptor();
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, me);
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
@@ -190,7 +197,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         else if (event.is(Deployment.APPLICATION_LOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                me.addApplication(applicationInfo);
+                me.addApplication(new ApplicationDescriptorImpl(applicationInfo));
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
         }
@@ -200,11 +207,13 @@ public class PayaraInstance implements EventListener, MessageReceiver {
             if (event.hook() != null && event.hook() instanceof DeploymentContext) {
                 DeploymentContext deploymentContext = (DeploymentContext) event.hook();
                 Application app = deploymentContext.getModuleMetaData(Application.class);
-                Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
-                if (appID != null) {
-                    app.setUniqueId(appID);
-                } else {
-                    cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), new Long(app.getUniqueId()));
+                if(app != null) {
+                    Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
+                    if (appID != null) {
+                        app.setUniqueId(appID);
+                    } else {
+                        cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), app.getUniqueId());
+                    }
                 }
             }
         } 
@@ -213,7 +222,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                me.removeApplication(applicationInfo);
+                me.removeApplication(new ApplicationDescriptorImpl(applicationInfo));
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
         } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
@@ -225,6 +234,16 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         
         // When Hazelcast is bootstrapped, update the instance descriptor with any new information
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
+            initialiseInstanceDescriptor();
+            // remove listener first
+            cluster.getEventBus().removeMessageReceiver(INTERNAL_EVENTS_NAME, this);
+            cluster.getEventBus().removeMessageReceiver(CDI_EVENTS_NAME, this);
+            cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
+            cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
+        }
+        
+        // If the generated name had to be changed, update the instance descriptor with the new information
+        if (event.is(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE)) {
             initialiseInstanceDescriptor();
         }
     }
@@ -241,15 +260,15 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         return result;
     }
 
-    public void pubishCDIEvent(PayaraClusteredCDIEvent event) {
+    public void publishCDIEvent(PayaraClusteredCDIEvent event) {
         if (event.getInstanceDescriptor() == null) {
-            event.setInstanceDescriptor(me);
+            event.setId(me);
         }
         ClusterMessage<PayaraClusteredCDIEvent> message = new ClusterMessage<>(event);
         cluster.getEventBus().publish(CDI_EVENTS_NAME, message);
     }
 
-    public void removeBootstrapListenr(PayaraClusterListener listener) {
+    public void removeBootstrapListener(PayaraClusterListener listener) {
         myListeners.remove(listener);
     }
 
@@ -257,7 +276,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         myListeners.add(listener);
     }
 
-    public void removeCDIListenr(CDIEventListener listener) {
+    public void removeCDIListener(CDIEventListener listener) {
         myCDIListeners.remove(listener);
     }
 
@@ -269,10 +288,10 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         return me;
     }
 
-    public InstanceDescriptor getDescriptor(String member) {
-        InstanceDescriptor result = null;
+    public InstanceDescriptorImpl getDescriptor(String member) {
+        InstanceDescriptorImpl result = null;
         if (cluster.isEnabled()) {
-            result = (InstanceDescriptor) cluster.getClusteredStore().get(INSTANCE_STORE_NAME, member);
+            result = (InstanceDescriptorImpl) cluster.getClusteredStore().get(INSTANCE_STORE_NAME, member);
         }
         return result;
     }
@@ -283,11 +302,14 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         
         // Get the Hazelcast specific information
         if (hazelcast.isEnabled()) {
-            instanceName = hazelcast.getInstance().getCluster().getLocalMember().getStringAttribute(
-                    HazelcastCore.INSTANCE_ATTRIBUTE);
-            myCurrentID = hazelcast.getInstance().getCluster().getLocalMember().getUuid();
-            liteMember = hazelcast.getInstance().getCluster().getLocalMember().isLiteMember();
-            hazelcastPort = hazelcast.getInstance().getCluster().getLocalMember().getSocketAddress().getPort();
+            instanceName = hazelcast.getMemberName();
+            instanceGroup = hazelcast.getMemberGroup();
+            myCurrentID = hazelcast.getUUID();
+            liteMember = hazelcast.isLite();
+            hazelcastPort = hazelcast.getPort();
+        } else {
+            instanceName = "payara-micro";
+            instanceGroup = "no-cluster";
         }
         
         // Get this instance's runtime type
@@ -338,8 +360,9 @@ public class PayaraInstance implements EventListener, MessageReceiver {
             if (me != null) {
                 deployedApplications = me.getDeployedApplications();
             }
-            me = new InstanceDescriptor(myCurrentID);
+            me = new InstanceDescriptorImpl(myCurrentID);
             me.setInstanceName(instanceName);
+            me.setInstanceGroup(instanceGroup);
             for (int port : ports) {
                 me.addHttpPort(port);
             }
@@ -363,13 +386,10 @@ public class PayaraInstance implements EventListener, MessageReceiver {
             
             // Register the instance descriptor to the cluster if it's enabled
             if (cluster.isEnabled()) {
-                cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
-                cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }  
         } catch (UnknownHostException ex) {
-            java.util.logging.Logger.getLogger(PayaraInstance.class.getName()).log(Level.SEVERE, 
-                    "Could not find local hostname", ex);
+            logger.log(Level.SEVERE, "Could not find local hostname", ex);
         }
     }
     

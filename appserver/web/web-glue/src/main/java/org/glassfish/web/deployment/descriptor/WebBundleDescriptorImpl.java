@@ -391,7 +391,15 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         String name = webComponentDescriptor.getCanonicalName();
         WebComponentDescriptor webCompDesc = getWebComponentByCanonicalName(name);
 
-        if (webCompDesc != null) {
+        if (webCompDesc != null && webCompDesc instanceof WebComponentDescriptorStub) {
+            // urlPattern from fragment is overridden by web.xml
+            resultDesc = webComponentDescriptor;
+            resultDesc.getUrlPatternsSet().clear();
+            resultDesc.getUrlPatternsSet().addAll(webCompDesc.getUrlPatternsSet());
+            removeWebComponentDescriptor(webCompDesc);
+            addWebComponentDescriptor(resultDesc);
+        }
+        else if(webCompDesc != null) {
             // Servlet defined in web.xml
             resultDesc = webCompDesc;
             if (!webCompDesc.isConflict(webComponentDescriptor, true)) {
@@ -2235,7 +2243,6 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public void setServletInitializersEnabled(boolean tf) {
         servletInitializersEnabled = tf;
     }
-
 
     private static final class ServletFilterMappingInfo {
         private ServletFilterMapping servletFilterMapping;

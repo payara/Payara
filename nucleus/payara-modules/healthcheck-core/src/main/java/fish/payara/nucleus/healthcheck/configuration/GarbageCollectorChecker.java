@@ -22,6 +22,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
+@CheckerConfigurationType(type = CheckerType.GARBAGE_COLLECTOR)
 public interface GarbageCollectorChecker extends Checker {
 
     @Attribute(defaultValue = "GBGC")

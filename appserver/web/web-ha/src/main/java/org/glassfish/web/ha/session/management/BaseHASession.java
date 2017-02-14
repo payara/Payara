@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 /*
  * BaseHASession.java
@@ -46,8 +47,6 @@
 
 package org.glassfish.web.ha.session.management;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 import java.io.IOException;
@@ -55,7 +54,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.security.Principal;
 import java.util.Enumeration;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
 import org.apache.catalina.core.StandardContext;

@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
 <security-configurations>
     <authentication-service default="true" name="adminAuth" use-password-credential="true">
@@ -125,6 +127,7 @@
       <notification-service-configuration enabled="true">
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
+      <monitoring-service-configuration></monitoring-service-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -378,6 +381,7 @@
       <notification-service-configuration enabled="true">
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
+      <monitoring-service-configuration></monitoring-service-configuration>
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-server</jvm-options>

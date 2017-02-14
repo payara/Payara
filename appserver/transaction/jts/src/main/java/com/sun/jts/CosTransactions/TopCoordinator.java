@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 //----------------------------------------------------------------------------
 //
@@ -77,12 +78,14 @@ import com.sun.jts.jtsxa.OTSResourceImpl;
 //import com.sun.enterprise.transaction.OTSResourceImpl;
 //import com.sun.enterprise.transaction.SynchronizationImpl;
 
-import com.sun.jts.trace.*;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
 import com.sun.jts.utils.LogFormatter;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * The TopCoordinator interface is our implementation of the standard
@@ -135,6 +138,10 @@ public class TopCoordinator extends CoordinatorImpl {
     boolean             dying = false;
     boolean             temporary = false;
     int                 hash = 0;
+
+    private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private final Lock readLock = rwLock.readLock();
+    private final Lock writeLock = rwLock.writeLock();
 
 	/*
 		Logger to log transaction messages
@@ -351,63 +358,68 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized public void doFinalize() {
+    public void doFinalize() {
+        writeLock.lock();
+        try {
+            // Set the flag to indicate that the coordinator is being destroyed.
 
-        // Set the flag to indicate that the coordinator is being destroyed.
+            dying = true;
 
-        dying = true;
+            // What we do when destroyed depends on the transaction's state.
+            // We assume that temporary Coordinators have rolled bak at this point.
 
-        // What we do when destroyed depends on the transaction's state.
-        // We assume that temporary Coordinators have rolled bak at this point.
+            int state = TransactionState.STATE_ROLLED_BACK;
+            if (tranState != null && !temporary) {
+                state = tranState.state;
+            }
 
-        int state = TransactionState.STATE_ROLLED_BACK;
-        if (tranState != null && !temporary) {
-            state = tranState.state;
+            switch (state) {
+
+                // If the transaction is active it should be rolled back.  This
+                // will result in the TopCoordinator self-destructing at the
+                // end of two-phase commit.
+
+                case TransactionState.STATE_ACTIVE :
+                    try {
+                        rollback(true);
+                    } catch (Throwable exc) {
+                        _logger.log(Level.FINE, "", exc);
+                    }
+
+                    break;
+
+                // For committed or rolled-back, we really need to destroy the
+                // object. Also for prepared_readonly.
+
+                case TransactionState.STATE_PREPARED_READONLY :
+                case TransactionState.STATE_COMMITTED :
+                case TransactionState.STATE_ROLLED_BACK :
+                case TransactionState.STATE_COMMITTED_ONE_PHASE_OK :
+                case TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK :
+
+                    if (superInfo != null) {
+                        superInfo.doFinalize();
+                    }
+
+                    tranState = null;
+                    superInfo = null;
+                    nestingInfo = null;
+                    participants = null;
+                    synchronizations = null;
+                    logRecord = null;
+                    terminator = null;
+                    name = null;
+                    break;
+
+                // For any other state, the transaction is completing, so the
+                // TopCoordinator will eventually self-destruct.  We do nothing here.
+
+                default :
+                    break;
+            }
         }
-
-        switch (state) {
-
-        // If the transaction is active it should be rolled back.  This
-        // will result in the TopCoordinator self-destructing at the
-        // end of two-phase commit.
-
-        case TransactionState.STATE_ACTIVE :
-            try {
-                rollback(true);
-            } catch (Throwable exc) {
-                _logger.log(Level.FINE, "", exc);
-            }
-
-            break;
-
-        // For committed or rolled-back, we really need to destroy the
-        // object. Also for prepared_readonly.
-
-        case TransactionState.STATE_PREPARED_READONLY :
-        case TransactionState.STATE_COMMITTED :
-        case TransactionState.STATE_ROLLED_BACK :
-        case TransactionState.STATE_COMMITTED_ONE_PHASE_OK :
-        case TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK :
-
-            if (superInfo != null) {
-                superInfo.doFinalize();
-            }
-
-            tranState = null;
-            superInfo = null;
-            nestingInfo = null;
-            participants = null;
-            synchronizations = null;
-            logRecord = null;
-            terminator = null;
-            name = null;
-            break;
-
-        // For any other state, the transaction is completing, so the
-        // TopCoordinator will eventually self-destruct.  We do nothing here.
-
-        default :
-            break;
+        finally {
+            writeLock.unlock();
         }
     }
 
@@ -426,66 +438,65 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized void reconstruct(CoordinatorLog log) {
+    void reconstruct(CoordinatorLog log) {
+        writeLock.lock();
+        try {
+            // Set up instance variables.
 
-        // Set up instance variables.
+            rollbackOnly = false;
+            registered = false;
+            registeredSync = false;
+            root = false;
+            dying = false;
+            temporary = false;
+            terminator = null;
+            logRecord = log;
+            name = null;
 
-        rollbackOnly = false;
-        registered = false;
-        registeredSync = false;
-        root = false;
-        dying = false;
-        temporary = false;
-        terminator = null;
-        logRecord = log;
-        name = null;
+            // Zero out NestingInfo and Synchronizations references. These won't be
+            // needed for a recovered transaction.
+            nestingInfo = null;
+            synchronizations = null;
 
-        // Zero out NestingInfo and Synchronizations references. These won't be
-        // needed for a recovered transaction.
+            // Use the result of the TransactionState reconstruction to
+            // decide whether to continue with recovery of this transaction.
+            tranState = new TransactionState();
+            int state = tranState.reconstruct(log);
+            if (state == TransactionState.STATE_NONE
+                    || state == TransactionState.STATE_COMMITTED
+                    || // state == TransactionState.STATE_COMMITTED_ONE_PHASE_OK ||
+                    // state == TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK ||
+                    state == TransactionState.STATE_ROLLED_BACK) {
 
-        nestingInfo = null;
-        synchronizations = null;
+                // If the transaction is discarded, then ensure that
+                // the log record is discarded.
+                CoordinatorLog.removeLog(log.localTID);
+                destroy();
 
-        // Use the result of the TransactionState reconstruction to
-        // decide whether to continue with recovery of this transaction.
+            } else {
 
-        tranState = new TransactionState();
-        int state = tranState.reconstruct(log);
-        if (state == TransactionState.STATE_NONE ||
-                state == TransactionState.STATE_COMMITTED ||
-                // state == TransactionState.STATE_COMMITTED_ONE_PHASE_OK ||
-                // state == TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK ||
-                state == TransactionState.STATE_ROLLED_BACK) {
+                // Otherwise continue with reconstruction.
+                participants = new RegisteredResources(this);
+                participants.reconstruct(log);
 
-            // If the transaction is discarded, then ensure that
-            // the log record is discarded.
+                // Reconstruct the SuperiorInfo object.  This will result in a
+                // call to RecoveryManager.addCoordinator (which is done
+                // because reconstruction of the object references in the
+                // SuperiorInfo requires the Coordinator to
+                // already be known to the RecoveryManager).
+                superInfo = new SuperiorInfo();
+                superInfo.reconstruct(log, this);
 
-            CoordinatorLog.removeLog(log.localTID);
-            destroy();
+                // Cache the name  - create a buffer and print the
+                // global XID into it.
+                name = superInfo.globalTID.toString();
 
-        } else {
-
-            // Otherwise continue with reconstruction.
-            participants = new RegisteredResources(this);
-            participants.reconstruct(log);
-
-            // Reconstruct the SuperiorInfo object.  This will result in a
-            // call to RecoveryManager.addCoordinator (which is done
-            // because reconstruction of the object references in the
-            // SuperiorInfo requires the Coordinator to
-            // already be known to the RecoveryManager).
-
-            superInfo = new SuperiorInfo();
-            superInfo.reconstruct(log, this);
-
-            // Cache the name  - create a buffer and print the
-            // global XID into it.
-
-            name = superInfo.globalTID.toString();
-
-            // Cache the hash value of the Coordinator.
-
-            hash = superInfo.globalTID.hashCode();
+                // Cache the hash value of the Coordinator.
+                hash = superInfo.globalTID.hashCode();
+            }
+        }
+        finally {
+            writeLock.unlock();
         }
     }
 
@@ -506,70 +517,69 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized void delegated_reconstruct(CoordinatorLog log, String logPath ) {
+    void delegated_reconstruct(CoordinatorLog log, String logPath ) {
+        writeLock.lock();
+        try {
+            // Set up instance variables.
 
-        // Set up instance variables.
+            rollbackOnly = false;
+            registered = false;
+            registeredSync = false;
+            root = false;
+            dying = false;
+            temporary = false;
+            terminator = null;
+            logRecord = log;
+            name = null;
 
-        rollbackOnly = false;
-        registered = false;
-        registeredSync = false;
-        root = false;
-        dying = false;
-        temporary = false;
-        terminator = null;
-        logRecord = log;
-        name = null;
+            // Zero out NestingInfo and Synchronizations references. These won't be
+            // needed for a recovered transaction.
+            nestingInfo = null;
+            synchronizations = null;
 
-        // Zero out NestingInfo and Synchronizations references. These won't be
-        // needed for a recovered transaction.
+            delegated = true;
+            this.logPath = logPath;
 
-        nestingInfo = null;
-        synchronizations = null;
+            // Use the result of the TransactionState reconstruction to
+            // decide whether to continue with recovery of this transaction.
+            tranState = new TransactionState();
+            // int state = tranState.delegated_reconstruct(log);
+            int state = tranState.reconstruct(log);
+            if (state == TransactionState.STATE_NONE
+                    || state == TransactionState.STATE_COMMITTED
+                    || // state == TransactionState.STATE_COMMITTED_ONE_PHASE_OK ||
+                    // state == TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK ||
+                    state == TransactionState.STATE_ROLLED_BACK) {
 
-        delegated = true;
-        this.logPath = logPath;
+                // If the transaction is discarded, then ensure that
+                // the log record is discarded.
+                CoordinatorLog.removeLog(log.localTID, logPath);
+                destroy();
 
-        // Use the result of the TransactionState reconstruction to
-        // decide whether to continue with recovery of this transaction.
+            } else {
 
-        tranState = new TransactionState();
-        // int state = tranState.delegated_reconstruct(log);
-        int state = tranState.reconstruct(log);
-        if (state == TransactionState.STATE_NONE ||
-                state == TransactionState.STATE_COMMITTED ||
-                // state == TransactionState.STATE_COMMITTED_ONE_PHASE_OK ||
-                // state == TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK ||
-                state == TransactionState.STATE_ROLLED_BACK) {
+                // Otherwise continue with reconstruction.
+                participants = new RegisteredResources(this);
+                participants.reconstruct(log);
 
-            // If the transaction is discarded, then ensure that
-            // the log record is discarded.
+                // Reconstruct the SuperiorInfo object.  This will result in a
+                // call to RecoveryManager.addCoordinator (which is done
+                // because reconstruction of the object references in the
+                // SuperiorInfo requires the Coordinator to
+                // already be known to the RecoveryManager).
+                superInfo = new SuperiorInfo();
+                superInfo.delegated_reconstruct(log, this, logPath);
 
-            CoordinatorLog.removeLog(log.localTID, logPath);
-            destroy();
+                // Cache the name  - create a buffer and print the
+                // global XID into it.
+                name = superInfo.globalTID.toString();
 
-        } else {
-
-            // Otherwise continue with reconstruction.
-            participants = new RegisteredResources(this);
-            participants.reconstruct(log);
-
-            // Reconstruct the SuperiorInfo object.  This will result in a
-            // call to RecoveryManager.addCoordinator (which is done
-            // because reconstruction of the object references in the
-            // SuperiorInfo requires the Coordinator to
-            // already be known to the RecoveryManager).
-
-            superInfo = new SuperiorInfo();
-            superInfo.delegated_reconstruct(log, this, logPath);
-
-            // Cache the name  - create a buffer and print the
-            // global XID into it.
-
-            name = superInfo.globalTID.toString();
-
-            // Cache the hash value of the Coordinator.
-
-            hash = superInfo.globalTID.hashCode();
+                // Cache the hash value of the Coordinator.
+                hash = superInfo.globalTID.hashCode();
+            }
+        }
+        finally {
+            writeLock.unlock();
         }
     }
 
@@ -592,296 +602,285 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized Status recover(boolean[/*1*/] isRoot) {
+    Status recover(boolean[/*1*/] isRoot) {
+        writeLock.lock();
+        try {
+            Status result;
 
-        Status result;
+            // Determine the global outcome using the transactions state for a root
+            // Coordinator, or the RecoveryCoordinator for a subordinate.
+            if (superInfo.recovery != null) {
 
-        // Determine the global outcome using the transactions state for a root
-        // Coordinator, or the RecoveryCoordinator for a subordinate.
+                // For a subordinate, first check whether the global
+                // outcome is known locally.
+                // GDH COP For the commit_one_phase operations we need to do the
+                //         following ultimately. However for all c-o-p operations
+                //         We know that the CLIENT/Superior chose to COMMIT.
+                //         Also for all c-o-p operations that are  'past tense'
+                //         the direction (commit or rolled back) is not really
+                //         important as we are using c-o-p for single resources
+                //         not last agent in CORBA CosTransactions.
+                //
+                // For clarity, all c-o-p states return a commited direction,
+                // This is counter intuative but logicaly correct (unimportant)
+                // even for COMMIT_ONE_PHASE_ROLLED_BACK.
+                // A well behaved resource will not contact us in any of the
+                // 'past tense' c-o-p states anyway as they have already returned
+                // from a c-o-p op and can expect no further flows
+                // (apart from forget perhaps).
+                // When it comes to real resource flows we must be careful to
+                // cause the following actions based on state:
+                //
+                // STATE_COMMITTING_ONE_PHASE
+                // (We only ever enter this state if we have one resource
+                // even if the c-o-p method was called on our CoordinatorResource)
+                // The transaction was partway through a commit_one_phase
+                // operation when the server failed.
+                // So the commit_one_phase needs to be called again.
+                // STATE COMMITTED_ONE_PHASE
+                // STATE COMMITTED_ONE_PHASE_ROLLEDBACK
+                // The transaction had just completed a commit_one_phase operation.
+                // Therefore all of the work for the downstream part of the
+                // transaction is over.  The only work to do is to possibly report
+                // outcome to superior.
+                // STATE COMMIT_ONE_PHASE_HEURISTIC_MIXED
+                // STATE COMMIT_ONE_PHASE_HEURISTIC_HAZARD
+                // Part of the tree has made a heuristic decision.  The forget
+                // message must flow to all subordinate coordinators to allow them
+                // to end.
+                switch (tranState.state) {
 
-        if (superInfo.recovery != null) {
-
-            // For a subordinate, first check whether the global
-            // outcome is known locally.
-
-
-            // GDH COP For the commit_one_phase operations we need to do the
-            //         following ultimately. However for all c-o-p operations
-            //         We know that the CLIENT/Superior chose to COMMIT.
-            //         Also for all c-o-p operations that are  'past tense'
-            //         the direction (commit or rolled back) is not really
-            //         important as we are using c-o-p for single resources
-            //         not last agent in CORBA CosTransactions.
-            //
-            // For clarity, all c-o-p states return a commited direction,
-            // This is counter intuative but logicaly correct (unimportant)
-            // even for COMMIT_ONE_PHASE_ROLLED_BACK.
-            // A well behaved resource will not contact us in any of the
-            // 'past tense' c-o-p states anyway as they have already returned
-            // from a c-o-p op and can expect no further flows
-            // (apart from forget perhaps).
-            // When it comes to real resource flows we must be careful to
-            // cause the following actions based on state:
-            //
-            // STATE_COMMITTING_ONE_PHASE
-            // (We only ever enter this state if we have one resource
-            // even if the c-o-p method was called on our CoordinatorResource)
-            // The transaction was partway through a commit_one_phase
-            // operation when the server failed.
-            // So the commit_one_phase needs to be called again.
-            // STATE COMMITTED_ONE_PHASE
-            // STATE COMMITTED_ONE_PHASE_ROLLEDBACK
-            // The transaction had just completed a commit_one_phase operation.
-            // Therefore all of the work for the downstream part of the
-            // transaction is over.  The only work to do is to possibly report
-            // outcome to superior.
-            // STATE COMMIT_ONE_PHASE_HEURISTIC_MIXED
-            // STATE COMMIT_ONE_PHASE_HEURISTIC_HAZARD
-            // Part of the tree has made a heuristic decision.  The forget
-            // message must flow to all subordinate coordinators to allow them
-            // to end.
-
-            switch (tranState.state) {
-
-            // GDH Due to the possibility of recovery being attempted
-            // on more than one thread we must cover the case where
-            // the transaction has actually COMMITTED already.
-
-            case TransactionState.STATE_COMMITTED :
-                // GDH (added)
-            case TransactionState.STATE_COMMITTED_ONE_PHASE_OK :
-                // GDH (added)
-            case TransactionState.STATE_COMMITTING_ONE_PHASE :
-                // GDH (added)
-            case TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK :
-                // GDH (added)
-            case TransactionState.STATE_COMMITTING :
-                result = Status.StatusCommitted;
-                break;
-
-            // GDH Due to the possibility of recovery being attempted
-            // on more than one thread we must cover the case where
-            // the transaction has actually ROLLED_BACK already.
-
-            case TransactionState.STATE_ROLLED_BACK :  // GDH (added)
-            case TransactionState.STATE_ROLLING_BACK :
-                // GDH Note we do not need C-O-P_ROLLED_BACK Here as the actual
-                // resource rolling back will be done already so it's academic.
-                result = Status.StatusRolledBack;
-                break;
-
-            // For a subordinate, the replay_completion method is invoked on
-            // the superior's RecoveryCoordinator.  We may need to create a
-            // CoordinatorResource object to give to the superior in the case
-            // where we are in recovery. If the number of times
-            // the replay_completion has bee retried is greater than the value
-            // specified by COMMITRETRY, then HEURISTICDIRECTION is used
-            // to determine the transaction outcome.
-
-            default :
-
-                boolean attemptRetry = true;
-                // String commitRetryVar;
-                // int commitRetries = 0;
-
-                // If COMMITRETRY is not set, then retry is infinite.
-                // Otherwise check that
-                // the current number of retries is less than the limit.
-
-               /**
-                commitRetryVar = Configuration.
-                    getPropertyValue(Configuration.COMMIT_RETRY);
-                if (commitRetryVar != null) {
-                    try {
-                        commitRetries = Integer.parseInt(commitRetryVar);
-                    } catch( NumberFormatException exc ) {}
-
-                    if (superInfo.resyncRetries() >= commitRetries) {
-                        attemptRetry = false;
-                    }
-                }
-                **/
-                int commitRetries = Configuration.getRetries();
-                if (commitRetries >= 0 && (superInfo.resyncRetries() >= commitRetries))
-                    attemptRetry = false;
-
-
-                if (!attemptRetry) {
-
-                    // If we are not to attempt a retry of the
-                    // replay_completion method, then the HEURISTICDIRECTION
-                    // environment variable  is used to get the global outcome.
-
-                    String heuristicVar;
-                    boolean commitTransaction = false;
-                    result = Status.StatusRolledBack;
-
-                    heuristicVar =
-                        Configuration.getPropertyValue(
-                            Configuration.HEURISTIC_DIRECTION);
-
-                    if (heuristicVar != null) {
-                        commitTransaction = (heuristicVar.charAt(0) == '1');
-                    }
-
-                    if (commitTransaction) {
+                    // GDH Due to the possibility of recovery being attempted
+                    // on more than one thread we must cover the case where
+                    // the transaction has actually COMMITTED already.
+                    case TransactionState.STATE_COMMITTED:
+                    // GDH (added)
+                    case TransactionState.STATE_COMMITTED_ONE_PHASE_OK:
+                    // GDH (added)
+                    case TransactionState.STATE_COMMITTING_ONE_PHASE:
+                    // GDH (added)
+                    case TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK:
+                    // GDH (added)
+                    case TransactionState.STATE_COMMITTING:
                         result = Status.StatusCommitted;
-                    }
+                        break;
 
-                } else {
+                    // GDH Due to the possibility of recovery being attempted
+                    // on more than one thread we must cover the case where
+                    // the transaction has actually ROLLED_BACK already.
+                    case TransactionState.STATE_ROLLED_BACK:  // GDH (added)
+                    case TransactionState.STATE_ROLLING_BACK:
+                        // GDH Note we do not need C-O-P_ROLLED_BACK Here as the actual
+                        // resource rolling back will be done already so it's academic.
+                        result = Status.StatusRolledBack;
+                        break;
 
-                    // Otherwise, use the RecoveryCoordinator to get
-                    // the global outcome. Get the global outcome
-                    // from the superior's RecoveryCoordinator.
+                    // For a subordinate, the replay_completion method is invoked on
+                    // the superior's RecoveryCoordinator.  We may need to create a
+                    // CoordinatorResource object to give to the superior in the case
+                    // where we are in recovery. If the number of times
+                    // the replay_completion has bee retried is greater than the value
+                    // specified by COMMITRETRY, then HEURISTICDIRECTION is used
+                    // to determine the transaction outcome.
+                    default:
 
-                    try {
-						if(_logger.isLoggable(Level.FINE))
-                    	{
-							_logger.logp(Level.FINE,"TopCoordinator","recover",
-									"Before invoking replay_completion on Superior Coordinator");
-                    	}
-                        if (!delegated) {
-                            result = superInfo.recovery.
-                                        replay_completion(superInfo.resource);
-                        } else {
-                            result = ((RecoveryCoordinatorImpl)(superInfo.recovery)).
-                                        replay_completion(superInfo.resource, logPath);
+                        boolean attemptRetry = true;
+                        // String commitRetryVar;
+                        // int commitRetries = 0;
+
+                        // If COMMITRETRY is not set, then retry is infinite.
+                        // Otherwise check that
+                        // the current number of retries is less than the limit.
+                        /**
+                         * commitRetryVar = Configuration.
+                         * getPropertyValue(Configuration.COMMIT_RETRY); if
+                         * (commitRetryVar != null) { try { commitRetries =
+                         * Integer.parseInt(commitRetryVar); } catch(
+                         * NumberFormatException exc ) {}
+                         *
+                         * if (superInfo.resyncRetries() >= commitRetries) {
+                         * attemptRetry = false; } }
+                *
+                         */
+                        int commitRetries = Configuration.getRetries();
+                        if (commitRetries >= 0 && (superInfo.resyncRetries() >= commitRetries)) {
+                            attemptRetry = false;
                         }
 
-                        // GDH
-                        // If the global result is returned as COMMITTING we
-                        // know the outcome of the global transaction
-                        // is COMMITTED.
+                        if (!attemptRetry) {
 
-                        if (result == Status.StatusCommitting) {
-                            result = Status.StatusCommitted;
-                        }
-                    } catch (Throwable exc) {
-                        _logger.log(Level.FINE, "", exc);
-                        // If the exception is neither TRANSIENT or
-                        // COMM_FAILURE, it isunexpected, so display a message
-                        // and assume that the transaction has rolled back.
-
-                        if (!(exc instanceof COMM_FAILURE) &&
-                                !(exc instanceof TRANSIENT)) {
+                            // If we are not to attempt a retry of the
+                            // replay_completion method, then the HEURISTICDIRECTION
+                            // environment variable  is used to get the global outcome.
+                            String heuristicVar;
+                            boolean commitTransaction = false;
                             result = Status.StatusRolledBack;
+
+                            heuristicVar
+                                    = Configuration.getPropertyValue(
+                                            Configuration.HEURISTIC_DIRECTION);
+
+                            if (heuristicVar != null) {
+                                commitTransaction = (heuristicVar.charAt(0) == '1');
+                            }
+
+                            if (commitTransaction) {
+                                result = Status.StatusCommitted;
+                            }
+
                         } else {
-                            // For TRANSIENT or COMM_FAILURE, the outcome
-                            // is unknown.
-                            result = Status.StatusUnknown;
+
+                            // Otherwise, use the RecoveryCoordinator to get
+                            // the global outcome. Get the global outcome
+                            // from the superior's RecoveryCoordinator.
+                            try {
+                                if (_logger.isLoggable(Level.FINE)) {
+                                    _logger.logp(Level.FINE, "TopCoordinator", "recover",
+                                            "Before invoking replay_completion on Superior Coordinator");
+                                }
+                                if (!delegated) {
+                                    result = superInfo.recovery.
+                                            replay_completion(superInfo.resource);
+                                } else {
+                                    result = ((RecoveryCoordinatorImpl) (superInfo.recovery)).
+                                            replay_completion(superInfo.resource, logPath);
+                                }
+
+                                // GDH
+                                // If the global result is returned as COMMITTING we
+                                // know the outcome of the global transaction
+                                // is COMMITTED.
+                                if (result == Status.StatusCommitting) {
+                                    result = Status.StatusCommitted;
+                                }
+                            } catch (Throwable exc) {
+                                _logger.log(Level.FINE, "", exc);
+                                // If the exception is neither TRANSIENT or
+                                // COMM_FAILURE, it isunexpected, so display a message
+                                // and assume that the transaction has rolled back.
+
+                                if (!(exc instanceof COMM_FAILURE)
+                                        && !(exc instanceof TRANSIENT)) {
+                                    result = Status.StatusRolledBack;
+                                } else {
+                                    // For TRANSIENT or COMM_FAILURE, the outcome
+                                    // is unknown.
+                                    result = Status.StatusUnknown;
+                                }
+                            }
                         }
-                    }
+
+                        break;
                 }
 
-                break;
-            }
+                // Clear the root Coordinator flag to indicate that
+                // this is not the root.
+                root = false;
 
-            // Clear the root Coordinator flag to indicate that
-            // this is not the root.
-
-            root = false;
-
-        } else {
-
-            // For a top-level Coordinator, we will generally only
-            // recover in the case where we have successfully prepared.
-            // If the state is not prepared_success,
-            // then assume it is rollback.
-
-            if (tranState.state == TransactionState.STATE_PREPARED_SUCCESS) {
-                result = Status.StatusCommitted;
             } else {
-                result = Status.StatusRolledBack;
+
+                // For a top-level Coordinator, we will generally only
+                // recover in the case where we have successfully prepared.
+                // If the state is not prepared_success,
+                // then assume it is rollback.
+                if (tranState.state == TransactionState.STATE_PREPARED_SUCCESS) {
+                    result = Status.StatusCommitted;
+                } else {
+                    result = Status.StatusRolledBack;
+                }
+
+                // Set the root Coordinator flag to indicate that this is the root.
+                root = true;
             }
 
-            // Set the root Coordinator flag to indicate that this is the root.
+            isRoot[0] = root;
 
-            root = true;
+            return result;
         }
-
-        isRoot[0] = root;
-
-        return result;
+        finally {
+            writeLock.unlock();
+        }
     }
 
     /**
      * Returns the local status of the target transaction.
      *
-     * @param
-     *
      * @return  The status of the transaction.
      *
      * @see
      */
+    @Override
     public Status get_status() {
+        readLock.lock();
+        try {
+            Status result = Status.StatusUnknown;
 
-        Status result = Status.StatusUnknown;
+            if (tranState != null) {
 
-        if (tranState != null) {
+                switch (tranState.state) {
 
-            switch (tranState.state) {
+                    // If active, return active or marked rollback-only
+                    // if the flag is set.
+                    case TransactionState.STATE_ACTIVE:
+                        if (rollbackOnly) {
+                            result = Status.StatusMarkedRollback;
+                        } else {
+                            result = Status.StatusActive;
+                        }
+                        break;
 
-            // If active, return active or marked rollback-only
-            // if the flag is set.
+                    // If prepared, (successfully or otherwise), return prepared.
+                    // If committing return prepared (may want to block in this case).
+                    case TransactionState.STATE_PREPARED_SUCCESS:
+                    case TransactionState.STATE_PREPARED_FAIL:
+                    case TransactionState.STATE_PREPARED_READONLY:
+                        result = Status.StatusPrepared;
+                        break;
 
-            case TransactionState.STATE_ACTIVE :
-                if( rollbackOnly )
-                    result = Status.StatusMarkedRollback;
-                else
-                    result = Status.StatusActive;
-                break;
+                    // If we have no internal state, return that fact.
+                    // All of these states map directly to the OMG values.
+                    case TransactionState.STATE_NONE:
+                        result = Status.StatusNoTransaction;
+                        break;
+                    case TransactionState.STATE_PREPARING:
+                        result = Status.StatusPreparing;
+                        break;
+                    case TransactionState.STATE_COMMITTING:
+                    case TransactionState.STATE_COMMITTING_ONE_PHASE:
+                        result = Status.StatusCommitting;
+                        break;
+                    case TransactionState.STATE_COMMITTED:
+                    case TransactionState.STATE_COMMITTED_ONE_PHASE_OK:
+                    case TransactionState.STATE_COMMIT_ONE_PHASE_HEURISTIC_HAZARD:
+                    case TransactionState.STATE_COMMIT_ONE_PHASE_HEURISTIC_MIXED:
+                        result = Status.StatusCommitted;
+                        break;
+                    case TransactionState.STATE_ROLLING_BACK:
+                    case TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK:
+                        result = Status.StatusRollingBack;
+                        break;
+                    case TransactionState.STATE_ROLLED_BACK:
+                        result = Status.StatusRolledBack;
+                        break;
 
-            // If prepared, (successfully or otherwise), return prepared.
-            // If committing return prepared (may want to block in this case).
-
-            case TransactionState.STATE_PREPARED_SUCCESS :
-            case TransactionState.STATE_PREPARED_FAIL :
-            case TransactionState.STATE_PREPARED_READONLY :
-                result = Status.StatusPrepared;
-                break;
-
-            // If we have no internal state, return that fact.
-            // All of these states map directly to the OMG values.
-
-            case TransactionState.STATE_NONE :
-                result = Status.StatusNoTransaction;
-                break;
-            case TransactionState.STATE_PREPARING :
-                result = Status.StatusPreparing;
-                break;
-            case TransactionState.STATE_COMMITTING :
-            case TransactionState.STATE_COMMITTING_ONE_PHASE :
-                result = Status.StatusCommitting;
-                break;
-            case TransactionState.STATE_COMMITTED :
-            case TransactionState.STATE_COMMITTED_ONE_PHASE_OK :
-            case TransactionState.STATE_COMMIT_ONE_PHASE_HEURISTIC_HAZARD :
-            case TransactionState.STATE_COMMIT_ONE_PHASE_HEURISTIC_MIXED :
-                result = Status.StatusCommitted;
-                break;
-            case TransactionState.STATE_ROLLING_BACK :
-            case TransactionState.STATE_COMMIT_ONE_PHASE_ROLLED_BACK :
-                result = Status.StatusRollingBack;
-                break;
-            case TransactionState.STATE_ROLLED_BACK :
-                result = Status.StatusRolledBack;
-                break;
-
-            // Any other state, return unknown.
-            // GDH Including c-o-p heuristic states
-
-            default :
-                result = Status.StatusUnknown;
-                break;
+                    // Any other state, return unknown.
+                    // GDH Including c-o-p heuristic states
+                    default:
+                        result = Status.StatusUnknown;
+                        break;
+                }
+            } else {
+                INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
+                        MinorCode.Completed,
+                        CompletionStatus.COMPLETED_NO);
+                throw exc;
             }
-        } else {
-            INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
-                                            MinorCode.Completed,
-                                            CompletionStatus.COMPLETED_NO);
-          throw exc;
-        }
 
-        return result;
+            return result;
+        }
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -891,12 +890,11 @@ public class TopCoordinator extends CoordinatorImpl {
      * This operation references no instance variables and so can be
      * implemented locally in the proxy class.
      *
-     * @param
-     *
      * @return  The status of the transaction.
      *
      * @see
      */
+    @Override
     public Status get_parent_status() {
         Status result = get_status();
         return result;
@@ -909,12 +907,11 @@ public class TopCoordinator extends CoordinatorImpl {
      * This operation references no instance variables and so can be
      * implemented locally in a proxy class.
      *
-     * @param
-     *
      * @return  The status of the transaction.
      *
      * @see
      */
+    @Override
     public Status get_top_level_status() {
 
         Status result = get_status();
@@ -940,10 +937,11 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-/**
+/*
 	removed synchronization at method level since only tranState requires
 	locking
 */
+    @Override
     public boolean is_same_transaction(Coordinator other)
             throws SystemException {
 
@@ -982,6 +980,7 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public boolean is_related_transaction(Coordinator other)
             throws SystemException {
 
@@ -1033,6 +1032,7 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public boolean is_ancestor_transaction(Coordinator other)
             throws SystemException {
 
@@ -1066,6 +1066,7 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public boolean is_descendant_transaction(Coordinator other)
             throws SystemException {
 
@@ -1091,12 +1092,12 @@ public class TopCoordinator extends CoordinatorImpl {
      * This operation references no instance variables and so can be
      * implemented locally in a proxy class.
      *
-     * @param
      *
      * @return  Indicates this is a top-level transaction.
      *
      * @see
      */
+    @Override
     public boolean is_top_level_transaction() {
 
         boolean result = true;
@@ -1109,16 +1110,15 @@ public class TopCoordinator extends CoordinatorImpl {
      * This operation references only the global TID, and so can be
      * implemented locally in a proxy class.
      *
-     * @param
-     *
      * @return  The hash value for the transaction.
      *
      * @see
      */
-/**
+/*
 	removed synchronization at method level since only tranState requires
 	locking
 */
+    @Override
     public int hash_transaction() {
 
         int result = hash;
@@ -1139,25 +1139,30 @@ public class TopCoordinator extends CoordinatorImpl {
      * This operation references only the global TID, and so can be
      * implemented locally in a proxy class.
      *
-     * @param
      *
      * @return  The hash value for the transaction.
      *
      * @see
      */
-    synchronized public int hash_top_level_tran() {
+    @Override
+    public int hash_top_level_tran() {
+        readLock.lock();
+        try {
+            int result = hash;
 
-        int result = hash;
+            if (tranState == null) {
+                INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
+                        MinorCode.Completed,
+                        CompletionStatus.COMPLETED_NO);
 
-        if (tranState == null) {
-            INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
-                                            MinorCode.Completed,
-                                            CompletionStatus.COMPLETED_NO);
+                throw exc;
+            }
 
-            throw exc;
+            return result;
         }
-
-        return result;
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -1180,160 +1185,154 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized public RecoveryCoordinator register_resource(Resource res)
+    @Override
+    public RecoveryCoordinator register_resource(Resource res)
             throws Inactive, TRANSACTION_ROLLEDBACK {
+        writeLock.lock();
+        try {
+            RecoveryCoordinator result = null;
 
-        RecoveryCoordinator result = null;
+            // First check the state of the transaction. If it is not active,
+            // do not allow the registration.
+            if (tranState == null || tranState.state
+                    != TransactionState.STATE_ACTIVE) {
+                Inactive exc = new Inactive();
+                throw exc;
+            }
 
-        // First check the state of the transaction. If it is not active,
-        // do not allow the registration.
+            // Check whether the transaction has been marked rollback-only.
+            if (rollbackOnly) {
+                TRANSACTION_ROLLEDBACK exc
+                        = new TRANSACTION_ROLLEDBACK(0, CompletionStatus.COMPLETED_NO);
+                throw exc;
+            }
 
-        if (tranState == null || tranState.state !=
-                TransactionState.STATE_ACTIVE) {
-          Inactive exc = new Inactive();
-          throw exc;
-        }
+            // If not previously registered, a CoordinatorResource object must be
+            // registered with our superior.  Note that root TopCoordinators are
+            // created with the registration flag set, so we do not need to
+            // check whether we are the root TopCoordinator here.
+            if (!registered && DefaultTransactionService.isORBAvailable()) {
 
-        // Check whether the transaction has been marked rollback-only.
+                // Initialise the CoordinatorResource with the local id,
+                // our reference, and a flag to indicate that it does not
+                // represent a subtransaction.
+                CoordinatorResourceImpl cImpl
+                        = new CoordinatorResourceImpl(superInfo.globalTID, this, false);
 
-        if (rollbackOnly) {
-            TRANSACTION_ROLLEDBACK exc =
-                new TRANSACTION_ROLLEDBACK(0, CompletionStatus.COMPLETED_NO);
-            throw exc;
-        }
+                try {
 
-        // If not previously registered, a CoordinatorResource object must be
-        // registered with our superior.  Note that root TopCoordinators are
-        // created with the registration flag set, so we do not need to
-        // check whether we are the root TopCoordinator here.
+                    // Register the CoordinatorResource with the superior
+                    // Coordinator, and store the resulting RecoveryCoordinator
+                    // reference.
+                    CoordinatorResource cRes = cImpl.object();
+                    RecoveryCoordinator superRecovery
+                            = superInfo.superior.register_resource(cRes);
+                    if (!(superRecovery instanceof TxInflowRecoveryCoordinator)) {
+                        superInfo.setRecovery(superRecovery);
+                    }
+                    superInfo.setResource(cRes);
+                    registered = true;
+                    if (_logger.isLoggable(Level.FINEST)) {
+                        _logger.logp(Level.FINEST, "TopCoordinator", "register_resource()",
+                                "CoordinatorResource " + cImpl
+                                + " has been registered with (Root)TopCoordinator"
+                                + superInfo.globalTID.toString());
+                    }
 
-        if (!registered && DefaultTransactionService.isORBAvailable()) {
+                } catch (Exception exc) {
 
-            // Initialise the CoordinatorResource with the local id,
-            // our reference, and a flag to indicate that it does not
-            // represent a subtransaction.
+                    // If an exception was raised, do not store the
+                    // RecoveryCoordinator or set the registration flag.
+                    // Throw an internal exception.
+                    cImpl.destroy();
 
-            CoordinatorResourceImpl cImpl =
-                new CoordinatorResourceImpl(superInfo.globalTID, this, false);
+                    if (exc instanceof OBJECT_NOT_EXIST) {
 
-            try {
+                        // If the exception is a system exception, then allow it
+                        // to percolate to the caller.
+                        TRANSACTION_ROLLEDBACK ex2
+                                = new TRANSACTION_ROLLEDBACK(
+                                        0, CompletionStatus.COMPLETED_NO);
+                        ex2.initCause(exc);
+                        throw ex2;
+                    }
 
-                // Register the CoordinatorResource with the superior
-                // Coordinator, and store the resulting RecoveryCoordinator
-                // reference.
+                    if (exc instanceof Inactive) {
+                        throw (Inactive) exc;
+                    }
 
-                CoordinatorResource cRes = cImpl.object();
-                RecoveryCoordinator superRecovery =
-                    superInfo.superior.register_resource(cRes);
-		if (!(superRecovery instanceof TxInflowRecoveryCoordinator))
-                    superInfo.setRecovery(superRecovery);
-                superInfo.setResource(cRes);
-                registered = true;
-				if(_logger.isLoggable(Level.FINEST))
-                {
-                    _logger.logp(Level.FINEST,"TopCoordinator","register_resource()",
-							"CoordinatorResource " + cImpl + 
-							" has been registered with (Root)TopCoordinator"+
-							superInfo.globalTID.toString());
+                    if (exc instanceof SystemException) {
+                        throw (SystemException) exc;
+                    }
+
+                    // Otherwise throw an internal exception.
+                    INTERNAL ex2 = new INTERNAL(MinorCode.NotRegistered,
+                            CompletionStatus.COMPLETED_NO);
+                    ex2.initCause(exc);
+                    throw ex2;
+                }
+            }
+
+            // If the set has not already been created, create it now.
+            if (participants == null) {
+                participants = new RegisteredResources(logRecord, this);
+            }
+
+            // Add a duplicate of the reference to the set.  This is done
+            // because if the registration is for a remote object, the proxy
+            // will be freed when the registration request returns.
+            // COMMENT(Ram J) if the res object is a local servant, there is
+            // no proxy involved. Also, the instanceof operator could be replaced
+            // by a is_local() method if this class implements the CORBA local
+            // object contract.
+            int numRes = 0;
+            if (res instanceof OTSResourceImpl) {
+                numRes = participants.addRes(res);
+                if (_logger.isLoggable(Level.FINEST)) {
+                    _logger.logp(Level.FINEST, "TopCoordinator", "register_resource()",
+                            "OTSResource " + res + " has been registered" + "GTID is:"
+                            + superInfo.globalTID.toString());
                 }
 
-            } catch (Exception exc) {
+            } else {
+                numRes = participants.addRes((Resource) res._duplicate());
+            }
 
-                // If an exception was raised, do not store the
-                // RecoveryCoordinator or set the registration flag.
-                // Throw an internal exception.
+            temporary = false;
 
-                cImpl.destroy();
+            // Create, initialise and return a RecoveryCoordinator
+            // object to the caller.
+            // COMMENT(Ram J) a RecoveryCoordinator object need not be
+            // created for local resources.
+            if (!(res instanceof OTSResourceImpl)) {
+                RecoveryCoordinatorImpl rcImpl = null;
+                try {
+                    rcImpl = new RecoveryCoordinatorImpl(
+                            superInfo.globalTID, numRes);
+                    result = rcImpl.object();
+                } catch (Exception exc) {
 
-                if (exc instanceof OBJECT_NOT_EXIST) {
-
-                    // If the exception is a system exception, then allow it
-                    // to percolate to the caller.
-                    TRANSACTION_ROLLEDBACK ex2 =
-                        new TRANSACTION_ROLLEDBACK(
-                            0, CompletionStatus.COMPLETED_NO);
+                    // If the RecoveryCoordinator could not be created,
+                    // report the exception.
+                    INTERNAL ex2 = new INTERNAL(MinorCode.RecCoordCreateFailed,
+                            CompletionStatus.COMPLETED_NO);
                     ex2.initCause(exc);
                     throw ex2;
                 }
 
-                if (exc instanceof Inactive)  {
-                    throw (Inactive)exc;
+                // ADD(Ram J) memory leak fix. All Recovery Coordinators need
+                // to be cleanedup when the transaction completes.
+                if (recoveryCoordinatorList == null) {
+                    recoveryCoordinatorList = new Vector();
                 }
-
-                if (exc instanceof SystemException) {
-                    throw (SystemException)exc;
-                }
-
-                // Otherwise throw an internal exception.
-
-                INTERNAL ex2 = new INTERNAL(MinorCode.NotRegistered,
-                                            CompletionStatus.COMPLETED_NO);
-                ex2.initCause(exc);
-                throw ex2;
-            }
-        }
-
-        // If the set has not already been created, create it now.
-
-        if (participants == null) {
-            participants = new RegisteredResources(logRecord, this);
-        }
-
-        // Add a duplicate of the reference to the set.  This is done
-        // because if the registration is for a remote object, the proxy
-        // will be freed when the registration request returns.
-
-        // COMMENT(Ram J) if the res object is a local servant, there is
-        // no proxy involved. Also, the instanceof operator could be replaced
-        // by a is_local() method if this class implements the CORBA local
-        // object contract.
-        int numRes = 0;
-        if (res instanceof OTSResourceImpl) {
-            numRes = participants.addRes(res);
-		    if(_logger.isLoggable(Level.FINEST))
-            {
-				_logger.logp(Level.FINEST,"TopCoordinator","register_resource()",
-						"OTSResource " + res +" has been registered"+"GTID is:"+
-						superInfo.globalTID.toString());
+                recoveryCoordinatorList.add(rcImpl);
             }
 
-        } else {
-            numRes = participants.addRes((Resource)res._duplicate());
+            return result;
         }
-
-        temporary = false;
-
-        // Create, initialise and return a RecoveryCoordinator
-        // object to the caller.
-
-        // COMMENT(Ram J) a RecoveryCoordinator object need not be
-        // created for local resources.
-        if (!(res instanceof OTSResourceImpl)) {
-            RecoveryCoordinatorImpl rcImpl = null;
-            try {
-                rcImpl = new RecoveryCoordinatorImpl(
-                                            superInfo.globalTID, numRes);
-                result = rcImpl.object();
-            } catch (Exception exc) {
-
-                // If the RecoveryCoordinator could not be created,
-                // report the exception.
-
-                INTERNAL ex2 = new INTERNAL(MinorCode.RecCoordCreateFailed,
-                                            CompletionStatus.COMPLETED_NO);
-                ex2.initCause(exc);
-                throw ex2;
-            }
-
-            // ADD(Ram J) memory leak fix. All Recovery Coordinators need
-            // to be cleanedup when the transaction completes.
-            if (recoveryCoordinatorList == null) {
-                recoveryCoordinatorList = new Vector();
-            }
-            recoveryCoordinatorList.add(rcImpl);
+        finally {
+            writeLock.unlock();
         }
-
-        return result;
     }
 
     /**
@@ -1343,14 +1342,13 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @param sares  The SubtransactionAwareResource to be registered.
      *
-     * @return
-     *
      * @exception NotSubtransaction  The Coordinator represents a top-level
      *   transaction and cannot accept the registration.
      *
      * @see
      */
-    synchronized public void register_subtran_aware(
+    @Override
+    public void register_subtran_aware(
             SubtransactionAwareResource sares) throws NotSubtransaction {
 
         NotSubtransaction exc = new NotSubtransaction();
@@ -1361,23 +1359,25 @@ public class TopCoordinator extends CoordinatorImpl {
      * Ensures that the transaction represented by the target TopCoordinator
      * cannot be committed.
      *
-     * @param
-     *
-     * @return
-     *
      * @exception Inactive  The Coordinator is already completing the
      *                      transaction.
      * @see
      */
-     public void rollback_only() throws Inactive {
-
-        if (tranState == null ||
-                tranState.state != TransactionState.STATE_ACTIVE) {
-            Inactive exc = new Inactive();
-            throw exc;
-        } else {
-            // Set the rollback-only flag.
-            rollbackOnly = true;
+    @Override
+    public void rollback_only() throws Inactive {
+        writeLock.lock();
+        try {
+            if (tranState == null
+                    || tranState.state != TransactionState.STATE_ACTIVE) {
+                Inactive exc = new Inactive();
+                throw exc;
+            } else {
+                // Set the rollback-only flag.
+                rollbackOnly = true;
+            }
+        }
+        finally {
+            writeLock.unlock();
         }
     }
 
@@ -1386,38 +1386,41 @@ public class TopCoordinator extends CoordinatorImpl {
      * This operation references only the global TID, and so can be
      * implemented locally in a proxy class.
      *
-     * @param
-     *
      * @return  The transaction name.
      *
      * @see
      */
-/**
+/*
 	removed synchronization at method level since only tranState requires
 	locking
 */
+    @Override
     public String get_transaction_name() {
+        readLock.lock();
+        try {
+            String result = null;
+            if (tranState != null) {
+                if (name == null) {
+                    name = superInfo.globalTID.toString();
+                }
+                result = name;
+            } else {
+                INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
+                        MinorCode.Completed,
+                        CompletionStatus.COMPLETED_NO);
+                throw exc;
+            }
 
-        String result = null;
-        if (tranState != null) {
-            if (name == null)
-                name = superInfo.globalTID.toString();
-            result = name;
-        } else {
-            INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
-                                            MinorCode.Completed,
-                                            CompletionStatus.COMPLETED_NO);
-            throw exc;
+            return result;
         }
-
-        return result;
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
      * Creates a subtransaction and returns a Control object that represents
      * the child transaction.
-     *
-     * @param
      *
      * @return  The Control object for the new child transaction.
      *
@@ -1426,70 +1429,70 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized public Control create_subtransaction() throws Inactive {
-
-        Control result = null;
-
-        // First check the state of the transaction. If it is not active,
-        // do not allow the subtransaction to be created.
-
-        if (tranState == null ||
-                tranState.state != TransactionState.STATE_ACTIVE) {
-            Inactive exc = new Inactive();
-            throw exc;
-        }
-
-        // Set up the sequence of ancestors to hold the single reference
-        // and global identifier of the top-level
-        // TopCoordinator as there are no ancestors.
-        // We do not need to make a copy of the global TID as this is done
-        // by the factory when it creates the child.
-
-        CoordinatorImpl[] ancestors = new CoordinatorImpl[1];
-        ancestors[0] = this;
-
-        // Create a new SubCoordinator, and initialise it with the given
-        // identifiers and ancestry.  If the operation fails,
-        // return a NULL Control object, and
-        // the SubtransactionsUnavailable exception. Note that the
-        // ancestor sequence is not copied by the creation operation.
-
-        SubCoordinator child = null;
-        TerminatorImpl terminator = null;
+    @Override
+    public Control create_subtransaction() throws Inactive {
+        writeLock.lock();
         try {
-            child = new SubCoordinator(superInfo.globalTID,
-                                       superInfo.localTID,
-                                       ancestors);
+            Control result = null;
 
-            // Create a Terminator object, and initialise it with the
-            // SubCoordinator reference and a flag to indicate that it
-            // represents a subtransaction.
+            // First check the state of the transaction. If it is not active,
+            // do not allow the subtransaction to be created.
+            if (tranState == null
+                    || tranState.state != TransactionState.STATE_ACTIVE) {
+                Inactive exc = new Inactive();
+                throw exc;
+            }
 
-            terminator = new TerminatorImpl(child,true);
+            // Set up the sequence of ancestors to hold the single reference
+            // and global identifier of the top-level
+            // TopCoordinator as there are no ancestors.
+            // We do not need to make a copy of the global TID as this is done
+            // by the factory when it creates the child.
+            CoordinatorImpl[] ancestors = new CoordinatorImpl[1];
+            ancestors[0] = this;
 
-            // Create a Control object, and initialise it with the Terminator,
-            // SubCoordinator and global OMGtid.
+            // Create a new SubCoordinator, and initialise it with the given
+            // identifiers and ancestry.  If the operation fails,
+            // return a NULL Control object, and
+            // the SubtransactionsUnavailable exception. Note that the
+            // ancestor sequence is not copied by the creation operation.
+            SubCoordinator child = null;
+            TerminatorImpl terminator = null;
+            try {
+                child = new SubCoordinator(superInfo.globalTID,
+                        superInfo.localTID,
+                        ancestors);
 
-            result = new ControlImpl(terminator, child,
-                                     new GlobalTID(child.getGlobalTID()),
-                                     child.getLocalTID()
-                                    ).object();
-        } catch (Throwable exc) {
-            Inactive ex2 = new Inactive();
-            ex2.initCause(exc);
-            throw ex2;
+                // Create a Terminator object, and initialise it with the
+                // SubCoordinator reference and a flag to indicate that it
+                // represents a subtransaction.
+                terminator = new TerminatorImpl(child, true);
+
+                // Create a Control object, and initialise it with the Terminator,
+                // SubCoordinator and global OMGtid.
+                result = new ControlImpl(terminator, child,
+                        new GlobalTID(child.getGlobalTID()),
+                        child.getLocalTID()
+                ).object();
+            } catch (Throwable exc) {
+                Inactive ex2 = new Inactive();
+                ex2.initCause(exc);
+                throw ex2;
+            }
+
+            // If the operation succeeded, add the new child to the set
+            // of children. Ensure that the NestingInfo object is set up.
+            if (nestingInfo == null) {
+                nestingInfo = new NestingInfo();
+            }
+
+            nestingInfo.addChild(child);
+
+            return result;
         }
-
-        // If the operation succeeded, add the new child to the set
-        // of children. Ensure that the NestingInfo object is set up.
-
-        if (nestingInfo == null) {
-            nestingInfo = new NestingInfo();
+        finally {
+            writeLock.unlock();
         }
-
-        nestingInfo.addChild(child);
-
-        return result;
     }
 
     /**
@@ -1502,14 +1505,12 @@ public class TopCoordinator extends CoordinatorImpl {
      * in resync.  I don't think this is a problem as the global identifier is
      * allocated in the constructor and then never changes.
      *
-     * @param
-     *
      * @return  The global transaction identifier.
      *
      * @see
      */
+    @Override
     public otid_t getGlobalTID() {
-
         otid_t result = superInfo.globalTID.realTID;
         return result;
     }
@@ -1530,15 +1531,14 @@ public class TopCoordinator extends CoordinatorImpl {
      * This method is currently not synchronized because that causes a deadlock
      * in resync.
      *
-     * @param
-     *
      * @return  The local identifier.
      *
      * @see
      */
+    @Override
     public long getLocalTID() {
 
-        long result = superInfo.localTID.longValue();
+        long result = superInfo.localTID;
         return result;
     }
 
@@ -1560,110 +1560,123 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized CoordinatorImpl replyAction(int[/*1*/] action)
+    @Override
+    CoordinatorImpl replyAction(int[/*1*/] action)
             throws SystemException {
+        readLock.lock();
+        try {
+            CoordinatorImpl result = null;
+            action[0] = CoordinatorImpl.doNothing;
 
-        CoordinatorImpl result = null;
-        action[0] = CoordinatorImpl.doNothing;
+            // If this Coordinator is not a root, and there are active children,
+            // report that fact to the caller. If the NestingInfo instance variable
+            // has not been set up, there are no children.
+            if (!root && nestingInfo != null && nestingInfo.replyCheck()) {
 
-        // If this Coordinator is not a root, and there are active children,
-        // report that fact to the caller. If the NestingInfo instance variable
-        // has not been set up, there are no children.
+                action[0] = CoordinatorImpl.activeChildren;
 
-        if (!root && nestingInfo != null && nestingInfo.replyCheck()) {
+                // If there are no active children, then check whether this
+                // transaction needs to be destroyed, or registered on reply.
+            } else {
 
-            action[0] = CoordinatorImpl.activeChildren;
+                // If there are participants, and we have not registered,
+                // raise an exception.
+                if (!registered) {
+                    if (participants != null && participants.involved()) {
 
-            // If there are no active children, then check whether this
-            // transaction needs to be destroyed, or registered on reply.
+                        INTERNAL ex2 = new INTERNAL(MinorCode.NotRegistered,
+                                CompletionStatus.COMPLETED_NO);
+                        throw ex2;
+                    } else if (!registeredSync) {
+                        action[0] = forgetMe;
+                    }
+                }
 
-        } else {
+                // If there are synchronization objects, and we have not
+                // registered, raise an exception.
+                if (!registeredSync) {
+                    if (synchronizations != null && synchronizations.involved()) {
 
-            // If there are participants, and we have not registered,
-            // raise an exception.
-
-            if (!registered) {
-                if (participants != null && participants.involved()) {
-
-                    INTERNAL ex2 = new INTERNAL(MinorCode.NotRegistered,
-                                                CompletionStatus.COMPLETED_NO);
-                    throw ex2;
-                } else if (!registeredSync) {
-                    action[0] = forgetMe;
+                        INTERNAL ex2 = new INTERNAL(MinorCode.NotRegistered,
+                                CompletionStatus.COMPLETED_NO);
+                        throw ex2;
+                    } else if (action[0] == doNothing && !registered) {
+                        // If we are not registered, and have no participants,
+                        // we have no reason to exist, so tell the caller to
+                        // forget about us. The TransactionManager will take
+                        // care of cleaning everything else up when
+                        // it receives the forgetMe response.
+                        action[0] = forgetMe;
+                    }
                 }
             }
 
-            // If there are synchronization objects, and we have not
-            // registered, raise an exception.
+            // Default action is do nothing when we are registered.
+            result = null;
 
-            if (!registeredSync) {
-                if (synchronizations != null && synchronizations.involved()) {
-
-                    INTERNAL ex2 = new INTERNAL(MinorCode.NotRegistered,
-                                                CompletionStatus.COMPLETED_NO);
-                    throw ex2;
-                } else if (action[0] == doNothing && !registered) {
-                    // If we are not registered, and have no participants,
-                    // we have no reason to exist, so tell the caller to
-                    // forget about us. The TransactionManager will take
-                    // care of cleaning everything else up when
-                    // it receives the forgetMe response.
-                    action[0] = forgetMe;
-                }
-            }
+            return result;
         }
-
-        // Default action is do nothing when we are registered.
-
-        result = null;
-
-        return result;
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
      * Marks the TopCoordinator as permanent.
      *
-     * @param
-     *
      * @return  The local transaction identifier.
      *
      * @see
      */
-    synchronized Long setPermanent() {
-
-        Long result = superInfo.localTID;
-        temporary = false;
-        return result;
+    @Override
+    Long setPermanent() {
+        writeLock.lock();
+        try {
+            Long result = superInfo.localTID;
+            temporary = false;
+            return result;
+        }
+        finally {
+            writeLock.unlock();
+        }
     }
 
     /**
      * Checks whether the TopCoordinator is marked rollback-only.
      *
-     * @param
-     *
      * @return  Indicates whether the transaction is rollback-only.
      *
      * @see
      */
-    synchronized public boolean isRollbackOnly() {
-
-        boolean result = rollbackOnly;
-        return result;
+    @Override
+    public boolean isRollbackOnly() {
+        readLock.lock();
+        try {
+            boolean result = rollbackOnly;
+            return result;
+        }
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
      * Checks whether the TopCoordinator is active.
      *
-     * @param
-     *
      * @return  Indicates the transaction is active.
      *
      * @see
      */
-    synchronized boolean isActive() {
-
-        boolean result = (tranState.state == TransactionState.STATE_ACTIVE);
-        return result;
+    @Override
+    boolean isActive() {
+        readLock.lock();
+        try {
+            boolean result = (tranState.state == TransactionState.STATE_ACTIVE);
+            return result;
+        }
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -1675,22 +1688,27 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized boolean hasRegistered() {
-
-        boolean result = registered || registeredSync;
-        return result;
+    @Override
+    boolean hasRegistered() {
+        readLock.lock();
+        try {
+            boolean result = registered || registeredSync;
+            return result;
+        }
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
      * Returns the sequence of ancestors of the transaction.
      *
-     * @param
-     *
      * @return  The sequence of ancestors.
      *
      * @see
      */
-    synchronized public TransIdentity[] getAncestors() {
+    @Override
+    public TransIdentity[] getAncestors() {
         return null;
     }
 
@@ -1704,20 +1722,25 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized boolean addChild(CoordinatorImpl child) {
+    @Override
+    boolean addChild(CoordinatorImpl child) {
+        writeLock.lock();
+        try {
+            boolean result;
 
-        boolean result;
+            // Make sure the NestingInfo instance variables is set up
+            // before adding the child.
+            if (nestingInfo == null) {
+                nestingInfo = new NestingInfo();
+            }
 
-        // Make sure the NestingInfo instance variables is set up
-        // before adding the child.
+            result = nestingInfo.addChild(child);
 
-        if (nestingInfo == null) {
-            nestingInfo = new NestingInfo();
+            return result;
         }
-
-        result = nestingInfo.addChild(child);
-
-        return result;
+        finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -1732,30 +1755,34 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized boolean removeChild(CoordinatorImpl child) {
+    @Override
+    boolean removeChild(CoordinatorImpl child) {
+        writeLock.lock();
+        try {
+            boolean result = false;
 
-        boolean result = false;
+            // Remove the child from the set of children.  If the NestingInfo
+            // instance variable has not been set up, then the child cannot
+            // be removed.
+            if (nestingInfo != null) {
+                result = nestingInfo.removeChild(child);
+            }
 
-        // Remove the child from the set of children.  If the NestingInfo
-        // instance variable has not been set up, then the child cannot
-        // be removed.
+            // If the removal results in an empty, temporary Coordinator, then this
+            // Coordinator must be cleaned up.  The RecoveryManager is called to
+            // clean up the transaction.
+            if (temporary && !registered
+                    && !(participants != null && participants.involved())
+                    && !(synchronizations != null && synchronizations.involved())
+                    && !(nestingInfo != null && nestingInfo.numChildren() > 0)) {
+                cleanUpEmpty(null);
+            }
 
-        if (nestingInfo != null) {
-            result = nestingInfo.removeChild(child);
+            return result;
         }
-
-        // If the removal results in an empty, temporary Coordinator, then this
-        // Coordinator must be cleaned up.  The RecoveryManager is called to
-        // clean up the transaction.
-
-        if (temporary && !registered &&
-                !(participants != null && participants.involved()) &&
-                !(synchronizations != null && synchronizations.involved()) &&
-                !(nestingInfo != null && nestingInfo.numChildren() > 0)) {
-            cleanUpEmpty(null);
+        finally {
+            writeLock.unlock();
         }
-
-        return result;
     }
 
     static String[] resultName = { "Commit"/*#Frozen*/, "Rollback"/*#Frozen*/, "Read-only"/*#Frozen*/ };
@@ -1783,12 +1810,14 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     Vote prepare()
             throws INVALID_TRANSACTION, HeuristicMixed, HeuristicHazard {
 
         // Until we actually distribute prepare flows, synchronize the method.
 
-        synchronized(this) {
+        writeLock.lock();
+        try {
 
             // First check for active children, before getting too far into
             // the prepare. This is only done for the root Coordinator as for
@@ -1831,6 +1860,9 @@ public class TopCoordinator extends CoordinatorImpl {
             // (by resources)
 
         }  // synchronised bit
+        finally {
+            writeLock.unlock();
+        }
 
         // Get the RegisteredResources to distribute prepare operations.
         // If a heuristic exception is thrown, then set the state
@@ -1932,7 +1964,8 @@ public class TopCoordinator extends CoordinatorImpl {
 
         // The remainder of the method needs to be synchronized.
 
-        synchronized(this) {
+        writeLock.lock();
+        try {
 
             // If the transaction has been marked rollback-only during
             // this process, change the vote.
@@ -2014,6 +2047,9 @@ public class TopCoordinator extends CoordinatorImpl {
                 }
             }
         }
+        finally {
+            writeLock.unlock();
+        }
 
         return overallResult;
     }
@@ -2038,12 +2074,14 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     void commit() throws HeuristicMixed, HeuristicHazard, NotPrepared {
 
         // Until we actually distribute prepare flows, synchronize the method.
 
 
-        synchronized(this) {
+        writeLock.lock();
+        try {
 			if(_logger.isLoggable(Level.FINE))
         	{
 				_logger.logp(Level.FINE,"TopCoordinator","commit()",
@@ -2088,6 +2126,9 @@ public class TopCoordinator extends CoordinatorImpl {
             // Release the lock before proceeding with commit.
 
         }
+        finally {
+            writeLock.unlock();
+        }
 
         // Commit all participants.  If a fatal error occurs during
         // this method, then the process must be ended with a fatal error.
@@ -2114,7 +2155,8 @@ public class TopCoordinator extends CoordinatorImpl {
 
         // The remainder of the method needs to be synchronized.
 
-        synchronized(this) {
+        writeLock.lock();
+        try {
 
             // Record that objects have been told to commit.
 
@@ -2183,6 +2225,9 @@ public class TopCoordinator extends CoordinatorImpl {
                 throw (INTERNAL) internalExc;
             }
         }
+        finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -2204,11 +2249,13 @@ public class TopCoordinator extends CoordinatorImpl {
      *   being rolled back.
      * @see
      */
+    @Override
     void rollback(boolean force) throws HeuristicMixed, HeuristicHazard {
 
         // Until we actually distribute prepare flows, synchronize the method.
 
-        synchronized(this){
+        writeLock.lock();
+        try {
 		if(_logger.isLoggable(Level.FINE))
 		{
 			_logger.logp(Level.FINE,"TopCoordinator","rollback()",
@@ -2281,6 +2328,9 @@ public class TopCoordinator extends CoordinatorImpl {
             // Release the lock before proceeding with rollback.
 
         }
+        finally {
+            writeLock.unlock();
+        }
 
         // Roll back all participants.  If a fatal error occurs during
         // this method, then the process must be ended with a fatal error.
@@ -2305,7 +2355,8 @@ public class TopCoordinator extends CoordinatorImpl {
 
         // The remainder of the method needs to be synchronized.
 
-        synchronized(this) {
+        writeLock.lock();
+        try {
 
             // Set the state.  Only bother doing this if the coordinator
             // is not temporary.
@@ -2374,6 +2425,9 @@ public class TopCoordinator extends CoordinatorImpl {
                 }
             }
         }
+        finally {
+            writeLock.unlock();
+        }
 
         // Otherwise return normally.
     }
@@ -2388,8 +2442,6 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @param sync  The Synchronization object to be registered.
      *
-     * @return
-     *
      * @exception Inactive  The Coordinator is in the process of completing the
      *   transaction and cannot accept this registration.
      * @exception SynchronizationUnavailable  The transaction service
@@ -2398,113 +2450,110 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized public void register_synchronization(Synchronization sync)
+    @Override
+    public void register_synchronization(Synchronization sync)
             throws SystemException, Inactive, SynchronizationUnavailable {
+        writeLock.lock();
+        try {
+            // First check the state of the transaction. If it is not active,
+            // do not allow the registration.
 
-        // First check the state of the transaction. If it is not active,
-        // do not allow the registration.
+            if (tranState == null
+                    || tranState.state != TransactionState.STATE_ACTIVE) {
+                Inactive exc = new Inactive();
+                throw exc;
+            }
 
-        if (tranState == null ||
-                tranState.state != TransactionState.STATE_ACTIVE) {
-              Inactive exc = new Inactive();
-              throw exc;
-        }
+            // If not previously registered, a CoordinatorSync object must be
+            // registered with our superior.  Note that root TopCoordinators
+            // are created with the registration flag set, so we do not need to
+            // check whether we are the root TopCoordinator here.
+            if (!registeredSync && DefaultTransactionService.isORBAvailable()) {
 
-        // If not previously registered, a CoordinatorSync object must be
-        // registered with our superior.  Note that root TopCoordinators
-        // are created with the registration flag set, so we do not need to
-        // check whether we are the root TopCoordinator here.
+                // Initialise the CoordinatorSync with the local id, our reference,
+                // and a flag to indicate that does not represent a subtransaction.
+                CoordinatorSynchronizationImpl sImpl
+                        = new CoordinatorSynchronizationImpl(this);
 
-        if (!registeredSync && DefaultTransactionService.isORBAvailable()) {
+                // Register the CoordinatorSync with the superior CoordinatorImpl.
+                try {
+                    Synchronization subSync = sImpl.object();
+                    superInfo.superior.register_synchronization(subSync);
+                    registeredSync = true;
 
-            // Initialise the CoordinatorSync with the local id, our reference,
-            // and a flag to indicate that does not represent a subtransaction.
+                    // added (Ram J) for memory leak fix.
+                    this.coordSyncImpl = sImpl;
+                    if (_logger.isLoggable(Level.FINER)) {
+                        _logger.logp(Level.FINER, "TopCoordinator",
+                                "register_synchronization()",
+                                "CoordinatorSynchronizationImpl :" + sImpl
+                                + " has been registered with (Root)TopCoordinator"
+                                + "GTID is: " + superInfo.globalTID.toString());
+                    }
 
-            CoordinatorSynchronizationImpl sImpl =
-                new CoordinatorSynchronizationImpl(this);
+                } catch (Exception exc) {
+                    // If an exception was raised, dont set the registration flag.
+                    sImpl.destroy();
 
-            // Register the CoordinatorSync with the superior CoordinatorImpl.
+                    // If the exception is a system exception, then allow it
+                    // to percolate to the caller.
+                    if (exc instanceof OBJECT_NOT_EXIST) {
+                        TRANSACTION_ROLLEDBACK ex2
+                                = new TRANSACTION_ROLLEDBACK(
+                                        0, CompletionStatus.COMPLETED_NO);
+                        ex2.initCause(exc);
+                        throw ex2;
+                    }
 
-            try {
-                Synchronization subSync = sImpl.object();
-                superInfo.superior.register_synchronization(subSync);
-                registeredSync = true;
+                    if (exc instanceof Inactive) {
+                        throw (Inactive) exc;
+                    }
 
-                // added (Ram J) for memory leak fix.
-                this.coordSyncImpl = sImpl;
-				if(_logger.isLoggable(Level.FINER))
-                {
-					_logger.logp(Level.FINER,"TopCoordinator",
-							"register_synchronization()", 
-							"CoordinatorSynchronizationImpl :" + sImpl + 
-							" has been registered with (Root)TopCoordinator"+
-							"GTID is: "+ superInfo.globalTID.toString());
-                }
+                    if (exc instanceof SystemException) {
+                        throw (SystemException) exc;
+                    }
 
-            } catch (Exception exc) {
-                // If an exception was raised, dont set the registration flag.
-                sImpl.destroy();
-
-                // If the exception is a system exception, then allow it
-                // to percolate to the caller.
-
-                if (exc instanceof OBJECT_NOT_EXIST) {
-                    TRANSACTION_ROLLEDBACK ex2 =
-                        new TRANSACTION_ROLLEDBACK(
-                            0, CompletionStatus.COMPLETED_NO);
+                    // Otherwise throw an internal exception.
+                    INTERNAL ex2 = new INTERNAL(MinorCode.NotRegistered,
+                            CompletionStatus.COMPLETED_NO);
                     ex2.initCause(exc);
                     throw ex2;
                 }
-
-                if (exc instanceof Inactive) {
-                    throw (Inactive)exc;
-                }
-
-                if (exc instanceof SystemException) {
-                    throw (SystemException) exc;
-                }
-
-                // Otherwise throw an internal exception.
-
-                INTERNAL ex2 = new INTERNAL(MinorCode.NotRegistered,
-                                            CompletionStatus.COMPLETED_NO);
-                ex2.initCause(exc);
-                throw ex2;
-            }
-        }
-
-        // Make sure the RegisteredSyncs instance variable has been set up.
-
-        if (synchronizations == null) {
-            synchronizations = new RegisteredSyncs();
-        }
-
-        // Add a duplicate of the reference to the set.  This is done
-        // because if the registration is for a remote object,
-        // the proxy will be freed
-        // when the registration request returns.
-
-        // COMMENT(Ram J) if the sync object is a local servant, there is
-        // no proxy involved. Also the instanceof operator could be replaced
-        // by a is_local() method if this class implements the CORBA local
-        // object contract.
-        if (sync instanceof com.sun.jts.jta.SynchronizationImpl) {
-            synchronizations.addSync(sync);
-
-		    if(_logger.isLoggable(Level.FINER))
-            {
-				_logger.logp(Level.FINER,"TopCoordinator",
-						"register_synchronization()",
-						"SynchronizationImpl :" + sync +
-						" has been registeredwith TopCoordinator :"+
-						"GTID is : "+ superInfo.globalTID.toString());
             }
 
-        } else {
-            synchronizations.addSync((Synchronization) sync._duplicate());
-        }
+            // Make sure the RegisteredSyncs instance variable has been set up.
+            if (synchronizations == null) {
+                synchronizations = new RegisteredSyncs();
+            }
 
-        temporary = false;
+            // Add a duplicate of the reference to the set.  This is done
+            // because if the registration is for a remote object,
+            // the proxy will be freed
+            // when the registration request returns.
+            // COMMENT(Ram J) if the sync object is a local servant, there is
+            // no proxy involved. Also the instanceof operator could be replaced
+            // by a is_local() method if this class implements the CORBA local
+            // object contract.
+            if (sync instanceof com.sun.jts.jta.SynchronizationImpl) {
+                synchronizations.addSync(sync);
+
+                if (_logger.isLoggable(Level.FINER)) {
+                    _logger.logp(Level.FINER, "TopCoordinator",
+                            "register_synchronization()",
+                            "SynchronizationImpl :" + sync
+                            + " has been registeredwith TopCoordinator :"
+                            + "GTID is : " + superInfo.globalTID.toString());
+                }
+
+            } else {
+                synchronizations.addSync((Synchronization) sync._duplicate());
+            }
+
+            temporary = false;
+        }
+        finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -2522,34 +2571,51 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized void beforeCompletion() throws INVALID_TRANSACTION {
+    void beforeCompletion() throws INVALID_TRANSACTION {
+        writeLock.lock();
+        RegisteredSyncs localSyncs = null;
+        try {
+            // First check for active children, before getting too far in.
+            // This is only done for the root Coordinator as for any
+            // others its too late.
 
-        // First check for active children, before getting too far in.
-        // This is only done for the root Coordinator as for any
-        // others its too late.
+            if (root && nestingInfo != null && nestingInfo.numChildren() != 0) {
+                INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
+                        MinorCode.UnfinishedSubtransactions,
+                        CompletionStatus.COMPLETED_NO);
+                throw exc;
+            }
 
-        if (root && nestingInfo != null && nestingInfo.numChildren() != 0) {
-            INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
-                                        MinorCode.UnfinishedSubtransactions,
-                                        CompletionStatus.COMPLETED_NO);
-            throw exc;
+            // If there are registered Synchronization objects, tell them
+            // the transaction is about to prepare.
+            if (synchronizations != null) {
+                localSyncs = synchronizations.clone();
+            }
+        }
+        catch (CloneNotSupportedException e) {
+            rollbackOnly = true;
+            throw new RuntimeException("Internal: Syncs must support clone()", e);
+        }
+        finally {
+            writeLock.unlock();
         }
 
-        // If there are registered Synchronization objects, tell them
-        // the transaction is about to prepare.
-
-        if (synchronizations != null) {
-
+        if (localSyncs != null) {
             // Tell the RegisteredSyncs to distribute the before completion
             // messages. If an exception is raised, then mark the transaction
             // rollback-only.
-
             try {
-                if (!synchronizations.distributeBefore()) {
+                if (!localSyncs.distributeBefore()) {
                     rollbackOnly = true;
                 }
             } catch (RuntimeException ex) {
-                rollbackOnly = true;
+                writeLock.lock();
+                try {
+                    rollbackOnly = true;
+                }
+                finally {
+                    writeLock.unlock();
+                }
                 throw ex;
             }
         }
@@ -2567,63 +2633,79 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized void afterCompletion(Status status) {
+    void afterCompletion(Status status) {
+        writeLock.lock();
+        RegisteredSyncs localSyncs = null;
+        try {
+            // If the Coordinator is still active, set it to read only to prevent
+            // the Coordinator from actually rolling back when it is destroyed.
 
-        // If the Coordinator is still active, set it to read only to prevent
-        // the Coordinator from actually rolling back when it is destroyed.
+            if (tranState.state == TransactionState.STATE_ACTIVE) {
+                tranState.setState(TransactionState.STATE_PREPARING);
+                tranState.setState(TransactionState.STATE_PREPARED_READONLY);
+            }
 
-        if (tranState.state == TransactionState.STATE_ACTIVE) {
-            tranState.setState(TransactionState.STATE_PREPARING);
-            tranState.setState(TransactionState.STATE_PREPARED_READONLY);
+            // If there are registered Synchronization objects,
+            // tell them the transaction has completed.
+            if (synchronizations != null) {
+                localSyncs = synchronizations.clone();
+            }
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Internal: Syncs must support clone()", e);
         }
 
-        // If there are registered Synchronization objects,
-        // tell them the transaction has completed.
+        finally {
+            writeLock.unlock();
+        }
 
-        if (synchronizations != null) {
-
+        if(localSyncs != null) {
             // Tell the RegisteredSyncs to distribute the after completion
             // messages. If an exception occurs, just report it.
-
             // synchronizations.distributeAfter(get_status());
-            synchronizations.distributeAfter(status);
+            localSyncs.distributeAfter(status);
         }
-
-        // At this point, there is nothing left to do, so destroy ourselves
-        // before returning.
-        boolean aborted = true;
-        if (status == Status.StatusCommitted) {
-            aborted = false;
-        }
-        if (!delegated) {
-            RecoveryManager.removeCoordinator(superInfo.globalTID,
-                                       superInfo.localTID,
-                                       aborted);
-        } else {
-            DelegatedRecoveryManager.removeCoordinator(superInfo.globalTID,
-                                       superInfo.localTID,
-                                       aborted, logPath);
-        }
-
-        // memory leak fix (Ram J) - cleanup the Recovery Coordinator objs.
-        if (recoveryCoordinatorList != null) {
-            for (int i = 0; i < recoveryCoordinatorList.size(); i++) {
-                RecoveryCoordinatorImpl rcImpl = (RecoveryCoordinatorImpl)
-                    recoveryCoordinatorList.elementAt(i);
-                rcImpl.destroy();
+        
+        writeLock.lock();
+        try {
+            // At this point, there is nothing left to do, so destroy ourselves
+            // before returning.
+            boolean aborted = true;
+            if (status == Status.StatusCommitted) {
+                aborted = false;
             }
-            recoveryCoordinatorList = null;
-        }
+            if (!delegated) {
+                RecoveryManager.removeCoordinator(superInfo.globalTID,
+                        superInfo.localTID,
+                        aborted);
+            } else {
+                DelegatedRecoveryManager.removeCoordinator(superInfo.globalTID,
+                        superInfo.localTID,
+                        aborted, logPath);
+            }
 
-        // memory leak fix (Ram J)
-        // destroy the CoordinatorSynchronization object.
-        if (this.coordSyncImpl != null) {
-            this.coordSyncImpl.destroy();
-        }
-        this.synchronizations = null;
+            // memory leak fix (Ram J) - cleanup the Recovery Coordinator objs.
+            if (recoveryCoordinatorList != null) {
+                for (int i = 0; i < recoveryCoordinatorList.size(); i++) {
+                    RecoveryCoordinatorImpl rcImpl = (RecoveryCoordinatorImpl) recoveryCoordinatorList.elementAt(i);
+                    rcImpl.destroy();
+                }
+                recoveryCoordinatorList = null;
+            }
 
-        // destroy the coordinator object.
-        destroy();
+            // memory leak fix (Ram J)
+            // destroy the CoordinatorSynchronization object.
+            if (this.coordSyncImpl != null) {
+                this.coordSyncImpl.destroy();
+            }
+            this.synchronizations = null;
+
+            // destroy the coordinator object.
+            destroy();
+        }
+        finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -2639,20 +2721,26 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    synchronized void setTerminator(CompletionHandler term) {
-        terminator = term;
+    @Override
+    void setTerminator(CompletionHandler term) {
+        writeLock.lock();
+        try {
+            terminator = term;
+        }
+        finally {
+            writeLock.unlock();
+        }
     }
 
     /**
      * Gets the parent coordinator of the transaction.  As this is a top level
      * coordinator, a parent does not exist so NULL is returned.
      *
-     * @param
-     *
      * @return  The parent Coordinator, null.
      *
      * @see
      */
+    @Override
     Coordinator getParent() {
 
         Coordinator result = null;
@@ -2662,16 +2750,20 @@ public class TopCoordinator extends CoordinatorImpl {
     /**
      * Gets the superior Coordinator for this transaction.
      *
-     * @param
-     *
      * @return  The superior Coordinator
      *
      * @see
      */
+    @Override
     Coordinator getSuperior() {
-
-        Coordinator result = superInfo.superior;
-        return result;
+        readLock.lock();
+        try {
+            Coordinator result = superInfo.superior;
+            return result;
+        }
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -2708,13 +2800,12 @@ public class TopCoordinator extends CoordinatorImpl {
     /**
      * Gets the object normally responsible for terminating this Coordinator.
      *
-     * @param
-     *
      * @return  The object normally responsible for terminating
      *   the Coordinator.
      *
      * @see
      */
+    @Override
     CompletionHandler getTerminator()  {
 
         CompletionHandler result = terminator;
@@ -2767,78 +2858,77 @@ public class TopCoordinator extends CoordinatorImpl {
      * Creates a PropagationContext which contains the information which would
      * normally be passed implicitly via the CosTSPropagation interfaces.
      *
-     * @param
-     *
      * @return  The transaction context.
      *
-     * @exception Inactive  The Coordinator is in the process of completing the
+     * @exception Unavailable  The Coordinator is in the process of completing the
      *   transaction and cannot return the information.
      *
      * @see
      */
-    synchronized public PropagationContext get_txcontext() throws Unavailable {
+    @Override
+    public PropagationContext get_txcontext() throws Unavailable {
+        readLock.lock();
+        try {
+            // First check the state of the transaction. If it is not active,
+            // do not allow the registration.
 
-        // First check the state of the transaction. If it is not active,
-        // do not allow the registration.
+            if (tranState == null
+                    || tranState.state != TransactionState.STATE_ACTIVE
+                    || rollbackOnly) {
+                Unavailable exc = new Unavailable();
+                throw exc;
+            }
 
-        if (tranState == null ||
-                tranState.state != TransactionState.STATE_ACTIVE ||
-                rollbackOnly ) {
-            Unavailable exc = new Unavailable();
-            throw exc;
+            // Work out the timeout value to pass, if any.
+            // Note that only top-level transactions have timeouts.
+            // We do not check for timeouts if the Coordinator is remote.
+            // If the Coordinator does not have a timeout defined, the
+            // TimeoutManager will return a negative value.
+            // If the transaction has timed out, the value will be  zero.
+            long timeLeft = TimeoutManager.timeLeft(superInfo.localTID);
+            int timeout = 0;
+            if (timeLeft > 0) {
+
+                timeout = (int) timeLeft / 1000;
+
+            } else if (timeLeft == 0) {
+
+                // If the timeout has expired, then do not return a context,
+                // but roll the transaction back and
+                // throw the TRANSACTION_ROLLEDBACK exception.
+                TimeoutManager.timeoutCoordinator(superInfo.localTID,
+                        TimeoutManager.ACTIVE_TIMEOUT);
+                TRANSACTION_ROLLEDBACK exc = new TRANSACTION_ROLLEDBACK(
+                        0, CompletionStatus.COMPLETED_NO);
+                throw exc;
+            }
+
+            // Fill in the context with the current transaction information,
+            // and the ancestor information.
+            TransIdentity current = new TransIdentity(this.object(),
+                    null,
+                    superInfo.globalTID.realTID);
+
+            // Ensure that the implementation specific data is filled with a value.
+            if (emptyData == null) {
+                emptyData = Configuration.getORB().create_any();
+                emptyData.insert_boolean(false);
+            }
+
+            PropagationContext result = new PropagationContext(
+                    timeout, current,
+                    new TransIdentity[0], emptyData);
+            if (_logger.isLoggable(Level.FINEST)) {
+                _logger.logp(Level.FINEST, "TopCoordinator", "get_txcontext()",
+                        "Obtained PropagationContext" + "GTID is: "
+                        + superInfo.globalTID.toString());
+            }
+
+            return result;
         }
-
-        // Work out the timeout value to pass, if any.
-        // Note that only top-level transactions have timeouts.
-        // We do not check for timeouts if the Coordinator is remote.
-        // If the Coordinator does not have a timeout defined, the
-        // TimeoutManager will return a negative value.
-        // If the transaction has timed out, the value will be  zero.
-
-        long timeLeft = TimeoutManager.timeLeft(superInfo.localTID);
-        int timeout = 0;
-        if (timeLeft > 0) {
-
-            timeout = (int)timeLeft/1000;
-
-        } else if (timeLeft == 0) {
-
-            // If the timeout has expired, then do not return a context,
-            // but roll the transaction back and
-            // throw the TRANSACTION_ROLLEDBACK exception.
-
-            TimeoutManager.timeoutCoordinator(superInfo.localTID,
-                                              TimeoutManager.ACTIVE_TIMEOUT);
-            TRANSACTION_ROLLEDBACK exc = new TRANSACTION_ROLLEDBACK(
-                                            0, CompletionStatus.COMPLETED_NO);
-            throw exc;
+        finally {
+            readLock.unlock();
         }
-
-        // Fill in the context with the current transaction information,
-        // and the ancestor information.
-
-        TransIdentity current = new TransIdentity(this.object(),
-                                                  null,
-                                                  superInfo.globalTID.realTID);
-
-        // Ensure that the implementation specific data is filled with a value.
-
-        if (emptyData == null){
-            emptyData = Configuration.getORB().create_any();
-            emptyData.insert_boolean(false);
-        }
-
-        PropagationContext result = new PropagationContext(
-                                            timeout, current,
-                                            new TransIdentity[0], emptyData);
-		if(_logger.isLoggable(Level.FINEST))
-        {
-			_logger.logp(Level.FINEST,"TopCoordinator","get_txcontext()", 
-					"Obtained PropagationContext"+"GTID is: "+
-					superInfo.globalTID.toString());
-        }
-
-        return result;
     }
 
     /**
@@ -2850,6 +2940,7 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     void cleanUpEmpty(CoordinatorImpl parent) {
 
         // Roll the transaction back, ignoring any exceptions.
@@ -2880,9 +2971,10 @@ public class TopCoordinator extends CoordinatorImpl {
      *                 should be tried.
      * @see
      */
+    @Override
     boolean commitOnePhase() throws HeuristicMixed, HeuristicHazard  {
-
-        synchronized (this) {
+        writeLock.lock();
+        try {
 
             // First check for active children, before getting too far
             // into the prepare. This is only done for
@@ -2946,6 +3038,9 @@ public class TopCoordinator extends CoordinatorImpl {
             //
 
         }  // first synchronised bit ends now to allow possible callbacks.
+        finally {
+            writeLock.unlock();
+        }
 
 
         if ((participants != null)  && (participants.numRegistered() == 1)) {
@@ -3078,7 +3173,8 @@ public class TopCoordinator extends CoordinatorImpl {
 
             // The remainder of the method needs to be synchronized too!
 
-            synchronized (this) {
+            writeLock.lock();
+            try {
 
                 // Clean up the TopCoordinator after a commit. In the case
                 // where the  TopCoordinator is a root,
@@ -3147,6 +3243,9 @@ public class TopCoordinator extends CoordinatorImpl {
                 }
 
             } //end of any synchronised work
+            finally {
+                writeLock.unlock();
+            }
 
             // Otherwise return normally.
 
@@ -3193,18 +3292,23 @@ public class TopCoordinator extends CoordinatorImpl {
      * This very basic method is used by the trace facility and
      * should not call any method which is traced.
      *
-     * @param
-     *
      * @return  The hash code for the object.
      *
      * @see
      */
+    @Override
     public int hashCode() {
-        if (hash == 0 && superInfo != null && superInfo.globalTID != null) {
-            hash = superInfo.globalTID.hashCode();
-        }
+        readLock.lock();
+        try {
+            if (hash == 0 && superInfo != null && superInfo.globalTID != null) {
+                hash = superInfo.globalTID.hashCode();
+            }
 
-        return hash;
+            return hash;
+        }
+        finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -3216,69 +3320,71 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public boolean equals(java.lang.Object other) {
+        readLock.lock();
+        try {
+            // Do a quick check on the object references.
 
-        // Do a quick check on the object references.
-
-        if( this == other ) return true;
-
-        // Obtain the global identifier for the other Coordinator.
-
-        otid_t otherTID = null;
-
-        // For local Coordinator objects which are really instances of the
-        // CoordinatorImpl class, get the global TID via a private method call.
-
-        if (other instanceof CoordinatorImpl) {
-            if (other instanceof TopCoordinator) {
-                otherTID = ((TopCoordinator) other).
-                                superInfo.globalTID.realTID;
+            if (this == other) {
+                return true;
             }
-        } else if (other instanceof org.omg.CORBA.Object) {
 
-            // For remote Coordinator objects which are instances of
-            // the JCoordinator class, use the getGlobalTID method remotely.
+            // Obtain the global identifier for the other Coordinator.
+            otid_t otherTID = null;
 
-            try {
-                JCoordinator jcoord = JCoordinatorHelper.
-                                        narrow((org.omg.CORBA.Object) other);
-                otherTID = jcoord.getGlobalTID();
-            } catch (BAD_PARAM exc) {
+            // For local Coordinator objects which are really instances of the
+            // CoordinatorImpl class, get the global TID via a private method call.
+            if (other instanceof CoordinatorImpl) {
+                if (other instanceof TopCoordinator) {
+                    otherTID = ((TopCoordinator) other).superInfo.globalTID.realTID;
+                }
+            } else if (other instanceof org.omg.CORBA.Object) {
 
-                // For remote Coordinator objects which are not
-                // instances of the JCoordinator class, use the propagation
-                // context to compare the Coordinators. This relies on the
-                // availability of the propagation
-                // context from the target Coordinator.
-
+                // For remote Coordinator objects which are instances of
+                // the JCoordinator class, use the getGlobalTID method remotely.
                 try {
-                    Coordinator coord =
-                        CoordinatorHelper.narrow((org.omg.CORBA.Object) other);
-                    PropagationContext pc = coord.get_txcontext();
-                    otherTID = pc.current.otid;
-                } catch (BAD_PARAM ex2) {
-                    // If the other object is not actually a Coordinator,
-                    // then the objects are not the same.
-                } catch (Unavailable ex2) {
-                    // If the other Coordinator is inactive, then there is
-                    // nothing we can do to get the global identifier for the
-                    // transaction, so we cannot compare the
-                    // Coordinator objects.
-                    INVALID_TRANSACTION ex3 = new INVALID_TRANSACTION(
-                                                MinorCode.CompareFailed,
-                                                CompletionStatus.COMPLETED_NO);
-                    ex3.initCause(exc);
-                    throw ex3;
+                    JCoordinator jcoord = JCoordinatorHelper.
+                            narrow((org.omg.CORBA.Object) other);
+                    otherTID = jcoord.getGlobalTID();
+                } catch (BAD_PARAM exc) {
+
+                    // For remote Coordinator objects which are not
+                    // instances of the JCoordinator class, use the propagation
+                    // context to compare the Coordinators. This relies on the
+                    // availability of the propagation
+                    // context from the target Coordinator.
+                    try {
+                        Coordinator coord
+                                = CoordinatorHelper.narrow((org.omg.CORBA.Object) other);
+                        PropagationContext pc = coord.get_txcontext();
+                        otherTID = pc.current.otid;
+                    } catch (BAD_PARAM ex2) {
+                        // If the other object is not actually a Coordinator,
+                        // then the objects are not the same.
+                    } catch (Unavailable ex2) {
+                        // If the other Coordinator is inactive, then there is
+                        // nothing we can do to get the global identifier for the
+                        // transaction, so we cannot compare the
+                        // Coordinator objects.
+                        INVALID_TRANSACTION ex3 = new INVALID_TRANSACTION(
+                                MinorCode.CompareFailed,
+                                CompletionStatus.COMPLETED_NO);
+                        ex3.initCause(exc);
+                        throw ex3;
+                    }
                 }
             }
+
+            // Compare the global identifiers.
+            if (otherTID != null) {
+                return superInfo.globalTID.isSameTID(otherTID);
+            }
+
+            return false;
         }
-
-        // Compare the global identifiers.
-
-        if (otherTID != null) {
-            return superInfo.globalTID.isSameTID(otherTID);
+        finally {
+            readLock.unlock();
         }
-
-        return false;
     }
 }

@@ -19,7 +19,6 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -63,8 +62,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+    @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+            opType = RestEndpoint.OpType.POST,
             path = "healthcheck-hoggingthreads-configure",
             description = "Configures the Hogging Threads Checker")
 })
@@ -91,19 +90,23 @@ public class HoggingThreadsConfigurer implements AdminCommand {
     @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "unit", optional = true, defaultValue = "SECONDS", acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
+    @Param(name = "unit", optional = true, acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String unit;
     
     @Param(name = "name", optional = true)
+    @Deprecated
     private String name;
+
+    @Param(name = "checkerName", optional = true)
+    private String checkerName;
     
-    @Param(name = "threshold-percentage", defaultValue = "95")
+    @Param(name = "threshold-percentage")
     @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String threshold;
 
     @Min(value = 1, message = "Retry count must be 1 or more")
-    @Param(name = "retry-count", defaultValue = "3")
+    @Param(name = "retry-count")
     private String retryCount;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
@@ -127,7 +130,12 @@ public class HoggingThreadsConfigurer implements AdminCommand {
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
+        
+        // Warn about deprecated option
+        if (name != null) {
+            actionReport.appendMessage("\n--name parameter is decremented, please begin using the --checkerName option\n");
+        }
+        
         try {
             HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
             HoggingThreadsChecker hoggingThreadConfiguration = healthCheckServiceConfiguration.getCheckerByType(HoggingThreadsChecker.class);
@@ -188,6 +196,11 @@ public class HoggingThreadsConfigurer implements AdminCommand {
         
         if (name != null) {
             checkerProxy.setName(name);
+        }
+        
+        // Take priority over deprecated parameter
+        if (checkerName != null) {
+            checkerProxy.setName(checkerName);
         }
         
         if (time != null) {

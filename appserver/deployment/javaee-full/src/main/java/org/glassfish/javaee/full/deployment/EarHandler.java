@@ -303,7 +303,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
         final ReadableArchive archive  = context.getSource();
         
-        ApplicationHolder holder =
+        final ApplicationHolder holder =
             getApplicationHolder(archive, context, true);
 
         // the ear classloader hierachy will be 
@@ -386,7 +386,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             cl =  AccessController.doPrivileged(new PrivilegedAction<EarClassLoader>() {
                 @Override
                 public EarClassLoader run() {
-                    return new EarClassLoader(embeddedConnCl);
+                    return new EarClassLoader(embeddedConnCl, holder.app);
                 }
             });
 

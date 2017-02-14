@@ -1,0 +1,122 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2017 Payara Foundation and/or its affiliatess. 
+ All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+-->
+
+<!initPage
+    setResourceBundle(key="i18nhx" bundle="fish.payara.admingui.healthcheck.Strings");
+/>
+<!composition template="/templates/default.layout"  
+        guiTitle="$resource{i18nhx.healthcheck.checker.configuration.heapMemoryUsage.pageTitle}">
+
+<!define name="content">
+
+<event>
+    <!beforeCreate
+        getRequestValue(key="configName" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="HEALTHCHECK_CONFIG_URL", 
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/health-check-service-configuration");
+
+        gf.restRequest(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/get-healthcheck-configuration?target=#{pageSession.configName}"  
+                method="GET" result="#{requestScope.resp}");      
+        setPageSessionAttribute(key="valueMap", 
+                value="#{requestScope.resp.data.subReports.get(2).extraProperties.heapMemoryUsage}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+                
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        
+        setPageSessionAttribute(key="dynamic", value="true");
+    />
+</event>
+
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+#include "/healthcheck/healthcheck/healthcheckConfigTabs.inc
+    <sun:title id="propertyContentPage" title="$resource{i18nhx.healthcheck.checker.configuration.heapMemoryUsage.pageTitle}" 
+               helpText="$resource{i18nhx.healthcheck.checker.configuration.heapMemoryUsage.pageTitleHelpText}" >
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="serviceName" value="healthcheck-heap");
+                    prepareSuccessfulMsg();
+                    gf.updateEntity(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/healthcheck-service-configure-checker-with-thresholds" 
+                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+<sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+    <sun:propertySheetSection id="heapMemoryUsageCheckerProps">
+        <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.configuration.enabledLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.configuration.enabledLabelHelpText}">
+            <sun:checkbox id="enabledBox" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.configuration.dynamicLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.configuration.dynamicLabelHelpText}">
+            <sun:checkbox id="dynamicBox" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.checker.configuration.nameLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.nameLabelHelpText}">
+            <sun:textField id="nameField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['checkerName']}"/>
+        </sun:property>
+        <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.checker.configuration.timeLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.timeLabelHelpText}">
+            <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer"
+                           text="#{pageSession.valueMap['time']}"/>
+        </sun:property>
+        <sun:property id="unitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.checker.configuration.unitLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.unitLabelHelpText}">
+            <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['unit']}" 
+                          labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
+        </sun:property>
+        <sun:property id="thresholdGoodProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.checker.configuration.thresholdGoodLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.thresholdGoodLabelHelpText}">
+            <sun:textField id="thresholdGoodField" columns="$int{40}" maxLength="250" styleClass="integer"
+                           text="#{pageSession.valueMap['thresholdGood']}"/>
+        </sun:property>
+        <sun:property id="thresholdWarningProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.checker.configuration.thresholdWarningLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.thresholdWarningLabelHelpText}">
+            <sun:textField id="thresholdWarningField" columns="$int{40}" maxLength="250" styleClass="integer"
+                           text="#{pageSession.valueMap['thresholdWarning']}"/>
+        </sun:property>
+        <sun:property id="thresholdCriticalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.checker.configuration.thresholdCriticalLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.thresholdCriticalLabelHelpText}">
+            <sun:textField id="thresholdCriticalField" columns="$int{40}" maxLength="250" styleClass="integer"
+                           text="#{pageSession.valueMap['thresholdCritical']}"/>
+        </sun:property>
+    </sun:propertySheetSection>
+</sun:propertySheet>
+</sun:form>
+</define>
+</composition>

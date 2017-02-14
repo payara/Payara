@@ -42,6 +42,7 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.constraints.Min;
 
 /**
  * Admin command to enable/disable specific health check service given with its
@@ -56,8 +57,8 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+    @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+            opType = RestEndpoint.OpType.POST,
             path = "healthcheck-configure-service",
             description = "Enables/Disables Health Check Service Specified With Name")
 })
@@ -81,17 +82,25 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     private Boolean enabled;
 
     @Param(name = "time", optional = true)
+    @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "unit", optional = true)
+    @Param(name = "unit", optional = true, 
+            acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String unit;
 
-    @Param(name = "serviceName", optional = false)
+    @Param(name = "serviceName", optional = false, 
+            acceptableValues = "healthcheck-cpu,healthcheck-gc,healthcheck-cpool,healthcheck-heap,healthcheck-threads,"
+                    + "healthcheck-machinemem")
     private String serviceName;
 
     @Param(name = "name", optional = true)
+    @Deprecated
     private String name;
 
+    @Param(name = "checkerName", optional = true)
+    private String checkerName;
+    
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
@@ -104,7 +113,6 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        final AdminCommandContext theContext = context;
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -121,6 +129,11 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
             return;
         }
 
+        // Warn about deprecated option
+        if (name != null) {
+            actionReport.appendMessage("\n--name parameter is decremented, please begin using the --checkerName option\n");
+        }
+        
         HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         final Checker checker = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
 
@@ -190,6 +203,11 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         }
         if (name != null) {
             checkerProxy.setName(name);
+        }
+        
+        // Take priority over deprecated parameter
+        if (checkerName != null) {
+            checkerProxy.setName(checkerName);
         }
     }
 }

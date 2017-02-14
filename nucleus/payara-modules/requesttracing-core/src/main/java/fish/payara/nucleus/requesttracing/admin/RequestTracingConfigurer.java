@@ -18,7 +18,6 @@
 package fish.payara.nucleus.requesttracing.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
@@ -42,7 +41,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Admin command to enable/disable all request tracing services defined in
@@ -57,7 +55,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 @PerLookup
 @I18n("requesttracing.configure")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "requesttracing-configure",
             description = "Enables/Disables Request Tracing Service")
@@ -87,20 +85,20 @@ public class RequestTracingConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
-    @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
+    @Param(name = "thresholdUnit", optional = true)
     private String unit;
 
-    @Param(name = "thresholdValue", optional = true, defaultValue = "30")
+    @Param(name = "thresholdValue", optional = true)
     private String value;
 
-    @Inject
-    ServiceLocator serviceLocator;
-    
-    CommandRunner.CommandInvocation inv;
+    @Param(name = "historicalTraceEnabled", optional = true)
+    private Boolean historicalTraceEnabled;
+
+    @Param(name = "historicalTraceStoreSize", optional = true)
+    private Integer historicalTraceStoreSize;
 
     @Override
     public void execute(AdminCommandContext context) {
-        final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
@@ -130,6 +128,13 @@ public class RequestTracingConfigurer implements AdminCommand {
                         if (value != null) {
                             requestTracingServiceConfigurationProxy.setThresholdValue(value);
                         }
+                        if (historicalTraceEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                        }
+                        if (historicalTraceStoreSize != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
+
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return requestTracingServiceConfigurationProxy;
                     }
@@ -145,32 +150,40 @@ public class RequestTracingConfigurer implements AdminCommand {
         if (dynamic) {
             if (server.isDas()) {
                 if (targetUtil.getConfig(target).isDas()) {
-                    service.getExecutionOptions().setEnabled(enabled);
-                    if (value != null) {
-                        service.getExecutionOptions().setThresholdValue(Long.valueOf(value));
-                        actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",
-                                "Request Tracing Service Threshold Value is set to {0}.", value) + "\n");
-                    }
-                    if (unit != null) {
-                        service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(unit));
-                        actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdunit.success",
-                                "Request Tracing Service Threshold Unit is set to {0}.", unit) + "\n");
-                    }
+                    configureDynamically(actionReport);
                 }
             } else {
-                service.getExecutionOptions().setEnabled(enabled);
-                if (value != null) {
-                    service.getExecutionOptions().setThresholdValue(Long.valueOf(value));
-                    actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",
-                            "Request Tracing Service Threshold Value is set to {0}.", value) + "\n");
-                }
-                if (unit != null) {
-                    service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(unit));
-                    actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdunit.success",
-                            "Request Tracing Service Threshold Unit is set to {0}.", unit) + "\n");
-                }
+                configureDynamically(actionReport);
             }
         }
+    }
+
+    private void configureDynamically(ActionReport actionReport) {
+        service.getExecutionOptions().setEnabled(enabled);
+        if (value != null) {
+            service.getExecutionOptions().setThresholdValue(Long.valueOf(value));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",
+                    "Request Tracing Service Threshold Value is set to {0}.", value) + "\n");
+        }
+        if (unit != null) {
+            service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(unit));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdunit.success",
+                    "Request Tracing Service Threshold Unit is set to {0}.", unit) + "\n");
+        }
+
+        if (historicalTraceEnabled != null) {
+            service.getExecutionOptions().setHistoricalTraceEnabled(historicalTraceEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.status.success",
+                    "Request Tracing Historical Trace status is set to {0}.", historicalTraceEnabled) + "\n");
+        }
+
+        if (historicalTraceStoreSize != null) {
+            service.getExecutionOptions().setHistoricalTraceStoreSize(historicalTraceStoreSize);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.storesize.success",
+                    "Request Tracing Historical Trace Store Size is set to {0}.", historicalTraceStoreSize) + "\n");
+        }
+
+        service.bootstrapRequestTracingService();
     }
 
     private boolean validate(ActionReport actionReport) {

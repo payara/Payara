@@ -17,11 +17,8 @@
  */
 package fish.payara.ha.hazelcast.store;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
@@ -36,28 +33,16 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "hazelcast-factory")
 public class HazelcastBackingStoreFactory implements BackingStoreFactory {
-
-    private HazelcastInstance hazelcast = null;
-
     @Inject
     HazelcastCore core;
 
-    @PostConstruct
-    public void postConstruct() {
-        hazelcast = core.getInstance();
-    }
-
     @Override
     public <K extends Serializable, V extends Serializable> BackingStore<K, V> createBackingStore(BackingStoreConfiguration<K, V> bsc) throws BackingStoreException {
-        if (!core.isEnabled()) {
-            throw new BackingStoreException("Hazelcast is NOT Enabled please enable Hazelcast");
-        }
-        IMap<K, V> storeMap = hazelcast.getMap(bsc.getStoreName());
-        return new HazelcastBackingStore<K, V>(storeMap, this, hazelcast.getLocalEndpoint().getUuid());
+        return new HazelcastBackingStore<K, V>(this, bsc.getStoreName(), core);
     }
 
     @Override
     public BackingStoreTransaction createBackingStoreTransaction() {
-        return new HazelcastBackingStoreTransaction(hazelcast.newTransactionContext());
+        return new HazelcastBackingStoreTransaction(core.getInstance().newTransactionContext());
     }
 }
