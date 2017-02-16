@@ -73,7 +73,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Inject
     MonitoringService monitoringService;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
     @Param(name = "amx", optional = true)
