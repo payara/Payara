@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource.deployer;
 
@@ -300,6 +301,26 @@ public class ConnectionFactoryDefinitionDeployer implements ResourceDeployer {
 
         public List<Property> getProperty() {
             return null;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            throw new UnsupportedOperationException();
         }
 
         public Property getProperty(String name) {
@@ -638,7 +659,27 @@ public class ConnectionFactoryDefinitionDeployer implements ResourceDeployer {
 
             return connectionFactoryProperties;
         }
- 
+
+        @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
 
         public Property getProperty(String name) {
             String value = desc.getProperty(name);
