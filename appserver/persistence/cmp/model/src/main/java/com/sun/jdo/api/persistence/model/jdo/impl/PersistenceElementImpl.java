@@ -46,12 +46,12 @@
 
 package com.sun.jdo.api.persistence.model.jdo.impl;
 
-import java.beans.*;
-
 import com.sun.jdo.api.persistence.model.ModelException;
 import com.sun.jdo.api.persistence.model.ModelVetoException;
 import com.sun.jdo.api.persistence.model.jdo.PersistenceElement;
 import com.sun.jdo.api.persistence.model.jdo.PersistenceElementProperties;
+
+import java.beans.*;
 
 /* TODO:
 	1. way to get to declaring class from here?
@@ -123,15 +123,10 @@ public abstract class PersistenceElementImpl extends Object
 	public synchronized void addPropertyChangeListener 
 		(PropertyChangeListener l)
 	{
+		// new test under synchronized block
 		if (_support == null)
-		{
-			synchronized(this)
-			{
-				// new test under synchronized block
-				if (_support == null)
-					_support = new PropertyChangeSupport(_element);
-			}
-		}
+			_support = new PropertyChangeSupport(_element);
+
 
 		_support.addPropertyChangeListener(l);
 	}
