@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -148,7 +149,7 @@ public class TransactionScopedContextImpl implements Context {
         if (transactionScopedBeanSet != null){
             transactionScopedBeanSet = Collections.synchronizedSet(transactionScopedBeanSet);
         } else {
-            transactionScopedBeanSet = Collections.synchronizedSet(new HashSet());
+            transactionScopedBeanSet = Collections.synchronizedSet(new HashSet<TransactionScopedBean>());
             //Fire this event only for the first initialization of context and not for every TransactionScopedBean in a Transaction
             TransactionScopedCDIUtil.fireEvent(TransactionScopedCDIUtil.INITIALIZED_EVENT);
             //Adding transactionScopedBeanSet in Map for the first time for this transactionSynchronizationRegistry key
@@ -159,6 +160,7 @@ public class TransactionScopedContextImpl implements Context {
         return transactionScopedBean.getContextualInstance();
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T getContextualInstance(Object beanId, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
         Object obj = transactionSynchronizationRegistry.getResource(beanId);
         TransactionScopedBean<T> transactionScopedBean = (TransactionScopedBean<T>) obj;

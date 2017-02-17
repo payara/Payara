@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -53,7 +54,9 @@ import static org.easymock.EasyMock.isA;
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
 public class TransactionScopedContextExtensionTest {
+
     @Test
+    @SuppressWarnings("unchecked")
     public void testafterBeanDiscovery() {
         EasyMockSupport mockSupport = new EasyMockSupport();
         AfterBeanDiscovery event = mockSupport.createMock(AfterBeanDiscovery.class);

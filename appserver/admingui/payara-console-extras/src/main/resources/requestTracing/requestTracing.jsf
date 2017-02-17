@@ -33,11 +33,12 @@
         gf.restRequest(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}/get-requesttracing-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="logNotifierValueMap", value="#{requestScope.resp.data.subReports.get(0).extraProperties.getRequesttracingConfigurationLOG}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic","historicalTraceEnabled"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        if (#{pageSession.valueMap['notifierEnabled']}=true) {
+        if (#{pageSession.logNotifierValueMap['notifierEnabled']}=true) {
             setPageSessionAttribute(key="notifierEnabledSelected", value="true");
         }
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
