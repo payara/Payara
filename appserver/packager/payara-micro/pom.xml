@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.171</version>
     </parent>
     <artifactId>payara-micro</artifactId>
     <name>Payara Micro Package</name>
@@ -99,12 +99,26 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.appserver.micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <type>glassfish-jar</type>
             <optional>true</optional>
         </dependency>   
+        <dependency>
+            <groupId>fish.payara.micro</groupId>
+            <artifactId>payara-micro-boot</artifactId>
+            <version>${project.version}</version>
+            <type>glassfish-jar</type>
+            <optional>true</optional>
+        </dependency> 
+        <dependency>
+            <groupId>fish.payara.micro</groupId>
+            <artifactId>payara-micro-cdi</artifactId>
+            <version>${project.version}</version>
+            <type>glassfish-jar</type>
+            <optional>true</optional>
+        </dependency> 
     </dependencies>
 </project>
 

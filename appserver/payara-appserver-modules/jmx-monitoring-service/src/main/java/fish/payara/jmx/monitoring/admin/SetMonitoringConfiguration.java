@@ -126,7 +126,8 @@ public class SetMonitoringConfiguration implements AdminCommand {
             }
 
         } catch (TransactionFailure ex) {
-            Logger.getLogger(SetMonitoringConfiguration.class.getName()).log(Level.WARNING, "Exception during command ", ex);
+            Logger.getLogger(SetMonitoringConfiguration.class.getName()).log(Level.WARNING, "Exception during command "
+                    + "set-monitoring-configuration: " + ex.getCause().getMessage());
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }

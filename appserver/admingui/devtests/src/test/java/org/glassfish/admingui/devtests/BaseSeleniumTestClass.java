@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+
 package org.glassfish.admingui.devtests;
 
 import com.google.common.base.Function;
@@ -1126,7 +1128,7 @@ public class BaseSeleniumTestClass {
                     value = operation();
                     success = true;
                 } catch (Exception e) {
-                    logger.log(Level.FINE, "Exception caught ('{0}'). Sleeping...", e.getMessage());
+                    logger.log(Level.FINE, "Exception caught (''{0}''). Sleeping...", e.getMessage());
                     count++;
                 }
             }

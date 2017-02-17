@@ -22,6 +22,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
+@CheckerConfigurationType(type = CheckerType.CPU_USAGE)
 public interface CpuUsageChecker extends Checker, ThresholdDiagnosticsChecker {
 
     @Attribute(defaultValue = "CPUC")

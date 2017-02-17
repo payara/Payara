@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb;
 
@@ -133,19 +134,24 @@ public class EJBUtils {
      * container-managed fields, all of which may include Remote 
      * EJB references,
      * Local refs, JNDI Contexts etc which are not Serializable.
+     * @param data
+     * @param loader
+     * @param resolveObject
+     * @param appUniqueId
+     * @return object
+     * @throws java.lang.Exception
      */
     public static final Object deserializeObject(byte[] data, 
-            ClassLoader loader, boolean resolveObject)
+            ClassLoader loader, boolean resolveObject, long appUniqueId)
         throws Exception
     {
-        return EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().deserializeObject(data, resolveObject, loader);
+        return EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().deserializeObject(data, resolveObject, loader, appUniqueId);
     }
 
-    public static final Object deserializeObject(byte[] data, 
-                                                 ClassLoader loader)
+    public static final Object deserializeObject(byte[] data, ClassLoader loader, long appUniqueId)
         throws Exception
     {
-        return EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().deserializeObject(data, true, loader);
+        return EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().deserializeObject(data, true, loader, appUniqueId);
     }
 
     public static boolean useStaticCodegen() {

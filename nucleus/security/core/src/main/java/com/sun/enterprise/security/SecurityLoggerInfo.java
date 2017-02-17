@@ -64,7 +64,7 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "Caught exception.",
             cause ="Unknown.",
-            action ="Check the server logs and contact Oracle support.",
+            action ="Check the server logs and contact Payara Support.",
             level = "WARNING")
     public static final String securityExceptionError = LOGMSG_PREFIX + "-01000";
     
@@ -81,7 +81,7 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "An I/O error occurred during copying of server config files.",
             cause ="Copying server config files.",
-            action ="Check the server logs and contact Oracle support.",
+            action ="Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String ioError = LOGMSG_PREFIX + "-01004";
     
@@ -113,14 +113,14 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "An I/O error occurred while copying the security config files.",
             cause = "Copying security files to instanceRoot/config.",
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "WARNING")
     public static final String copyingSecurityConfigFilesIOError = LOGMSG_PREFIX + "-01013";
     
     @LogMessageInfo(
             message = "An error occurred while upgrading the security config files.",
             cause = "Upgrade security config files from a previous version.",
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String securityUpgradeServiceException = LOGMSG_PREFIX + "-01014";
     
@@ -144,14 +144,14 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "Disabled realm [{0}] due to errors.",
             cause ="No realms available.",
-            action ="Check the server logs and contact Oracle support.",
+            action ="Check the server logs and contact Payara Support.",
             level = "WARNING")
     public static final String realmConfigDisabledError = LOGMSG_PREFIX + "-01100";
     
     @LogMessageInfo(
             message = "No realms available. Authentication services disabled.",
             cause ="No realms available.",
-            action ="Check the server logs and contact Oracle support.",
+            action ="Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String noRealmsError = LOGMSG_PREFIX + "-01101";
     
@@ -236,7 +236,7 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "Failed to get the group names for user {0} in realm {1}: {2}.",
             cause = "Operation now allowed",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             level = "WARNING")
     public static final String invalidOperationForRealmError = LOGMSG_PREFIX + "-01150";
     
@@ -255,14 +255,14 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "Exception in getting security context.",
             cause = "There was an exception obtaining the default security context.",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             level = "SEVERE")
     public static final String defaultSecurityContextError = LOGMSG_PREFIX + "-05036";
     
     @LogMessageInfo(
             message = "Default user login error.",
             cause = "There was an exception while authenticating the default caller principal.",
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String defaultUserLoginError = LOGMSG_PREFIX + "-05038";
     
@@ -276,7 +276,7 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "Exception in security accesscontroller action.",
             cause = "Running a privileged action",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             level = "SEVERE")
     public static final String securityAccessControllerActionError = LOGMSG_PREFIX + "-05043";
    
@@ -289,21 +289,21 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "doAsPrivileged AuthPermission required to set SecurityContext.",
             cause = "Setting the SecurityContext in the current thread",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             level = "SEVERE")
     public static final String securityContextPermissionError = LOGMSG_PREFIX + "-05048";
     
     @LogMessageInfo(
             message = "Unexpected exception while attempting to set SecurityContext.",
             cause = "There was an unexpected exception while setting the security context.",
-            action = "Check the server logs and contact Oracle support.",
+            action = "Check the server logs and contact Payara Support.",
             level = "SEVERE")
     public static final String securityContextUnexpectedError = LOGMSG_PREFIX + "-05049";
     
     @LogMessageInfo(
             message = "Could not change the SecurityContext.",
             cause = "Changing the current SecurityContext.",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             level = "SEVERE")
     public static final String securityContextNotChangedError = LOGMSG_PREFIX + "-05050";
     
@@ -327,7 +327,7 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "Failed to instantiate the SecurityLifeCycle.",
             cause = "Unknown",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             level = "SEVERE")
     public static final String secMgrInitFailure = LOGMSG_PREFIX + "-05101";
     
@@ -348,14 +348,14 @@ public class SecurityLoggerInfo {
     @LogMessageInfo(
             message = "IIOP Security - error importing a name: ${0}.",
             cause = "Importing a name in IIOP",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             level = "SEVERE")
     public static final String iiopImportNameError = LOGMSG_PREFIX + "-05300";
     
     @LogMessageInfo(
             message = "IIOP Security - error creating an exported name: ${0}.",
             cause = "Creating an exported name in IIOP",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             level = "SEVERE")
     public static final String iiopCreateExportedNameError = LOGMSG_PREFIX + "-05301";
     

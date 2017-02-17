@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates] 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
 
 package com.sun.enterprise.security.acl;
 
@@ -163,6 +163,10 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
         appDefaultMapping = false;
         if(secService != null) {
             appDefaultMapping = Boolean.parseBoolean(secService.getActivateDefaultPrincipalToRoleMapping());
+            if (appDefaultMapping) {
+                // if set explicitly in the security service allow default mapping
+                return appDefaultMapping;
+            }
         }
         
         ApplicationRegistry appRegistry = Globals.getDefaultHabitat().getService(ApplicationRegistry.class);

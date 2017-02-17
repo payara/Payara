@@ -42,6 +42,10 @@ public class CacheResultInterceptor extends AbstractJSR107Interceptor {
     @SuppressWarnings("unchecked")
     public Object cacheResult(InvocationContext ctx) throws Throwable {
         
+        if (!isEnabled()) {
+            return ctx.proceed();
+        }
+        
         // get my annotation
         CacheResult annotation = ctx.getMethod().getAnnotation(CacheResult.class);
         PayaraCacheKeyInvocationContext<CacheResult> pctx = new PayaraCacheKeyInvocationContext<>(ctx, annotation);

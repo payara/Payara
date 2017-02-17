@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -82,7 +83,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
     public static final String UNABLE_TO_INSTANTIATE_CONTAINER_LISTENER = "AS-WEB-GLUE-00091";
 
     @LogMessageInfo(
-            message = "Creating connector for address='{0}' port='{1}' protocol='{2}'",
+            message = "Creating connector for address=''{0}'' port=''{1}'' protocol=''{2}''",
             level = "FINE")
     public static final String CREATE_CONNECTOR = "AS-WEB-GLUE-00092";
 

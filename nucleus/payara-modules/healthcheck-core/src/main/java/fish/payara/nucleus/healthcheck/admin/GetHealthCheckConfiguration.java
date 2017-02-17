@@ -18,16 +18,23 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import java.util.HashMap;
+
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -43,6 +50,10 @@ import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 
 /**
  * @author mertcaliskan
@@ -54,7 +65,7 @@ import java.util.List;
 @ExecuteOn(value = {RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
+        @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
                 path = "get-healthcheck-configuration",
                 description = "List HealthCheck Configuration")
@@ -66,7 +77,15 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             "Retry Count"};
     final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
-
+    final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
+    
+    private final String garbageCollectorPropertyName = "garbageCollector";
+    private final String cpuUsagePropertyName = "cpuUsage";
+    private final String connectionPoolPropertyName = "connectionPool";
+    private final String heapMemoryUsagePropertyName = "heapMemoryUsage";
+    private final String machineMemoryUsagePropertyName = "machineMemoryUsage";
+    private final String hoggingThreadsPropertyName = "hoggingThreads";
+    
     @Inject
     ServiceLocator habitat;
 
@@ -87,22 +106,82 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         }
 
         ActionReport mainActionReport = context.getActionReport();
-        ActionReport baseActionReport = mainActionReport.addSubActionsReport();
-        ActionReport hoggingThreadsActionReport = mainActionReport.addSubActionsReport();
-        ActionReport thresholdDiagnosticsActionReport = mainActionReport.addSubActionsReport();
+        ActionReport baseActionReport = mainActionReport.addSubActionsReport(); // subReport(0)
+        ActionReport hoggingThreadsActionReport = mainActionReport.addSubActionsReport(); // subReport(1)
+        ActionReport thresholdDiagnosticsActionReport = mainActionReport.addSubActionsReport(); // subReport(2) 
 
         ColumnFormatter baseColumnFormatter = new ColumnFormatter(baseHeaders);
         ColumnFormatter hoggingThreadsColumnFormatter = new ColumnFormatter(hoggingThreadsHeaders);
         ColumnFormatter thresholdDiagnosticsColumnFormatter = new ColumnFormatter(thresholdDiagnosticsHeaders);
+        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);
 
-        HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration
-                .class);
+        HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         List<ServiceHandle<BaseHealthCheck>> allServiceHandles = habitat.getAllServiceHandles(BaseHealthCheck.class);
+        List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
         mainActionReport.appendMessage("Health Check Service Configuration is enabled?: " + configuration.getEnabled() + "\n");
+        
+        if (Boolean.parseBoolean(configuration.getEnabled())) {
+            mainActionReport.appendMessage("Historical Tracing Enabled?: " + configuration.getHistoricalTraceEnabled() 
+                    + "\n");
+            if (Boolean.parseBoolean(configuration.getHistoricalTraceEnabled())) {
+                mainActionReport.appendMessage("Historical Tracing Store Size: " 
+                        + configuration.getHistoricalTraceStoreSize() + "\n");
+            }
+        }
+
+        // Create the extraProps map for the general healthcheck configuration
+        Properties mainExtraProps = new Properties();
+        Map<String, Object> mainExtraPropsMap = new HashMap<>();
+
+        mainExtraPropsMap.put("enabled", configuration.getEnabled());
+        mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
+        mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
+        
+        mainExtraProps.put("healthcheckConfiguration", mainExtraPropsMap);
+        mainActionReport.setExtraProperties(mainExtraProps);
+
+        if (!configuration.getNotifierList().isEmpty()) {
+            List<Class<Notifier>> notifierClassList = Lists.transform(configuration.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
+                @Override
+                public Class<Notifier> apply(Notifier input) {
+                    return resolveNotifierClass(input);
+                }
+            });
+
+            Properties extraProps = new Properties();
+            for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {
+                Notifier notifier = configuration.getNotifierByType(serviceHandle.getService().getNotifierType());
+                if (notifier != null) {
+                    ConfigView view = ConfigSupport.getImpl(notifier);
+                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+
+                    if (notifierClassList.contains(view.<Notifier>getProxyType())) {
+                        Object values[] = new Object[2];
+                        values[0] = annotation.type();
+                        values[1] = notifier.getEnabled();
+                        notifiersColumnFormatter.addRow(values);
+
+                        Map<String, Object> map = new HashMap<>(2);
+                        map.put("notifierName", values[0]);
+                        map.put("notifierEnabled", values[1]);
+
+                        extraProps.put("notifierList" + annotation.type(), map);
+                    }
+                }
+            }
+            mainActionReport.getExtraProperties().putAll(extraProps);
+            mainActionReport.appendMessage(notifiersColumnFormatter.toString());
+            mainActionReport.appendMessage(StringUtils.EOL);
+        }
+
         mainActionReport.appendMessage("Below are the list of configuration details of each checker listed by its name.");
         mainActionReport.appendMessage(StringUtils.EOL);
 
+        Properties baseExtraProps = new Properties();
+        Properties hoggingThreadsExtraProps = new Properties();
+        Properties thresholdDiagnosticsExtraProps = new Properties();
+        
         for (ServiceHandle<BaseHealthCheck> serviceHandle : allServiceHandles) {
             Checker checker = configuration.getCheckerByType(serviceHandle.getService().getCheckerType());
 
@@ -117,6 +196,9 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[4] = hoggingThreadsChecker.getThresholdPercentage();
                 values[5] = hoggingThreadsChecker.getRetryCount();
                 hoggingThreadsColumnFormatter.addRow(values);
+                
+                // Create the extra props map for a hogging thread checker
+                addHoggingThreadsCheckerExtraProps(hoggingThreadsExtraProps, hoggingThreadsChecker);
             }
             else if (checker instanceof ThresholdDiagnosticsChecker) {
                 ThresholdDiagnosticsChecker thresholdDiagnosticsChecker = (ThresholdDiagnosticsChecker) checker;
@@ -133,6 +215,10 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 Property thresholdGoodProperty = thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD);
                 values[6] = thresholdGoodProperty != null ? thresholdGoodProperty.getValue() : "-";
                 thresholdDiagnosticsColumnFormatter.addRow(values);
+                
+                // Create the extra props map for a checker with thresholds
+                addThresholdDiagnosticsCheckerExtraProps(thresholdDiagnosticsExtraProps, 
+                        thresholdDiagnosticsChecker);
             }
             else if (checker != null) {
                 Object values[] = new Object[4];
@@ -141,6 +227,9 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[2] = checker.getTime();
                 values[3] = checker.getUnit();
                 baseColumnFormatter.addRow(values);
+                
+                // Create the extra props map for a base checker
+                addBaseCheckerExtraProps(baseExtraProps, checker);
             }
         }
 
@@ -156,7 +245,159 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             thresholdDiagnosticsActionReport.setMessage(thresholdDiagnosticsColumnFormatter.toString());
             thresholdDiagnosticsActionReport.appendMessage(StringUtils.EOL);
         }
+        
+        // Populate the extraProps with defaults for any checker that isn't present
+        baseExtraProps = checkCheckerPropertyPresence(baseExtraProps, garbageCollectorPropertyName);
+        hoggingThreadsExtraProps = checkCheckerPropertyPresence(hoggingThreadsExtraProps, hoggingThreadsPropertyName);
+        thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
+                cpuUsagePropertyName);
+        thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
+                connectionPoolPropertyName);
+        thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
+                heapMemoryUsagePropertyName);
+        thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
+                machineMemoryUsagePropertyName);
+        
+        // Add the extra props to their respective action reports
+        baseActionReport.setExtraProperties(baseExtraProps);
+        hoggingThreadsActionReport.setExtraProperties(hoggingThreadsExtraProps);
+        thresholdDiagnosticsActionReport.setExtraProperties(thresholdDiagnosticsExtraProps);
 
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+    
+    private void addHoggingThreadsCheckerExtraProps(Properties hoggingThreadsExtraProps, 
+            HoggingThreadsChecker hoggingThreadsChecker) {
+        Map<String, Object> extraPropsMap = new HashMap<>(6);       
+        
+        extraPropsMap.put("checkerName", hoggingThreadsChecker.getName());
+        extraPropsMap.put("enabled", hoggingThreadsChecker.getEnabled());
+        extraPropsMap.put("time", hoggingThreadsChecker.getTime());
+        extraPropsMap.put("unit", hoggingThreadsChecker.getUnit());
+        extraPropsMap.put("threshold-percentage", hoggingThreadsChecker.getThresholdPercentage());
+        extraPropsMap.put("retry-count", hoggingThreadsChecker.getRetryCount());
+        
+        hoggingThreadsExtraProps.put(hoggingThreadsPropertyName, extraPropsMap);
+    }
+    
+    private void addThresholdDiagnosticsCheckerExtraProps(Properties thresholdDiagnosticsExtraProps, 
+            ThresholdDiagnosticsChecker thresholdDiagnosticsChecker) {
+        
+        Map<String, Object> extraPropsMap = new HashMap<>(7);       
+        
+        extraPropsMap.put("checkerName", thresholdDiagnosticsChecker.getName());
+        extraPropsMap.put("enabled", thresholdDiagnosticsChecker.getEnabled());
+        extraPropsMap.put("time", thresholdDiagnosticsChecker.getTime());
+        extraPropsMap.put("unit", thresholdDiagnosticsChecker.getUnit());
+        extraPropsMap.put("thresholdCritical", thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL).getValue());
+        extraPropsMap.put("thresholdWarning", thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING).getValue());
+        extraPropsMap.put("thresholdGood", thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD).getValue());
+
+        // Get the checker type
+        ConfigView view = ConfigSupport.getImpl(thresholdDiagnosticsChecker);
+        CheckerConfigurationType annotation = view.getProxyType().getAnnotation(CheckerConfigurationType.class);
+        
+        // Add the extraPropsMap as a property with a name matching its checker type
+        switch (annotation.type()) {
+            case CONNECTION_POOL:
+                thresholdDiagnosticsExtraProps.put(connectionPoolPropertyName, extraPropsMap);
+                break;
+            case CPU_USAGE:
+                thresholdDiagnosticsExtraProps.put(cpuUsagePropertyName, extraPropsMap);
+                break;
+            case HEAP_MEMORY_USAGE:
+                thresholdDiagnosticsExtraProps.put(heapMemoryUsagePropertyName, extraPropsMap);
+                break;
+            case MACHINE_MEMORY_USAGE:
+                thresholdDiagnosticsExtraProps.put(machineMemoryUsagePropertyName, extraPropsMap);
+                break;
+        }
+    }
+    
+    private void addBaseCheckerExtraProps(Properties baseExtraProps, 
+            Checker checker) {
+        Map<String, Object> extraPropsMap = new HashMap<>(4);       
+        
+        extraPropsMap.put("checkerName", checker.getName());
+        extraPropsMap.put("enabled", checker.getEnabled());
+        extraPropsMap.put("time", checker.getTime());
+        extraPropsMap.put("unit", checker.getUnit());
+
+        // Get the checker type
+        ConfigView view = ConfigSupport.getImpl(checker);
+        CheckerConfigurationType annotation = view.getProxyType().getAnnotation(CheckerConfigurationType.class);
+        
+        // Add the extraPropsMap as a property with a name matching its checker type
+        switch (annotation.type()) {
+            case GARBAGE_COLLECTOR:
+                baseExtraProps.put(garbageCollectorPropertyName, extraPropsMap);
+                break;
+        }
+    }
+    
+    private Properties checkCheckerPropertyPresence(Properties extraProps, String checkerName) {
+        // Check that properties have been created for each checker, and create a default if not
+        if (!extraProps.containsKey(checkerName)) {
+            Map<String, Object> extraPropsMap;
+            switch (checkerName) {
+                case garbageCollectorPropertyName:
+                    extraPropsMap = new HashMap<>(4);
+                    extraPropsMap.put("checkerName", DEFAULT_GARBAGE_COLLECTOR_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case hoggingThreadsPropertyName:
+                    extraPropsMap = new HashMap<>(6);
+                    extraPropsMap.put("checkerName", DEFAULT_HOGGING_THREADS_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case cpuUsagePropertyName:
+                    extraPropsMap = new HashMap<>(7);
+                    extraPropsMap.put("checkerName", DEFAULT_CPU_USAGE_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case connectionPoolPropertyName:
+                    extraPropsMap = new HashMap<>(7);
+                    extraPropsMap.put("checkerName", DEFAULT_CONNECTION_POOL_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case heapMemoryUsagePropertyName:
+                    extraPropsMap = new HashMap<>(7);
+                    extraPropsMap.put("checkerName", DEFAULT_HEAP_MEMORY_USAGE_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                case machineMemoryUsagePropertyName:
+                    extraPropsMap = new HashMap<>(7);
+                    extraPropsMap.put("checkerName", DEFAULT_MACHINE_MEMORY_USAGE_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+            }
+        }
+        
+        return extraProps;
+    }
+    
+    private Map<String, Object> populateDefaultValuesMap(Map<String, Object> extraPropsMap) {
+        // Common properties
+        extraPropsMap.put("enabled", DEFAULT_ENABLED);
+        extraPropsMap.put("time", DEFAULT_TIME);
+        extraPropsMap.put("unit", DEFAULT_UNIT);
+        
+        // Add default properties for hogging threads checker, or add default properties for a thresholdDiagnostics checker
+        // if the checker type isn't a hogging thread or garbage collector checker (the only current base checker)
+        if (extraPropsMap.containsValue(DEFAULT_HOGGING_THREADS_NAME)) {
+            extraPropsMap.put("threshold-percentage", DEFAULT_THRESHOLD_PERCENTAGE);
+            extraPropsMap.put("retry-count", DEFAULT_RETRY_COUNT);
+        } else if (!extraPropsMap.containsValue(DEFAULT_GARBAGE_COLLECTOR_NAME)) {
+            extraPropsMap.put("thresholdCritical", THRESHOLD_DEFAULTVAL_CRITICAL);
+            extraPropsMap.put("thresholdWarning", THRESHOLD_DEFAULTVAL_WARNING);
+            extraPropsMap.put("thresholdGood", THRESHOLD_DEFAULTVAL_GOOD);
+        }
+        
+        return extraPropsMap;
+    }
+
+    private Class<Notifier> resolveNotifierClass(Notifier input) {
+        ConfigView view = ConfigSupport.getImpl(input);
+        return view.getProxyType();
     }
 }

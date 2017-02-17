@@ -19,6 +19,7 @@ package fish.payara.nucleus.exec;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.Member;
+import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
 import java.util.Collection;
@@ -32,6 +33,8 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -41,18 +44,19 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-cluster-executor")
 @RunLevel(StartupRunLevel.VAL)
-public class ClusterExecutionService {
+public class ClusterExecutionService implements EventListener {
     
     private static final Logger logger = Logger.getLogger(ClusterExecutionService.class.getCanonicalName());
     
     @Inject
     private HazelcastCore hzCore;
     
+    @Inject
+    private Events events;
+    
     @PostConstruct
     public void postConstruct() {
-        if (hzCore.isEnabled()) {
-            logger.info("Payara Clustered Exector Service Enabled");
-        }
+        events.register(this);
     }
     
     public <T extends Serializable> Future<T> runCallable(String memberUUID, Callable<T> callable) {
@@ -103,6 +107,15 @@ public class ClusterExecutionService {
             }
         }
         return result;
+    }
+
+    @Override
+    public void event(Event event) {
+        if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
+            if (hzCore.isEnabled()) {
+                logger.info("Payara Clustered Executor Service Enabled");
+            }
+        }
     }
     
     

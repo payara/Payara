@@ -3,15 +3,15 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserv
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/master/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
@@ -47,11 +47,12 @@
   <parent>
     <groupId>fish.payara.extras.payara-micro</groupId>
     <artifactId>payara-micro-parent</artifactId>
-    <version>4.1.1.171-SNAPSHOT</version>
+    <version>4.1.1.171</version>
   </parent>
   
-  <artifactId>payara-micro-distribution</artifactId>
-  <version>4.1.1.171-SNAPSHOT</version>
+  <groupId>fish.payara.micro</groupId>
+  <artifactId>payara-micro</artifactId>
+  <version>4.1.1.171</version>
   <name>Payara Micro Distribution</name>
   <packaging>jar</packaging>
 
@@ -89,7 +90,7 @@
                     </goals>
                     <configuration>
                         <tasks>
-                            <ant dir="." antfile="build.xml" target="create.distribution">
+                            <ant dir="." antfile="build.xml" target="new.create">
                                 <property name="bundlename" value="fish.payara.micro" />
                                 <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
                                 <property name="install.dir.name" value="${install.dir.name}" />                            
@@ -161,23 +162,6 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-cluster</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-
-                <dependency>
-                    <groupId>org.glassfish.main.packager</groupId>
-                    <artifactId>glassfish-management</artifactId>
-                    <version>${project.version}</version>
-                    <type>zip</type>
-                    <optional>true</optional>
-                </dependency>
-        -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-common-web</artifactId>
@@ -276,14 +260,6 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        <!--        <dependency>
-                    <groupId>org.glassfish.main.packager</groupId>
-                    <artifactId>shoal</artifactId>
-                    <version>${project.version}</version>
-                    <type>zip</type>
-                    <optional>true</optional>
-                </dependency>
-        -->
         <!-- hazelcast package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -308,7 +284,15 @@
               <type>zip</type>
               <optional>true</optional>
           </dependency>
-        <!-- phonehome package -->
+          <!-- notification package -->
+          <dependency>
+              <groupId>org.glassfish.main.packager</groupId>
+              <artifactId>notification</artifactId>
+              <version>${project.version}</version>
+              <type>zip</type>
+              <optional>true</optional>
+          </dependency>
+          <!-- phonehome package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>phonehome</artifactId>
@@ -326,24 +310,35 @@
         </dependency>
         <!-- Add Payara Micro Core -->
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-core</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- Add Payara Micro Services -->
         <dependency>
-            <groupId>fish.payara.appserver.micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
+        <!-- Add Boot classes -->
+        <dependency>
+            <groupId>fish.payara.micro</groupId>
+            <artifactId>payara-micro-boot</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>            
+            <optional>true</optional>
+        </dependency>    
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- Add JBatch -->
         <dependency>
@@ -351,42 +346,47 @@
             <artifactId>glassfish-batch-connector</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>
             <artifactId>glassfish-batch-commands</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>
             <artifactId>payara-jbatch</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- Add Concurrency -->
         <dependency>
             <groupId>javax.enterprise.concurrent</groupId>
             <artifactId>javax.enterprise.concurrent-api</artifactId>
-            <version>1.0</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.enterprise.concurrent</artifactId>
-            <version>1.0</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.concurrent</groupId>
             <artifactId>concurrent-connector</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>        
         <dependency>
             <groupId>org.glassfish.main.concurrent</groupId>
             <artifactId>concurrent-impl</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency> 
         <!-- Add Hazelcast EJB Timer Store -->
         <dependency>
@@ -394,12 +394,14 @@
             <artifactId>hazelcast-ejb-timer</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <optional>true</optional>
         </dependency>
         <!-- PAYARA-1081 -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
             <version>${jackson.version}</version>
+            <optional>true</optional>
         </dependency>
       </dependencies>
     <profiles>

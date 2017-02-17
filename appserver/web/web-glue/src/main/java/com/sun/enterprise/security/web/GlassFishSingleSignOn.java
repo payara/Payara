@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.web;
 
@@ -88,12 +89,12 @@ public class GlassFishSingleSignOn
     private static final String SESSION_DESTROYED = "AS-WEB-GLUE-00030";
 
     @LogMessageInfo(
-            message = "Process request for '{0}'",
+            message = "Process request for ''{0}''",
             level = "FINE")
     private static final String REQUEST_PROCESSED = "AS-WEB-GLUE-00031";
 
     @LogMessageInfo(
-            message = "Principal '{0}' has already been authenticated",
+            message = "Principal ''{0}'' has already been authenticated",
             level = "FINE")
     private static final String PRINCIPAL_ALREADY_AUTHENTICATED = "AS-WEB-GLUE-00032";
 
@@ -113,7 +114,7 @@ public class GlassFishSingleSignOn
     private static final String NO_REALM_CONFIGURED = "AS-WEB-GLUE-00035";
 
     @LogMessageInfo(
-            message = "This application uses realm '{0}'",
+            message = "This application uses realm ''{0}''",
             level = "FINE")
     private static final String APP_REALM = "AS-WEB-GLUE-00036";
 
@@ -123,12 +124,12 @@ public class GlassFishSingleSignOn
     private static final String CHECKING_CACHED_PRINCIPAL = "AS-WEB-GLUE-00037";
 
     @LogMessageInfo(
-            message = "Found cached principal '{0}' with auth type '{1}' in realm '{2}'",
+            message = "Found cached principal ''{0}'' with auth type ''{1}'' in realm ''{2}''",
             level = "FINE")
     private static final String FOUND_CACHED_PRINCIPAL = "AS-WEB-GLUE-00038";
 
     @LogMessageInfo(
-            message = "Ignoring SSO entry which does not match application realm '{0}'",
+            message = "Ignoring SSO entry which does not match application realm ''{0}''",
             level = "FINE")
     private static final String IGNORING_SSO = "AS-WEB-GLUE-00039";
 
@@ -138,7 +139,7 @@ public class GlassFishSingleSignOn
     private static final String NO_CACHED_PRINCIPAL_FOUND = "AS-WEB-GLUE-00040";
 
     @LogMessageInfo(
-            message = "Deregistering sso id '{0}'",
+            message = "Deregistering sso id ''{0}''",
             level = "FINE")
     private static final String DEREGISTER_SSO = "AS-WEB-GLUE-00041";
 

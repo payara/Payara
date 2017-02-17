@@ -38,11 +38,14 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.services.impl.monitor.probes;
 
 import org.glassfish.external.probe.provider.annotations.Probe;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.probe.provider.annotations.ProbeProvider;
+import org.glassfish.grizzly.threadpool.AbstractThreadPool;
 
 /**
  * Probe provider interface for thread pool related events.
@@ -53,14 +56,12 @@ public class ThreadPoolProbeProvider {
     @Probe(name="setMaxThreadsEvent")
     public void setMaxThreadsEvent(
         @ProbeParam("monitoringId") String monitoringId,
-        @ProbeParam("threadPoolName") String threadPoolName,
         @ProbeParam("maxNumberOfThreads") int maxNumberOfThreads) {}
     
 
     @Probe(name="setCoreThreadsEvent")
     public void setCoreThreadsEvent(
         @ProbeParam("monitoringId") String monitoringId,
-        @ProbeParam("threadPoolName") String threadPoolName,
         @ProbeParam("coreNumberOfThreads") int coreNumberOfThreads) {}
 
     /**
@@ -70,34 +71,32 @@ public class ThreadPoolProbeProvider {
     @Probe(name="threadAllocatedEvent")
     public void threadAllocatedEvent(
         @ProbeParam("monitoringId") String monitoringId,
-        @ProbeParam("threadPoolName") String threadPoolName,
+        @ProbeParam("threadPool") AbstractThreadPool threadPool,
         @ProbeParam("threadId") long threadId) {}
 
 
     @Probe(name="threadReleasedEvent")
     public void threadReleasedEvent(
         @ProbeParam("monitoringId") String monitoringId,
-        @ProbeParam("threadPoolName") String threadPoolName,
+        @ProbeParam("threadPool") AbstractThreadPool threadPool,
         @ProbeParam("threadId") long threadId) {}
 
 
     @Probe(name="maxNumberOfThreadsReachedEvent")
     public void maxNumberOfThreadsReachedEvent(
         @ProbeParam("monitoringId") String monitoringId,
-        @ProbeParam("threadPoolName") String threadPoolName,
+        @ProbeParam("threadPool") AbstractThreadPool threadPool,
         @ProbeParam("maxNumberOfThreads") int maxNumberOfThreads) {}
 
 
     @Probe(name="threadDispatchedFromPoolEvent")
     public void threadDispatchedFromPoolEvent(
         @ProbeParam("monitoringId") String monitoringId,
-        @ProbeParam("threadPoolName") String threadPoolName,
         @ProbeParam("threadId") long threadId) {}
 
 
     @Probe(name="threadReturnedToPoolEvent")
     public void threadReturnedToPoolEvent(
         @ProbeParam("monitoringId") String monitoringId,
-        @ProbeParam("threadPoolName") String threadPoolName,
         @ProbeParam("threadId") long threadId) {}
 }

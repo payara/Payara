@@ -38,10 +38,13 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.services.impl.monitor;
 
 import com.sun.enterprise.v3.services.impl.monitor.stats.ConnectionQueueStatsProvider;
 import com.sun.enterprise.v3.services.impl.monitor.stats.ThreadPoolStatsProvider;
+import com.sun.enterprise.v3.services.impl.monitor.stats.ThreadPoolStatsProviderGlobal;
 import org.glassfish.grizzly.threadpool.AbstractThreadPool;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.grizzly.threadpool.ThreadPoolProbe;
@@ -60,11 +63,22 @@ public class ThreadPoolMonitor implements ThreadPoolProbe {
         this.monitoringId = monitoringId;
 
         if (grizzlyMonitoring != null) {
-            final ThreadPoolStatsProvider threadPoolStatsProvider =
+            final ThreadPoolStatsProvider threadPoolStatsProvider = 
                     grizzlyMonitoring.getThreadPoolStatsProvider(monitoringId);
-            if (threadPoolStatsProvider != null) {
+            if (threadPoolStatsProvider != null && !config.getPoolName().equals("")) {
                 threadPoolStatsProvider.setStatsObject(config);
+                
+                // Subtract the number of busy threads from the global count before resetting
+                final ThreadPoolStatsProviderGlobal globalThreadPoolStats = (ThreadPoolStatsProviderGlobal) 
+                        grizzlyMonitoring.getThreadPoolStatsProvider("");
+                if (globalThreadPoolStats != null) {
+                    globalThreadPoolStats.subtractBusyThreads(threadPoolStatsProvider.getCurrentThreadsBusy().getCount());
+                }
+                    
                 threadPoolStatsProvider.reset();
+                
+                // Update the global counts
+                grizzlyMonitoring.updateGlobalThreadPoolStatsProvider();
             }
 
             final ConnectionQueueStatsProvider connectionQueueStatsProvider =
@@ -86,59 +100,48 @@ public class ThreadPoolMonitor implements ThreadPoolProbe {
 
     @Override
     public void onThreadAllocateEvent(AbstractThreadPool threadPool, Thread thread) {
-        grizzlyMonitoring.getThreadPoolProbeProvider().threadAllocatedEvent(
-                monitoringId, threadPool.getConfig().getPoolName(),
-                thread.getId());
+        grizzlyMonitoring.getThreadPoolProbeProvider().threadAllocatedEvent(monitoringId, threadPool, thread.getId());
     }
 
     @Override
     public void onThreadReleaseEvent(AbstractThreadPool threadPool, Thread thread) {
-        grizzlyMonitoring.getThreadPoolProbeProvider().threadReleasedEvent(
-                monitoringId, threadPool.getConfig().getPoolName(),
-                thread.getId());
+        grizzlyMonitoring.getThreadPoolProbeProvider().threadReleasedEvent(monitoringId, threadPool, thread.getId());
     }
 
     @Override
     public void onMaxNumberOfThreadsEvent(AbstractThreadPool threadPool, int maxNumberOfThreads) {
-        grizzlyMonitoring.getThreadPoolProbeProvider().maxNumberOfThreadsReachedEvent(
-                monitoringId, threadPool.getConfig().getPoolName(),
+        grizzlyMonitoring.getThreadPoolProbeProvider().maxNumberOfThreadsReachedEvent(monitoringId, threadPool, 
                 maxNumberOfThreads);
     }
 
     @Override
     public void onTaskDequeueEvent(AbstractThreadPool threadPool, Runnable task) {
-        grizzlyMonitoring.getThreadPoolProbeProvider().threadDispatchedFromPoolEvent(
-                monitoringId, threadPool.getConfig().getPoolName(),
+        grizzlyMonitoring.getThreadPoolProbeProvider().threadDispatchedFromPoolEvent(monitoringId, 
                 Thread.currentThread().getId());
-        grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskDequeuedEvent(
-                monitoringId, task.getClass().getName());
+        grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskDequeuedEvent(monitoringId, task.getClass().getName());
     }
 
     @Override
     public void onTaskCancelEvent(AbstractThreadPool threadPool, Runnable task) {
         // when dequeued task is cancelled - we have to "return" the thread, that
         // we marked as dispatched from the pool
-        grizzlyMonitoring.getThreadPoolProbeProvider().threadReturnedToPoolEvent(
-                monitoringId, threadPool.getConfig().getPoolName(),
+        grizzlyMonitoring.getThreadPoolProbeProvider().threadReturnedToPoolEvent(monitoringId, 
                 Thread.currentThread().getId());
     }
     
     @Override
     public void onTaskCompleteEvent(AbstractThreadPool threadPool, Runnable task) {
         grizzlyMonitoring.getThreadPoolProbeProvider().threadReturnedToPoolEvent(
-                monitoringId, threadPool.getConfig().getPoolName(),
-                Thread.currentThread().getId());
+                monitoringId, Thread.currentThread().getId());
     }
 
     @Override
     public void onTaskQueueEvent(AbstractThreadPool threadPool, Runnable task) {
-        grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskQueuedEvent(
-                monitoringId, task.getClass().getName());
+        grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskQueuedEvent(monitoringId, task.getClass().getName());
     }
 
     @Override
     public void onTaskQueueOverflowEvent(AbstractThreadPool threadPool) {
-        grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskQueueOverflowEvent(
-                monitoringId);
+        grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskQueueOverflowEvent(monitoringId);
     }
 }

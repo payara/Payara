@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.service;
 
@@ -188,7 +188,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
         try {
 
             _runtime.getResourceNamingService().publishObject(poolInfo, jndiNameForPool, connectorPoolObj, true);
-            ManagedConnectionFactory mcf = obtainManagedConnectionFactory(poolInfo);
+            ManagedConnectionFactory mcf = createManagedConnectionFactory(connectorPoolObj);
             if (mcf == null) {
                 _runtime.getResourceNamingService().unpublishObject(poolInfo, jndiNameForPool);
                 String i18nMsg = localStrings.getString("ccp_adm.failed_to_create_mcf", poolInfo);
@@ -909,6 +909,13 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
 
     public ManagedConnectionFactory obtainManagedConnectionFactory(PoolInfo poolInfo) throws ConnectorRuntimeException{
         return obtainManagedConnectionFactory(poolInfo, null);
+    }
+
+    private ManagedConnectionFactory createManagedConnectionFactory(ConnectorConnectionPool connectorPoolObj) throws ConnectorRuntimeException {
+        if(_registry.isMCFCreated(connectorPoolObj.getPoolInfo())) {
+            recreateConnectorConnectionPool(connectorPoolObj);
+        }
+        return obtainManagedConnectionFactory(connectorPoolObj.getPoolInfo());
     }
 
     /**

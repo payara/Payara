@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -67,7 +67,6 @@ import org.glassfish.web.valve.GlassFishValve;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.file.Paths;
 import org.glassfish.grizzly.utils.Charsets;
 
 /**
@@ -275,6 +274,45 @@ final class StandardContextValve
     }
     */
 
+    /**
+     * resolves '.' and '..' elements in the path
+     * if there are too many, making a path negative, returns null
+     *
+     * @param path to be normalized
+     * @return normalized path or null
+     */
+    private static String normalize(String path) {
+        if (path == null) {
+            return null;
+        }
+
+        String rv = path;
+        // starts with a double-slash
+        if(rv.indexOf("//") == 0) {
+            rv = rv.replace("//", "/");
+        }
+
+        // Normalize the slashes and add leading slash if necessary
+        if (rv.indexOf('\\') >= 0) {
+            rv = rv.replace('\\', '/');
+        }
+
+        // Resolve occurrences of "/../" in the normalized path
+        while (true) {
+            int idx = rv.indexOf("/../");
+            if (idx < 0) {
+                break;
+            }
+            if (idx == 0) {
+                return null;  // negative relative path
+            }
+            int index2 = rv.lastIndexOf('/', idx - 1);
+            rv = rv.substring(0, index2) + rv.substring(idx + 3);
+        }
+
+        // Return the normalized path that we have completed
+        return rv;
+    }
 
     private Wrapper preInvoke(Request request, Response response) {
 
@@ -283,16 +321,12 @@ final class StandardContextValve
         // START CR 6415120
         if (request.getCheckRestrictedResources()) {
         // END CR 6415120
-            // PAYARA-989 Help Windows find index.jsf by removing the double slash
-            String requestPath = hreq.getRequestPathMB().toString(Charsets.UTF8_CHARSET);
-            if (requestPath.equals("//index.jsf")) {
-                requestPath = requestPath.replace("//", "/");
-            }
-            String requestPathDC = Paths.get(requestPath).normalize().toString().toUpperCase();
-            if ((requestPathDC.startsWith("/META-INF/", 0))
-                    || (requestPathDC.equalsIgnoreCase("/META-INF"))
-                    || (requestPathDC.startsWith("/WEB-INF/", 0))
-                    || (requestPathDC.equalsIgnoreCase("/WEB-INF"))) {
+            String requestPath = normalize(hreq.getRequestPathMB().toString(Charsets.UTF8_CHARSET));
+            if ((requestPath == null)
+                    || (requestPath.toUpperCase().startsWith("/META-INF/", 0))
+                    || (requestPath.equalsIgnoreCase("/META-INF"))
+                    || (requestPath.toUpperCase().startsWith("/WEB-INF/", 0))
+                    || (requestPath.equalsIgnoreCase("/WEB-INF"))) {
                 notFound((HttpServletResponse) response.getResponse());
                 return null;
             }

@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.171</version>
     </parent>
     <groupId>fish.payara.packager</groupId>
     <artifactId>requesttracing-package</artifactId>
@@ -31,11 +31,6 @@
     <description>This pom describes how to assemble the Nucleus Request Tracing package</description>
 
     <dependencies>
-        <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>notification-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>

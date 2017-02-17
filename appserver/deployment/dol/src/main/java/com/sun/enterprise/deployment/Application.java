@@ -43,6 +43,7 @@ package com.sun.enterprise.deployment;
 
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import com.sun.enterprise.deployment.node.ApplicationNode;
 import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
@@ -59,7 +60,6 @@ import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -174,6 +174,8 @@ public class Application extends CommonResourceBundleDescriptor
     private String classLoadingDelegate;
     private final List<Pattern> scanningInclusions = new ArrayList<>();
     private final List<Pattern> scanningExclusions = new ArrayList<>();
+    private final Set<String> whitelistPackages = new HashSet<>();
+
 
     private boolean initializeInOrder = false;
 
@@ -756,6 +758,18 @@ public class Application extends CommonResourceBundleDescriptor
     public void addScanningExclusions(List<String> exclusions, String libDir) {
         this.scanningExclusions.addAll(FluentIterable.from(exclusions)
                 .transform(new WildcardToRegex(libDir)).toList());
+    }
+
+    public boolean isWhitelistEnabled() {
+        return !whitelistPackages.isEmpty();
+    }
+
+    public Set<String> getWhitelistPackages() {
+        return ImmutableSet.copyOf(whitelistPackages);
+    }
+
+    public void addWhitelistPackage(String aPackage) {
+        whitelistPackages.add(aPackage);
     }
 
     /**
@@ -1714,7 +1728,7 @@ public class Application extends CommonResourceBundleDescriptor
             input = input.replaceAll("(\\?|\\*)", ".$1");
             input = input.replaceFirst("\\.jar$", "");
             if(StringUtils.ok(libDir)) {
-                input = String.format("^%s%c%s(-.*)?\\.jar$", libDir, File.separatorChar, input);
+                input = String.format("^%s/%s(-.*)?\\.jar$", libDir, input);
             }
             return Pattern.compile(input, Pattern.CASE_INSENSITIVE);
         }

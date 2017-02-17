@@ -22,6 +22,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
+@CheckerConfigurationType(type = CheckerType.HEAP_MEMORY_USAGE)
 public interface HeapMemoryUsageChecker extends Checker, ThresholdDiagnosticsChecker {
 
     @Attribute(defaultValue = "HEAP")

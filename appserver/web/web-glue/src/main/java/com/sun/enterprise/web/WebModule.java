@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -571,7 +571,7 @@ public class WebModule extends PwcWebModule implements Context {
             if (classLoader != null) {
                 try {
                     ois = javaEEIOUtils.createObjectInputStream(
-                        is, true, classLoader);
+                        is, true, classLoader, getUniqueId());
                 } catch (Exception e) {
                     logger.log(Level.SEVERE,
                             CREATE_CUSTOM_OBJECT_INTPUT_STREAM_ERROR, e);
@@ -672,10 +672,14 @@ public class WebModule extends PwcWebModule implements Context {
             webFragmentMap = webBundleDescriptor.getJarNameToWebFragmentNameMap();
         }
 
+        boolean servletInitializersEnabled = true;
+        if (webBundleDescriptor != null) {
+            servletInitializersEnabled = webBundleDescriptor.getServletInitializersEnabled();
+        }
         Iterable<ServletContainerInitializer> allInitializers =
             ServletContainerInitializerUtil.getServletContainerInitializers(
                 webFragmentMap, orderingList, hasOthers,
-                wmInfo.getAppClassLoader(), webBundleDescriptor.getServletInitializersEnabled());
+                wmInfo.getAppClassLoader(), servletInitializersEnabled);
         setServletContainerInitializerInterestList(allInitializers);
 
         DeploymentContext dc = getWebModuleConfig().getDeploymentContext();
@@ -2425,9 +2429,13 @@ public class WebModule extends PwcWebModule implements Context {
             ((RealmInitializer)realm).updateWebSecurityManager();
             setRealm(realm);
         }
-
     }
     
+    @Override
+    public long getUniqueId() {
+        com.sun.enterprise.deployment.Application app = wmInfo.getDescriptor().getApplication();
+        return app != null? app.getUniqueId() : 0L;
+    }
 }
 
 class V3WebappLoader extends WebappLoader {

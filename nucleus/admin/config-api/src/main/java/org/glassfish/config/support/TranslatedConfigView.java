@@ -63,14 +63,20 @@ import java.security.PrivilegedAction;
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
  * into system properties values.
+ * 
+ * Also support translation of Password Aliases
+ * 
+ * Also support translation of Environment Variables
  *
  * @author Jerome Dochez
  */
 public class TranslatedConfigView implements ConfigView {
 
     final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
+    final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
+    private static final String ENV_TOKEN = "ENV";
     private static int MAX_SUBSTITUTION_DEPTH = 100;
     public static final ThreadLocal<Boolean> doSubstitution = new ThreadLocal<Boolean>() {
         @Override
@@ -89,8 +95,10 @@ public class TranslatedConfigView implements ConfigView {
             if(doSubstitution.get() == false) {
                 return value;
             }
+            
+           
             if (domainPasswordAliasStore() != null) {
-                if (getAlias(stringValue) != null) {
+                if (getAlias(stringValue, ALIAS_TOKEN) != null) {
                     try{
                         return getRealPasswordFromAlias(stringValue);
                     } catch (Exception e) {
@@ -100,21 +108,40 @@ public class TranslatedConfigView implements ConfigView {
                     }
                 }
             }
-           
+            
+            String origValue = stringValue;
+            int i = 0;            // Perform Environment variable substitution
+            Matcher m2 = envP.matcher(stringValue);
+
+            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m2.group(2).trim();
+                String newValue = System.getenv(matchValue);
+                if (newValue != null) {
+                    stringValue = m2.replaceFirst(
+                            Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
+                    m2.reset(stringValue);
+                } 
+                i++;     
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getAnonymousLogger().severe(
+                        Strings.get("TranslatedConfigView.badprop", 
+                        i, origValue));
+            }            
 
             // Perform system property substitution in the value
             // The loop limit is imposed to prevent infinite looping to values
             // such as a=${a} or a=foo ${b} and b=bar {$a}
             Matcher m = p.matcher(stringValue);
-            String origValue = stringValue;
-            int i = 0;
+            i = 0;
             while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String newValue = System.getProperty(m.group(2).trim());
+                String matchValue = m.group(2).trim();
+                String newValue = System.getProperty(matchValue);
                 if (newValue != null) {
                     stringValue = m.replaceFirst(
                             Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));
                     m.reset(stringValue);
-                }
+                } 
                 i++;     
             }
             if (i >= MAX_SUBSTITUTION_DEPTH) {
@@ -122,7 +149,10 @@ public class TranslatedConfigView implements ConfigView {
                         Strings.get("TranslatedConfigView.badprop", 
                         i, origValue));
             }
+            
+
             return stringValue;
+            
         }
         return value;
     }
@@ -186,10 +216,10 @@ public class TranslatedConfigView implements ConfigView {
      * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
      * @return The aliasname or null.
      */
-    static public String getAlias(String propName)
+    static public String getAlias(String propName, String token)
     {
        String aliasName=null;
-       String starter = "${" + ALIAS_TOKEN + "="; //no space is allowed in starter
+       String starter = "${" + token + "="; //no space is allowed in starter
        String ender   = "}";
 
        propName = propName.trim();
@@ -209,7 +239,7 @@ public class TranslatedConfigView implements ConfigView {
                KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException,
                UnrecoverableKeyException {
 
-           final String          an = getAlias(at);
+           final String          an = getAlias(at, ALIAS_TOKEN);
            final boolean     exists = domainPasswordAliasStore.containsKey(an);
            if (!exists) {
 

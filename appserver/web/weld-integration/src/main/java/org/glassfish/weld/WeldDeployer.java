@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -97,6 +97,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
+import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.resources.spi.ResourceLoader;
 
 @Service
@@ -217,7 +218,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 });
                 try {
                     bootstrap.startExtensions(deploymentImpl.getExtensions());
-                    bootstrap.startContainer(fAppName, Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
+                    bootstrap.startContainer(deploymentImpl.getAppName() + ".bda", Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
                     bootstrap.startInitialization();
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                     bootstrap.deployBeans();
@@ -474,10 +475,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         String archiveName = !isSubArchive? appInfo.getName() : archive.getName();
         int suffixIdx = archiveName.lastIndexOf('-');
         if(isSubArchive && suffixIdx > 0) {
-            archiveName = archiveName.substring(0, suffixIdx);
-            if(!context.getArchiveHandler().getArchiveType().isEmpty()) {
-                archiveName = String.format("%s.%s", archiveName, context.getArchiveHandler().getArchiveType());
+            String versionStr = archiveName.substring(suffixIdx + 1, archiveName.length());
+            if(versionStr.matches("^[0-9]+\\..*")) {
+                archiveName = archiveName.substring(0, suffixIdx);
             }
+        }
+        if(!context.getArchiveHandler().getArchiveType().isEmpty()) {
+            archiveName = String.format("%s.%s", archiveName, context.getArchiveHandler().getArchiveType());
         }
         
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
@@ -508,6 +512,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             deploymentImpl.getServices().add(EjbServices.class, ejbServices);
         }
 
+        DeployCommandParameters dc = context.getCommandParameters(DeployCommandParameters.class);
+        deploymentImpl.getServices().add(ExternalConfiguration.class,
+                new ExternalConfigurationImpl(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"),
+                dc != null? !dc.isAvailabilityEnabled() : true));
 
         BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
         if (bda != null && !bda.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {

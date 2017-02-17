@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -61,10 +62,10 @@ import java.lang.reflect.Method;
 public class EJBLocalObjectInvocationHandlerDelegate
     implements InvocationHandler {
 
-    private Class intfClass;
-    private long containerId;
-    private EJBLocalObjectInvocationHandler delegate;
-    private boolean isOptionalLocalBusinessView;
+    private final Class intfClass;
+    private final long containerId;
+    private final EJBLocalObjectInvocationHandler delegate;
+    private final boolean isOptionalLocalBusinessView;
     
     EJBLocalObjectInvocationHandlerDelegate(Class intfClass, long containerId,
             EJBLocalObjectInvocationHandler delegate) {
@@ -74,6 +75,7 @@ public class EJBLocalObjectInvocationHandlerDelegate
         this.isOptionalLocalBusinessView = delegate.isOptionalLocalBusinessView();
     }
     
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) 
         throws Throwable {
         
@@ -95,10 +97,12 @@ public class EJBLocalObjectInvocationHandlerDelegate
         return delegate;
     }
     
+    @Override
     public int hashCode() {
         return (int) containerId;
     }
     
+    @Override
     public boolean equals(Object other) {
         boolean result = false;
         
@@ -119,6 +123,7 @@ public class EJBLocalObjectInvocationHandlerDelegate
         return result;
     }
 
+    @Override
     public String toString() {
         return intfClass.getName() + "_" + System.identityHashCode(this);
     }
@@ -136,10 +141,10 @@ public class EJBLocalObjectInvocationHandlerDelegate
     private static final class SerializableLocalObjectDelegate
         implements SerializableObjectFactory
     {
-        private long containerId;
-        private String intfClassName;
-        private Object primaryKey;
-        private boolean isOptionalLocalBusinessView;
+        private final long containerId;
+        private final String intfClassName;
+        private final Object primaryKey;
+        private final boolean isOptionalLocalBusinessView;
         private long version = 0L; //Used only for SFSBs
         
         SerializableLocalObjectDelegate(long containerId, 
@@ -150,11 +155,16 @@ public class EJBLocalObjectInvocationHandlerDelegate
             this.isOptionalLocalBusinessView = isOptionalLocalBusView;
             this.version = version;
         }
-        
-        public Object createObject()
+
+        @Override
+        public Object createObject(long appUniqueId)
             throws IOException
         {
-            BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
+            BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, appUniqueId);
+            // if really cannot find it
+            if(container == null) {
+                throw new IOException(String.format("Cannot find EJB with ID: %d", containerId));
+            }
             EJBLocalObjectImpl ejbLocalBusinessObjectImpl = isOptionalLocalBusinessView ?
                 container.getOptionalEJBLocalBusinessObjectImpl(primaryKey) :
                 container.getEJBLocalBusinessObjectImpl(primaryKey);

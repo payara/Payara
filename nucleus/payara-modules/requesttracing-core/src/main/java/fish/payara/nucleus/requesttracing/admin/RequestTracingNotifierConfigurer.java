@@ -22,13 +22,11 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptions;
-import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptionsFactory;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -45,7 +43,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,11 +59,12 @@ import java.util.logging.Logger;
 @PerLookup
 @I18n("requesttracing.configure.notifier")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
+    @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "requesttracing-configure-notifier",
             description = "Enables/Disables Notifier Specified With Name")
 })
+@Deprecated
 public class RequestTracingNotifierConfigurer implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurer.class);
@@ -135,7 +133,7 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                             PropertyVetoException, TransactionFailure {
                         Notifier notifierProxy = (Notifier) requestTracingServiceConfigurationProxy.createChild(notifierService.getNotifierType());
                         if (notifierEnabled != null) {
-                            notifierProxy.enabled(String.valueOf(notifierEnabled));
+                            notifierProxy.enabled(notifierEnabled);
                         }
                         requestTracingServiceConfigurationProxy.getNotifierList().add(notifierProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -148,7 +146,7 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                     public Object run(final Notifier notifierProxy) throws
                             PropertyVetoException, TransactionFailure {
                         if (notifierEnabled != null) {
-                            notifierProxy.enabled(String.valueOf(notifierEnabled));
+                            notifierProxy.enabled(notifierEnabled);
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notifierProxy;

@@ -41,8 +41,8 @@ Google-collections guava 1.0
 JType 0.1.0
 IzPack 4.3.3
 ant-contrib 1.0b5
-jettison 1.1
-jackson 1.9.2
+jettison 1.3.8
+jackson 2.8.5
 jrebel 3.1.2 SDK
 Velocity 1.4
 

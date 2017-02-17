@@ -275,7 +275,7 @@ public class TimerWrapper
          * When deserializing the timer wrapper create a TimerWrapper object.
          * Check if the record is valid only when making calls on the object.
          */
-        public Object createObject() throws EJBException {
+        public Object createObject(long appUniqueId) throws EJBException {
             // Can't store a static ref because in embedded container it can be 
             // changed by server restart
             EJBTimerService timerService = EJBTimerService.getEJBTimerService();

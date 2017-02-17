@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -525,11 +526,7 @@ public class StandardManager
         ObjectInputStream ois = null;
         try {
             BufferedInputStream bis = new BufferedInputStream(is);
-            if (container != null) {
-                ois = ((StandardContext)container).createObjectInputStream(bis);
-            } else {
-                ois = new ObjectInputStream(bis);
-            }
+            ois = createObjectInputStream(bis);
         } catch (IOException ioe) {
             String msg = MessageFormat.format(rb.getString(LOADING_PERSISTED_SESSION_IO_EXCEPTION),
                                               ioe);
@@ -597,7 +594,6 @@ public class StandardManager
             }
         }
     }
-
 
     /**
      * Save any currently active sessions in the appropriate persistence
@@ -715,12 +711,7 @@ public class StandardManager
             throws IOException {
         ObjectOutputStream oos = null;
         try {
-            if (container != null) {
-                oos = ((StandardContext) container).createObjectOutputStream(
-                        new BufferedOutputStream(os));
-            } else {
-                oos = new ObjectOutputStream(new BufferedOutputStream(os));
-            }
+            oos = createObjectOutputStream(os);
         } catch (IOException e) {
             String msg = MessageFormat.format(rb.getString(SAVING_PERSISTED_SESSION_IO_EXCEPTION),
                                               e);

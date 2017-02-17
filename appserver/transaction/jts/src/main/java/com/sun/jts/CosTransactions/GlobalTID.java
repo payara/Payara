@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 //----------------------------------------------------------------------------
 //
@@ -67,13 +68,11 @@ package com.sun.jts.CosTransactions;
 import java.io.*;
 
 import org.omg.CosTransactions.*;
-import com.sun.jts.trace.*;
 
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
-import com.sun.jts.utils.LogFormatter;
 
 /**This class provides a wrapper for the otid_t class in the
  * org.omg.CosTSInteroperation package to allow us to add operations.
@@ -309,14 +308,16 @@ public class GlobalTID extends Object {
         hashCode = 0;
 
         // Add up the values in the XID.
-
-        if( realTID.tid != null )
-            for( int pos = 0; pos < realTID.tid.length; pos++ )
+        // GLASSFISH-21532 The branch qualifier values should not be used for calculating the hashcode
+        if( realTID.tid != null ) {
+            for( int pos = 0; pos < realTID.tid.length - realTID.bqual_length; pos++ ) {
                 hashCode += realTID.tid[pos];
+            }
+        }
 
-        // Add in the formatId and branch qualifier length.
+        // Add in the formatId
 
-        hashCode += realTID.formatID + realTID.bqual_length;
+        hashCode += realTID.formatID;
 
         // Multiply the result by the "magic hashing constant".
 

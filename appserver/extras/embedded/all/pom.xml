@@ -46,12 +46,12 @@
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.171</version>
     <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-embedded-all</artifactId>
-    <version>4.1.1.171-SNAPSHOT</version>
+    <version>4.1.1.171</version>
     <name>Embedded Payara All-In-One</name>
 
     <packaging>jar</packaging>
@@ -329,6 +329,14 @@
        <dependency>
            <groupId>fish.payara.packager</groupId>
            <artifactId>requesttracing-package</artifactId>
+           <version>${project.version}</version>
+           <type>zip</type>
+           <optional>true</optional>
+       </dependency>
+
+       <dependency>
+           <groupId>fish.payara.packager</groupId>
+           <artifactId>notification-package</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
            <optional>true</optional>

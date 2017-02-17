@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+  Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+
+  The contents of this file are subject to the terms of either the GNU
+  General Public License Version 2 only ("GPL") or the Common Development
+  and Distribution License("CDDL") (collectively, the "License").  You
+  may not use this file except in compliance with the License.  You can
+  obtain a copy of the License at
+  https://github.com/payara/Payara/blob/master/LICENSE.txt
+  See the License for the specific
+  language governing permissions and limitations under the License.
+
+  When distributing the software, include this License Header Notice in each
+  file and include the License file at glassfish/legal/LICENSE.txt.
+
+  GPL Classpath Exception:
+  The Payara Foundation designates this particular file as subject to the "Classpath"
+  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+  file that accompanied this code.
+
+  Modifications:
+  If applicable, add the following below the License Header, with the fields
+  enclosed by brackets [] replaced by your own identifying information:
+  "Portions Copyright [year] [name of copyright owner]"
+
+  Contributor(s):
+  If you wish your version of this file to be governed by only the CDDL or
+  only the GPL Version 2, indicate your decision by adding "[Contributor]
+  elects to include this software in this distribution under the [CDDL or GPL
+  Version 2] license."  If you don't indicate a single choice of license, a
+  recipient has the option to distribute your version of this file under
+  either the CDDL, the GPL Version 2 or to extend the choice of license to
+  its licensees as provided above.  However, if you add GPL Version 2 code
+  and therefore, elected the GPL Version 2 license, then the option applies
+  only if the new code is made subject to such option by the copyright
+  holder.
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main.packager</groupId>
+        <artifactId>nucleus-packages</artifactId>
+        <version>4.1.1.171</version>
+    </parent>
+    <groupId>fish.payara.packager</groupId>
+    <artifactId>notification-package</artifactId>
+    <name>Nucleus Notification Package</name>
+    <packaging>distribution-fragment</packaging>
+    <description>This pom describes how to assemble the Nucleus Notification package</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>notification-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-jms-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-hipchat-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-slack-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-email-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-xmpp-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-core</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-java7</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-tcp</artifactId>
+            <version>${smack.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xpp3</groupId>
+                    <artifactId>xpp3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-extensions</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-im</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jxmpp</groupId>
+            <artifactId>jxmpp-core</artifactId>
+            <version>${jxmpp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jxmpp</groupId>
+            <artifactId>jxmpp-util-cache</artifactId>
+            <version>${jxmpp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.bundles</groupId>
+            <artifactId>org.apache.servicemix.bundles.xpp3</artifactId>
+            <version>${xpp3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-snmp-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.snmp4j</groupId>
+            <artifactId>snmp4j</artifactId>
+            <version>${snmp4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-eventbus-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>
+

@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.171</version>
     </parent>
 
     <developers>
@@ -162,6 +162,7 @@
         <module>healthcheck</module>
         <module>phonehome</module>
         <module>requesttracing</module>
+        <module>notification</module>
         <module>asadmin-recorder</module>
         <module>JMX-Monitoring</module>
         <module>payara-micro</module>

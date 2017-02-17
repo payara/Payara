@@ -27,18 +27,22 @@
 <event>
     <!beforeCreate 
         getRequestValue(key="configName" value="#{pageSession.configName}" );
+        setPageSessionAttribute(key="REQUEST_TRACING_CONFIG_URL", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/request-tracing-service-configuration");
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-requesttracing-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
-        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getRequesttracingConfiguration}");
+        gf.restRequest(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}/get-requesttracing-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic"});
+        setPageSessionAttribute(key="logNotifierValueMap", value="#{requestScope.resp.data.subReports.get(0).extraProperties.getRequesttracingConfigurationLOG}");
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic","historicalTraceEnabled"});
         if (#{pageSession.valueMap['enabled']}=true) {
-        setPageSessionAttribute(key="enabledSelected", value="true");
-          setPageSessionAttribute(key="notifierEnabledSelected", value="true");
+            setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        if (#{pageSession.valueMap['notifierEnabled']}=true) {
-        setPageSessionAttribute(key="notifierEnabledSelected", value="true");
+        if (#{pageSession.logNotifierValueMap['notifierEnabled']}=true) {
+            setPageSessionAttribute(key="notifierEnabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
+            setPageSessionAttribute(key="historicalTraceEnabled", value="true");
         }
         setPageSessionAttribute(key="dynamic", value="true");
         setPageSessionAttribute(key="notifierDynamic", value="true");
@@ -51,14 +55,16 @@
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierEnabled" value="#{pageSession.notifierEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" 
+                            value="#{pageSession.historicalTraceEnabled}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    gf.updateEntity(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
         </sun:panelGroup>
@@ -70,7 +76,10 @@
         <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.enabledHelp}">
             <sun:checkbox id="enabledProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true" />
         </sun:property>
-        <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
+      <sun:property id="logNotifierEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.logNotifierEnabled}" helpText="$resource{i18nrt.requestTracing.configuration.logNotifierEnabledHelp}">
+          <sun:checkbox id="logNotifierEnabledLabel" selected="#{pageSession.notifierEnabledSelected}" selectedValue="true" />
+      </sun:property>
+      <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" label="$resource{i18nrt.requestTracing.configuration.dynamic.label}" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
         <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
@@ -78,6 +87,18 @@
         </sun:property>
         <sun:property id="thresholdValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdValue}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdValueHelp}">
             <sun:textField id="thresholdValue" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['thresholdValue']}" />
+        </sun:property>
+        <sun:property id="historicalTraceEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nrt.requestTracing.configuration.historicalTraceEnabledLabel}"  
+                      helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceEnabledLabelHelpText}">
+            <sun:checkbox id="historicalTraceEnabledBox" selected="#{pageSession.historicalTraceEnabled}" 
+                          selectedValue="true" />
+        </sun:property>
+        <sun:property id="historicalTraceStoreSizeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreSizeLabel}"  
+                      helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreSizeLabelHelpText}">
+            <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}"  styleClass="integer" maxLength="30" 
+                           text="#{pageSession.valueMap['historicalTraceStoreSize']}" />
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>
