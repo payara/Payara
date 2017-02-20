@@ -56,7 +56,8 @@ import java.util.Set;
 public class RuntimeOptions {
 
     private Map<RUNTIME_OPTION, List<String>> options;
-    static ResourceBundle bundle = ResourceBundle.getBundle("commandoptions");
+    static ResourceBundle commandoptions = ResourceBundle.getBundle("commandoptions");
+    static ResourceBundle commandlogstrings = ResourceBundle.getBundle("commandlogstrings");
 
     public static void printHelp() {
         System.err.println();
@@ -64,7 +65,7 @@ public class RuntimeOptions {
             System.err.print("--" + option.name());
             System.err.print(' ');
             try {
-                System.err.println(bundle.getString(option.name()));
+                System.err.println(commandoptions.getString(option.name()));
             } catch (MissingResourceException mre){
                 //ignore as there is no description for this option
                 System.err.println();
@@ -105,9 +106,9 @@ public class RuntimeOptions {
                     }
                     values.add(value);
                 } catch (IllegalArgumentException iae) {
-                    throw new ValidationException(MessageFormat.format(bundle.getString("notValidArgument"),arg));
+                    throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArgument"),arg));
                 } catch (IndexOutOfBoundsException ex) {
-                    throw new ValidationException(MessageFormat.format(bundle.getString("expectedArgument"),arg));
+                    throw new ValidationException(MessageFormat.format(commandlogstrings.getString("expectedArgument"),arg));
                 } catch (ValidationException ve) {
                     throw new ValidationException(arg + " " + ve.getMessage(),ve);
                 }

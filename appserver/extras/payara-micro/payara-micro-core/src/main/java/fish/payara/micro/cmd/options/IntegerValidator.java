@@ -70,9 +70,9 @@ public class IntegerValidator extends Validator {
             }
         }catch (NumberFormatException nfe) {
             if (rangeSet) {
-                throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("integerRangeIncorrect"),optionValue,minimumValue,maxValue));
+                throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("integerRangeIncorrect"),optionValue,minimumValue,maxValue));
             } else {
-                throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("integerIncorrect"),optionValue));                
+                throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("integerIncorrect"),optionValue));                
             }
         }
         return true;
