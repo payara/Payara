@@ -62,7 +62,7 @@ public class RuntimeOptions {
     public static void printHelp() {
         System.err.println();
         for (RUNTIME_OPTION option : RUNTIME_OPTION.values()) {
-            System.err.print("--" + option.name());
+            System.err.print("--" + rightPad(option.name(), findLongestOption() + 3));
             System.err.print(' ');
             try {
                 System.err.println(commandoptions.getString(option.name()));
@@ -115,6 +115,29 @@ public class RuntimeOptions {
             }
         }
     }
+    
+    private static int findLongestOption() {
 
+        int longest = 0;
+
+        for (RUNTIME_OPTION option : RUNTIME_OPTION.values()) {
+            if (option.name().length() > longest) {
+                longest = option.name().length();
+            }
+        }
+        return longest;
+    }
+
+    private static String rightPad(String toPad, int paddedLength) {
+
+        // return input if anything doesn't make sense
+        if (null == toPad || toPad.length() >= paddedLength || paddedLength < 1) {
+            return toPad;
+        }
+        for (int i = toPad.length(); i < paddedLength; i++) {
+            toPad += " ";
+        }
+        return toPad;
+    }
 
 }
