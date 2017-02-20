@@ -40,6 +40,8 @@
 package fish.payara.micro.cmd.options;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,15 +63,23 @@ public class RuntimeOptions {
 
     public static void printHelp() {
         System.err.println();
+        ArrayList<String> output = new ArrayList<>();
         for (RUNTIME_OPTION option : RUNTIME_OPTION.values()) {
-            System.err.print("--" + rightPad(option.name(), findLongestOption() + 3));
-            System.err.print(' ');
+            String entry = "--" + rightPad(option.name(), findLongestOption() + 3);
+            entry += " ";
             try {
-                System.err.println(commandoptions.getString(option.name()));
+                entry += commandoptions.getString(option.name());
             } catch (MissingResourceException mre){
                 //ignore as there is no description for this option
                 System.err.println();
             }
+            output.add(entry);
+        }
+        
+        //alphabetise
+        Collections.sort(output, String.CASE_INSENSITIVE_ORDER);
+        for (String s : output){
+            System.err.println(s);
         }
     }
     
