@@ -62,7 +62,6 @@ public class RuntimeOptions {
     static ResourceBundle commandlogstrings = ResourceBundle.getBundle("commandlogstrings");
 
     public static void printHelp() {
-        System.err.println();
         ArrayList<String> output = new ArrayList<>();
         for (RUNTIME_OPTION option : RUNTIME_OPTION.values()) {
             String entry = "--" + rightPad(option.name(), findLongestOption() + 3);
