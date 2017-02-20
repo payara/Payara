@@ -42,7 +42,7 @@ grant codeBase "${fish.payara.micro.BootJar}" {
     permission java.security.AllPermission;
 };
 
-grant codeBase "file://${fish.payara.micro.UnpackDir}/-" {
+grant codeBase "file:${fish.payara.micro.UnpackDir}/-" {
     permission java.security.AllPermission;
 };
 
