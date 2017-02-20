@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -98,7 +99,6 @@ import static org.apache.catalina.InstanceEvent.EventType.*;
  * @author Remy Maucherat
  * @version $Revision: 1.12.2.1 $ $Date: 2008/04/17 18:37:09 $
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 public class StandardWrapper
         extends ContainerBase
         implements ServletConfig, Wrapper {
@@ -107,13 +107,12 @@ public class StandardWrapper
                                                     "GET", "HEAD", "POST" };
 
     private final RequestTracingService requestTracing;
-    private final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
+    private static final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return false;
         }
     };
-
 
     @LogMessageInfo(
         message = "Parent container of a Wrapper must be a Context",
@@ -232,7 +231,9 @@ public class StandardWrapper
 
         // suppress PWC6117 file not found errors
         java.util.logging.Logger jspLog = java.util.logging.Logger.getLogger("org.apache.jasper.servlet.JspServlet");
-        jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
+        if(!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
+            jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
+        }
     }
 
 
@@ -1689,7 +1690,9 @@ public class StandardWrapper
                         }
                     }
                     try {
-                        isInSuppressFFNFThread.set(true);
+                        if(isJspServlet) {
+                            isInSuppressFFNFThread.set(true);
+                        }
                         serv.service((HttpServletRequest) request,
                                     (HttpServletResponse) response);
                     }
@@ -2342,7 +2345,7 @@ public class StandardWrapper
         return false;
     }
 
-    private class NotFoundErrorSupressionFilter implements java.util.logging.Filter {
+    private static class NotFoundErrorSupressionFilter implements java.util.logging.Filter {
         private final java.util.logging.Filter oldFilter;
 
         public NotFoundErrorSupressionFilter(java.util.logging.Filter oldFilter) {
@@ -2352,7 +2355,7 @@ public class StandardWrapper
         @Override
         public boolean isLoggable(LogRecord record) {
             boolean rv = true;
-            if(StandardWrapper.this.isJspServlet && StandardWrapper.this.isInSuppressFFNFThread.get()) {
+            if(isInSuppressFFNFThread.get()) {
                 rv = !record.getMessage().startsWith("PWC6117: File");
             }
             if(oldFilter != null) {
