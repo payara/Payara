@@ -47,12 +47,12 @@
   <parent>
     <groupId>fish.payara.extras.payara-micro</groupId>
     <artifactId>payara-micro-parent</artifactId>
-    <version>4.1.1.171</version>
+    <version>4.1.1.171.0.1</version>
   </parent>
   
   <groupId>fish.payara.micro</groupId>
   <artifactId>payara-micro</artifactId>
-  <version>4.1.1.171</version>
+  <version>4.1.1.171.0.1</version>
   <name>Payara Micro Distribution</name>
   <packaging>jar</packaging>
 
