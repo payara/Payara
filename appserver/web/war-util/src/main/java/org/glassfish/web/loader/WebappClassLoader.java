@@ -1529,7 +1529,7 @@ public class WebappClassLoader
      * @exception ClassNotFoundException if the class was not found
      */
     @Override
-    protected Class<?> loadClass(String name, boolean resolve)
+    protected synchronized Class<?> loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
 
         if (logger.isLoggable(Level.FINER)) {
