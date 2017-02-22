@@ -68,7 +68,7 @@ public class KeystoreManager {
     private static final String KEYTOOL_EXE_NAME = OS.isWindows() ? "keytool.exe" : "keytool";
     private static String CERTIFICATE_DN_PREFIX = "CN=";
     private static String CERTIFICATE_DN_SUFFIX =
-            ",OU=GlassFish,O=Oracle Corporation,L=Santa Clara,ST=California,C=US";
+            ",OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK";
     public static final String CERTIFICATE_ALIAS = "s1as";
     public static final String INSTANCE_SECURE_ADMIN_ALIAS = "glassfish-instance";
     public static final String DEFAULT_MASTER_PASSWORD = "changeit";
