@@ -47,6 +47,9 @@
                         </goals>
                         <configuration>
                             <instructions>
+                                <Import-Package>
+                                    fish.payara.nucleus.requesttracing.api
+                                </Import-Package>
                                 <Export-Package>
                                     fish.payara.nucleus.requesttracing.api
                                 </Export-Package>

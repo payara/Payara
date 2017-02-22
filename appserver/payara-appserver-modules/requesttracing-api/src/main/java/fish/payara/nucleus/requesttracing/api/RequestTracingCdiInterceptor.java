@@ -19,7 +19,6 @@ package fish.payara.nucleus.requesttracing.api;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
-import fish.payara.requesttracing.api.Traced;
 import org.glassfish.internal.api.Globals;
 
 import javax.annotation.Priority;
