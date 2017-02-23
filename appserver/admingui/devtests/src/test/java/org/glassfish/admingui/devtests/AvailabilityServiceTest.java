@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,6 +85,7 @@ public class AvailabilityServiceTest extends BaseSeleniumTestClass {
         setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", generateRandomString());
         clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
         assertTableRowCount("propertyForm:basicTable", count);
+        deleteAllTableRows("propertyForm:basicTable", 1);
     }
 
     @Test
@@ -101,6 +102,8 @@ public class AvailabilityServiceTest extends BaseSeleniumTestClass {
         setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", generateRandomString());
         clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
         assertTableRowCount("propertyForm:basicTable", count);
+        deleteAllTableRows("propertyForm:basicTable", 1);
+        clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
     }
 
     @Test
@@ -119,25 +122,24 @@ public class AvailabilityServiceTest extends BaseSeleniumTestClass {
             clickAndWait("treeForm:tree:configurations:" + clusterName + "-config:availabilityService:availabilityService_link", TRIGGER_AVAILABILTY_SERVICE_PAGE);
             clickAndWait("propertyForm:availabilityTabs:jmsAvailabilityTab", TRIGGER_JMS_AVAILABILTY);
 
-            clickAndWait("propertyForm:jmsTypePropertySheet:jmsTypeSection:jmsTypeProp:optLocal", "i18ncs.cluster.jms.mqClusterTypeEnhanced");
-            selenium.check("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:optEnhanced");
-//            selectDropdownOption("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:clusterType", CLUSTER_TYPE);
+            selenium.check("propertyForm:propertySheet:propertSectionTextField:AvailabilityEnabledProp:avail");
+//            selectDropdownOption("propertyForm:propertySheet:propertSectionTextField:ClusterTypeProp:clusterType", CLUSTER_TYPE);
             
-            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbVendorProp:dbVendor", DB_VENDOR);
-            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUserProp:dbUser", DB_USER);
-            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUrlProp:dbUrl", DB_URL);
-            setFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:PswdTextProp:NewPassword", DB_PASSWORD);
+            setFieldValue("propertyForm:propertySheet:propertSectionTextField:DbVendorProp:DbVendor", DB_VENDOR);
+            setFieldValue("propertyForm:propertySheet:propertSectionTextField:DbUserNameProp:DbUserName", DB_USER);
+            setFieldValue("propertyForm:propertySheet:propertSectionTextField:DbUrlProp:DbUrl", DB_URL);
+            setFieldValue("propertyForm:propertySheet:propertSectionTextField:DbPasswordProp:DbPassword", DB_PASSWORD);
 
             clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
 
         clickAndWait("propertyForm:availabilityTabs:availabilityTab", TRIGGER_AVAILABILTY_SERVICE_PAGE);
         clickAndWait("propertyForm:availabilityTabs:jmsAvailabilityTab", TRIGGER_JMS_AVAILABILTY);
 
-            assertTrue(selenium.isChecked("propertyForm:jmsPropertySheet:configureJmsClusterSection:ClusterTypeProp:optEnhanced"));
-            assertEquals(DB_VENDOR, getFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbVendorProp:dbVendor"));
-            assertEquals(DB_USER, getFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUserProp:dbUser"));
-            assertEquals(DB_PASSWORD, getFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:PswdTextProp:NewPassword"));
-            assertEquals(DB_URL, getFieldValue("propertyForm:jmsPropertySheet:configureJmsClusterSection:DbUrlProp:dbUrl"));
+            assertTrue(selenium.isChecked("propertyForm:propertySheet:propertSectionTextField:AvailabilityEnabledProp:avail"));
+            assertEquals(DB_VENDOR, getFieldValue("propertyForm:propertySheet:propertSectionTextField:DbVendorProp:DbVendor"));
+            assertEquals(DB_USER, getFieldValue("propertyForm:propertySheet:propertSectionTextField:DbUserNameProp:DbUserName"));
+            assertEquals(DB_PASSWORD, getFieldValue("propertyForm:propertySheet:propertSectionTextField:DbPasswordProp:DbPassword"));
+            assertEquals(DB_URL, getFieldValue("propertyForm:propertySheet:propertSectionTextField:DbUrlProp:DbUrl"));
 
             int count = addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton");
             setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:col1St", generateRandomString());
