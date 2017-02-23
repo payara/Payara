@@ -21,10 +21,10 @@
         <artifactId>packages</artifactId>
         <version>4.1.1.172-SNAPSHOT</version>
     </parent>
-    <artifactId>notification</artifactId>
-    <name>Notification Package</name>
+    <artifactId>notification-snmp</artifactId>
+    <name>SNMP Notification Package</name>
     <packaging>distribution-fragment</packaging>
-    <description>This pom describes how to assemble the Notification package</description>
+    <description>This pom describes how to assemble the SNMP Notification package</description>
 
     <properties>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
@@ -99,15 +99,18 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.packager</groupId>
-            <artifactId>notification-package</artifactId>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-snmp-core</artifactId>
             <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.snmp4j</groupId>
+            <artifactId>snmp4j</artifactId>
+            <version>${snmp4j.version}</version>
+        </dependency>
+	<dependency>
            <groupId>fish.payara.admingui</groupId>
-           <artifactId>eventbus-notifier-console-plugin</artifactId>
+           <artifactId>snmp-notifier-console-plugin</artifactId>
            <version>${project.version}</version>
            <optional>true</optional>
         </dependency>

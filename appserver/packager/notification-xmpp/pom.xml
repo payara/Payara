@@ -21,10 +21,10 @@
         <artifactId>packages</artifactId>
         <version>4.1.1.172-SNAPSHOT</version>
     </parent>
-    <artifactId>notification</artifactId>
-    <name>Notification Package</name>
+    <artifactId>notification-xmpp</artifactId>
+    <name>XMPP Notification Package</name>
     <packaging>distribution-fragment</packaging>
-    <description>This pom describes how to assemble the Notification package</description>
+    <description>This pom describes how to assemble the XMPP Notification package</description>
 
     <properties>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
@@ -99,17 +99,61 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.packager</groupId>
-            <artifactId>notification-package</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
            <groupId>fish.payara.admingui</groupId>
-           <artifactId>eventbus-notifier-console-plugin</artifactId>
+           <artifactId>xmpp-notifier-console-plugin</artifactId>
            <version>${project.version}</version>
            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-xmpp-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-core</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-java7</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-tcp</artifactId>
+            <version>${smack.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xpp3</groupId>
+                    <artifactId>xpp3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-extensions</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-im</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jxmpp</groupId>
+            <artifactId>jxmpp-core</artifactId>
+            <version>${jxmpp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jxmpp</groupId>
+            <artifactId>jxmpp-util-cache</artifactId>
+            <version>${jxmpp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.bundles</groupId>
+            <artifactId>org.apache.servicemix.bundles.xpp3</artifactId>
+            <version>${xpp3.version}</version>
         </dependency>
     </dependencies>
 </project>
