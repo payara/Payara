@@ -121,11 +121,11 @@
                 <sun:checkbox id="securityDisabledBox" selected="#{pageSession.securityDisabledSelected}" 
                               selectedValue="true" />
             </sun:property>
-            <sun:property id="roomNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nxn.notifier.xmpp.configuration.roomNameLabel}"  
-                          helpText="$resource{i18nxn.notifier.xmpp.configuration.roomNameLabelHelpText}">
-                <sun:textField id="roomName" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['roomName']}" styleClass="required"  
+            <sun:property id="roomIDProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                          label="$resource{i18nxn.notifier.xmpp.configuration.roomIDLabel}"  
+                          helpText="$resource{i18nxn.notifier.xmpp.configuration.roomIDLabelHelpText}">
+                <sun:textField id="roomID" columns="$int{75}" maxLength="255" 
+                               text="#{pageSession.valueMap['roomID']}" styleClass="required"  
                                required="#{true}"/>
             </sun:property>
         </sun:propertySheetSection>

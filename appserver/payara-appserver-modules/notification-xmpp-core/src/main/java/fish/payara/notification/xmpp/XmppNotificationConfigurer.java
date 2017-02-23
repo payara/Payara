@@ -84,7 +84,7 @@ public class XmppNotificationConfigurer extends BaseNotificationConfigurer<XmppN
     @Param(name = "securityDisabled", defaultValue = "false", optional = true)
     private Boolean securityDisabled;
 
-    @Param(name = "roomName")
+    @Param(name = "roomID")
     private String roomName;
 
     protected void applyValues(XmppNotifierConfiguration configuration) throws PropertyVetoException {
