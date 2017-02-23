@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,11 +67,11 @@ public class AdminObjectTest extends BaseSeleniumTestClass {
 
         setFieldValue("form:propertySheet:propertSectionTextField:nameNew:name", resName);
         setFieldValue("form:propertySheet:propertSectionTextField:descriptionProp:descAdaptor", description);
-        int count = addTableRow("form:basicTable", "form:basicTable:topActionsGroup1:addSharedTableButton");
+        int count = addTableRow("form:basicTable", "form:basicTable:topActionsGroup1:addButton");
 
         setFieldValue("form:basicTable:rowGroup1:0:col2:col1St", "property" + generateRandomString());
         setFieldValue("form:basicTable:rowGroup1:0:col3:col1St", "value");
-        setFieldValue("form:basicTable:rowGroup1:0:col4:col1St", "description");
+        //setFieldValue("form:basicTable:rowGroup1:0:col4:col1St", "description");
         int emptyCount = getTableRowCountByValue("form:basicTable", "", "col3:col1St", false);
         count = count - emptyCount;
         clickAndWait("form:propertyContentPage:topButtons:newButton", TRIGGER_ADMIN_OBJECT_RESOURCES);
@@ -122,11 +122,11 @@ public class AdminObjectTest extends BaseSeleniumTestClass {
 
         setFieldValue("form:propertySheet:propertSectionTextField:nameNew:name", resName);
         setFieldValue("form:propertySheet:propertSectionTextField:descriptionProp:descAdaptor", description);
-        int count = addTableRow("form:basicTable", "form:basicTable:topActionsGroup1:addSharedTableButton");
+        int count = addTableRow("form:basicTable", "form:basicTable:topActionsGroup1:addButton");
 
         setFieldValue("form:basicTable:rowGroup1:0:col2:col1St", "property" + generateRandomString());
         setFieldValue("form:basicTable:rowGroup1:0:col3:col1St", "value");
-        setFieldValue("form:basicTable:rowGroup1:0:col4:col1St", "description");
+        //setFieldValue("form:basicTable:rowGroup1:0:col4:col1St", "description");
 
         int emptyCount = getTableRowCountByValue("form:basicTable", "", "col3:col1St", false);
         count = count - emptyCount;

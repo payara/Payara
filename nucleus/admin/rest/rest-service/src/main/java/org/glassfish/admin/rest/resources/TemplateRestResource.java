@@ -194,6 +194,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     @OPTIONS
+    @Produces(MediaType.APPLICATION_JSON)
     public ActionReportResult optionsLegacyFormat() {
         return buildActionReportResult(false);
     }

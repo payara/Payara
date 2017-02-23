@@ -181,7 +181,7 @@
     foreach (var="row" list="#{pageSession.selectedRows}") {
         urlencode(value="#{row['name']}" result="#{requestScope.encodedResName}");
         gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
-        if(!#{pageSession.onlyDASExist}){
+        //if(!#{pageSession.onlyDASExist}){
             setAttribute(key="targetUrlsList" value="#{row['targetUrls']}");
             foreach (var="targetUrl" list="#{requestScope.targetUrlsList}") {
                 createMap(result="#{requestScope.attrMap}");
@@ -193,7 +193,7 @@
                     method="DELETE"
                     result="#{requestScope.foo}");
             }
-        }
+        //}
         createMap(result="#{requestScope.attrMap}");
         if ("#{pageSession.childType}=admin-object-resource") {
             mapPut(map="#{requestScope.attrMap}" key="target" value="server-config");
