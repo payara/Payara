@@ -19,12 +19,12 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.1.171.0.1</version>
+        <version>4.1.1.172-SNAPSHOT</version>
     </parent>
-    <artifactId>notification</artifactId>
-    <name>Notification Package</name>
+    <artifactId>notification-hipchat</artifactId>
+    <name>HipChat Notification Package</name>
     <packaging>distribution-fragment</packaging>
-    <description>This pom describes how to assemble the Notification package</description>
+    <description>This pom describes how to assemble the HipChat Notification package</description>
 
     <properties>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
@@ -99,15 +99,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.packager</groupId>
-            <artifactId>notification-package</artifactId>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-hipchat-core</artifactId>
             <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
         </dependency>
         <dependency>
            <groupId>fish.payara.admingui</groupId>
-           <artifactId>eventbus-notifier-console-plugin</artifactId>
+           <artifactId>hipchat-notifier-console-plugin</artifactId>
            <version>${project.version}</version>
            <optional>true</optional>
         </dependency>
