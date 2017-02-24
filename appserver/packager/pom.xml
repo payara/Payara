@@ -166,6 +166,12 @@
         <module>asadmin-recorder</module>
         <module>JMX-Monitoring</module>
         <module>payara-micro</module>
+        <module>notification-email</module>
+        <module>notification-hipchat</module>
+        <module>notification-jms</module>
+        <module>notification-slack</module>
+        <module>notification-snmp</module>
+        <module>notification-xmpp</module>
     </modules>
 
     <build>
