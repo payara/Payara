@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.newrelic;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fish.payara.nucleus.notification.service.NotificationRunnable;
-import org.glassfish.grizzly.utils.Charsets;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -52,11 +52,12 @@ import java.util.logging.Logger;
 /**
  * @author mertcaliskan
  */
-public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMessageQueue, HipchatNotifierConfigurationExecutionOptions> {
+public class NewRelicNotificationRunnable extends NotificationRunnable<NewRelicEventMessageQueue, NewRelicNotifierConfigurationExecutionOptions> {
 
-    private static Logger logger = Logger.getLogger(HipchatNotificationRunnable.class.getCanonicalName());
+    private static Logger logger = Logger.getLogger(NewRelicNotificationRunnable.class.getCanonicalName());
+    private static final String HEADER_XINSERTKEY = "X-Insert-Key";
 
-    HipchatNotificationRunnable(HipchatMessageQueue queue, HipchatNotifierConfigurationExecutionOptions executionOptions) {
+    public NewRelicNotificationRunnable(NewRelicEventMessageQueue queue, NewRelicNotifierConfigurationExecutionOptions executionOptions) {
         this.queue = queue;
         this.executionOptions = executionOptions;
     }
@@ -64,20 +65,22 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
     @Override
     public void run() {
         while (queue.size() > 0) {
-            String formattedURL = MessageFormat.format(HIPCHAT_RESOURCE, executionOptions.getRoomName(), executionOptions.getToken());
-            String fullURL = HIPCHAT_ENDPOINT + formattedURL;
+            String formattedURL = MessageFormat.format(NEWRELIC_RESOURCE, executionOptions.getAccountId());
+            String fullURL = NEWRELIC_ENDPOINT + formattedURL;
             try {
                 URL url = new URL(fullURL);
                 HttpURLConnection connection = createConnection(url,
-                        new NotificationRunnable.Header(HEADER_CONTENTTYPE, ACCEPT_TYPE_TEXT_PLAIN));
+                        new NotificationRunnable.Header(HEADER_CONTENTTYPE, ACCEPT_TYPE_JSON),
+                        new NotificationRunnable.Header(HEADER_XINSERTKEY, executionOptions.getKey()));
 
-                HipchatMessage message = queue.getMessage();
-                try (OutputStream outputStream = connection.getOutputStream()) {
-                    outputStream.write((message.getSubject() + "\n" + message.getMessage()).getBytes(Charsets.UTF8_CHARSET));
-                    if (connection.getResponseCode() != 204) {
-                        logger.log(Level.SEVERE,
-                                "Error occurred while connecting Hipchat. Check your room name and token. HTTP response code",
-                                connection.getResponseCode());
+                NewRelicEventMessage message = queue.getMessage();
+                try(OutputStream outputStream = connection.getOutputStream()) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.writeValue(System.out, message);
+                    objectMapper.writeValue(outputStream, message);
+                    if (connection.getResponseCode() != 200) {
+                        logger.log(Level.SEVERE, "Error occurred while connecting New Relic. " +
+                                "Check your Account ID and Key. HTTP response code: " + connection.getResponseCode());
                     }
                 }
             }
@@ -101,6 +104,6 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        logger.log(Level.SEVERE, "Error occurred consuming hipchat messages from queue", e);
+        logger.log(Level.SEVERE, "Error occurred consuming New Relic messages from queue", e);
     }
 }

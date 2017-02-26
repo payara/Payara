@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,47 +36,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.log;
+package fish.payara.notification.newrelic;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.EventSource;
-import fish.payara.nucleus.notification.domain.NotificationEventFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.annotation.PostConstruct;
-import java.util.logging.Level;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class LogNotificationEventFactory extends NotificationEventFactory<LogNotificationEvent> {
+public class NewRelicNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    @PostConstruct
-    void postConstruct() {
-        registerEventFactory(NotifierType.LOG, this);
+    private String key;
+    private String accountId;
+
+    NewRelicNotifierConfigurationExecutionOptions() {
+        super(NotifierType.NEWRELIC);
     }
 
-    public LogNotificationEvent buildNotificationEvent(String subject, String message) {
-        LogNotificationEvent event = initializeEvent(new LogNotificationEvent());
-        event.setSubject(subject);
-        event.setLevel(Level.INFO);
-        event.setMessage(message);
+    public String getKey() {
+        return key;
+    }
 
-        return event;
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
 
     @Override
-    public LogNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
-        LogNotificationEvent notificationEvent = initializeEvent(new LogNotificationEvent());
-        notificationEvent.setLevel(level);
-        notificationEvent.setSubject(subject);
-        notificationEvent.setMessage(message);
-        notificationEvent.setParameters(parameters);
-
-        return notificationEvent;
+    public String toString() {
+        return "NewRelicNotifierConfigurationExecutionOptions{" +
+                "key='" + key + '\'' +
+                ", accountId='" + accountId + '\'' +
+                "} " + super.toString();
     }
 }

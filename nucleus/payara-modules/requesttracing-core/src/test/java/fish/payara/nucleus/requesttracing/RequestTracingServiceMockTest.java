@@ -42,6 +42,7 @@ package fish.payara.nucleus.requesttracing;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.EventSource;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
@@ -97,7 +98,7 @@ public class RequestTracingServiceMockTest {
 
         requestTracingService.endTrace();
 
-        verify(notificationService).notify(any(LogNotificationEvent.class));
+        verify(notificationService).notify(any(EventSource.class), any(LogNotificationEvent.class));
     }
 }
 

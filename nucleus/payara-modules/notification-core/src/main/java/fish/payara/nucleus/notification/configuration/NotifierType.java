@@ -51,5 +51,6 @@ public enum NotifierType {
     EMAIL,
     XMPP,
     SNMP,
-    EVENTBUS
+    EVENTBUS,
+    NEWRELIC
 }

@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,47 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.log;
+package fish.payara.notification.newrelic;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.EventSource;
-import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class LogNotificationEventFactory extends NotificationEventFactory<LogNotificationEvent> {
+public class NewRelicNotifierConfigurationExecutionOptionsFactory
+        extends NotifierConfigurationExecutionOptionsFactory<NewRelicNotifierConfiguration, NewRelicNotifierConfigurationExecutionOptions> {
 
     @PostConstruct
     void postConstruct() {
-        registerEventFactory(NotifierType.LOG, this);
-    }
-
-    public LogNotificationEvent buildNotificationEvent(String subject, String message) {
-        LogNotificationEvent event = initializeEvent(new LogNotificationEvent());
-        event.setSubject(subject);
-        event.setLevel(Level.INFO);
-        event.setMessage(message);
-
-        return event;
+        registerExecutionOptions(NotifierType.NEWRELIC, this);
     }
 
     @Override
-    public LogNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
-        LogNotificationEvent notificationEvent = initializeEvent(new LogNotificationEvent());
-        notificationEvent.setLevel(level);
-        notificationEvent.setSubject(subject);
-        notificationEvent.setMessage(message);
-        notificationEvent.setParameters(parameters);
+    public NewRelicNotifierConfigurationExecutionOptions build(NewRelicNotifierConfiguration notifierConfiguration) {
+        NewRelicNotifierConfigurationExecutionOptions executionOptions = new NewRelicNotifierConfigurationExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setKey(notifierConfiguration.getKey());
+        executionOptions.setAccountId(notifierConfiguration.getAccountId());
 
-        return notificationEvent;
+        return executionOptions;
     }
 }

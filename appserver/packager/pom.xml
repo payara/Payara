@@ -172,6 +172,7 @@
         <module>notification-slack</module>
         <module>notification-snmp</module>
         <module>notification-xmpp</module>
+        <module>notification-newrelic</module>
     </modules>
 
     <build>
