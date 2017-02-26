@@ -17,6 +17,7 @@ import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.domain.EventSource;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
@@ -147,7 +148,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
             if (notifierExecutionOptions.isEnabled()) {
                 NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
                 NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(level, subject, message, parameters);
-                notificationService.notify(notificationEvent);
+                notificationService.notify(EventSource.HEALTHCHECK, notificationEvent);
             }
         }
 
