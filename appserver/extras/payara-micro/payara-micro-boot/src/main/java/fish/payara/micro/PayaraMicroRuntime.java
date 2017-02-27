@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,11 +39,6 @@
  */
 package fish.payara.micro;
 
-//import fish.payara.appserver.micro.services.CDIEventListener;
-//import fish.payara.appserver.micro.services.PayaraClusterListener;
-//import fish.payara.appserver.micro.services.PayaraClusteredCDIEvent;
-//import fish.payara.appserver.micro.services.command.ClusterCommandResult;
-//import fish.payara.appserver.micro.services.data.InstanceDescriptor;
 import fish.payara.micro.event.PayaraClusteredCDIEvent;
 import fish.payara.micro.event.PayaraClusterListener;
 import fish.payara.micro.event.CDIEventListener;

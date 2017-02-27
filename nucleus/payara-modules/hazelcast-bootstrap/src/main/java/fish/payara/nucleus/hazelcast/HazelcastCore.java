@@ -85,7 +85,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  *
- * @author steve
+ * @author Steve Millidge (Payara Foundation)
  */
 @Service(name = "hazelcast-core")
 @RunLevel(StartupRunLevel.VAL)

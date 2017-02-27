@@ -24,7 +24,7 @@ import org.jvnet.hk2.config.Configured;
 
 /**
  *
- * @author steve
+ * @author Steve Millidge (Payara Foundation)
  */
 @Configured
 public interface HazelcastRuntimeConfiguration 

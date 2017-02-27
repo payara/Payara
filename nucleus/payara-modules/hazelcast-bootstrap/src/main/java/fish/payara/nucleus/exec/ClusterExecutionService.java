@@ -123,7 +123,7 @@ public class ClusterExecutionService implements EventListener {
      * @return A map of Futures keyed by Member UUID
      */
     public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable) {
-        HashMap<String, Future<T>> result = new HashMap<String, Future<T>>(2);
+        HashMap<String, Future<T>> result = new HashMap<>(2);
         if (hzCore.isEnabled()) {
 
             Set<Member> membersToSubmit = selectMembers(memberUUIDS);
@@ -142,7 +142,7 @@ public class ClusterExecutionService implements EventListener {
      * @return A Map of Future results keyed by member UUID
      */
     public <T extends Serializable> Map<String, Future<T>> runCallableAllMembers(Callable<T> callable) {
-        HashMap<String, Future<T>> result = new HashMap<String, Future<T>>(2);
+        HashMap<String, Future<T>> result = new HashMap<>(2);
         if (hzCore.isEnabled()) {
             // work out which members correspond to cluster UUIDS.
             HazelcastInstance instance = hzCore.getInstance();
@@ -220,7 +220,7 @@ public class ClusterExecutionService implements EventListener {
      * Schedules a Callable object to be run in the future
      * @param runnable The Runnable Object
      * @param delay The delay before running the task
-     * @param periodThe period for the fixed rate
+     * @param period The period for the fixed rate
      * @param unit The time unit of the delay
      * @return A Future containing the result
      */
@@ -303,7 +303,7 @@ public class ClusterExecutionService implements EventListener {
         // work out which members correspond to cluster UUIDS.
         HazelcastInstance instance = hzCore.getInstance();
         Set<Member> members = instance.getCluster().getMembers();
-        Set<Member> membersToSubmit = new HashSet<Member>(members.size());
+        Set<Member> membersToSubmit = new HashSet<>(members.size());
         for (Member member : members) {
             if (memberUUIDS.contains(member.getUuid())) {
                 membersToSubmit.add(member);
