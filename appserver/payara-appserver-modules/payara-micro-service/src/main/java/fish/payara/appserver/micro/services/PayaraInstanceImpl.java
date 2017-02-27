@@ -130,7 +130,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     @Override
     public <T extends Serializable> Map<String, Future<T>> runCallable(Callable<T> callable) {
-        return cluster.getExecService().runCallable(callable);
+        return cluster.getExecService().runCallableAllMembers(callable);
     }
 
     @Override
@@ -141,7 +141,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     @Override
     public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
-        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(callable);
+        Map<String, Future<ClusterCommandResultImpl>> result = cluster.getExecService().runCallableAllMembers(callable);
         return result;
     }
 

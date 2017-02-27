@@ -89,7 +89,22 @@ public interface HazelcastRuntimeConfiguration
     String getHostAwarePartitioning();
     public void setHostAwarePartitioning(String value);
 
+    @Attribute(defaultValue = "4")
+    String getExecutorPoolSize();
+    public void setExecutorPoolSize(String value);
     
+    @Attribute(defaultValue = "20")
+    String getExecutorQueueCapacity();
+    public void setExecutorQueueCapacity(String value);
+    
+    @Attribute(defaultValue = "4")
+    String getScheduledExecutorPoolSize();
+    public void setScheduledExecutorPoolSize(String value);
+    
+    @Attribute(defaultValue = "20")
+    String getScheduledExecutorQueueCapacity();
+    public void setScheduledExecutorQueueCapacity(String value);
+
     @Attribute(defaultValue = "")
     String getLicenseKey();
     public void setLicenseKey(String value);

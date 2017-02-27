@@ -45,10 +45,12 @@ import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.GlobalSerializerConfig;
+import com.hazelcast.config.SerializationConfig;
+import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.PartitionGroupConfig;
-import com.hazelcast.config.SerializationConfig;
+import com.hazelcast.config.ScheduledExecutorConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.serialization.Serializer;
@@ -91,6 +93,8 @@ public class HazelcastCore implements EventListener {
 
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
     public final static String INSTANCE_GROUP_ATTRIBUTE = "GLASSFISH_INSTANCE_GROUP";
+    public static final String CLUSTER_EXECUTOR_SERVICE_NAME="payara-cluster-execution";
+    public static final String SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME="payara-scheduled-execution";
     private static HazelcastCore theCore;
 
     private HazelcastInstance theInstance;
@@ -267,6 +271,17 @@ public class HazelcastCore implements EventListener {
                     partitionGroupConfig.setEnabled(enabled);
                     partitionGroupConfig.setGroupType(PartitionGroupConfig.MemberGroupType.HOST_AWARE);
                 }
+                
+                // build the executor config
+                ExecutorConfig executorConfig = config.getExecutorConfig(CLUSTER_EXECUTOR_SERVICE_NAME);
+                executorConfig.setStatisticsEnabled(true);
+                executorConfig.setPoolSize(Integer.valueOf(configuration.getExecutorPoolSize()));
+                executorConfig.setQueueCapacity(Integer.valueOf(configuration.getExecutorQueueCapacity()));
+                
+                ScheduledExecutorConfig scheduledExecutorConfig = config.getScheduledExecutorConfig(SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME);
+                scheduledExecutorConfig.setDurability(1);
+                scheduledExecutorConfig.setCapacity(Integer.valueOf(configuration.getScheduledExecutorQueueCapacity()));
+                scheduledExecutorConfig.setPoolSize(Integer.valueOf(configuration.getScheduledExecutorPoolSize()));
                             
                 config.setProperty("hazelcast.jmx", "true");
             }
