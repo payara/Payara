@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates.] -->
+
 <!-- grizzly/httpAttr.inc -->
 
 
