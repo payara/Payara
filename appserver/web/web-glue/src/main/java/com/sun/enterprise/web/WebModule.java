@@ -776,7 +776,14 @@ public class WebModule extends PwcWebModule implements Context {
     @Override
     protected void callServletContainerInitializers()
             throws LifecycleException {
-        super.callServletContainerInitializers();
+        WebComponentInvocation inv = new WebComponentInvocation(this);
+        try {
+            webContainer.getInvocationManager().preInvoke(inv);
+            super.callServletContainerInitializers();
+        }
+        finally {
+            webContainer.getInvocationManager().postInvoke(inv);
+        }
         if (!isJsfApplication() && !contextListeners.isEmpty()) {
             /* 
              * Remove any JSF related ServletContextListeners from
