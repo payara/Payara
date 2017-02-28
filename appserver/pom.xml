@@ -849,6 +849,12 @@
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-javaee-base</artifactId>
                 <version>1.0.7</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.glassfish.hk2.external</groupId>
+                        <artifactId>bean-validator</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
