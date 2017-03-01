@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1271,8 +1271,24 @@ public class PECoyoteConnector extends Connector {
         if (Boolean.valueOf(sslConfig.getTlsEnabled())) {
             if (needComma) {
                 sslProtocolsBuf.append(", ");
+            } else {
+                needComma = true;
             }
             sslProtocolsBuf.append("TLSv1");
+        }
+        if (Boolean.valueOf(sslConfig.getTls11Enabled())) {
+            if (needComma) {
+                sslProtocolsBuf.append(", ");
+            } else {
+                needComma = true;
+            }
+            sslProtocolsBuf.append("TLSv1.1");
+        }
+        if (Boolean.valueOf(sslConfig.getTls12Enabled())) {
+            if (needComma) {
+                sslProtocolsBuf.append(", ");
+            }
+            sslProtocolsBuf.append("TLSv1.2");
         }
         if (Boolean.valueOf(sslConfig.getSsl3Enabled()) ||
                 Boolean.valueOf(sslConfig.getTlsEnabled())) {
