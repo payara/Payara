@@ -19,6 +19,7 @@ package fish.payara.cdi.jsr107;
 
 import fish.payara.cdi.jsr107.impl.NamedCache;
 import com.hazelcast.core.HazelcastInstance;
+import fish.payara.nucleus.hazelcast.CacheManagerProxy;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.logging.Logger;
 import javax.cache.Cache;
@@ -65,8 +66,11 @@ public class JSR107Producer {
             logger.warning("Unable to inject CacheManager as Hazelcast is Disabled");
             return null;
         }
-       CacheManager result = null;
-        return hazelcastCore.getCachingProvider().getCacheManager();
+        CacheManager result = hazelcastCore.getCachingProvider().getCacheManager();
+        if(!(result instanceof CacheManagerProxy)) {
+            result = new CacheManagerProxy(result, hazelcastCore.getServerContext());
+        }
+        return result;
     }
     
     @Dependent

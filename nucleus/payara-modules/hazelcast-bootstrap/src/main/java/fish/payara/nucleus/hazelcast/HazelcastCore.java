@@ -23,7 +23,6 @@ import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.PartitionGroupConfig;
-import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import fish.payara.nucleus.events.HazelcastEvents;
@@ -148,6 +147,10 @@ public class HazelcastCore implements EventListener {
             bootstrapHazelcast();
         }
         return hazelcastCachingProvider;
+    }
+
+    public ServerContext getServerContext() {
+        return context;
     }
 
     public boolean isEnabled() {
@@ -306,7 +309,7 @@ public class HazelcastCore implements EventListener {
             ctx = new InitialContext();
             ctx.bind(configuration.getJNDIName(), theInstance);
             ctx.bind(configuration.getCachingProviderJNDIName(), hazelcastCachingProvider);
-            ctx.bind(configuration.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
+            ctx.bind(configuration.getCacheManagerJNDIName(), new CacheManagerProxy(hazelcastCachingProvider.getCacheManager(), context));
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at {0}", configuration.getJNDIName());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at {0}", configuration.getCachingProviderJNDIName());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at {0}", configuration.getCacheManagerJNDIName());
