@@ -17,6 +17,7 @@
  */
 package fish.payara.nucleus.hazelcast;
 
+import fish.payara.nucleus.hazelcast.JavaEEContextUtil.Context;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -24,10 +25,14 @@ import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.Configuration;
+import javax.cache.configuration.Factory;
+import javax.cache.event.CacheEntryEventFilter;
+import javax.cache.event.CacheEntryListener;
 import javax.cache.integration.CompletionListener;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  * proxy the cache so we can set up invocation context for
@@ -38,8 +43,9 @@ import javax.cache.processor.EntryProcessorResult;
  * @param <V> value
  */
 public class CacheProxy<K, V> implements Cache<K, V> {
-    public CacheProxy(Cache<K, V> delegate) {
+    public CacheProxy(Cache<K, V> delegate, ServerContext serverContext) {
         this.delegate = delegate;
+        this.serverContext = serverContext;
     }
 
     @Override
@@ -57,9 +63,45 @@ public class CacheProxy<K, V> implements Cache<K, V> {
         return delegate.containsKey(k);
     }
 
+    private static class CPLProxy implements CompletionListener {
+        public CPLProxy(CompletionListener delegate, ServerContext serverContext) {
+            this.delegate = delegate;
+            this.ctxUtil = new JavaEEContextUtil(serverContext);
+        }
+
+        @Override
+        public void onCompletion() {
+            Context ctx = null;
+            try {
+                ctx = ctxUtil.preInvoke();
+                delegate.onCompletion();
+            }
+            finally {
+                ctxUtil.postInvoke(ctx);
+            }
+        }
+
+        @Override
+        public void onException(Exception excptn) {
+            Context ctx = null;
+            try {
+                ctx = ctxUtil.preInvoke();
+                delegate.onException(excptn);
+            }
+            finally {
+                ctxUtil.postInvoke(ctx);
+            }
+        }
+
+        private final CompletionListener delegate;
+        private final JavaEEContextUtil ctxUtil;
+    }
+
     @Override
     public void loadAll(Set<? extends K> set, boolean bln, CompletionListener cl) {
-        // +++ TODO wrap CompletionListner
+        if(!(cl instanceof CPLProxy)) {
+            cl = new CPLProxy(cl, serverContext);
+        }
         delegate.loadAll(set, bln, cl);
     }
 
@@ -135,13 +177,17 @@ public class CacheProxy<K, V> implements Cache<K, V> {
 
     @Override
     public <T> T invoke(K k, EntryProcessor<K, V, T> ep, Object... os) throws EntryProcessorException {
-        // +++ TODO wrap EP
+        if(!(ep instanceof EntryProcessorProxy)) {
+            ep = new EntryProcessorProxy<>(ep, serverContext);
+        }
         return delegate.invoke(k, ep, os);
     }
 
     @Override
     public <T> Map<K, EntryProcessorResult<T>> invokeAll(Set<? extends K> set, EntryProcessor<K, V, T> ep, Object... os) {
-        // +++ TODO wrap EP
+        if(!(ep instanceof EntryProcessorProxy)) {
+            ep = new EntryProcessorProxy<>(ep, serverContext);
+        }
         return delegate.invokeAll(set, ep, os);
     }
 
@@ -170,15 +216,78 @@ public class CacheProxy<K, V> implements Cache<K, V> {
         return delegate.unwrap(type);
     }
 
+    // +++ TODO create entry listner proxy
+    private static class CELCProxy<K, V> implements CacheEntryListenerConfiguration<K, V> {
+        public CELCProxy(CacheEntryListenerConfiguration<K, V> delegate, ServerContext serverContext) {
+            this.delegate = delegate;
+            this.ctxUtil = new JavaEEContextUtil(serverContext);
+        }
+
+        @Override
+        public Factory<CacheEntryListener<? super K, ? super V>> getCacheEntryListenerFactory() {
+            Context ctx = null;
+            try {
+                ctxUtil.preInvoke();
+                return delegate.getCacheEntryListenerFactory();
+            }
+            finally {
+                ctxUtil.postInvoke(ctx);
+            }
+        }
+
+        @Override
+        public boolean isOldValueRequired() {
+            Context ctx = null;
+            try {
+                ctxUtil.preInvoke();
+                return delegate.isOldValueRequired();
+            }
+            finally {
+                ctxUtil.postInvoke(ctx);
+            }
+        }
+
+        @Override
+        public Factory<CacheEntryEventFilter<? super K, ? super V>> getCacheEntryEventFilterFactory() {
+            Context ctx = null;
+            try {
+                ctxUtil.preInvoke();
+                return delegate.getCacheEntryEventFilterFactory();
+            }
+            finally {
+                ctxUtil.postInvoke(ctx);
+            }
+        }
+
+        @Override
+        public boolean isSynchronous() {
+            Context ctx = null;
+            try {
+                ctxUtil.preInvoke();
+                return delegate.isSynchronous();
+            }
+            finally {
+                ctxUtil.postInvoke(ctx);
+            }
+        }
+
+
+        private final CacheEntryListenerConfiguration<K, V> delegate;
+        private final JavaEEContextUtil ctxUtil;
+
+        private static final long serialVersionUID = 1L;
+    }
+
     @Override
     public void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> celc) {
-        // +++ TODO wrap CELC
+        if(!(celc instanceof CELCProxy)) {
+            celc = new CELCProxy<>(celc, serverContext);
+        }
         delegate.registerCacheEntryListener(celc);
     }
 
     @Override
     public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> celc) {
-        // +++ TODO wrap CELC
         delegate.deregisterCacheEntryListener(celc);
     }
 
@@ -188,4 +297,5 @@ public class CacheProxy<K, V> implements Cache<K, V> {
     }
 
     private final Cache<K, V> delegate;
+    private final ServerContext serverContext;
 }

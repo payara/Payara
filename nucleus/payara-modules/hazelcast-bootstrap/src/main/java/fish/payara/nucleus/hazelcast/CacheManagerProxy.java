@@ -68,7 +68,7 @@ public class CacheManagerProxy implements CacheManager {
             cache = delegate.createCache(string, config);
         }
 
-        return new CacheProxy<>(cache);
+        return new CacheProxy<>(cache, serverContext);
     }
 
     @Override
