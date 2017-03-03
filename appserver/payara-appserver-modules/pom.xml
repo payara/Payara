@@ -43,5 +43,6 @@
         <module>notification-xmpp-core</module>
         <module>notification-snmp-core</module>
         <module>notification-newrelic-core</module>
+        <module>zendesk-support</module>
     </modules>
 </project>
