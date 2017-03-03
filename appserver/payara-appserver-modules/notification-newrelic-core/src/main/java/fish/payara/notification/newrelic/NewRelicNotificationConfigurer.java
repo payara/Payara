@@ -69,7 +69,7 @@ public class NewRelicNotificationConfigurer extends BaseNotificationConfigurer<N
     @Param(name = "key")
     private String key;
 
-    @Param(name = "accountId")
+    @Param(name = "accountId", alias = "accountid")
     private String accountId;
 
     protected void applyValues(NewRelicNotifierConfiguration configuration) throws PropertyVetoException {
