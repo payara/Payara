@@ -122,14 +122,10 @@ abstract class ConnectorStarter {
                 if (adminSubject != null) {
                     // extract the principal name and create a JMXPrincipal and add to the subject PAYARA-1251         
                     Set<PrincipalImpl> principals = adminSubject.getPrincipals(PrincipalImpl.class);
-                    String name = null;
                     for (PrincipalImpl principal : principals) {
                         if (!(principal instanceof Group) && !(principal instanceof Role)) {
-                            name = principal.getName();
+                            adminSubject.getPrincipals().add(new JMXPrincipal(principal.getName()));
                         }
-                    }
-                    if (name != null) {
-                        adminSubject.getPrincipals().add(new JMXPrincipal(name));
                     }
                 }
                 return adminSubject;               
