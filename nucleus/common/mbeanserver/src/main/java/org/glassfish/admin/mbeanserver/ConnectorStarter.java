@@ -51,7 +51,9 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Set;
 import javax.management.remote.JMXPrincipal;
+import org.glassfish.security.common.Group;
 import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.Role;
 
 /**
 Start and stop JMX connectors, base class.
@@ -117,22 +119,20 @@ abstract class ConnectorStarter {
                 // on first access.
                 JMXAuthenticator controller = mHabitat.getService(JMXAuthenticator.class);
                 Subject adminSubject = controller.authenticate(credentials);
-                Subject result = new Subject();
-
                 if (adminSubject != null) {
-                    // extract the principal name and create a JMXPrincipal            
+                    // extract the principal name and create a JMXPrincipal and add to the subject PAYARA-1251         
                     Set<PrincipalImpl> principals = adminSubject.getPrincipals(PrincipalImpl.class);
                     String name = null;
                     for (PrincipalImpl principal : principals) {
-                        name = principal.getName();
+                        if (!(principal instanceof Group) && !(principal instanceof Role)) {
+                            name = principal.getName();
+                        }
                     }
-
                     if (name != null) {
-                        result.getPrincipals().add(new JMXPrincipal(name));
+                        adminSubject.getPrincipals().add(new JMXPrincipal(name));
                     }
-                    result.setReadOnly();
                 }
-                return result;               
+                return adminSubject;               
             }
         };
     }
