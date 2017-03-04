@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,42 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.nucleus.requesttracing.admin.notifier;
 
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import fish.payara.nucleus.notification.configuration.DatadogNotifier;
+import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-public abstract class NotificationRunnable<MQ extends MessageQueue, EO extends NotifierConfigurationExecutionOptions>
-        implements Runnable, Thread.UncaughtExceptionHandler {
+@Service(name = "requesttracing-datadog-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "requesttracing-datadog-notifier-configure",
+                description = "Configures Datadog Notifier for RequestTracing Service")
+})
+public class DatadogRequestTracingNotifierConfigurer extends BaseRequestTracingNotifierConfigurer<DatadogNotifier> {
 
-    protected static final String HTTP_METHOD_POST = "POST";
-    protected static final String ACCEPT_TYPE_JSON = "application/json";
-    protected static final String ACCEPT_TYPE_TEXT_PLAIN = "text/plain";
-
-    protected static final String HIPCHAT_ENDPOINT = "https://api.hipchat.com";
-    protected static final String HIPCHAT_RESOURCE = "/v2/room/{0}/notification?auth_token={1}";
-
-    protected static final String SLACK_ENDPOINT = "https://hooks.slack.com/services";
-    protected static final String SLACK_RESOURCE = "/{0}/{1}/{2}";
-
-    protected static final String DATADOG_ENDPOINT = "https://app.datadoghq.com/api/v1/events";
-    protected static final String DATADOG_RESOURCE = "?api_key={0}";
-
-    protected MQ queue;
-    protected EO executionOptions;
-
-    protected HttpURLConnection createConnection(URL url, String contentType) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestMethod(HTTP_METHOD_POST);
-        connection.setRequestProperty("Content-Type", contentType);
-        connection.connect();
-        return connection;
+    @Override
+    protected void applyValues(DatadogNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
     }
 }

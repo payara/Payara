@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,42 +37,79 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.datadog;
 
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fish.payara.nucleus.notification.service.Message;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * @author mertcaliskan
+ * Created by mertcaliskan
  */
-public abstract class NotificationRunnable<MQ extends MessageQueue, EO extends NotifierConfigurationExecutionOptions>
-        implements Runnable, Thread.UncaughtExceptionHandler {
+public class Main {
 
     protected static final String HTTP_METHOD_POST = "POST";
     protected static final String ACCEPT_TYPE_JSON = "application/json";
-    protected static final String ACCEPT_TYPE_TEXT_PLAIN = "text/plain";
 
-    protected static final String HIPCHAT_ENDPOINT = "https://api.hipchat.com";
-    protected static final String HIPCHAT_RESOURCE = "/v2/room/{0}/notification?auth_token={1}";
+    static final String ENDPOINT = "https://app.datadoghq.com/api/v1/events?api_key=0c132491b27df330b0bc80595fd9624c";
 
-    protected static final String SLACK_ENDPOINT = "https://hooks.slack.com/services";
-    protected static final String SLACK_RESOURCE = "/{0}/{1}/{2}";
+    public static void main(String[] args) throws IOException {
+        URL url = new URL(ENDPOINT);
+        HttpURLConnection connection = createConnection(url, ACCEPT_TYPE_JSON);
+        DatadogMessage message = new DatadogMessage("title", "message");
+        try(OutputStream outputStream = connection.getOutputStream()) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(outputStream, message);
 
-    protected static final String DATADOG_ENDPOINT = "https://app.datadoghq.com/api/v1/events";
-    protected static final String DATADOG_RESOURCE = "?api_key={0}";
+            if (connection.getResponseCode() != 200) {
+                System.out.println("Error occurred while connecting Datadog. " + "Check your tokens. HTTP response code: " + connection.getResponseCode());
+            }
+        }
+    }
 
-    protected MQ queue;
-    protected EO executionOptions;
-
-    protected HttpURLConnection createConnection(URL url, String contentType) throws IOException {
+    private static HttpURLConnection createConnection(URL url, String contentType) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod(HTTP_METHOD_POST);
         connection.setRequestProperty("Content-Type", contentType);
         connection.connect();
         return connection;
+    }
+
+    public static class DatadogMessage extends Message {
+
+        private String title;
+        private String text;
+        private String priority = "Normal";
+        private List<String> tags;
+
+        public DatadogMessage(String subject, String message) {
+            this.title = subject;
+            this.subject = message;
+            this.text = message;
+            this.tags = Arrays.asList("HealthCheck");
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getPriority() {
+            return priority;
+        }
+
+        public List<String> getTags() {
+            return tags;
+        }
     }
 }

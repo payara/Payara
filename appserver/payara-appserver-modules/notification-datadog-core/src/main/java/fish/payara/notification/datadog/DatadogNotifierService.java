@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,42 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.datadog;
 
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.notification.configuration.DatadogNotifier;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author mertcaliskan
  */
-public abstract class NotificationRunnable<MQ extends MessageQueue, EO extends NotifierConfigurationExecutionOptions>
-        implements Runnable, Thread.UncaughtExceptionHandler {
+@Service(name = "service-datadog")
+@RunLevel(StartupRunLevel.VAL)
+public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNotificationEvent,
+        DatadogNotifier,
+        DatadogNotifierConfiguration,
+        DatadogMessageQueue> {
 
-    protected static final String HTTP_METHOD_POST = "POST";
-    protected static final String ACCEPT_TYPE_JSON = "application/json";
-    protected static final String ACCEPT_TYPE_TEXT_PLAIN = "text/plain";
+    private DatadogNotifierConfigurationExecutionOptions executionOptions;
 
-    protected static final String HIPCHAT_ENDPOINT = "https://api.hipchat.com";
-    protected static final String HIPCHAT_RESOURCE = "/v2/room/{0}/notification?auth_token={1}";
+    DatadogNotifierService() {
+        super("datadog-message-consumer-");
+}
 
-    protected static final String SLACK_ENDPOINT = "https://hooks.slack.com/services";
-    protected static final String SLACK_RESOURCE = "/{0}/{1}/{2}";
+    @Override
+    @Subscribe
+    public void handleNotification(DatadogNotificationEvent event) {
+        if (executionOptions.isEnabled()) {
+            DatadogMessage message = new DatadogMessage(event, event.getSubject(), event.getMessage());
+            queue.addMessage(message);
+        }
+    }
 
-    protected static final String DATADOG_ENDPOINT = "https://app.datadoghq.com/api/v1/events";
-    protected static final String DATADOG_RESOURCE = "?api_key={0}";
+    @Override
+    public void bootstrap() {
+        register(NotifierType.DATADOG, DatadogNotifier.class, DatadogNotifierConfiguration.class, this);
 
-    protected MQ queue;
-    protected EO executionOptions;
+        initializeExecutor();
+        executionOptions = (DatadogNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+        scheduleExecutor(new DatadogNotificationRunnable(queue, executionOptions));
+    }
 
-    protected HttpURLConnection createConnection(URL url, String contentType) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestMethod(HTTP_METHOD_POST);
-        connection.setRequestProperty("Content-Type", contentType);
-        connection.connect();
-        return connection;
+    @Override
+    public void shutdown() {
+        super.reset();
     }
 }
