@@ -5,8 +5,9 @@
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>4.1.1.172-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>support</artifactId>
+    <artifactId>payara-support</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara Support</name>
         
