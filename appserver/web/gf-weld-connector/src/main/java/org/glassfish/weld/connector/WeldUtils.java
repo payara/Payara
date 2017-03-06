@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -61,6 +61,7 @@ import javax.ejb.MessageDriven;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 import javax.enterprise.context.*;
+import javax.enterprise.inject.Model;
 import javax.enterprise.inject.Stereotype;
 import javax.inject.Scope;
 import javax.inject.Singleton;
@@ -122,6 +123,7 @@ public class WeldUtils {
         cdiScopeAnnotations.add(RequestScoped.class.getName());
         cdiScopeAnnotations.add(Dependent.class.getName());
         cdiScopeAnnotations.add(Singleton.class.getName());
+        cdiScopeAnnotations.add(Model.class.getName());
     }
 
     protected static final List<String> cdiEnablingAnnotations;
