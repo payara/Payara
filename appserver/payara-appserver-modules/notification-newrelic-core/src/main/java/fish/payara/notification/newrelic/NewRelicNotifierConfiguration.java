@@ -1,7 +1,6 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +36,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.newrelic;
+
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+
+import java.beans.PropertyVetoException;
 
 /**
- * The type of notifier types that notification service supports.
+ * Configuration class with the aim to configure New Relic notification specific parameters.
+ * This configuration is only being used by notification services.
  *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP,
-    SNMP,
-    EVENTBUS,
-    NEWRELIC,
-    DATADOG
+@Configured
+@NotifierConfigurationType(type = NotifierType.NEWRELIC)
+public interface NewRelicNotifierConfiguration extends NotifierConfiguration {
+
+    @Attribute(required = true)
+    String getKey();
+    void setKey(String value) throws PropertyVetoException;
+
+    @Attribute(required = true)
+    String getAccountId();
+    void setAccountId(String value) throws PropertyVetoException;
 }

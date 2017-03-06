@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.newrelic;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
 
 /**
- * The type of notifier types that notification service supports.
- *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP,
-    SNMP,
-    EVENTBUS,
-    NEWRELIC,
-    DATADOG
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class NewRelicNotifierConfigurationExecutionOptionsFactory
+        extends NotifierConfigurationExecutionOptionsFactory<NewRelicNotifierConfiguration, NewRelicNotifierConfigurationExecutionOptions> {
+
+    @PostConstruct
+    void postConstruct() {
+        registerExecutionOptions(NotifierType.NEWRELIC, this);
+    }
+
+    @Override
+    public NewRelicNotifierConfigurationExecutionOptions build(NewRelicNotifierConfiguration notifierConfiguration) {
+        NewRelicNotifierConfigurationExecutionOptions executionOptions = new NewRelicNotifierConfigurationExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setKey(notifierConfiguration.getKey());
+        executionOptions.setAccountId(notifierConfiguration.getAccountId());
+
+        return executionOptions;
+    }
 }

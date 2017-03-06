@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.datadog;
+package fish.payara.notification.newrelic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fish.payara.nucleus.notification.service.NotificationRunnable;
@@ -52,11 +52,12 @@ import java.util.logging.Logger;
 /**
  * @author mertcaliskan
  */
-public class DatadogNotificationRunnable extends NotificationRunnable<DatadogMessageQueue, DatadogNotifierConfigurationExecutionOptions> {
+public class NewRelicNotificationRunnable extends NotificationRunnable<NewRelicEventMessageQueue, NewRelicNotifierConfigurationExecutionOptions> {
 
-    private static Logger logger = Logger.getLogger(DatadogNotificationRunnable.class.getCanonicalName());
+    private static Logger logger = Logger.getLogger(NewRelicNotificationRunnable.class.getCanonicalName());
+    private static final String HEADER_XINSERTKEY = "X-Insert-Key";
 
-    public DatadogNotificationRunnable(DatadogMessageQueue queue, DatadogNotifierConfigurationExecutionOptions executionOptions) {
+    public NewRelicNotificationRunnable(NewRelicEventMessageQueue queue, NewRelicNotifierConfigurationExecutionOptions executionOptions) {
         this.queue = queue;
         this.executionOptions = executionOptions;
     }
@@ -64,21 +65,22 @@ public class DatadogNotificationRunnable extends NotificationRunnable<DatadogMes
     @Override
     public void run() {
         while (queue.size() > 0) {
-            String formattedURL = MessageFormat.format(DATADOG_RESOURCE, executionOptions.getKey());
-            String fullURL = DATADOG_ENDPOINT + formattedURL;
+            String formattedURL = MessageFormat.format(NEWRELIC_RESOURCE, executionOptions.getAccountId());
+            String fullURL = NEWRELIC_ENDPOINT + formattedURL;
             try {
                 URL url = new URL(fullURL);
                 HttpURLConnection connection = createConnection(url,
-                        new NotificationRunnable.Header(HEADER_CONTENTTYPE, ACCEPT_TYPE_JSON));
+                        new NotificationRunnable.Header(HEADER_CONTENTTYPE, ACCEPT_TYPE_JSON),
+                        new NotificationRunnable.Header(HEADER_XINSERTKEY, executionOptions.getKey()));
 
-                DatadogMessage message = queue.getMessage();
+                NewRelicEventMessage message = queue.getMessage();
                 try(OutputStream outputStream = connection.getOutputStream()) {
                     ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.writeValue(System.out, message);
                     objectMapper.writeValue(outputStream, message);
-
-                    if (connection.getResponseCode() < 200 && connection.getResponseCode() >= 300) {
-                        logger.log(Level.SEVERE, "Error occurred while connecting Datadog. " +
-                                "Check your parameters. HTTP response code: " + connection.getResponseCode());
+                    if (connection.getResponseCode() != 200) {
+                        logger.log(Level.SEVERE, "Error occurred while connecting New Relic. " +
+                                "Check your Account ID and Key. HTTP response code: " + connection.getResponseCode());
                     }
                 }
             }
@@ -102,6 +104,6 @@ public class DatadogNotificationRunnable extends NotificationRunnable<DatadogMes
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        logger.log(Level.SEVERE, "Error occurred consuming datadog messages from queue", e);
+        logger.log(Level.SEVERE, "Error occurred consuming New Relic messages from queue", e);
     }
 }

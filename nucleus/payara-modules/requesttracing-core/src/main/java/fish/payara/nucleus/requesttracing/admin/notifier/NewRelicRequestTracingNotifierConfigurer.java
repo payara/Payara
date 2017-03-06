@@ -1,7 +1,6 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +36,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.requesttracing.admin.notifier;
+
+
+import fish.payara.nucleus.notification.configuration.NewRelicNotifier;
+import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.beans.PropertyVetoException;
 
 /**
- * The type of notifier types that notification service supports.
- *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP,
-    SNMP,
-    EVENTBUS,
-    NEWRELIC,
-    DATADOG
+@Service(name = "requesttracing-newrelic-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "requesttracing-newrelic-notifier-configure",
+                description = "Configures New Relic Notifier for RequestTracing Service")
+})
+public class NewRelicRequestTracingNotifierConfigurer extends BaseRequestTracingNotifierConfigurer<NewRelicNotifier> {
+
+    @Override
+    protected void applyValues(NewRelicNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
+    }
 }

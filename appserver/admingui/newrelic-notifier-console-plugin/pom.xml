@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-  Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -41,31 +39,45 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>fish.payara.admingui</groupId>
+        <artifactId>admingui</artifactId>
         <version>4.1.1.172-SNAPSHOT</version>
     </parent>
-    <artifactId>payara-appserver-modules</artifactId>
-    <name>Payara Appserver Modules</name>
-    <description>Payara Appserver modules</description>
-    <packaging>pom</packaging>
-    <modules>
-        <module>payara-jsr107</module>
-        <module>jsr107-repackaged</module>
-        <module>hazelcast-ejb-timer</module>
-        <module>requesttracing-api</module>
-        <module>jmx-monitoring-service</module>
-        <module>payara-micro-service</module>
-        <module>payara-micro-cdi</module>
-        <module>jaspic-servlet-utils</module>
-        <module>notification-jms-core</module>
-        <module>notification-hipchat-core</module>
-        <module>notification-slack-core</module>
-        <module>notification-email-core</module>
-        <module>notification-xmpp-core</module>
-        <module>notification-snmp-core</module>
-        <module>notification-newrelic-core</module>
-        <module>notification-datadog-core</module>
-        <module>zendesk-support</module>
-    </modules>
+    <artifactId>newrelic-notifier-console-plugin</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>New Relic Notifier Console Plugin</name>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*.jar</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>console-plugin-service</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

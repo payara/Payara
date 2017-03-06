@@ -70,7 +70,8 @@ public class SlackNotificationRunnable extends NotificationRunnable<SlackMessage
             String fullURL = SLACK_ENDPOINT + formattedURL;
             try {
                 URL url = new URL(fullURL);
-                HttpURLConnection connection = createConnection(url, ACCEPT_TYPE_JSON);
+                HttpURLConnection connection = createConnection(url,
+                        new NotificationRunnable.Header(HEADER_CONTENTTYPE, ACCEPT_TYPE_JSON));
 
                 SlackMessage message = queue.getMessage();
                 try(OutputStream outputStream = connection.getOutputStream()) {

@@ -1,7 +1,6 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +36,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.newrelic;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
- * The type of notifier types that notification service supports.
- *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP,
-    SNMP,
-    EVENTBUS,
-    NEWRELIC,
-    DATADOG
+public class NewRelicNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
+
+    private String key;
+    private String accountId;
+
+    NewRelicNotifierConfigurationExecutionOptions() {
+        super(NotifierType.NEWRELIC);
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    @Override
+    public String toString() {
+        return "NewRelicNotifierConfigurationExecutionOptions{" +
+                "key='" + key + '\'' +
+                ", accountId='" + accountId + '\'' +
+                "} " + super.toString();
+    }
 }

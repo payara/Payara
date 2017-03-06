@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-  Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -42,30 +40,26 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <artifactId>payara-appserver-modules</artifactId>
         <version>4.1.1.172-SNAPSHOT</version>
     </parent>
-    <artifactId>payara-appserver-modules</artifactId>
-    <name>Payara Appserver Modules</name>
-    <description>Payara Appserver modules</description>
-    <packaging>pom</packaging>
-    <modules>
-        <module>payara-jsr107</module>
-        <module>jsr107-repackaged</module>
-        <module>hazelcast-ejb-timer</module>
-        <module>requesttracing-api</module>
-        <module>jmx-monitoring-service</module>
-        <module>payara-micro-service</module>
-        <module>payara-micro-cdi</module>
-        <module>jaspic-servlet-utils</module>
-        <module>notification-jms-core</module>
-        <module>notification-hipchat-core</module>
-        <module>notification-slack-core</module>
-        <module>notification-email-core</module>
-        <module>notification-xmpp-core</module>
-        <module>notification-snmp-core</module>
-        <module>notification-newrelic-core</module>
-        <module>notification-datadog-core</module>
-        <module>zendesk-support</module>
-    </modules>
+    <groupId>fish.payara.appserver</groupId>
+    <artifactId>notification-newrelic-core</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>New Relic Notification Implementation</name>
+    <description>New Relic Notification Implementation</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>notification-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

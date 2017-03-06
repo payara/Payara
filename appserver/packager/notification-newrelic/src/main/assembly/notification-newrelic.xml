@@ -1,7 +1,8 @@
-/*
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,23 +37,30 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- */
-package fish.payara.nucleus.notification.configuration;
+ -->
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+          http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
-/**
- * The type of notifier types that notification service supports.
- *
- * @author mertcaliskan
- */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP,
-    SNMP,
-    EVENTBUS,
-    NEWRELIC,
-    DATADOG
-}
+    <id>stage-package</id>
+    <formats>
+        <format>dir</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${temp.dir}/nucleus</directory>
+            <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}</directory>
+            <excludes>
+                <exclude>nucleus/**</exclude>
+                <exclude>pkg_proto.py</exclude>
+            </excludes>
+            <outputDirectory>${install.dir.name}</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

@@ -1,7 +1,6 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,20 +38,15 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
+import org.jvnet.hk2.config.Configured;
+
 /**
- * The type of notifier types that notification service supports.
+ * Configuration class for attaching New Relic event mechanism into.
+ * Health check and Request tracing services enables the use of New Relic event notification mechanism with this notifier configuration.
  *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP,
-    SNMP,
-    EVENTBUS,
-    NEWRELIC,
-    DATADOG
+@Configured
+@NotifierConfigurationType(type = NotifierType.NEWRELIC)
+public interface NewRelicNotifier extends Notifier {
 }
