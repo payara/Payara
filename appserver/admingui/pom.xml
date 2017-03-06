@@ -148,6 +148,7 @@
         <module>snmp-notifier-console-plugin</module>
         <module>xmpp-notifier-console-plugin</module>
         <module>jms-notifier-console-plugin</module>
+        <module>datadog-notifier-console-plugin</module>
         <module>healthcheck-service-console-plugin</module>
         <module>newrelic-notifier-console-plugin</module>
     </modules>

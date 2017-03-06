@@ -63,6 +63,9 @@ public abstract class NotificationRunnable<MQ extends MessageQueue, EO extends N
     protected static final String NEWRELIC_ENDPOINT = "https://insights-collector.newrelic.com/v1";
     protected static final String NEWRELIC_RESOURCE = "/accounts/{0}/events";
 
+    protected static final String DATADOG_ENDPOINT = "https://app.datadoghq.com/api/v1/events";
+    protected static final String DATADOG_RESOURCE = "?api_key={0}";
+
     protected static final String HEADER_CONTENTTYPE = "Content-Type";
 
     protected MQ queue;
