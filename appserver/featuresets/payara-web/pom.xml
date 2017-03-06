@@ -190,6 +190,12 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-datadog</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
