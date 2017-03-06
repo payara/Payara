@@ -23,6 +23,6 @@ file and include the License file at packager/legal/LICENSE.txt.
         type="fish.payara.admingui:navNode"
         priority="800"
         parentId="tree"
-        content="/support/pluginTreeNodeSupport.jsf"
+        content="support/pluginTreeNodeSupport.jsf"
     />
 </console-config>

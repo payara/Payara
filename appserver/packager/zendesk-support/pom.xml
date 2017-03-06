@@ -103,6 +103,11 @@
             <artifactId>zendesk-support</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>payara-support</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

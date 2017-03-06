@@ -31,7 +31,7 @@
                         <!-- _include does not work. See Felix-620.
                         <_include>osgi.bundle</_include>
                         -->
-                        <Export-Package>org.glassfish.jdbc.admingui</Export-Package>
+                        <Export-Package>fish.payara.admingui.support</Export-Package>
                     </instructions>
                 </configuration>
                 <executions>
