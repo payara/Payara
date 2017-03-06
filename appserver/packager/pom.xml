@@ -172,6 +172,8 @@
         <module>notification-slack</module>
         <module>notification-snmp</module>
         <module>notification-xmpp</module>
+        <module>notification-newrelic</module>
+        <module>notification-datadog</module>
         <module>zendesk-support</module>
     </modules>
 

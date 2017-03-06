@@ -18,6 +18,7 @@ import fish.payara.nucleus.notification.configuration.NotificationServiceConfigu
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.EventSource;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationExecutionOptions;
 import fish.payara.nucleus.notification.log.LogNotifier;
@@ -132,7 +133,8 @@ public class NotificationService implements EventListener, ConfigListener {
         }
     }
 
-    public void notify(NotificationEvent notificationEvent) {
+    public void notify(EventSource source, NotificationEvent notificationEvent) {
+        notificationEvent.setEventType(source.getValue());
         notificationEventBus.postEvent(notificationEvent);
     }
 
