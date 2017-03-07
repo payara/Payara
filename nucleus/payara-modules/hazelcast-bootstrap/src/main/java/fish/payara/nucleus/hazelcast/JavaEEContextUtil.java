@@ -27,6 +27,8 @@ import javax.enterprise.inject.spi.CDI;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.jboss.weld.context.bound.BoundRequestContext;
 
 /**
@@ -39,6 +41,7 @@ public class JavaEEContextUtil {
         this.serverContext = serverContext;
         capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
         compEnvMgr = serverContext.getDefaultServices().getService(ComponentEnvManager.class);
+        appRegistry = serverContext.getDefaultServices().getService(ApplicationRegistry.class);
     }
 
     /**
@@ -100,6 +103,25 @@ public class JavaEEContextUtil {
         postInvoke(context.rootCtx);
     }
 
+    /**
+     * @return application name or null if there is no invocation context
+     */
+    String getApplicationName() {
+        ComponentInvocation ci = serverContext.getInvocationManager().getCurrentInvocation();
+        return ci != null? ci.getAppName() : null;
+    }
+
+    void setApplicationContext(String appName) {
+        if(appName == null) {
+            return;
+        }
+        ApplicationInfo appInfo = appRegistry.get(appName);
+        if(appInfo != null) {
+            Utility.setContextClassLoader(appInfo.getAppClassLoader());
+        }
+    }
+
+
     public static class Context {
         public Context(ClassLoader classLoader, ComponentInvocation invocation) {
             this.classLoader = classLoader;
@@ -126,4 +148,5 @@ public class JavaEEContextUtil {
     private final ServerContext serverContext;
     private final ComponentInvocation capturedInvocation;
     private final ComponentEnvManager compEnvMgr;
+    private final ApplicationRegistry appRegistry;
 }

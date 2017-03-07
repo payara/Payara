@@ -20,11 +20,15 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
+import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.PartitionGroupConfig;
+import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.nio.serialization.Serializer;
+import com.hazelcast.nio.serialization.StreamSerializer;
 import fish.payara.nucleus.events.HazelcastEvents;
 import java.io.File;
 import java.io.IOException;
@@ -209,8 +213,19 @@ public class HazelcastCore implements EventListener {
                     config = new Config();
                 }
                 config.setClassLoader(clh.getCommonClassLoader());
+                Serializer ser = config.getSerializationConfig().getGlobalSerializerConfig().getImplementation();
+                if(ser instanceof StreamSerializer) {
+                    config.getSerializationConfig().getGlobalSerializerConfig().setImplementation(new PayaraHazelcastSerializer(context, (StreamSerializer<?>)ser));
+                }
+                else {
+                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Global serializer is not StreamSerializer: {0}", ser.getClass().getName());
+                }
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
+                SerializationConfig serializationConfig = new SerializationConfig()
+                        .setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(new PayaraHazelcastSerializer(context))
+                                .setOverrideJavaSerialization(true));
+                config.setSerializationConfig(serializationConfig);
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 config.getNetworkConfig().setPortAutoIncrement(true);
                 mcConfig.setEnabled(true);                // check Payara micro overrides
