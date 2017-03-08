@@ -39,9 +39,9 @@
  */
 package fish.payara.nucleus.hazelcast.contextproxy;
 
-import fish.payara.nucleus.hazelcast.JavaEEContextUtil;
-import fish.payara.nucleus.hazelcast.JavaEEContextUtil.Context;
-import fish.payara.nucleus.hazelcast.JavaEEContextUtil.RequestContext;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import org.glassfish.internal.api.JavaEEContextUtil.RequestContext;
 import java.util.Collection;
 import java.util.Map;
 import javax.cache.Cache;

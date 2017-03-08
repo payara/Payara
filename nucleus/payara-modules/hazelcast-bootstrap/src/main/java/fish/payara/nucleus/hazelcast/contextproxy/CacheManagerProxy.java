@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast.contextproxy;
 
-import fish.payara.nucleus.hazelcast.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CompleteConfiguration;
@@ -59,15 +59,15 @@ public class CacheManagerProxy implements CacheManager {
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException {
         Cache<K, V> cache;
-        JavaEEContextUtil ctxUtil = new JavaEEContextUtil(serverContext);
-        if(config instanceof CompleteConfiguration) {
+        JavaEEContextUtil ctxUtil = serverContext.getDefaultServices().getService(JavaEEContextUtil.class);
+        if(ctxUtil != null && config instanceof CompleteConfiguration) {
             CompleteConfiguration<K, V> cfg = new CompleteConfigurationProxy<>((CompleteConfiguration<K, V>)config, ctxUtil);
             cache = delegate.createCache(string, cfg);
         } else {
             cache = delegate.createCache(string, config);
         }
 
-        return new CacheProxy<>(cache, ctxUtil);
+        return ctxUtil != null? new CacheProxy<>(cache, ctxUtil) : cache;
     }
 
     private interface Exclusions {

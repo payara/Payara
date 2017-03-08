@@ -37,36 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast;
+package fish.payara.appserver.context;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.util.Utility;
+import org.glassfish.internal.api.JavaEEContextUtil;
 import java.util.HashMap;
-import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.enterprise.inject.spi.CDI;
+import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.jboss.weld.context.bound.BoundRequestContext;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * utility to create / push Java EE thread context
  * 
  * @author lprimak
  */
-public class JavaEEContextUtil {
-    public JavaEEContextUtil(ServerContext serverContext) {
-        this.serverContext = serverContext;
+@Service
+@PerLookup
+public class JavaEEContextUtilImpl implements JavaEEContextUtil {
+    @PostConstruct
+    void init() {
         capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
-        compEnvMgr = serverContext.getDefaultServices().getService(ComponentEnvManager.class);
-        appRegistry = serverContext.getDefaultServices().getService(ApplicationRegistry.class);
     }
 
     /**
@@ -74,6 +77,7 @@ public class JavaEEContextUtil {
      *
      * @return old ClassLoader, or null if no invocation has been created
      */
+    @Override
     public Context preInvoke() {
         ClassLoader oldClassLoader = Utility.getClassLoader();
         InvocationManager invMgr = serverContext.getInvocationManager();
@@ -91,10 +95,11 @@ public class JavaEEContextUtil {
         return new Context(oldClassLoader, invocationCreated? invMgr.getCurrentInvocation() : null);
     }
 
+    @Override
     public void postInvoke(Context ctx) {
-        if (ctx.invocation != null) {
-            serverContext.getInvocationManager().postInvoke(ctx.invocation);
-            Utility.setContextClassLoader(ctx.classLoader);
+        if (ctx.getInvocation() != null) {
+            getServerContext().getInvocationManager().postInvoke(ctx.getInvocation());
+            Utility.setContextClassLoader(ctx.getClassLoader());
         }
     }
 
@@ -104,13 +109,14 @@ public class JavaEEContextUtil {
      *
      * @return new context that was created
      */
+    @Override
     public RequestContext preInvokeRequestContext() {
         Context rootCtx = preInvoke();
         BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
         RequestContext context = new RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<String, Object>());
-        if(context.ctx != null) {
-            context.ctx.associate(context.storage);
-            context.ctx.activate();
+        if(context.getCtx() != null) {
+            context.getCtx().associate(context.getStorage());
+            context.getCtx().activate();
         }
         return context;
     }
@@ -120,23 +126,31 @@ public class JavaEEContextUtil {
      *
      * @param context to be popped
      */
+    @Override
     public void postInvokeRequestContext(RequestContext context) {
-        if (context.ctx != null) {
-            context.ctx.deactivate();
-            context.ctx.dissociate(context.storage);
+        if (context.getCtx() != null) {
+            context.getCtx().deactivate();
+            context.getCtx().dissociate(context.getStorage());
         }
-        postInvoke(context.rootCtx);
+        postInvoke(context.getRootCtx());
     }
 
     /**
      * @return application name or null if there is no invocation context
      */
-    String getApplicationName() {
+    @Override
+    public String getApplicationName() {
         ComponentInvocation ci = serverContext.getInvocationManager().getCurrentInvocation();
         return ci != null? ci.getAppName() : null;
     }
 
-    void setApplicationContext(String appName) {
+    /**
+     * set context class loader by appName
+     *
+     * @param appName
+     */
+    @Override
+    public void setApplicationContext(String appName) {
         if(appName == null) {
             return;
         }
@@ -146,22 +160,9 @@ public class JavaEEContextUtil {
         }
     }
 
-    @RequiredArgsConstructor
-    public static class Context {
-        final ClassLoader classLoader;
-        final ComponentInvocation invocation;
-    }
 
-    @RequiredArgsConstructor
-    public static class RequestContext {
-        final Context rootCtx;
-        final BoundRequestContext ctx;
-        final Map<String, Object> storage;
-    }
-
-
-    private final @Getter(AccessLevel.PACKAGE) ServerContext serverContext;
-    private final ComponentInvocation capturedInvocation;
-    private final ComponentEnvManager compEnvMgr;
-    private final ApplicationRegistry appRegistry;
+    private @Inject @Getter(AccessLevel.PACKAGE) ServerContext serverContext;
+    private ComponentInvocation capturedInvocation;
+    private @Inject ComponentEnvManager compEnvMgr;
+    private @Inject ApplicationRegistry appRegistry;
 }

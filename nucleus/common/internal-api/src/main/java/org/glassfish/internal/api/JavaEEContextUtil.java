@@ -37,37 +37,75 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast.contextproxy;
+package org.glassfish.internal.api;
 
-import org.glassfish.internal.api.JavaEEContextUtil;
-import org.glassfish.internal.api.JavaEEContextUtil.Context;
-import javax.cache.processor.EntryProcessor;
-import javax.cache.processor.EntryProcessorException;
-import javax.cache.processor.MutableEntry;
+import java.util.Map;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.jboss.weld.context.bound.BoundRequestContext;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * push Java EE environment before invoking delegate
- *
+ * utility to create / push Java EE thread context
+ * 
  * @author lprimak
- * @param <K>
- * @param <V>
- * @param <T>
  */
-@RequiredArgsConstructor
-public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>{
-    @Override
-    public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
-        Context ctx = null;
-        try {
-            ctx = ctxUtil.preInvoke();
-            return delegate.process(me, os);
-        }
-        finally {
-            ctxUtil.postInvoke(ctx);
-        }
+@Contract
+public interface JavaEEContextUtil {
+    /**
+     * pushes Java EE invocation context
+     *
+     * @return old ClassLoader, or null if no invocation has been created
+     */
+    Context preInvoke();
+
+    /**
+     * pushes invocation context onto the stack
+     * Also creates Request scope
+     *
+     * @return new context that was created
+     */
+    RequestContext preInvokeRequestContext();
+
+    /**
+     * context to pop from the stack
+     *
+     * @param ctx to be popped
+     */
+    void postInvoke(Context ctx);
+    /**
+     * context to pop from the stack
+     *
+     * @param context to be popped
+     */
+    void postInvokeRequestContext(RequestContext context);
+
+    /**
+     * @return application name or null if there is no invocation context
+     */
+    String getApplicationName();
+
+    /**
+     * set context class loader by appName
+     *
+     * @param appName
+     */
+    void setApplicationContext(String appName);
+
+    
+    @RequiredArgsConstructor
+    @Getter
+    public static class Context {
+        final ClassLoader classLoader;
+        final ComponentInvocation invocation;
     }
 
-    private final EntryProcessor<K, V, T> delegate;
-    private final JavaEEContextUtil ctxUtil;
+    @RequiredArgsConstructor
+    @Getter
+    public static class RequestContext {
+        final Context rootCtx;
+        final BoundRequestContext ctx;
+        final Map<String, Object> storage;
+    }
 }

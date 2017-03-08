@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import com.google.common.base.Optional;
+import org.glassfish.internal.api.JavaEEContextUtil;
 import com.hazelcast.internal.serialization.impl.JavaDefaultSerializers;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
@@ -52,9 +52,9 @@ import java.io.IOException;
  */
 public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
     @SuppressWarnings("unchecked")
-    public PayaraHazelcastSerializer(JavaEEContextUtil ctxUtil, Optional<StreamSerializer<?>> delegate) {
+    public PayaraHazelcastSerializer(JavaEEContextUtil ctxUtil, StreamSerializer<?> delegate) {
         this.ctxUtil = ctxUtil;
-        this.delegate = (StreamSerializer<Object>)delegate.or(new JavaDefaultSerializers.JavaSerializer(true, false));
+        this.delegate = delegate != null? (StreamSerializer<Object>)delegate : new JavaDefaultSerializers.JavaSerializer(true, false);
     }
 
 
