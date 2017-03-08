@@ -37,8 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast;
+package fish.payara.nucleus.hazelcast.contextproxy;
 
+import fish.payara.nucleus.hazelcast.JavaEEContextUtil;
 import java.net.URI;
 import java.util.Properties;
 import javax.cache.CacheManager;

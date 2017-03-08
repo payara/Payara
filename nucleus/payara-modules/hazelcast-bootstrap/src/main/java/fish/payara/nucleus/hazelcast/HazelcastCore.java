@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.hazelcast;
 
+import fish.payara.nucleus.hazelcast.contextproxy.CacheManagerProxy;
+import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import com.google.common.base.Optional;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;

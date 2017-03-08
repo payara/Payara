@@ -37,41 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast;
+package fish.payara.nucleus.hazelcast.contextproxy;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-import javax.cache.configuration.CompleteConfiguration;
-import javax.cache.configuration.Configuration;
+import fish.payara.nucleus.hazelcast.JavaEEContextUtil;
+import fish.payara.nucleus.hazelcast.JavaEEContextUtil.Context;
+import javax.cache.processor.EntryProcessor;
+import javax.cache.processor.EntryProcessorException;
+import javax.cache.processor.MutableEntry;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
 
 /**
- * Proxy all applicable factory calls
- * so Java EE context is propagated from within Hazelcast threads
+ * push Java EE environment before invoking delegate
  *
  * @author lprimak
+ * @param <K>
+ * @param <V>
+ * @param <T>
  */
 @RequiredArgsConstructor
-public class CacheManagerProxy implements CacheManager {
+public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>{
     @Override
-    public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException {
-        Cache<K, V> cache;
-        if(config instanceof CompleteConfiguration) {
-            CompleteConfiguration<K, V> cfg = new CompleteConfigurationProxy<>((CompleteConfiguration<K, V>)config, ctxUtil);
-            cache = delegate.createCache(string, cfg);
-        } else {
-            cache = delegate.createCache(string, config);
+    public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
+        Context ctx = null;
+        try {
+            ctx = ctxUtil.preInvoke();
+            return delegate.process(me, os);
         }
-
-        return new CacheProxy<>(cache, ctxUtil);
+        finally {
+            ctxUtil.postInvoke(ctx);
+        }
     }
 
-    private interface Exclusions {
-        public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException;
-    }
-
-
-    private final @Delegate(excludes = Exclusions.class ) CacheManager delegate;
+    private final EntryProcessor<K, V, T> delegate;
     private final JavaEEContextUtil ctxUtil;
 }
