@@ -328,8 +328,8 @@ public class HazelcastCore implements EventListener {
             hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);
             events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
             bindToJNDI();
+            booted = true;
         }
-        booted = true;
     }
 
     private void bindToJNDI() {
