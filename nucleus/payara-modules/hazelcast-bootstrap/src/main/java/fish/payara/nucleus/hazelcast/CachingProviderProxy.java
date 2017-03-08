@@ -39,39 +39,41 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import javax.cache.Cache;
+import java.net.URI;
+import java.util.Properties;
 import javax.cache.CacheManager;
-import javax.cache.configuration.CompleteConfiguration;
-import javax.cache.configuration.Configuration;
+import javax.cache.spi.CachingProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 
 /**
- * Proxy all applicable factory calls
- * so Java EE context is propagated from within Hazelcast threads
  *
  * @author lprimak
  */
 @RequiredArgsConstructor
-public class CacheManagerProxy implements CacheManager {
+public class CachingProviderProxy implements CachingProvider {
     @Override
-    public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException {
-        Cache<K, V> cache;
-        if(config instanceof CompleteConfiguration) {
-            CompleteConfiguration<K, V> cfg = new CompleteConfigurationProxy<>((CompleteConfiguration<K, V>)config, ctxUtil);
-            cache = delegate.createCache(string, cfg);
-        } else {
-            cache = delegate.createCache(string, config);
-        }
-
-        return new CacheProxy<>(cache, ctxUtil);
+    public CacheManager getCacheManager(URI uri, ClassLoader cl, Properties prprts) {
+        return new CacheManagerProxy(delegate.getCacheManager(uri, cl, prprts), ctxUtil);
     }
+
+    @Override
+    public CacheManager getCacheManager(URI uri, ClassLoader cl) {
+        return new CacheManagerProxy(delegate.getCacheManager(uri, cl), ctxUtil);
+    }
+
+    @Override
+    public CacheManager getCacheManager() {
+        return new CacheManagerProxy(delegate.getCacheManager(), ctxUtil);
+    }
+
 
     private interface Exclusions {
-        public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException;
+        CacheManager getCacheManager();
+        CacheManager getCacheManager(URI uri, ClassLoader cl, Properties prprts);
+        CacheManager getCacheManager(URI uri, ClassLoader cl);
     }
 
-
-    private final @Delegate(excludes = Exclusions.class ) CacheManager delegate;
+    private final @Delegate(excludes = Exclusions.class) CachingProvider delegate;
     private final JavaEEContextUtil ctxUtil;
 }
