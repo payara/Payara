@@ -40,13 +40,20 @@
 package fish.payara.nucleus.hazelcast;
 
 import fish.payara.nucleus.hazelcast.JavaEEContextUtil.Context;
+import fish.payara.nucleus.hazelcast.JavaEEContextUtil.RequestContext;
 import java.util.Map;
 import java.util.Set;
 import javax.cache.Cache;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.Factory;
+import javax.cache.event.CacheEntryCreatedListener;
+import javax.cache.event.CacheEntryEvent;
 import javax.cache.event.CacheEntryEventFilter;
+import javax.cache.event.CacheEntryExpiredListener;
 import javax.cache.event.CacheEntryListener;
+import javax.cache.event.CacheEntryListenerException;
+import javax.cache.event.CacheEntryRemovedListener;
+import javax.cache.event.CacheEntryUpdatedListener;
 import javax.cache.integration.CompletionListener;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
@@ -123,8 +130,114 @@ public class CacheProxy<K, V> implements Cache<K, V> {
         return delegate.invokeAll(set, ep, os);
     }
 
+    @RequiredArgsConstructor
+    private static class CELProxy<K, V> implements CacheEntryCreatedListener<K, V>, CacheEntryExpiredListener<K, V>,
+            CacheEntryRemovedListener<K, V>, CacheEntryUpdatedListener<K, V> {
+        @Override
+        public void onCreated(Iterable<CacheEntryEvent<? extends K, ? extends V>> itrbl) throws CacheEntryListenerException {
+            CacheEntryCreatedListener<K, V> listener = (CacheEntryCreatedListener<K, V>)delegate;
+            RequestContext ctx = ctxUtil.preInvokeRequestContext();
+            try {
+                listener.onCreated(itrbl);
+            }
+            finally {
+                ctxUtil.postInvokeRequestContext(ctx);
+            }
+        }
 
-    // +++ TODO create entry listner proxy
+        @Override
+        public void onExpired(Iterable<CacheEntryEvent<? extends K, ? extends V>> itrbl) throws CacheEntryListenerException {
+            CacheEntryExpiredListener<K, V> listener = (CacheEntryExpiredListener<K, V>)delegate;
+            RequestContext ctx = ctxUtil.preInvokeRequestContext();
+            try {
+                listener.onExpired(itrbl);
+            }
+            finally {
+                ctxUtil.postInvokeRequestContext(ctx);
+            }
+        }
+
+        @Override
+        public void onRemoved(Iterable<CacheEntryEvent<? extends K, ? extends V>> itrbl) throws CacheEntryListenerException {
+            CacheEntryRemovedListener<K, V> listener = (CacheEntryRemovedListener<K, V>)delegate;
+            RequestContext ctx = ctxUtil.preInvokeRequestContext();
+            try {
+                listener.onRemoved(itrbl);
+            }
+            finally {
+                ctxUtil.postInvokeRequestContext(ctx);
+            }
+        }
+
+        @Override
+        public void onUpdated(Iterable<CacheEntryEvent<? extends K, ? extends V>> itrbl) throws CacheEntryListenerException {
+            CacheEntryUpdatedListener<K, V> listener = (CacheEntryUpdatedListener<K, V>)delegate;
+            RequestContext ctx = ctxUtil.preInvokeRequestContext();
+            try {
+                listener.onUpdated(itrbl);
+            }
+            finally {
+                ctxUtil.postInvokeRequestContext(ctx);
+            }
+        }
+
+        private final CacheEntryListener<K, V> delegate;
+        private final JavaEEContextUtil ctxUtil;
+    }
+
+    @RequiredArgsConstructor
+    private static class CELFProxy<K, V> implements Factory<CacheEntryListener<? super K, ? super V>> {
+        @Override
+        public CacheEntryListener<? super K, ? super V> create() {
+            Context ctx = ctxUtil.preInvoke();
+            try {
+                return new CELProxy<>(delegate.create(), ctxUtil);
+            }
+            finally {
+                ctxUtil.postInvoke(ctx);
+            }
+        }
+
+        private final Factory<CacheEntryListener<? super K, ? super V>> delegate;
+        private final JavaEEContextUtil ctxUtil;
+        private static final long serialVersionUID = 1L;
+    }
+
+    @RequiredArgsConstructor
+    private static class CEEVProxy<K, V> implements CacheEntryEventFilter<K, V> {
+        @Override
+        public boolean evaluate(CacheEntryEvent<? extends K, ? extends V> cee) throws CacheEntryListenerException {
+            RequestContext ctx = ctxUtil.preInvokeRequestContext();
+            try {
+                return delegate.evaluate(cee);
+            }
+            finally {
+                ctxUtil.postInvokeRequestContext(ctx);
+            }
+        }
+
+        private final CacheEntryEventFilter<K, V> delegate;
+        private final JavaEEContextUtil ctxUtil;
+    }
+
+    @RequiredArgsConstructor
+    private static class CEEVFProxy<K, V> implements Factory<CacheEntryEventFilter<? super K, ? super V>> {
+        @Override
+        public CacheEntryEventFilter<? super K, ? super V> create() {
+            Context ctx = ctxUtil.preInvoke();
+            try {
+                return new CEEVProxy<>(delegate.create(), ctxUtil);
+            }
+            finally {
+                ctxUtil.postInvoke(ctx);
+            }
+        }
+
+        private final Factory<CacheEntryEventFilter<? super K, ? super V>> delegate;
+        private final JavaEEContextUtil ctxUtil;
+        private static final long serialVersionUID = 1L;
+    }
+
     @RequiredArgsConstructor
     private static class CELCProxy<K, V> implements CacheEntryListenerConfiguration<K, V> {
         @Override
@@ -132,7 +245,7 @@ public class CacheProxy<K, V> implements Cache<K, V> {
             Context ctx = null;
             try {
                 ctxUtil.preInvoke();
-                return delegate.getCacheEntryListenerFactory();
+                return new CELFProxy<>(delegate.getCacheEntryListenerFactory(), ctxUtil);
             }
             finally {
                 ctxUtil.postInvoke(ctx);
@@ -156,7 +269,7 @@ public class CacheProxy<K, V> implements Cache<K, V> {
             Context ctx = null;
             try {
                 ctxUtil.preInvoke();
-                return delegate.getCacheEntryEventFilterFactory();
+                return new CEEVFProxy<>(delegate.getCacheEntryEventFilterFactory(), ctxUtil);
             }
             finally {
                 ctxUtil.postInvoke(ctx);
