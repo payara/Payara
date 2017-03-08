@@ -46,6 +46,7 @@ import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  * Proxy all applicable factory calls
@@ -58,6 +59,7 @@ public class CacheManagerProxy implements CacheManager {
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException {
         Cache<K, V> cache;
+        JavaEEContextUtil ctxUtil = new JavaEEContextUtil(serverContext);
         if(config instanceof CompleteConfiguration) {
             CompleteConfiguration<K, V> cfg = new CompleteConfigurationProxy<>((CompleteConfiguration<K, V>)config, ctxUtil);
             cache = delegate.createCache(string, cfg);
@@ -74,5 +76,5 @@ public class CacheManagerProxy implements CacheManager {
 
 
     private final @Delegate(excludes = Exclusions.class ) CacheManager delegate;
-    private final JavaEEContextUtil ctxUtil;
+    private final ServerContext serverContext;
 }

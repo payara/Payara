@@ -39,7 +39,6 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import fish.payara.nucleus.hazelcast.contextproxy.CacheManagerProxy;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import com.google.common.base.Optional;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
@@ -117,8 +116,6 @@ public class HazelcastCore implements EventListener {
     @Inject
     private ClassLoaderHierarchy clh;
 
-    private JavaEEContextUtil ctxUtil;
-    
     public static HazelcastCore getCore() {
         return theCore;
     }
@@ -128,7 +125,6 @@ public class HazelcastCore implements EventListener {
         theCore = this;
         events.register(this);
         enabled = Boolean.valueOf(configuration.getEnabled());
-        ctxUtil = new JavaEEContextUtil(context);
     }
     
     public String getMemberName() {
@@ -230,6 +226,7 @@ public class HazelcastCore implements EventListener {
             File serverConfigFile = new File(serverConfigURL.getPath());
             hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
             File file = new File(hazelcastFilePath);
+            JavaEEContextUtil ctxUtil = new JavaEEContextUtil(context);
             if (file.exists()) {
                 config = ConfigLoader.load(hazelcastFilePath);
                 if (config == null) {
@@ -338,7 +335,7 @@ public class HazelcastCore implements EventListener {
 
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
-            hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
+            hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);
             events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
         }
         booted = true;
@@ -349,8 +346,8 @@ public class HazelcastCore implements EventListener {
             InitialContext ctx;
             ctx = new InitialContext();
             ctx.bind(configuration.getJNDIName(), theInstance);
-            ctx.bind(configuration.getCachingProviderJNDIName(), new CachingProviderProxy(hazelcastCachingProvider, ctxUtil));
-            ctx.bind(configuration.getCacheManagerJNDIName(), new CacheManagerProxy(hazelcastCachingProvider.getCacheManager(), ctxUtil));
+            ctx.bind(configuration.getCachingProviderJNDIName(), hazelcastCachingProvider);
+            ctx.bind(configuration.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at {0}", configuration.getJNDIName());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at {0}", configuration.getCachingProviderJNDIName());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at {0}", configuration.getCacheManagerJNDIName());

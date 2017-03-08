@@ -39,13 +39,13 @@
  */
 package fish.payara.nucleus.hazelcast.contextproxy;
 
-import fish.payara.nucleus.hazelcast.JavaEEContextUtil;
 import java.net.URI;
 import java.util.Properties;
 import javax.cache.CacheManager;
 import javax.cache.spi.CachingProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  *
@@ -55,17 +55,17 @@ import lombok.experimental.Delegate;
 public class CachingProviderProxy implements CachingProvider {
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader cl, Properties prprts) {
-        return new CacheManagerProxy(delegate.getCacheManager(uri, cl, prprts), ctxUtil);
+        return new CacheManagerProxy(delegate.getCacheManager(uri, cl, prprts), serverContext);
     }
 
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader cl) {
-        return new CacheManagerProxy(delegate.getCacheManager(uri, cl), ctxUtil);
+        return new CacheManagerProxy(delegate.getCacheManager(uri, cl), serverContext);
     }
 
     @Override
     public CacheManager getCacheManager() {
-        return new CacheManagerProxy(delegate.getCacheManager(), ctxUtil);
+        return new CacheManagerProxy(delegate.getCacheManager(), serverContext);
     }
 
 
@@ -76,5 +76,5 @@ public class CachingProviderProxy implements CachingProvider {
     }
 
     private final @Delegate(excludes = Exclusions.class) CachingProvider delegate;
-    private final JavaEEContextUtil ctxUtil;
+    private final ServerContext serverContext;
 }
