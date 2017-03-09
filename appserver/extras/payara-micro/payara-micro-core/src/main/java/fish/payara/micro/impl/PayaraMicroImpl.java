@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.impl;
 
+import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.boot.runtime.BootCommand;
 import fish.payara.micro.cmd.options.RuntimeOptions;
@@ -1737,19 +1738,22 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         GAVConvertor gavConvertor = new GAVConvertor();
 
         for (String gav : GAVs) {
-            Map.Entry<String, URL> artefactMapEntry
-                    = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
+            try {
+                Map.Entry<String, URL> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
 
-            if (deploymentURLsMap == null) {
-                deploymentURLsMap = new LinkedHashMap<>();
-            }
+                if (deploymentURLsMap == null) {
+                    deploymentURLsMap = new LinkedHashMap<>();
+                }
 
-            String contextRoot = artefactMapEntry.getKey();
-            if ("ROOT".equals(contextRoot)) {
-                contextRoot = "/";
+                String contextRoot = artefactMapEntry.getKey();
+                if ("ROOT".equals(contextRoot)) {
+                    contextRoot = "/";
+                }
+                
+                deploymentURLsMap.put(contextRoot, artefactMapEntry.getValue());
+            } catch (MalformedURLException ex) {
+                throw new GlassFishException(ex.getMessage());
             }
-            deploymentURLsMap.put(contextRoot,
-                    artefactMapEntry.getValue());
         }
     }
 

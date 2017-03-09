@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation and/or its affiliates.
+ Copyright (c) 2016-2017 Payara Foundation and/or its affiliates.
  All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
@@ -17,7 +17,7 @@
  file and include the License file at packager/legal/LICENSE.txt.
  */
 
-package fish.payara.micro.impl;
+package fish.payara.deployment.util;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.embeddable.GlassFishException;
 
 /**
  * Performs the functions required for converting GAV (group, artefact, version)
@@ -48,29 +47,16 @@ public class GAVConvertor {
      * @param repositoryURLs A list of repository URLs to search for the 
      * target artefact in
      * @return A URL matching the provided GAV
-     * @throws GlassFishException Thrown if an artefact cannot be found for
+     * @throws MalformedURLException Thrown if an artefact cannot be found for
      * the provided GAV
      */
-    public Map.Entry<String, URL> getArtefactMapEntry(String GAV, List<URL> repositoryURLs)
-            throws GlassFishException {
+    public Map.Entry<String, URL> getArtefactMapEntry(String GAV, List<URL> repositoryURLs) throws MalformedURLException {
         final Map<String, String> GAVMap = splitGAV(GAV);
         Map.Entry<String, URL> artefactMapEntry = null;
         
-        try {
-            final String relativeURLString = constructRelativeURLString(GAVMap);
-            final URL artefactURL = findArtefactURL(repositoryURLs, 
-                    relativeURLString);
-            artefactMapEntry = new AbstractMap.SimpleEntry<>(GAVMap.get("artefactId"), 
-                            artefactURL);
-        } catch (MalformedURLException ex) {
-            logger.log(Level.WARNING, "Error converting GAV to URL: {0}", GAV);
-        }
-        
-        if (artefactMapEntry == null) {
-            throw new GlassFishException("Error getting artefact URL for GAV: " 
-                + GAVMap.get("groupId") + ", " + GAVMap.get("artefactId")
-                + ", " + GAVMap.get("versionNumber"));
-        }
+        final String relativeURLString = constructRelativeURLString(GAVMap);
+        final URL artefactURL = findArtefactURL(repositoryURLs, relativeURLString);
+        artefactMapEntry = new AbstractMap.SimpleEntry<>(GAVMap.get("artefactId"), artefactURL);
         
         return artefactMapEntry;
     } 
@@ -83,7 +69,7 @@ public class GAVConvertor {
      * @return A Map containing the groupId, artefactId, and versionNumber of 
      * the provided GAV as Strings
      */
-    private Map<String, String> splitGAV(String GAV) throws GlassFishException {
+    private Map<String, String> splitGAV(String GAV) throws MalformedURLException {
         final String[] splitGAV = GAV.split(",|:");
         final Map<String, String> GAVMap = new HashMap<>();
         try {
@@ -91,9 +77,9 @@ public class GAVConvertor {
             GAVMap.put("artefactId", splitGAV[1]);
             GAVMap.put("versionNumber", splitGAV[2]);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            throw new GlassFishException("Error converting String \"" + GAV
-                    + "\" to GAV, make sure it takes the form of "
-                    + "groupId,artifactId,version");
+            logger.log(Level.WARNING, "Error converting String \"{0}\" to GAV, make sure it takes the form of "
+                    + "groupId,artifactId,version", GAV);
+            throw new MalformedURLException(ex.getMessage());
         }
         
         return GAVMap;
@@ -106,13 +92,10 @@ public class GAVConvertor {
      * @return A String representing the relative URL of the provided GAV.
      * @throws MalformedURLException 
      */
-    private String constructRelativeURLString(Map<String, String> GAVMap) 
-            throws MalformedURLException {
-        final String artefactFileName = GAVMap.get("artefactId") + "-"
-                + GAVMap.get("versionNumber");
-        final String relativeURLString = GAVMap.get("groupId") + "/"
-                + GAVMap.get("artefactId") + "/" + GAVMap.get("versionNumber")
-                + "/" + artefactFileName;
+    private String constructRelativeURLString(Map<String, String> GAVMap) throws MalformedURLException {
+        final String artefactFileName = GAVMap.get("artefactId") + "-" + GAVMap.get("versionNumber");
+        final String relativeURLString = GAVMap.get("groupId") + "/" + GAVMap.get("artefactId") + "/" 
+                + GAVMap.get("versionNumber") + "/" + artefactFileName;
         
         return relativeURLString;
     }
@@ -125,10 +108,9 @@ public class GAVConvertor {
      * @param relativeURLString A String representation of the relative
      * artefact URL.
      * @return A valid URL to download the target artefact from.
-     * @throws GlassFishException 
+     * @throws IOException 
      */
-    private URL findArtefactURL(List<URL> repositoryURLs, String relativeURLString) 
-            throws GlassFishException {     
+    private URL findArtefactURL(List<URL> repositoryURLs, String relativeURLString) throws MalformedURLException {     
         final String[] archiveTypes = new String[]{".jar", ".war", ".ear"};
         
         boolean validURLFound = false;
@@ -140,33 +122,25 @@ public class GAVConvertor {
             // Append each archive type until a valid URL is found
             for (String archiveType : archiveTypes) { 
                 try {
-                    artefactURL = new URL(repositoryURL, relativeURLString
-                            + archiveType);
+                    artefactURL = new URL(repositoryURL, relativeURLString + archiveType);
 
-                    HttpURLConnection httpConnection = 
-                            (HttpURLConnection) artefactURL.openConnection();
+                    HttpURLConnection httpConnection = (HttpURLConnection) artefactURL.openConnection();
                     httpConnection.setRequestMethod("HEAD");
 
-                    if (httpConnection.getResponseCode() == 
-                            HttpURLConnection.HTTP_OK) {
+                    if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                         validURLFound = true;
                         break;
                     } else {
-                        logger.log(Level.FINE, "Artefact not found at URL: {0}",
-                                artefactURL.toString());
+                        logger.log(Level.FINE, "Artefact not found at URL: {0}", artefactURL.toString());
                     }
                 } catch (MalformedURLException ex) {
-                    String[] errorParameters = new String[]{repositoryURL.toString(), 
-                        relativeURLString, archiveType};
-                    logger.log(Level.WARNING, "Error creating URL from "
-                            + "repository URL, {0}, relative URL, {1}, and "
-                            + "archive type, {2}", errorParameters);
+                    String[] errorParameters = new String[]{repositoryURL.toString(), relativeURLString, archiveType};
+                    logger.log(Level.WARNING, "Error creating URL from repository URL, {0}, relative URL, {1}, and archive"
+                            + " type, {2}", errorParameters);
                 } catch (ProtocolException ex) {
-                    logger.log(Level.WARNING,"Error setting request method to "
-                            + "\"HEAD\"");
+                    logger.log(Level.WARNING,"Error setting request method to \"HEAD\"");
                 } catch (IOException ex) {
-                    logger.log(Level.WARNING, "Error getting HTTP connection "
-                            + "response code");
+                    logger.log(Level.WARNING, "Error getting HTTP connection response code");
                 }      
             }
             
@@ -176,8 +150,7 @@ public class GAVConvertor {
         }
         
         if (validURLFound == false) {
-            throw new GlassFishException("No artefact can be found for "
-                    + "relative URL: "+ relativeURLString);
+            throw new MalformedURLException("No artefact can be found for relative URL: "+ relativeURLString);
         }
         
         return artefactURL;
