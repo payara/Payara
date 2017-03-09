@@ -79,7 +79,7 @@ public class GAVConvertor {
         } catch (ArrayIndexOutOfBoundsException ex) {
             logger.log(Level.WARNING, "Error converting String \"{0}\" to GAV, make sure it takes the form of "
                     + "groupId,artifactId,version", GAV);
-            throw new MalformedURLException(ex.getMessage());
+            throw new MalformedURLException(ex.toString() + "\nGAV does not appear to be in the correct format");
         }
         
         return GAVMap;

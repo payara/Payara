@@ -45,7 +45,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 public class PhoneHomeTask implements Runnable {
     
     private final String PHONE_HOME_ID;
-    private static final String PHONE_HOME_URL = "http://192.168.1.88/phone/";
+    private static final String PHONE_HOME_URL = "http://www.payara.fish/phonehome";
     private static final String USER_AGENT = "Mozilla/5.0";
     private static final int CONN_TIMEOUT_MS = 5000;    // 5 seconds
     private static final int READ_TIMEOUT_MS = 5000;    // 5 seconds
