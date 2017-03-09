@@ -195,8 +195,8 @@
         <servlet-api.version>3.1.0</servlet-api.version>
         <grizzly.version>2.3.29</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
-        <hk2.version>2.5.0-b35</hk2.version>
-        <hk2.plugin.version>2.5.0-b35</hk2.plugin.version>
+        <hk2.version>2.5.0-b36</hk2.version>
+        <hk2.plugin.version>2.5.0-b36</hk2.plugin.version>
         <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
         <javax.validation.version>1.1.0.Final</javax.validation.version>
         <classmate.version>1.3.3</classmate.version>
