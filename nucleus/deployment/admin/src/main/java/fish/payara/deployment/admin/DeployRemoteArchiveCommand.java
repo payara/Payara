@@ -101,8 +101,8 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
     @Param(primary = true)
     private String path;
     
-    @Param(name = "additionalRepositories", optional = true, multiple = true, alias = "additionalrepositories")
-    private String[] additionalRepositories;
+    @Param(name = "additionalRepositories", optional = true, alias = "additionalrepositories")
+    private List<String> additionalRepositories;
     
     @Inject
     ServiceLocator serviceLocator;
@@ -138,6 +138,17 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                     name = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".ear"));
                 }
             }
+            
+            // If a context root hasn't been provided, get it from the URI
+            if (contextroot == null) {
+                if (path.endsWith(".jar")) {
+                    contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".jar"));
+                } else if (path.endsWith(".war")) {
+                    contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".war"));
+                } else if (path.endsWith(".ear")) {
+                    contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".ear"));
+                }
+            }
         } else {     
             try {
                 // If the path String doesn't start with Http or Https, then assume it's a GAV coordinate
@@ -153,9 +164,14 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                 // Download the file to temp, and return a File object to pass to the deploy command
                 fileToDeploy = convertUriToFile(artefactEntry.getValue().toURI());
                 
-                // If a name hasn't been provided, get it from the URI
+                // If a name hasn't been provided, get it from the artefact name
                 if (name == null) {
                     name = artefactEntry.getKey();
+                }
+                
+                // If a context root hasn't been provided, get it from the artefact name
+                if (contextroot == null) {
+                    contextroot = "/" + artefactEntry.getKey();
                 }
             } catch (MalformedURLException ex) {
                 logger.log(Level.SEVERE, ex.getMessage());
@@ -183,7 +199,7 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
         }
     }
     
-    private List<URL> formatRepositoryUrls(String[] additionalRepositories) throws MalformedURLException {
+    private List<URL> formatRepositoryUrls(List<String> additionalRepositories) throws MalformedURLException {
         List<URL> repositoryUrls = new ArrayList<>();
         for (String repository : additionalRepositories) {
             if (!repository.endsWith("/")) {
@@ -201,10 +217,7 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
         
         parameterMap.add("name", name);
         parameterMap.add("path", fileToDeploy.getAbsolutePath());
-        
-        if (contextroot != null) {
-            parameterMap.add("contextroot", contextroot);
-        }
+        parameterMap.add("contextroot", contextroot);
         
         if (virtualservers != null) {
             parameterMap.add("virtualservers", virtualservers);
