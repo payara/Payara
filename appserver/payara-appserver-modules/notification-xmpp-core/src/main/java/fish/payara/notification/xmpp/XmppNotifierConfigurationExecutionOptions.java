@@ -52,7 +52,7 @@ public class XmppNotifierConfigurationExecutionOptions extends NotifierConfigura
     private String username;
     private String password;
     private Boolean securityDisabled;
-    private String roomName;
+    private String roomId;
 
     XmppNotifierConfigurationExecutionOptions() {
         super(NotifierType.XMPP);
@@ -106,12 +106,12 @@ public class XmppNotifierConfigurationExecutionOptions extends NotifierConfigura
         this.securityDisabled = securityDisabled;
     }
 
-    public String getRoomName() {
-        return roomName;
+    public String getRoomId() {
+        return roomId;
     }
 
-    public void setRoomName(String roomName) {
-        this.roomName = roomName;
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
     }
 
     @Override
@@ -122,7 +122,7 @@ public class XmppNotifierConfigurationExecutionOptions extends NotifierConfigura
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", securityDisabled=" + securityDisabled +
-                ", roomName='" + roomName + '\'' +
+                ", roomId='" + roomId + '\'' +
                 "} " + super.toString();
     }
 }
