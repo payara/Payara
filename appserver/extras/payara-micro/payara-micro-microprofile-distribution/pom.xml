@@ -800,6 +800,14 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+          <!-- healthcheck package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>healthcheck</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
         <!-- request tracing package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
