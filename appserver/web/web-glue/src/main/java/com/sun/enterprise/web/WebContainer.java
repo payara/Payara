@@ -651,7 +651,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     componentEnvManager.unbindFromComponentNamespace(wbd);
                 }
             } catch (NamingException ex) {
-                logger.log(Level.SEVERE, EXCEPTION_DURING_DESTROY, ex);
+                logger.log(Level.SEVERE, LogFacade.EXCEPTION_DURING_DESTROY, ex);
             }
         }
     }
