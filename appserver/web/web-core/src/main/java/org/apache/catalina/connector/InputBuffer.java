@@ -97,6 +97,8 @@ public class InputBuffer extends Reader
 
     private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
+    
+    private RequestTracingService requestTracing;
 
     // -------------------------------------------------------------- Constants
 
