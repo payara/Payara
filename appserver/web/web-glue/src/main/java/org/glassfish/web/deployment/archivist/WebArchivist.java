@@ -348,18 +348,12 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
             if (mergedWebFragment == null) {
                 mergedWebFragment = wf;
             } else {
-                if(wf.isExists() && wf.isDistributable() == null) {
-                    wf.setDistributable(false);
-                }
                 mergedWebFragment.addWebBundleDescriptor(wf);
             }
         }
 
         if (mergedWebFragment != null) {
             mergedWebFragment.setExists(true);
-            if(descriptor.isDistributable() == null) {
-                descriptor.setDistributable(false);
-            }
             descriptor.addWebBundleDescriptor(mergedWebFragment);
 
             // if there any mapping stubs left, there is something invalid referenced from web.xml
