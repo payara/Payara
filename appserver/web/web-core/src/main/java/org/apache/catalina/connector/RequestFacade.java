@@ -842,7 +842,7 @@ public class RequestFacade
     
     public java.security.Principal getPrincipal() {
         if (request == null) {
-            throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
         }
         return request.getUserPrincipal();
     }
