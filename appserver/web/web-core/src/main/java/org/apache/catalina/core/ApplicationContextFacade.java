@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -101,7 +101,6 @@ public final class ApplicationContextFacade
         classCache.put("addFilter", new Class[]{String.class, String.class});
         classCache.put("addListener", clazz);
         classCache.put("addServlet", new Class[]{String.class, String.class});
-        classCache.put("addJspFile", new Class[]{String.class, String.class});
         classCache.put("createFilter", new Class[]{Class.class});
         classCache.put("createListener", new Class[]{Class.class});
         classCache.put("createServlet", new Class[]{Class.class});
@@ -124,8 +123,6 @@ public final class ApplicationContextFacade
         classCache.put("setAttribute", new Class[]{String.class, Object.class});
         classCache.put("setInitParameter", new Class[]{String.class, String.class});
         classCache.put("setSessionTrackingModes", new Class[]{Set.class});
-        classCache.put("getSessionTimeout", new Class[]{});
-        classCache.put("setSessionTimeout", new Class[]{Integer.class});
     }
     
     /**
@@ -558,23 +555,6 @@ public final class ApplicationContextFacade
         }
     }
 
-    /*
-     * Adds the servlet with the given name and jsp file to this
-     * servlet context.
-    */
-    @Override
-    @SuppressWarnings("unchecked") // doPrivileged() returns the correct type
-    public ServletRegistration.Dynamic addJspFile(
-            String servletName, String jspFile) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (ServletRegistration.Dynamic) doPrivileged(
-                    "addJspFile", new Object[] {servletName, jspFile});
-        } else {
-            return context.addJspFile(servletName, jspFile);
-        }
-    }
-
-
     /**
      * Instantiates the given Servlet class and performs any required
      * resource injection into the new Servlet instance before returning
@@ -907,23 +887,6 @@ public final class ApplicationContextFacade
         }
     }
 
-    @Override
-    public int getSessionTimeout() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (Integer)doPrivileged("getSessionTimeout", null);
-        } else {
-            return context.getSessionTimeout();
-        }
-    }
-
-    @Override
-    public void setSessionTimeout(int sessionTimeout) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("getSessionTimeout", null);
-        } else {
-            context.setSessionTimeout(sessionTimeout);
-        }
-    }
 
     // START PWC 1.2
     /**
