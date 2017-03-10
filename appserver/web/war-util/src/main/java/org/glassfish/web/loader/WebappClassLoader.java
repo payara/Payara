@@ -253,7 +253,6 @@ public class WebappClassLoader
      * for locally loaded classes or resources.
      */
     protected JarFile[] jarFiles = new JarFile[0];
-    protected final Object jarFilesLock = new Object();
 
     /**
      * Lock to synchronize closing and opening of jar
