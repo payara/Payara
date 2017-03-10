@@ -150,6 +150,7 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator-cdi</artifactId>
             <version>${hibernate.validator.version}</version>
+            <classifier>payara-p1</classifier>
         </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>
