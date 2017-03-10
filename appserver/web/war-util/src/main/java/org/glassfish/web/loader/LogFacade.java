@@ -301,4 +301,9 @@ public class LogFacade {
             message = "Unable to determine TLD resources for [{0}] tag library, because class loader [{1}] for [{2}] is not an instance of java.net.URLClassLoader",
             level = "WARNING")
     public static final String UNABLE_TO_DETERMINE_TLD_RESOURCES = prefix + "00039";
+    
+    @LogMessageInfo(
+            message = "Using previously defined JDBC leak prevention resource",
+            level = "FINE")
+    public static final String LEAK_PREVENTION_JDBC_REUSE = "AS-WEB-UTIL-00040";
 }
