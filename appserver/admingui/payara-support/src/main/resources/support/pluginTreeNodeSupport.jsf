@@ -38,10 +38,10 @@
  * holder.
 -->
 
-<!-- pluginTreeNodeAdminService.jsf -->
+<!-- pluginTreeNodeSupport.jsf -->
 
 <sun:treeNode id="support"
     text="$resource{i18n.tree.support}"
-    url="/support/support.jsf?configName=${configName}"
+    url="/payara_support/support/support.jsf"
     imageURL="/resource/images/support.png"
 />
