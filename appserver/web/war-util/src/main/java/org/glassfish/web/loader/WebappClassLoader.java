@@ -2022,7 +2022,7 @@ public class WebappClassLoader
                         defineClass("org.glassfish.web.loader.JdbcLeakPrevention",
                             classBytes, 0, offset, this.getClass().getProtectionDomain());
                 } else {
-                    logger.log(Level.FINE, getString(LEAK_PREVENTION_JDBC_REUSE, contextName));   
+                    logger.log(Level.FINE, getString(LogFacade.LEAK_PREVENTION_JDBC_REUSE, contextName));   
                 }
             }
             Object obj = jdbcLeakPreventionResourceClass.newInstance();
