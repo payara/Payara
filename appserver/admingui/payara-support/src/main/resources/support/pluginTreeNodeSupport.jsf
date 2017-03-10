@@ -41,7 +41,11 @@
 <!-- pluginTreeNodeSupport.jsf -->
 
 <sun:treeNode id="support"
-    text="$resource{i18n.tree.support}"
+    text="$resource{i18nhs.support.tree}"
     url="/payara_support/support/support.jsf"
     imageURL="/resource/images/support.png"
-/>
+    >
+     <!beforeCreate
+        setResourceBundle(key="i18nhs" bundle="fish.payara.admingui.support.Strings");
+    />
+</sun:treeNode>
