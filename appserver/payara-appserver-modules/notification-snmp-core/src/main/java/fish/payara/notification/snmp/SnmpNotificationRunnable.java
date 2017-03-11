@@ -91,7 +91,8 @@ public class SnmpNotificationRunnable extends NotificationRunnable<SnmpMessageQu
                 pdu.add(new VariableBinding(SnmpConstants.snmpTrapOID, oidInstance));
                 pdu.add(new VariableBinding(SnmpConstants.snmpTrapAddress, new IpAddress(executionOptions.getHost())));
                 pdu.add(new VariableBinding(SnmpConstants.sysUpTime, new OctetString(new Date().toString())));
-                pdu.add(new VariableBinding(oidInstance, new OctetString(queue.getMessage().getSubject() + "\n" + queue.getMessage().getMessage())));
+                SnmpMessage message = queue.getMessage();
+                pdu.add(new VariableBinding(oidInstance, new OctetString(message.getSubject() + "\n" + message.getMessage())));
 
                 snmp.send(pdu, communityTarget);
             }
