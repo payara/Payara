@@ -92,14 +92,15 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             BundleDescriptor bd = (BundleDescriptor)componentEnv;
             Utility.setContextClassLoader(bd.getClassLoader());
         }
-        return new Context(oldClassLoader, invocationCreated? invMgr.getCurrentInvocation() : null);
+        return new ContextImpl.Context(oldClassLoader, invocationCreated? invMgr.getCurrentInvocation() : null);
     }
 
     @Override
-    public void postInvoke(Context ctx) {
-        if (ctx.getInvocation() != null) {
-            getServerContext().getInvocationManager().postInvoke(ctx.getInvocation());
-            Utility.setContextClassLoader(ctx.getClassLoader());
+    public void postInvoke(Context _ctx) {
+        ContextImpl.Context ctx = (ContextImpl.Context)_ctx;
+        if (ctx.invocation != null) {
+            getServerContext().getInvocationManager().postInvoke(ctx.invocation);
+            Utility.setContextClassLoader(ctx.classLoader);
         }
     }
 
@@ -113,10 +114,10 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     public RequestContext preInvokeRequestContext() {
         Context rootCtx = preInvoke();
         BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
-        RequestContext context = new RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<String, Object>());
-        if(context.getCtx() != null) {
-            context.getCtx().associate(context.getStorage());
-            context.getCtx().activate();
+        ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<String, Object>());
+        if(context.ctx != null) {
+            context.ctx.associate(context.storage);
+            context.ctx.activate();
         }
         return context;
     }
@@ -128,11 +129,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
      */
     @Override
     public void postInvokeRequestContext(RequestContext context) {
-        if (context.getCtx() != null) {
-            context.getCtx().deactivate();
-            context.getCtx().dissociate(context.getStorage());
+        ContextImpl.RequestContext ctx = (ContextImpl.RequestContext)context;
+        if (ctx.ctx!= null) {
+            ctx.ctx.deactivate();
+            ctx.ctx.dissociate(ctx.storage);
         }
-        postInvoke(context.getRootCtx());
+        postInvoke(ctx.rootCtx);
     }
 
     /**

@@ -37,57 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.internal.api;
+package fish.payara.appserver.context;
 
-import org.jvnet.hk2.annotations.Contract;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.jboss.weld.context.bound.BoundRequestContext;
 
 /**
- * utility to create / push Java EE thread context
- * 
+ * JavaEE context holder implementation
+ *
  * @author lprimak
  */
-@Contract
-public interface JavaEEContextUtil {
-    /**
-     * pushes Java EE invocation context
-     *
-     * @return old ClassLoader, or null if no invocation has been created
-     */
-    Context preInvoke();
+class ContextImpl {
+    @RequiredArgsConstructor
+    public static class Context implements JavaEEContextUtil.Context {
+        final ClassLoader classLoader;
+        final ComponentInvocation invocation;
+    }
 
-    /**
-     * pushes invocation context onto the stack
-     * Also creates Request scope
-     *
-     * @return new context that was created
-     */
-    RequestContext preInvokeRequestContext();
-
-    /**
-     * context to pop from the stack
-     *
-     * @param ctx to be popped
-     */
-    void postInvoke(Context ctx);
-    /**
-     * context to pop from the stack
-     *
-     * @param context to be popped
-     */
-    void postInvokeRequestContext(RequestContext context);
-
-    /**
-     * @return application name or null if there is no invocation context
-     */
-    String getApplicationName();
-
-    /**
-     * set context class loader by appName
-     *
-     * @param appName
-     */
-    void setApplicationContext(String appName);
-
-    interface Context {};
-    interface RequestContext {};
+    @RequiredArgsConstructor
+    public static class RequestContext implements JavaEEContextUtil.RequestContext{
+        final JavaEEContextUtil.Context rootCtx;
+        final BoundRequestContext ctx;
+        final Map<String, Object> storage;
+    }
 }
