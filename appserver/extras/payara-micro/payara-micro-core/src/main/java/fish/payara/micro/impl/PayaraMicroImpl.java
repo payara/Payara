@@ -161,32 +161,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
-     * @param args Command line arguments for PayaraMicro Usage: --noCluster
-     * Disables clustering<br/>
-     * --port sets the http port<br/>
-     * --sslPort sets the https port number<br/>
-     * --mcAddress sets the cluster multicast group<br/>
-     * --mcPort sets the cluster multicast port<br/>
-     * --startPort sets the cluster start port number<br/>
-     * --name sets the instance name<br/>
-     * --rootDir Sets the root configuration directory and saves the
-     * configuration across restarts<br/>
-     * --deploymentDir if set to a valid directory all war files in this
-     * directory will be deployed<br/>
-     * --deploy specifies a war file to deploy<br/>
-     * --domainConfig overrides the complete server configuration with an
-     * alternative domain.xml file<br/>
-     * --minHttpThreads the minimum number of threads in the HTTP thread
-     * pool<br/>
-     * --maxHttpThreads the maximum number of threads in the HTTP thread
-     * pool<br/>
-     * --lite Sets this Payara Micro to not store Cluster Data<br/>
-     * --enableHealthCheck enables/disables Health Check Service<br/>
-     * --disablePhomeHome disables Phone Home Service<br/>
-     * --logToFile outputs all the Log entries to a user defined file<br/>
-     * --accessLog Sets user defined directory path for the access log<br/>
-     * --accessLogFormat Sets user defined log format for the access log<br/>
-     * --logProperties Allows user to set their own logging properties file
+     * @param args Command line arguments for PayaraMicro Usage: --help to see all the options
      * <br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
@@ -1883,54 +1858,53 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
 
         // Set the domain.xml
-        String alternateDomainXMLStr = System.getProperty("payaramicro.domainConfig");
+        String alternateDomainXMLStr = getProperty("payaramicro.domainConfig");
         if (alternateDomainXMLStr != null && !alternateDomainXMLStr.isEmpty()) {
             applicationDomainXml = alternateDomainXMLStr;
         }
 
         // Set the hazelcast config file
-        String alternateHZConfigFileStr = System.getProperty("payaramicro.hzConfigFile");
+        String alternateHZConfigFileStr = getProperty("payaramicro.hzConfigFile");
         if (alternateHZConfigFileStr != null && !alternateHZConfigFileStr.isEmpty()) {
             alternateHZConfigFile = new File(alternateHZConfigFileStr);
         }
 
-        autoBindHttp = Boolean.getBoolean("payaramicro.autoBindHttp");
-        autoBindRange = Integer.getInteger("payaramicro.autoBindRange", 5);
-        autoBindSsl = Boolean.getBoolean("payaramicro.autoBindSsl");
-        generateLogo = Boolean.getBoolean("payaramicro.logo");
-        logToFile = Boolean.getBoolean("payaramicro.logToFile");
-        enableAccessLog = Boolean.getBoolean("payaramicro.enableAccessLog");
-        enableAccessLogFormat = Boolean.getBoolean("payaramicro.enableAccessLogFormat");
-        logPropertiesFile = Boolean.getBoolean("payaramicro.logPropertiesFile");
-        enableHealthCheck = Boolean.getBoolean("payaramicro.enableHealthCheck");
-        httpPort = Integer.getInteger("payaramicro.port", Integer.MIN_VALUE);
-        hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
-        hzPort = Integer.getInteger("payaramicro.mcPort", Integer.MIN_VALUE);
-        hostAware = Boolean.getBoolean("payaramicro.hostAware");
-        hzStartPort = Integer.getInteger("payaramicro.startPort", Integer.MIN_VALUE);
-        hzClusterName = System.getProperty("payaramicro.clusterName");
-        hzClusterPassword = System.getProperty("payaramicro.clusterPassword");
-        liteMember = Boolean.getBoolean("payaramicro.lite");
-        maxHttpThreads = Integer.getInteger("payaramicro.maxHttpThreads", Integer.MIN_VALUE);
-        minHttpThreads = Integer.getInteger("payaramicro.minHttpThreads", Integer.MIN_VALUE);
-        noCluster = Boolean.getBoolean("payaramicro.noCluster");
-        disablePhoneHome = Boolean.getBoolean("payaramicro.disablePhoneHome");
-        enableRequestTracing = Boolean.getBoolean("payaramicro.enableRequestTracing");
-        requestTracingThresholdUnit = System.getProperty("payaramicro.requestTracingThresholdUnit", "SECONDS");
-        requestTracingThresholdValue = Long.getLong("payaramicro.requestTracingThresholdValue", 30);
+        autoBindHttp = getBooleanProperty("payaramicro.autoBindHttp");
+        autoBindRange = getIntegerProperty("payaramicro.autoBindRange", 5);
+        autoBindSsl = getBooleanProperty("payaramicro.autoBindSsl");
+        generateLogo = getBooleanProperty("payaramicro.logo");
+        logToFile = getBooleanProperty("payaramicro.logToFile");
+        enableAccessLog = getBooleanProperty("payaramicro.enableAccessLog");
+        enableAccessLogFormat = getBooleanProperty("payaramicro.logPropertiesFile");
+        enableHealthCheck = getBooleanProperty("payaramicro.enableHealthCheck");
+        httpPort = getIntegerProperty("payaramicro.port", Integer.MIN_VALUE);
+        hzMulticastGroup = getProperty("payaramicro.mcAddress");
+        hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
+        hostAware = getBooleanProperty("payaramicro.hostAware");
+        hzStartPort = getIntegerProperty("payaramicro.startPort", Integer.MIN_VALUE);
+        hzClusterName = getProperty("payaramicro.clusterName");
+        hzClusterPassword = getProperty("payaramicro.clusterPassword");
+        liteMember = getBooleanProperty("payaramicro.lite");
+        maxHttpThreads = getIntegerProperty("payaramicro.maxHttpThreads", Integer.MIN_VALUE);
+        minHttpThreads = getIntegerProperty("payaramicro.minHttpThreads", Integer.MIN_VALUE);
+        noCluster = getBooleanProperty("payaramicro.noCluster");
+        disablePhoneHome = getBooleanProperty("payaramicro.disablePhoneHome");
+        enableRequestTracing = getBooleanProperty("payaramicro.enableRequestTracing");
+        requestTracingThresholdUnit = getProperty("payaramicro.requestTracingThresholdUnit", "SECONDS");
+        requestTracingThresholdValue = getLongProperty("payaramicro.requestTracingThresholdValue", 30L);
 
         // Set the rootDir file
-        String rootDirFileStr = System.getProperty("payaramicro.rootDir");
+        String rootDirFileStr = getProperty("payaramicro.rootDir");
         if (rootDirFileStr != null && !rootDirFileStr.isEmpty()) {
             rootDir = new File(rootDirFileStr);
         }
 
-        String name = System.getProperty("payaramicro.name");
+        String name = getProperty("payaramicro.name");
         if (name != null && !name.isEmpty()) {
             instanceName = name;
         }
 
-        String instanceGroupName = System.getProperty("payaramicro.instanceGroup");
+        String instanceGroupName = getProperty("payaramicro.instanceGroup");
         if (instanceGroupName != null && !instanceGroupName.isEmpty()) {
             instanceGroup = instanceGroupName;
         }
@@ -2224,5 +2198,58 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), bootTime});
     }
+    
+    private String getProperty(String value) {
+        String result;
+        result = System.getProperty(value);
+        if (result == null) {
+            result = System.getenv(value.replace('.', '_'));
+        }
+        return result;
+    }
+    
+    private String getProperty(String value, String defaultValue) {
+        String result = getProperty(value);
+        if (result == null) {
+            result = defaultValue;
+        }
+        return result;
+    }
+    
+    private Boolean getBooleanProperty(String value) {
+        String property;
+        property = System.getProperty(value);
+        if (property == null) {
+            property = System.getenv(value.replace('.', '_'));
+        }
+        return "true".equals(property);
+    }
+    
+    private Integer getIntegerProperty(String value, Integer defaultValue) {
+        String property;
+        property = System.getProperty(value);
+        if (property == null) {
+            property = System.getenv(value.replace('.', '_'));
+        }
+        if (property == null) {
+            return defaultValue;
+        } else {
+            return Integer.decode(property);
+        }
+    }
+    
+    private Long getLongProperty(String value, Long defaultValue) {
+        String property;
+        property = System.getProperty(value);
+        if (property == null) {
+            property = System.getenv(value.replace('.', '_'));
+        }
+        if (property == null) {
+            return defaultValue;
+        } else {
+            return Long.decode(property);
+        }
+    }
+    
 
 }
