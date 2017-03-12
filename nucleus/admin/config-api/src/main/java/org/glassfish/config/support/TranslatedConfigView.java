@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -137,6 +137,10 @@ public class TranslatedConfigView implements ConfigView {
             while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
                 String matchValue = m.group(2).trim();
                 String newValue = System.getProperty(matchValue);
+                if (newValue == null) {
+                    // try environment variables as a fall back
+                    newValue = System.getenv(matchValue);
+                }
                 if (newValue != null) {
                     stringValue = m.replaceFirst(
                             Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));
