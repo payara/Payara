@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -163,13 +162,6 @@ public final class MessageBeanContainer extends BaseContainer implements
     MessageBeanContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
             throws Exception {
         super(ContainerType.MESSAGE_DRIVEN, desc, loader, sm);
-
-        // Instantiate the ORB and Remote naming manager
-        // to allow client lookups of JMS queues/topics/connectionfactories
-        // TODO - implement the sniffer for DAS/cluster instance - listening on the naming port that will
-        // instantiate the orb/remote naming service on demand upon initial access.
-        // Once that's available, this call can be removed.
-        initializeProtocolManager();
 
         isMessageDriven = true;
 
