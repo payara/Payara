@@ -65,6 +65,9 @@ import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.IASRealm;
 import java.lang.StringBuffer;
 import java.util.regex.Matcher;
+import javax.naming.directory.Attributes;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.Service;
 import sun.security.x509.X500Name;
@@ -128,6 +131,8 @@ public final class LDAPRealm extends IASRealm
     public static final String PARAM_GRPDN="group-base-dn";
     public static final String PARAM_GRP_SEARCH_FILTER="group-search-filter";
     public static final String PARAM_GRP_TARGET="group-target";
+    public static final String PARAM_DYNAMIC_GRP_FILTER="dynamic-group-search-filter";
+    public static final String PARAM_DYNAMIC_GRP_TARGET="dynamic-group-target";
     public static final String PARAM_MODE="mode";
     public static final String PARAM_JNDICF="jndiCtxFactory";
     public static final String PARAM_POOLSIZE="pool-size";
@@ -149,6 +154,7 @@ public final class LDAPRealm extends IASRealm
     private static final String GRP_SEARCH_FILTER_DEFAULT=
                                      "uniquemember="+SUBST_SUBJECT_DN;
     private static final String GRP_TARGET_DEFAULT="cn";
+    private static final String DYNAMIC_GRP_TARGET_DEFAULT="ismemberof";//"memberOf";
     private static final String MODE_DEFAULT=MODE_FIND_BIND;
     private static final String JNDICF_DEFAULT=
                                      "com.sun.jndi.ldap.LdapCtxFactory";
@@ -234,9 +240,17 @@ public final class LDAPRealm extends IASRealm
                 PARAM_GRP_SEARCH_FILTER, GRP_SEARCH_FILTER_DEFAULT);
         this.setProperty(PARAM_GRP_SEARCH_FILTER, grpSearchFilter);
 
+        String dynGrpSearchFilter = props.getProperty(
+                PARAM_DYNAMIC_GRP_FILTER, SEARCH_FILTER_DEFAULT);
+        this.setProperty(PARAM_DYNAMIC_GRP_FILTER, dynGrpSearchFilter);
+
         String grpTarget = props.getProperty(
                 PARAM_GRP_TARGET, GRP_TARGET_DEFAULT);
         this.setProperty(PARAM_GRP_TARGET, grpTarget);
+
+        String dynGrpTarget = props.getProperty(
+                PARAM_DYNAMIC_GRP_TARGET, DYNAMIC_GRP_TARGET_DEFAULT);
+        this.setProperty(PARAM_DYNAMIC_GRP_TARGET, dynGrpTarget);
 
         String objectFactory = props.getProperty(
                 DYNAMIC_GROUP_FACTORY_OBJECT_PROPERTY, DYNAMIC_GROUP_OBJECT_FACTORY);
@@ -363,6 +377,9 @@ public final class LDAPRealm extends IASRealm
         //no authentication has happened through the realm.
         DirContext ctx = null;
         String srcFilter = null;
+
+        String dynFilter = null;
+        String dynMember = getProperty(PARAM_DYNAMIC_GRP_TARGET);
         try {
             ctx = new InitialDirContext(getLdapBindProps());
 
@@ -385,16 +402,20 @@ public final class LDAPRealm extends IASRealm
 
             }
             StringBuffer sb = new StringBuffer(getProperty(PARAM_GRP_SEARCH_FILTER));
+            StringBuffer dynSb = new StringBuffer(getProperty(PARAM_DYNAMIC_GRP_FILTER));
             substitute(sb, SUBST_SUBJECT_NAME, _username);
             substitute(sb, SUBST_SUBJECT_DN, userDN);
+            substitute(dynSb, SUBST_SUBJECT_NAME, _username);
+            substitute(dynSb, SUBST_SUBJECT_DN, userDN);
 
             srcFilter = sb.toString();
+            dynFilter = dynSb.toString();
             List<String> groupsList = new ArrayList<String>();
             groupsList.addAll(groupSearch(ctx, getProperty(PARAM_GRPDN), srcFilter, getProperty(PARAM_GRP_TARGET)));
             // search filter is constructed internally as
             // as a groupofURLS
-            groupsList.addAll(dynamicGroupSearch(ctx, getProperty(PARAM_GRPDN), getProperty(PARAM_GRP_TARGET),
-                    userDN));
+            groupsList.addAll(dynamicGroupSearch(ctx, getProperty(PARAM_GRPDN), dynMember, 
+                    dynFilter, getProperty(PARAM_GRP_TARGET)));
             return groupsList;
         } catch (Exception e) {
              _logger.log(Level.WARNING, "ldaprealm.groupsearcherror",e);
@@ -489,6 +510,9 @@ public final class LDAPRealm extends IASRealm
         DirContext ctx = null;
         String srcFilter = null;
         String[] grpList = null;
+
+        String dynFilter = null;
+        String dynMember = getProperty(PARAM_DYNAMIC_GRP_TARGET);
         try {
             ctx = new InitialDirContext(getLdapBindProps());
             String realUserDN = userSearch(ctx, getProperty(PARAM_USERDN), userid);
@@ -505,16 +529,21 @@ public final class LDAPRealm extends IASRealm
 
             // search groups using above connection, substituting %d (and %s)
             sb = new StringBuffer(getProperty(PARAM_GRP_SEARCH_FILTER));
+            StringBuffer dynSb = new StringBuffer(getProperty(PARAM_DYNAMIC_GRP_FILTER));
+
             substitute(sb, SUBST_SUBJECT_NAME, _username);
             substitute(sb, SUBST_SUBJECT_DN, realUserDN);
+            substitute(dynSb, SUBST_SUBJECT_NAME, _username);
+            substitute(dynSb, SUBST_SUBJECT_DN, realUserDN);
 
             srcFilter = sb.toString();
+            dynFilter = dynSb.toString();
             ArrayList groupsList = new ArrayList();
             groupsList.addAll(groupSearch(ctx, getProperty(PARAM_GRPDN), srcFilter, getProperty(PARAM_GRP_TARGET)));
             // search filter is constructed internally as
             // as a groupofURLS
-            groupsList.addAll(dynamicGroupSearch(ctx, getProperty(PARAM_GRPDN), getProperty(PARAM_GRP_TARGET),
-                realUserDN));          
+            groupsList.addAll(dynamicGroupSearch(ctx, getProperty(PARAM_GRPDN), dynMember,
+                dynFilter, getProperty(PARAM_GRP_TARGET)));          
             grpList = new String[groupsList.size()];
             groupsList.toArray(grpList);
         } catch (Exception e) {
@@ -647,45 +676,37 @@ public final class LDAPRealm extends IASRealm
      *
      */
     private List dynamicGroupSearch(DirContext ctx, String baseDN, 
-            String target, String userDN)
+            String memberOfAttr, String filter, String target) throws NamingException
     {        
         List groupList = new ArrayList();
-        String filter = DYNAMIC_GROUP_FILTER;
         
-        String[] targets = new String[] { target, "memberUrl" };
-
+        String[] targets = new String[] { memberOfAttr };
+        
         try {
             SearchControls ctls = new SearchControls();
             ctls.setReturningAttributes(targets);
             ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            ctls.setReturningObjFlag(true);
+            //Set this to false to avoid objects and hence exposing ldap object
+            //injection.
+            ctls.setReturningObjFlag(false);
             
             NamingEnumeration e = ctx.search(baseDN, filter, ctls);
             
             while(e.hasMore()) {
                 SearchResult res = (SearchResult)e.next();
-                Object searchedObject = res.getObject();
-                
-
-                if (searchedObject instanceof GroupOfURLs){ // dynamic group
-                   
-                    GroupOfURLs gurls = (GroupOfURLs) searchedObject;
-                    Principal x500principal = new X500Principal(userDN);
-                    if (gurls.isMember(x500principal)) {
-                        
-                        Attribute grpAttr = res.getAttributes().get(target);
-                        int sz = grpAttr.size();
-                        for (int i=0; i<sz; i++) {
-                            String s = (String)grpAttr.get(i);
-                            groupList.add(s);
+                Attribute isMemberOf = res.getAttributes().get(memberOfAttr);
+                if (isMemberOf != null) {
+                    for (Enumeration values = isMemberOf.getAll();
+                            values.hasMoreElements();) {
+                        String groupDN = (String) values.nextElement();
+                        LdapName dn = new LdapName(groupDN);
+                        for(Rdn rdn : dn.getRdns()) {
+                            if(rdn.getType().equalsIgnoreCase(target)) {
+                                groupList.add(rdn.getValue());
+                                break;
+                            }
                         }
                     }
-                    
-                } 
-
-                // recommended by Jaya Hangal from JDK team
-                if (searchedObject instanceof Context) {
-                    ((Context)searchedObject).close();
                 }
             }
         } catch (Exception e) {
