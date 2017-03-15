@@ -23,6 +23,7 @@
             </roles>
         </developer>
     </developers>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
@@ -35,6 +36,11 @@
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>4.1.1.171</version>
         </dependency>
     </dependencies>
 </project>

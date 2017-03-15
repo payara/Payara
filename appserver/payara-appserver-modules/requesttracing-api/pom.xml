@@ -79,5 +79,10 @@
             <artifactId>javax.annotation-api</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>4.1.1.171</version>
+        </dependency>
     </dependencies>
 </project>
