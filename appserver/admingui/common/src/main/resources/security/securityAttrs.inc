@@ -66,10 +66,10 @@
             />
         </sun:property>
         <sun:property id="defaultPrincipalProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.DefaultPrincipal}" helpText="$resource{i18nc.security.DefaultPrincipalHelp}">
-            <sun:textField id="DefaultPrincipal" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.security.DefaultPrincipal']}" text="#{pageSession.valueMap['defaultPrincipal']}"/>
+            <sun:textField id="DefaultPrincipal" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.security.DefaultPrincipal']}" text="#{requestScope.principal"/>
         </sun:property>
         <sun:property id="defaultPrincipalPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.DefaultPrincipalPassword}" helpText="$resource{i18nc.security.DefaultPrincipalPasswordHelp}">
-            <sun:passwordField id="DefaultPrincipalPassword" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.security.DefaultPrincipalPassword']}" text="#{pageSession.valueMap['defaultPrincipalPassword']}"/>
+            <sun:passwordField id="DefaultPrincipalPassword" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.security.DefaultPrincipalPassword']}" text="#{requestScope.password"/>
         </sun:property>
       <sun:property id="jaccProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.Jacc}" helpText="$resource{i18nc.security.JaccHelp}">
             <sun:dropDown id="Jacc" labels="$pageSession{jaccs}" selected="#{pageSession.valueMap['jacc']}" />
