@@ -60,7 +60,8 @@ grant codeBase "file:${com.sun.aas.imqLib}/-" {
 
 // Derby driver classes get all permissions by default
 grant codeBase "file:${com.sun.aas.derbyRoot}/lib/-" {
-    permission java.security.AllPermission;
+    permission java.lang.RuntimePermission "createClassLoader";
+    permission java.io.FilePermission       "<<ALL FILES>>", "read,write";
 }; 
 
 
@@ -100,7 +101,6 @@ grant {
     permission java.lang.RuntimePermission  "loadLibrary.*";
     permission java.lang.RuntimePermission  "queuePrintJob";
     permission java.net.SocketPermission    "*", "connect";
-    permission java.io.FilePermission       "<<ALL FILES>>", "read,write";
 
         // work-around for pointbase bug 4864405      
         permission java.io.FilePermission "${com.sun.aas.instanceRoot}${/}lib${/}databases${/}-", "delete";
@@ -143,4 +143,6 @@ grant {
     permission java.io.SerializablePermission "enableSubclassImplementation";
 };
 
- 
+grant  codeBase "file:${com.sun.aas.instanceRoot}/applications/-"{
+    permission java.io.FilePermission       "<<ALL FILES>>", "read,write";
+}; 
