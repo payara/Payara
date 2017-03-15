@@ -61,7 +61,7 @@ public interface XmppNotifierConfiguration extends NotifierConfiguration {
     void host(String host) throws PropertyVetoException;
 
     @Attribute(dataType = Integer.class, defaultValue = "5222")
-    Integer getPort();
+    String getPort();
     void port(String port) throws PropertyVetoException;
 
     @Attribute(required = true)
@@ -77,7 +77,7 @@ public interface XmppNotifierConfiguration extends NotifierConfiguration {
     void password(String password) throws PropertyVetoException;
 
     @Attribute(defaultValue = "false")
-    Boolean getSecurityDisabled();
+    String getSecurityDisabled();
     void securityDisabled(String securityDisabled) throws PropertyVetoException;
 
     @Attribute(required = true)

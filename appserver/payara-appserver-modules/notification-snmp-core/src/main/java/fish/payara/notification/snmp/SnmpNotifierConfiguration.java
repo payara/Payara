@@ -73,7 +73,7 @@ public interface SnmpNotifierConfiguration extends NotifierConfiguration {
     String getHost();
     void setHost(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "162")
-    Integer getPort();
+    @Attribute(defaultValue = "162", dataType = Integer.class)
+    String getPort();
     void setPort(String value) throws PropertyVetoException;
 }
