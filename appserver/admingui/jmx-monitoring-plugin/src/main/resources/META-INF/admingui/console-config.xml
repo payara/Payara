@@ -39,11 +39,20 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     holder.
 -->
 <console-config id="jmxmonitoring">
+    
     <integration-point
         id="jmxmonitoring"
-        type="fish.payara.admingui:navNode"
-        priority="450"
-        parentId="configuration"
-        content="jmxmonitoring/jmxmonitoring.jsf"
+        type="org.glassfish.admingui:navNode"
+        priority="101"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeJmxMonitoring.jsf"
+    />
+    
+    <integration-point
+        id="jmxmonitoringLink"
+        type="org.glassfish.admingui:configuration"
+        priority="101"
+        parentId="propSheetSection"
+        content="jmxmonitoring/jmxLinks.jsf"
     />
 </console-config>

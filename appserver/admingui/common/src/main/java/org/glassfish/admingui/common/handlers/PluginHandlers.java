@@ -190,9 +190,9 @@ public class PluginHandlers {
             includeIntegrationPoints(ctx, root, getSortedIntegrationPoints(points));
         }catch(Exception ex){
             GuiUtil.getLogger().severe("Error in includeIntegrations ; \ntype = " + type + "; root=" + root.toString());
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+            //if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
-            }
+            //}
         }
     }
 

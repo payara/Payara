@@ -124,10 +124,13 @@ Portions Copyright [2016] [Payara Foundation]
                             
                             <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmx.Enabled}" helpText="$resource{i18njmx.jmx.EnabledHelp}">
                                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['reconnectEnabled']}" selectedValue="false"/>
+                            </sun:property>
                             <sun:property id="amxProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmx.AMXEnabled}" helpText="$resource{i18njmx.jmx.AMXEnabledHelp}">
                                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['reconnectEnabled']}" selectedValue="false"/>
+                            </sun:property>
                              <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmx.Dynamic}" helpText="$resource{i18njmx.jmx.DynamicHelp}">
                                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['reconnectEnabled']}" selectedValue="true"/>
+                            </sun:property>
                             <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.TimeLabel}" helpText="$resource{i18njmx.TimeLabelHelpText}">
                                 <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer" text="#{pageSession.valueMap['time']}"/>
                             </sun:property>                            
