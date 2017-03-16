@@ -1,24 +1,24 @@
 <!--
 
-    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+   Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/master/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at glassfish/legal/LICENSE.txt.
 
     GPL Classpath Exception:
-    Oracle designates this particular file as subject to the "Classpath"
-    exception as provided by Oracle in the GPL Version 2 section of the License
+    The Payara Foundation designates this particular file as subject to the "Classpath"
+    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
     file that accompanied this code.
 
     Modifications:
@@ -37,82 +37,59 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
-Portions Copyright [2016] [Payara Foundation]
 -->
 
 <!initPage
     setResourceBundle(key="i18n" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18nc" bundle="org.glassfish.admingui.core.Strings");
-    setResourceBundle(key="i18njmx" bundle="org.glassfish.admingui.jmxmonitoring.Strings");
+    setResourceBundle(key="i18njmx" bundle="fish.payara.admingui.jmxmonitoring.Strings");
 />
 
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18njmx.jmxmonitoring.Title}" >
 <!define name="content">
     <event>
         <!beforeCreate
-            getRequestValue(key="configName" value="#{pageSession.configName}" default="server-config");
-            setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/jmx/jmxmonitoring.jsf?name=#{pageSession.Name}&configName=#{pageSession.configName}");
-            setAttribute(key="edit" value="#{true}");
-            setPageSessionAttribute(key="hasPropertySheet" value="#{true}");
-
-            setPageSessionAttribute(key="childType" value="jmx-service");
-            setPageSessionAttribute(key="convertToFalseList" value={"reconnectEnabled"});
-
-            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}");
-            setPageSessionAttribute(key="childType", value="jmx-service");
-            setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
-            setPageSessionAttribute(key="rest-api" value="true");
-            gf.restRequest(endpoint="#{pageSession.selfUrl}", method="get", result="#{pageSession.result}");
-            setPageSessionAttribute(key="valueMap", value="#{pageSession.result.data.extraProperties.entity}");
-
-            gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="GET", result="#{requestScope.propTable}");
-            setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
-
-            setPageSessionAttribute(key="edit" value="#{true}" );
-            setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
-            setPageSessionAttribute(key="showCancelButton" value="#{false}" );
-            setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
-            setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
             
-            gf.getClusterForConfig(configName="#{configName}" cluster="#{pageSession.clusterName}");
+        getRequestValue(key="configName" value="#{pageSession.configName}");
+        setSessionAttribute(key="JMXMONITORING_CONFIG_URL", 
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/jmxmonitoring");
+
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-monitoring-configuration?target=#{pageSession.configName}"  
+                method="GET" result="#{requestScope.resp}");      
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.jmxmonitoringConfiguration}");
+        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+                
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['amx']}=true) {
+            setPageSessionAttribute(key="amxSelected", value="true");
+        }
+
+        setPageSessionAttribute(key="dynamic", value="true");
 
         />
     </event>
              <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
                 <!-- Page Title -->
-                <sun:title id="propertyContentPage" title="$resource{i18njmx.jmx.Title}" helpText="$resource{i18njmx.jmx.PageHelp}">
+                <sun:title id="propertyContentPage" title="$resource{i18njmx.jmxmonitoring.Title}" helpText="$resource{i18njmx.jmxmonitoring.PageHelp}">
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
-                <!command
-                    gf.createEntity(endpoint="#{pageSession.selfUrl}"
-                        attrs="#{pageSession.valueMap}"
-                        skipAttrs="#{pageSession.skipAttrsList}"
-                        convertToFalse="#{pageSession.convertToFalseList}"
-                        onlyUseAttrs="#{pageSession.onlyUseAttrs}"
-                    );
-                    
-                    // Save properties...
-                    removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
-                    javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
-                    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
-
-                    if (#{pageSession.valueMap['masterBroker']}) {
-                        createMap(result="#{requestScope.mbAttrs}");
-                        mapPut(map="#{requestScope.mbAttrs}" key="id" value="#{pageSession.valueMap['masterBroker']}");
-                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession['clusterName']}/change-master-broker",
-                            attrs="#{requestScope.mbAttrs}",
-                            method="post",
-                            result="#{pageSession.resultMap}",
-                            throwException="#{true}");
-                    }
-
+                 <!command
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="amx" value="#{pageSession.amxSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" 
+                            value="#{pageSession.historicalTraceEnabledSelected}");
                     prepareSuccessfulMsg();
-                    gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
-                />
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-configuration" 
+                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    />
             </sun:button>
         </sun:panelGroup>
     </facet>
@@ -122,19 +99,19 @@ Portions Copyright [2016] [Payara Foundation]
 #include "/common/shared/configNameSection.inc"
                         <sun:propertySheetSection id="propertSectionTextField">
                             
-                            <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmx.Enabled}" helpText="$resource{i18njmx.jmx.EnabledHelp}">
-                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['reconnectEnabled']}" selectedValue="false"/>
+                            <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Enabled}" helpText="$resource{i18njmx.jmxmonitoring.EnabledHelp}">
+                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['enabledSelected']}" selectedValue="false"/>
                             </sun:property>
-                            <sun:property id="amxProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmx.AMXEnabled}" helpText="$resource{i18njmx.jmx.AMXEnabledHelp}">
-                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['reconnectEnabled']}" selectedValue="false"/>
+                            <sun:property id="amxProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.AMXEnabled}" helpText="$resource{i18njmx.jmxmonitoring.AMXEnabledHelp}">
+                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['amxSelected']}" selectedValue="false"/>
                             </sun:property>
-                             <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmx.Dynamic}" helpText="$resource{i18njmx.jmx.DynamicHelp}">
-                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['reconnectEnabled']}" selectedValue="true"/>
+                             <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Dynamic}" helpText="$resource{i18njmx.jmxmonitoring.DynamicHelp}">
+                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['dynamic']}" selectedValue="true"/>
                             </sun:property>
-                            <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.TimeLabel}" helpText="$resource{i18njmx.TimeLabelHelpText}">
+                            <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.TimeLabel}" helpText="$resource{jmxmonitoring.TimeLabelHelpText}">
                                 <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer" text="#{pageSession.valueMap['time']}"/>
                             </sun:property>                            
-                            <sun:property id="unitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmx.UnitLabel}" helpText="$resource{i18njmx.jmx.UnitLabelHelp}">
+                            <sun:property id="unitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.UnitLabel}" helpText="$resource{i18njmx.jmxmonitoring.UnitLabelHelp}">
                                  <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['unit']}" 
                                     labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
                             </sun:property>                        

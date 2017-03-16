@@ -19,6 +19,9 @@ import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -93,6 +96,13 @@ public class GetMonitoringConfiguration implements AdminCommand {
         actionReport.appendMessage("Monitoring Service Configuration log frequency? " + monitoringConfig.getLogFrequency() + " " + monitoringConfig.getLogFrequencyUnit());
         actionReport.appendMessage(StringUtils.EOL);
 
+         Map<String, Object> map = new HashMap<String, Object>();
+        Properties extraProps = new Properties();
+        map.put("enabled", monitoringConfig.getEnabled());
+        map.put("amx", monitoringConfig.getAmx());
+        map.put("time", monitoringConfig.getLogFrequency());
+        map.put("unit", monitoringConfig.getLogFrequencyUnit());
+        
         for (Property property : monitoringConfig.getProperty()) {
             Object values[] = new Object[3];
             values[0] = property.getName();
@@ -100,6 +110,9 @@ public class GetMonitoringConfiguration implements AdminCommand {
             values[2] = property.getDescription();
             attributeColumnFormatter.addRow(values);
         }
+        
+        extraProps.put("jmxmonitoringConfiguration", map);
+        actionReport.setExtraProperties(extraProps);
 
         attributeReport.setMessage(attributeColumnFormatter.toString());
         attributeReport.appendMessage(StringUtils.EOL);
