@@ -100,8 +100,8 @@ public class GetMonitoringConfiguration implements AdminCommand {
         Properties extraProps = new Properties();
         map.put("enabled", monitoringConfig.getEnabled());
         map.put("amx", monitoringConfig.getAmx());
-        map.put("time", monitoringConfig.getLogFrequency());
-        map.put("unit", monitoringConfig.getLogFrequencyUnit());
+        map.put("logfrequency", monitoringConfig.getLogFrequency());
+        map.put("logfrequencyunit", monitoringConfig.getLogFrequencyUnit());
         
         for (Property property : monitoringConfig.getProperty()) {
             Object values[] = new Object[3];

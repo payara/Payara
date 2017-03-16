@@ -60,7 +60,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
                 
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "amx"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
@@ -84,8 +84,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="amx" value="#{pageSession.amxSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" 
-                            value="#{pageSession.historicalTraceEnabledSelected}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-configuration" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
@@ -100,19 +98,19 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                         <sun:propertySheetSection id="propertSectionTextField">
                             
                             <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Enabled}" helpText="$resource{i18njmx.jmxmonitoring.EnabledHelp}">
-                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['enabledSelected']}" selectedValue="false"/>
+                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
                             </sun:property>
                             <sun:property id="amxProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.AMXEnabled}" helpText="$resource{i18njmx.jmxmonitoring.AMXEnabledHelp}">
-                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['amxSelected']}" selectedValue="false"/>
+                                <sun:checkbox id="amx" label="$resource{i18n.common.Enabled}" selected="#{pageSession.amxSelected}" selectedValue="true"/>
                             </sun:property>
                              <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Dynamic}" helpText="$resource{i18njmx.jmxmonitoring.DynamicHelp}">
-                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['dynamic']}" selectedValue="true"/>
+                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>
                             </sun:property>
                             <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.TimeLabel}" helpText="$resource{jmxmonitoring.TimeLabelHelpText}">
-                                <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer" text="#{pageSession.valueMap['time']}"/>
+                                <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer" text="#{pageSession.valueMap['logfrequency']}"/>
                             </sun:property>                            
-                            <sun:property id="unitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.UnitLabel}" helpText="$resource{i18njmx.jmxmonitoring.UnitLabelHelp}">
-                                 <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['unit']}" 
+                            <sun:property id="logfrequencyunitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.UnitLabel}" helpText="$resource{i18njmx.jmxmonitoring.UnitLabelHelp}">
+                                 <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['logfrequencyunit']}" 
                                     labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
                             </sun:property>                        
                             "<br /><br />
