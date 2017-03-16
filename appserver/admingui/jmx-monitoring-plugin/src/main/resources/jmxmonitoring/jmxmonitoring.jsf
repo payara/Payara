@@ -51,11 +51,14 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <!beforeCreate
             
         getRequestValue(key="configName" value="#{pageSession.configName}");
-        setSessionAttribute(key="JMXMONITORING_CONFIG_URL", 
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/jmxmonitoring");
+         setPageSessionAttribute(key="JMXMONITORING_CONFIG_URL", 
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/jmxmonitoring"); 
 
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-monitoring-configuration?target=#{pageSession.configName}"  
-                method="GET" result="#{requestScope.resp}");      
+                method="GET" result="#{requestScope.resp}"); 
+                
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/property.json" method="GET" result="#{requestScope.propTable}")
+        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.jmxmonitoringConfiguration}");
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
@@ -69,6 +72,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+       
 
         />
     </event>

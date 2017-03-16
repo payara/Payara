@@ -42,7 +42,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         toolTip="$resource{i18njmx.tree.jmxmonitoring.tooltip}"
         url="#{request.contextPath}/jmxmonitoring.jsf?configName=#{configName}"
         >
-        <sun:image url="/resource/common/images/monitor.gif" />
+        <sun:image url="/resource/images/monitor.gif" />
         <sun:staticText text="$resource{i18njmx.tree.jmxmonitoring}" />
     </sun:hyperlink>
     <!beforeCreate

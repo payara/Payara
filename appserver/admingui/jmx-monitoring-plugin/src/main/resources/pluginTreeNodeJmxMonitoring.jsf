@@ -44,7 +44,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 <sun:treeNode  id="jmxmonitoring"
     text="$resource{i18njmx.tree.jmxmonitoring}"
     url="/jmxmonitoring/jmxmonitoring.jsf?configName=${configName}"
-    imageURL="/resource/images/monitoring.png"
+    imageURL="/resource/images/monitor.gif"
     >
     <!beforeCreate
         setResourceBundle(key="i18njmx" bundle="fish.payara.admingui.jmxmonitoring.Strings");
