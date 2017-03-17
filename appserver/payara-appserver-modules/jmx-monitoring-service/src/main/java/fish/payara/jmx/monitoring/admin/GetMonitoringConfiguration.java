@@ -139,18 +139,14 @@ public class GetMonitoringConfiguration implements AdminCommand {
             values[0] = property.getName();
             values[1] = property.getValue();
             values[2] = property.getDescription();
-            //ActionReport.MessagePart part = attributeReport.getTopMessagePart().addChild();
-            //part.setMessage(property.getName() + ":" + property.getValue());
             propMap.put(property.getName(), property.getValue());
             attributeColumnFormatter.addRow(values);
         }
-        //attributeReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        
         //Cannot change key in line below - required for admingui propertyDescTable.inc
         extraProps.put("properties", propMap);
         
-        actionReport.setExtraProperties(extraProps);
-        
-        
+        actionReport.setExtraProperties(extraProps);             
 
         attributeReport.setMessage(attributeColumnFormatter.toString());
         attributeReport.appendMessage(StringUtils.EOL);

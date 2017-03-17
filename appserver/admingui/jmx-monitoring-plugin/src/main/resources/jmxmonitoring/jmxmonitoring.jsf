@@ -73,7 +73,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
         setPageSessionAttribute(key="dynamic", value="true");
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
-       
+        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
 
         />
     </event>
@@ -92,6 +92,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-configuration" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                            
+                     if (#{pageSession.hasPropertyTable}) {
+                        removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
+                        javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+                    }
                     />
             </sun:button>
         </sun:panelGroup>
