@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.impl;
 
+import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.boot.runtime.BootCommand;
 import fish.payara.micro.cmd.options.RuntimeOptions;
@@ -1737,19 +1738,22 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         GAVConvertor gavConvertor = new GAVConvertor();
 
         for (String gav : GAVs) {
-            Map.Entry<String, URL> artefactMapEntry
-                    = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
+            try {
+                Map.Entry<String, URL> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
 
-            if (deploymentURLsMap == null) {
-                deploymentURLsMap = new LinkedHashMap<>();
-            }
+                if (deploymentURLsMap == null) {
+                    deploymentURLsMap = new LinkedHashMap<>();
+                }
 
-            String contextRoot = artefactMapEntry.getKey();
-            if ("ROOT".equals(contextRoot)) {
-                contextRoot = "/";
+                String contextRoot = artefactMapEntry.getKey();
+                if ("ROOT".equals(contextRoot)) {
+                    contextRoot = "/";
+                }
+                
+                deploymentURLsMap.put(contextRoot, artefactMapEntry.getValue());
+            } catch (MalformedURLException ex) {
+                throw new GlassFishException(ex.getMessage());
             }
-            deploymentURLsMap.put(contextRoot,
-                    artefactMapEntry.getValue());
         }
     }
 
