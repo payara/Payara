@@ -87,6 +87,7 @@ public class UberJarCreator {
     private File postBootCommands;
 
     private static final Logger LOGGER = Logger.getLogger(UberJarCreator.class.getName());
+    private File postDeployCommands;
 
     UberJarCreator(String fileName) {
         this(new File(fileName));
@@ -126,6 +127,10 @@ public class UberJarCreator {
 
     public void setPostBootCommands(File postBootCommands) {
         this.postBootCommands = postBootCommands;
+    }
+    
+    public void setPostDeployCommands(File postDeployCommands) {
+        this.postDeployCommands = postDeployCommands;
     }
 
     public void addRuntimeJar(File jar) {
@@ -197,7 +202,9 @@ public class UberJarCreator {
                         is = new FileInputStream(postBootCommands);
                     } else if (entry.toString().contains("MICRO-INF/pre-boot-commands.txt") && (preBootCommands != null)) {
                         is = new FileInputStream(preBootCommands);
-                    } else if (entry.toString().contains("MICRO-INF/domain/domain.xml") && (domainXML != null)) {
+                    } else if (entry.toString().contains("MICRO-INF/post-deploy-commands.txt") && (postDeployCommands != null)) {
+                        is = new FileInputStream(postDeployCommands);
+                    }else if (entry.toString().contains("MICRO-INF/domain/domain.xml") && (domainXML != null)) {
                         is = new FileInputStream(domainXML);
                     }
 

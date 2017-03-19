@@ -212,6 +212,28 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.main.ejb</groupId>
+            <artifactId>ejb-full-container</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <optional>true</optional>
+        </dependency>        
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>ejb.security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.connectors</groupId>
+            <artifactId>connectors-inbound-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jsf</artifactId>
             <version>${project.version}</version>
