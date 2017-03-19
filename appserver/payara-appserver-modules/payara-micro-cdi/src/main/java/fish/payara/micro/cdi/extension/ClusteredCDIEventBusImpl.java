@@ -49,6 +49,8 @@ import fish.payara.micro.PayaraInstance;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -184,6 +186,10 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                 @Override
                 public void run() {
                     try {
+                        
+                        // create the set of qualifiers for the event
+                        // first add Inbound qualifier with the correct properties                                                
+                        Set<Annotation> qualifiers = new HashSet<>();
                         Serializable eventPayload = event.getPayload();
                         Inbound inbound = new Inbound() {
                             @Override
@@ -196,10 +202,25 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                                 return Inbound.class;
                             }
                         };
-                        bm.fireEvent(eventPayload,inbound);
+                        qualifiers.add(inbound);
+                        
+                        // Now create Qualifiers for the sent event qualifiers
+                        Set<String> receivedQualifiers = event.getQualifierClassNames();
+                        for (String receivedQualifier : receivedQualifiers) {
+                            try {
+                                // qualifier is sent over as a class name so find the class
+                                Class<? extends Annotation> clazz = (Class<? extends Annotation>) Class.forName(receivedQualifier, true, Thread.currentThread().getContextClassLoader());
+                                qualifiers.add(new QualifierAnnotationLiteral(clazz));
+                            }catch (ClassNotFoundException t) {
+                                // ignore the qualifier and print warning
+                                Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO,"Received event with Qualifier which could not be loaded " + receivedQualifier + " thjis qualifier will be ignored");
+                            }
+                        }
+                        Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
+                        bm.fireEvent(eventPayload,annotations);
                     } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.FINE, "Received event which could not be deserialized", ex);
-                    }
+                        Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Received Event but could not process it", ex);
+                    } 
                 }
             });
         } finally {
@@ -228,6 +249,12 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
             clusteredEvent.setLoopBack(loopBack);
             clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
             clusteredEvent.setProperty(INSTANCE_PROPERTY, serializeArray(instanceName));
+            
+            Set<Annotation> qualifiers = meta.getQualifiers();
+            if (qualifiers != null && !qualifiers.isEmpty()) {
+                clusteredEvent.addQualifiers(qualifiers);
+            }
+            
             runtime.publishCDIEvent(clusteredEvent);
         } catch (IOException ex) {
         }

@@ -22,7 +22,16 @@ import fish.payara.cdi.jsr107.implementation.PayaraValueHolder;
 import fish.payara.micro.data.InstanceDescriptor;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -35,6 +44,7 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
     private boolean loopBack = false;
     private PayaraValueHolder payload;
     private Properties props;
+    private Set<String> qualifiers;
 
     public PayaraClusteredCDIEventImpl(InstanceDescriptor id, Serializable payload) throws IOException {
         this.id = id;
@@ -112,7 +122,43 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
         }
         return result;
     }
-     
+    
+    @Override
+    public Set<String> getQualifierClassNames() {
+        if (qualifiers != null) {
+            return qualifiers;
+        }else {
+            return Collections.EMPTY_SET;
+        }
+    } 
+
+    @Override
+    public void addQualifiers(Set<Annotation> add) {
+        if (qualifiers == null) {
+            qualifiers = new HashSet<>(add.size());
+        }
+        for (Annotation annotation : add) {
+            if (Proxy.isProxyClass(annotation.getClass())) {
+                InvocationHandler handler = Proxy.getInvocationHandler(annotation);
+                Method methods[] = Annotation.class.getMethods();
+                Method annotationType = null;
+                for (Method method : methods) {
+                    if (method.getName().equals("annotationType")) {
+                        annotationType = method;
+                    }
+                }
+                if (annotationType != null) {
+                    try {        
+                            Class<? extends Annotation> annotationClazz = (Class<? extends Annotation>) handler.invoke(add, annotationType, new Object[0]);
+                            if (!annotationClazz.getCanonicalName().equals("fish.payara.micro.cdi.Outbound")) {
+                                qualifiers.add(annotationClazz.getCanonicalName());
+                            }
+                        } catch (Throwable ex) {
+                    }
+                }
+            }
+        }
+    }    
     
     
     
