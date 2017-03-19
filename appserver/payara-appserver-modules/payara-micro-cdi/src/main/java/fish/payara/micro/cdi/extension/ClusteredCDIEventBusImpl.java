@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,7 +72,7 @@ import org.glassfish.internal.api.Globals;
 
 /**
  *
- * @author steve
+ * @author Steve Millidge (Payara Services Limited)
  */
 @ApplicationScoped
 public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIEventBus {
@@ -185,7 +185,9 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
             managedExecutorService.submit(new Runnable() {
                 @Override
                 public void run() {
+                    ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
                     try {
+                        Thread.currentThread().setContextClassLoader(capturedClassLoader);
                         
                         // create the set of qualifiers for the event
                         // first add Inbound qualifier with the correct properties                                                
@@ -205,22 +207,20 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                         qualifiers.add(inbound);
                         
                         // Now create Qualifiers for the sent event qualifiers
-                        Set<String> receivedQualifiers = event.getQualifierClassNames();
-                        for (String receivedQualifier : receivedQualifiers) {
-                            try {
-                                // qualifier is sent over as a class name so find the class
-                                Class<? extends Annotation> clazz = (Class<? extends Annotation>) Class.forName(receivedQualifier, true, Thread.currentThread().getContextClassLoader());
-                                qualifiers.add(new QualifierAnnotationLiteral(clazz));
-                            }catch (ClassNotFoundException t) {
-                                // ignore the qualifier and print warning
-                                Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO,"Received event with Qualifier which could not be loaded " + receivedQualifier + " thjis qualifier will be ignored");
+                        Set<Annotation> receivedQualifiers = event.getQualifiers();
+                        for (Annotation receivedQualifier : receivedQualifiers) {
+                            // strip out OutBound as we don't want it even though it was sent over
+                            if (!(receivedQualifier instanceof Outbound)) {
+                                qualifiers.add(receivedQualifier);
                             }
                         }
                         Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
                         bm.fireEvent(eventPayload,annotations);
                     } catch (IOException | ClassNotFoundException ex) {
                         Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Received Event but could not process it", ex);
-                    } 
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(oldCL);
+                    }
                 }
             });
         } finally {
