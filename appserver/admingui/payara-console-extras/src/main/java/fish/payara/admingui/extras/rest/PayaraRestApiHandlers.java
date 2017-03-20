@@ -105,7 +105,7 @@ public class PayaraRestApiHandlers
                 @HandlerInput(name = "rows", type = List.class, required = true),
                 @HandlerInput(name = "command", type = String.class, required = true)},
             output = {
-                @HandlerOutput(name = "result", type = String.class)
+                @HandlerOutput(name = "response", type = Map.class)
             })
     public static void sendAsadminCommandToSelectedInstances(HandlerContext handlerCtx) {
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
@@ -113,7 +113,7 @@ public class PayaraRestApiHandlers
                 + "/" + "send-asadmin-command";
         List<HashMap> rows = (List<HashMap>) handlerCtx.getInputValue("rows");
         String command = (String) handlerCtx.getInputValue("command");
-
+        
         // Check that the text box isn't empty
         if (command != null) {
             // Get the selected rows
@@ -156,7 +156,8 @@ public class PayaraRestApiHandlers
                 attrsMap.put("logOutput", "true");
 
                 try{
-                    RestUtil.restRequest(endpoint, attrsMap, "POST", handlerCtx, false, true);
+                    Map response = RestUtil.restRequest(endpoint, attrsMap, "POST", handlerCtx, false, false);
+                    handlerCtx.setOutputValue("response", response);
                 } catch (Exception ex) {
                     GuiUtil.handleException(handlerCtx, ex);
                 }
