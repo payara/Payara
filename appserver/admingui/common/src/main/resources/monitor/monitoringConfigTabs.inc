@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -38,14 +37,23 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     only if the new code is made subject to such option by the copyright
     holder.
 -->
-<console-config id="jmxmonitoring">
-    
-    <integration-point
-        id="jmxmonitoringTab"
-        type="fish.payara.admingui:monitoringConfigTabs"
-        priority="40"
-        parentId="monitoringConfigTabs"
-        content="jmxmonitoring/jmxmonitoringTab.jsf"
+
+<sun:tabSet id="monitoringConfigTabs" immediate="true" selected="#{sessionScope.monitoringConfigTab}" 
+         text="Monitoring" toolTip="Monitoring Service Tabs">
+    <!beforeCreate
+        setResourceBundle(key="common" bundle="org.glassfish.common.admingui.Strings")
+        setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
     />
     
-</console-config>
+    <sun:tab id="monitoringGeneralTab" immediate="true" text="General" toolTip="General Monitoring Config">
+	<!command
+            setSessionAttribute(key="monitoringConfigTab" value="monitoringGeneral");
+            gf.redirect(page="#{request.contextPath}/common/monitor/monitoringPage.jsf?configName=#{configName}");
+	/>
+    </sun:tab>
+</sun:tabSet>
+<event>
+    <!afterCreate
+        includeIntegrations(type="fish.payara.admingui:monitoringConfigTabs");
+    />
+</event>
