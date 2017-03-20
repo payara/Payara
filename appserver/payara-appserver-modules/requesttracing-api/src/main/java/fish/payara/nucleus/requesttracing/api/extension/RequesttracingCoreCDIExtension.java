@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates.
  * All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
@@ -15,7 +15,10 @@
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.requesttracing.api;
+package fish.payara.nucleus.requesttracing.api.extension;
+
+import fish.payara.nucleus.requesttracing.api.RequestTracingCdiInterceptor;
+import fish.payara.nucleus.requesttracing.api.Traced;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AnnotatedType;

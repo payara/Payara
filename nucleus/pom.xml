@@ -40,7 +40,8 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] Payara Foundation -->
+<!--"Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]" -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -234,6 +235,7 @@
         <xpp3.version>1.1.4c_7</xpp3.version>
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
+        <payara.api.version>4.1.1.172-SNAPSHOT</payara.api.version>
 
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,18 +36,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.eventbus;
+package fish.payara.notification.eventbus.core;
 
-import fish.payara.nucleus.notification.service.Message;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
  * @author mertcaliskan
  */
-public class EventbusMessage extends Message {
+public class EventbusNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    public EventbusMessage(EventbusNotificationEvent event, String subject, String message) {
-        this.subject = subject;
-        this.message = message;
-        addIdentifyingInfo(event);
+    private String topicName;
+
+    EventbusNotifierConfigurationExecutionOptions() {
+        super(NotifierType.EVENTBUS);
+    }
+
+    public String getTopicName() {
+        return topicName;
+    }
+
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
+    }
+
+    @Override
+    public String toString() {
+        return "EventbusNotifierConfigurationExecutionOptions{" +
+                "topicName='" + topicName + '\'' +
+                "} " + super.toString();
     }
 }

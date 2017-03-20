@@ -40,52 +40,29 @@
     holder.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
-    </parent>
-    <groupId>fish.payara.micro</groupId>
-    <artifactId>payara-micro-cdi</artifactId>
-    <packaging>glassfish-jar</packaging>
-    <name>Payara Micro CDI</name>
-    <description>Payara Micro CDI Extension</description>
-    <developers>
-        <developer>
-            <id>smillidge</id>
-            <name>Steve Millidge</name>
-            <url>http://www.payara.co</url>
-            <organization>Payara Inc.</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    <dependencies>
-        <dependency>
-            <groupId>fish.payara.micro</groupId>
-            <artifactId>payara-micro-service</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.micro</groupId>
-            <artifactId>payara-micro-boot</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.api</groupId>
-            <artifactId>payara-api</artifactId>
-            <version>${payara.api.version}</version>
-        </dependency>
-    </dependencies>
-</project>
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+          http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+    <id>stage-package</id>
+    <formats>
+        <format>dir</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${temp.dir}/nucleus</directory>
+            <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}</directory>
+            <excludes>
+                <exclude>nucleus/**</exclude>
+                <exclude>pkg_proto.py</exclude>
+            </excludes>
+            <outputDirectory>${install.dir.name}</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,34 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.eventbus;
+package fish.payara.notification.eventbus.core;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import java.text.MessageFormat;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
  */
-public class EventbusNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class EventbusNotificationEventFactory extends NotificationEventFactory<EventbusNotificationEvent> {
 
-    private String topicName;
-
-    EventbusNotifierConfigurationExecutionOptions() {
-        super(NotifierType.EVENTBUS);
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.EVENTBUS, this);
     }
 
-    public String getTopicName() {
-        return topicName;
-    }
+    public EventbusNotificationEvent buildNotificationEvent(String subject, String message) {
+        EventbusNotificationEvent event = initializeEvent(new EventbusNotificationEvent());
+        event.setSubject(subject);
+        event.setMessage(message);
 
-    public void setTopicName(String topicName) {
-        this.topicName = topicName;
+        return event;
     }
 
     @Override
-    public String toString() {
-        return "EventbusNotifierConfigurationExecutionOptions{" +
-                "topicName='" + topicName + '\'' +
-                "} " + super.toString();
+    public EventbusNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        EventbusNotificationEvent event = initializeEvent(new EventbusNotificationEvent());
+        event.setSubject(subject);
+        if (parameters != null && parameters.length > 0) {
+            message = MessageFormat.format(message, parameters);
+        }
+        event.setMessage(message);
+        return event;
     }
 }

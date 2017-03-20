@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.eventbus;
+package fish.payara.notification.eventbus.core;
 
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;

@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,24 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.eventbus;
+package fish.payara.notification.eventbus.core;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.EventBus;
+import fish.payara.nucleus.notification.configuration.EventbusNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import javax.inject.Inject;
 
 /**
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.EVENTBUS)
-public interface EventbusNotifierConfiguration extends NotifierConfiguration {
+@Service(name = "service-eventbus")
+@RunLevel(StartupRunLevel.VAL)
+public class EventbusNotifierService extends QueueBasedNotifierService<EventbusNotificationEvent,
+        EventbusNotifier,
+        EventbusNotifierConfiguration,
+        EventbusMessageQueue> {
 
-    @Attribute(defaultValue = "payara.notification.event")
-    String getTopicName();
-    void setTopicName(String value) throws PropertyVetoException;
+    @Inject
+    EventBus eventBus;
+
+    private EventbusNotifierConfigurationExecutionOptions executionOptions;
+
+    EventbusNotifierService() {
+        super("eventbus-message-consumer-");
+    }
+
+    @Override
+    @Subscribe
+    public void handleNotification(EventbusNotificationEvent event) {
+        if(executionOptions.isEnabled()) {
+            EventbusMessageImpl message = new EventbusMessageImpl(event, event.getSubject(), event.getMessage());
+            eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
+        }
+    }
+
+    @Override
+    public void bootstrap() {
+        register(NotifierType.EVENTBUS, EventbusNotifier.class, EventbusNotifierConfiguration.class, this);
+
+        executionOptions = (EventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+    }
+
+    @Override
+    public void shutdown() {
+        super.reset();
+    }
 }

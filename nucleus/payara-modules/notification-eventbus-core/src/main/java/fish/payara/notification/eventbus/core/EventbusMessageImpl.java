@@ -1,7 +1,6 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,34 +36,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.eventbus;
+package fish.payara.notification.eventbus.core;
 
-import fish.payara.nucleus.notification.configuration.EventbusNotifier;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.annotation.PostConstruct;
+import fish.payara.notification.eventbus.EventbusMessage;
+import fish.payara.nucleus.notification.service.Message;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class EventbusNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<EventbusNotifier> {
+public class EventbusMessageImpl extends Message implements EventbusMessage {
 
-    @PostConstruct
-    void postConstruct() {
-        register(NotifierType.EVENTBUS, this);
+    private String host;
+    private String serverName;
+    private String domain;
+    private String instance;
+
+    public EventbusMessageImpl(EventbusNotificationEvent event, String subject, String message) {
+        this.subject = subject;
+        this.message = message;
+        this.host = event.getHostName();
+        this.serverName = event.getServerName();
+        this.domain = event.getDomainName();
+        this.instance = event.getInstanceName();
     }
 
-    public NotifierExecutionOptions build(EventbusNotifier notifier) {
-        EventbusNotifierExecutionOptions executionOptions = new EventbusNotifierExecutionOptions();
-        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+    @Override
+    public String getHost() {
+        return host;
+    }
 
-        return executionOptions;
+    @Override
+    public String getServerName() {
+        return serverName;
+    }
+
+    @Override
+    public String getDomain() {
+        return domain;
+    }
+
+    @Override
+    public String getInstance() {
+        return instance;
     }
 }
