@@ -1,4 +1,4 @@
-/*
+<!--
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
@@ -36,59 +36,16 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- */
-package fish.payara.appserver.zendesk;
+-->
 
-import fish.payara.appserver.zendesk.config.ZendeskSupportConfiguration;
-import java.beans.PropertyChangeEvent;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.event.Events;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigListener;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
+<!-- pluginTreeNodeSupport.jsf -->
 
-/**
- *
- * @author Andrew Pielage
- */
-@Service (name = "zendesk-support")
-@RunLevel(StartupRunLevel.VAL)
-public class ZendeskSupportService implements ConfigListener {
-
-    private static final Logger LOGGER= Logger.getLogger(ZendeskSupportService.class.getCanonicalName());
-
-    @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    @Optional
-    ZendeskSupportConfiguration zendeskSupportConfiguration;
-    
-    @Inject
-    Events events;
-    
-    @Inject
-    ServiceLocator habitat;
-    
-    @PostConstruct
-    void postConstruct() {
-        zendeskSupportConfiguration = habitat.getService(ZendeskSupportConfiguration.class);
-    }
-    
-    @Override
-    public UnprocessedChangeEvents changed(PropertyChangeEvent[] pces) {
-        for (PropertyChangeEvent pce : pces) {
-            if (pce.getPropertyName().equals("emailAddress")) {
-                zendeskSupportConfiguration.setEmailAddress(pce.getNewValue().toString());
-            }
-        }
-        return null;
-    }
-    
-}
+<sun:treeNode id="support"
+    text="$resource{i18nhs.support.tree}"
+    url="/payara_support/support/support.jsf"
+    imageURL="/resource/images/support.png"
+    >
+     <!beforeCreate
+        setResourceBundle(key="i18nhs" bundle="fish.payara.admingui.support.Strings");
+    />
+</sun:treeNode>
