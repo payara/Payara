@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardWrapper;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.descriptor.*;
 
 import javax.servlet.SessionCookieConfig;
@@ -70,22 +70,7 @@ import java.util.logging.Logger;
  */
 public class TomcatDeploymentConfig {
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Security role name {0} used in an <auth-constraint> without being defined in a <security-role>",
-            level = "WARNING")
-    public static final String ROLE_AUTH = "AS-WEB-GLUE-00132";
-
-    @LogMessageInfo(
-            message = "Security role name {0} used in a <run-as> without being defined in a <security-role>",
-            level = "WARNING")
-    public static final String ROLE_RUNAS = "AS-WEB-GLUE-00133";
-
-    @LogMessageInfo(
-            message = "Security role name {0} used in a <role-link> without being defined in a <security-role>",
-            level = "WARNING")
-    public static final String ROLE_LINK = "AS-WEB-GLUE-00134";
+    private static final Logger logger = LogFacade.getLogger();
 
 
     /**
@@ -614,7 +599,7 @@ public class TomcatDeploymentConfig {
                 if (!"*".equals(roles[j]) &&
                         !webModule.hasSecurityRole(roles[j])) {
                     logger.log(Level.WARNING,
-                        ROLE_AUTH, roles[j]);
+                        LogFacade.ROLE_AUTH, roles[j]);
                     webModule.addSecurityRole(roles[j]);
                 }
             }
@@ -627,7 +612,7 @@ public class TomcatDeploymentConfig {
             String runAs = wrapper.getRunAs();
             if ((runAs != null) && !webModule.hasSecurityRole(runAs)) {
                 logger.log(Level.WARNING,
-                    ROLE_RUNAS, runAs);
+                    LogFacade.ROLE_RUNAS, runAs);
                 webModule.addSecurityRole(runAs);
             }
             String names[] = wrapper.findSecurityReferences();
@@ -635,7 +620,7 @@ public class TomcatDeploymentConfig {
                 String link = wrapper.findSecurityReference(names[j]);
                 if ((link != null) && !webModule.hasSecurityRole(link)) {
                     logger.log(Level.WARNING,
-                        ROLE_LINK, link);
+                        LogFacade.ROLE_LINK, link);
                     webModule.addSecurityRole(link);
                 }
             }

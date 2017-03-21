@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,14 +74,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.RequestUtil;
 import org.glassfish.grizzly.WriteHandler;
 import org.glassfish.grizzly.http.util.ByteChunk;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * The buffer used by Tomcat response. This is a derivative of the Tomcat 3.3
@@ -94,26 +93,8 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 public class OutputBuffer extends Writer
     implements ByteChunk.ByteOutputChannel {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "The WriteListener has already been set.",
-            level = "WARNING"
-    )
-    public static final String WRITE_LISTENER_BEEN_SET = "AS-WEB-CORE-00049";
-
-    @LogMessageInfo(
-            message = "Cannot set WriteListener for non-async or non-upgrade request",
-            level = "WARNING"
-    )
-    public static final String NON_ASYNC_UPGRADE_EXCEPTION = "AS-WEB-CORE-00050";
-
-    @LogMessageInfo(
-            message = "Error in invoking WriteListener.onWritePossible",
-            level = "WARNING"
-    )
-    public static final String WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR = "AS-WEB-CORE-00051";
 
     // -------------------------------------------------------------- Constants
 
@@ -528,12 +509,12 @@ public class OutputBuffer extends Writer
 
     public void setWriteListener(WriteListener writeListener) {
         if (writeHandler != null) {
-            throw new IllegalStateException(rb.getString(WRITE_LISTENER_BEEN_SET));
+            throw new IllegalStateException(rb.getString(LogFacade.WRITE_LISTENER_BEEN_SET));
         }
 
         Request req = (Request)response.getRequest();
         if (!(req.isAsyncStarted() || req.isUpgrade())) {
-            throw new IllegalStateException(rb.getString(NON_ASYNC_UPGRADE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.NON_ASYNC_UPGRADE_WRITER_EXCEPTION));
         }
 
         writeHandler = new WriteHandlerImpl(writeListener);
@@ -542,7 +523,7 @@ public class OutputBuffer extends Writer
             try {
                 writeHandler.onWritePossible();
             } catch(Throwable t) {
-                log.log(Level.WARNING, WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR, t);
+                log.log(Level.WARNING, LogFacade.WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR, t);
             }
         }
     }

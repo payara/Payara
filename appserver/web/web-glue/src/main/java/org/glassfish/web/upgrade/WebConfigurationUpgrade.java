@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -62,12 +62,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="webConfigurationUpgrade")
 public class WebConfigurationUpgrade implements ConfigurationUpgrade, PostConstruct {
 
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Unable to delete {0}",
-            level = "WARNING")
-    public static final String UNABLE_TO_DELETE = "AS-WEB-GLUE-00284";
+    private static final Logger _logger = LogFacade.getLogger();
 
     @Inject
     private ServerEnvironment serverEnvironment;
@@ -85,7 +80,7 @@ public class WebConfigurationUpgrade implements ConfigurationUpgrade, PostConstr
                 } else if (f.getName().endsWith("SESSIONS.ser")) {
                     if (!FileUtils.deleteFileMaybe(f)) {
                         _logger.log(Level.WARNING,
-                                UNABLE_TO_DELETE,
+                                LogFacade.UNABLE_TO_DELETE,
                                 f.toString());
                     }
                 }

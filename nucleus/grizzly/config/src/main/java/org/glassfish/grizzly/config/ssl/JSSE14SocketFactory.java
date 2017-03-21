@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -340,17 +340,17 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
         String attrValue = (String) attributes.get("sslSessionTimeout");
         if (attrValue != null) {
             sslSessionCtxt.setSessionTimeout(
-                Integer.valueOf(attrValue));
+                Integer.parseInt(attrValue));
         }
         attrValue = (String) attributes.get("ssl3SessionTimeout");
         if (attrValue != null) {
             sslSessionCtxt.setSessionTimeout(
-                Integer.valueOf(attrValue));
+                Integer.parseInt(attrValue));
         }
         attrValue = (String) attributes.get("sslSessionCacheSize");
         if (attrValue != null) {
             sslSessionCtxt.setSessionCacheSize(
-                Integer.valueOf(attrValue));
+                Integer.parseInt(attrValue));
         }
     }
 

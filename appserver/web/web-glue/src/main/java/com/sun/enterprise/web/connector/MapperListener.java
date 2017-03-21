@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,7 @@ import org.apache.catalina.util.RequestUtil;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 
 /**
@@ -100,48 +100,9 @@ public class MapperListener implements NotificationListener, NotificationFilter{
 
     public transient HttpService httpService;
 
-    protected static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+    protected static final Logger logger = LogFacade.getLogger();
 
     protected static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Cannot find WebContainer implementation",
-            level = "SEVERE",
-            cause = "Web container is null",
-            action = "Check if the mapper listener is initialized correctly")
-    public static final String CANNOT_FIND_WEB_CONTAINER = "AS-WEB-GLUE-00084";
-
-    @LogMessageInfo(
-            message = "Cannot find Engine implementation",
-            level = "SEVERE",
-            cause = "Engine is null",
-            action = "Check if the mapper listener is initialized correctly")
-    public static final String CANNOT_FIND_ENGINE = "AS-WEB-GLUE-00085";
-
-    @LogMessageInfo(
-            message = "Error registering contexts",
-            level = "WARNING")
-    public static final String ERROR_REGISTERING_CONTEXTS = "AS-WEB-GLUE-00086";
-
-    @LogMessageInfo(
-            message = "HTTP listener with network listener name {0} ignoring registration of host with object name {1}, because none of the host's associated HTTP listeners matches this network listener name",
-            level = "FINE")
-    public static final String IGNORE_HOST_REGISTRATIONS = "AS-WEB-GLUE-00087";
-
-    @LogMessageInfo(
-            message = "Register Context {0}",
-            level = "FINE")
-    public static final String REGISTER_CONTEXT = "AS-WEB-GLUE-00088";
-
-    @LogMessageInfo(
-            message = "Unregister Context {0}",
-            level = "FINE")
-    public static final String UNREGISTER_CONTEXT = "AS-WEB-GLUE-00089";
-
-    @LogMessageInfo(
-            message = "Register Wrapper {0} in Context {1}",
-            level = "FINE")
-    public static final String REGISTER_WRAPPER = "AS-WEB-GLUE-00090";
 
     protected transient Mapper mapper = null;
 
@@ -206,7 +167,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
     public void init() {
 
         if (webContainer == null)  {
-            logger.log(Level.SEVERE, CANNOT_FIND_WEB_CONTAINER);
+            logger.log(Level.SEVERE, LogFacade.CANNOT_FIND_WEB_CONTAINER);
             return;
         }
 
@@ -215,7 +176,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             httpService = webContainer.getHttpService();
             engine = webContainer.getEngine();
             if (engine == null) {
-                logger.log(Level.SEVERE, CANNOT_FIND_ENGINE);
+                logger.log(Level.SEVERE, LogFacade.CANNOT_FIND_ENGINE);
                 return;
             }
 
@@ -241,7 +202,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             }
 
         } catch (Exception e) {
-            logger.log(Level.WARNING, ERROR_REGISTERING_CONTEXTS, e);
+            logger.log(Level.WARNING, LogFacade.ERROR_REGISTERING_CONTEXTS, e);
         }
 
     }
@@ -375,7 +336,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             }
             if (!nameMatch) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, IGNORE_HOST_REGISTRATIONS, new Object[]{networkListenerName, name});
+                    logger.log(Level.FINE, LogFacade.IGNORE_HOST_REGISTRATIONS, new Object[]{networkListenerName, name});
                 }
                 return;
             }
@@ -451,7 +412,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             contextName = "";
         }
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, REGISTER_CONTEXT, contextName);
+            logger.log(Level.FINE, LogFacade.REGISTER_CONTEXT, contextName);
         }
 
         javax.naming.Context resources = context.findStaticResources();
@@ -502,7 +463,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         }
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, UNREGISTER_CONTEXT, contextName);
+            logger.log(Level.FINE, LogFacade.REGISTER_CONTEXT, contextName);
         }
 
         mapper.removeContext(hostName, contextName);
@@ -542,7 +503,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             contextName = "";
         }
 
-        String msg = MessageFormat.format(rb.getString(REGISTER_WRAPPER), wrapperName, contextName);
+        String msg = MessageFormat.format(rb.getString(LogFacade.REGISTER_WRAPPER), wrapperName, contextName);
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(msg);
         }

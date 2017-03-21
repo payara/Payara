@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -239,7 +239,7 @@ public class EjbRuntimeEndpointInfo {
                     ArrayList<WebServiceFeature> wsFeatures = new ArrayList<WebServiceFeature>();
                     // Only if MTOm is enabled create the Binding with the MTOMFeature
                     if (mtomEnabled) {
-                        int mtomThreshold = endpoint.getMtomThreshold() != null ? new Integer(endpoint.getMtomThreshold()):0;
+                        int mtomThreshold = endpoint.getMtomThreshold() != null ? Integer.parseInt(endpoint.getMtomThreshold()):0;
                         MTOMFeature mtom = new MTOMFeature(true,mtomThreshold);
                         wsFeatures.add(mtom);
                     }

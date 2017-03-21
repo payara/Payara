@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -253,7 +253,7 @@ public class GMSConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
         final int MAX_GMS_MULTICAST_PORT = 32000;
 
         int portInterval = MAX_GMS_MULTICAST_PORT - MIN_GMS_MULTICAST_PORT;
-        return Integer.valueOf(Math.round((float)(Math.random() * portInterval)) + MIN_GMS_MULTICAST_PORT).toString();
+        return Integer.toString(Math.round((float)(Math.random() * portInterval)) + MIN_GMS_MULTICAST_PORT);
     }
 
     // copied from config-api com.sun.enterprise.config.serverbeans.Cluster.java in order to generate a valid v3.1 value for this required properties.

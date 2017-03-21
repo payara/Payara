@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,11 +68,10 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -90,17 +89,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteHttpListener implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "Specified http listener, {0}, doesn''t exist.",
-            level = "INFO")
-    protected static final String DELETE_HTTP_LISTENER_NOT_EXISTS = "AS-WEB-ADMIN-00028";
-
-    @LogMessageInfo(
-            message = "{0} delete failed.",
-            level = "INFO")
-    protected static final String DELETE_HTTP_LISTENER_FAIL = "AS-WEB-ADMIN-00029";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name = "listener_id", primary = true)
     String listenerId;
@@ -131,7 +120,7 @@ public class DeleteHttpListener implements AdminCommand {
         ActionReport report = context.getActionReport();
         networkConfig = config.getNetworkConfig();
         if (!exists()) {
-            report.setMessage(MessageFormat.format(rb.getString(DELETE_HTTP_LISTENER_NOT_EXISTS), listenerId));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_HTTP_LISTENER_NOT_EXISTS), listenerId));
             report.setActionExitCode(ExitCode.FAILURE);
             return;
         }
@@ -145,7 +134,7 @@ public class DeleteHttpListener implements AdminCommand {
             cleanUp(name);
             report.setActionExitCode(ExitCode.SUCCESS);
         } catch (TransactionFailure e) {
-            report.setMessage(MessageFormat.format(rb.getString(DELETE_HTTP_LISTENER_FAIL), listenerId));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_HTTP_LISTENER_FAIL), listenerId));
             report.setActionExitCode(ExitCode.FAILURE);
             report.setFailureCause(e);
         }

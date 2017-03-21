@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.api.web.TldProvider;
-import org.glassfish.web.loader.WebappClassLoader;
+import org.glassfish.web.loader.LogFacade;
 
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -78,7 +78,7 @@ import com.sun.enterprise.util.net.JarURIPattern;
 @Singleton
 public class JerseyMvcTldProvider implements TldProvider, PostConstruct {
 
-    private static final Logger logger = WebappClassLoader.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
 
@@ -120,14 +120,14 @@ public class JerseyMvcTldProvider implements TldProvider, PostConstruct {
                         try {
                             uris[i] = urls[i].toURI();
                         } catch (URISyntaxException e) {
-                            String msg = rb.getString(WebappClassLoader.TLD_PROVIDER_IGNORE_URL);
+                            String msg = rb.getString(LogFacade.TLD_PROVIDER_IGNORE_URL);
                             msg = MessageFormat.format(msg, urls[i]);
                             logger.log(Level.WARNING, msg, e);
                         }
                     }
                 }
             } else {
-                logger.log(Level.WARNING, WebappClassLoader.UNABLE_TO_DETERMINE_TLD_RESOURCES, new Object[]{
+                logger.log(Level.WARNING, LogFacade.UNABLE_TO_DETERMINE_TLD_RESOURCES, new Object[]{
                         JerseyMvcTldProvider.class.getSimpleName(), classLoader, JerseyMvcTldProvider.class.getName()
                 });
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,11 +54,10 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -96,22 +95,7 @@ import java.util.ResourceBundle;
 })
 public class CreateHttp implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "The specified protocol {0} is not yet configured.",
-            level = "INFO")
-    protected static final String CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND = "AS-WEB-ADMIN-00013";
-
-    @LogMessageInfo(
-            message = "Failed to create http-redirect for {0}: {1}.",
-            level = "INFO")
-    protected static final String CREATE_HTTP_REDIRECT_FAIL = "AS-WEB-ADMIN-00014";
-
-    @LogMessageInfo(
-            message = "An http element for {0} already exists. Cannot add duplicate http.",
-            level = "INFO")
-    private static final String CREATE_HTTP_FAIL_DUPLICATE = "AS-WEB-ADMIN-00015";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name = "protocolname", primary = true)
     String protocolName;
@@ -163,12 +147,12 @@ public class CreateHttp implements AdminCommand {
             }
         }
         if (protocol == null) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND), protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
         if (protocol.getHttp() != null) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_HTTP_FAIL_DUPLICATE), protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_HTTP_FAIL_DUPLICATE), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
 
@@ -199,7 +183,7 @@ public class CreateHttp implements AdminCommand {
         } catch (TransactionFailure e) {
             report.setMessage(
                     MessageFormat.format(
-                            rb.getString(CREATE_HTTP_REDIRECT_FAIL),
+                            rb.getString(LogFacade.CREATE_HTTP_REDIRECT_FAIL),
                             protocolName,
                             e.getMessage() == null ? "No reason given." : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

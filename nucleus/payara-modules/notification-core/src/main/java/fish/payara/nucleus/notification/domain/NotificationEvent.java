@@ -45,12 +45,21 @@ package fish.payara.nucleus.notification.domain;
  */
 public abstract class NotificationEvent {
 
+    private String eventType;
     private String serverName;
     private String hostName;
     private String domainName;
     private String instanceName;
     private String subject;
     private String message;
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
 
     public String getServerName() {
         return serverName;

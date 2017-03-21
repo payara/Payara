@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -89,7 +89,7 @@ public class OSGiGlassFishRuntime extends GlassFishRuntimeDecorator {
     @Override
     public GlassFish newGlassFish(GlassFishProperties glassfishProperties) throws GlassFishException {
         GlassFish embeddedGf = super.newGlassFish(glassfishProperties);
-        int finalStartLevel = Integer.valueOf(glassfishProperties.getProperties().getProperty(
+        int finalStartLevel = Integer.parseInt(glassfishProperties.getProperties().getProperty(
                 Constants.FINAL_START_LEVEL_PROP, "2"));
         return new OSGiGlassFishImpl(embeddedGf, framework.getBundleContext(), finalStartLevel);
     }

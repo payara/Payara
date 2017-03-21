@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,7 @@ package org.apache.catalina.realm;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.*;
@@ -131,44 +131,6 @@ import java.util.logging.Level;
 public class JAASRealm
     extends RealmBase
  {
-     @LogMessageInfo(
-             message = "Setting JAAS app name {0}",
-             level = "INFO"
-     )
-     public static final String SETTING_JAAS_INFO = "AS-WEB-CORE-00306";
-
-     @LogMessageInfo(
-             message = "Login exception authenticating username {0}",
-             level = "FINE"
-     )
-     public static final String LOGIN_EXCEPTION_AUTHENTICATING_USERNAME = "AS-WEB-CORE-00307";
-
-     @LogMessageInfo(
-             message = "Username {0} NOT authenticated due to failed login",
-             level = "FINE"
-     )
-     public static final String USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN = "AS-WEB-CORE-00308";
-
-     @LogMessageInfo(
-             message = "Username {0} NOT authenticated due to expired account",
-             level = "FINE"
-     )
-     public static final String USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT = "AS-WEB-CORE-00309";
-
-     @LogMessageInfo(
-             message = "Username {0} NOT authenticated due to expired credential",
-             level = "FINE"
-     )
-     public static final String USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL = "AS-WEB-CORE-00310";
-
-     @LogMessageInfo(
-             message = "error ",
-             level = "SEVERE",
-             cause = "Could not authenticate by using the current username",
-             action = "Verify the username and credential"
-     )
-     public static final String AUTHENTICATION_ERROR = "AS-WEB-CORE-00311";
-
 
     // ----------------------------------------------------- Instance Variables
 
@@ -229,7 +191,7 @@ public class JAASRealm
         if( appName==null  ) {
             appName=name;
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, SETTING_JAAS_INFO, appName);
+                log.log(Level.INFO, LogFacade.SETTING_JAAS_INFO, appName);
             }
         }
     }
@@ -336,7 +298,7 @@ public class JAASRealm
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "Error initializing JAAS: " +  e.toString());
 
-                String msg = MessageFormat.format(rb.getString(LOGIN_EXCEPTION_AUTHENTICATING_USERNAME), username);
+                String msg = MessageFormat.format(rb.getString(LogFacade.LOGIN_EXCEPTION_AUTHENTICATING_USERNAME), username);
                 log.log(Level.FINE, msg, e);
             }
             return (null);
@@ -354,27 +316,27 @@ public class JAASRealm
             subject = loginContext.getSubject();
             if (subject == null) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, username);
+                    log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, username);
                 }
                 return (null);
             }
         } catch (AccountExpiredException e) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT, username);
+                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT, username);
             }
             return (null);
         } catch (CredentialExpiredException e) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL, username);
+                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL, username);
             }
             return (null);
         } catch (FailedLoginException e) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, username);
+                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, username);
             }
             return (null);
         } catch (LoginException e) {
-            String msg = MessageFormat.format(rb.getString(LOGIN_EXCEPTION_AUTHENTICATING_USERNAME),
+            String msg = MessageFormat.format(rb.getString(LogFacade.LOGIN_EXCEPTION_AUTHENTICATING_USERNAME),
                                               username);
             log.log(Level.FINE, msg, e);
             return (null);
@@ -400,7 +362,7 @@ public class JAASRealm
 
         return (principal);
         } catch( Throwable t) {
-            log.log(Level.SEVERE, AUTHENTICATION_ERROR, t);
+            log.log(Level.SEVERE, LogFacade.AUTHENTICATION_ERROR, t);
             return null;
         }
     }

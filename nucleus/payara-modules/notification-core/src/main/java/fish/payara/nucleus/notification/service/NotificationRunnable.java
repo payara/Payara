@@ -60,15 +60,45 @@ public abstract class NotificationRunnable<MQ extends MessageQueue, EO extends N
     protected static final String SLACK_ENDPOINT = "https://hooks.slack.com/services";
     protected static final String SLACK_RESOURCE = "/{0}/{1}/{2}";
 
+    protected static final String NEWRELIC_ENDPOINT = "https://insights-collector.newrelic.com/v1";
+    protected static final String NEWRELIC_RESOURCE = "/accounts/{0}/events";
+
+    protected static final String DATADOG_ENDPOINT = "https://app.datadoghq.com/api/v1/events";
+    protected static final String DATADOG_RESOURCE = "?api_key={0}";
+
+    protected static final String HEADER_CONTENTTYPE = "Content-Type";
+
     protected MQ queue;
     protected EO executionOptions;
 
-    protected HttpURLConnection createConnection(URL url, String contentType) throws IOException {
+    protected HttpURLConnection createConnection(URL url, Header... headers) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod(HTTP_METHOD_POST);
-        connection.setRequestProperty("Content-Type", contentType);
+        if (headers != null) {
+            for (Header header : headers) {
+                connection.setRequestProperty(header.getKey(), header.getValue());
+            }
+        }
         connection.connect();
         return connection;
+    }
+
+    public class Header {
+
+        String key;
+        String value;
+
+        public Header(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+        public String getValue() {
+            return value;
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,8 +62,8 @@ package org.apache.catalina.authenticator;
 import org.apache.catalina.Globals;
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.deploy.LoginConfig;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -84,30 +84,6 @@ import java.text.MessageFormat;
 public class SSLAuthenticator
     extends AuthenticatorBase {
 
-
-    @LogMessageInfo(
-            message = "Looking up certificates",
-            level = "INFO"
-    )
-    public static final String LOOK_UP_CERTIFICATE_INFO = "AS-WEB-CORE-00017";
-
-    @LogMessageInfo(
-            message = "No certificates included with this request",
-            level = "INFO"
-    )
-    public static final String NO_CERTIFICATE_INCLUDED_INFO = "AS-WEB-CORE-00018";
-
-    @LogMessageInfo(
-            message = "No client certificate chain in this request",
-            level = "WARNING"
-    )
-    public static final String NO_CLIENT_CERTIFICATE_CHAIN = "AS-WEB-CORE-00019";
-
-    @LogMessageInfo(
-            message = "Cannot authenticate with the provided credentials",
-            level = "WARNING"
-    )
-    public static final String CANNOT_AUTHENTICATE_WITH_CREDENTIALS = "AS-WEB-CORE-00020";
 
 
     // ------------------------------------------------------------- Properties
@@ -157,7 +133,7 @@ public class SSLAuthenticator
             ((HttpServletRequest) request.getRequest()).getUserPrincipal();
         if (principal != null) {
             if (debug >= 1) {
-                String msg = MessageFormat.format(rb.getString(SingleSignOn.PRINCIPAL_BEEN_AUTHENTICATED_INFO),
+                String msg = MessageFormat.format(rb.getString(LogFacade.PRINCIPAL_BEEN_AUTHENTICATED_INFO),
                                                   principal.getName());
                 log(msg);
             }
@@ -168,7 +144,7 @@ public class SSLAuthenticator
         HttpServletResponse hres =
             (HttpServletResponse) response.getResponse();
         if (debug >= 1)
-            log(rb.getString(LOOK_UP_CERTIFICATE_INFO));
+            log(rb.getString(LogFacade.LOOK_UP_CERTIFICATE_INFO));
 
         X509Certificate certs[] = (X509Certificate[])
             request.getRequest().getAttribute(Globals.CERTIFICATES_ATTR);
@@ -178,10 +154,10 @@ public class SSLAuthenticator
         }
         if ((certs == null) || (certs.length < 1)) {
             if (debug >= 1)
-                log(rb.getString(NO_CERTIFICATE_INCLUDED_INFO));
+                log(rb.getString(LogFacade.NO_CERTIFICATE_INCLUDED_INFO));
             // BEGIN S1AS 4878272
             hres.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            response.setDetailMessage(rb.getString(NO_CLIENT_CERTIFICATE_CHAIN));
+            response.setDetailMessage(rb.getString(LogFacade.NO_CLIENT_CERTIFICATE_CHAIN));
             // END S1AS 4878272
             return (false);
         }
@@ -193,7 +169,7 @@ public class SSLAuthenticator
                 log("Realm.authenticate() returned false");
             // BEGIN S1AS 4878272
             hres.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setDetailMessage(rb.getString(CANNOT_AUTHENTICATE_WITH_CREDENTIALS));
+            response.setDetailMessage(rb.getString(LogFacade.CANNOT_AUTHENTICATE_WITH_CREDENTIALS));
             // END S1AS 4878272
             return (false);
         }

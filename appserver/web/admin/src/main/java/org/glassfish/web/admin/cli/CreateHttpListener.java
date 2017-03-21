@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,8 +73,7 @@ import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.internal.api.Target;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
+import org.glassfish.web.admin.LogFacade;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -130,44 +129,9 @@ public class CreateHttpListener implements AdminCommand {
     private static final String DEFAULT_TRANSPORT = "tcp";
     private NetworkConfig networkConfig = null;
 
-    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "The acceptor threads must be at least 1",
-            level = "INFO")
-    private static final String ACCEPTOR_THREADS_TOO_LOW = "AS-WEB-ADMIN-00003";
-
-    @LogMessageInfo(
-            message = "Listener {0} could not be created, actual reason: {1}",
-            level = "INFO")
-    private static final String CREATE_HTTP_LISTENER_FAIL = "AS-WEB-ADMIN-00004";
-
-    @LogMessageInfo(
-            message = "A default virtual server is required.  Please use --default-virtual-server to specify this value.",
-            level = "INFO")
-    private static final String CREATE_HTTP_LISTENER_VS_BLANK = "AS-WEB-ADMIN-00005";
-
-    @LogMessageInfo(
-            message = "--defaultVS and --default-virtual-server conflict.  Please use only --default-virtual-server to specify this value.",
-            level = "INFO")
-    private static final String CREATE_HTTP_LISTENER_VS_BOTH_PARAMS = "AS-WEB-ADMIN-00006";
-
-    @LogMessageInfo(
-            message = "Attribute value (default-virtual-server = {0}) is not found in list of virtual servers defined in config.",
-            level = "INFO")
-    private static final String CREATE_HTTP_LISTENER_VS_NOTEXISTS = "AS-WEB-ADMIN-00007";
-
-    @LogMessageInfo(
-            message = "Http Listener named {0} already exists.",
-            level = "INFO")
-    private static final String CREATE_HTTP_LISTENER_DUPLICATE = "AS-WEB-ADMIN-00008";
-
-    @LogMessageInfo(
-            message = "Port [{0}] is already taken for address [{1}], please choose another port.",
-            level = "INFO")
-    protected static final String PORT_IN_USE = "AS-WEB-ADMIN-00009";
 
     /**
      * Executes the command with the command parameters passed as Properties where the keys are the paramter names and
@@ -222,7 +186,7 @@ public class CreateHttpListener implements AdminCommand {
             if (logger.isLoggable(Level.INFO)) {
                 logger.log(Level.INFO, e.getMessage(), e);
             }
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_HTTP_LISTENER_FAIL), listenerId, e.getMessage()));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_HTTP_LISTENER_FAIL), listenerId, e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;
@@ -278,12 +242,12 @@ public class CreateHttpListener implements AdminCommand {
 
     private boolean verifyDefaultVirtualServer(ActionReport report) {
         if (defaultVS == null && defaultVirtualServer == null) {
-            report.setMessage(rb.getString(CREATE_HTTP_LISTENER_VS_BLANK));
+            report.setMessage(rb.getString(LogFacade.CREATE_HTTP_LISTENER_VS_BLANK));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
         }
         if (defaultVS != null && defaultVirtualServer != null && !defaultVS.equals(defaultVirtualServer)) {
-            report.setMessage(rb.getString(CREATE_HTTP_LISTENER_VS_BOTH_PARAMS));
+            report.setMessage(rb.getString(LogFacade.CREATE_HTTP_LISTENER_VS_BOTH_PARAMS));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
         } else if (defaultVirtualServer == null && defaultVS != null) {
@@ -292,7 +256,7 @@ public class CreateHttpListener implements AdminCommand {
         //no need to check the other things (e.g. id) for uniqueness
         // ensure that the specified default virtual server exists
         if (!defaultVirtualServerExists()) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_HTTP_LISTENER_VS_NOTEXISTS), defaultVirtualServer));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_HTTP_LISTENER_VS_NOTEXISTS), defaultVirtualServer));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
         }
@@ -306,7 +270,7 @@ public class CreateHttpListener implements AdminCommand {
             if (listener.getPort().trim().equals(listenerPort) &&
                 listener.getAddress().trim().equals(listenerAddress)) {
                 String def = "Port is already taken by another listener, choose another port.";
-                String msg = MessageFormat.format(rb.getString(PORT_IN_USE), listenerPort, listenerAddress);
+                String msg = MessageFormat.format(rb.getString(LogFacade.PORT_IN_USE), listenerPort, listenerAddress);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return false;
@@ -317,7 +281,7 @@ public class CreateHttpListener implements AdminCommand {
 
     private boolean validateInputs(final ActionReport report) {
         if(acceptorThreads != null && Integer.parseInt(acceptorThreads) < 1) {
-            report.setMessage(MessageFormat.format(rb.getString(ACCEPTOR_THREADS_TOO_LOW), listenerId));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.ACCEPTOR_THREADS_TOO_LOW), listenerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
         }
@@ -327,7 +291,7 @@ public class CreateHttpListener implements AdminCommand {
         // ensure we don't already have one of this name
         for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
             if (listener.getName().equals(listenerId)) {
-                report.setMessage(MessageFormat.format(rb.getString(CREATE_HTTP_LISTENER_DUPLICATE), listenerId));
+                report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_HTTP_LISTENER_DUPLICATE), listenerId));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return false;
             }

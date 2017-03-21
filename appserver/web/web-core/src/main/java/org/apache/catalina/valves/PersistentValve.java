@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,6 @@ package org.apache.catalina.valves;
 
 import org.apache.catalina.*;
 import org.apache.catalina.session.PersistentManager;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -82,11 +81,6 @@ import java.io.IOException;
 public class PersistentValve
     extends ValveBase {
 
-    @LogMessageInfo(
-            message = "No Context configured to process this request",
-            level = "WARNING"
-    )
-    public static final String NO_CONTEXT_CONFIGURED = "AS-WEB-CORE-00514";
     // ----------------------------------------------------- Instance Variables
 
 
@@ -132,7 +126,7 @@ public class PersistentValve
         if (context == null) {
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                 rb.getString(NO_CONTEXT_CONFIGURED));
+                 rb.getString(LogFacade.NO_CONTEXT_CONFIGURED));
             return END_PIPELINE;
         }
 
@@ -184,7 +178,7 @@ public class PersistentValve
         if (context == null) {
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                 rb.getString(NO_CONTEXT_CONFIGURED));
+                 rb.getString(LogFacade.NO_CONTEXT_CONFIGURED));
             return;
         }
 

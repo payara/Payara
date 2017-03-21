@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,11 +65,9 @@ import com.google.common.cache.CacheBuilder;
 import com.sun.enterprise.spi.io.BaseIndirectlySerializable;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.tomcat.util.security.PrivilegedSetTccl;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.*;
@@ -111,51 +109,10 @@ import java.util.logging.Logger;
 public class StandardSession
     implements HttpSession, Session, Serializable {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+    private static final ResourceBundle rb = log.getResourceBundle();
 
-    @LogMessageInfo(
-            message = "Session id change event listener threw exception",
-            level = "WARNING"
-    )
-    public static final String SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00389";
-
-    @LogMessageInfo(
-            message = "Session event listener threw exception",
-            level = "WARNING"
-    )
-    public static final String SESSION_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00390";
-
-    @LogMessageInfo(
-            message = "Session already invalidated",
-            level = "WARNING"
-    )
-    public static final String SESSION_INVALIDATED_EXCEPTION = "AS-WEB-CORE-00391";
-
-    @LogMessageInfo(
-            message = "Session attribute event listener threw exception",
-            level = "WARNING"
-    )
-    public static final String SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00392";
-
-    @LogMessageInfo(
-            message = "setAttribute: name parameter cannot be null",
-            level = "WARNING"
-    )
-    public static final String NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00393";
-
-    @LogMessageInfo(
-            message = "Session binding event listener threw exception",
-            level = "WARNING"
-    )
-    public static final String SESSION_BINDING_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00394";
-
-    @LogMessageInfo(
-            message = " Cannot serialize session attribute {0} for session {1}",
-            level = "WARNING"
-    )
-    public static final String CANNOT_SERIALIZE_SESSION_EXCEPTION = "AS-WEB-CORE-00395";
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -495,7 +452,7 @@ public class StandardSession
                     } catch (Exception e) {
                         // Ignore
                     }
-                    log(rb.getString(SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION), t);
+                    log(rb.getString(LogFacade.SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION), t);
                 }
             }
         }
@@ -576,7 +533,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(rb.getString(SESSION_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_EVENT_LISTENER_EXCEPTION), t);
             }
         }
     }
@@ -603,7 +560,7 @@ public class StandardSession
     public long getLastAccessedTime() {
         if ( !isValid() ) {
             throw new IllegalStateException
-                ("getLastAccessedTime: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getLastAccessedTime: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
         }
         return (this.lastAccessedTime);
 
@@ -928,7 +885,7 @@ public class StandardSession
                                 // Ignore
                             }
                             // FIXME - should we do anything besides log these?
-                            log(rb.getString(SESSION_EVENT_LISTENER_EXCEPTION), t);
+                            log(rb.getString(LogFacade.SESSION_EVENT_LISTENER_EXCEPTION), t);
                         }
                     }
                 }
@@ -1316,7 +1273,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("getCreationTime: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getCreationTime: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         return (this.creationTime);
 
@@ -1368,7 +1325,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("getAttribute: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getAttribute: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         if (name == null) return null;
 
@@ -1391,7 +1348,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("getAttributeNames: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getAttributeNames: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
 
         return (new Enumerator<String>(attributes.keySet(), true));
@@ -1432,7 +1389,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("getValueNames: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getValueNames: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         return (keys());
 
@@ -1608,7 +1565,7 @@ public class StandardSession
 
         if (!isValid)
             throw new IllegalStateException
-                ("invalidate: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("invalidate: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
         //make sure foreground locked first
         if(!this.isForegroundLocked()) {
             this.getSessionLockForForeground();
@@ -1637,7 +1594,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("isNew: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("isNew: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         return (this.isNew);
 
@@ -1716,7 +1673,7 @@ public class StandardSession
         // Validate our current state
         if (!isValid() && checkValid)
             throw new IllegalStateException
-                ("removeAttribute: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("removeAttribute: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         // Remove this attribute from our collection
         Object value = attributes.remove(name);
@@ -1785,7 +1742,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(rb.getString(SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -1838,7 +1795,7 @@ public class StandardSession
         // Name cannot be null
         if (name == null)
             throw new IllegalArgumentException
-                (rb.getString(NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION));
+                (rb.getString(LogFacade.NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION));
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -1849,7 +1806,7 @@ public class StandardSession
         // Validate our current state
         if (!isValid()) {
             throw new IllegalStateException
-                ("setAttribute: "+ rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("setAttribute: "+ rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
         }
 
         if (manager != null) {
@@ -1865,7 +1822,7 @@ public class StandardSession
             try {
                 ((HttpSessionBindingListener) value).valueBound(event);
             } catch (Throwable t){
-                log(rb.getString(SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -1885,7 +1842,7 @@ public class StandardSession
             } catch (Throwable t) {
                 context.fireContainerEvent(
                     ContainerEvent.AFTER_SESSION_VALUE_UNBOUND, null);
-                log(rb.getString(SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
             }
         }
         
@@ -1950,7 +1907,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(rb.getString(SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -2255,7 +2212,7 @@ public class StandardSession
             } catch (IOException e) {
                 if((e instanceof NotSerializableException || e.getCause() instanceof NotSerializableException)
                         && (serSuccess == null || serSuccess == false)) {
-                String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_SERIALIZE_SESSION_EXCEPTION),
                                                   new Object[] {saveNames.get(i), id});
                 log(msg, Level.WARNING);
                 stream.writeObject(NOT_SERIALIZED);

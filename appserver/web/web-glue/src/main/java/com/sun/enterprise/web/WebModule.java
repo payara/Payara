@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,8 +74,8 @@ import org.glassfish.embeddable.web.config.SecurityConfig;
 import org.glassfish.embeddable.web.config.TransportGuarantee;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.security.common.Role;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.admin.monitor.ServletProbeProvider;
 import org.glassfish.web.admin.monitor.SessionProbeProvider;
 import org.glassfish.web.admin.monitor.WebModuleProbeProvider;
@@ -115,183 +115,9 @@ public class WebModule extends PwcWebModule implements Context {
 
     // ----------------------------------------------------- Class Variables
 
-    private static final Logger logger = WebContainer.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     protected static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Unable to create custom ObjectInputStream",
-            level = "SEVERE",
-            cause = "An exception occurred during creating ObjectInputStream",
-            action = "Check the Exception for error")
-    public static final String CREATE_CUSTOM_OBJECT_INTPUT_STREAM_ERROR = "AS-WEB-GLUE-00222";
-
-    @LogMessageInfo(
-            message = "Unable to create custom ObjectOutputStream",
-            level = "SEVERE",
-            cause = "An exception occurred during creating ObjectOutputStream",
-            action = "Check the Exception for error")
-    public static final String CREATE_CUSTOM_BOJECT_OUTPUT_STREAM_ERROR = "AS-WEB-GLUE-00223";
-
-    @LogMessageInfo(
-            message = "The default-locale attribute of locale-charset-info element is being ignored",
-            level = "WARNING")
-    public static final String DEFAULT_LOCALE_DEPRECATED = "AS-WEB-GLUE-00224";
-
-    @LogMessageInfo(
-            message = "Realm {0} is not an instance of {1}, and will be ignored",
-            level = "SEVERE",
-            cause = "Realm {0} is not an instance of {1}",
-            action = "Check the Realm")
-    public static final String IGNORE_INVALID_REALM = "AS-WEB-GLUE-00225";
-
-    @LogMessageInfo(
-            message = "Web module [{0}] has a property with missing name or value",
-            level = "WARNING")
-    public static final String NULL_WEB_MODULE_PROPERTY = "AS-WEB-GLUE-00226";
-
-    @LogMessageInfo(
-            message = "Object of type {0} is not a valve",
-            level = "WARNING")
-    public static final String VALVE_CLASS_NAME_NO_VALVE = "AS-WEB-GLUE-00227";
-
-    @LogMessageInfo(
-            message = "Unable to add valve to web module {0}",
-            level = "WARNING")
-    public static final String VALVE_MISSING_NAME = "AS-WEB-GLUE-00228";
-
-    @LogMessageInfo(
-            message = "Unable to add valve with name {0} to web module {1}",
-            level = "WARNING")
-    public static final String VALVE_MISSING_CLASS_NAME = "AS-WEB-GLUE-00229";
-
-    @LogMessageInfo(
-            message = "No method {0}(java.lang.String) defined on valve {1} of web module {2}",
-            level = "SEVERE",
-            cause = "A matching method is not found",
-            action = "Check the method name")
-    public static final String VALVE_SPECIFIED_METHOD_MISSING = "AS-WEB-GLUE-00230";
-
-    @LogMessageInfo(
-            message = "Exception during execution of method {0} on valve {1} of web module {2}",
-            level = "SEVERE",
-            cause = "An exception occurred during method execution",
-            action = "Check the Exception for error")
-    public static final String VALVE_SETTER_CAUSED_EXCEPTION = "AS-WEB-GLUE-00231";
-
-    @LogMessageInfo(
-            message = "Valve {0} of web module {1} has a property without any name",
-            level = "SEVERE",
-            cause = "The valve is missing property name",
-            action = "Check the property name")
-    public static final String VALVE_MISSING_PROPERTY_NAME = "AS-WEB-GLUE-00232";
-
-    @LogMessageInfo(
-            message = "Unable to add listener of type {0} to web module {1}",
-            level = "WARNING")
-    public static final String INVALID_LISTENER = "AS-WEB-GLUE-00233";
-
-    @LogMessageInfo(
-            message = "Unable to load extension class {0} from web module {1}",
-            level = "WARNING")
-    public static final String UNABLE_TO_LOAD_EXTENSION = "AS-WEB-GLUE-00234";
-
-    @LogMessageInfo(
-            message = "Null property name or value for alternate docbase",
-            level = "WARNING")
-    public static final String ALTERNATE_DOC_BASE_NULL_PROPERTY_NAME_VALVE = "AS-WEB-GLUE-00235";
-
-    @LogMessageInfo(
-            message = "Alternate docbase property value {0} is missing a URL pattern or docbase",
-            level = "WARNING")
-    public static final String ALTERNATE_DOC_BASE_MISSING_PATH_OR_URL_PATTERN = "AS-WEB-GLUE-00236";
-
-    @LogMessageInfo(
-            message = "URL pattern {0} for alternate docbase is invalid",
-            level = "WARNING")
-    public static final String ALTERNATE_DOC_BASE_ILLEGAL_URL_PATTERN = "AS-WEB-GLUE-00237";
-
-    @LogMessageInfo(
-            message = "Failed to parse sun-web.xml singleThreadedServletPoolSize property value ({0}) of web module deployed at {1}, using default ({2})",
-            level = "WARNING")
-    public static final String INVALID_SERVLET_POOL_SIZE = "AS-WEB-GLUE-00238";
-
-    @LogMessageInfo(
-            message = "Enabled session ID reuse for web module {0} deployed on virtual server {1}",
-            level = "WARNING")
-    public static final String SESSION_IDS_REUSED = "AS-WEB-GLUE-00239";
-
-    @LogMessageInfo(
-            message = "Using alternate deployment descriptor {0} for web module {1}",
-            level = "FINE")
-    public static final String ALT_DD_NAME = "AS-WEB-GLUE-00240";
-
-    @LogMessageInfo(
-            message = "Ignoring invalid property {0} = {1}",
-            level = "WARNING")
-    public static final String INVALID_PROPERTY = "AS-WEB-GLUE-00241";
-
-    @LogMessageInfo(
-            message = "Unable to save sessions for web module {0} during redeployment",
-            level = "WARNING")
-    public static final String UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY = "AS-WEB-GLUE-00242";
-
-    @LogMessageInfo(
-            message = "Unable to restore sessions for web module [{0}] from previous deployment",
-            level = "WARNING")
-    public static final String UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY = "AS-WEB-GLUE-00243";
-
-    @LogMessageInfo(
-            message = "Webservice based application, requires Metro to be installed. Run updatecenter client located in bin folder to install Metro",
-            level = "WARNING")
-    public static final String MISSING_METRO = "AS-WEB-GLUE-00244";
-
-    @LogMessageInfo(
-            message = "WebModule[{0}]: Setting delegate to {1}",
-            level = "FINE")
-    public static final String SETTING_DELEGATE = "AS-WEB-GLUE-00245";
-
-    @LogMessageInfo(
-            message = "WebModule[{0}]: Adding {1} to the classpath",
-            level = "FINE")
-    public static final String ADDING_CLASSPATH = "AS-WEB-GLUE-00246";
-
-    @LogMessageInfo(
-            message = "extra-class-path component {0} is not a valid pathname",
-            level = "SEVERE",
-            cause = "A MalformedURLException occurred",
-            action = "Check the extra-class-path component")
-    public static final String CLASSPATH_ERROR = "AS-WEB-GLUE-00247";
-
-    @LogMessageInfo(
-            message = "class-loader attribute dynamic-reload-interval in sun-web.xml not supported",
-            level = "WARNING")
-    public static final String DYNAMIC_RELOAD_INTERVAL = "AS-WEB-GLUE-00248";
-
-    @LogMessageInfo(
-            message = "IN WebContainer>>ConfigureSessionManager before builder factory FINAL_PERSISTENCE-TYPE IS = {0} FINAL_PERSISTENCE_FREQUENCY IS = {1} FINAL_PERSISTENCE_SCOPE IS = {2}",
-            level = "FINEST")
-    public static final String CONFIGURE_SESSION_MANAGER = "AS-WEB-GLUE-00249";
-
-    @LogMessageInfo(
-            message = "PersistenceStrategyBuilder class = {0}",
-            level = "FINEST")
-    public static final String PERSISTENCE_STRATEGY_BUILDER = "AS-WEB-GLUE-00250";
-
-    @LogMessageInfo(
-            message = "Property [{0}] is not yet supported",
-            level = "INFO")
-    public static final String PROP_NOT_YET_SUPPORTED = "AS-WEB-GLUE-00251";
-
-    @LogMessageInfo(
-            message = "WebModule[{0}] configure cookie properties {1}",
-            level = "FINE")
-    public static final String CONFIGURE_COOKIE_PROPERTIES = "AS-WEB-GLUE-00252";
-
-    @LogMessageInfo(
-            message = "Unable to add listener of type: {0}, because it does not implement any of the required ServletContextListener, ServletContextAttributeListener, ServletRequestListener, ServletRequestAttributeListener, HttpSessionListener, or HttpSessionAttributeListener interfaces",
-            level = "WARNING")
-    public static final String INVALID_LISTENER_TYPE = "AS-WEB-GLUE-00253";
 
     private static final String ALTERNATE_FROM = "from=";
     private static final String ALTERNATE_DOCBASE = "dir=";
@@ -455,7 +281,7 @@ public class WebModule extends PwcWebModule implements Context {
         if (lcinfo != null) {
             if (lcinfo.getAttributeValue(
                             LocaleCharsetInfo.DEFAULT_LOCALE) != null) {
-               logger.warning(DEFAULT_LOCALE_DEPRECATED);
+               logger.warning(LogFacade.DEFAULT_LOCALE_DEPRECATED);
             }
             /*
              * <parameter-encoding> subelem of <sun-web-app> takes precedence
@@ -574,7 +400,7 @@ public class WebModule extends PwcWebModule implements Context {
                         is, true, classLoader, getUniqueId());
                 } catch (Exception e) {
                     logger.log(Level.SEVERE,
-                            CREATE_CUSTOM_OBJECT_INTPUT_STREAM_ERROR, e);
+                            LogFacade.CREATE_CUSTOM_OBJECT_INTPUT_STREAM_ERROR, e);
                 }
             }
         }
@@ -601,7 +427,7 @@ public class WebModule extends PwcWebModule implements Context {
             oos = javaEEIOUtils.createObjectOutputStream(os, true);
         } catch (IOException ioe) {
             logger.log(Level.SEVERE,
-                    CREATE_CUSTOM_BOJECT_OUTPUT_STREAM_ERROR, ioe);
+                    LogFacade.CREATE_CUSTOM_BOJECT_OUTPUT_STREAM_ERROR, ioe);
             oos = new ObjectOutputStream(os);
         }
 
@@ -645,7 +471,7 @@ public class WebModule extends PwcWebModule implements Context {
     @Override
     public void setRealm(Realm realm) {
         if ((realm != null) && !(realm instanceof RealmAdapter)) {
-            logger.log(Level.SEVERE, IGNORE_INVALID_REALM,
+            logger.log(Level.SEVERE, LogFacade.IGNORE_INVALID_REALM,
                     new Object[] { realm.getClass().getName(),
                         RealmAdapter.class.getName() });
         } else {
@@ -1201,7 +1027,7 @@ public class WebModule extends PwcWebModule implements Context {
                                                String propValue){
         if (propName == null || propValue == null) {
             logger.log(Level.WARNING,
-                        NULL_WEB_MODULE_PROPERTY,
+                        LogFacade.NULL_WEB_MODULE_PROPERTY,
                         getName());
             return;
         }
@@ -1226,7 +1052,7 @@ public class WebModule extends PwcWebModule implements Context {
         } else if (valve instanceof GlassFishValve) {
             super.addValve((GlassFishValve) valve);
         } else {
-            logger.log(Level.WARNING, VALVE_CLASS_NAME_NO_VALVE,
+            logger.log(Level.WARNING, LogFacade.VALVE_CLASS_NAME_NO_VALVE,
                        className);
         }
     }
@@ -1243,12 +1069,12 @@ public class WebModule extends PwcWebModule implements Context {
         String className = valveDescriptor.getAttributeValue(
                 org.glassfish.web.deployment.runtime.Valve.CLASS_NAME);
         if (valveName == null) {
-            logger.log(Level.WARNING, VALVE_MISSING_NAME,
+            logger.log(Level.WARNING, LogFacade.VALVE_MISSING_NAME,
                        getName());
             return;
         }
         if (className == null) {
-            logger.log(Level.WARNING, VALVE_MISSING_CLASS_NAME,
+            logger.log(Level.WARNING, LogFacade.VALVE_MISSING_CLASS_NAME,
                        new Object[]{valveName, getName()});
             return;
         }
@@ -1258,7 +1084,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
         if (!(valve instanceof GlassFishValve) &&
                 !(valve instanceof Valve)) {
-            logger.log(Level.WARNING, VALVE_CLASS_NAME_NO_VALVE,
+            logger.log(Level.WARNING, LogFacade.VALVE_CLASS_NAME_NO_VALVE,
                        className);
             return;
         }
@@ -1275,19 +1101,19 @@ public class WebModule extends PwcWebModule implements Context {
                             propName, String.class);
                         method.invoke(valve, value);
                     } catch (NoSuchMethodException ex) {
-                        String msg = rb.getString(VALVE_SPECIFIED_METHOD_MISSING);
+                        String msg = rb.getString(LogFacade.VALVE_SPECIFIED_METHOD_MISSING);
                         msg = MessageFormat.format(msg,
                             new Object[] { propName, valveName, getName()});
                         logger.log(Level.SEVERE, msg, ex);
                     } catch (Throwable t) {
-                        String msg = rb.getString(VALVE_SETTER_CAUSED_EXCEPTION);
+                        String msg = rb.getString(LogFacade.VALVE_SETTER_CAUSED_EXCEPTION);
                         msg = MessageFormat.format(msg,
                             new Object[] { propName, valveName, getName()});
                         logger.log(Level.SEVERE, msg, t);
                     }
                 } else {
                     logger.log(Level.WARNING,
-                        VALVE_MISSING_PROPERTY_NAME,
+                        LogFacade.VALVE_MISSING_PROPERTY_NAME,
                         new Object[]{valveName, getName()});
                     return;
                 }
@@ -1318,7 +1144,7 @@ public class WebModule extends PwcWebModule implements Context {
         } else if (listener instanceof InstanceListener){
             addInstanceListener(listenerName);
         } else {
-            logger.log(Level.SEVERE, INVALID_LISTENER,
+            logger.log(Level.SEVERE, LogFacade.INVALID_LISTENER,
                 new Object[] {listenerName, getName()});
         }
     }
@@ -1328,7 +1154,7 @@ public class WebModule extends PwcWebModule implements Context {
             Class clazz = getLoader().getClassLoader().loadClass(className);
             return clazz.newInstance();
         } catch (Throwable ex){
-            String msg = rb.getString(UNABLE_TO_LOAD_EXTENSION);
+            String msg = rb.getString(LogFacade.UNABLE_TO_LOAD_EXTENSION);
             msg = MessageFormat.format(msg, new Object[] { className, getName() });
             logger.log(Level.SEVERE, msg, ex);
         }
@@ -1427,7 +1253,7 @@ public class WebModule extends PwcWebModule implements Context {
     void parseAlternateDocBase(String propName, String propValue) {
 
         if (propName == null || propValue == null) {
-            logger.log(Level.WARNING, ALTERNATE_DOC_BASE_NULL_PROPERTY_NAME_VALVE);
+            logger.log(Level.WARNING, LogFacade.ALTERNATE_DOC_BASE_NULL_PROPERTY_NAME_VALVE);
             return;
         }
 
@@ -1447,7 +1273,7 @@ public class WebModule extends PwcWebModule implements Context {
         if (fromIndex < 0 || dirIndex < 0) {
             logger.log(
                 Level.WARNING,
-                ALTERNATE_DOC_BASE_MISSING_PATH_OR_URL_PATTERN,
+                LogFacade.ALTERNATE_DOC_BASE_MISSING_PATH_OR_URL_PATTERN,
                 propValue);
             return;
         }
@@ -1469,7 +1295,7 @@ public class WebModule extends PwcWebModule implements Context {
         urlPattern = urlPattern.trim();
         if (!validateURLPattern(urlPattern)) {
             logger.log(Level.WARNING,
-                       ALTERNATE_DOC_BASE_ILLEGAL_URL_PATTERN,
+                       LogFacade.ALTERNATE_DOC_BASE_ILLEGAL_URL_PATTERN,
                        urlPattern);
             return;
         }
@@ -1518,14 +1344,14 @@ public class WebModule extends PwcWebModule implements Context {
                 String value = prop.getAttributeValue("value");
                 if (name == null || value == null) {
                     throw new IllegalArgumentException(
-                            rb.getString(NULL_WEB_MODULE_PROPERTY));
+                            rb.getString(LogFacade.NULL_WEB_MODULE_PROPERTY));
                 }
                 if ("singleThreadedServletPoolSize".equalsIgnoreCase(name)) {
                     int poolSize = getSTMPoolSize();
                     try {
                         poolSize = Integer.parseInt(value);
                     } catch(NumberFormatException e) {
-                        String msg = rb.getString(INVALID_SERVLET_POOL_SIZE);
+                        String msg = rb.getString(LogFacade.INVALID_SERVLET_POOL_SIZE);
                         msg = MessageFormat.format(msg, value, contextPath, Integer.toString(poolSize));
                         logger.log(Level.WARNING, msg, e);
                     }
@@ -1545,7 +1371,7 @@ public class WebModule extends PwcWebModule implements Context {
                     boolean reuse = ConfigBeansUtilities.toBoolean(value);
                     setReuseSessionID(reuse);
                     if (reuse) {
-                        String msg = rb.getString(SESSION_IDS_REUSED);
+                        String msg = rb.getString(LogFacade.SESSION_IDS_REUSED);
                         msg = MessageFormat.format(msg, contextPath, vs.getID());
                         logger.log(Level.WARNING, msg);
                     }
@@ -1587,7 +1413,7 @@ public class WebModule extends PwcWebModule implements Context {
                     // in configureCatalinaProperties()
                 } else {
                     Object[] params = {name, value};
-                    logger.log(Level.WARNING, INVALID_PROPERTY,
+                    logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,
                         params);
                 }
             }
@@ -1630,7 +1456,7 @@ public class WebModule extends PwcWebModule implements Context {
 
         if (logger.isLoggable(Level.FINE)) {
             Object[] objs = {altDDName, wmInfo.getName()};
-            logger.log(Level.FINE, ALT_DD_NAME, objs);
+            logger.log(Level.FINE, LogFacade.ALT_DD_NAME, objs);
         }
 
         setAltDDName(altDDName);
@@ -1746,7 +1572,7 @@ public class WebModule extends PwcWebModule implements Context {
             props.setProperty(getObjectName(),
                               gfEncoder.encode(baos.toByteArray()));
         } catch (Exception ex) {
-            String msg = rb.getString(UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY);
+            String msg = rb.getString(LogFacade.UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY);
             msg = MessageFormat.format(msg, getName());
             logger.log(Level.WARNING, msg, ex);
         }
@@ -1776,7 +1602,7 @@ public class WebModule extends PwcWebModule implements Context {
                     gfDecoder.decodeBuffer(sessions));
                 manager.readSessions(bais);
             } catch (Exception ex) {
-                String msg = rb.getString(UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY);
+                String msg = rb.getString(LogFacade.UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY);
                 msg = MessageFormat.format(msg, getName());
                 logger.log(Level.WARNING, msg, ex);
             }
@@ -1803,7 +1629,7 @@ public class WebModule extends PwcWebModule implements Context {
             return super.loadListener(loader, listenerClassName);
         } catch (Exception e) {
             if (WS_SERVLET_CONTEXT_LISTENER.equals(listenerClassName)) {
-                logger.log(Level.WARNING, MISSING_METRO, e);
+                logger.log(Level.WARNING, LogFacade.MISSING_METRO, e);
             }
             throw e;
         }
@@ -1863,7 +1689,7 @@ public class WebModule extends PwcWebModule implements Context {
         boolean delegate = ConfigBeansUtilities.toBoolean(value);
         loader.setDelegate(delegate);
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, SETTING_DELEGATE, new Object[]{getPath(), delegate});
+            logger.log(Level.FINE, LogFacade.SETTING_DELEGATE, new Object[]{getPath(), delegate});
         }
 
         // Get any extra paths to be added to the class path of this
@@ -1879,7 +1705,7 @@ public class WebModule extends PwcWebModule implements Context {
                 for (String path : pathElements) {
                     path = path.replace("\\:", ":");
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, ADDING_CLASSPATH, new Object[]{getPath(), path});
+                        logger.log(Level.FINE, LogFacade.ADDING_CLASSPATH, new Object[]{getPath(), path});
                     }
 
                     try {
@@ -1900,7 +1726,7 @@ public class WebModule extends PwcWebModule implements Context {
                             URL url = file.toURI().toURL();
                             loader.addRepository(url.toString());
                         } catch (MalformedURLException mue2) {
-                            String msg = rb.getString(CLASSPATH_ERROR);
+                            String msg = rb.getString(LogFacade.CLASSPATH_ERROR);
                             Object[] params = { path };
                             msg = MessageFormat.format(msg, params);
                             logger.log(Level.SEVERE, msg, mue2);
@@ -1915,7 +1741,7 @@ public class WebModule extends PwcWebModule implements Context {
         if (value != null) {
             // Log warning if dynamic-reload-interval is specified
             // in sun-web.xml since it is not supported
-            logger.log(Level.WARNING, DYNAMIC_RELOAD_INTERVAL);
+            logger.log(Level.WARNING, LogFacade.DYNAMIC_RELOAD_INTERVAL);
         }
     }
 
@@ -1941,13 +1767,13 @@ public class WebModule extends PwcWebModule implements Context {
             name = prop.getAttributeValue(WebProperty.NAME);
             value = prop.getAttributeValue(WebProperty.VALUE);
             if(name == null || value == null) {
-                throw new IllegalArgumentException(rb.getString(NULL_WEB_MODULE_PROPERTY));
+                throw new IllegalArgumentException(rb.getString(LogFacade.NULL_WEB_MODULE_PROPERTY));
             }
             if("ignoreHiddenJarFiles".equalsIgnoreCase(name)) {
                 loader.setIgnoreHiddenJarFiles(ConfigBeansUtilities.toBoolean(value));
             } else {
                 Object[] params = {name, value};
-                logger.log(Level.WARNING, INVALID_PROPERTY,
+                logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,
                     params);
             }
         }
@@ -1973,7 +1799,7 @@ public class WebModule extends PwcWebModule implements Context {
         String scope = configHelper.getPersistenceScope();
 
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, CONFIGURE_SESSION_MANAGER, new Object[]{persistence.getType(), frequency, scope});
+            logger.log(Level.FINEST, LogFacade.CONFIGURE_SESSION_MANAGER, new Object[]{persistence.getType(), frequency, scope});
         }
 
         PersistenceStrategyBuilderFactory factory =
@@ -1983,7 +1809,7 @@ public class WebModule extends PwcWebModule implements Context {
             factory.createPersistenceStrategyBuilder(persistence.getType(),
                                                      frequency, scope, this);
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, PERSISTENCE_STRATEGY_BUILDER, builder.getClass().getName());
+            logger.log(Level.FINEST, LogFacade.PERSISTENCE_STRATEGY_BUILDER, builder.getClass().getName());
         }
 
         builder.initializePersistenceStrategy(this, smBean,
@@ -2037,7 +1863,7 @@ public class WebModule extends PwcWebModule implements Context {
                 String name = prop.getAttributeValue(WebProperty.NAME);
                 String value = prop.getAttributeValue(WebProperty.VALUE);
                 if(name == null || value == null) {
-                    throw new IllegalArgumentException(rb.getString(NULL_WEB_MODULE_PROPERTY));
+                    throw new IllegalArgumentException(rb.getString(LogFacade.NULL_WEB_MODULE_PROPERTY));
                 }
                 if("timeoutSeconds".equalsIgnoreCase(name)) {
                     try {
@@ -2052,7 +1878,7 @@ public class WebModule extends PwcWebModule implements Context {
                     setEnableURLRewriting(ConfigBeansUtilities.toBoolean(value));
                 } else {
                     if (logger.isLoggable(Level.INFO)) {
-                        logger.log(Level.INFO, PROP_NOT_YET_SUPPORTED, name);
+                        logger.log(Level.INFO, LogFacade.PROP_NOT_YET_SUPPORTED, name);
                     }
                 }
             }
@@ -2091,7 +1917,7 @@ public class WebModule extends PwcWebModule implements Context {
                     String name = prop.getAttributeValue(WebProperty.NAME);
                     String value = prop.getAttributeValue(WebProperty.VALUE);
                     if(name == null || value == null) {
-                        throw new IllegalArgumentException(rb.getString(NULL_WEB_MODULE_PROPERTY));
+                        throw new IllegalArgumentException(rb.getString(LogFacade.NULL_WEB_MODULE_PROPERTY));
                     }
                     if("cookieName".equalsIgnoreCase(name)) {
                         cookieConfig.setName(value);
@@ -2114,13 +1940,13 @@ public class WebModule extends PwcWebModule implements Context {
                     } else {
                         Object[] params = {name, value};
                         logger.log(Level.WARNING,
-                            INVALID_PROPERTY,
+                            LogFacade.INVALID_PROPERTY,
                             params);
                     }
                 }
                 if (props.length > 0) {
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, CONFIGURE_COOKIE_PROPERTIES, new Object[]{getPath(), cookieConfig});
+                        logger.log(Level.FINE, LogFacade.CONFIGURE_COOKIE_PROPERTIES, new Object[]{getPath(), cookieConfig});
                     }
                     setSessionCookieConfigFromSunWebXml(cookieConfig);
                 }

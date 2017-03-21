@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -672,7 +672,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         String cacheSize = getStatementCacheSize();
         if(cacheSize != null){
             try{
-                statementCacheSize = Integer.valueOf(cacheSize);
+                statementCacheSize = Integer.parseInt(cacheSize);
                 //TODO-SC FINE log-level with Pool Name (if possible)
                 if(_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, "StatementCaching Size : " + statementCacheSize);
@@ -1512,7 +1512,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         String stmtLeakTimeout = getStatementLeakTimeoutInSeconds();
         String stmtLeakReclaim = getStatementLeakReclaim();
         if (stmtLeakTimeout != null) {
-            statementLeakTimeout = Integer.valueOf(stmtLeakTimeout) * 1000L;
+            statementLeakTimeout = Integer.parseInt(stmtLeakTimeout) * 1000L;
             statementLeakReclaim = Boolean.valueOf(stmtLeakReclaim);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "StatementLeakTimeout in seconds: "

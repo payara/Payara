@@ -689,6 +689,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                getTimeoutSeconds(http), TimeUnit.SECONDS));
         final org.glassfish.grizzly.http.HttpServerFilter httpServerFilter =
             createHttpServerCodecFilter(http);
+        httpServerFilter.setRemoveHandledContentEncodingHeaders(true);
         final Set<ContentEncoding> contentEncodings =
             configureContentEncodings(http);
         for (ContentEncoding contentEncoding : contentEncodings) {
@@ -1102,11 +1103,15 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             new CompressionEncodingFilter(compressionLevel, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
-                GZipContentEncoding.getGzipAliases()));
+                GZipContentEncoding.getGzipAliases(),
+                compressionLevel != CompressionLevel.OFF
+            ));
         final ContentEncoding lzmaEncoding = new LZMAContentEncoding(new CompressionEncodingFilter(compressionLevel, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
-                LZMAContentEncoding.getLzmaAliases()));
+                LZMAContentEncoding.getLzmaAliases(),
+                compressionLevel != CompressionLevel.OFF
+        ));
         final Set<ContentEncoding> set = new HashSet<ContentEncoding>(2);
         set.add(gzipContentEncoding);
         set.add(lzmaEncoding);
