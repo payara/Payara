@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,40 @@
     <name>Eventbus Notification Implementation</name>
     <description>Eventbus Notification Implementation</description>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Import-Package>
+                                    javax.inject,
+                                    org.glassfish.hk2.api,
+                                    org.jvnet.hk2.config,
+                                    org.glassfish.hk2.runlevel,
+                                    fish.payara.notification.eventbus,
+                                    fish.payara.nucleus.eventbus,
+                                    fish.payara.nucleus.notification.admin,
+                                    fish.payara.nucleus.notification.configuration,
+                                    fish.payara.nucleus.notification.domain,
+                                    fish.payara.nucleus.notification.service
+                                </Import-Package>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
@@ -58,6 +92,11 @@
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 

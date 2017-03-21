@@ -40,68 +40,20 @@
     holder.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>payara-appserver-modules</artifactId>
+        <groupId>org.glassfish.main.packager</groupId>
+        <artifactId>nucleus-packages</artifactId>
         <version>4.1.1.172-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.appserver</groupId>
-    <artifactId>payara-jsr107</artifactId>
-    <packaging>glassfish-jar</packaging>
-    <name>Payara JSR107</name>
-    <description>Payara JSR107 Integration Module</description>
-    <developers>
-        <developer>
-            <id>smillidge</id>
-            <name>Steve Millidge</name>
-            <url>http://www.payara.co</url>
-            <organization>Payara Inc.</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                        <configuration>
-                            <instructions>
-                                <Export-Package>
-                                    fish.payara.cdi.jsr107.implementation
-                                </Export-Package>
-                            </instructions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <groupId>fish.payara.packager</groupId>
+    <artifactId>payara-api-package</artifactId>
+    <name>Nucleus Payara API Package</name>
+    <packaging>distribution-fragment</packaging>
+    <description>This pom describes how to assemble the Nucleus Payara API package</description>
 
     <dependencies>
-        <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>hazelcast-bootstrap</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
-        </dependency>
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
@@ -109,3 +61,4 @@
         </dependency>
     </dependencies>
 </project>
+

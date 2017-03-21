@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -15,7 +15,7 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.cdi.jsr107.impl;
+package fish.payara.cdi.jsr107.implementation;
 
 import java.io.Serializable;
 import java.util.Arrays;

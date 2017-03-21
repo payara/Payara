@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -15,26 +15,28 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.cdi.jsr107.impl;
+package fish.payara.cdi.jsr107.implementation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectStreamClass;
+import java.lang.annotation.Annotation;
+import javax.cache.Cache;
+import javax.cache.annotation.CacheInvocationContext;
+import javax.cache.annotation.CacheResolver;
 
 /**
  *
  * @author steve
  */
-public class PayaraTCCLObjectInputStream extends ObjectInputStream {
+public class PayaraCacheResolver implements CacheResolver {
     
-    public PayaraTCCLObjectInputStream(InputStream is) throws IOException {
-        super(is);
+    private Cache<?,?> cache;
+    
+    public PayaraCacheResolver(Cache<?,?> cache) {
+        this.cache = cache;
     }
 
     @Override
-    protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-        return Thread.currentThread().getContextClassLoader().loadClass(desc.getName());
-    }  
+    public <K, V> Cache<K, V> resolveCache(CacheInvocationContext<? extends Annotation> cic) {
+        return (Cache<K, V>) cache;
+    }
     
 }
