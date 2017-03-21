@@ -48,7 +48,8 @@
                         <configuration>
                             <instructions>
                                 <Export-Package>
-                                    fish.payara.nucleus.requesttracing.api
+                                    fish.payara.nucleus.requesttracing.api,
+                                    fish.payara.requesttracing.api
                                 </Export-Package>
                             </instructions>
                         </configuration>

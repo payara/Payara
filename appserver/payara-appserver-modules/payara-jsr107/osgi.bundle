@@ -1,1 +1,1 @@
--exportcontents: fish.payara.cdi.jsr107.impl; version=${project.osgi.version}
+-exportcontents: fish.payara.cdi.jsr107.impl,fish.payara.jcache.api; version=${project.osgi.version}
