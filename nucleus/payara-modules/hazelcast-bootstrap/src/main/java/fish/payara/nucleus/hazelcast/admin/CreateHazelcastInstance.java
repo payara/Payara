@@ -40,6 +40,9 @@
 package fish.payara.nucleus.hazelcast.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -53,6 +56,12 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import java.util.ArrayList;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  *
@@ -80,17 +89,14 @@ public class CreateHazelcastInstance implements AdminCommand {
     @I18n("generic.config")
     String configRef;
     
-    @Param(name = "cluster", optional = true)
-    String clusterName;
-    
     @Param(name = "lbenabled", optional = true)
     private Boolean lbEnabled;
     
     @Param(name = "checkports", optional = true, defaultValue = "true")
-    private boolean checkPorts;
+    private Boolean checkPorts;
     
     @Param(optional = true, defaultValue = "false")
-    private boolean terse;
+    private Boolean terse;
     
     @Param(name = "portbase", optional = true)
     private String portBase;
@@ -105,10 +111,10 @@ public class CreateHazelcastInstance implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
     
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true, defaultValue = "true")
     private Boolean enabled;
 
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
+    @Param(name = "dynamic", optional = true, defaultValue = "true")
     private Boolean dynamic;
 
     @Param(name = "hazelcastConfigurationFile", shortName = "f", optional = true)
@@ -141,9 +147,130 @@ public class CreateHazelcastInstance implements AdminCommand {
     @Param(name = "hostawareParitioning", optional = true, defaultValue = "false")
     private Boolean hostawarePartitioning;  
     
+    //Persistence paramers
+    @Param(name = "webPersistence", optional = true, defaultValue = "hazelcast", acceptableValues="memory, file, hazelcast, replicated")
+    private String webPersistence;
+    
+    @Param(name = "ejbPersistence", optional = true, defaultValue = "hazelcast", acceptableValues="file, hazelcast, replicated")
+    private String ejbPersistence;
+    
+    //Other variables
+    @Inject
+    protected Logger logger;
+    
+    @Inject
+    ServiceLocator serviceLocator;
+    
     @Override
     public void execute(AdminCommandContext context) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        try {
+            
+            CommandRunner run = serviceLocator.getService(CommandRunner.class);
+            CommandInvocation createinstance =  run.getCommandInvocation("create-instance", context.getActionReport(), context.getSubject());
+            ParameterMap instanceArgs = prepareCreateInstanceArgs();
+            createinstance.parameters(instanceArgs);
+            createinstance.execute();
+
+            CommandInvocation hazelcastConfig = run.getCommandInvocation("set-hazelcast-configuration", context.getActionReport(), context.getSubject());
+            RemoteCLICommand setHazelcastConfig = new RemoteCLICommand();
+            ParameterMap hazelcastArgs = prepareHazelcastArgs();
+            hazelcastConfig.parameters(hazelcastArgs);
+            hazelcastConfig.execute();
+            
+            CommandInvocation webPersistenceCommand = run.getCommandInvocation("set", context.getActionReport(), context.getSubject());
+            ParameterMap webPArgs = new ParameterMap();
+            webPArgs.add("DEFAULT", "configs.config." + instance + "-config.availability-service.web-container-availability.persistence-type=" + webPersistence);
+            webPersistenceCommand.parameters(webPArgs);
+            webPersistenceCommand.execute();
+            
+            CommandInvocation ejbPersist = run.getCommandInvocation("set", context.getActionReport(), context.getSubject());
+            ParameterMap ejbPArgs = new ParameterMap();
+            ejbPArgs.add("DEFAULT","configs.config." + instance + "-config.availability-service.ejb-container-availability.sfsb-ha-persistence-type=" + ejbPersistence);
+            ejbPersist.parameters(ejbPArgs);
+            ejbPersist.execute();
+            
+            
+        } catch (Exception e){
+            
+            logger.log(Level.SEVERE,"Error executing operation" ,e);
+            throw new UnsupportedOperationException(e);
+        }
+        
+        
     }
+    
+    private ParameterMap prepareCreateInstanceArgs(){
+        ParameterMap instArgs = new ParameterMap();
+        ArrayList<String> instanceArgs = new ArrayList<String>();
+        instArgs.add("node", node);
+        if (lbEnabled != null){
+            instArgs.add("lbenabled", lbEnabled.toString());
+        }
+        if (checkPorts != null){
+            instArgs.add("checkPorts", checkPorts.toString());
+        }
+        if (terse != null){
+            instArgs.add("terse", terse.toString());
+        }
+        if (portBase != null){
+            instArgs.add("portbase", portBase);;
+        }
+        if (systemProperties != null){
+            instArgs.add("systemProperties", systemProperties);
+        }
+        if (instance != null){
+             instArgs.add("instance_name", instance);;
+        }
+        return instArgs;
+    }
+    
+    
+    private ParameterMap prepareHazelcastArgs() {
+        ParameterMap hazelargs = new ParameterMap();
+        ArrayList<String> hazelcastArgs = new ArrayList<String>();
+        hazelcastArgs.add("set-hazelcast-configuration");
+        hazelargs.add("target", instance);
+        if (enabled != null) {
+            hazelargs.add("enabled", enabled.toString());
+        }
+        if (dynamic != null) {
+            hazelargs.add("dynamic", dynamic.toString());
+        }
+        if (configFile != null) {
+            hazelargs.add("hazelcastconfigurationfile", configFile);
+        }
+        if (startPort != null) {
+            hazelargs.add("startPort", startPort);
+        }
+        if (multiCastGroup != null) {
+            hazelargs.add("multicastGroup", multiCastGroup);
+        }
+        if (multicastPort != null) {
+            hazelargs.add("multicastPort", multicastPort);
+        }
+        if (hzClusterName != null) {
+            hazelargs.add("clusterName", hzClusterName);
+        }
+        if (hzClusterPassword != null) {
+            hazelargs.add("clusterPassword", hzClusterPassword);
+        }
+        if (jndiName != null) {
+            hazelargs.add("jndiName", jndiName);
+        }
+        if (licenseKey != null) {
+            hazelargs.add("licenseKey", licenseKey);;
+        }
+        if (lite != null) {
+            hazelargs.add("lite", lite.toString());
+        }
+        if (hostawarePartitioning != null) {
+            hazelargs.add("hostawareParitioning", hostawarePartitioning.toString());;
+        }
+        
+        return hazelargs;
+    }
+
+
     
 }
