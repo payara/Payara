@@ -70,6 +70,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     @PostConstruct
     void init() {
         capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
+        if(capturedInvocation != null) {
+            capturedInvocation = capturedInvocation.clone();
+        }
     }
 
     /**
@@ -143,7 +146,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     @Override
     public String getApplicationName() {
         ComponentInvocation ci = serverContext.getInvocationManager().getCurrentInvocation();
-        return ci != null? ci.getAppName() : null;
+        return ci != null? ci.getModuleName() : null;
     }
 
     /**
@@ -157,9 +160,29 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             return;
         }
         ApplicationInfo appInfo = appRegistry.get(appName);
+
+        // try plain non-versioned app first
+        if(appInfo == null) {
+            appName = stripVersionSuffix(appName);
+            appInfo = appRegistry.get(appName);
+        }
+        // for versioned applications, search app registry and strip out the version number
+        if(appInfo == null) {
+            for(String regAppName : appRegistry.getAllApplicationNames()) {
+                if(stripVersionSuffix(regAppName).equals(appName)) {
+                    appInfo = appRegistry.get(regAppName);
+                    break;
+                }
+            }
+        }
         if(appInfo != null) {
             Utility.setContextClassLoader(appInfo.getAppClassLoader());
         }
+    }
+
+    private static String stripVersionSuffix(String name) {
+        int delimiterIndex = name.lastIndexOf(':');
+        return delimiterIndex != -1? name.substring(0, delimiterIndex) : name;
     }
 
 
