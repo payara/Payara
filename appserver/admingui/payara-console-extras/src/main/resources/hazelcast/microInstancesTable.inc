@@ -43,8 +43,15 @@
                     
                     getAllSingleMapRows(TableRowGroup="${tableRowGroup}" Rows="#{requestScope.rows}");
                     py.sendAsadminCommandToSelectedInstances(parentEndpoint="#{pageSession.parentUrl}", 
-                            rows="#{requestScope.rows}", command="#{pageSession.command}");
-                    
+                            rows="#{requestScope.rows}", command="#{pageSession.command}", 
+                            response="#{pageSession.commandResponse}");
+                            
+                    if("#{pageSession.commandResponse.data['exit_code']} = FAILURE") {
+                        prepareAlertMsg(type="error", detail="#{pageSession.commandResponse.data.message}", 
+                                summary="An error has occurred");
+                        gf.redirect(page="#{request.contextPath}/hazelcast/hazelcastMembersDomain.jsf?&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                    }
+                            
                     py.prepareSuccessfulCommandMsg();
                     gf.redirect(page="#{request.contextPath}/hazelcast/hazelcastMembersDomain.jsf?&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
