@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions copyright [2017] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -74,6 +75,13 @@ public final class ConfigBeansUtilities {
         domain = paramDomain;
     }
 
+    /*
+     * Get the default value of Condition from dtd
+    */
+    public static String getDefaultCondition() {
+        return null;
+    }
+    
     /**
      * Get the default value of Format from dtd
      */
