@@ -34,7 +34,7 @@ public class PayaraTCCLObjectInputStream extends ObjectInputStream {
 
     @Override
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-        return Thread.currentThread().getContextClassLoader().loadClass(desc.getName());
+        return Class.forName(desc.getName(), false, Thread.currentThread().getContextClassLoader());
     }  
     
 }

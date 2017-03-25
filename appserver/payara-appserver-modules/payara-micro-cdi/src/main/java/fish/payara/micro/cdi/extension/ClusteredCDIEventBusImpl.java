@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.cdi.extension;
 
+import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
 import fish.payara.micro.cdi.ClusteredCDIEventBus;
@@ -179,7 +180,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                 capturedInvocation.getModuleName());
         final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(capturedClassLoader);
+            Utility.setContextClassLoader(capturedClassLoader);
             im.preInvoke(newInvocation);
 
             managedExecutorService.submit(new Runnable() {
@@ -187,7 +188,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                 public void run() {
                     ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
                     try {
-                        Thread.currentThread().setContextClassLoader(capturedClassLoader);
+                        Utility.setContextClassLoader(capturedClassLoader);
                         
                         // create the set of qualifiers for the event
                         // first add Inbound qualifier with the correct properties                                                
@@ -219,12 +220,12 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                     } catch (IOException | ClassNotFoundException ex) {
                         Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Received Event but could not process it", ex);
                     } finally {
-                        Thread.currentThread().setContextClassLoader(oldCL);
+                        Utility.setContextClassLoader(oldCL);
                     }
                 }
             });
         } finally {
-            Thread.currentThread().setContextClassLoader(oldTCCL);
+            Utility.setContextClassLoader(oldTCCL);
             im.postInvoke(newInvocation);
         }
     }
