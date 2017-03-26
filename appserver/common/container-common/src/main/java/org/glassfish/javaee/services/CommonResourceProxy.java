@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.javaee.services;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -86,6 +86,9 @@ public class CommonResourceProxy implements NamingObjectProxy.InitializationNami
                     }
                 }
                 getResourceDeployer(desc).deployResource(desc);
+                try {
+                    ic.rebind(desc.getName(), this);
+                } catch (NamingException e) {}
             } catch (Exception e) {
                 NamingException ne = new NamingException("Unable to create resource [" + desc.getName() + " ]");
                 ne.initCause(e);
