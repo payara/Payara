@@ -45,7 +45,7 @@ import fish.payara.micro.cdi.ClusteredCDIEventBus;
 import fish.payara.appserver.micro.services.PayaraClusteredCDIEventImpl;
 import fish.payara.micro.event.CDIEventListener;
 import fish.payara.micro.event.PayaraClusteredCDIEvent;
-import fish.payara.appserver.micro.services.PayaraInstance;
+import fish.payara.micro.PayaraInstance;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
