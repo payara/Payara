@@ -1691,15 +1691,16 @@ public class WebappClassLoader
      *
      * @param name Name of the class to be loaded
      * @param resolve If <code>true</code> then resolve the class
+     * @return class
      *
      * @exception ClassNotFoundException if the class was not found
      */
     @Override
-    protected Class<?> loadClass(String name, boolean resolve)
+    protected synchronized Class<?> loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
 
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "loadClass(" + name + ")");
+            logger.log(Level.FINER, "loadClass({0})", name);
         }
 
         Class<?> clazz = null;

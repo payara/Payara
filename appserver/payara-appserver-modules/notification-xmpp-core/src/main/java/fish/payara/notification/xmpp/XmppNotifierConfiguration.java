@@ -81,5 +81,5 @@ public interface XmppNotifierConfiguration extends NotifierConfiguration {
     void securityDisabled(String securityDisabled) throws PropertyVetoException;
 
     @Attribute(required = true)
-    String getRoomName();
-    void roomName(String roomName) throws PropertyVetoException;}
+    String getRoomId();
+    void roomId(String roomId) throws PropertyVetoException;}

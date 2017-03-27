@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>4.1.1.171.0.1</version>
+        <version>4.1.1.171.1</version>
     </parent>
     <artifactId>payara-web</artifactId>
     <name>Payara Web Featureset</name>
@@ -151,9 +151,40 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        <!-- Notifiers -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>notification</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-email</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-hipchat</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-slack</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-snmp</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-xmpp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
