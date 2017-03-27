@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1.1.171.0.1</version>
+        <version>4.1.1.171.1</version>
     </parent>
 
     <developers>
@@ -166,6 +166,12 @@
         <module>asadmin-recorder</module>
         <module>JMX-Monitoring</module>
         <module>payara-micro</module>
+        <module>notification-email</module>
+        <module>notification-hipchat</module>
+        <module>notification-jms</module>
+        <module>notification-slack</module>
+        <module>notification-snmp</module>
+        <module>notification-xmpp</module>
     </modules>
 
     <build>

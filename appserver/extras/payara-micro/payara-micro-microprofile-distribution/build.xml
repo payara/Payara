@@ -111,16 +111,9 @@
 	<delete file="${runtimedir}/backup.jar"/>
 	<delete file="${runtimedir}/payara-domain.jar"/>
 	<delete file="${runtimedir}/ant.jar" failonerror="false"/>
-	<delete file="${runtimedir}/notification-jms-core.jar"/>
-	<delete file="${runtimedir}/notification-email-core.jar"/>
-	<delete file="${runtimedir}/notification-hipchat-core.jar"/>
-	<delete file="${runtimedir}/notification-slack-core.jar"/>
-	<delete file="${runtimedir}/notification-snmp-core.jar"/>
-	<delete file="${runtimedir}/notification-xmpp-core.jar"/>
-	<delete file="${runtimedir}/notification-xmpp-core.jar"/>
-	<delete file="${runtimedir}/org.apache.servicemix.bundles.xpp3.jar"/>
 	<delete verbose="true" failonerror="false">
 	  <fileset dir="${runtimedir}" includes="console-**-help.jar"/>
+	  <fileset dir="${runtimedir}" includes="**console-plugin.jar"/>
 	  <fileset dir="${runtimedir}" includes="console-**-plugin.jar"/>
 	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
 	  <fileset dir="${runtimedir}" includes="**/appserver-domain.jar"/>
