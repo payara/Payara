@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2004-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,29 +41,36 @@
 
 -->
 
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!--
+   Please remember to customize this file for your environment. The defaults for 
+   following fields may not be appropriate.  
+   - target-server name, address and port
+   - Property security.config in message-security-config
+-->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <groupId>org.glassfish.main.admin</groupId>
-    <artifactId>admin</artifactId>
-    <packaging>pom</packaging>
-    <name>Admin Modules</name>
-    <modules>
-        <module>backup</module>
-        <module>cli</module>
-        <module>cli-optional</module>
-        <module>admin-core</module>
-        <module>backup-l10n</module>
-        <module>cli-optional-l10n</module>
-        <module>gf_template</module>
-        <module>gf_template_web</module>
-        <module>payara_template</module>
-    </modules>
-</project>
+<!DOCTYPE client-container PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Application Client Container//EN" "http://glassfish.org/dtds/glassfish-application-client-container_1_3.dtd">
+
+<client-container>
+  <target-server name="%%%SERVER_NAME%%%" address="localhost" port="%%%ORB_LISTENER1_PORT%%%"/>
+  <log-service file="" level="WARNING"/>
+  <message-security-config auth-layer="SOAP">
+    <!-- turned off by default -->
+    <provider-config class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-id="XWS_ClientProvider" provider-type="client"> 
+      <request-policy auth-source="content"/>
+      <response-policy auth-source="content"/>
+      <property name="encryption.key.alias" value="s1as"/>
+      <property name="signature.key.alias" value="s1as"/>
+      <property name="dynamic.username.password" value="false"/>
+      <property name="debug" value="false"/>
+    </provider-config>
+    <provider-config class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-id="ClientProvider" provider-type="client"> 
+      <request-policy auth-source="content"/>
+      <response-policy auth-source="content"/>
+      <property name="encryption.key.alias" value="s1as"/>
+      <property name="signature.key.alias" value="s1as"/>
+      <property name="dynamic.username.password" value="false"/>
+      <property name="debug" value="false"/>
+      <property name="security.config" value="${com.sun.aas.installRoot}/lib/appclient/wss-client-config-1.0.xml"/>
+    </provider-config>
+  </message-security-config>
+</client-container>
