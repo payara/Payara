@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * Copyright (c) 2016 Payara Foundation. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ -->
+
+<!--
+   Please remember to customize this file for your environment. The defaults for 
+   following fields may not be appropriate.  
+   - target-server name, address and port
+   - Property security.config in message-security-config
+-->
+
+<!DOCTYPE client-container PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Application Client Container//EN" "http://glassfish.org/dtds/glassfish-application-client-container_1_3.dtd">
+
+<client-container>
+  <target-server name="%%%SERVER_NAME%%%" address="localhost" port="%%%ORB_LISTENER1_PORT%%%"/>
+  <log-service file="" level="WARNING"/>
+  <message-security-config auth-layer="SOAP">
+    <!-- turned off by default -->
+    <provider-config class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-id="XWS_ClientProvider" provider-type="client"> 
+      <request-policy auth-source="content"/>
+      <response-policy auth-source="content"/>
+      <property name="encryption.key.alias" value="s1as"/>
+      <property name="signature.key.alias" value="s1as"/>
+      <property name="dynamic.username.password" value="false"/>
+      <property name="debug" value="false"/>
+    </provider-config>
+    <provider-config class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-id="ClientProvider" provider-type="client"> 
+      <request-policy auth-source="content"/>
+      <response-policy auth-source="content"/>
+      <property name="encryption.key.alias" value="s1as"/>
+      <property name="signature.key.alias" value="s1as"/>
+      <property name="dynamic.username.password" value="false"/>
+      <property name="debug" value="false"/>
+      <property name="security.config" value="${com.sun.aas.installRoot}/lib/appclient/wss-client-config-1.0.xml"/>
+    </provider-config>
+  </message-security-config>
+</client-container>
