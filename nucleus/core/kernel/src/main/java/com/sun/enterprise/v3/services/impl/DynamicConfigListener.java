@@ -246,6 +246,10 @@ public class DynamicConfigListener implements ConfigListener {
     private boolean isRedundantChange(PropertyChangeEvent[] events) {
         boolean redundant = true;
 
+        if(events == null || events.length == 0) {
+            return redundant;
+        }
+
         for (PropertyChangeEvent event : events) {
             if (!event.getNewValue().equals(event.getOldValue())) {
                 redundant = false;
