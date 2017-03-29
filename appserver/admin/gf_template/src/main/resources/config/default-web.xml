@@ -327,7 +327,7 @@
         javax.servlet.jsp.jar
         jspcaching-connector.jar
         web-glue.jar
-        hibernate-validator.jar
+        hibernate-validator-payara-p1.jar
         javax.ejb.jar
         javax.enterprise.deploy-api.jar
         javax.jms-api.jar

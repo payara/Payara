@@ -156,6 +156,7 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate.validator.version}</version>
+            <classifier>payara-p1</classifier>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>
