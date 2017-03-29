@@ -143,9 +143,14 @@
            <artifactId>payara-domain</artifactId>
            <version>${project.version}</version>
        </dependency>
-        <dependency>
+       <dependency>
            <groupId>org.glassfish.main.admin</groupId>
            <artifactId>appserver-domain-web</artifactId>
+           <version>${project.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.glassfish.main.admin</groupId>
+           <artifactId>payara-domain-web</artifactId>
            <version>${project.version}</version>
        </dependency>
     </dependencies>
