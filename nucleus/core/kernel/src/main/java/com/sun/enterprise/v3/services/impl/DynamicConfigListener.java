@@ -50,6 +50,7 @@ import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 
 import org.jvnet.hk2.config.Changed;
@@ -82,6 +83,7 @@ import org.glassfish.grizzly.impl.SafeFutureImpl;
  */
 public class DynamicConfigListener implements ConfigListener {
     private static final String ADMIN_LISTENER = "admin-listener";
+    private static final String OFF = "OFF";
     private GrizzlyService grizzlyService;
     private Config config;
     private final Logger logger;
@@ -116,37 +118,43 @@ public class DynamicConfigListener implements ConfigListener {
                         /*
                          * Make sure the SSL parent is in fact a protocol.  It could
                          * be a jmx-connector.
-                         */
-                        final ConfigBeanProxy parent = t.getParent();
-                        if (parent instanceof Protocol) {
-                            return processProtocol(type, (Protocol) parent, null);
-                        }
-                    } else if (tClass == Protocol.class && t instanceof Protocol) {
-                        return processProtocol(type, (Protocol) t, null);
-                    } else if (tClass == ThreadPool.class && t instanceof ThreadPool) {
-                        NotProcessed notProcessed = null;
-                        for (NetworkListener listener : ((ThreadPool) t).findNetworkListeners()) {
+                     */
+                    final ConfigBeanProxy parent = t.getParent();
+                    if (parent instanceof Protocol) {
+                        return processProtocol(type, (Protocol) parent, null);
+                    }
+                } else if (tClass == Protocol.class && t instanceof Protocol) {
+                    return processProtocol(type, (Protocol) t, null);
+                } else if (tClass == ThreadPool.class && t instanceof ThreadPool) {
+                    NotProcessed notProcessed = null;
+                    for (NetworkListener listener : ((ThreadPool) t).findNetworkListeners()) {
                             notProcessed = processNetworkListener(type, listener, null);
-                        }
-                        return notProcessed;
-                    } else if (tClass == Transport.class && t instanceof Transport) {
-                        NotProcessed notProcessed = null;
-                        for (NetworkListener listener : ((Transport) t).findNetworkListeners()) {
-                            notProcessed = processNetworkListener(type, listener, null);
-                        }
-                        return notProcessed;
-                    } else if (tClass == VirtualServer.class 
-                                    && t instanceof VirtualServer 
-                                    && !grizzlyService.hasMapperUpdateListener()) {
-                        return processVirtualServer(type, (VirtualServer) t);
-                    } else if (tClass == SystemProperty.class && t instanceof SystemProperty) {
-                        NetworkConfig networkConfig = config.getNetworkConfig();
+                    }
+                    
+                    MonitoringService ms = config.getMonitoringService();
+                    String level = ms.getModuleMonitoringLevels().getThreadPool();
+                    if (level != null && (!level.equals(OFF)) && notProcessed == null){
+                        notProcessed = new NotProcessed("Monitoring not set with new admin pool");
+                    }
+                    return notProcessed;
+                } else if (tClass == Transport.class && t instanceof Transport) {
+                    NotProcessed notProcessed = null;
+                    for (NetworkListener listener : ((Transport) t).findNetworkListeners()) {
+                        notProcessed = processNetworkListener(type, listener, null);
+                    }
+                    return notProcessed;
+                } else if (tClass == VirtualServer.class
+                        && t instanceof VirtualServer
+                        && !grizzlyService.hasMapperUpdateListener()) {
+                    return processVirtualServer(type, (VirtualServer) t);
+                } else if (tClass == SystemProperty.class && t instanceof SystemProperty) {
+                    NetworkConfig networkConfig = config.getNetworkConfig();
                         if ((networkConfig != null) && ((SystemProperty)t).getName().endsWith("LISTENER_PORT")) {
-                            for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
+                        for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
                                 if (listener.getPort().equals(((SystemProperty)t).getValue())) {
-                                    return processNetworkListener(Changed.TYPE.CHANGE, listener, events);
-                                }
+                                return processNetworkListener(Changed.TYPE.CHANGE, listener, events);
                             }
+                        }
                         }
                         return null;
                     }
