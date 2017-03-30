@@ -153,6 +153,7 @@
         <module>healthcheck-service-console-plugin</module>
         <module>newrelic-notifier-console-plugin</module>
         <module>jmx-monitoring-plugin</module>
+        <module>payara-fang</module>
     </modules>
     <build>
         <plugins>

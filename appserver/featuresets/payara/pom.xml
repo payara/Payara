@@ -131,5 +131,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        <!-- Payara Fang -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-fang</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 </project>
