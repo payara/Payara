@@ -36,8 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
-
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.cdi.transaction;
 
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
@@ -79,6 +80,7 @@ public class TransactionScopedCDIUtil {
     }
 
     /* Copied from JSF */
+    @SuppressWarnings("unchecked")
     public static Bean createHelperBean(BeanManager beanManager, Class beanClass) {
         BeanWrapper result = null;
         AnnotatedType annotatedType = beanManager.createAnnotatedType(beanClass);
@@ -136,6 +138,7 @@ public class TransactionScopedCDIUtil {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public Set<InjectionPoint> getInjectionPoints() {
             return injectionTarget.getInjectionPoints();
         }
@@ -191,6 +194,7 @@ public class TransactionScopedCDIUtil {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public Object create(CreationalContext ctx) {
             Object instance = injectionTarget.produce(ctx);
             injectionTarget.inject(instance, ctx);
@@ -199,6 +203,7 @@ public class TransactionScopedCDIUtil {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void destroy(Object instance, CreationalContext ctx) {
             injectionTarget.preDestroy(instance);
             injectionTarget.dispose(instance);

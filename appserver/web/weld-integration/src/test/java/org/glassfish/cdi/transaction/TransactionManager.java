@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -47,6 +48,7 @@ import javax.transaction.*;
 public class TransactionManager implements javax.transaction.TransactionManager {
     ThreadLocal transactionThreadLocal = new ThreadLocal();
 
+    @SuppressWarnings("unchecked")
     public void begin() throws NotSupportedException, SystemException {
         if (getTransaction()!=null) throw new NotSupportedException("attempt to start tx when one already exists");
         transactionThreadLocal.set(new Transaction());
@@ -69,6 +71,7 @@ public class TransactionManager implements javax.transaction.TransactionManager 
         return (javax.transaction.Transaction) transactionThreadLocal.get();
     }
 
+    @SuppressWarnings("unchecked")
     public void resume(javax.transaction.Transaction transaction) throws InvalidTransactionException, IllegalStateException, SystemException {
         transactionThreadLocal.set(transaction);
     }
@@ -86,6 +89,7 @@ public class TransactionManager implements javax.transaction.TransactionManager 
         
     }
 
+    @SuppressWarnings("unchecked")
     public javax.transaction.Transaction suspend() throws SystemException {
         javax.transaction.Transaction transaction = (javax.transaction.Transaction)transactionThreadLocal.get();
         transactionThreadLocal.set(null);
