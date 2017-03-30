@@ -1,0 +1,20 @@
+language: java
+sudo: required
+# specifying other dists doesn't make sense because `trusty` doesn't have `oraclejdk8` (fails due to `Sorry, but JDK '[oraclejdk8]' is not known.`) which is the only supported JDK currently. Testing on Mac OSX doesn't make too much sense since it will run the same `maven` based build routine.
+
+jdk:
+- oraclejdk7
+- oraclejdk8
+- openjdk7
+# `openjdk8` not available
+
+env:
+- MAVEN_OPTS="-Xmx24g -Xms2g -XX:-UseGCOverheadLimit"
+# avoid `GC overhead limit exceeded` (still occurs with `-Xmx12g`)
+
+install: /bin/true
+
+script:
+- mvn install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --show-version
+# --update-snapshots causes severe details (ca. 10 min)
+- mvn test verify --batch-mode
