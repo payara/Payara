@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,6 +80,7 @@ import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
@@ -93,7 +94,6 @@ import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.naming.resources.ProxyDirContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
 
@@ -160,132 +160,8 @@ import org.glassfish.web.valve.GlassFishValve;
 public abstract class ContainerBase
     implements Container, Lifecycle, Pipeline {
 
-    protected static final Logger log = StandardServer.log;
+    protected static final Logger log = LogFacade.getLogger();
     protected static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "ContainerBase.setLoader: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop previous loader",
-        action = "Verify previous loader"
-    )
-    public static final String CONTAINER_BASE_SET_LOADER_STOP = "AS-WEB-CORE-00099";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setLoader: start:",
-        level = "SEVERE",
-        cause = "Could not start new loader",
-        action = "Verify the configuration of container"
-    )
-    public static final String CONTAINER_BASE_SET_LOADER_START = "AS-WEB-CORE-00100";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setLogger: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop previous logger",
-        action = "Verify previous logger"
-    )
-    public static final String CONTAINER_BASE_SET_LOGGER_STOP = "AS-WEB-CORE-00101";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setLogger: start: ",
-        level = "SEVERE",
-        cause = "Could not start new logger",
-        action = "Verify the configuration of container"
-    )
-    public static final String CONTAINER_BASE_SET_LOGGER_START = "AS-WEB-CORE-00102";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setManager: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop previous manager",
-        action = "Verify previous manager"
-    )
-    public static final String CONTAINER_BASE_SET_MANAGER_STOP = "AS-WEB-CORE-00103";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setManager: start: ",
-        level = "SEVERE",
-        cause = "Could not start new manager",
-        action = "Verify the configuration of container"
-    )
-    public static final String CONTAINER_BASE_SET_MANAGER_START = "AS-WEB-CORE-00104";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setRealm: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop previous realm",
-        action = "Verify previous realm"
-    )
-    public static final String CONTAINER_BASE_SET_REALM_STOP = "AS-WEB-CORE-00105";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setRealm: start: ",
-        level = "SEVERE",
-        cause = "Could not start new realm",
-        action = "Verify the configuration of container"
-    )
-    public static final String CONTAINER_BASE_SET_REALM_START = "AS-WEB-CORE-00106";
-
-    @LogMessageInfo(
-        message = "addChild: Child name {0} is not unique",
-        level = "WARNING"
-    )
-    public static final String DUPLICATE_CHILD_NAME_EXCEPTION = "AS-WEB-CORE-00107";
-
-    @LogMessageInfo(
-        message = "ContainerBase.addChild: start: ",
-        level = "SEVERE",
-        cause = "Could not start new child container",
-        action = "Verify the configuration of parent container"
-    )
-    public static final String CONTAINER_BASE_ADD_CHILD_START = "AS-WEB-CORE-00108";
-
-    @LogMessageInfo(
-        message = "ContainerBase.removeChild: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop existing child container",
-        action = "Verify existing child container"
-    )
-    public static final String CONTAINER_BASE_REMOVE_CHILD_STOP = "AS-WEB-CORE-00109";
-
-    @LogMessageInfo(
-        message = "Container {0} has already been started",
-        level = "INFO"
-    )
-    public static final String CONTAINER_STARTED = "AS-WEB-CORE-00110";
-
-    @LogMessageInfo(
-        message = "Container {0} has not been started",
-        level = "SEVERE",
-        cause = "Current container has not been started",
-        action = "Verify the current container"
-    )
-    public static final String CONTAINER_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00111";
-
-    @LogMessageInfo(
-        message = "Error stopping container {0}",
-        level = "SEVERE",
-        cause = "Could not stop child container",
-        action = "Verify the existence of current child container"
-    )
-    public static final String ERROR_STOPPING_CONTAINER = "AS-WEB-CORE-00112";
-
-    @LogMessageInfo(
-        message = "Error unregistering ",
-        level = "SEVERE",
-        cause = "Could not unregister current container",
-        action = "Verify if the container has been registered"
-    )
-    public static final String ERROR_UNREGISTERING = "AS-WEB-CORE-00113";
-
-    @LogMessageInfo(
-        message = "Exception invoking periodic operation: ",
-        level = "SEVERE",
-        cause = "Could not set the context ClassLoader",
-        action = "Verify the security permission"
-    )
-    public static final String EXCEPTION_INVOKES_PERIODIC_OP = "AS-WEB-CORE-00114";
 
 
 
@@ -561,7 +437,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) oldLoader).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_LOADER_STOP, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_LOADER_STOP, e);
                 }
             }
 
@@ -573,7 +449,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) loader).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_LOADER_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_LOADER_START, e);
                 }
             }
         } finally {
@@ -631,7 +507,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) oldLogger).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_LOGGER_STOP, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_LOGGER_STOP, e);
                 }
             }
 
@@ -644,7 +520,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) logger).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_LOGGER_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_LOGGER_START, e);
                 }
             }
         } finally {
@@ -702,7 +578,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) oldManager).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_MANAGER_STOP, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_MANAGER_STOP, e);
                 }
             }
 
@@ -714,7 +590,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) manager).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_MANAGER_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_MANAGER_START, e);
                 }
             }
         } finally {
@@ -914,7 +790,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) oldRealm).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_REALM_STOP, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_REALM_STOP, e);
                 }
             }
 
@@ -926,7 +802,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) realm).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_REALM_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_REALM_START, e);
                 }
             }
         } finally {
@@ -1031,7 +907,7 @@ public abstract class ContainerBase
             log.log(Level.FINEST, "Add child " + child + " " + this);
         synchronized(children) {
             if (children.get(child.getName()) != null) {
-                String msg = MessageFormat.format(rb.getString(DUPLICATE_CHILD_NAME_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.DUPLICATE_CHILD_NAME_EXCEPTION),
                                                                child.getName());
             throw new IllegalArgumentException(msg);
             }
@@ -1040,9 +916,9 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) child).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_ADD_CHILD_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_ADD_CHILD_START, e);
                     throw new IllegalStateException
-                            (rb.getString(CONTAINER_BASE_ADD_CHILD_START) + e);
+                            (rb.getString(LogFacade.CONTAINER_BASE_ADD_CHILD_START) + e);
                 }
             }
             children.put(child.getName(), child);
@@ -1175,7 +1051,7 @@ public abstract class ContainerBase
                     ((Lifecycle) child).stop();
                 }
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, CONTAINER_BASE_REMOVE_CHILD_STOP, e);
+                log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_REMOVE_CHILD_STOP, e);
             }
         }
         
@@ -1264,7 +1140,7 @@ public abstract class ContainerBase
         // Validate and update our current component state
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, CONTAINER_STARTED, logName());
+                log.log(Level.INFO, LogFacade.CONTAINER_STARTED, logName());
             }
             return;
         }
@@ -1316,7 +1192,7 @@ public abstract class ContainerBase
         // Validate and update our current component state
         if (!started) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, CONTAINER_NOT_STARTED_EXCEPTION, logName());
+                log.log(Level.INFO, LogFacade.CONTAINER_NOT_STARTED_EXCEPTION, logName());
             }
             return;
         }
@@ -1343,7 +1219,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) children[i]).stop();
                 } catch (Throwable t) {
-                    String msg = MessageFormat.format(rb.getString(ERROR_STOPPING_CONTAINER), children[i]);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_STOPPING_CONTAINER), children[i]);
                     log.log(Level.SEVERE, msg, t);
                 }
             }
@@ -1410,7 +1286,7 @@ public abstract class ContainerBase
                     }
                 }
             } catch( Throwable t ) {
-                log.log(Level.SEVERE, ERROR_UNREGISTERING, t);
+                log.log(Level.SEVERE, LogFacade.ERROR_UNREGISTERING, t);
             }
         }
 
@@ -1592,7 +1468,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) children[i]).start();
                 } catch (Throwable t) {
-                    String msg = MessageFormat.format(rb.getString(CONTAINER_NOT_STARTED_EXCEPTION), children[i]);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.CONTAINER_NOT_STARTED_EXCEPTION), children[i]);
                     log.log(Level.SEVERE, msg, t);
                     if (children[i] instanceof Context) {
                         ((Context) children[i]).setAvailable(false);
@@ -1822,7 +1698,7 @@ public abstract class ContainerBase
                 }
                 container.backgroundProcess();
             } catch (Throwable t) {
-                log.log(Level.SEVERE, EXCEPTION_INVOKES_PERIODIC_OP, t);
+                log.log(Level.SEVERE, LogFacade.EXCEPTION_INVOKES_PERIODIC_OP, t);
             } finally {
                 Thread.currentThread().setContextClassLoader(cl);
             }

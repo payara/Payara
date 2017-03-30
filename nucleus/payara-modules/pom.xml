@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.172-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.payara-modules</groupId>
@@ -37,5 +37,6 @@
         <module>notification-core</module>
         <module>asadmin-recorder</module>
         <module>service-exemplar</module>
+        <module>notification-eventbus-core</module>
     </modules>
 </project>

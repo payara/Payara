@@ -52,6 +52,7 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedObject;
 import org.glassfish.gmbal.ManagedAttribute;
+import org.glassfish.web.admin.LogFacade;
 
 /**
  * Provides the monitoring data at the Web container level
@@ -63,7 +64,7 @@ import org.glassfish.gmbal.ManagedAttribute;
 @Description("Web Request Statistics")
 public class RequestStatsProvider {
 
-    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final String ERROR_COUNT_DESCRIPTION =
         "Cumulative value of the error count, with error count representing the number of cases where the response code was greater than or equal to 400";

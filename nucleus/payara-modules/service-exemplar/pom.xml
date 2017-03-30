@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.172-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.payara-modules</groupId>

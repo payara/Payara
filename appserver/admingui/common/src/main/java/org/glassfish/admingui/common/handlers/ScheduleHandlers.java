@@ -2,7 +2,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -128,7 +128,7 @@ public class ScheduleHandlers {
                 continue;
             }
             try {
-                int i = Integer.valueOf(dataItem).intValue();
+                int i = Integer.parseInt(dataItem);
                 if (i >=0 && i < dataValues.length)
                     dataMap.put(dataValues[i], String.valueOf(i));
             } catch (NumberFormatException e) {
@@ -169,7 +169,7 @@ public class ScheduleHandlers {
                 break;
             }
             try {
-                int val = Integer.valueOf(o.toString()).intValue();
+                int val = Integer.parseInt(o.toString());
 
                 if (val >= 0 && val < data.length) {
                     if (str.length() > 0)

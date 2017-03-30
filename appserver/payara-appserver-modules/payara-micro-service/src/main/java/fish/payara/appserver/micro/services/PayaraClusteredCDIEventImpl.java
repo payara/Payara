@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -18,8 +18,7 @@
 package fish.payara.appserver.micro.services;
 
 import fish.payara.micro.event.PayaraClusteredCDIEvent;
-import fish.payara.cdi.jsr107.impl.PayaraValueHolder;
-import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
+import fish.payara.cdi.jsr107.implementation.PayaraValueHolder;
 import fish.payara.micro.data.InstanceDescriptor;
 import java.io.IOException;
 import java.io.Serializable;

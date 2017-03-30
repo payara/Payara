@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -536,16 +536,6 @@ class LogHandle {
                 allocateSuccess = true;
             }
             while( !allocateSuccess );
-
-            // IF allocate failed
-            //   Unlock the log file latch
-            //   Return LOG_WRITE_FAILURE
-
-            if (!allocateSuccess) {
-                throw new LogException(LogException.LOG_WRITE_FAILURE, 12,
-                        sm.getString("jts.log_allocate_failed"), (Throwable) null);
-            }
-
             // SET ChunkRemaining to the Grabbed size - RecordSize
 
             chunkRemaining = grabSize - recordSize;

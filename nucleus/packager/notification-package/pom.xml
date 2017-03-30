@@ -44,7 +44,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.172-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.packager</groupId>
     <artifactId>notification-package</artifactId>
@@ -59,88 +59,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>notification-jms-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>notification-hipchat-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>notification-slack-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>notification-email-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>notification-xmpp-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smack-core</artifactId>
-            <version>${smack.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smack-java7</artifactId>
-            <version>${smack.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smack-tcp</artifactId>
-            <version>${smack.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>xpp3</groupId>
-                    <artifactId>xpp3</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smack-extensions</artifactId>
-            <version>${smack.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smack-im</artifactId>
-            <version>${smack.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jxmpp</groupId>
-            <artifactId>jxmpp-core</artifactId>
-            <version>${jxmpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jxmpp</groupId>
-            <artifactId>jxmpp-util-cache</artifactId>
-            <version>${jxmpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.servicemix.bundles</groupId>
-            <artifactId>org.apache.servicemix.bundles.xpp3</artifactId>
-            <version>${xpp3.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>notification-snmp-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.snmp4j</groupId>
-            <artifactId>snmp4j</artifactId>
-            <version>${snmp4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.nucleus</groupId>
             <artifactId>notification-eventbus-core</artifactId>
             <version>${project.version}</version>
         </dependency>

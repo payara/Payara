@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,8 +58,7 @@
 
 package org.apache.catalina.util;
 
-import org.apache.catalina.core.StandardServer;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
 
 import java.util.ResourceBundle;
 
@@ -72,19 +71,7 @@ import java.util.ResourceBundle;
 
 public final class HexUtils {
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Odd number of hexadecimal digits",
-            level = "WARNING"
-    )
-    public static final String ODD_NUMBER_HEX_DIGITS_EXCEPTION = "AS-WEB-CORE-00487";
-
-    @LogMessageInfo(
-            message = "Bad hexadecimal digit",
-            level = "WARNING"
-    )
-    public static final String BAD_HEX_DIGIT_EXCEPTION = "AS-WEB-CORE-00488";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     // Code from Ajp11, from Apache's JServ
 
@@ -125,7 +112,7 @@ public final class HexUtils {
         int length = digits.length();
         if (length % 2 != 0) {
             throw new IllegalArgumentException
-                    (rb.getString(ODD_NUMBER_HEX_DIGITS_EXCEPTION));
+                    (rb.getString(LogFacade.ODD_NUMBER_HEX_DIGITS_EXCEPTION));
         }
 
         int bLength = length / 2;
@@ -142,7 +129,7 @@ public final class HexUtils {
                 b += ((c1 - 'A' + 10) * 16);
             else
                 throw new IllegalArgumentException
-                    (rb.getString(BAD_HEX_DIGIT_EXCEPTION));
+                    (rb.getString(LogFacade.BAD_HEX_DIGIT_EXCEPTION));
             if ((c2 >= '0') && (c2 <= '9'))
                 b += (c2 - '0');
             else if ((c2 >= 'a') && (c2 <= 'f'))
@@ -151,7 +138,7 @@ public final class HexUtils {
                 b += (c2 - 'A' + 10);
             else
                 throw new IllegalArgumentException
-                    (rb.getString(BAD_HEX_DIGIT_EXCEPTION));
+                    (rb.getString(LogFacade.BAD_HEX_DIGIT_EXCEPTION));
             bytes[i] = b;
         }
         return bytes;
@@ -193,19 +180,19 @@ public final class HexUtils {
         int len;
         if(hex.length < 4 ) return 0;
         if( DEC[hex[0]]<0 )
-            throw new IllegalArgumentException(rb.getString(BAD_HEX_DIGIT_EXCEPTION));
+            throw new IllegalArgumentException(rb.getString(LogFacade.BAD_HEX_DIGIT_EXCEPTION));
         len = DEC[hex[0]];
         len = len << 4;
         if( DEC[hex[1]]<0 )
-            throw new IllegalArgumentException(rb.getString(BAD_HEX_DIGIT_EXCEPTION));
+            throw new IllegalArgumentException(rb.getString(LogFacade.BAD_HEX_DIGIT_EXCEPTION));
         len += DEC[hex[1]];
         len = len << 4;
         if( DEC[hex[2]]<0 )
-            throw new IllegalArgumentException(rb.getString(BAD_HEX_DIGIT_EXCEPTION));
+            throw new IllegalArgumentException(rb.getString(LogFacade.BAD_HEX_DIGIT_EXCEPTION));
         len += DEC[hex[2]];
         len = len << 4;
         if( DEC[hex[3]]<0 )
-            throw new IllegalArgumentException(rb.getString(BAD_HEX_DIGIT_EXCEPTION));
+            throw new IllegalArgumentException(rb.getString(LogFacade.BAD_HEX_DIGIT_EXCEPTION));
         len += DEC[hex[3]];
         return len;
     }

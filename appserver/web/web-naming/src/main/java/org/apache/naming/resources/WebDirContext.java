@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,6 +74,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 
+import org.apache.naming.LogFacade;
 import org.apache.naming.NamingEntry;
 import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
@@ -165,7 +166,7 @@ public class WebDirContext extends FileDirContext {
             jfEntry = lookupFromJars(name);
             if (jfEntry == null) {
                 throw new NamingException
-                    (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
             }
         }
 
@@ -223,7 +224,7 @@ public class WebDirContext extends FileDirContext {
 
         if (file == null && jfeEntries.size() == 0) {
             throw new NamingException
-                    (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
         }
         return new NamingContextEnumeration(namingEntries.iterator());
     }
@@ -263,7 +264,7 @@ public class WebDirContext extends FileDirContext {
 
         if (file == null && jfeEntries.size() == 0) {
             throw new NamingException
-                    (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
         }
 
         return new NamingContextBindingsEnumeration(namingEntries.iterator(),
@@ -298,7 +299,7 @@ public class WebDirContext extends FileDirContext {
             JarFileEntry jfEntry = lookupFromJars(name);
             if (jfEntry == null) {
                 throw new NamingException
-                    (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
             } else {
                 return new JarResourceAttributes(jfEntry.getJarEntry());
             }

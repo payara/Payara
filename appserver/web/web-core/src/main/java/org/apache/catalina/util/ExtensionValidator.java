@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,10 +58,9 @@
 
 package org.apache.catalina.util;
 
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardServer;
 import org.apache.naming.resources.Resource;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.naming.Binding;
 import javax.naming.NamingEnumeration;
@@ -100,32 +99,12 @@ import java.util.logging.Logger;
  */
 public final class ExtensionValidator {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
 
     private static volatile HashMap<String, Extension> containerAvailableExtensions = null;
     private static ArrayList<ManifestResource> containerManifestResources =
         new ArrayList<ManifestResource>();
-
-    @LogMessageInfo(
-            message = "Failed to load manifest resources {0}",
-            level = "SEVERE",
-            cause = "Could not find MANIFEST from JAR file",
-            action = "Verify the JAR file"
-    )
-    public static final String FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION = "AS-WEB-CORE-00484";
-
-    @LogMessageInfo(
-            message = "ExtensionValidator[{0}][{1}]: Required extension \"{2}\" not found.",
-            level = "INFO"
-    )
-    public static final String EXTENSION_NOT_FOUND_INFO = "AS-WEB-CORE-00485";
-
-    @LogMessageInfo(
-            message = "ExtensionValidator[{0}]: Failure to find {1} required extension(s).",
-            level = "INFO"
-    )
-    public static final String FAILED_FIND_EXTENSION_INFO = "AS-WEB-CORE-00486";
 
 
     // ----------------------------------------------------- Static Initializer
@@ -156,7 +135,7 @@ public final class ExtensionValidator {
                     try {
                         addSystemResource(item);
                     } catch (IOException e) {
-                        String msg = MessageFormat.format(rb.getString(FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION),
+                        String msg = MessageFormat.format(rb.getString(LogFacade.FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION),
                                                           item);
                         log.log(Level.SEVERE, msg, e);
                     }
@@ -180,7 +159,7 @@ public final class ExtensionValidator {
                         try {
                             addSystemResource(files[i]);
                         } catch (IOException e) {
-                            String msg = MessageFormat.format(rb.getString(FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION),
+                            String msg = MessageFormat.format(rb.getString(LogFacade.FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION),
                                                               files[i]);
                             log.log(Level.SEVERE, msg, e);
                         }
@@ -364,7 +343,7 @@ public final class ExtensionValidator {
                 } else {
                     // Failure
                     if (log.isLoggable(Level.INFO)) {
-                        log.log(Level.INFO, EXTENSION_NOT_FOUND_INFO,
+                        log.log(Level.INFO, LogFacade.EXTENSION_NOT_FOUND_INFO,
                                 new Object[] {appName, mre.getResourceName(),
                                         requiredExt.getExtensionName()});
                     }
@@ -376,7 +355,7 @@ public final class ExtensionValidator {
 
         if (!passes) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, FAILED_FIND_EXTENSION_INFO,
+                log.log(Level.INFO, LogFacade.FAILED_FIND_EXTENSION_INFO,
                         new Object[] {appName, failureCount});
             }
         }

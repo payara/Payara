@@ -21,7 +21,7 @@ file and include the License file at packager/legal/LICENSE.txt.
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.172-SNAPSHOT</version>
     </parent>
     <artifactId>payara-console-extras</artifactId>
     <packaging>glassfish-jar</packaging>

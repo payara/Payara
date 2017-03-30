@@ -37,7 +37,7 @@
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
                 
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled", "notifierEnabled"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }

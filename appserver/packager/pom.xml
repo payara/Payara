@@ -40,13 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.172-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -166,6 +167,16 @@
         <module>asadmin-recorder</module>
         <module>JMX-Monitoring</module>
         <module>payara-micro</module>
+        <module>notification-email</module>
+        <module>notification-hipchat</module>
+        <module>notification-jms</module>
+        <module>notification-slack</module>
+        <module>notification-snmp</module>
+        <module>notification-xmpp</module>
+        <module>notification-newrelic</module>
+        <module>notification-datadog</module>
+        <module>zendesk-support</module>
+        <module>payara-api</module>
     </modules>
 
     <build>

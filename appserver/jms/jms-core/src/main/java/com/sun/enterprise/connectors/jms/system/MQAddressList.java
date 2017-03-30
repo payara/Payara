@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,11 +55,13 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
 import com.sun.enterprise.admin.util.AdminConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.enterprise.connectors.jms.JMSLoggerInfo;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
+import org.glassfish.api.logging.LogHelper;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -71,7 +73,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 public class MQAddressList {
 
-    private static final Logger logger = Logger.getLogger(ActiveJmsResourceAdapter.JMS_MAIN_LOGGER);
+    private static final Logger logger = JMSLoggerInfo.getLogger();
     private String myName =
                System.getProperty(SystemPropertyConstants.SERVER_NAME);
 
@@ -142,7 +144,7 @@ public class MQAddressList {
                     logFine("setting up for SI/DAS " + this.targetName);
                 if (isAConfig(targetName) || isDAS(targetName)) {
                     if (logger.isLoggable(Level.FINE))
-                        logFine("performing default setup for DAS/remote clusters/PE instance" + targetName);
+                        logFine("performing default setup for DAS/remote clusters/PE instance " + targetName);
                     defaultSetup();
                 } else {
                     logFine("configuring for Standalone EE server instance");
@@ -168,7 +170,7 @@ public class MQAddressList {
             logFine("na host" + nodeHost);
         } catch (Exception e) {
             if (logger.isLoggable(Level.FINE))
-                logger.log(Level.FINE,"Exception while attempting to get nodeagentHost", e.getMessage());
+                logger.log(Level.FINE, "Exception while attempting to get nodeagentHost : " + e.getMessage());
             if (logger.isLoggable(Level.FINER))
                 logger.log(Level.FINER, e.getMessage(), e);
         }
@@ -267,8 +269,7 @@ public class MQAddressList {
             logger.log(Level.FINE, "Master broker obtained is " + masterbrk);
         }
         catch (Exception e) {
-        logger.log(Level.SEVERE, "Cannot obtain master broker");
-        logger.log(Level.SEVERE, e.getMessage(), e);
+            LogHelper.log(logger, Level.SEVERE, JMSLoggerInfo.GET_MASTER_FAILED, e);
         }
     //}
     return masterbrk;

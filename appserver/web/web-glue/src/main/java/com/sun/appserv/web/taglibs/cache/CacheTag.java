@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
+
 
 /**
  * CacheTag is a JSP tag that allows server-side caching of JSP page
@@ -116,22 +117,12 @@ public class CacheTag extends BodyTagSupport
     /**
      * The logger to use for logging ALL web container related messages.
      */
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger _logger = LogFacade.getLogger();
 
     /**
      * The resource bundle containing the localized message strings.
      */
     private static final ResourceBundle _rb = _logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "CacheTag[{0}]: Timeout = {1}",
-            level = "FINE")
-    private static final String CACHETAG_TIMEOUT = "AS-WEB-GLUE-00025";
-
-    @LogMessageInfo(
-            message = "Cache not found in the specified scope",
-            level = "INFO")
-    private static final String TAGLIBS_CACHE_NO_CACHE = "AS-WEB-GLUE-00026";
 
 
     // ---------------------------------------------------------------------
@@ -164,7 +155,7 @@ public class CacheTag extends BodyTagSupport
         _key = CacheUtil.generateKey(_keyExpr, pageContext);
 
         if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE, CACHETAG_TIMEOUT, new Object[] {_key, _timeout});
+            _logger.log(Level.FINE, LogFacade.CACHETAG_TIMEOUT, new Object[] {_key, _timeout});
 
         // if useCachedResponse is false, we do not check for any
         // cached response and just evaluate the tag body
@@ -172,7 +163,7 @@ public class CacheTag extends BodyTagSupport
 
             _cache = CacheUtil.getCache(pageContext, _scope);
             if (_cache == null)
-                throw new JspException(_rb.getString(TAGLIBS_CACHE_NO_CACHE));
+                throw new JspException(_rb.getString(LogFacade.TAGLIBS_CACHE_NO_CACHE));
 
             // if refreshCache is true, we want to re-evaluate the
             // tag body and refresh the cached entry

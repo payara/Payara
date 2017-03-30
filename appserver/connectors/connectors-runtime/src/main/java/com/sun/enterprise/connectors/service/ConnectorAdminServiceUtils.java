@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.service;
 
@@ -112,7 +113,12 @@ public class ConnectorAdminServiceUtils implements ConnectorConstants {
     }
 
     private static String getReservePrefixedJNDIName(String prefix, String resourceName) {
-        return prefix + resourceName;
+        if(!resourceName.startsWith(prefix)) {
+            return prefix + resourceName;
+        }
+        else {
+            return resourceName;
+        }
     }
 
     public static String getReservePrefixedJNDINameForPool(PoolInfo poolInfo) {

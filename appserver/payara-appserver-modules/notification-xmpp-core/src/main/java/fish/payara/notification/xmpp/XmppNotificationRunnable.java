@@ -70,7 +70,7 @@ public class XmppNotificationRunnable extends NotificationRunnable<XmppMessageQu
             try {
                 XmppMessage xmppMessage = queue.getMessage();
                 MultiUserChatManager manager = MultiUserChatManager.getInstanceFor(connection);
-                MultiUserChat multiUserChat = manager.getMultiUserChat(executionOptions.getRoomName() + "@" + executionOptions.getServiceName());
+                MultiUserChat multiUserChat = manager.getMultiUserChat(executionOptions.getRoomId() + "@" + executionOptions.getServiceName());
                 if (multiUserChat != null) {
                     if (!multiUserChat.isJoined()) {
                         multiUserChat.join(executionOptions.getUsername(), executionOptions.getPassword());

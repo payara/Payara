@@ -68,7 +68,8 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
             String fullURL = HIPCHAT_ENDPOINT + formattedURL;
             try {
                 URL url = new URL(fullURL);
-                HttpURLConnection connection = createConnection(url, ACCEPT_TYPE_TEXT_PLAIN);
+                HttpURLConnection connection = createConnection(url,
+                        new NotificationRunnable.Header(HEADER_CONTENTTYPE, ACCEPT_TYPE_TEXT_PLAIN));
 
                 HipchatMessage message = queue.getMessage();
                 try (OutputStream outputStream = connection.getOutputStream()) {

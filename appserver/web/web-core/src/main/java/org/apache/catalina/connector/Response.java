@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,11 +79,11 @@ import javax.servlet.http.HttpServletResponse;
 import com.sun.appserv.ProxyHandler;
 import org.apache.catalina.Connector;
 import org.apache.catalina.Context;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Globals;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.RequestUtil;
@@ -93,7 +93,6 @@ import org.glassfish.grizzly.http.util.CookieUtils;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.grizzly.http.util.MimeHeaders;
 import org.glassfish.grizzly.http.util.UEncoder;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.util.HtmlEntityEncoder;
 // START S1AS 6170450
 
@@ -112,50 +111,8 @@ public class Response
 
     // ------------------------------------------------------ Static variables
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Error during finishResponse",
-            level = "WARNING"
-    )
-    public static final String ERROR_DURING_FINISH_RESPONSE = "AS-WEB-CORE-00075";
-
-    @LogMessageInfo(
-            message = "getWriter() has already been called for this response",
-            level = "WARNING"
-    )
-    public static final String GET_WRITER_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00076";
-
-    @LogMessageInfo(
-            message = "getOutputStream() has already been called for this response",
-            level = "WARNING"
-    )
-    public static final String GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00077";
-
-    @LogMessageInfo(
-            message = "Cannot reset buffer after response has been committed",
-            level = "WARNING"
-    )
-    public static final String CANNOT_RESET_BUFFER_EXCEPTION = "AS-WEB-CORE-00078";
-
-    @LogMessageInfo(
-            message = "Cannot change buffer size after data has been written",
-            level = "WARNING"
-    )
-    public static final String CANNOT_CHANGE_BUFFER_SIZE_EXCEPTION = "AS-WEB-CORE-00079";
-
-    @LogMessageInfo(
-            message = "Cannot call sendError() after the response has been committed",
-            level = "WARNING"
-    )
-    public static final String CANNOT_CALL_SEND_ERROR_EXCEPTION = "AS-WEB-CORE-00080";
-
-    @LogMessageInfo(
-            message = "Cannot call sendRedirect() after the response has been committed",
-            level = "WARNING"
-    )
-    public static final String CANNOT_CALL_SEND_REDIRECT_EXCEPTION = "AS-WEB-CORE-00081";
+    private static final Logger log = LogFacade.getLogger();
+    private static final ResourceBundle rb = log.getResourceBundle();
 
 
     /**
@@ -629,7 +586,7 @@ public class Response
         } catch(IOException e) {
 	    ;
         } catch(Throwable t) {
-	    log(rb.getString(ERROR_DURING_FINISH_RESPONSE), t);
+	    log(rb.getString(LogFacade.ERROR_DURING_FINISH_RESPONSE), t);
         }
     }
 
@@ -744,7 +701,7 @@ public class Response
 
         if (usingWriter)
             throw new IllegalStateException
-                (rb.getString(GET_WRITER_BEEN_CALLED_EXCEPTION));
+                (rb.getString(LogFacade.GET_WRITER_BEEN_CALLED_EXCEPTION));
 
         usingOutputStream = true;
         if (outputStream == null) {
@@ -774,7 +731,7 @@ public class Response
         throws IOException {
 
         if (usingOutputStream)
-            throw new IllegalStateException(rb.getString(GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION));
 
         /*
          * If the response's character encoding has not been specified as
@@ -854,7 +811,7 @@ public class Response
     public void resetBuffer(boolean resetWriterStreamFlags) {
 
         if (isCommitted())
-            throw new IllegalStateException(rb.getString(CANNOT_RESET_BUFFER_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_RESET_BUFFER_EXCEPTION));
 
         outputBuffer.reset();
                 
@@ -878,7 +835,7 @@ public class Response
     public void setBufferSize(int size) {
 
         if (isCommitted() || !outputBuffer.isNew())
-            throw new IllegalStateException(rb.getString(CANNOT_CHANGE_BUFFER_SIZE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_CHANGE_BUFFER_SIZE_EXCEPTION));
 
         outputBuffer.setBufferSize(size);
 
@@ -1401,7 +1358,7 @@ public class Response
         throws IOException {
 
         if (isCommitted())
-            throw new IllegalStateException(rb.getString(CANNOT_CALL_SEND_ERROR_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_CALL_SEND_ERROR_EXCEPTION));
 
         // Ignore any call from an included servlet
         if (included) {
@@ -1454,7 +1411,7 @@ public class Response
             throws IOException {
 
         if (isCommitted())
-            throw new IllegalStateException(rb.getString(CANNOT_CALL_SEND_REDIRECT_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_CALL_SEND_REDIRECT_EXCEPTION));
 
         // Ignore any call from an included servlet
         if (included)

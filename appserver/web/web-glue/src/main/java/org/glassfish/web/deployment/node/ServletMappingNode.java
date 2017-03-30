@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,10 +47,11 @@ import com.sun.enterprise.deployment.node.XMLNode;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
-import com.sun.enterprise.web.WebContainer;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.xml.WebTagNames;
 
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 /**
@@ -60,6 +61,8 @@ import java.util.logging.Level;
  * @version 
  */
 public class ServletMappingNode extends DeploymentDescriptorNode {
+
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     private String servletName;
     private String urlPattern;
@@ -112,9 +115,8 @@ public class ServletMappingNode extends DeploymentDescriptorNode {
                     value = trimmedUrl;
                 } else {
                     throw new IllegalArgumentException(
-                            WebContainer.rb.getString(
-                                    MessageFormat.format(
-                                            FilterMappingNode.ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN, value)));
+                            MessageFormat.format(
+                                    rb.getString(LogFacade.ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN), value));
                 }
             }
 

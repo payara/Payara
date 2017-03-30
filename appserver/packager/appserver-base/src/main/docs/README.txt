@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 4.1.1.171-SNAPSHOT!
+Thank you for downloading Payara Server 4.1.1.171!
 
 Here are a few short steps to get you started...
 
@@ -13,7 +13,7 @@ Check http://www.oracle.com/technetwork/java/javase/downloads/index.html to down
 1. Installing Payara Server
 ===========================
 
-Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-4.1.1.171-SNAPSHOT.zip
+Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-4.1.1.171.zip
 
 
 The default domain called 'domain1' is installed and preconfigured.
@@ -47,13 +47,13 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://payara.gitbooks.io/payara-server/content/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 4.1.1 Release Notes as they contain important information: https://github.com/payara/Payara/wiki/Release-Notes-(Payara-4.1.1.171-SNAPSHOT)
+Make sure to also check the Payara Server 4.1.1 Release Notes as they contain important information: https://github.com/payara/Payara/wiki/Release-Notes-(Payara-4.1.1.171)
 
 
 5. Documentation 
 ================
 
-Payara Server 4.1.1 Releases Notes: https://github.com/payara/Payara/wiki/Release-Notes-(Payara-4.1.1.171-SNAPSHOT)
+Payara Server 4.1.1 Releases Notes: https://github.com/payara/Payara/wiki/Release-Notes-(Payara-4.1.1.171)
 
 Payara Server Documentation: https://payara.gitbooks.io/payara-server/content/
 

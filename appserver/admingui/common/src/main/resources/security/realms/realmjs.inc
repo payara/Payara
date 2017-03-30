@@ -37,7 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    
+    Portions Copyright [2017] Payara Foundation and/or affiliates
 -->
 
 <f:verbatim>
@@ -92,8 +93,7 @@ function checkClassname() {
 		checkRequired(id="form1:jdbcSection:userName:userName", '#{reqMsg}' )  &&
 		checkRequired(id="form1:jdbcSection:pswd:pswd" , '#{reqMsg}' )  &&
 		checkRequired(id="form1:jdbcSection:groupTable:groupTable" , '#{reqMsg}' )  &&
-		checkRequired(id="form1:jdbcSection:groupName:groupName" , '#{reqMsg}' ) &&
-                checkRequired(id="form1:jdbcSection:pswdEnc:pswdEnc" , '#{reqMsg}' );
+		checkRequired(id="form1:jdbcSection:groupName:groupName" , '#{reqMsg}' );
 	} else if (type.match('PamRealm') != null) {
 	    return checkRequired(id="form1:pamSection:jaax:jaax" , '#{reqMsg}') ;
 	} else if (type == '') {

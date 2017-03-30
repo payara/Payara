@@ -4,11 +4,11 @@
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.1.172-SNAPSHOT</version>
     </parent>
     <artifactId>healthcheck-service-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
-    <version>4.1.1.171-SNAPSHOT</version>
+    <version>4.1.1.172-SNAPSHOT</version>
 
     <name>Healthcheck Service Console Plugin</name>
 
