@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * An object representing a link to another ejb.
@@ -235,7 +237,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
      */
     @Override
     public void setLinkName(String linkName) {
-        ejbLink = linkName;
+        ejbLink = (String)TranslatedConfigView.getTranslatedValue(linkName);
     }    
     /**
      * return the jndi name of the bean to which I refer.
@@ -274,7 +276,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 
     @Override
     public void setLookupName(String l) {
-        lookupName = l;
+        lookupName = (String)TranslatedConfigView.getTranslatedValue(l);
     }
 
     @Override
