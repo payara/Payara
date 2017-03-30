@@ -340,8 +340,9 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
                     DOLUtils.getDefaultLogger().finer("With value " + attributes.getValue(i));
                 }
 		// we try the setAttributeValue first, if not processed then the setElement
-		if (!setAttributeValue(element, new XMLElement(attributes.getQName(i)), attributes.getValue(i))) {
-		    setElementValue(new XMLElement(attributes.getQName(i)), attributes.getValue(i));
+                String attrValue = (String)TranslatedConfigView.getTranslatedValue(attributes.getValue(i));
+		if (!setAttributeValue(element, new XMLElement(attributes.getQName(i)), attrValue)) {
+		    setElementValue(new XMLElement(attributes.getQName(i)), attrValue);
 		}
 	                
             } 
@@ -443,7 +444,6 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      */
     @Override
     public void setElementValue(XMLElement element, String value) {
-        value = (String)TranslatedConfigView.getTranslatedValue(value);
 	//DOLUtils.getDefaultLogger().finer("SETELEMENTVALUE : " + "in " + getXMLRootTag() + "  Node, startElement " + element.getQName());
         Map dispatchTable = getDispatchTable();
         

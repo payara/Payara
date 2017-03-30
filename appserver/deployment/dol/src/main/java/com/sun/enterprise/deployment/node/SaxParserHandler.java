@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node;
 
@@ -61,6 +62,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
+import org.glassfish.config.support.TranslatedConfigView;
 
 
 /**
@@ -575,12 +577,11 @@ public class SaxParserHandler extends DefaultHandler {
             }
             if (doReplace) {
               element = new XMLElement(replacementName, namespaces);
-              topNode.setElementValue(element,
-                                      replacementValue);
+              topNode.setElementValue(element, (String)TranslatedConfigView.getTranslatedValue(replacementValue));
             } else if (doDelete) {
               // don't set a value so that the element is not written out
             } else if (getElementsPreservingWhiteSpace().contains(element.getQName())) {
-                topNode.setElementValue(element, elementData.toString());
+                topNode.setElementValue(element, (String)TranslatedConfigView.getTranslatedValue(elementData.toString()));
             } else if (element.getQName().equals(
                 TagNames.ENVIRONMENT_PROPERTY_VALUE)) {
                 Object envEntryDesc = topNode.getDescriptor();
@@ -595,20 +596,20 @@ public class SaxParserHandler extends DefaultHandler {
                         (envProp.getType().equals("java.lang.String") || 
                          envProp.getType().equals("java.lang.Character"))) {
                         topNode.setElementValue(element,
-                                        elementData.toString());
+                                        (String)TranslatedConfigView.getTranslatedValue(elementData.toString()));
                     } else {
                         topNode.setElementValue(element,
-                                        elementData.toString().trim());
+                                        (String)TranslatedConfigView.getTranslatedValue(elementData.toString().trim()));
                     }
                 } else {
                     topNode.setElementValue(element,
-                                        elementData.toString().trim());
+                                        (String)TranslatedConfigView.getTranslatedValue(elementData.toString().trim()));
                 }
             } else {
               /*
                * Allow any case for true/false & convert to lower case
                */
-              String val = elementData.toString().trim();
+              String val = (String)TranslatedConfigView.getTranslatedValue(elementData.toString().trim());
               if (TRUE_STR.equalsIgnoreCase(val)) {
                 topNode.setElementValue(element, val.toLowerCase(Locale.US));
               } else if (FALSE_STR.equalsIgnoreCase(val)) {

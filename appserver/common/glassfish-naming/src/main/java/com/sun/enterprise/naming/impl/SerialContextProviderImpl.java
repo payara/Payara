@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.naming.impl;
 
@@ -44,6 +45,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
+import org.glassfish.config.support.TranslatedConfigView;
 
 public class SerialContextProviderImpl implements SerialContextProvider {
     private TransientContext rootContext;
@@ -62,6 +64,7 @@ public class SerialContextProviderImpl implements SerialContextProvider {
      */
 
     public Object lookup(String name) throws NamingException, RemoteException {
+        name = (String)TranslatedConfigView.getTranslatedValue(name);
         try {
             return rootContext.lookup(name);
         } catch (NamingException ne) {
