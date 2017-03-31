@@ -40,6 +40,7 @@
 package fish.payara.appserver.environment.warning.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.appserver.environment.warning.config.EnvironmentWarningConfiguration;
 import java.util.HashMap;
@@ -49,10 +50,13 @@ import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
@@ -63,9 +67,11 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "get-environment-warning-configuration")
 @PerLookup
+@CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(RuntimeType.DAS)
+@TargetType(value = {CommandTarget.DAS})
 @RestEndpoints({
-    @RestEndpoint(configBean = EnvironmentWarningConfiguration.class,
+    @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
             path = "get-environment-warning-configuration",
             description = "Gets the Environment Warning Configuration")

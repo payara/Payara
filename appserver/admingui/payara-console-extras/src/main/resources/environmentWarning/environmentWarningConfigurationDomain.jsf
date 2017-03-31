@@ -1,0 +1,76 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+ -->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="Environment Warning Configuration"  >
+
+<!define name="content">
+
+<event>
+    <!beforeCreate
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-environment-warning-configuration"  method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.environmentWarningConfiguration}");
+        
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        />
+</event>
+
+<sun:form id="propertyForm">
+
+#include "/common/appServer/domainTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+
+    <sun:title id="propertyContentPage" title="$resource{i18nhc.environmentWarning.configurationTitle}" helpText="$resource{i18nhc.environmentWarning.configurationTitleHelp}" >
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    prepareSuccessfulMsg();
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-environment-warning-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+
+                    />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+#include "/common/shared/nameSection.inc"
+<sun:propertySheetSection >
+    <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.enabled}"  helpText="$resource{i18nhc.environmentWarning.configuration.enabledHelp}">
+        <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+    </sun:property>
+    <sun:property id="messageProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.message}"  helpText="$resource{i18nhc.environmentWarning.configuration.messageHelp}">
+        <sun:textField id="message" columns="$int{55}" maxLength="250" text="#{pageSession.valueMap['message']}" />
+    </sun:property>
+    <sun:property id="colourProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.colour}"  helpText="$resource{i18nhc.environmentWarning.configuration.colourHelp}">
+        <sun:textField id="colour" columns="$int{55}" maxLength="250" text="#{pageSession.valueMap['colour']}" />
+    </sun:property>
+</sun:propertySheetSection>
+
+<sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />
+</sun:form>
+</define>
+</composition>

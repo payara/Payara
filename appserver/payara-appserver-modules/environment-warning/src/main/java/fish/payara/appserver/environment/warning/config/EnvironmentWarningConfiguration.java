@@ -48,7 +48,7 @@ import org.jvnet.hk2.config.Configured;
  *
  * @author Matt Gill
  */
-@Configured(name="environment-warning-configuration")
+@Configured
 public interface EnvironmentWarningConfiguration extends ConfigBeanProxy, ConfigExtension {
     
     @Attribute(required = false, defaultValue = "false", dataType = Boolean.class)

@@ -54,50 +54,36 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import fish.payara.appserver.environment.warning.config.EnvironmentWarningConfiguration;
+import org.glassfish.api.event.EventListener;
 import org.jvnet.hk2.config.Transactions;
 
 /**
  *
  * @author Matt Gill
  */
-@Service (name = "environment-warning")
+@Service(name = "environment-warning")
 @RunLevel(StartupRunLevel.VAL)
-public class EnvironmentWarningService implements ConfigListener {
-
-    private static final Logger LOGGER= Logger.getLogger(EnvironmentWarningService.class.getCanonicalName());
+public class EnvironmentWarningService implements EventListener {
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional
     EnvironmentWarningConfiguration environmentWarningConfiguration;
-    
+
+    @Inject
+    Events events;
+
     @Inject
     ServiceLocator habitat;
-    
-    @Inject
-    Transactions transactions;
-    
+
     @PostConstruct
     void postConstruct() {
-        transactions.addListenerForType(EnvironmentWarningConfiguration.class, this);
+        events.register(this);
+        environmentWarningConfiguration = habitat.getService(EnvironmentWarningConfiguration.class);
     }
-    
+
     @Override
-    public UnprocessedChangeEvents changed(PropertyChangeEvent[] pces) {
-        // doesn't do anything yet
-        /*
-        for (PropertyChangeEvent pce : pces) {
-            if (pce.getPropertyName().equals("enabled")) {
-                environmentWarningConfiguration.setEnabled((Boolean)pce.getNewValue());
-            }
-            if (pce.getPropertyName().equals("message")) {
-                environmentWarningConfiguration.setMessage(pce.getNewValue().toString());
-            }
-            if (pce.getPropertyName().equals("colour")) {
-                environmentWarningConfiguration.setColour(pce.getNewValue().toString());
-            }
-        }*/
-        return null;
+    public void event(Event event) {
     }
-    
+
 }

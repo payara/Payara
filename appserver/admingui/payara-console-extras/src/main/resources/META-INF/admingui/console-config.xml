@@ -106,5 +106,13 @@ file and include the License file at packager/legal/LICENSE.txt.
         parentId="propSheetSection"
         content="hazelcast/hazelcastConfigLink.jsf"
     />
+    
+    <integration-point
+        id="domainEnvironmentWarning"
+        type="org.glassfish.admingui:domainTab"
+        priority="40"
+        parentId="domainTabs"
+        content="environmentWarning/environmentWarningTabsDomain.jsf"
+    />
 
 </console-config>
