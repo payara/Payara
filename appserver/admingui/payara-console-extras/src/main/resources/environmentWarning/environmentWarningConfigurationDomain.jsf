@@ -81,7 +81,7 @@
 </sun:title>
 #include "/common/shared/nameSection.inc"
 <sun:propertySheetSection >
-    <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.enabled}"  helpText="$resource{i18nhc.environmentWarning.configuration.enabledHelp}">
+    <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Enabled}"  helpText="$resource{i18nhc.environmentWarning.configuration.enabledHelp}">
         <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" selectedValue="true" />
     </sun:property>
     <sun:property id="messageProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.message}"  helpText="$resource{i18nhc.environmentWarning.configuration.messageHelp}">

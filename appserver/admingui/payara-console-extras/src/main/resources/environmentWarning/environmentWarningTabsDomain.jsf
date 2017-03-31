@@ -37,7 +37,7 @@
    only if the new code is made subject to such option by the copyright
    holder.
 -->
-<sun:tab id="domainEnvironmentWarning" immediate="true" text="$resource{i18nhc.environmentWarning.environmentWarningTabs}" toolTip="$resource{i18nhc.environmentWarning.environmentWarningTabsTips}">
+<sun:tab id="domainEnvironmentWarning" immediate="true" text="$resource{i18nhc.environmentWarning.environmentWarningTab}" toolTip="$resource{i18nhc.environmentWarning.environmentWarningTabTip}">
     <!beforeCreate
         setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
         setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
