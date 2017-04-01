@@ -17,6 +17,7 @@
  */
 package fish.payara.appserver.micro.services;
 
+import fish.payara.micro.PayaraInstance;
 import fish.payara.micro.event.PayaraClusterListener;
 import fish.payara.micro.event.CDIEventListener;
 import com.sun.enterprise.deployment.Application;
@@ -25,6 +26,7 @@ import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
 import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
+import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.micro.event.PayaraClusteredCDIEvent;
 import fish.payara.nucleus.cluster.PayaraCluster;
@@ -58,6 +60,7 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
+import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -67,7 +70,8 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-instance")
 @RunLevel(StartupRunLevel.VAL)
-public class PayaraInstance implements EventListener, MessageReceiver {
+@Contract()
+public class PayaraInstanceImpl implements EventListener, MessageReceiver, PayaraInstance {
 
     public static final String INSTANCE_STORE_NAME = "payara.instance.store";
 
@@ -77,7 +81,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
 
     public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";    
     
-    private static final Logger logger = Logger.getLogger(PayaraInstance.class.getName());
+    private static final Logger logger = Logger.getLogger(PayaraInstanceImpl.class.getName());
 
     @Inject
     private PayaraCluster cluster;
@@ -108,36 +112,43 @@ public class PayaraInstance implements EventListener, MessageReceiver {
     @Inject
     private HazelcastCore hazelcast;
     
+    @Override
     public String getInstanceName() {
         return instanceName;
     }
 
+    @Override
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
         me.setInstanceName(instanceName);
     }
 
+    @Override
     public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable) {
         return cluster.getExecService().runCallable(memberUUIDS, callable);
     }
 
+    @Override
     public <T extends Serializable> Map<String, Future<T>> runCallable(Callable<T> callable) {
         return cluster.getExecService().runCallable(callable);
     }
 
-    public ClusterCommandResultImpl executeLocalAsAdmin(String command, String... parameters) {
+    @Override
+    public ClusterCommandResult executeLocalAsAdmin(String command, String... parameters) {
         return new ClusterCommandResultImpl(commandRunner.run(command, parameters));
     }
 
-    public Map<String, Future<ClusterCommandResultImpl>> executeClusteredASAdmin(String command, String... parameters) {
+    @Override
+    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
-        Map<String, Future<ClusterCommandResultImpl>> result = cluster.getExecService().runCallable(callable);
+        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(callable);
         return result;
     }
 
-    public Map<String, Future<ClusterCommandResultImpl>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
+    @Override
+    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
-        Map<String, Future<ClusterCommandResultImpl>> result = cluster.getExecService().runCallable(memberGUIDs, callable);
+        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(memberGUIDs, callable);
         return result;
     }
 
@@ -248,6 +259,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         }
     }
 
+    @Override
     public Set<InstanceDescriptor> getClusteredPayaras() {
         Set<String> members = cluster.getClusterMembers();
         HashSet<InstanceDescriptor> result = new HashSet<>(members.size());
@@ -260,6 +272,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         return result;
     }
 
+    @Override
     public void publishCDIEvent(PayaraClusteredCDIEvent event) {
         if (event.getInstanceDescriptor() == null) {
             event.setId(me);
@@ -268,26 +281,32 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         cluster.getEventBus().publish(CDI_EVENTS_NAME, message);
     }
 
+    @Override
     public void removeBootstrapListener(PayaraClusterListener listener) {
         myListeners.remove(listener);
     }
 
+    @Override
     public void addBootstrapListener(PayaraClusterListener listener) {
         myListeners.add(listener);
     }
 
+    @Override
     public void removeCDIListener(CDIEventListener listener) {
         myCDIListeners.remove(listener);
     }
 
+    @Override
     public void addCDIListener(CDIEventListener listener) {
         myCDIListeners.add(listener);
     }
 
+    @Override
     public InstanceDescriptor getLocalDescriptor() {
         return me;
     }
 
+    @Override
     public InstanceDescriptorImpl getDescriptor(String member) {
         InstanceDescriptorImpl result = null;
         if (cluster.isEnabled()) {
@@ -397,6 +416,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
      * Checks whether or not this instance is in a Hazelcast cluster
      * @return true if this instance is in a Hazelcast cluster
      */
+    @Override
     public boolean isClustered() {
         return cluster.isEnabled();
     }
