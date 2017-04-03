@@ -43,7 +43,7 @@
         setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     />
     <!command
-        setSessionAttribute(key="domainTabs" value="environmentWarning");
+        setSessionAttribute(key="domainTabs" value="domainEnvironmentWarning");
         gf.redirect(page="#{request.contextPath}/payaraExtras/environmentWarning/environmentWarningConfigurationDomain.jsf");
     />
 </sun:tab>
