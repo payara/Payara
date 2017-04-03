@@ -1407,10 +1407,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             public void run() {
                 try {
                     if (gf != null) {
-                        gf.stop();
                         gf.dispose();
                     }
                 } catch (GlassFishException ex) {
+                } catch (IllegalStateException ex) {
+                    // Just log at a fine level and move on
+                    LOGGER.log(Level.FINE, "Already shut down");
                 }
             }
         });

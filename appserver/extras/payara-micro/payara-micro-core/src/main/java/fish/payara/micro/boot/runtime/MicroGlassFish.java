@@ -71,6 +71,10 @@ public class MicroGlassFish implements GlassFish {
 
     @Override
     public void stop() throws GlassFishException {
+        if (status == Status.STOPPED || status == Status.STOPPING || status == Status.DISPOSED) {
+            throw new IllegalStateException("Already in " + status + " state.");
+        }
+        
         status = Status.STOPPING;
         kernel.stop();
         status = Status.STOPPED;
@@ -78,6 +82,17 @@ public class MicroGlassFish implements GlassFish {
 
     @Override
     public void dispose() throws GlassFishException {
+        if (status == Status.DISPOSED) {
+            throw new IllegalStateException("Already disposed.");
+        } else if (status != Status.STOPPED) {
+            try {
+                stop();
+            } catch (Exception e) {
+                // ignore and continue.
+                e.printStackTrace();
+            }
+        }
+        
         kernel = null;
         habitat = null;
         status = Status.DISPOSED;
