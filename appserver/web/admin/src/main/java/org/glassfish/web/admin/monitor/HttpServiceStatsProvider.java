@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.web.admin.monitor;
 
@@ -209,11 +209,15 @@ public class HttpServiceStatsProvider implements PostConstruct {
     }
 
     private long getInitialOpenConnections(){
-        GrizzlyMonitoring monitoring = Globals.get(GrizzlyService.class).getMonitoring();
         long initialCount = 0;
-        for (String networkListener : networkListeners) {
-            ConnectionQueueStatsProvider connectionQueueStats = monitoring.getConnectionQueueStatsProvider(networkListener);
-            initialCount += connectionQueueStats.getOpenConnectionsCount().getCount();
+        try {
+            GrizzlyMonitoring monitoring = Globals.get(GrizzlyService.class).getMonitoring();        
+            for (String networkListener : networkListeners) {
+                ConnectionQueueStatsProvider connectionQueueStats = monitoring.getConnectionQueueStatsProvider(networkListener);
+                initialCount += connectionQueueStats.getOpenConnectionsCount().getCount();
+            }
+        } catch (NullPointerException e){
+            logger.log(Level.FINER, "Tried to get number of connections before service started", e);
         }
         return initialCount;
     }
