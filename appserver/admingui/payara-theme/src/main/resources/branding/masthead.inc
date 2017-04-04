@@ -51,9 +51,9 @@
               serverInfo="#{hostName}" serverInfoLabel="$resource{i18n.masthead.serverInfoLabel}"
               dateTime="$boolean{false}" notificationMsg="$attribute{null}">
     
-        <h:panelGroup layout="block" id="environmentWarningBar" rendered="#{sessionScope.environmentWarningBarEnabled}" style="text-align:center;background-color:#{sessionScope.environmentWarningBarColour}">
+        <h:panelGroup layout="block" id="environmentWarningBar" rendered="#{sessionScope.environmentWarningBarEnabled}" style="text-align:center;background-color:#{sessionScope.environmentWarningBarBackgroundColour}">
             <sun:staticText id="environmentWarningBarMessage"
-                           style="color:white;"
+                           style="color:#{sessionScope.environmentWarningBarTextColour};"
                            text="#{sessionScope.environmentWarningBarMessage}"
                            toolTip="#{sessionScope.environmentWarningBarMessage}">
             </sun:staticText>

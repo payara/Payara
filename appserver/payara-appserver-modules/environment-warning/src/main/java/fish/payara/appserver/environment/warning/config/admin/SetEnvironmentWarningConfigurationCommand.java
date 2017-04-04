@@ -92,8 +92,11 @@ public class SetEnvironmentWarningConfigurationCommand implements AdminCommand {
     @Param(name = "message", alias = "Message")
     private String message;
     
-    @Param(name = "colour", alias = "Colour")
-    private String colour;
+    @Param(name = "backgroundColour", alias = "BackgroundColour")
+    private String backgroundColour;
+    
+    @Param(name = "textColour", alias = "TextColour")
+    private String textColour;
     
     private final String target = "server-config";
     
@@ -112,7 +115,8 @@ public class SetEnvironmentWarningConfigurationCommand implements AdminCommand {
                     public Object run(EnvironmentWarningConfiguration config) {
                         config.setEnabled(enabled);
                         config.setMessage(message);
-                        config.setColour(colour);
+                        config.setBackgroundColour(backgroundColour);
+                        config.setTextColour(textColour);
                         return null;
                     }
                 }, environmentWarningConfiguration);

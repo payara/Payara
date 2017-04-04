@@ -87,8 +87,11 @@
     <sun:property id="messageProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.message}"  helpText="$resource{i18nhc.environmentWarning.configuration.messageHelp}">
         <sun:textField id="message" columns="$int{55}" maxLength="250" text="#{pageSession.valueMap['message']}" />
     </sun:property>
-    <sun:property id="colourProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.colour}"  helpText="$resource{i18nhc.environmentWarning.configuration.colourHelp}">
-        <sun:textField id="colour" columns="$int{55}" maxLength="250" text="#{pageSession.valueMap['colour']}" />
+    <sun:property id="backgroundColourProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.backgroundColour}"  helpText="$resource{i18nhc.environmentWarning.configuration.backgroundColourHelp}">
+        <sun:textField id="backgroundColour" columns="$int{55}" maxLength="250" text="#{pageSession.valueMap['backgroundColour']}" />
+    </sun:property>
+    <sun:property id="textColourProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.environmentWarning.configuration.textColour}"  helpText="$resource{i18nhc.environmentWarning.configuration.textColourHelp}">
+        <sun:textField id="textColour" columns="$int{55}" maxLength="250" text="#{pageSession.valueMap['textColour']}" />
     </sun:property>
 </sun:propertySheetSection>
 

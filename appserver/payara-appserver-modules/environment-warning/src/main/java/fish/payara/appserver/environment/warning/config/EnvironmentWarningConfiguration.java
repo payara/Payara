@@ -60,6 +60,10 @@ public interface EnvironmentWarningConfiguration extends ConfigBeanProxy, Config
     public void setMessage(String message);
     
     @Attribute(required = false, defaultValue = "#325764")
-    String getColour();
-    public void setColour(String colour);
+    String getBackgroundColour();
+    public void setBackgroundColour(String colour);
+    
+    @Attribute(required = false, defaultValue = "#ffffff")
+    String getTextColour();
+    public void setTextColour(String colour);
 }

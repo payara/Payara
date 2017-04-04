@@ -90,12 +90,13 @@ public class GetEnvironmentWarningConfigurationCommand implements AdminCommand {
 
         ActionReport actionReport = acc.getActionReport();
 
-        final String[] outputHeaders = {"Enabled", "Message", "Colour"};
+        final String[] outputHeaders = {"Enabled", "Message", "Background Colour", "Text Colour"};
         ColumnFormatter columnFormatter = new ColumnFormatter(outputHeaders);
         Object[] outputValues = {
             environmentWarningConfiguration.isEnabled(),
             environmentWarningConfiguration.getMessage(),
-            environmentWarningConfiguration.getColour()
+            environmentWarningConfiguration.getBackgroundColour(),
+            environmentWarningConfiguration.getTextColour()
         };
         columnFormatter.addRow(outputValues);
         actionReport.appendMessage(columnFormatter.toString());
@@ -103,7 +104,8 @@ public class GetEnvironmentWarningConfigurationCommand implements AdminCommand {
         Map<String, Object> extraPropsMap = new HashMap<>();
         extraPropsMap.put("enabled", environmentWarningConfiguration.isEnabled());
         extraPropsMap.put("message", environmentWarningConfiguration.getMessage());
-        extraPropsMap.put("colour", environmentWarningConfiguration.getColour());
+        extraPropsMap.put("backgroundColour", environmentWarningConfiguration.getBackgroundColour());
+        extraPropsMap.put("textColour", environmentWarningConfiguration.getTextColour());
 
         Properties extraProps = new Properties();
         extraProps.put("environmentWarningConfiguration", extraPropsMap);

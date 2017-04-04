@@ -219,9 +219,12 @@ public class GuiUtil {
         sessionMap.put("environmentWarningBarMessage", ((Map) ((Map) 
                 ((Map) environmentWarningConfiguration.get("data"))
                         .get("extraProperties")).get("environmentWarningConfiguration")).get("message"));   
-        sessionMap.put("environmentWarningBarColour", ((Map) ((Map) 
+        sessionMap.put("environmentWarningBarBackgroundColour", ((Map) ((Map) 
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("colour"));       
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("backgroundColour"));   
+        sessionMap.put("environmentWarningBarTextColour", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("textColour"));       
        
         sessionMap.put("reqMsg", GuiUtil.getMessage("msg.JS.enterValue"));
         sessionMap.put("reqMsgSelect", GuiUtil.getMessage("msg.JS.selectValue"));

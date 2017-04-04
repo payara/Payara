@@ -75,7 +75,8 @@
         setPageSessionAttribute(key="environmentWarningConfig", value="#{requestScope.result.data.extraProperties.environmentWarningConfiguration}");
         setSessionAttribute(key="environmentWarningBarEnabled", value="#{pageSession.environmentWarningConfig['enabled']}");
         setSessionAttribute(key="environmentWarningBarMessage", value="#{pageSession.environmentWarningConfig['message']}");
-        setSessionAttribute(key="environmentWarningBarColour", value="#{pageSession.environmentWarningConfig['colour']}");
+        setSessionAttribute(key="environmentWarningBarBackgroundColour", value="#{pageSession.environmentWarningConfig['backgroundColour']}");
+        setSessionAttribute(key="environmentWarningBarTextColour", value="#{pageSession.environmentWarningConfig['textColour']}");
         
         gf.restRequest(endpoint="#{request.scheme}://#{sessionScope.serverName}:#{sessionScope.serverPort}/management/domain/anonymous-user-enabled"
             method="GET", result="#{requestScope.result}", quiet="true");
@@ -112,7 +113,9 @@
                 setAttribute(key="reloadJS" value="
                     if (document.getElementById('Masthead:statusPanel:restartLink')
                         || !document.getElementById('Masthead:environmentWarningBar')
-                        || document.getElementById('Masthead:environmentWarningBarMessage').text != '#{sessionScope.environmentWarningBarMessage}'
+                        || document.getElementById('Masthead:environmentWarningBarMessage').title != '#{sessionScope.environmentWarningBarMessage}'
+                        || RgbToHex(document.getElementById('Masthead:environmentWarningBar').style.backgroundColor) != '#{sessionScope.environmentWarningBarBackgroundColour}'
+                        || RgbToHex(document.getElementById('Masthead:environmentWarningBarMessage').style.color) != '#{sessionScope.environmentWarningBarTextColour}'
                         ) {reloadHeaderFrame();}
                 ");
             }
@@ -145,7 +148,9 @@
                 setAttribute(key="reloadJS" value="
                     if (!document.getElementById('Masthead:statusPanel:restartLink')
                         || !document.getElementById('Masthead:environmentWarningBar')
-                        || document.getElementById('Masthead:environmentWarningBarMessage').text != '#{sessionScope.environmentWarningBarMessage}'
+                        || document.getElementById('Masthead:environmentWarningBarMessage').title != '#{sessionScope.environmentWarningBarMessage}'
+                        || RgbToHex(document.getElementById('Masthead:environmentWarningBar').style.backgroundColor) != '#{sessionScope.environmentWarningBarBackgroundColour}'
+                        || RgbToHex(document.getElementById('Masthead:environmentWarningBarMessage').style.color) != '#{sessionScope.environmentWarningBarTextColour}'
                         ) {reloadHeaderFrame();}
                 ");
             }
