@@ -17,7 +17,7 @@
  */
 package fish.payara.appserver.micro.services.command;
 
-import fish.payara.appserver.micro.services.PayaraInstance;
+import fish.payara.appserver.micro.services.PayaraInstanceImpl;
 import fish.payara.micro.ClusterCommandResult;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
@@ -28,7 +28,7 @@ import org.glassfish.internal.api.Globals;
  *
  * @author steve
  */
-public class AsAdminCallable implements Callable<ClusterCommandResultImpl>, Serializable {
+public class AsAdminCallable implements Callable<ClusterCommandResult>, Serializable {
     private static final long serialVersionUID = 1L;
     
     private final String command;
@@ -41,9 +41,9 @@ public class AsAdminCallable implements Callable<ClusterCommandResultImpl>, Seri
 
 
     @Override
-    public ClusterCommandResultImpl call() throws Exception {
+    public ClusterCommandResult call() throws Exception {
         ServiceLocator locator = Globals.getDefaultBaseServiceLocator();
-        PayaraInstance instance = locator.getService(PayaraInstance.class, "payara-instance");
+        PayaraInstanceImpl instance = locator.getService(PayaraInstanceImpl.class, "payara-instance");
         return instance.executeLocalAsAdmin(command, args);
     }
     

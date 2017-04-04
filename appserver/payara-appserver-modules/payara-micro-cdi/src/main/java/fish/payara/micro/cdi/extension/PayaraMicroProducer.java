@@ -39,7 +39,7 @@
  */
 package fish.payara.micro.cdi.extension;
 
-import fish.payara.appserver.micro.services.PayaraInstance;
+import fish.payara.micro.PayaraInstance;
 import javax.enterprise.inject.Produces;
 import org.glassfish.internal.api.Globals;
 

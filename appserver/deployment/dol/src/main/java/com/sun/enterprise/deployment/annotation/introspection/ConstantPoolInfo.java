@@ -131,7 +131,7 @@ public class ConstantPoolInfo {
                     buffer.getShort();
                     break;
                 default:
-                    DOLUtils.getDefaultLogger().severe("Unknow type constant pool " + type + " at position" + i);
+                    DOLUtils.getDefaultLogger().severe("Unknown type constant pool " + type + " at position" + i);
                     break;
             }
         }
