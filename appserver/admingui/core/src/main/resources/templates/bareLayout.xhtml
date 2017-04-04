@@ -71,6 +71,12 @@
         setSessionAttribute(key="showEnableAsadminRecorderButton", value="#{! pageSession.asadminRecorderEnabled}");
         setSessionAttribute(key="showDisableAsadminRecorderButton", value="#{pageSession.asadminRecorderEnabled}");
         
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-environment-warning-configuration", method="get", result="#{requestScope.result}");
+        setPageSessionAttribute(key="environmentWarningConfig", value="#{requestScope.result.data.extraProperties.environmentWarningConfiguration}");
+        setSessionAttribute(key="environmentWarningBarEnabled", value="#{pageSession.environmentWarningConfig['enabled']}");
+        setSessionAttribute(key="environmentWarningBarMessage", value="#{pageSession.environmentWarningConfig['message']}");
+        setSessionAttribute(key="environmentWarningBarColour", value="#{pageSession.environmentWarningConfig['colour']}");
+        
         gf.restRequest(endpoint="#{request.scheme}://#{sessionScope.serverName}:#{sessionScope.serverPort}/management/domain/anonymous-user-enabled"
             method="GET", result="#{requestScope.result}", quiet="true");
         
@@ -91,6 +97,25 @@
             if ("#{sessionScope.showEnableAsadminRecorderButton}") {
                 setAttribute(key="reloadJS" value="if (document.getElementById('Masthead:statusPanel:restartLink') || !document.getElementById('Masthead:enableAsadminRecorderLink')) {reloadHeaderFrame();}");
             }
+            // if the environment warning bar should be disabled
+            if ("!(#{sessionScope.environmentWarningBarEnabled})") {
+                // reload the top panel if the warning bar is currently enabled
+                setAttribute(key="reloadJS" value="
+                    if (document.getElementById('Masthead:statusPanel:restartLink')
+                        || document.getElementById('Masthead:environmentWarningBar')
+                        ) {reloadHeaderFrame();}
+                ");
+            }
+            // if the environment warning bar should be enabled
+            if ("#{sessionScope.environmentWarningBarEnabled}") {
+                // reload the top panel if the warning bar is currently disabled
+                setAttribute(key="reloadJS" value="
+                    if (document.getElementById('Masthead:statusPanel:restartLink')
+                        || !document.getElementById('Masthead:environmentWarningBar')
+                        || document.getElementById('Masthead:environmentWarningBarMessage').text != '#{sessionScope.environmentWarningBarMessage}'
+                        ) {reloadHeaderFrame();}
+                ");
+            }
         }
         if ("#{sessionScope.restartRequired}") {
             if ("!(#{sessionScope.showLogoutButton})") {
@@ -104,6 +129,25 @@
             }
             if ("#{sessionScope.showEnableAsadminRecorderButton}") {
                 setAttribute(key="reloadJS" value="if (!document.getElementById('Masthead:statusPanel:restartLink') || !document.getElementById('Masthead:enableAsadminRecorderLink')) {reloadHeaderFrame();}");
+            }
+            // if the environment warning bar should be disabled
+            if ("!(#{sessionScope.environmentWarningBarEnabled})") {
+                // reload the top panel if the warning bar is currently enabled
+                setAttribute(key="reloadJS" value="
+                    if (!document.getElementById('Masthead:statusPanel:restartLink')
+                        || document.getElementById('Masthead:environmentWarningBar')
+                        ) {reloadHeaderFrame();}
+                ");
+            }
+            // if the environment warning bar should be enabled
+            if ("#{sessionScope.environmentWarningBarEnabled}") {
+                // reload the top panel if the warning bar is currently disabled
+                setAttribute(key="reloadJS" value="
+                    if (!document.getElementById('Masthead:statusPanel:restartLink')
+                        || !document.getElementById('Masthead:environmentWarningBar')
+                        || document.getElementById('Masthead:environmentWarningBarMessage').text != '#{sessionScope.environmentWarningBarMessage}'
+                        ) {reloadHeaderFrame();}
+                ");
             }
         }
         if ("!(#{sessionScope._currentUpdateCountMsg}=#{sessionScope._updateCountMsg})"){
@@ -130,7 +174,6 @@
     if (index > -1) {
         top.window.location = loc.substring(0, index);
     }
-
     admingui.help.pluginId = '#{pluginId}';
     document.title = "#{guiTitle}";
 

@@ -50,9 +50,14 @@
               roleInfo="#{domainName}" roleInfoLabel="$resource{i18n.masthead.domainInfoLabel}"
               serverInfo="#{hostName}" serverInfoLabel="$resource{i18n.masthead.serverInfoLabel}"
               dateTime="$boolean{false}" notificationMsg="$attribute{null}">
-
-
-
+    
+        <h:panelGroup layout="block" id="environmentWarningBar" rendered="#{sessionScope.environmentWarningBarEnabled}" style="text-align:center;background-color:#{sessionScope.environmentWarningBarColour}">
+            <sun:staticText id="environmentWarningBarMessage"
+                           style="color:white;"
+                           text="#{sessionScope.environmentWarningBarMessage}"
+                           toolTip="#{sessionScope.environmentWarningBarMessage}">
+            </sun:staticText>
+        </h:panelGroup>
     <!facet consoleLink>
         <sun:hyperlink id="homeLink" toolTip="$resource{i18n.homeLinkTooltip}" target="_top" text="$resource{i18n.masthead.Home}" url="#{request.contextPath}/common/index.jsf" />
     </facet>
