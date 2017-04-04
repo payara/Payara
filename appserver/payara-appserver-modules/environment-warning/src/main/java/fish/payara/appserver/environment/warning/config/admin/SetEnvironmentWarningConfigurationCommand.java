@@ -43,6 +43,8 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.appserver.environment.warning.EnvironmentWarningService;
 import fish.payara.appserver.environment.warning.config.EnvironmentWarningConfiguration;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -112,11 +114,19 @@ public class SetEnvironmentWarningConfigurationCommand implements AdminCommand {
             try {
                 ConfigSupport.apply(new SingleConfigCode<EnvironmentWarningConfiguration>(){
                     @Override
-                    public Object run(EnvironmentWarningConfiguration config) {
+                    public Object run(EnvironmentWarningConfiguration config) throws PropertyVetoException{
                         config.setEnabled(enabled);
                         config.setMessage(message);
-                        config.setBackgroundColour(backgroundColour);
-                        config.setTextColour(textColour);
+                        if(backgroundColour.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
+                            config.setBackgroundColour(backgroundColour);
+                        } else {
+                            throw new PropertyVetoException("Invalid data for background colour, must be a hex value.", new PropertyChangeEvent(config, "backgroundColour", config.getBackgroundColour(), backgroundColour));
+                        }
+                        if(textColour.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
+                            config.setTextColour(textColour);
+                        } else {
+                            throw new PropertyVetoException("Invalid data for text colour, must be a hex value.", new PropertyChangeEvent(config, "textColour", config.getTextColour(), textColour));
+                        }
                         return null;
                     }
                 }, environmentWarningConfiguration);

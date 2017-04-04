@@ -63,7 +63,7 @@ import org.jvnet.hk2.config.Transactions;
  */
 @Service(name = "environment-warning")
 @RunLevel(StartupRunLevel.VAL)
-public class EnvironmentWarningService implements EventListener {
+public class EnvironmentWarningService {
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -71,19 +71,11 @@ public class EnvironmentWarningService implements EventListener {
     EnvironmentWarningConfiguration environmentWarningConfiguration;
 
     @Inject
-    Events events;
-
-    @Inject
     ServiceLocator habitat;
 
     @PostConstruct
     void postConstruct() {
-        events.register(this);
         environmentWarningConfiguration = habitat.getService(EnvironmentWarningConfiguration.class);
-    }
-
-    @Override
-    public void event(Event event) {
     }
 
 }
