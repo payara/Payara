@@ -72,8 +72,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 @RestEndpoints({
     @RestEndpoint(configBean = DomainXMLConfiguration.class,
             opType = RestEndpoint.OpType.GET,
-            path = "get-zendesk-support-configuration",
-            description = "Gets the Zendesk Support Configuration")
+            path = "get-domain-xml",
+            description = "Gets a copy of the full domain.xml")
 })
 public class GetDomainXMLCommand implements AdminCommand{
     
