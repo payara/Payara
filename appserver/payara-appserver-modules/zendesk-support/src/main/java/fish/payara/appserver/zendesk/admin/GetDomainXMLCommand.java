@@ -40,7 +40,7 @@
 package fish.payara.appserver.zendesk.admin;
 
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.appserver.zendesk.config.DomainXMLConfiguration;
+import fish.payara.appserver.zendesk.config.ZendeskSupportConfiguration;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -70,7 +71,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-    @RestEndpoint(configBean = DomainXMLConfiguration.class,
+    @RestEndpoint(configBean = ZendeskSupportConfiguration.class,
             opType = RestEndpoint.OpType.GET,
             path = "get-domain-xml",
             description = "Gets a copy of the full domain.xml")
@@ -79,7 +80,7 @@ public class GetDomainXMLCommand implements AdminCommand{
     
     @Inject
     ServerEnvironment se;
-    
+        
     @Override
     public void execute(AdminCommandContext context) {
         
@@ -101,17 +102,16 @@ public class GetDomainXMLCommand implements AdminCommand{
             Properties extraProps = new Properties();
             extraProps.put("zendeskSupportConfiguration", extraPropsMap);
         
-            actionReport.setExtraProperties(extraProps);
-            
+            actionReport.setExtraProperties(extraProps);       
             
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(GetDomainXMLCommand.class.getName()).log(Level.SEVERE, "domain.xml not found", ex);
+            Logger.getLogger(GetDomainXMLCommand.class.getName()).log(Level.SEVERE, "domain.xml not found");
         } catch (IOException ex) {
-            Logger.getLogger(GetDomainXMLCommand.class.getName()).log(Level.SEVERE, "Error reading domain.xml", ex);
+            Logger.getLogger(GetDomainXMLCommand.class.getName()).log(Level.SEVERE, "Error reading domain.xml");
         }
         
     }
     
-    
+       
 }
