@@ -51,6 +51,7 @@ import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 
 import org.jvnet.hk2.config.Changed;
@@ -84,6 +85,7 @@ import org.glassfish.grizzly.impl.SafeFutureImpl;
 public class DynamicConfigListener implements ConfigListener {
 
     private static final String ADMIN_LISTENER = "admin-listener";
+    private static final String OFF = "OFF";
     private GrizzlyService grizzlyService;
     private Config config;
     private final Logger logger;
@@ -128,8 +130,13 @@ public class DynamicConfigListener implements ConfigListener {
                 } else if (tClass == ThreadPool.class && t instanceof ThreadPool) {
                     NotProcessed notProcessed = null;
                     for (NetworkListener listener : ((ThreadPool) t).findNetworkListeners()) {
-                        // for each network listener which listens to this thread, update itself. Return any unprocessed events.
-                        notProcessed = processNetworkListener(type, listener, events);
+                            notProcessed = processNetworkListener(type, listener, null);
+                    }
+                    
+                    MonitoringService ms = config.getMonitoringService();
+                    String level = ms.getModuleMonitoringLevels().getThreadPool();
+                    if (level != null && (!level.equals(OFF)) && notProcessed == null){
+                        notProcessed = new NotProcessed("Monitoring not set with new admin pool");
                     }
                     return notProcessed;
                 } else if (tClass == Transport.class && t instanceof Transport) {
@@ -144,14 +151,14 @@ public class DynamicConfigListener implements ConfigListener {
                     return processVirtualServer(type, (VirtualServer) t);
                 } else if (tClass == SystemProperty.class && t instanceof SystemProperty) {
                     NetworkConfig networkConfig = config.getNetworkConfig();
-                    if ((networkConfig != null) && ((SystemProperty) t).getName().endsWith("LISTENER_PORT")) {
+                        if ((networkConfig != null) && ((SystemProperty)t).getName().endsWith("LISTENER_PORT")) {
                         for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
-                            if (listener.getPort().equals(((SystemProperty) t).getValue())) {
-                                return processNetworkListener(Changed.TYPE.CHANGE, listener, events);
+                                if (listener.getPort().equals(((SystemProperty)t).getValue())) {
+                                    return processNetworkListener(Changed.TYPE.CHANGE, listener, events);
+                                }
                             }
                         }
-                    }
-                    return null;
+                        return null;
                 }
                 return null;
             }
