@@ -93,7 +93,7 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
         DynamicConfiguration config = dcs.createDynamicConfiguration();
         config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(context));
         config.commit();
-        registry.populateServiceLocator("default", habitat, Arrays.asList(new EmbeddedInhabitantsParser(), new DuplicatePostProcessor()));
+        registry.populateServiceLocator("default", habitat, Arrays.asList(new PayaraMicroInhabitantsParser(), new EmbeddedInhabitantsParser(), new DuplicatePostProcessor()));
         registry.populateConfig(habitat);
         ModuleStartup kernel = habitat.getService(ModuleStartup.class);
         gf = new MicroGlassFish(kernel, habitat, glassfishProperties.getProperties());
