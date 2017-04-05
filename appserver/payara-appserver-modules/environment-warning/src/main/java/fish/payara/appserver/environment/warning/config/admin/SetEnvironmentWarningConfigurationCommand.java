@@ -41,7 +41,6 @@ package fish.payara.appserver.environment.warning.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import fish.payara.appserver.environment.warning.EnvironmentWarningService;
 import fish.payara.appserver.environment.warning.config.EnvironmentWarningConfiguration;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -84,9 +83,6 @@ public class SetEnvironmentWarningConfigurationCommand implements AdminCommand {
 
     @Inject
     private Target targetUtil;
-    
-    @Inject
-    EnvironmentWarningService environmentWarningService;
     
     @Param(name = "enabled", alias = "Enabled")
     private Boolean enabled;
