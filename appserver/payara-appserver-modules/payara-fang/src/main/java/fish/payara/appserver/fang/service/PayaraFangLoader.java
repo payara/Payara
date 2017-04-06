@@ -108,8 +108,11 @@ public class PayaraFangLoader extends Thread {
                 webEngine.setSniffer("web");
                 Engine weldEngine = singleModule.createChild(Engine.class);
                 weldEngine.setSniffer("weld");
+                Engine securityEngine = singleModule.createChild(Engine.class);
+                securityEngine.setSniffer("security");
                 singleModule.getEngines().add(webEngine);
                 singleModule.getEngines().add(weldEngine);
+                singleModule.getEngines().add(securityEngine);
                 
                 // Create the application-ref
                 Server s = (Server) proxies[1];

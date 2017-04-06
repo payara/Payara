@@ -10,6 +10,7 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.appserver.fang.service.PayaraFangService;
+import fish.payara.appserver.fang.service.configuration.PayaraFangConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -90,7 +91,8 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         }
         
         try {
-            endpointDecider = new PayaraFangEndpointDecider(serverConfig);
+            PayaraFangConfiguration fangServiceConfiguration = habitat.getService(PayaraFangConfiguration.class);
+            endpointDecider = new PayaraFangEndpointDecider(serverConfig, fangServiceConfiguration);
         } catch (Exception ex) {
             logger.log(Level.INFO, "Payara Fang Console cannot initialise", ex);
         }

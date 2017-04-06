@@ -8,13 +8,15 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.annotations.Optional;
 
 /**
  *
@@ -29,6 +31,7 @@ public class PayaraFangEndpointDecider {
     private Config config;
     private Logger logger = Logger.getLogger(PayaraFangEndpointDecider.class.getName());
     private List<String> hosts;
+    private PayaraFangConfiguration fangServiceConfiguration;
     
     private final static String DEFAULT_CONTEXT_ROOT = "/fang";
     
@@ -37,10 +40,11 @@ public class PayaraFangEndpointDecider {
     @Inject
     ServiceLocator habitat;
     
-    public PayaraFangEndpointDecider(Config config) {
+    public PayaraFangEndpointDecider(Config config, PayaraFangConfiguration fangServiceConfiguration) {
         if (config == null || logger == null)
             throw new IllegalArgumentException("config or logger can't be null");
         this.config = config;
+        this.fangServiceConfiguration = fangServiceConfiguration;
         setValues();
     }
     
@@ -85,7 +89,12 @@ public class PayaraFangEndpointDecider {
         
         // Set the context root and port number
         if (ServerTags.ADMIN_LISTENER_ID.equals(networkListener.getName())) {
-            contextRoot = DEFAULT_CONTEXT_ROOT;
+            // Get the context root from the Payara Fang service
+            if (fangServiceConfiguration == null) {
+                contextRoot = DEFAULT_CONTEXT_ROOT;
+            } else {
+                contextRoot = fangServiceConfiguration.getContextRoot();
+            }
             
             try {
                 port = Integer.parseInt(networkListener.getPort());
@@ -101,17 +110,12 @@ public class PayaraFangEndpointDecider {
             }
             
             // Get the context root from the Payara Fang service
-            PayaraFangConfiguration fangServiceConfiguration = habitat.getService(PayaraFangConfiguration.class);
             if (fangServiceConfiguration == null) {
                 contextRoot = DEFAULT_CONTEXT_ROOT;
             } else {
-                setContextRootFromService(fangServiceConfiguration);
+                contextRoot = fangServiceConfiguration.getContextRoot();
             }
         }
-    }
-    
-    private void setContextRootFromService(PayaraFangConfiguration fangService) {
-        contextRoot = fangService.getContextRoot();
     }
     
     public List<String> getHosts() {
