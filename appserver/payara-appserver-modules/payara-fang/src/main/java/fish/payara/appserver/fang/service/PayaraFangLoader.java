@@ -15,12 +15,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -52,42 +50,40 @@ public class PayaraFangLoader extends Thread {
     @Override
     public void run() {
         try {
-            if (domain.getSystemApplicationReferencedFrom(serverEnv.getInstanceName(), PayaraFangService.FANG_APP_NAME) 
-                    == null) {
-//                if (serverEnv.isDas()) {
+            // Check if the application is registered for this instance already
+            if (payaraFangAdapter.getConfig() == null) {
+                // Only the DAS should create system applications.
+                if (serverEnv.isDas()) {
+                    createAndRegisterApplication();
+                } else {
                     registerApplication();
-//                } else {
-//                    logger.log(Level.WARNING, "Payara Fang not yet registered in the DAS");
-//                    return;
-//                }
+                }
             }
             
             load();
-
-            // From within this Thread mark the installation process complete
-            payaraFangAdapter.setInstalling(false);
         } catch (Exception ex) {
-            payaraFangAdapter.setInstalling(false);
             payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_REGISTERED);
-            logger.log(Level.INFO, "Problem while attempting to register Payara Fang!", ex);
+            logger.log(Level.WARNING, "Problem while attempting to register Payara Fang!", ex);
         }
     }
 
    
     /**
-     * Register the application
+     * Create the system application entry and register the application
      * @throws Exception 
      */
-    private void registerApplication() throws Exception {
+    private void createAndRegisterApplication() throws Exception {
+        // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.REGISTERING);
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Registering the Payara Fang Application...");
         }
 
-        //create the application entry in domain.xml
+        // Create the system application entry and application-ref in the config
         ConfigCode code = new ConfigCode() {
             @Override
             public Object run(ConfigBeanProxy... proxies) throws PropertyVetoException, TransactionFailure {
+                // Create the system application
                 SystemApplications systemApplications = (SystemApplications) proxies[0];
                 Application application = systemApplications.createChild(Application.class);
                 systemApplications.getModules().add(application);
@@ -101,10 +97,10 @@ public class PayaraFangLoader extends Thread {
                     application.setLocation("${com.sun.aas.installRootURI}/lib/install/applications/" 
                             + PayaraFangService.FANG_APP_NAME);
                 } catch (Exception me) {
-                    // can't do anything
                     throw new RuntimeException(me);
                 }
                 
+                // Set the engine types
                 Module singleModule = application.createChild(Module.class);
                 application.getModule().add(singleModule);
                 singleModule.setName(application.getName());
@@ -114,12 +110,62 @@ public class PayaraFangLoader extends Thread {
                 weldEngine.setSniffer("weld");
                 singleModule.getEngines().add(webEngine);
                 singleModule.getEngines().add(weldEngine);
+                
+                // Create the application-ref
                 Server s = (Server) proxies[1];
                 List<ApplicationRef> arefs = s.getApplicationRef();
                 ApplicationRef aref = s.createChild(ApplicationRef.class);
                 aref.setRef(application.getName());
                 aref.setEnabled(Boolean.TRUE.toString());
-                aref.setVirtualServers(getVirtualServerList());
+                aref.setVirtualServers(getVirtualServerListAsString());
+                arefs.add(aref);
+                
+                return true;
+            }
+        };
+        
+        Server server = domain.getServerNamed(serverEnv.getInstanceName());
+        ConfigSupport.apply(code, domain.getSystemApplications(), server);
+
+        // Update the adapter state
+        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Payara Fang Registered.");
+        }
+    }
+    
+    private void registerApplication() throws Exception {
+        // Update the adapter state
+        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.REGISTERING);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Registering the Payara Fang Application...");
+        }
+
+        // Create the application-ref entry in the domain.xml
+        ConfigCode code = new ConfigCode() {
+            @Override
+            public Object run(ConfigBeanProxy... proxies) throws PropertyVetoException, TransactionFailure {
+                // Get the system application config
+                SystemApplications systemApplications = (SystemApplications) proxies[0];
+                Application application = null;
+                for (Application systemApplication : systemApplications.getApplications()) {
+                    if (systemApplication.getName().equals(PayaraFangService.FANG_APP_NAME)) {
+                        application = systemApplication;
+                        break;
+                    }
+                }
+                
+                if (application == null) {
+                    throw new IllegalStateException("Payara Fang has no system app entry!");
+                }
+                
+                // Create the application-ref
+                Server s = (Server) proxies[1];
+                List<ApplicationRef> arefs = s.getApplicationRef();
+                ApplicationRef aref = s.createChild(ApplicationRef.class);
+                aref.setRef(application.getName());
+                aref.setEnabled(Boolean.TRUE.toString());
+                aref.setVirtualServers(getVirtualServerListAsString());
                 arefs.add(aref);
                 return true;
             }
@@ -128,24 +174,31 @@ public class PayaraFangLoader extends Thread {
         Server server = domain.getServerNamed(serverEnv.getInstanceName());
         ConfigSupport.apply(code, domain.getSystemApplications(), server);
 
-        // Set the adapter state
+        // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Payara Fang Registered.");
         }
     }
 
-    private String getVirtualServerList() {
-        if (vss == null)
+    private String getVirtualServerListAsString() {
+        if (vss == null) {
             return "";
-        String s = Arrays.toString(vss.toArray(new String[vss.size()]));
-        //standard JDK implemetation always returns this enclosed in [], remove them
-        s = s.substring(1, s.length() - 1);
-        return (s);
+        }
+            
+        String virtualServers = Arrays.toString(vss.toArray(new String[vss.size()]));
+        
+        // Standard JDK implemetation always returns this enclosed in [], which we don't want
+        virtualServers = virtualServers.substring(1, virtualServers.length() - 1);
+        
+        return virtualServers;
     }
 
+    /**
+     * Loads the application
+     */
     private void load() {
-        ApplicationRegistry appRegistry = habitat.<ApplicationRegistry>getService(ApplicationRegistry.class);
+        ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
         ApplicationInfo appInfo = appRegistry.get(PayaraFangService.FANG_APP_NAME);
         if (appInfo != null && appInfo.isLoaded()) {
             payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADED);
@@ -158,15 +211,15 @@ public class PayaraFangLoader extends Thread {
             throw new IllegalStateException("Payara Fang has no system app entry!");
         }
         
-        // Set adapter state
+        // Update adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADING);
 
         // Load the Payara Fang Application
-        String sn = serverEnv.getInstanceName();
-        ApplicationRef ref = domain.getApplicationRefInServer(sn, PayaraFangService.FANG_APP_NAME);
-        habitat.<ApplicationLoaderService>getService(ApplicationLoaderService.class).processApplication(config, ref);
+        String instanceName = serverEnv.getInstanceName();
+        ApplicationRef ref = domain.getApplicationRefInServer(instanceName, PayaraFangService.FANG_APP_NAME);
+        habitat.getService(ApplicationLoaderService.class).processApplication(config, ref);
 
-        // Set adapter state
+        // Update adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADED);
     }
 }
