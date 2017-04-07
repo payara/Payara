@@ -33,6 +33,25 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                <artifactId>maven-antrun-extended-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <tasks>
+                                <!-- extract Payara Fang war file into the final location -->
+                                <resolveArtifact artifactId="Fang" property="war" />
+                                <unzip src="${war}" dest="target/dependency/glassfish/lib/install/applications/__fang" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -102,6 +121,13 @@
             <groupId>fish.payara.appserver</groupId>
             <artifactId>payara-fang</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.monitoring</groupId>
+            <artifactId>Fang</artifactId>
+            <version>${payara.fang.version}</version>
+            <type>war</type>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

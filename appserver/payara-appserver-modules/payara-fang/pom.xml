@@ -11,64 +11,7 @@
     <packaging>glassfish-jar</packaging>
     <name>Payara Fang</name>
     
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <tasks>
-                                <!-- extract Payara Fang war file into the final location -->
-                                <resolveArtifact artifactId="Fang" property="war" />
-                                <unzip src="${war}" dest="target/classes/glassfish/lib/install/applications/__fang" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                        <configuration>
-                            <instructions>
-                                <Import-Package>
-                                    !fish.payara.monitoring.fang.*,
-                                    *
-                                </Import-Package>
-                                <Export-Package>
-                                    !fish.payara.monitoring.fang.*,
-                                    !glassfish.lib.install.applications.__fang.*,
-                                    fish.payara.appserver.fang.service.*
-                                </Export-Package>
-                            </instructions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
-        <dependency>
-            <groupId>fish.payara.monitoring</groupId>
-            <artifactId>Fang</artifactId>
-            <version>${payara.fang.version}</version>
-            <type>war</type>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
