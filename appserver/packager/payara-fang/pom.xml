@@ -119,7 +119,7 @@
     <dependencies>
 	<dependency>
             <groupId>fish.payara.appserver</groupId>
-            <artifactId>payara-fang</artifactId>
+            <artifactId>payara-fang-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
