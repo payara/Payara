@@ -25,9 +25,9 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-fang")
 @RunLevel(PostStartupRunLevel.VAL)
-public class PayaraFangService {
+public class PayaraFangStartupService {
     
-    public static final String FANG_APP_NAME = "__fang";
+    public static final String DEFAULT_FANG_APP_NAME = "__fang";
     
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -58,7 +58,8 @@ public class PayaraFangService {
     private void loadApplication() {
         try {
             new PayaraFangLoader(payaraFangAdapter, habitat, domain, serverEnv, 
-                    payaraFangAdapter.getContextRoot(), payaraFangAdapter.getVirtualServers()).start();
+                    payaraFangAdapter.getContextRoot(), configuration.getApplicationName(), 
+                    payaraFangAdapter.getVirtualServers()).start();
         } catch (Exception ex) {
             throw new RuntimeException("Unable to load Payara Fang!", ex);
         }

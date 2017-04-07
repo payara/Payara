@@ -9,14 +9,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Named;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.annotations.Optional;
 
 /**
  *
@@ -29,7 +25,7 @@ public class PayaraFangEndpointDecider {
     private InetAddress address;
     private int maxThreadPoolSize = 5;
     private Config config;
-    private Logger logger = Logger.getLogger(PayaraFangEndpointDecider.class.getName());
+    private static final Logger logger = Logger.getLogger(PayaraFangEndpointDecider.class.getName());
     private List<String> hosts;
     private PayaraFangConfiguration fangServiceConfiguration;
     

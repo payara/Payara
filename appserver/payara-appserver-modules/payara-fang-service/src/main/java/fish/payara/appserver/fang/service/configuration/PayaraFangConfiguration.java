@@ -29,4 +29,8 @@ public interface PayaraFangConfiguration extends ConfigBeanProxy, ConfigExtensio
     @Attribute(defaultValue="/fang")
     String getContextRoot();
     void setContextRoot(String contextRoot) throws PropertyVetoException;
+    
+    @Attribute(defaultValue="__fang")
+    String getApplicationName();
+    void setApplicationName(String name) throws PropertyVetoException;
 }

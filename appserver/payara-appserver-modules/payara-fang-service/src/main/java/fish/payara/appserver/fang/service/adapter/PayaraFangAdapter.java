@@ -9,10 +9,9 @@ import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import fish.payara.appserver.fang.service.PayaraFangService;
+import com.sun.enterprise.config.serverbeans.SystemApplications;
 import fish.payara.appserver.fang.service.configuration.PayaraFangConfiguration;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,6 +39,7 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -49,10 +49,10 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 public final class PayaraFangAdapter extends HttpHandler implements Adapter {
     private PayaraFangAdapterState stateMsg = PayaraFangAdapterState.UNINITIALISED;
-    private boolean isOK = false;
     private boolean isRegistered = false;
+    private boolean appRegistered = false;
     private ResourceBundle bundle;
-    private Method[] allowedHttpMethods = {Method.GET, Method.POST, Method.HEAD, Method.DELETE, Method.PUT};
+    private final Method[] allowedHttpMethods = {Method.GET, Method.POST, Method.HEAD, Method.DELETE, Method.PUT};
 
     private static PayaraFangEndpointDecider endpointDecider;
     
@@ -74,36 +74,68 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config serverConfig;
     
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Optional
+    PayaraFangConfiguration fangServiceConfiguration;
+    
     private final static Logger logger = Logger.getLogger(PayaraFangAdapter.class.getName());
     private final static String RESOURCE_PACKAGE = "fish/payara/appserver/fang/adapter";
     private final CountDownLatch latch = new CountDownLatch(1);
     
     @PostConstruct
     public void postConstruct() {
+        fangServiceConfiguration = habitat.getService(PayaraFangConfiguration.class);
         init();
     }
     
     private void init() {
-        if (appExistsInConfig()) {
-            setStateMsg(PayaraFangAdapterState.NOT_LOADED);
-        } else {
-            setStateMsg(PayaraFangAdapterState.NOT_REGISTERED);
-        }
-        
         try {
-            PayaraFangConfiguration fangServiceConfiguration = habitat.getService(PayaraFangConfiguration.class);
             endpointDecider = new PayaraFangEndpointDecider(serverConfig, fangServiceConfiguration);
         } catch (Exception ex) {
             logger.log(Level.INFO, "Payara Fang Console cannot initialise", ex);
         }
+        
+        if (appExistsInConfig() && (domain.getSystemApplicationReferencedFrom(env.getInstanceName(), 
+                fangServiceConfiguration.getApplicationName()) != null)) {
+            setStateMsg(PayaraFangAdapterState.NOT_LOADED);
+            setAppRegistered(true);
+        } else {
+            setStateMsg(PayaraFangAdapterState.NOT_REGISTERED);
+        }
     }
     
-    private boolean appExistsInConfig() {
-        return (getConfig() != null);
+    public boolean appExistsInConfig() {
+        return (getSystemApplicationConfig() != null);
     }
     
-    public Application getConfig() {
-        return domain.getSystemApplicationReferencedFrom(env.getInstanceName(), PayaraFangService.FANG_APP_NAME);
+    public Application getSystemApplicationConfig() {
+        // First, check if there is an app registered for this server with the given application name
+        Application application = domain.getSystemApplicationReferencedFrom(env.getInstanceName(), 
+                fangServiceConfiguration.getApplicationName());
+        
+        // If the app hasn't been registered to the instance yet, the previous check will return null, so check for one 
+        // with a matching context root instead (as these are also unique)
+        if (application == null) {
+            application = getApplicationWithMatchingContextRoot();
+        }
+        
+        return application;
+    }
+    
+    private Application getApplicationWithMatchingContextRoot() {
+        Application application = null;
+        String contextRoot = getContextRoot();
+
+        SystemApplications systemApplications = domain.getSystemApplications();
+        for (Application systemApplication : systemApplications.getApplications()) {
+            if (systemApplication.getContextRoot().equals(contextRoot)) {
+                application = systemApplication;
+                break;
+            }
+        }
+        
+        return application;
     }
     
     private PayaraFangAdapterState getStateMsg() {
@@ -323,5 +355,13 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
     @Override
     public void setRegistered(boolean isRegistered) {
         this.isRegistered = isRegistered;
+    }
+    
+    public boolean isAppRegistered() {
+        return appRegistered;
+    }
+    
+    public void setAppRegistered(boolean appRegistered) {
+        this.appRegistered = true;
     }
 }

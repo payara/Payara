@@ -32,41 +32,43 @@ public class PayaraFangLoader extends Thread {
     private final Domain domain;
     private final ServerEnvironmentImpl serverEnv;
     private final String contextRoot;
+    private String applicationName;
+    private boolean applicationNameChanged = false;
     private final PayaraFangAdapter payaraFangAdapter;
     private final ServiceLocator habitat;
     private final Logger logger = Logger.getLogger(PayaraFangLoader.class.getName());
     private final List<String> vss;
 
     PayaraFangLoader(PayaraFangAdapter payaraFangAdapter, ServiceLocator habitat, Domain domain, 
-            ServerEnvironmentImpl serverEnv, String contextRoot, List<String> vss) {
+            ServerEnvironmentImpl serverEnv, String contextRoot, String applicationName, List<String> vss) {
         this.payaraFangAdapter = payaraFangAdapter;
         this.habitat = habitat;
         this.domain = domain;
         this.serverEnv = serverEnv;
         this.contextRoot = contextRoot;
+        this.applicationName = applicationName;
         this.vss = vss;
     }
 
     @Override
     public void run() {
         try {
-            // Check if the application is registered for this instance already
-            if (payaraFangAdapter.getConfig() == null) {
-                // Only the DAS should create system applications.
-                if (serverEnv.isDas()) {
-                    createAndRegisterApplication();
-                } else {
+            // Check if the application already exists, creating the system-app entry if it isn't
+            if (payaraFangAdapter.appExistsInConfig()) {
+                // Check if the app is actually registered to this instance
+                if (!payaraFangAdapter.isAppRegistered()) {
                     registerApplication();
                 }
+            } else {
+                createAndRegisterApplication();
             }
             
-            load();
+            loadApplication();
         } catch (Exception ex) {
             payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_REGISTERED);
             logger.log(Level.WARNING, "Problem while attempting to register Payara Fang!", ex);
         }
     }
-
    
     /**
      * Create the system application entry and register the application
@@ -86,16 +88,20 @@ public class PayaraFangLoader extends Thread {
                 // Create the system application
                 SystemApplications systemApplications = (SystemApplications) proxies[0];
                 Application application = systemApplications.createChild(Application.class);
+                
+                // Check if the application name is valid, generating a new one if it isn't
+                checkAndResolveApplicationName(systemApplications); 
+                
                 systemApplications.getModules().add(application);
-                application.setName(PayaraFangService.FANG_APP_NAME);
+                application.setName(applicationName);
                 application.setEnabled(Boolean.TRUE.toString());
-                application.setObjectType("system-admin"); //TODO
+                application.setObjectType("system-admin");
                 application.setDirectoryDeployed("true");
                 application.setContextRoot(contextRoot);
                 
                 try {
                     application.setLocation("${com.sun.aas.installRootURI}/lib/install/applications/" 
-                            + PayaraFangService.FANG_APP_NAME);
+                            + PayaraFangStartupService.DEFAULT_FANG_APP_NAME);
                 } catch (Exception me) {
                     throw new RuntimeException(me);
                 }
@@ -103,7 +109,7 @@ public class PayaraFangLoader extends Thread {
                 // Set the engine types
                 Module singleModule = application.createChild(Module.class);
                 application.getModule().add(singleModule);
-                singleModule.setName(application.getName());
+                singleModule.setName(applicationName);
                 Engine webEngine = singleModule.createChild(Engine.class);
                 webEngine.setSniffer("web");
                 Engine weldEngine = singleModule.createChild(Engine.class);
@@ -152,7 +158,7 @@ public class PayaraFangLoader extends Thread {
                 SystemApplications systemApplications = (SystemApplications) proxies[0];
                 Application application = null;
                 for (Application systemApplication : systemApplications.getApplications()) {
-                    if (systemApplication.getName().equals(PayaraFangService.FANG_APP_NAME)) {
+                    if (systemApplication.getName().equals(applicationName)) {
                         application = systemApplication;
                         break;
                     }
@@ -200,15 +206,15 @@ public class PayaraFangLoader extends Thread {
     /**
      * Loads the application
      */
-    private void load() {
+    private void loadApplication() {
         ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
-        ApplicationInfo appInfo = appRegistry.get(PayaraFangService.FANG_APP_NAME);
+        ApplicationInfo appInfo = appRegistry.get(applicationName);
         if (appInfo != null && appInfo.isLoaded()) {
             payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADED);
             return;
         }
 
-        Application config = payaraFangAdapter.getConfig();
+        Application config = payaraFangAdapter.getSystemApplicationConfig();
         
         if (config == null) {
             throw new IllegalStateException("Payara Fang has no system app entry!");
@@ -219,10 +225,51 @@ public class PayaraFangLoader extends Thread {
 
         // Load the Payara Fang Application
         String instanceName = serverEnv.getInstanceName();
-        ApplicationRef ref = domain.getApplicationRefInServer(instanceName, PayaraFangService.FANG_APP_NAME);
+        ApplicationRef ref = domain.getApplicationRefInServer(instanceName, applicationName);
         habitat.getService(ApplicationLoaderService.class).processApplication(config, ref);
 
-        // Update adapter state
+        // Update adapter state and mark as registered
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADED);
+        payaraFangAdapter.setAppRegistered(true);
     }
+    
+    private void checkAndResolveApplicationName(SystemApplications systemApplications) {
+        // Check if the application name is not empty
+        if (applicationName == null || applicationName.equals("")) {
+            logger.log(Level.INFO, "No or incorrect application name detected for Payara Fang: reverting to default");
+            applicationName = PayaraFangStartupService.DEFAULT_FANG_APP_NAME;
+            applicationNameChanged = true;
+        }
+        
+        // Loop through the system applications
+        boolean validApplicationNameFound = false;
+        int applicationNameSuffix = 1;
+        while (!validApplicationNameFound) {
+            // Check if the current application name is in use
+            validApplicationNameFound = isApplicationNameValid(systemApplications);
+            
+            if (!validApplicationNameFound) {
+                // If the name isn't valid, append a number to it and try again
+                applicationName = applicationName + "-" + applicationNameSuffix;
+                applicationNameSuffix++;
+                applicationNameChanged = true;
+            }
+        }
+        
+    }
+    
+    private boolean isApplicationNameValid(SystemApplications systemApplications) {
+        boolean validApplicationNameFound = true;
+        
+        // Search through the system application names to check if there are any apps with the same name
+        for (Application systemApplication : systemApplications.getApplications()) {
+            if (systemApplication.getName().equals(applicationName)) {
+                // We've found an application with the same name, that means we can't use this one
+                validApplicationNameFound = false;
+                break;
+            }
+        }
+        
+        return validApplicationNameFound;
+    } 
 }
