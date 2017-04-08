@@ -186,7 +186,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
             managedExecutorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
+                    ClassLoader oldCL = Utility.getClassLoader();
                     try {
                         Utility.setContextClassLoader(capturedClassLoader);
                         
