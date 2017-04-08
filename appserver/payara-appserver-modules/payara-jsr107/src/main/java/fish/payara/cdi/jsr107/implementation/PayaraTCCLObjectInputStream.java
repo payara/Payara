@@ -17,6 +17,7 @@
  */
 package fish.payara.cdi.jsr107.implementation;
 
+import com.sun.enterprise.util.Utility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -34,7 +35,7 @@ public class PayaraTCCLObjectInputStream extends ObjectInputStream {
 
     @Override
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-        return Thread.currentThread().getContextClassLoader().loadClass(desc.getName());
+        return Class.forName(desc.getName(), false, Utility.getClassLoader());
     }  
     
 }
