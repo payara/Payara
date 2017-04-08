@@ -100,7 +100,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @PostConstruct
     void postConstruct() {
         runtime.addCDIListener(this);
-        capturedClassLoader = Thread.currentThread().getContextClassLoader();
+        capturedClassLoader = Utility.getClassLoader();
         im = Globals.getDefaultHabitat().getService(InvocationManager.class);
         capturedInvocation = im.getCurrentInvocation();
         if (managedExecutorService == null) {
