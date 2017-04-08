@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.handlers;
 
@@ -55,10 +55,9 @@ import org.jvnet.hk2.annotations.Service;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.logging.Level;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * This handler is responsible in handling
@@ -200,7 +199,7 @@ public class WebServletHandler extends AbstractWebHandler {
                         validUrlPatterns = false;
                         break;
                     }
-                    webCompDesc.addUrlPattern(up);
+                    webCompDesc.addUrlPattern((String)TranslatedConfigView.getTranslatedValue(up));
                 }
             }
 
@@ -224,7 +223,7 @@ public class WebServletHandler extends AbstractWebHandler {
             for (WebInitParam initParam : initParams) {
                 webCompDesc.addInitializationParameter(
                         new EnvironmentProperty(
-                            initParam.name(), initParam.value(),
+                            initParam.name(), (String)TranslatedConfigView.getTranslatedValue(initParam.value()),
                             initParam.description()));
             }
         }
@@ -257,6 +256,9 @@ public class WebServletHandler extends AbstractWebHandler {
         String servletName = webServletAn.name();
         if (servletName == null || servletName.length() == 0) {
             servletName = webCompClass.getName();
+        }
+        else {
+            servletName = (String)TranslatedConfigView.getTranslatedValue(servletName);
         }
         return servletName;
     }
