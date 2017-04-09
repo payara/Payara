@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
@@ -53,6 +53,7 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
@@ -135,7 +136,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
 
         for (ActivationConfigProperty acProp : mdAn.activationConfig()) {
             EnvironmentProperty envProp = new EnvironmentProperty(
-                    acProp.propertyName(), acProp.propertyValue(), "");
+                    acProp.propertyName(), (String) TranslatedConfigView.getTranslatedValue(acProp.propertyValue()), "");
                                                 // with empty description
             // xml override
             if (acProp.propertyName().equals("resourceAdapter")) {
