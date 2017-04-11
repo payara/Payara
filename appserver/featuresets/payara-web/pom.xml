@@ -240,5 +240,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        <!-- environment warning -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>environment-warning</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 </project>

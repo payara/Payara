@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] 
 
 /*
  * GuiUtil.java
@@ -207,7 +207,24 @@ public class GuiUtil {
                         .get("extraProperties")).get("asadminRecorderEnabled"));
         sessionMap.put("showDisableAsadminRecorderButton", (boolean)((Map) 
                 ((Map) asadminRecorderEnabled.get("data"))
-                        .get("extraProperties")).get("asadminRecorderEnabled"));        
+                        .get("extraProperties")).get("asadminRecorderEnabled"));  
+
+        Map environmentWarningConfiguration = 
+                RestUtil.restRequest(sessionMap.get("REST_URL") 
+                        + "/get-environment-warning-configuration", null, "GET", null, 
+                        false);
+        sessionMap.put("environmentWarningBarEnabled", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("enabled"));   
+        sessionMap.put("environmentWarningBarMessage", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("message"));   
+        sessionMap.put("environmentWarningBarBackgroundColour", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("backgroundColour"));   
+        sessionMap.put("environmentWarningBarTextColour", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("textColour"));       
        
         sessionMap.put("reqMsg", GuiUtil.getMessage("msg.JS.enterValue"));
         sessionMap.put("reqMsgSelect", GuiUtil.getMessage("msg.JS.selectValue"));
