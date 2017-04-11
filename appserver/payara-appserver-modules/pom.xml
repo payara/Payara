@@ -67,5 +67,6 @@
         <module>notification-newrelic-core</module>
         <module>notification-datadog-core</module>
         <module>zendesk-support</module>
+        <module>environment-warning</module>
     </modules>
 </project>

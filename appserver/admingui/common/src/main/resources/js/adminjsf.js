@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-/*Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+/*Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 /*
  * Common utility
  */
@@ -1860,6 +1860,27 @@ function checkForSelectedValue(fieldId) {
 function reloadHeaderFrame() {
     var mastheadForm = document.getElementById('af');
     admingui.ajax.postAjaxRequest(mastheadForm, { render: 'af' }, 'af', false);
+}
+
+function RgbToHex(string) {
+    
+    var rgb = string.match(/\d+/g);
+    
+    if(rgb == null || rgb.length != 3) {
+        rgb = ["0","0","0"];
+    }
+    
+    // Convert to base 16
+    var rhex = Number(rgb[0]).toString(16);
+    // if it's a single digit then add a 0 to start
+    rhex = (rhex.length == 1)? "0" + rhex : rhex;
+    
+    var ghex = Number(rgb[1]).toString(16);
+    ghex = (ghex.length == 1)? "0" + ghex : ghex;
+    var bhex = Number(rgb[2]).toString(16);
+    bhex = (bhex.length == 1)? "0" + bhex : bhex;
+    
+    return "#" + rhex + ghex + bhex;
 }
 
 admingui.deploy = {
