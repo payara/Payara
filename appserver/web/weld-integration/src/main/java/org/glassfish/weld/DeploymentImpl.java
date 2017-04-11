@@ -74,6 +74,7 @@ import org.jboss.weld.bootstrap.spi.Metadata;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import org.jboss.weld.injection.spi.InjectionServices;
 
 /*
  * Represents a deployment of a CDI (Weld) application.
@@ -413,13 +414,15 @@ public class DeploymentImpl implements CDI11Deployment {
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, CDILoggerInfo.LOAD_BEAN_DEPLOYMENT_ARCHIVE_CREATE_NEW_BDA, new Object []{beanClass});
         }
-        List<Class<?>> beanClasses = new ArrayList<Class<?>>();
-        List<URL> beanXMLUrls = new CopyOnWriteArrayList<URL>();
-        Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
+        List<Class<?>> beanClasses = new ArrayList<>();
+        List<URL> beanXMLUrls = new CopyOnWriteArrayList<>();
+        Set<EjbDescriptor> ejbs = new HashSet<>();
         beanClasses.add(beanClass);
         BeanDeploymentArchive newBda =
             new BeanDeploymentArchiveImpl(beanClass.getName(),
                                           beanClasses, beanXMLUrls, ejbs, context);
+        InjectionServices injectionServices = this.getServices().get(InjectionServices.class);
+        newBda.getServices().add(InjectionServices.class, injectionServices);
         BeansXml beansXml = newBda.getBeansXml();
         if (beansXml == null || !beansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
             if ( logger.isLoggable( FINE ) ) {
