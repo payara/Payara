@@ -147,4 +147,5 @@ grant {
     permission javax.management.MBeanPermission "[amx-support:*]", "*";
     permission java.lang.management.ManagementPermission "monitor";
     permission javax.management.MBeanPermission "com.hazelcast.*", "*";
+    permission javax.management.MBeanPermission "fish.payara.*", "*";
 };
