@@ -193,22 +193,22 @@ public class JmsHostWrapper implements JmsHost {
 
     @Override
     public Property addProperty(Property property) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public Property lookupProperty(String s) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public Property removeProperty(String s) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public Property removeProperty(Property property) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     public ConfigBeanProxy deepCopy(ConfigBeanProxy proxy)

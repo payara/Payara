@@ -348,22 +348,25 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public Property addProperty(Property property) {
-            throw new UnsupportedOperationException();
+            desc.getProperties().put(property.getName(), property);
+            return property;
         }
 
         @Override
         public Property lookupProperty(String s) {
-            throw new UnsupportedOperationException();
+            return getProperty(s);
         }
 
         @Override
         public Property removeProperty(String s) {
-            throw new UnsupportedOperationException();
+            Property property = lookupProperty(s);
+            desc.getProperties().remove(s);
+            return property;
         }
 
         @Override
         public Property removeProperty(Property property) {
-            throw new UnsupportedOperationException();
+            return removeProperty(property.getName());
         }
 
         public Property getProperty(String name) {

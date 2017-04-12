@@ -230,23 +230,25 @@ public class DummyNetworkListener implements NetworkListener {
 
     @Override
     public Property addProperty(Property property) {
-        throw new UnsupportedOperationException();
-
+        properties.add(property);
+        return property;
     }
 
     @Override
     public Property lookupProperty(String s) {
-        throw new UnsupportedOperationException();
+        return getProperty(s);
     }
 
     @Override
     public Property removeProperty(String s) {
-        throw new UnsupportedOperationException();
+        Property property = getProperty(s);
+        return removeProperty(property);
     }
 
     @Override
     public Property removeProperty(Property property) {
-        throw new UnsupportedOperationException();
+        properties.remove(property);
+        return property;
     }
 
     @Override

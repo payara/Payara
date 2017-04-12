@@ -67,10 +67,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -521,22 +518,25 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public Property addProperty(Property property) {
-            throw new UnsupportedOperationException();
+            desc.getProperties().put(property.getName(), property);
+            return property;
         }
 
         @Override
         public Property lookupProperty(String s) {
-            throw new UnsupportedOperationException();
+            return (Property) desc.getProperties().get(s);
         }
 
         @Override
         public Property removeProperty(String s) {
-            throw new UnsupportedOperationException();
+            Property property = lookupProperty(s);
+            desc.getProperties().remove(s);
+            return property;
         }
 
         @Override
         public Property removeProperty(Property property) {
-            throw new UnsupportedOperationException();
+            return removeProperty(property.getName());
         }
 
         @Override
