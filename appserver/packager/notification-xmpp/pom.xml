@@ -111,6 +111,11 @@
         </dependency>
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-core</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack-java7</artifactId>
             <version>${smack.version}</version>
         </dependency>
@@ -134,6 +139,16 @@
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack-im</artifactId>
             <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jxmpp</groupId>
+            <artifactId>jxmpp-core</artifactId>
+            <version>${jxmpp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jxmpp</groupId>
+            <artifactId>jxmpp-util-cache</artifactId>
+            <version>${jxmpp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>
