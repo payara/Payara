@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -60,6 +60,26 @@ public class GFLauncherInfo {
     public void addArgs(String... args) {
         for (String s : args) {
             argsRaw.add(s);
+        }
+    }
+    
+    /**
+     * Sets the file containing commands to be run postboot.
+     * @param file 
+     */
+    public void setpostbootCommandsFile(File file){
+        postbootCommandsFile = file;
+    }
+    
+    /**
+     * Sets the file containing commands to be run postboot.
+     * @param file 
+     */
+    public void setpostbootCommandsFile(String file){
+        if (file == null){
+            postbootCommandsFile = null;
+        } else {
+            postbootCommandsFile = new File(file);
         }
     }
 
@@ -181,6 +201,14 @@ public class GFLauncherInfo {
         return domainName;
     }
 
+    /**
+     * Returns the file that contains the commands to be executed postboot
+     * @return 
+     */
+    public File getPostbootCommandsFile(){
+        return postbootCommandsFile;
+    }
+    
     public File getConfigFile() {
         return configFile;
     }
@@ -281,14 +309,16 @@ public class GFLauncherInfo {
         else if(isInstance()) {
             map.put("-instancedir", SmartFile.sanitize(instanceRootDir.getPath()));
         }
-
+        if (postbootCommandsFile != null){
+            map.put("-postbootcommandfile", SmartFile.sanitize(postbootCommandsFile.getPath()));
+        }
         map.put("-watchdog", Boolean.toString(watchdog));
         map.put("-verbose", Boolean.toString(verbose));
         map.put("-debug", Boolean.toString(debug));
         map.put("-instancename", instanceName);
         map.put("-upgrade", Boolean.toString(upgrade));
         map.put("-read-stdin", "true"); //always make the server read the stdin for master password, at least.
-
+        
         if(respawnInfo != null) {
             respawnInfo.put(map);
         }
@@ -574,6 +604,7 @@ public class GFLauncherInfo {
     private ArrayList<String> argsRaw = new ArrayList<String>();
     private List<HostAndPort> adminAddresses;
     private RespawnInfo respawnInfo;
+    private File postbootCommandsFile;
     // BUG TODO get the def. domains dir from asenv 3/14/2008
     private final static String DEFAULT_DOMAIN_PARENT_DIR = "domains";
     private final static String CONFIG_DIR = "config";

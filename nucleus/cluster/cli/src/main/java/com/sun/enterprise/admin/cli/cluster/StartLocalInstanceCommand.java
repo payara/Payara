@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -85,6 +86,11 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
             defaultValue = "false")
     private boolean dry_run;
 
+    @Param(name = "prebootCommandFile", optional = true, defaultValue = "config/pre-boot-commands.txt")
+    private String preBootCommand;
+    @Param(name = "postbootCommandFile", optional = true, defaultValue = "config/post-boot-commands.txt")
+    private String postBootCommand;
+    
     // handled by superclass
     //@Param(name = "instance_name", primary = true, optional = false)
     //private String instanceName0;
@@ -115,8 +121,17 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
 
         File dir = getServerDirs().getServerDir();
 
-        if(!dir.isDirectory())
+        if(!dir.isDirectory()){
             throw new CommandException(Strings.get("Instance.noSuchInstance"));
+        }
+        File prebootfile = new File(getServerDirs().toString() + preBootCommand);
+        if (!prebootfile.exists()){
+            throw new CommandValidationException("preboot commands file does not exist");
+        }
+        File postbootFile = new File(getServerDirs().toString() + preBootCommand);
+        if (!postbootFile.exists()){
+            throw new CommandValidationException("postboot commands file does not exist");
+        }
     }
 
     /**
@@ -154,9 +169,10 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                         mpv,
                         debug);
 
-            if(!helper.prepareForLaunch())
+            if(!helper.prepareForLaunch()){
                 return ERROR;
-
+            }
+            
             if(dry_run) {
                 if (logger.isLoggable(Level.FINE))
                     logger.fine(Strings.get("dry_run_msg"));
