@@ -102,7 +102,7 @@
         <sun:hyperlink id="reloadLink" text="$resource{i18n.deployTable.reload}">
             <!command
                 gf.reloadApplication(appName="#{td.value.name}");
-                gf.redirect(page="#{request.contextPath}/#{pageSession.listPageLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                gf.redirect(page="#{pageSession.listPageLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
             />
         </sun:hyperlink>
         
