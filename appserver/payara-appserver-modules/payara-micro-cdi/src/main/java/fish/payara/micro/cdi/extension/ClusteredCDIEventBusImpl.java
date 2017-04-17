@@ -173,11 +173,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         }
 
         // as we are on the hazelcast thread we need to establish the invocation manager
-        ComponentInvocation newInvocation = new ComponentInvocation(capturedInvocation.getComponentId(),
-                capturedInvocation.getInvocationType(),
-                capturedInvocation.getContainer(),
-                capturedInvocation.getAppName(),
-                capturedInvocation.getModuleName());
+        ComponentInvocation newInvocation = capturedInvocation.clone();
         final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
         try {
             Utility.setContextClassLoader(capturedClassLoader);
