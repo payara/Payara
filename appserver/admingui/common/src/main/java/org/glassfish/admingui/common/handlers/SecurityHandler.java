@@ -242,7 +242,7 @@ public class SecurityHandler {
         if (attrMap == null) {
             attrMap = new HashMap();
         }
-        String classname = "";
+        String classname;
         try{
           if(option.equals("predefine")){
             classname = attrMap.get("classname");
@@ -253,13 +253,6 @@ public class SecurityHandler {
                 putOptional(attrMap, propList, "assign-groups", "fileAsGroups");
             }else
             if(classname.indexOf("LDAPRealm")!= -1){
-                if (!edit) {
-                    attrMap.put("baseDn", "\"" + attrMap.get("baseDn") + "\"");
-                    attrMap.put("directory", "\"" + attrMap.get("directory") + "\"");
-                    for (Map<String,String> m : propList) {
-                        m.put("value", "\"" + m.get("value") + "\"");
-                    }
-                }
                 putOptional(attrMap, propList, "jaas-context", "ldapJaax");
                 putOptional(attrMap, propList, "base-dn", "baseDn");
                 putOptional(attrMap, propList, "directory", "directory");
