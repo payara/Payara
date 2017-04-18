@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affilates
  */
 
 package com.sun.enterprise.glassfish.bootstrap;
@@ -44,6 +46,7 @@ import org.glassfish.embeddable.*;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
@@ -52,6 +55,8 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
@@ -64,14 +69,14 @@ public class GlassFishMain {
         MainHelper.checkJdkVersion();
 
         final Properties argsAsProps = argsToMap(args);
-
+        
         String platform = MainHelper.whichPlatform();
 
         System.out.println("Launching GlassFish on " + platform + " platform");
 
         // Set the system property if downstream code wants to know about it
         System.setProperty(Constants.PLATFORM_PROPERTY_KEY, platform); // TODO(Sahoo): Why is this a system property?
-
+        
         File installRoot = MainHelper.findInstallRoot();
 
         // domainDir can be passed as argument, so pass the agrgs as well.
@@ -111,11 +116,14 @@ public class GlassFishMain {
             addShutdownHook();
             gfr = GlassFishRuntime.bootstrap(new BootstrapProperties(ctx), getClass().getClassLoader());
             gf = gfr.newGlassFish(new GlassFishProperties(ctx));
+            doBootCommands(ctx.getProperty("-prebootcommandfile"));
             if (Boolean.valueOf(Util.getPropertyOrSystemProperty(ctx, "GlassFish_Interactive", "false"))) {
                 startConsole();
             } else {
                 gf.start();
             }
+            
+            doBootCommands(ctx.getProperty("-postbootcommandfile")); 
         }
 
         private void startConsole() throws IOException {
@@ -210,6 +218,62 @@ public class GlassFishMain {
             });
 
         }
+ 
+        /**
+         * Runs a series of commands from a file
+         * @param file 
+         */
+        private void doBootCommands(String file) {
+            if (file == null){
+                return;
+            }
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                
+                System.out.println("Reading in commandments from " + file);
+                String line = reader.readLine();;
+                while (line != null) {
+                    
+                        String[] commmandParts = cleanCommand(line);
+                        CommandRunner runner = gf.getCommandRunner();
+                        CommandResult result;
+                        if (!(commmandParts[0].isEmpty() || commmandParts[0].equals(" "))){
+                            
+                            if (commmandParts.length == 1){
+                                result = runner.run(commmandParts[0]);
+                            } else {
+                                String[] argv = commmandParts[1].split(" ");
+                                result = runner.run(commmandParts[0], argv);
+                            }
+                            System.out.println(result.getOutput());
+                            if (result.getFailureCause() != null){
+                                throw result.getFailureCause();
+                            }
+                        }
+                    line = reader.readLine();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, "Error reading from file");
+            } catch (Throwable ex) {
+                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        /**
+         * Cleans up a single line command to be space-seperated, comments removed etc.
+         * @param command
+         * @return 
+         */
+        private String[] cleanCommand(String command){
+            String line = command.split("#")[0];
+            line = line.trim();
+            if (!line.startsWith("set ")){
+                line = line.replaceAll("=", " ");
+            }            
+            line = line.replaceAll("(\\s+)", " ");
+            String[] split = line.split(" ", 2);
+            return split;
+        }
+        
 
     }
 
