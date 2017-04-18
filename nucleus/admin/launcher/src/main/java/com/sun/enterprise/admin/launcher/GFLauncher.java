@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -88,8 +88,9 @@ public abstract class GFLauncher {
     public final void launch() throws GFLauncherException {
         try {
             startTime = System.currentTimeMillis();
-            if (!setupCalledByClients)
+            if (!setupCalledByClients) {
                 setup();
+            }
             internalLaunch();
         }
         catch (GFLauncherException gfe) {
@@ -315,7 +316,7 @@ public abstract class GFLauncher {
     public final boolean needsManualUpgrade() {
         return needsManualUpgrade;
     }
-
+    
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     //////     ALL private and package-private below   ////////////////////////
@@ -465,7 +466,7 @@ public abstract class GFLauncher {
             // See GLASSFISH-21113
             // remove bsexec as from 10.10.3 bsexec requires sudo
 	    cmds.add("nohup");
-            cmds.addAll(getCommandLine());
+            cmds.addAll(getCommandLine());            
         }
         else {
             cmds = getCommandLine();
@@ -1050,7 +1051,7 @@ public abstract class GFLauncher {
     private boolean needsManualUpgrade = false;
     private int debugPort = -1;
     private boolean debugSuspend = false;
-
+    
     ///////////////////////////////////////////////////////////////////////////
     private static class ProcessWhacker implements Runnable {
         ProcessWhacker(Process p, String msg) {

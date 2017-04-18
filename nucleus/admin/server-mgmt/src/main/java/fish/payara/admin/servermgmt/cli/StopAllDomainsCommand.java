@@ -40,7 +40,6 @@
 package fish.payara.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.servermgmt.cli.*;
-import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.DASUtils;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
@@ -48,19 +47,12 @@ import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.DomainsManager;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.io.DomainDirs;
-import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.*;
 /**
  * The stop-all-domains command
