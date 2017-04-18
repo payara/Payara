@@ -64,6 +64,18 @@ public class GFLauncherInfo {
     }
     
     /**
+     * Sets the file containing commands to be run preboot.
+     * @param file 
+     */
+    public void setPrebootCommandsFile(String file){
+        if (file == null){
+            prebootCommandsFile = null;
+        } else {
+            prebootCommandsFile = new File(file);
+        }
+    }
+    
+    /**
      * Sets the file containing commands to be run postboot.
      * @param file 
      */
@@ -202,6 +214,13 @@ public class GFLauncherInfo {
     }
 
     /**
+     * @return The file that contains the commands to be run preboot
+     */
+    public File getPrebootCommandsFile(){
+        return prebootCommandsFile;
+    }
+    
+    /**
      * Returns the file that contains the commands to be executed postboot
      * @return 
      */
@@ -308,6 +327,9 @@ public class GFLauncherInfo {
         }
         else if(isInstance()) {
             map.put("-instancedir", SmartFile.sanitize(instanceRootDir.getPath()));
+        }
+        if (prebootCommandsFile != null){
+            map.put("-prebootcommandfile", SmartFile.sanitize(prebootCommandsFile.getPath()));
         }
         if (postbootCommandsFile != null){
             map.put("-postbootcommandfile", SmartFile.sanitize(postbootCommandsFile.getPath()));
@@ -605,6 +627,7 @@ public class GFLauncherInfo {
     private List<HostAndPort> adminAddresses;
     private RespawnInfo respawnInfo;
     private File postbootCommandsFile;
+    private File prebootCommandsFile;
     // BUG TODO get the def. domains dir from asenv 3/14/2008
     private final static String DEFAULT_DOMAIN_PARENT_DIR = "domains";
     private final static String CONFIG_DIR = "config";

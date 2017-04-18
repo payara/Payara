@@ -91,9 +91,9 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     private boolean dry_run;
     @Param(name = "drop-interrupted-commands", optional = true, defaultValue = "false")
     private boolean drop_interrupted_commands;
-    //@Param(name = "prebootCommandFile", optional = true)
-    //private String preBootCommand;
-    @Param(name = "postbootCommandFile", optional = true)
+    @Param(name = "prebootcommandfile", optional = true)
+    private String preBootCommand;
+    @Param(name = "postbootcommandfile", optional = true)
     private String postBootCommand;
     
     @Inject
@@ -120,12 +120,12 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             throws CommandException, CommandValidationException {
         setDomainName(domainName0);
         
-        /*if (preBootCommand != null){
+        if (preBootCommand != null){
             File prebootfile = new File(preBootCommand);
             if (!prebootfile.exists()){
                 throw new CommandValidationException("preboot commands file does not exist: " + prebootfile.getAbsolutePath());
             }
-        }*/
+        }
         
         if (postBootCommand != null){
             File postbootFile = new File(postBootCommand);
@@ -240,6 +240,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         info.setUpgrade(upgrade);
         info.setWatchdog(watchdog);
         info.setDropInterruptedCommands(drop_interrupted_commands);
+        info.setPrebootCommandsFile(preBootCommand);
         info.setpostbootCommandsFile(postBootCommand);
         info.setRespawnInfo(programOpts.getClassName(),
                 programOpts.getClassPath(),

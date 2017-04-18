@@ -115,14 +115,14 @@ public class GlassFishMain {
         public void launch(Properties ctx) throws Exception {
             addShutdownHook();
             gfr = GlassFishRuntime.bootstrap(new BootstrapProperties(ctx), getClass().getClassLoader());
-            gf = gfr.newGlassFish(new GlassFishProperties(ctx)); 
+            gf = gfr.newGlassFish(new GlassFishProperties(ctx));
+            doBootCommands(ctx.getProperty("-prebootcommandfile"));
             if (Boolean.valueOf(Util.getPropertyOrSystemProperty(ctx, "GlassFish_Interactive", "false"))) {
                 startConsole();
             } else {
                 gf.start();
             }
             
-            //Post boot commandsq
             doBootCommands(ctx.getProperty("-postbootcommandfile")); 
         }
 
@@ -266,7 +266,9 @@ public class GlassFishMain {
         private String[] cleanCommand(String command){
             String line = command.split("#")[0];
             line = line.trim();
-            line = line.replaceAll("=", " ");
+            if (!line.startsWith("set ")){
+                line = line.replaceAll("=", " ");
+            }            
             line = line.replaceAll("(\\s+)", " ");
             String[] split = line.split(" ", 2);
             return split;
