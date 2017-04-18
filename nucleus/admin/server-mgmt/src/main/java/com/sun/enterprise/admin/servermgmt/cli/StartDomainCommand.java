@@ -41,7 +41,6 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import java.io.*;
 import java.util.*;
@@ -241,12 +240,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         info.setUpgrade(upgrade);
         info.setWatchdog(watchdog);
         info.setDropInterruptedCommands(drop_interrupted_commands);
-        if (postBootCommand == null) {
-            postBootCommand = null;
-        }
-        logger.log(Level.SEVERE, postBootCommand);
-            info.setpostbootCommandsFile(postBootCommand);
-        //}
+        info.setpostbootCommandsFile(postBootCommand);
         info.setRespawnInfo(programOpts.getClassName(),
                 programOpts.getClassPath(),
                 respawnArgs());

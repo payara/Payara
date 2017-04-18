@@ -115,7 +115,7 @@ public class GlassFishMain {
         public void launch(Properties ctx) throws Exception {
             addShutdownHook();
             gfr = GlassFishRuntime.bootstrap(new BootstrapProperties(ctx), getClass().getClassLoader());
-            gf = gfr.newGlassFish(new GlassFishProperties(ctx));           
+            gf = gfr.newGlassFish(new GlassFishProperties(ctx)); 
             if (Boolean.valueOf(Util.getPropertyOrSystemProperty(ctx, "GlassFish_Interactive", "false"))) {
                 startConsole();
             } else {

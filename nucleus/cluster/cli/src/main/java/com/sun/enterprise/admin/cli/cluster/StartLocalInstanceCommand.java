@@ -86,10 +86,6 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
             defaultValue = "false")
     private boolean dry_run;
 
-    @Param(name = "prebootCommandFile", optional = true, defaultValue = "config/pre-boot-commands.txt")
-    private String preBootCommand;
-    @Param(name = "postbootCommandFile", optional = true, defaultValue = "config/post-boot-commands.txt")
-    private String postBootCommand;
     
     // handled by superclass
     //@Param(name = "instance_name", primary = true, optional = false)
@@ -124,14 +120,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
         if(!dir.isDirectory()){
             throw new CommandException(Strings.get("Instance.noSuchInstance"));
         }
-        File prebootfile = new File(getServerDirs().toString() + preBootCommand);
-        if (!prebootfile.exists()){
-            throw new CommandValidationException("preboot commands file does not exist");
-        }
-        File postbootFile = new File(getServerDirs().toString() + preBootCommand);
-        if (!postbootFile.exists()){
-            throw new CommandValidationException("postboot commands file does not exist");
-        }
+        
     }
 
     /**
