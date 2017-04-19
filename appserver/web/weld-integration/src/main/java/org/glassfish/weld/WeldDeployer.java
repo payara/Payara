@@ -558,6 +558,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
                     InjectionManager injectionMgr = services.getService(InjectionManager.class);
                     InjectionServices injectionServices = new InjectionServicesImpl(injectionMgr, bundle, deploymentImpl);
+                    // Add service
+                    deploymentImpl.getServices().add(InjectionServices.class, injectionServices);
 
                     if (logger.isLoggable(Level.FINE)) {
                         logger.log(Level.FINE,

@@ -177,6 +177,7 @@
         <module>notification-datadog</module>
         <module>zendesk-support</module>
         <module>payara-api</module>
+        <module>environment-warning</module>
     </modules>
 
     <build>

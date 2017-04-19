@@ -28,7 +28,7 @@
 
 <event>
     <!beforeCreate
-        getRequestValue(key="config" value="#{pageSession.config}");
+        getRequestValue(key="config" value="#{pageSession.configName}");
         urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
         getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
 
@@ -44,10 +44,10 @@
         }
 
         createMap(result="#{pageSession.attrsMap}")
-        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.config}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.config}"  method="GET" result="#{requestScope.resp}");
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.config}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");

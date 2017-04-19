@@ -217,7 +217,7 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
                 MessageDrivenBeanNode subNode = new MessageDrivenBeanNode();
                 subNode.writeDescriptor(entrepriseBeansNode, EjbTagNames.MESSAGE_DRIVEN, (EjbMessageBeanDescriptor) ejb);
             }  else {
-                throw new IllegalStateException("Unknow ejb type " + ejb.getType());
+                throw new IllegalStateException("Unknown ejb type " + ejb.getType());
             }
         }
 

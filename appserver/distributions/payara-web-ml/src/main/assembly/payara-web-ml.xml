@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017] [Payara Foundation] -->
 
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
@@ -58,6 +59,10 @@
                 <exclude>bin/*</exclude>
                 <exclude>glassfish/bin/*</exclude>
                 <exclude>glassfish/lib/nadmin*</exclude>
+                <!-- Exclude appserver-domain files -->
+                <exclude>glassfish/common/templates/gf/*appserver-domain*.jar</exclude>
+                <!-- Exclude payara-domain files -->
+                <exclude>glassfish/common/templates/gf/*payara-domain*.jar</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>
@@ -79,4 +84,18 @@
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>
     </fileSets>
+    
+    <!-- Name of appserver-domain and payara-domain replacements -->
+    <files>
+        <file>
+            <source>${temp.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain-web.jar</source>
+            <destName>appserver-domain.jar</destName>
+            <outputDirectory>${install.dir.name}/glassfish/common/templates/gf/</outputDirectory>
+        </file>
+        <file>
+            <source>${temp.dir}/${install.dir.name}/glassfish/common/templates/gf/payara-domain-web.jar</source>
+            <destName>payara-domain.jar</destName>
+            <outputDirectory>${install.dir.name}/glassfish/common/templates/gf/</outputDirectory>
+        </file>
+    </files>
 </assembly>

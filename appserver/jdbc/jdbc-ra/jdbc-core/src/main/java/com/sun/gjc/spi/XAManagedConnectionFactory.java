@@ -37,25 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package com.sun.gjc.spi;
+
+import static com.sun.gjc.util.SecurityUtils.getPasswordCredential;
+
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.resource.ResourceException;
+import javax.resource.spi.ConfigProperty;
+import javax.resource.spi.ConnectionDefinition;
+import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.ResourceAllocationException;
+import javax.resource.spi.security.PasswordCredential;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.common.DataSourceSpec;
 import com.sun.gjc.spi.base.AbstractDataSource;
-import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ResourceAllocationException;
-import javax.resource.spi.security.PasswordCredential;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.resource.spi.ConfigProperty;
-import javax.resource.spi.ConnectionDefinition;
 
 /**
  * XA <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.
@@ -99,29 +101,29 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactoryImpl {
     public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
-        PasswordCredential pc = SecurityUtils.getPasswordCredential(this, subject, cxRequestInfo);
+        PasswordCredential passwordCredential = getPasswordCredential(this, subject, cxRequestInfo);
 
         javax.sql.XADataSource dataSource = getDataSource();
 
         javax.sql.XAConnection xaConn = null;
-        ManagedConnectionImpl mc = null;
+        
 
         try {
-            /* For the case where the user/passwd of the connection pool is
+           /* For the case where the user/passwd of the connection pool is
             * equal to the PasswordCredential for the connection request
             * get a connection from this pool directly.
             * for all other conditions go create a new connection
             */
-            if (isEqual(pc, getUser(), getPassword())) {
+            String user = getUser();
+            if (user == null || isEqual(passwordCredential, user, getPassword())) {
                 xaConn = dataSource.getXAConnection();
             } else {
-                xaConn = dataSource.getXAConnection(pc.getUserName(),
-                        new String(pc.getPassword()));
+                xaConn = dataSource.getXAConnection(
+                            passwordCredential.getUserName(),
+                            new String(passwordCredential.getPassword()));
             }
 
-
         } catch (java.sql.SQLException sqle) {
-            //_logger.log(Level.WARNING, "jdbc.exc_create_xa_conn",sqle);
             if(_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "jdbc.exc_create_xa_conn", sqle);
             }
@@ -131,9 +133,10 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactoryImpl {
             throw new ResourceAllocationException(msg, sqle);
         }
 
-        try{
+        ManagedConnectionImpl mc = null;
+        try {
             mc = constructManagedConnection(
-                    xaConn, null, pc, this);
+                    xaConn, null, passwordCredential, this);
 
             mc.initializeConnectionType(ManagedConnectionImpl.ISXACONNECTION);
             //GJCINT

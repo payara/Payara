@@ -16,7 +16,7 @@
  file and include the License file at packager/legal/LICENSE.txt.
  */
 
-package fish.payara.admingui.notifier.eventbus;
+package fish.payara.admingui.notifier.email;
 
 import java.net.URL;
 import org.glassfish.api.admingui.ConsoleProvider;

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.*;
@@ -60,6 +62,7 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * @author Dapeng Hu
@@ -271,7 +274,7 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
         desc.setName(defn.name());
-        desc.setResourceAdapter(defn.resourceAdapter());
+        desc.setResourceAdapter((String) TranslatedConfigView.getTranslatedValue(defn.resourceAdapter()));
         desc.setInterfaceName(defn.interfaceName());
         desc.setTransactionSupport(defn.transactionSupport().toString());
         desc.setMaxPoolSize(defn.maxPoolSize());
@@ -292,7 +295,7 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
                     if (index > 0 && index < property.length() - 1) {
                         String name = property.substring(0, index);
                         String value = property.substring(index + 1);
-                        properties.put(name.trim(), value.trim());
+                        properties.put(name.trim(), TranslatedConfigView.getTranslatedValue(value.trim()));
                     }
                 }
             }

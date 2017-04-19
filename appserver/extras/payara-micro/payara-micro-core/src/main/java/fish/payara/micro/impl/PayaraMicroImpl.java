@@ -148,6 +148,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private final short defaultHttpsPort = 8181;
     private BootCommands preBootCommands;
     private BootCommands postBootCommands;
+    private BootCommands postDeployCommands;
     private String userLogFile = "payara-server%u.log";
     private String userAccessLogDirectory = "";
     private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
@@ -157,6 +158,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String instanceGroup;
     private String preBootFileName;
     private String postBootFileName;
+    private String postDeployFileName;
     private RuntimeDirectory runtimeDir = null;
 
     /**
@@ -981,6 +983,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             deployAll();
 
             postBootActions();
+            postDeployCommands.executeCommands(gf.getCommandRunner());
 
             long end = System.currentTimeMillis();
             dumpFinalStatus(end - start);
@@ -1025,6 +1028,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         repositoryURLs = new LinkedList<>();
         preBootCommands = new BootCommands();
         postBootCommands = new BootCommands();
+        postDeployCommands = new BootCommands();
         try {
             repositoryURLs.add(new URL(defaultMavenRepository));
         } catch (MalformedURLException ex) {
@@ -1264,6 +1268,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case prebootcommandfile:
                         preBootFileName = value;
                         break;
+                    case postdeploycommandfile:
+                        postDeployFileName = value;
+                        break;
                     default:
                         break;
                 }
@@ -1297,9 +1304,53 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void deployAll() throws GlassFishException {
-        // Deploy explicit wars first.
+      
+        // Deploy from within the jar first.
         int deploymentCount = 0;
-        Deployer deployer = gf.getDeployer();
+        Deployer deployer = gf.getDeployer();                
+        // search MICRO-INF/deploy for deployments
+        // if there is a deployment called ROOT deploy to the root context /
+        URL url = this.getClass().getClassLoader().getResource("MICRO-INF/deploy");
+        if (url != null) {
+            String entryName = "";
+            try {
+                List<String> entriesToDeploy = new LinkedList<>();
+                JarURLConnection urlcon = (JarURLConnection) url.openConnection();
+                JarFile jFile = urlcon.getJarFile();
+                Enumeration<JarEntry> entries = jFile.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    entryName = entry.getName();
+                    if (!entry.isDirectory() && !entryName.endsWith(".properties") && !entryName.endsWith(".xml") && !entryName.endsWith(".gitkeep") && entryName.startsWith("MICRO-INF/deploy")) {
+                        entriesToDeploy.add(entryName);
+                    }
+                }
+
+                for (String entry : entriesToDeploy) {
+                    File file = new File(entry);
+                    String contextRoot = file.getName();
+                    String name = contextRoot.substring(0, contextRoot.length() - 4);
+                    if (contextRoot.endsWith(".ear") || contextRoot.endsWith(".war") || contextRoot.endsWith(".jar") || contextRoot.endsWith(".rar")) {
+                        contextRoot = name;
+                    }
+
+                    if (contextRoot.equals("ROOT")) {
+                        contextRoot = "/";
+                    }
+
+                    deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
+                            "true", "--contextroot",
+                            contextRoot, "--name", name, "--force","true");
+                    deploymentCount++;
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, "Could not deploy jar entry {0}",
+                        entryName);
+            }
+        } else {
+            LOGGER.info("No META-INF/deploy directory");
+        }
+
         if (deployments != null) {
             for (File war : deployments) {
                 if (war.exists() && war.canRead()) {
@@ -1355,48 +1406,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
         }
 
-        // search MICRO-INF/deploy for deployments
-        // if there is a deployment called ROOT deploy to the root context /
-        URL url = this.getClass().getClassLoader().getResource("MICRO-INF/deploy");
-        if (url != null) {
-            String entryName = "";
-            try {
-                HashSet<String> entriesToDeploy = new HashSet<>();
-                JarURLConnection urlcon = (JarURLConnection) url.openConnection();
-                JarFile jFile = urlcon.getJarFile();
-                Enumeration<JarEntry> entries = jFile.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    entryName = entry.getName();
-                    if (!entry.isDirectory() && !entryName.endsWith(".properties") && !entryName.endsWith(".xml") && !entryName.endsWith(".gitkeep") && entryName.startsWith("MICRO-INF/deploy")) {
-                        entriesToDeploy.add(entryName);
-                    }
-                }
-
-                for (String entry : entriesToDeploy) {
-                    File file = new File(entry);
-                    String contextRoot = file.getName();
-                    if (contextRoot.endsWith(".ear") || contextRoot.endsWith(".war") || contextRoot.endsWith(".jar") || contextRoot.endsWith(".rar")) {
-                        contextRoot = contextRoot.substring(0, contextRoot.length() - 4);
-                    }
-
-                    if (contextRoot.equals("ROOT")) {
-                        contextRoot = "/";
-                    }
-
-                    deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
-                            "true", "--contextroot",
-                            contextRoot, "--name", file.getName(), "--force","true");
-                    deploymentCount++;
-                }
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "Could not deploy jar entry {0}",
-                        entryName);
-            }
-        } else {
-            LOGGER.info("No META-INF/deploy directory");
-        }
-
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
 
@@ -1407,10 +1416,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             public void run() {
                 try {
                     if (gf != null) {
-                        gf.stop();
                         gf.dispose();
                     }
                 } catch (GlassFishException ex) {
+                } catch (IllegalStateException ex) {
+                    // Just log at a fine level and move on
+                    LOGGER.log(Level.FINE, "Already shut down");
                 }
             }
         });
@@ -1518,6 +1529,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (postBootFileName != null) {
             postBootCommands.parseCommandScript(new File(postBootFileName));
+        }
+        
+        scriptURL = Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/post-deploy-commands.txt");
+        if (scriptURL != null) {
+            postDeployCommands.parseCommandScript(scriptURL);
+        }
+
+        if (postDeployFileName != null) {
+            postDeployCommands.parseCommandScript(new File(postDeployFileName));
         }
     }
 
@@ -1927,6 +1947,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (preBootFileName != null) {
             creator.setPreBootCommands(new File(preBootFileName));
+        }
+        
+        if (postDeployFileName != null) {
+            creator.setPostDeployCommands(new File(postDeployFileName));
         }
 
         if (logPropertiesFile) {
