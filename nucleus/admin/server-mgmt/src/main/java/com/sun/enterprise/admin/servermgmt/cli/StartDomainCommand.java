@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2017] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -90,7 +91,11 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     private boolean dry_run;
     @Param(name = "drop-interrupted-commands", optional = true, defaultValue = "false")
     private boolean drop_interrupted_commands;
-
+    @Param(name = "prebootcommandfile", optional = true)
+    private String preBootCommand;
+    @Param(name = "postbootcommandfile", optional = true)
+    private String postBootCommand;
+    
     @Inject
     ServerEnvironment senv;
     
@@ -114,6 +119,20 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     protected void validate()
             throws CommandException, CommandValidationException {
         setDomainName(domainName0);
+        
+        if (preBootCommand != null){
+            File prebootfile = new File(preBootCommand);
+            if (!prebootfile.exists()){
+                throw new CommandValidationException("preboot commands file does not exist: " + prebootfile.getAbsolutePath());
+            }
+        }
+        
+        if (postBootCommand != null){
+            File postbootFile = new File(postBootCommand);
+            if (!postbootFile.exists()){
+                throw new CommandValidationException("postboot commands file does not exist: "+ postbootFile.getAbsolutePath());
+            }
+        }
         super.validate();
     }
 
@@ -132,9 +151,10 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                     mpv,
                     debug);
 
-            if (helper.prepareForLaunch() == false)
+            if (helper.prepareForLaunch() == false){
                 return ERROR;
-
+            }
+            
             if (!upgrade && launcher.needsManualUpgrade()) {
                 logger.info(strings.get("manualUpgradeNeeded"));
                 return ERROR;
@@ -220,7 +240,8 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         info.setUpgrade(upgrade);
         info.setWatchdog(watchdog);
         info.setDropInterruptedCommands(drop_interrupted_commands);
-
+        info.setPrebootCommandsFile(preBootCommand);
+        info.setpostbootCommandsFile(postBootCommand);
         info.setRespawnInfo(programOpts.getClassName(),
                 programOpts.getClassPath(),
                 respawnArgs());
