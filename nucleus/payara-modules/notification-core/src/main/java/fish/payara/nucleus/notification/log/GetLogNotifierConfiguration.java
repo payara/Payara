@@ -70,9 +70,10 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
     protected String listConfiguration(LogNotifierConfiguration configuration) {
         String headers[] = {"Enabled"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[1];
+        Object values[] = new Object[2];
 
         values[0] = configuration.getEnabled();
+        values[1] = configuration.getUseSeparateLogFile();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -80,10 +81,11 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(1);
+        Map<String, Object> map = new HashMap<>(2);
         
         map.put("enabled", configuration.getEnabled());
-        
+        map.put("useSeparateLogFile", configuration.getUseSeparateLogFile());
+
         return map;
     }
 }

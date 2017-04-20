@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,27 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.log;
+package fish.payara.enterprise.server.logging;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import com.sun.enterprise.server.logging.GFFileHandler;
 
-import java.beans.PropertyVetoException;
+import java.io.File;
 
 /**
- * Configuration class with the aim to configure log notification specific parameters.
- * This configuration is only being used by notification services.
+ * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}
+ * The lifecycle of the bean is not managed by HK2 in order to prevent notification.log file creation upon domain start.
  *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.LOG)
-public interface LogNotifierConfiguration extends NotifierConfiguration {
+public class PayaraNotificationFileHandler extends GFFileHandler {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getUseSeparateLogFile();
-    void useSeparateLogFile(Boolean useSeperateLogFile) throws PropertyVetoException;
+    private static final String NOTIFICATION_FILENAME = "notification.log";
+
+    @Override
+    protected String evaluateFileName() {
+        return env.getInstanceRoot().getAbsolutePath()
+                + File.separator + LOGS_DIR + File.separator + NOTIFICATION_FILENAME;
+    }
 }
