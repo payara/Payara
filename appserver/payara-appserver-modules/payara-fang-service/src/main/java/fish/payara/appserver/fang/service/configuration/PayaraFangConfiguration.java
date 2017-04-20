@@ -22,7 +22,7 @@ public interface PayaraFangConfiguration extends ConfigBeanProxy, ConfigExtensio
      * Checks if Payara Fang is enabled or not
      * @return true if enabled
      */
-    @Attribute(defaultValue="false")
+    @Attribute(defaultValue="false", dataType = Boolean.class)
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 

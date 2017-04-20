@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -33,12 +34,11 @@ public class PayaraFangLoader extends Thread {
     private final ServerEnvironmentImpl serverEnv;
     private final String contextRoot;
     private String applicationName;
-    private boolean applicationNameChanged = false;
     private final PayaraFangAdapter payaraFangAdapter;
     private final ServiceLocator habitat;
-    private final Logger logger = Logger.getLogger(PayaraFangLoader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PayaraFangLoader.class.getName());
     private final List<String> vss;
-
+    
     PayaraFangLoader(PayaraFangAdapter payaraFangAdapter, ServiceLocator habitat, Domain domain, 
             ServerEnvironmentImpl serverEnv, String contextRoot, String applicationName, List<String> vss) {
         this.payaraFangAdapter = payaraFangAdapter;
@@ -53,20 +53,22 @@ public class PayaraFangLoader extends Thread {
     @Override
     public void run() {
         try {
-            // Check if the application already exists, creating the system-app entry if it isn't
+            // Check if the application already exists
             if (payaraFangAdapter.appExistsInConfig()) {
                 // Check if the app is actually registered to this instance
                 if (!payaraFangAdapter.isAppRegistered()) {
+                    // We hit here if the app exists, but hasn't been registered to this instance yet
                     registerApplication();
                 }
             } else {
+                // If the app simply doesn't exist, create one and register it for this instance
                 createAndRegisterApplication();
             }
             
             loadApplication();
         } catch (Exception ex) {
             payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_REGISTERED);
-            logger.log(Level.WARNING, "Problem while attempting to register Payara Fang!", ex);
+            LOGGER.log(Level.WARNING, "Problem while attempting to register Payara Fang!", ex);
         }
     }
    
@@ -77,8 +79,8 @@ public class PayaraFangLoader extends Thread {
     private void createAndRegisterApplication() throws Exception {
         // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.REGISTERING);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Registering the Payara Fang Application...");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Registering the Payara Fang Application...");
         }
 
         // Create the system application entry and application-ref in the config
@@ -101,7 +103,7 @@ public class PayaraFangLoader extends Thread {
                 
                 try {
                     application.setLocation("${com.sun.aas.installRootURI}/lib/install/applications/" 
-                            + PayaraFangStartupService.DEFAULT_FANG_APP_NAME);
+                            + PayaraFangService.DEFAULT_FANG_APP_NAME);
                 } catch (Exception me) {
                     throw new RuntimeException(me);
                 }
@@ -138,16 +140,16 @@ public class PayaraFangLoader extends Thread {
 
         // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Payara Fang Registered.");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Payara Fang Registered.");
         }
     }
     
     private void registerApplication() throws Exception {
         // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.REGISTERING);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Registering the Payara Fang Application...");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Registering the Payara Fang Application...");
         }
 
         // Create the application-ref entry in the domain.xml
@@ -185,8 +187,8 @@ public class PayaraFangLoader extends Thread {
 
         // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Payara Fang Registered.");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Payara Fang Registered.");
         }
     }
 
@@ -236,9 +238,8 @@ public class PayaraFangLoader extends Thread {
     private void checkAndResolveApplicationName(SystemApplications systemApplications) {
         // Check if the application name is not empty
         if (applicationName == null || applicationName.equals("")) {
-            logger.log(Level.INFO, "No or incorrect application name detected for Payara Fang: reverting to default");
-            applicationName = PayaraFangStartupService.DEFAULT_FANG_APP_NAME;
-            applicationNameChanged = true;
+            LOGGER.log(Level.INFO, "No or incorrect application name detected for Payara Fang: reverting to default");
+            applicationName = PayaraFangService.DEFAULT_FANG_APP_NAME;
         }
         
         // Loop through the system applications
@@ -252,7 +253,6 @@ public class PayaraFangLoader extends Thread {
                 // If the name isn't valid, append a number to it and try again
                 applicationName = applicationName + "-" + applicationNameSuffix;
                 applicationNameSuffix++;
-                applicationNameChanged = true;
             }
         }
         
