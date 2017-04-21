@@ -85,22 +85,26 @@ public class PayaraFangService implements ConfigListener {
         boolean attemptStart = false;
         
         for (PropertyChangeEvent propertyChangeEvent : propertyChangeEvents) {
-            // Check if the property change event is for us.
+            // Check that the property change event is for us.
             if (propertyChangeEvent.getSource().toString().equals("GlassFishConfigBean." 
                     + PayaraFangConfiguration.class.getName()) && isCurrentInstanceMatchTarget(propertyChangeEvent)) {
                 // Check if the property has actually changed
                 if (!propertyChangeEvent.getOldValue().equals(propertyChangeEvent.getNewValue())) {
                     // If the application hasn't attempted to start yet
-                    if (propertyChangeEvent.getPropertyName().equals("enabled") && !startAttempted) {
-                        // Set a flag to attempt a load of the application
-                        attemptStart = true;
-                    } else if (propertyChangeEvent.getPropertyName().equals("context-root") && !startAttempted) {
-                        // If we haven't attempted to start yet, grab the new context root
-                        Config serverConfig = domain.getServerNamed(serverEnv.getInstanceName()).getConfig();
-                        PayaraFangEndpointDecider endpointDecider = new PayaraFangEndpointDecider(serverConfig, 
-                                payaraFangConfiguration);
-                        contextRoot = endpointDecider.getContextRoot();
+                    if (!startAttempted) {
+                        // We can only get here if enabled was false at server start, so it's safe to assume that enabled
+                        // is being set to true
+                        if (propertyChangeEvent.getPropertyName().equals("enabled")) {
+                            attemptStart = true;
+                        } else if (propertyChangeEvent.getPropertyName().equals("context-root")) {
+                            // If we haven't attempted to start the app yet, grab the new context root
+                            Config serverConfig = domain.getServerNamed(serverEnv.getInstanceName()).getConfig();
+                            PayaraFangEndpointDecider endpointDecider = new PayaraFangEndpointDecider(serverConfig, 
+                                    payaraFangConfiguration);
+                            contextRoot = endpointDecider.getContextRoot();
+                        }
                     } else {
+                        // If a startup has been attempted, just throw an unprocessed change event
                         unprocessedChanges.add(new UnprocessedChangeEvent(propertyChangeEvent, 
                                 "Payara Fang redeploy required"));
                     }
@@ -108,6 +112,7 @@ public class PayaraFangService implements ConfigListener {
             }
         }
         
+        // This should only be true if Payara Fang was not enabled at startup, and we've just enabled the service
         if (attemptStart) {
             loadApplication();
         }
