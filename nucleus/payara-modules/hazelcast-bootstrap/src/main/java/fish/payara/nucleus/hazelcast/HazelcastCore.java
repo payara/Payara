@@ -222,6 +222,14 @@ public class HazelcastCore implements EventListener {
                 if(ctxUtil == null) {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Application Object Serialization Not Available");
                 }
+                SerializationConfig serConfig = config.getSerializationConfig();
+                if (serConfig == null || serConfig.getGlobalSerializerConfig() == null) {
+                    SerializationConfig serializationConfig = new SerializationConfig()
+                            .setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(
+                                    new PayaraHazelcastSerializer(ctxUtil, null))
+                                    .setOverrideJavaSerialization(true));
+                    config.setSerializationConfig(serializationConfig);
+                }
                 Serializer ser = config.getSerializationConfig().getGlobalSerializerConfig().getImplementation();
                 if(ctxUtil != null && ser instanceof StreamSerializer) {
                     config.getSerializationConfig().getGlobalSerializerConfig().setImplementation(
