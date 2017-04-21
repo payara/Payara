@@ -1,8 +1,43 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
+
 package fish.payara.appserver.fang.service.adapter;
 
 import com.sun.appserv.server.util.Version;
@@ -109,6 +144,10 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         return (getSystemApplicationConfig() != null);
     }
     
+    public boolean appExistsInConfig(String contextRoot) {
+        return (getSystemApplicationConfig(contextRoot) != null);
+    }
+    
     public Application getSystemApplicationConfig() {
         // First, check if there is an app registered for this server with the given application name
         Application application = domain.getSystemApplicationReferencedFrom(env.getInstanceName(), 
@@ -123,9 +162,30 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         return application;
     }
     
+    public Application getSystemApplicationConfig(String contextRoot) {      
+        // check for an app with a matching context root
+        Application application = getApplicationWithMatchingContextRoot(contextRoot);
+        
+        return application;
+    }
+    
     private Application getApplicationWithMatchingContextRoot() {
         Application application = null;
         String contextRoot = getContextRoot();
+
+        SystemApplications systemApplications = domain.getSystemApplications();
+        for (Application systemApplication : systemApplications.getApplications()) {
+            if (systemApplication.getContextRoot().equals(contextRoot)) {
+                application = systemApplication;
+                break;
+            }
+        }
+        
+        return application;
+    }
+    
+    private Application getApplicationWithMatchingContextRoot(String contextRoot) {
+        Application application = null;
 
         SystemApplications systemApplications = domain.getSystemApplications();
         for (Application systemApplication : systemApplications.getApplications()) {
@@ -363,5 +423,18 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
     
     public void setAppRegistered(boolean appRegistered) {
         this.appRegistered = true;
+    }
+    
+    public boolean isAppRegistered(String contextRoot) {
+        boolean registered = false;
+        Application application = getSystemApplicationConfig(contextRoot);
+        
+        // Check if we've found an application with a matching context root, and that it's registered to this instance
+        if (application != null && (domain.getSystemApplicationReferencedFrom(env.getInstanceName(), 
+                application.getName()) != null)) {
+            registered = true;
+        }
+        
+        return registered;
     }
 }
