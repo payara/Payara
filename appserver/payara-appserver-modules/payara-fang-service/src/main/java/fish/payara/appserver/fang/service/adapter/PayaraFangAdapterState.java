@@ -11,6 +11,7 @@ public enum PayaraFangAdapterState {
     UNINITIALISED("state.uninitialised", "Payara Fang has not been initialised yet"),
     REGISTERING("state.registering", "Payara Fang is being registered as a system application"),
     NOT_REGISTERED("state.notRegistered", "Payara Fang is not registered in the config"),
+    RECONFIGURING("state.reconfiguring", "Payara Fang system-application entry is being reconfigured"),
     WELCOME_TO("status.welcometo", "Welcome to ");
     
     private final String desc;

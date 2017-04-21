@@ -59,16 +59,21 @@ public class PayaraFangLoader extends Thread {
                 if (!payaraFangAdapter.isAppRegistered()) {
                     // We hit here if the app exists, but hasn't been registered to this instance yet
                     registerApplication();
+                } else if (!contextRoot.equals(payaraFangAdapter.getSystemApplicationConfig().getContextRoot())) {
+                    // We hit here if there is a system application already created and registered to this instance, but
+                    // we've changed the context root and so need to reconfigure the system app
+                    reconfigureSystemApplication();
                 }
             } else {
                 // If the app simply doesn't exist, create one and register it for this instance
+                // We should only be able to reach here if we're the DAS
                 createAndRegisterApplication();
             }
             
             loadApplication();
         } catch (Exception ex) {
             payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_REGISTERED);
-            LOGGER.log(Level.WARNING, "Problem while attempting to register Payara Fang!", ex);
+            LOGGER.log(Level.WARNING, "Problem while attempting to register or load Payara Fang!", ex);
         }
     }
    
@@ -79,9 +84,7 @@ public class PayaraFangLoader extends Thread {
     private void createAndRegisterApplication() throws Exception {
         // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.REGISTERING);
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Registering the Payara Fang Application...");
-        }
+        LOGGER.log(Level.FINE, "Registering the Payara Fang Application...");
 
         // Create the system application entry and application-ref in the config
         ConfigCode code = new ConfigCode() {
@@ -140,17 +143,13 @@ public class PayaraFangLoader extends Thread {
 
         // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Payara Fang Registered.");
-        }
+        LOGGER.log(Level.FINE, "Payara Fang Registered.");
     }
     
     private void registerApplication() throws Exception {
         // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.REGISTERING);
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Registering the Payara Fang Application...");
-        }
+        LOGGER.log(Level.FINE, "Registering the Payara Fang Application...");
 
         // Create the application-ref entry in the domain.xml
         ConfigCode code = new ConfigCode() {
@@ -187,9 +186,7 @@ public class PayaraFangLoader extends Thread {
 
         // Update the adapter state
         payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Payara Fang Registered.");
-        }
+        LOGGER.log(Level.FINE, "Payara Fang Registered.");
     }
 
     private String getVirtualServerListAsString() {
@@ -271,5 +268,30 @@ public class PayaraFangLoader extends Thread {
         }
         
         return validApplicationNameFound;
-    } 
+    }
+    
+    private void reconfigureSystemApplication() throws Exception {
+        Application systemApplication = payaraFangAdapter.getSystemApplicationConfig();
+        
+        // Update the adapter state
+        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.RECONFIGURING);
+        LOGGER.log(Level.FINE, "Reconfiguring the Payara Fang Application...");        
+
+        // Reconfigure the system-application entry in the domain.xml
+        ConfigCode code = new ConfigCode() {
+            @Override
+            public Object run(ConfigBeanProxy... proxies) throws PropertyVetoException, TransactionFailure {
+                Application systemApplication = (Application) proxies[0];
+                systemApplication.setContextRoot(contextRoot);
+                
+                return true;
+            }
+        };
+        
+        ConfigSupport.apply(code, systemApplication);
+
+        // Update the adapter state
+        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
+        LOGGER.log(Level.FINE, "Payara Fang Reconfigured.");
+    }
 }

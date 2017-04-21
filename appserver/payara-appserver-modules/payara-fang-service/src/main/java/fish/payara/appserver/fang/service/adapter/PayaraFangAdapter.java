@@ -138,7 +138,7 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         return application;
     }
     
-    private PayaraFangAdapterState getStateMsg() {
+    public PayaraFangAdapterState getStateMsg() {
         return stateMsg;
     }
     

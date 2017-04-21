@@ -5,11 +5,11 @@
  */
 package fish.payara.appserver.fang.service;
 
-import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.SystemApplications;
 import fish.payara.appserver.fang.service.adapter.PayaraFangAdapter;
+import fish.payara.appserver.fang.service.adapter.PayaraFangAdapterState;
+import fish.payara.appserver.fang.service.adapter.PayaraFangEndpointDecider;
 import fish.payara.appserver.fang.service.configuration.PayaraFangConfiguration;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -18,10 +18,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.config.ApplicationName;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.PostStartupRunLevel;
@@ -42,12 +38,13 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 public class PayaraFangService implements ConfigListener {
     
     public static final String DEFAULT_FANG_APP_NAME = "__fang";
-    private boolean bootstrapped = false;
+    private boolean startAttempted = false;
+    private String contextRoot;
     
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional
-    private PayaraFangConfiguration configuration;
+    private PayaraFangConfiguration payaraFangConfiguration;
     
     @Inject
     private PayaraFangAdapter payaraFangAdapter;
@@ -63,17 +60,19 @@ public class PayaraFangService implements ConfigListener {
     
     @PostConstruct
     private void postConstruct() {
-        configuration = habitat.getService(PayaraFangConfiguration.class);
+        contextRoot = payaraFangAdapter.getContextRoot();
+        payaraFangConfiguration = habitat.getService(PayaraFangConfiguration.class);
         
-        if (configuration.getEnabled().equals("true")) {
+        if (payaraFangConfiguration.getEnabled().equals("true")) {
             loadApplication();
         }
     }
     
     private void loadApplication() {
+        startAttempted = true;
         try {
             new PayaraFangLoader(payaraFangAdapter, habitat, domain, serverEnv, 
-                    payaraFangAdapter.getContextRoot(), configuration.getApplicationName(), 
+                    contextRoot, payaraFangConfiguration.getApplicationName(), 
                     payaraFangAdapter.getVirtualServers()).start();
         } catch (Exception ex) {
             throw new RuntimeException("Unable to load Payara Fang!", ex);
@@ -83,6 +82,7 @@ public class PayaraFangService implements ConfigListener {
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
+        boolean attemptStart = false;
         
         for (PropertyChangeEvent propertyChangeEvent : propertyChangeEvents) {
             // Check if the property change event is for us.
@@ -90,14 +90,26 @@ public class PayaraFangService implements ConfigListener {
                     + PayaraFangConfiguration.class.getName()) && isCurrentInstanceMatchTarget(propertyChangeEvent)) {
                 // Check if the property has actually changed
                 if (!propertyChangeEvent.getOldValue().equals(propertyChangeEvent.getNewValue())) {
-                    if (propertyChangeEvent.getPropertyName().equals("enabled") && !bootstrapped) {
-                        loadApplication();
+                    // If the application hasn't attempted to start yet
+                    if (propertyChangeEvent.getPropertyName().equals("enabled") && !startAttempted) {
+                        // Set a flag to attempt a load of the application
+                        attemptStart = true;
+                    } else if (propertyChangeEvent.getPropertyName().equals("context-root") && !startAttempted) {
+                        // If we haven't attempted to start yet, grab the new context root
+                        Config serverConfig = domain.getServerNamed(serverEnv.getInstanceName()).getConfig();
+                        PayaraFangEndpointDecider endpointDecider = new PayaraFangEndpointDecider(serverConfig, 
+                                payaraFangConfiguration);
+                        contextRoot = endpointDecider.getContextRoot();
                     } else {
-                    unprocessedChanges.add(new UnprocessedChangeEvent(propertyChangeEvent, 
-                        "Payara Fang redeploy required"));
+                        unprocessedChanges.add(new UnprocessedChangeEvent(propertyChangeEvent, 
+                                "Payara Fang redeploy required"));
                     }
                 }
             }
+        }
+        
+        if (attemptStart) {
+            loadApplication();
         }
         
         if (unprocessedChanges.isEmpty()) {
