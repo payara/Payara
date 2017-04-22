@@ -85,9 +85,10 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         ClassLoader oldClassLoader = Utility.getClassLoader();
         InvocationManager invMgr = serverContext.getInvocationManager();
         boolean invocationCreated = false;
-        if(invMgr.getCurrentInvocation() == null) {
-            invMgr.preInvoke(new ComponentInvocation(capturedInvocation.getComponentId(), ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
-                    capturedInvocation.getContainer(), capturedInvocation.getAppName(), capturedInvocation.getModuleName()));
+        if(invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
+            ComponentInvocation newInvocation = capturedInvocation.clone();
+            newInvocation.clearRegistry();
+            invMgr.preInvoke(newInvocation);
             invocationCreated = true;
         }
         JndiNameEnvironment componentEnv = compEnvMgr.getCurrentJndiNameEnvironment();

@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast.contextproxy;
 
+import java.io.IOException;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
 import org.glassfish.internal.api.JavaEEContextUtil.RequestContext;
@@ -53,6 +54,7 @@ import javax.cache.integration.CacheLoaderException;
 import javax.cache.integration.CacheWriter;
 import javax.cache.integration.CacheWriterException;
 import lombok.RequiredArgsConstructor;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Proxy all applicable factory calls
@@ -65,6 +67,11 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         super(config);
         this.ctxUtil = ctxUtil;
         init();
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     }
 
     private void init() {
@@ -200,6 +207,6 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         };
     }
 
-    private final JavaEEContextUtil ctxUtil;
+    private transient /* final */ JavaEEContextUtil ctxUtil;
     private static final long serialVersionUID = 1L;
 }
