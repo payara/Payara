@@ -88,6 +88,12 @@ public interface JavaEEContextUtil {
      */
     void setApplicationContext(String appName);
 
+    /**
+     * @return Class Loader that's associated with current invocation
+     *         or null if there is no current invocation
+     */
+    ClassLoader getInvocationClassLoader();
+
     interface Context {};
     interface RequestContext {};
 }

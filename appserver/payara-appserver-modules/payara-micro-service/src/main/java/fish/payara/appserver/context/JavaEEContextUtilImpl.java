@@ -91,10 +91,8 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             invMgr.preInvoke(newInvocation);
             invocationCreated = true;
         }
-        JndiNameEnvironment componentEnv = compEnvMgr.getCurrentJndiNameEnvironment();
-        if(invocationCreated && componentEnv instanceof BundleDescriptor) {
-            BundleDescriptor bd = (BundleDescriptor)componentEnv;
-            Utility.setContextClassLoader(bd.getClassLoader());
+        if(invocationCreated) {
+            Utility.setContextClassLoader(getInvocationClassLoader());
         }
         return new ContextImpl.Context(oldClassLoader, invocationCreated? invMgr.getCurrentInvocation() : null);
     }
@@ -179,6 +177,16 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         if(appInfo != null) {
             Utility.setContextClassLoader(appInfo.getAppClassLoader());
         }
+    }
+
+    @Override
+    public ClassLoader getInvocationClassLoader() {
+        JndiNameEnvironment componentEnv = compEnvMgr.getCurrentJndiNameEnvironment();
+        if(componentEnv instanceof BundleDescriptor) {
+            BundleDescriptor bd = (BundleDescriptor)componentEnv;
+            return bd.getClassLoader();
+        }
+        return null;
     }
 
     private static String stripVersionSuffix(String name) {
