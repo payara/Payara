@@ -81,7 +81,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
      * @return old ClassLoader, or null if no invocation has been created
      */
     @Override
-    public Context preInvoke() {
+    public Context pushContext() {
         ClassLoader oldClassLoader = Utility.getClassLoader();
         InvocationManager invMgr = serverContext.getInvocationManager();
         boolean invocationCreated = false;
@@ -100,7 +100,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     }
 
     @Override
-    public void postInvoke(Context _ctx) {
+    public void popContext(Context _ctx) {
         ContextImpl.Context ctx = (ContextImpl.Context)_ctx;
         if (ctx.invocation != null) {
             getServerContext().getInvocationManager().postInvoke(ctx.invocation);
@@ -115,8 +115,8 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
      * @return new context that was created
      */
     @Override
-    public RequestContext preInvokeRequestContext() {
-        Context rootCtx = preInvoke();
+    public RequestContext pushRequestContext() {
+        Context rootCtx = pushContext();
         BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
         ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<String, Object>());
         if(context.ctx != null) {
@@ -132,13 +132,13 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
      * @param context to be popped
      */
     @Override
-    public void postInvokeRequestContext(RequestContext context) {
+    public void popRequestContext(RequestContext context) {
         ContextImpl.RequestContext ctx = (ContextImpl.RequestContext)context;
         if (ctx.ctx!= null) {
             ctx.ctx.deactivate();
             ctx.ctx.dissociate(ctx.storage);
         }
-        postInvoke(ctx.rootCtx);
+        popContext(ctx.rootCtx);
     }
 
     /**
