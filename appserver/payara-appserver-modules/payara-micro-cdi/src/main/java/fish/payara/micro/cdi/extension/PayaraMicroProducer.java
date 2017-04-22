@@ -40,6 +40,8 @@
 package fish.payara.micro.cdi.extension;
 
 import fish.payara.micro.PayaraInstance;
+import fish.payara.micro.PayaraMicro;
+import fish.payara.micro.PayaraMicroRuntime;
 import javax.enterprise.inject.Produces;
 import org.glassfish.internal.api.Globals;
 
@@ -49,14 +51,19 @@ import org.glassfish.internal.api.Globals;
  */
 public class PayaraMicroProducer {
     
-    private final PayaraInstance runtime;
+    private final PayaraInstance instance;
     
     PayaraMicroProducer() {
-        runtime = Globals.getDefaultHabitat().getService(PayaraInstance.class);
+        instance = Globals.getDefaultHabitat().getService(PayaraInstance.class);
     }
     
     @Produces
-    PayaraInstance getRuntime() {
-        return runtime;
+    public PayaraInstance getInstance() {
+        return instance;
+    }
+    
+    @Produces
+    public PayaraMicroRuntime getRuntime() {
+        return PayaraMicro.getInstance().getRuntime();
     }
 }
