@@ -61,11 +61,11 @@
             gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-components" , attrs="#{requestScope.attrsMap}" method="GET"  result="#{requestScope.result}");
             gf.getDeployedAppsInfo(appPropsMap="#{requestScope.result.data.properties}" filterValue="#{pageSession.filterValue}", filters=>$attribute{filters} result=>$attribute{listOfRows} );
             setPageSessionAttribute(key="tableTitle" value="$resource{i18n.deployTable.applications}");
-            setPageSessionAttribute(key="editLink" value="common/applications/applicationEdit.jsf");
-            setPageSessionAttribute(key="listPageLink" value="common/applications/applications.jsf");
-            setPageSessionAttribute(key="targetLink" value="common/applications/targetListing.jsf");
+            setPageSessionAttribute(key="editLink" value="/common/applications/applicationEdit.jsf");
+            setPageSessionAttribute(key="listPageLink" value="/common/applications/applications.jsf");
+            setPageSessionAttribute(key="targetLink" value="/common/applications/targetListing.jsf");
 
-            setPageSessionAttribute(key="nextPageLink" value="common/applications/upload.jsf?cancelPage=#{pageSession.listPageLink}&listPageLink=#{pageSession.listPageLink}");
+            setPageSessionAttribute(key="nextPageLink" value="/common/applications/upload.jsf?cancelPage=#{pageSession.listPageLink}&listPageLink=#{pageSession.listPageLink}");
             setPageSessionAttribute(key="isLifecycle" value="#{false}");
             setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18n.msg.JS.confirmUndeploy}");
 

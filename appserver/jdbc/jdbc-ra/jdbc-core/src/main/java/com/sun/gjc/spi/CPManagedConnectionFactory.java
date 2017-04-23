@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] 
 package com.sun.gjc.spi;
 
 import com.sun.enterprise.util.i18n.StringManager;
@@ -129,7 +129,8 @@ public class CPManagedConnectionFactory extends ManagedConnectionFactoryImpl {
             * get a connection from this pool directly.
             * for all other conditions go create a new connection
             */
-            if (isEqual(pc, getUser(), getPassword())) {
+            String user = getUser();
+            if (user == null || isEqual(pc, user, getPassword())) {
                 cpConn = dataSource.getPooledConnection();
             } else {
                 cpConn = dataSource.getPooledConnection(pc.getUserName(),
