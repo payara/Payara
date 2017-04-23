@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -162,6 +163,29 @@
         <dependency>
             <groupId>javax.enterprise.deploy</groupId>
             <artifactId>javax.enterprise.deploy-api</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>fish.payara.admingui</groupId>
+	   <artifactId>console-concurrent-plugin</artifactId>
+           <version>${project.version}</version>
+       </dependency> 
+       <dependency>
+           <groupId>org.glassfish.main.concurrent</groupId>
+           <artifactId>concurrent-connector</artifactId>
+           <version>${project.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.glassfish.main.concurrent</groupId>
+	   <artifactId>concurrent-impl</artifactId>
+           <version>${project.version}</version>
+       </dependency> 
+       <dependency>
+            <groupId>javax.enterprise.concurrent</groupId>
+            <artifactId>javax.enterprise.concurrent-api</artifactId>
+        </dependency>
+       <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.enterprise.concurrent</artifactId>
         </dependency>
     </dependencies>
 </project>
