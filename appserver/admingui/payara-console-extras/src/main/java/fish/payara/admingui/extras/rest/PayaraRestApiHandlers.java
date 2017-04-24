@@ -20,12 +20,14 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
+import org.jboss.logging.Logger;
 
 /**
  * A class containing Payara specific handler methods for the REST API
@@ -172,5 +174,62 @@ public class PayaraRestApiHandlers
     @Handler(id="py.prepareSuccessfulCommandMsg")
     public static void prepareSuccessfulCommandMsg(HandlerContext handlerCtx){
         GuiUtil.prepareAlert("success", "Command sent successfully", null);
+    }
+    
+    @Handler(id="py.sortEnabledNotifierStatus",
+    	input={
+            @HandlerInput(name="requestTracingNotifiers", type=String.class, required=true),
+            @HandlerInput(name="avaliableNotifiers", type=List.class, required=true )},
+        output={
+            @HandlerOutput(name="enabled", type=List.class),
+            @HandlerOutput(name="disabled", type=List.class)})
+    public static void sortEnabledNotifierStatus(HandlerContext handlerctx){
+        List<String> enabled = new ArrayList<String>();
+        List<String> disabled = new ArrayList<String>();
+        
+        List<String> avaliable = (List) handlerctx.getInputValue("avaliableNotifiers");
+        Logger logger = Logger.getLogger(PayaraRestApiHandlers.class);
+        logger.log(Logger.Level.ERROR, handlerctx.getInputValue("requestTracingNotifiers"));
+        
+        String notifiersString = (String) handlerctx.getInputValue("requestTracingNotifiers");
+        notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
+        String[] notifiers = notifiersString.split("\\}\\,");
+        for (String notifier : notifiers){
+            String name = notifier.split("notifierName=", 2)[1];
+            //String name = longName.substring(1, longName.length());
+            if (notifier.contains("notifierEnabled=true")){
+                enabled.add(name);
+            } else {
+                disabled.add(name);
+            }
+            avaliable.remove(name);
+        }
+        for (String unused : avaliable){
+            disabled.add(unused);
+        }
+        
+        logger.log(Logger.Level.ERROR, enabled.toString());
+        logger.log(Logger.Level.ERROR, disabled.toString());
+        handlerctx.setOutputValue("disabled", disabled);
+        handlerctx.setOutputValue("enabled", enabled);
+        /*JsonObject notifiers = Json.createReader(new StringReader((String) handlerctx.getInputValue("requestTracingNotifiers"))).readObject();
+        for (int i = 0; i < notifiers.size(); i++){
+            
+            JsonObject service = notifiers.getJsonObject((String)notifiers.keySet().toArray()[i]);
+            //JsonObject service = notifiers.get(i).asJsonObject();
+            String name = service.getString("notifierName");
+            if (service.getBoolean("notifierEnabled")){
+                enabled.add(name);          
+            } else {
+                disabled.add(name);
+            }
+            avaliable.remove(name);
+        }
+        for (String left : avaliable){
+            disabled.add(left);
+        }*/
+
+        
+        
     }
 }
