@@ -67,27 +67,15 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             setPageSessionAttribute(key="notifierEnabledSelected", value="true")
             
         }
-        listAdd(list="#{pageSession.selectedNotifiersList}", value="Log" index="0");
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
             setPageSessionAttribute(key="historicalTraceEnabled", value="true");
         }
-        //if (not empty "#{requestScope.resp.data.subReports.get(0).extraProperties.getRequesttracingConfigurationLOG}"){
-          //  listAdd(list="#{pageSession.selectedNotifiersList}", value="Log" index="Log");
-        //}
         if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
             convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
             gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
         }
-        //if (! empty "#{pageSession.selectedNotifiersList}"){
-        //    convertListToArray(list="#{pageSession.selectedNotifiersList}" array="#{pageSession.selectedNotifiers}");
-        //}
-        //convertStringtoList(str="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" result="#{pageSession.avaliableList}");
-        //convertListToArray(list="#{pageSession.avaliableList}" array="#{pageSession.allNotifiers}");
         py.sortEnabledNotifierStatus(requestTracingNotifiers="#{requestScope.resp.data.subReports.get(0).extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
-        //gf.convertListToOptionArray(list="#{pageSession.enabledNotifiersList}", optionArray="#{pageSession.enabledNotifiers}");
         convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
-        //gf.stringArrayToSelectItemArray(stringArray="#{requestScope.enabledNotifiersArr}" item="#{pageSession.enabledNotifiers}")
-        //gf.convertListToOptionArray(list="#{pageSession.disabledNotifiersList}", optionArray="#{pageSession.disabledNotifiers}");
         convertListToArray(list="#{pageSession.disabledNotifiersList}" array="#{pageSession.disabledNotifiersArr}");
         gf.stringArrayToSelectItemArray(stringArray="#{pageSession.disabledNotifiersArr}" item="#{pageSession.disabledNotifiers}");
         setPageSessionAttribute(key="dynamic", value="true");
@@ -111,9 +99,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                             value="#{pageSession.historicalTraceEnabled}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    py.updateRequesttracingNotifiers(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
                     />
             </sun:button>
-               <h:outputText value="#{pageSession.allNotifiers}"/>
         </sun:panelGroup>
     </facet>
 </sun:title>
