@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
-import org.jboss.logging.Logger;
 
 /**
  * A class containing Payara specific handler methods for the REST API
@@ -211,8 +210,6 @@ public class PayaraRestApiHandlers
         List<String> disabled = new ArrayList<String>();
         
         List<String> avaliable = (List) handlerctx.getInputValue("avaliableNotifiers");
-        Logger logger = Logger.getLogger(PayaraRestApiHandlers.class);
-        logger.log(Logger.Level.ERROR, handlerctx.getInputValue("requestTracingNotifiers"));
         
         String notifiersString = (String) handlerctx.getInputValue("requestTracingNotifiers");
         notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
@@ -229,10 +226,7 @@ public class PayaraRestApiHandlers
         }
         for (String unused : avaliable){
             disabled.add(unused);
-        }
-        
-        logger.log(Logger.Level.ERROR, enabled.toString());
-        logger.log(Logger.Level.ERROR, disabled.toString());
+        }        
         handlerctx.setOutputValue("disabled", disabled);
         handlerctx.setOutputValue("enabled", enabled);
                 
