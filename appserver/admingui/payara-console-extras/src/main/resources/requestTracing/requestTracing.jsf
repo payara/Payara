@@ -74,10 +74,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
             gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
         }
-        py.sortEnabledNotifierStatus(requestTracingNotifiers="#{requestScope.resp.data.subReports.get(0).extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
+        py.sortRequestTracingEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.subReports.get(0).extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
         convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
-        convertListToArray(list="#{pageSession.disabledNotifiersList}" array="#{pageSession.disabledNotifiersArr}");
-        gf.stringArrayToSelectItemArray(stringArray="#{pageSession.disabledNotifiersArr}" item="#{pageSession.disabledNotifiers}");
         setPageSessionAttribute(key="dynamic", value="true");
         setPageSessionAttribute(key="notifierDynamic", value="true");
         /> 
@@ -99,7 +97,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                             value="#{pageSession.historicalTraceEnabled}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                    py.updateRequesttracingNotifiers(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+                    py.updateNotifiers(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
                     />
             </sun:button>
         </sun:panelGroup>

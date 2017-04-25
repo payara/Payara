@@ -36,7 +36,7 @@
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.healthcheckConfiguration}");
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-                
+                        
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled", "notifierEnabled"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
@@ -49,6 +49,15 @@
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
+        
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
+        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
+        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
+            convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
+            gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
+        }
+        py.sortHealthcheckEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
+        convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
     />
 </event>
 
@@ -70,6 +79,7 @@
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/healthcheck-configure" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    py.updateNotifiers(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
                     />
             </sun:button>
         </sun:panelGroup>
@@ -104,6 +114,18 @@
                       helpText="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreSizeLabelHelpText}">
             <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['historicalTraceStoreSize']}"/>
+        </sun:property>
+    </sun:propertySheetSection>
+
+    <sun:propertySheetSection id="notifiers">
+        <sun:property id="avaliableNotifiers" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
+            <sun:addRemove id="notifiersAddRemove"
+                selectAll="$boolean{true}"
+                items="#{pageSession.allNotifiers}"
+                selected="#{pageSession.enabledNotifiersArr}"
+                availableItemsLabel="$resource{i18nhx.healthcheck.configuration.availableNotifiers}"
+                selectedItemsLabel="$resource{i18nhx.healthcheck.configuration.selectedNotifiers}">
+            </sun:addRemove>
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>

@@ -198,25 +198,64 @@ public class PayaraRestApiHandlers
         GuiUtil.prepareAlert("success", "Command sent successfully", null);
     }
     
-    @Handler(id="py.sortEnabledNotifierStatus",
+    @Handler(id="py.sortRequestTracingEnabledNotifierStatus",
     	input={
-            @HandlerInput(name="requestTracingNotifiers", type=String.class, required=true),
+            @HandlerInput(name="specifiedNotifiers", type=String.class, required=true),
             @HandlerInput(name="avaliableNotifiers", type=List.class, required=true )},
         output={
             @HandlerOutput(name="enabled", type=List.class),
             @HandlerOutput(name="disabled", type=List.class)})
-    public static void sortEnabledNotifierStatus(HandlerContext handlerctx){
+    public static void sortRequestTracingEnabledNotifierStatus(HandlerContext handlerctx){
         List<String> enabled = new ArrayList<String>();
         List<String> disabled = new ArrayList<String>();
         
         List<String> avaliable = (List) handlerctx.getInputValue("avaliableNotifiers");
         
-        String notifiersString = (String) handlerctx.getInputValue("requestTracingNotifiers");
+        String notifiersString = (String) handlerctx.getInputValue("specifiedNotifiers");
         notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
         String[] notifiers = notifiersString.split("\\}\\,");
         for (String notifier : notifiers){
             String name = notifier.split("notifierName=", 2)[1];
-            //String name = longName.substring(1, longName.length());
+            if (notifier.contains("notifierEnabled=true")){
+                enabled.add(name);
+            } else {
+                disabled.add(name);
+            }
+            avaliable.remove(name);
+        }
+        for (String unused : avaliable){
+            disabled.add(unused);
+        }        
+        handlerctx.setOutputValue("disabled", disabled);
+        handlerctx.setOutputValue("enabled", enabled);
+                
+    }
+    
+        @Handler(id="py.sortHealthcheckEnabledNotifierStatus",
+    	input={
+            @HandlerInput(name="specifiedNotifiers", type=String.class, required=true),
+            @HandlerInput(name="avaliableNotifiers", type=List.class, required=true )},
+        output={
+            @HandlerOutput(name="enabled", type=List.class),
+            @HandlerOutput(name="disabled", type=List.class)})
+    public static void sortHealthcheckEnabledNotifierStatus(HandlerContext handlerctx){
+        List<String> enabled = new ArrayList<String>();
+        List<String> disabled = new ArrayList<String>();
+        
+        List<String> avaliable = (List) handlerctx.getInputValue("avaliableNotifiers");
+        
+        String notifiersString = (String) handlerctx.getInputValue("specifiedNotifiers");
+        notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
+        
+        String[] notifiers = notifiersString.split("[\\}\\]]\\,");
+        for (String notifier : notifiers){
+            //Check to see if this is actually a notifier
+            notifier = notifier.trim();
+            if (!notifier.startsWith("notifierList")){
+                continue;
+            }
+            
+            String name = "service-" + notifier.split("notifierName=", 2)[1].toLowerCase();
             if (notifier.contains("notifierEnabled=true")){
                 enabled.add(name);
             } else {
@@ -236,7 +275,7 @@ public class PayaraRestApiHandlers
      * Updates the request tracing notifiers to be enabled or disabled
      * @param handlerCtx 
      */
-    @Handler(id="py.updateRequesttracingNotifiers",
+    @Handler(id="py.updateNotifiers",
             input={
                 @HandlerInput(name="endpoint", type=String.class, required=true),
                 @HandlerInput(name="selected", type=String[].class, required=true),
@@ -245,7 +284,7 @@ public class PayaraRestApiHandlers
                 @HandlerInput(name="quiet", type=boolean.class, defaultValue="false"),
                 @HandlerInput(name="throwException", type=boolean.class, defaultValue="true")
             })
-    public static void updateRequesttracingNotifiers(HandlerContext handlerCtx){
+    public static void updateNotifiers(HandlerContext handlerCtx) {
         String[] notifiers = (String[]) handlerCtx.getInputValue("notifiers");
         String[] enabled = (String[]) handlerCtx.getInputValue("selected");
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
@@ -255,7 +294,16 @@ public class PayaraRestApiHandlers
         List<String> enabledNotifiers = Arrays.asList(enabled);
         for (String notifier : notifiers){
             String name = notifier.split("-")[1];
-            String restEndpoint = endpoint + "/requesttracing-" + name + "-notifier-configure";
+            String restEndpoint;
+            if (endpoint.contains("request-tracing-service-configuration")){
+                restEndpoint = endpoint + "/requesttracing-" + name + "-notifier-configure";
+            } else if (endpoint.contains("health-check-service-configuration")){
+                restEndpoint = endpoint + "/healthcheck-" + name + "-notifier-configure";
+            } else {
+                //Unknown service being configured
+                throw new UnknownConfigurationException();
+            }
+            
             HashMap<String, Object> attrs = new HashMap<String, Object>();
             if (enabledNotifiers.contains(notifier)){
                 attrs.put("enabled", "true");                
