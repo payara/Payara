@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,58 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension;
+package fish.payara.nucleus.exec;
 
-import fish.payara.micro.PayaraInstance;
-import fish.payara.micro.PayaraMicro;
-import fish.payara.micro.PayaraMicroRuntime;
-import javax.enterprise.inject.Produces;
-import org.glassfish.internal.api.Globals;
+import com.hazelcast.scheduledexecutor.IScheduledFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  *
- * @author steve
+ * @author Steve Millidge <Payara Services Limited>
+ * @param <V> Type of the object
  */
-public class PayaraMicroProducer {
+public class ScheduledTaskFuture<V extends Object> implements Future {
     
-    private final PayaraInstance instance;
+    private IScheduledFuture<V> wrappee;
     
-    PayaraMicroProducer() {
-        instance = Globals.getDefaultHabitat().getService(PayaraInstance.class);
+    public ScheduledTaskFuture(IScheduledFuture<V> future) {
+        wrappee = future;
     }
-    
-    @Produces
-    public PayaraInstance getInstance() {
-        return instance;
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return wrappee.cancel(mayInterruptIfRunning);
     }
-    
-    @Produces
-    public PayaraMicroRuntime getRuntime() {
-        return PayaraMicro.getInstance().getRuntime();
+
+    @Override
+    public boolean isCancelled() {
+        return wrappee.isCancelled();
     }
+
+    @Override
+    public boolean isDone() {
+        return wrappee.isDone();
+    }
+
+    @Override
+    public Object get() throws InterruptedException, ExecutionException {
+        Object result = wrappee.get();
+        // as we got the result dispose of the IScheduledFuture
+        wrappee.dispose();
+        return result;
+    }
+
+    @Override
+    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        Object result = wrappee.get();
+        // as we got the result dispose of the IScheduledFuture
+        wrappee.dispose();
+        return result;
+    }
+
+
+    
 }
