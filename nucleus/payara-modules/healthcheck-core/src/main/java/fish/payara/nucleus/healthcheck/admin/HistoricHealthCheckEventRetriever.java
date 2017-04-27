@@ -100,6 +100,11 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
 
+        if (!service.isEnabled()){
+            actionReport.setMessage("Health Check service is not enabled");
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }      
         if (!service.isHistoricalTraceEnabled()) {
             actionReport.setMessage("Health Check Historical Trace is not enabled!");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
