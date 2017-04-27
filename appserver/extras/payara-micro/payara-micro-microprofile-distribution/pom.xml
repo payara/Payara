@@ -887,6 +887,14 @@
               <artifactId>ha-hazelcast-store</artifactId>
               <version>${project.version}</version>
           </dependency>
+          <!-- payara rest endpoint package -->
+          <dependency>
+              <groupId>org.glassfish.main.packager</groupId>
+              <artifactId>payara-rest-endpoints</artifactId>
+              <version>${project.version}</version>
+              <type>zip</type>
+              <optional>true</optional>
+          </dependency>
         <!-- Add Payara Micro Core -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
