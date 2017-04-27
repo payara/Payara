@@ -81,7 +81,8 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
     private Boolean notifierDynamic;
 
-    @Param(name = "notifierEnabled")
+    @Deprecated
+    @Param(name = "notifierEnabled", optional = true)
     private Boolean notifierEnabled;
 
     @Param(name = "historicalTraceEnabled", optional = true)
@@ -151,7 +152,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());
         params.add("target", target);
-        params.add("enabled", notifierEnabled.toString());
+        if (notifierEnabled != null) {
+            params.add("enabled", notifierEnabled.toString());
+        }
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem

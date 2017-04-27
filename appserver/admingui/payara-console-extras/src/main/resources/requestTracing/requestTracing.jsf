@@ -55,17 +55,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         gf.restRequest(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}/get-requesttracing-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="logNotifierValueMap", value="#{requestScope.resp.data.subReports.get(0).extraProperties.getRequesttracingConfigurationLOG}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
         setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
         
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic","historicalTraceEnabled"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
-        }
-        if (#{pageSession.logNotifierValueMap['notifierEnabled']}=true) {
-            setPageSessionAttribute(key="notifierEnabledSelected", value="true")
-            
         }
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
             setPageSessionAttribute(key="historicalTraceEnabled", value="true");
@@ -90,7 +85,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                    mapPut(map="#{pageSession.valueMap}" key="notifierEnabled" value="#{pageSession.notifierEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" 
@@ -110,9 +104,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.enabledHelp}">
             <sun:checkbox id="enabledProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true" />
         </sun:property>
-      <sun:property id="logNotifierEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.logNotifierEnabled}" helpText="$resource{i18nrt.requestTracing.configuration.logNotifierEnabledHelp}">
-          <sun:checkbox id="logNotifierEnabledLabel" selected="#{pageSession.notifierEnabledSelected}" selectedValue="true" />
-      </sun:property>
       <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" label="$resource{i18nrt.requestTracing.configuration.dynamic.label}" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
