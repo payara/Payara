@@ -8,8 +8,7 @@ webpackJsonp([1,5],{
 var environment = {
     production: true,
     zendesk: {
-        baseUrl: 'http://payara.fish/api/zendesk/',
-        //baseUrl:'http://54.202.146.207/api/zendesk/',
+        baseUrl: 'http://api.payara.fish/api/zendesk/',
         filesUrl: 'https://payara.zendesk.com/api/v2/',
         token: 'ypxD1iQz4gC3CXNZa60y9GC39izttZmxQXMoxtt0'
     },
@@ -622,7 +621,7 @@ var ListTicketsComponent = (function () {
         this.loginService = loginService;
     }
     /**
-     * ngOnInit - OnInit method ofthe component
+     * ngOnInit - OnInit method of the component
      */
     ListTicketsComponent.prototype.ngOnInit = function () {
         var _this = this;
@@ -890,7 +889,7 @@ var LoginComponent = (function () {
         this.user = new __WEBPACK_IMPORTED_MODULE_6__classes_user__["a" /* User */]();
     }
     /**
-     * ngOnInit - OnInit method ofthe component
+     * ngOnInit - OnInit method of the component
      */
     LoginComponent.prototype.ngOnInit = function () {
         this.user == null;
@@ -1864,7 +1863,7 @@ var CommentDataComponent = (function () {
         this.saved = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
     }
     /**
-     * ngOnInit - OnInit method ofthe component
+     * ngOnInit - OnInit method of the component
      */
     CommentDataComponent.prototype.ngOnInit = function () {
         this.newAttachments = [];
@@ -2012,7 +2011,7 @@ var TicketDataComponent = (function () {
         this.loginService = loginService;
     }
     /**
-     * ngOnInit - OnInit method ofthe component
+     * ngOnInit - OnInit method of the component
      */
     TicketDataComponent.prototype.ngOnInit = function () {
         var _this = this;
