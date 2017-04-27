@@ -56,6 +56,7 @@ println("sectionDetail =  $attribute{sectionDetail}");
         gf.getSubComponents(appName="#{pageSession.appName}"  moduleList="#{pageSession.moduleList}" result="#{requestScope.listOfRows}");
         />
      <sun:tableRowGroup id="rowGroup1"  data={"$attribute{listOfRows}"} sourceVar="td">
+         
         <sun:tableColumn headerText="$resource{i18n.ComponentTable.colModule}" sort="moduleName" rowHeader="$boolean{true}" id="colModule">
             <staticText id="nameCol" value="#{td.value.moduleName}" />
         </sun:tableColumn>
@@ -90,3 +91,9 @@ println("sectionDetail =  $attribute{sectionDetail}");
     </sun:tableRowGroup>
 </sun:table>
 "<br /><br />
+
+<event>
+    <!afterCreate
+        includeIntegrations(type="org.glassfish.admingui:subComponentTablePage");
+        />
+</event>

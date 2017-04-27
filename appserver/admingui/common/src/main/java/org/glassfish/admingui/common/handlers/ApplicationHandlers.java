@@ -171,6 +171,7 @@ public class ApplicationHandlers {
                 oneRow.put("name", " ----------- ");
                 oneRow.put("type", " ----------- ");
                 oneRow.put("hasEndpoint", false);
+                oneRow.put("hasPayaraRestEndpoint", false);
                 oneRow.put("hasLaunch", false);
                 oneRow.put("hasAppClientLaunch", false);
                 oneRow.put("hasAppClientStub", false);
@@ -235,6 +236,7 @@ public class ApplicationHandlers {
                     oneRow.put("hasLaunch", false);
                     oneRow.put("sniffers", "");
                     oneRow.put("hasEndpoint", false);
+                    oneRow.put("hasPayaraRestEndpoint", false);
                     oneRow.put("hasAppClientLaunch", false);
                     oneRow.put("hasAppClientStub", false);
                     if (wsAppMap != null){
@@ -242,6 +244,15 @@ public class ApplicationHandlers {
                             oneRow.put("hasEndpoint", true );
                         }
                     }
+                    
+                    Map payaraAttrs = new HashMap();
+                    payaraAttrs.put("componentname", e.getKey());
+                    Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", payaraAttrs, "GET", null, false, false);
+                    Map payaraEndpointsExtraProps = (Map)((Map)((Map)payaraEndpointDataMap.get("data")).get("extraProperties"));
+                    if (payaraEndpointsExtraProps != null && payaraEndpointsExtraProps.get("endpointMap") != null) {
+                        oneRow.put("hasPayaraRestEndpoint", true);
+                    }
+                    
                     result.add(oneRow);
                 }
             }
