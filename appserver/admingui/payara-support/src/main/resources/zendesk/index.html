@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ZendeskLocal</title>
+  <base href="./">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script type="text/javascript">
+      var loc = window.location.href;
+      var baseUrl = loc.split('?')[0].replace('index.html','');
+      if(loc.indexOf('index')>=0){
+        if(loc.split('?').length >= 2){
+          var params = loc.split('?')[1];
+          if(params.split('=').length >= 2){
+            var url = params.split('=')[1];
+            var globalPort = url.split(':')[2].split('/')[0];
+          }
+        }
+      }
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+<script type="text/javascript" src="/resource/zendesk/inline.bundle.js"></script><script type="text/javascript" src="/resource/zendesk/polyfills.bundle.js"></script><script type="text/javascript" src="/resource/zendesk/scripts.bundle.js"></script><script type="text/javascript" src="/resource/zendesk/styles.bundle.js"></script><script type="text/javascript" src="/resource/zendesk/vendor.bundle.js"></script><script type="text/javascript" src="/resource/zendesk/main.bundle.js"></script></body>
+</html>
