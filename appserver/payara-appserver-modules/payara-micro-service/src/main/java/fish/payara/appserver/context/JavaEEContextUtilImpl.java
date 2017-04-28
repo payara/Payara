@@ -41,6 +41,7 @@ package fish.payara.appserver.context;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.internal.api.JavaEEContextUtil;
@@ -185,6 +186,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         if(componentEnv instanceof BundleDescriptor) {
             BundleDescriptor bd = (BundleDescriptor)componentEnv;
             return bd.getClassLoader();
+        } else if (componentEnv instanceof EjbDescriptor) {
+            EjbDescriptor ed = (EjbDescriptor)componentEnv;
+            return ed.getEjbBundleDescriptor().getClassLoader();
         }
         return null;
     }
