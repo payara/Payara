@@ -57,7 +57,11 @@ import com.sun.enterprise.web.WebContainer;
 import com.sun.enterprise.web.WebModule;
 import fish.payara.appserver.rest.endpoints.RestEndpointModel;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -75,7 +79,8 @@ import org.glassfish.jersey.servlet.ServletContainer;
 /**
  * CLI for listing all REST endpoints.
  * <p>
- * asadmin list-rest-endpoints [--modulename <modulename> [--componentname <componentname>]]
+ * asadmin list-rest-endpoints [--appname <appname> [--componentname
+ * <componentname>]]
  *
  * Will be executed on DAS
  *
@@ -91,16 +96,16 @@ import org.glassfish.jersey.servlet.ServletContainer;
             path = "list-rest-endpoints",
             description = "list-rest-endpoints",
             params = {
-                @RestParam(name = "modulename", value = "$parent")
+                @RestParam(name = "appname", value = "$parent")
             })
 })
 public class ListRestEndpointsCommand implements AdminCommand {
 
     /**
-     * The name of the deployed module
+     * The name of the deployed application
      */
-    @Param(primary = true, alias = "moduleName")
-    private String moduleName = null;
+    @Param(primary = true, alias = "appName")
+    private String appName = null;
 
     /**
      * The name of the JAX-RS component
@@ -115,7 +120,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
 
-        Map<String, String> endpoints = new HashMap(); // Map of endpoint -> HTTP method
+        Map<String, String> endpoints = new LinkedHashMap(); // Map of endpoint -> HTTP method
 
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -124,91 +129,151 @@ public class ListRestEndpointsCommand implements AdminCommand {
         ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
 
         // Check if the given application exists
-        if(!appRegistry.getAllApplicationNames().contains(moduleName)) {
-            report.setMessage("Application " + moduleName + " is not registered");
+        if (!appRegistry.getAllApplicationNames().contains(appName)) {
+            report.setMessage("Application " + appName + " is not registered");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
+        // Get the deployed application with the provided name
+        ApplicationInfo appInfo = getSpecifiedApplication(appName, appRegistry);
+
+        // Get the web modules from the given application (e.g. multiple wars in an ear)
+        List<WebModule> modules = getWebModules(appInfo);
+
+        // Get the Jersey applications from all of the modules (or only the one matching the given component name)
+        Map<ServletContainer, String> jerseyApplicationMap = getSpecifiedJerseyApplications(componentName, modules);
+
+        // error out in the case of a non existent provided component
+        if (jerseyApplicationMap.isEmpty()) {
+            report.setMessage("Component " + componentName + " could not be found");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
+        // loop through jersey components
+        for (ServletContainer jerseyApplication : jerseyApplicationMap.keySet()) {
+            String appRoot = jerseyApplication.getServletContext().getContextPath();
+            String jerseyAppRoot = jerseyApplicationMap.get(jerseyApplication);
+
+            List<Class<?>> containedClasses = getClasses(jerseyApplication);
+
+            boolean componentHasEndpoint = false;
+
+            // loop through all classes contained by given jersey application
+            for (Class containedClass : containedClasses) {
+                List<RestEndpointModel> classEndpoints = getEndpointsForClass(containedClass);
+
+                // loop through endpoints in given class
+                for (RestEndpointModel endpoint : classEndpoints) {
+                    String endpointPath = appRoot + jerseyAppRoot + endpoint.getPath();
+                    componentHasEndpoint = true;
+                    endpoints.put(endpointPath, endpoint.getRequestMethod());
+                }
+            }
+
+            // error out in the case of an empty specified component
+            if (!componentHasEndpoint && jerseyApplication.getServletConfig().getServletName().equals(componentName)) {
+                report.setMessage("Component " + componentName + " has no deployed endpoints");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+
+        }
+
+        // error out in the case of an empty application
+        if (endpoints.isEmpty()) {
+            report.setMessage("Application " + appName + " has no deployed endpoints");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
         
+        // Print out endpoints to log
+        for(String endpointPath : endpoints.keySet()) {
+            report.appendMessage(endpoints.get(endpointPath) + "\t" + endpointPath + "\n");
+        }
+
+        Properties extraProps = new Properties();
+        extraProps.put("endpointMap", endpoints);
+        report.setExtraProperties(extraProps);
+    }
+
+    private ApplicationInfo getSpecifiedApplication(String appName, ApplicationRegistry appRegistry) {
         // Loop through all deployed application names
         for (String applicationRegistryNameEntry : appRegistry.getAllApplicationNames()) {
-            if (applicationRegistryNameEntry.equals(moduleName)) {
+            if (applicationRegistryNameEntry.equals(appName)) {
                 // found the entered application
-                ApplicationInfo appInfo = appRegistry.get(applicationRegistryNameEntry);
+                return appRegistry.get(applicationRegistryNameEntry);
+            }
+        }
+        return null;
+    }
 
-                for (ModuleInfo moduleInfo : appInfo.getModuleInfos()) {
-                    WebApplication webApplication = (WebApplication) moduleInfo.getEngineRefForContainer(WebContainer.class).getApplicationContainer();
+    private List<WebModule> getWebModules(ApplicationInfo appInfo) {
+        List<WebModule> webModules = new ArrayList<>();
+        // loop through all deployed modules in the application (e.g. multiple wars in one ear)
+        for (ModuleInfo moduleInfo : appInfo.getModuleInfos()) {
+            WebApplication webApplication = (WebApplication) moduleInfo.getEngineRefForContainer(WebContainer.class).getApplicationContainer();
+            for (WebModule module : webApplication.getWebModules()) {
+                webModules.add(module);
+            }
+        }
+        return webModules;
+    }
 
-                    // loop through all web modules in the given application (should only be one but who knows).
-                    for (WebModule webModule : webApplication.getWebModules()) {
-                        
-                        boolean componentExists = (componentName == null);
-                        
-                        // loop through all servlets in the given web module
-                        for (Container container : webModule.findChildren()) {
-                            // check that it is actually a servlet
-                            if (container instanceof StandardWrapper) {
-                                // cast to a servlet from generic container
-                                StandardWrapper servlet = (StandardWrapper) container;
-                                // if it is a jersey application servlet, and if a component name has been specified and this servlet matches
-                                if (servlet.getServletClass() == ServletContainer.class && (componentName == null ^ servlet.getName().equals(componentName))) {
-                                    componentExists = true;
-                                    // count through all the application URL mappings
-                                    for (String mapping : servlet.getMappings()) {
-                                        // May be represented as "path/to/resource/*", which needs to be removed
-                                        mapping = mapping.replaceAll("/\\*", "");
-                                        // Convert the servlet to a jersey application servlet
-                                        ServletContainer jerseyApplication = (ServletContainer) servlet.getServlet();
-                                        Set<Class<?>> containedClasses = jerseyApplication.getConfiguration().getApplication().getClasses();
-                                        
-                                        // keep track of whether the given Jersey application has deployed endpoints. If a component hasn't been specified,
-                                        // then set this to true by default.
-                                        boolean componentHasResources = (componentName == null);
-                                        
-                                        for (Class containedClass : containedClasses) {
+    private Map<ServletContainer, String> getSpecifiedJerseyApplications(String componentName, List<WebModule> modules) {
 
-                                            // Loop through all of the methods directly declared in the class
-                                            for (Method method : containedClass.getDeclaredMethods()) {
-                                                // Get the endpoint associated with that method (if applicable)
-                                                RestEndpointModel endpoint = RestEndpointModel.generateFromMethod(method);
+        Map<ServletContainer, String> jerseyApplicationMap = new HashMap<>();
 
-                                                if (endpoint != null) {
-                                                    componentHasResources = true;
-                                                    endpoints.put(webModule.getName() + mapping + endpoint.getPath(), endpoint.getRequestMethod());
-                                                    report.appendMessage(endpoint.getRequestMethod() + "\t" + webModule.getName() + mapping + endpoint.getPath() + "\n");
-                                                }
-                                            }
-                                        }
-                                        
-                                        if(!componentHasResources) {
-                                            report.setMessage("Component " + componentName + " has no registered REST endpoints");
-                                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                            return;
-                                        }
-                                    }
-                                }
-                            }
+        for (WebModule webModule : modules) {
+
+            // loop through all servlets in the given web module
+            for (Container container : webModule.findChildren()) {
+                // check that it is actually a servlet
+                if (container instanceof StandardWrapper) {
+                    // cast to a servlet from generic container
+                    StandardWrapper servlet = (StandardWrapper) container;
+                    // if it is a jersey application servlet, and if a component name has been specified and this servlet matches
+                    if (servlet.getServletClass() == ServletContainer.class && (componentName == null ^ servlet.getName().equals(componentName))) {
+
+                        Collection<String> mappings = servlet.getMappings();
+                        String servletMapping = null;
+
+                        if (mappings.size() > 0) {
+                            // May be represented as "path/to/resource/*", which needs to be removed
+                            servletMapping = mappings.toArray()[0].toString().replaceAll("/\\*", "");
                         }
 
-                        if (!componentExists) {
-                            report.setMessage("Component " + componentName + " could not be found");
-                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                            return;
-                        }
+                        jerseyApplicationMap.put((ServletContainer) servlet.getServlet(), servletMapping);
                     }
                 }
             }
         }
-        
-        if(endpoints.isEmpty()) {
-            report.setMessage("Application " + moduleName + " has no registered REST endpoints");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+
+        return jerseyApplicationMap;
+    }
+
+    private List<Class<?>> getClasses(ServletContainer jerseyApplication) {
+        List<Class<?>> classes = new ArrayList<>();
+
+        for (Class jerseyClass : jerseyApplication.getConfiguration().getApplication().getClasses()) {
+            classes.add(jerseyClass);
         }
-        
-        Properties extraProps = new Properties();
-        extraProps.put("endpointMap", endpoints);
-        report.setExtraProperties(extraProps);
+        return classes;
+    }
+
+    private List<RestEndpointModel> getEndpointsForClass(Class containerClass) {
+        List<RestEndpointModel> endpoints = new ArrayList<>();
+        // Loop through all of the methods directly declared in the class
+        for (Method method : containerClass.getDeclaredMethods()) {
+            // Get the endpoint associated with that method (if applicable)
+            RestEndpointModel endpoint = RestEndpointModel.generateFromMethod(method);
+
+            if (endpoint != null) {
+                endpoints.add(endpoint);
+            }
+        }
+        return endpoints;
     }
 
 }
