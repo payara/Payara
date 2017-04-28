@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast.contextproxy;
 
+import java.io.IOException;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
 import org.glassfish.internal.api.JavaEEContextUtil.RequestContext;
@@ -53,6 +54,7 @@ import javax.cache.integration.CacheLoaderException;
 import javax.cache.integration.CacheWriter;
 import javax.cache.integration.CacheWriterException;
 import lombok.RequiredArgsConstructor;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Proxy all applicable factory calls
@@ -65,6 +67,11 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         super(config);
         this.ctxUtil = ctxUtil;
         init();
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     }
 
     private void init() {
@@ -82,12 +89,12 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
             public CacheLoader<K, V> create() {
                 Context ctx = null;
                 try {
-                    ctx = ctxUtil.preInvoke();
+                    ctx = ctxUtil.pushContext();
                     final CacheLoader<K, V> loader = fact.create();
                     return new CacheLoaderImpl(loader);
                 }
                 finally {
-                    ctxUtil.postInvoke(ctx);
+                    ctxUtil.popContext(ctx);
                 }
             }
             
@@ -100,11 +107,11 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 public V load(K k) throws CacheLoaderException {
                     RequestContext context = null;
                     try {
-                        context = ctxUtil.preInvokeRequestContext();
+                        context = ctxUtil.pushRequestContext();
                         return loader.load(k);
                     }
                     finally {
-                        ctxUtil.postInvokeRequestContext(context);
+                        ctxUtil.popRequestContext(context);
                     }
                 }
 
@@ -112,11 +119,11 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 public Map<K, V> loadAll(Iterable<? extends K> itrbl) throws CacheLoaderException {
                     RequestContext context = null;
                     try {
-                        context = ctxUtil.preInvokeRequestContext();
+                        context = ctxUtil.pushRequestContext();
                         return loader.loadAll(itrbl);
                     }
                     finally {
-                        ctxUtil.postInvokeRequestContext(context);
+                        ctxUtil.popRequestContext(context);
                     }
                 }
 
@@ -133,13 +140,13 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
             public CacheWriter<K, V> create() {
                 Context ctx = null;
                 try {
-                    ctx = ctxUtil.preInvoke();
+                    ctx = ctxUtil.pushContext();
                     @SuppressWarnings("unchecked")
                     final CacheWriter<K, V> delegate = (CacheWriter<K, V>) fact.create();
                     return new CacheWriterImpl(delegate);
                 }
                 finally {
-                    ctxUtil.postInvoke(ctx);
+                    ctxUtil.popContext(ctx);
                 }
             }
 
@@ -149,11 +156,11 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 public void write(Cache.Entry<? extends K, ? extends V> entry) throws CacheWriterException {
                     RequestContext context = null;
                     try {
-                        context = ctxUtil.preInvokeRequestContext();
+                        context = ctxUtil.pushRequestContext();
                         delegate.write(entry);
                     }
                     finally {
-                        ctxUtil.postInvokeRequestContext(context);
+                        ctxUtil.popRequestContext(context);
                     }
                 }
 
@@ -161,11 +168,11 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 public void writeAll(Collection<Cache.Entry<? extends K, ? extends V>> clctn) throws CacheWriterException {
                     RequestContext context = null;
                     try {
-                        context = ctxUtil.preInvokeRequestContext();
+                        context = ctxUtil.pushRequestContext();
                         delegate.writeAll(clctn);
                     }
                     finally {
-                        ctxUtil.postInvokeRequestContext(context);
+                        ctxUtil.popRequestContext(context);
                     }
                 }
 
@@ -173,11 +180,11 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 public void delete(Object o) throws CacheWriterException {
                     RequestContext context = null;
                     try {
-                        context = ctxUtil.preInvokeRequestContext();
+                        context = ctxUtil.pushRequestContext();
                         delegate.delete(o);
                     }
                     finally {
-                        ctxUtil.postInvokeRequestContext(context);
+                        ctxUtil.popRequestContext(context);
                     }
                 }
 
@@ -185,11 +192,11 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 public void deleteAll(Collection<?> clctn) throws CacheWriterException {
                     RequestContext context = null;
                     try {
-                        context = ctxUtil.preInvokeRequestContext();
+                        context = ctxUtil.pushRequestContext();
                         delegate.deleteAll(clctn);
                     }
                     finally {
-                        ctxUtil.postInvokeRequestContext(context);
+                        ctxUtil.popRequestContext(context);
                     }
                 }
 
@@ -200,6 +207,6 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         };
     }
 
-    private final JavaEEContextUtil ctxUtil;
+    private transient /* final */ JavaEEContextUtil ctxUtil;
     private static final long serialVersionUID = 1L;
 }
