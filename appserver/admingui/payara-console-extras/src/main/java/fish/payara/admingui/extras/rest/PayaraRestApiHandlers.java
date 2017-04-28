@@ -173,4 +173,46 @@ public class PayaraRestApiHandlers
     public static void prepareSuccessfulCommandMsg(HandlerContext handlerCtx){
         GuiUtil.prepareAlert("success", "Command sent successfully", null);
     }
+    
+    @Handler(id = "py.getHistoricHealthcheckMessages",
+            input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
+            output = @HandlerOutput(name = "result", type = java.util.List.class))
+    public static void getHistoricHealthcheckMessages(HandlerContext handlerCtx){
+        String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
+        String endpoint;
+        
+        // Check for trailing slashes
+        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-healthchecks" : parentEndpoint 
+                + "/" + "list-historic-healthchecks";
+        
+        Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, true);
+        Map data = (Map) responseMap.get("data");
+         
+        // Extract the information from the Map and place it in a List for representation in the dataTable
+        List<Map> messages = new ArrayList<>();
+        if (data != null) {
+            Map extraProperties = (Map) data.get("extraProperties");
+            if (extraProperties != null) {
+
+                try {
+                    messages = (List<Map>) extraProperties.get("historicmessages");
+                    if (messages == null) {
+                        // Re-initialise to empty if members is not found
+                        messages = new ArrayList<>();
+                    } else {
+                        for (Map message : messages) {
+                            message.put("selected", false);
+                        }
+                    }
+                } catch (ClassCastException ex) {
+                    // This exception should only be caught if Hazelcast is not enabled, as the command returns a 
+                    // String instead of a List. In such a case, re-initialise to an empty List
+                    messages = new ArrayList<>();
+                }
+            }
+        }
+            
+        handlerCtx.setOutputValue("result", messages);
+    }
+       
 }
