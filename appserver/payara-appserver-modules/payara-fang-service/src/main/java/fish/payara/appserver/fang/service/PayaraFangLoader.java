@@ -271,8 +271,14 @@ public class PayaraFangLoader extends Thread {
             payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADED);
             return;
         }
-
-        Application config = payaraFangAdapter.getSystemApplicationConfig();
+        
+        Application config = null;
+        if (dynamicStart) {
+            config = payaraFangAdapter.getSystemApplicationConfig(contextRoot);
+        } else {
+            config = payaraFangAdapter.getSystemApplicationConfig();
+        }
+        
         
         if (config == null) {
             throw new IllegalStateException("Payara Fang has no system app entry!");

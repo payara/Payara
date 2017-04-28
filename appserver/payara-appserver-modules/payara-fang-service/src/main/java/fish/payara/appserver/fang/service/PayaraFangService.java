@@ -118,6 +118,9 @@ public class PayaraFangService implements ConfigListener {
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
         
+        // Reset dynamicStart to default value
+        dynamicStart = false;
+        
         for (PropertyChangeEvent propertyChangeEvent : propertyChangeEvents) {
             // Check that the property change event is for us.
             if (propertyChangeEvent.getSource().toString().equals("GlassFishConfigBean." 
