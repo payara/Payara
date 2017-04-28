@@ -105,7 +105,7 @@
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${payara.api.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
