@@ -2229,7 +2229,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             sb.append(url.toString()).append('\n');
         }
         for(ApplicationDescriptor app : id.getDeployedApplications()) {
-            sb.append("\n").append(app.getName()).append(" URLs\n");
+            sb.append("\n").append("'" + app.getName()).append("' Application URLs\n");
             try {
                 CommandResult result = gf.getCommandRunner().run("list-rest-endpoints", app.getName());
                 sb.append(result.getOutput().replaceAll("PlainTextActionReporter(SUCCESS|FAILURE)", ""));
