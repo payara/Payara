@@ -708,7 +708,7 @@ public class StandardPipeline
 
 
     private void postInvoke(final GlassFishValve savedValve, final Request request, final Response response) throws IOException, ServletException{
-        if(request.getRequest().isAsyncSupported()){
+        if(request.getRequest().isAsyncSupported() && request.getRequest().isAsyncStarted()){
             request.getRequest().getAsyncContext().addListener(new AsyncListener() {
                 @Override
                 public void onComplete(AsyncEvent event) throws IOException {
