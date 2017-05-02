@@ -119,7 +119,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
 
-        Map<String, String> endpoints = new LinkedHashMap(); // Map of endpoint -> HTTP method
+        Map<String, String> endpoints = new LinkedHashMap<>(); // Map of endpoint -> HTTP method
 
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
