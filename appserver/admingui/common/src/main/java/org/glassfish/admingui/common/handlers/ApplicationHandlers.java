@@ -171,7 +171,6 @@ public class ApplicationHandlers {
                 oneRow.put("name", " ----------- ");
                 oneRow.put("type", " ----------- ");
                 oneRow.put("hasEndpoint", false);
-                oneRow.put("hasPayaraRestEndpoint", false);
                 oneRow.put("hasLaunch", false);
                 oneRow.put("hasAppClientLaunch", false);
                 oneRow.put("hasAppClientStub", false);

@@ -65,7 +65,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.net.JarURLConnection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.glassfish.embeddable.BootstrapProperties;
@@ -2228,8 +2227,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         for (URL url : urls) {
             sb.append(url.toString()).append('\n');
         }
+        // Count through applications and print out their REST endpoints
         for(ApplicationDescriptor app : id.getDeployedApplications()) {
-            sb.append("\n").append("'" + app.getName()).append("' Application URLs\n");
+            sb.append("\n").append("'" + app.getName()).append("' REST Endpoints\n");
             try {
                 CommandResult result = gf.getCommandRunner().run("list-rest-endpoints", app.getName());
                 sb.append(result.getOutput().replaceAll("PlainTextActionReporter(SUCCESS|FAILURE)", ""));

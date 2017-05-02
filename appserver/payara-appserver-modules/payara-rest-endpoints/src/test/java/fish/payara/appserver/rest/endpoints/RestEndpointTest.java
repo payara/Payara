@@ -1,12 +1,3 @@
-package fish.payara.appserver.rest.endpoints;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.Path;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -47,6 +38,15 @@ import static org.junit.Assert.assertEquals;
  * holder.
 
  */
+package fish.payara.appserver.rest.endpoints;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.Path;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
 /**
  *
  * @author Matt Gill

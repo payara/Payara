@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -26,10 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.glassfish.admingui.common.util.AppUtil;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
-import org.glassfish.admingui.common.util.TargetUtil;
 
 /**
  * A class containing Payara specific handler methods for the REST API
@@ -169,6 +167,10 @@ public class PayaraRestApiHandlers
         }
     }
     
+    /**
+     * Gets the REST endpoints from a given app name and optional component name
+     * @param handlerCtx 
+     */
     @Handler(id = "py.getRestEndpoints",
         input = {
             @HandlerInput(name = "appName", type = String.class, required = true),
@@ -184,14 +186,17 @@ public class PayaraRestApiHandlers
             String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
             String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
             
+            // get the extra properties from the list-rest-endpoints command, passing in the component name
             Map attrMap = new HashMap();
             attrMap.put("componentname", encodedComponentName);
             Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, false, false);
             Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
+            // Check if the command returned any endpoints
             if((Map)payaraEndpointsExtraProps.get("endpointMap") != null) {
                 Map<String, String> endpointMap = (Map)payaraEndpointsExtraProps.get("endpointMap");
                 for(String key : endpointMap.keySet()) {
+                    // Count through returned endpoints
                     Map<String, String> rowMap = new HashMap<>();
                     rowMap.put("endpointName", key);
                     rowMap.put("requestMethod", endpointMap.get(key));
@@ -207,6 +212,10 @@ public class PayaraRestApiHandlers
           handlerCtx.setOutputValue("result", result);
     }
     
+    /**
+     * Gets a Map of components and their REST endpoints from a given sub component list
+     * @param handlerCtx 
+     */
     @Handler(id = "py.hasRestEndpoints",
         input = {
             @HandlerInput(name = "appName", type = String.class, required = true),
@@ -226,11 +235,13 @@ public class PayaraRestApiHandlers
                 String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
                 String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
 
+                // Get the result of the list-rest-endpoints command and get it's extra properties
                 Map attrMap = new HashMap();
                 attrMap.put("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, false, false);
                 Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
+                // Enter into the map the key of the component and whether it has endpoints or not
                 result.put(componentName, false);
                 if((Map)payaraEndpointsExtraProps.get("endpointMap") != null) {
                     result.put(componentName, true);
