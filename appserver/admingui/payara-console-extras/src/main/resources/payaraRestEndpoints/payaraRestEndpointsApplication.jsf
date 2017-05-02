@@ -37,11 +37,11 @@
    only if the new code is made subject to such option by the copyright
    holder.
 -->
-<sun:hyperlink id="payaraRestEndpointLink" rendered="#{requestScope.hasRestEndpoint}" text="$resource{i18nhc.payaraRestEndpoint.viewEndpointsLink}"
-               url="#{request.contextPath}/payaraExtras/payaraRestEndpoints/payaraRestEndpoints.jsf?appName=#{td.value.appName}&compName=#{td.value.name}" >
+<sun:hyperlink id="payaraRestEndpointLink" rendered="#{requestScope.hasRestEndpoint[td.value.name]}" text="$resource{i18nhc.payaraRestEndpoint.viewEndpointsLink}"
+               url="#{request.contextPath}/payaraExtras/payaraRestEndpoints/payaraRestEndpoints.jsf?appName=#{pageSession.encodedAppName}&compName=#{td.value.name}" >
     <!beforeCreate
         setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
         setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-        py.hasRestEndpoints(appName="#{pageSession.encodedAppName}" moduleList="#{pageSession.moduleList}" result="#{requestScope.hasRestEndpointList}");
+        py.hasRestEndpoints(appName="#{pageSession.encodedAppName}" rowList="#{requestScope.listOfRows}" result="#{requestScope.hasRestEndpoint}");
         />
 </sun:hyperlink>

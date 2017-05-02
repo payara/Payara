@@ -46,7 +46,7 @@
     setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nhc.payaraRestEndpoint.EndpointPageTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nhc.payaraRestEndpoint.endpointPageTitle}" >
 <!define name="content">
 <event>
     <!beforeCreate
@@ -60,7 +60,7 @@
 <sun:form id="propertyForm">
     #include "/common/shared/alertMsg_1.inc"
     <!-- Page Title -->
-    <sun:title id="propertyContentPage" title="$resource{i18nhc.payaraRestEndpoint.EndpointPageTitle}" helpText="$resource{i18nhc.payaraRestEndpoint.EndpointPageTitleHelp}">
+    <sun:title id="propertyContentPage" title="$resource{i18nhc.payaraRestEndpoint.endpointPageTitle}" helpText="$resource{i18nhc.payaraRestEndpoint.endpointPageTitleHelp}">
 
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
@@ -80,23 +80,25 @@
                            url="#{request.contextPath}/common/applications/applicationEdit.jsf?appName=#{pageSession.encodedAppName}"/>
         </sun:property>
 
+        <sun:property id="compName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ComponentTable.colName}" >
+            <staticText id="compName" value="#{pageSession.encodedCompName}" />
+        </sun:property>
+
     </sun:propertySheetSection>
 </sun:propertySheet>
 
-<sun:table id="endpointTable"  title="$resource{i18n.ComponentTable.tableTitle}" style="padding: 10pt; width:95%" >
+<sun:table id="endpointTable"  title="$resource{i18nhc.payaraRestEndpoint.endpointTableTitle}" style="padding: 10pt; width:95%" >
     <!beforeCreate
-        py.getAppContextRoot(appName="#{pageSession.encodedAppName}" result="#{requestScope.contextRoot}");
-        py.getRestEndpoints(appName="#{pageSession.encodedAppName}" componentName="#{pageSession.encodedCompName}" result="#{requestScope.listOfRows}");
+        py.getRestEndpoints(appName="#{pageSession.encodedAppName}" componentName="#{pageSession.encodedCompName}" result="#{requestScope.listOfEndpoints}");
         />
 
-    <sun:tableRowGroup id="rowGroup1"  data={"$attribute{listOfRows}"} sourceVar="td">
+    <sun:tableRowGroup id="rowGroup1"  data={"$attribute{listOfEndpoints}"} sourceVar="td">
 
-        <sun:tableColumn headerText="Endpoint Path" sort="endpointPath" rowHeader="$boolean{true}" id="colPath">
-            <sun:hyperlink id="namePath" text="#{td.value.endpointPath}"
-                           url="#{requestScope.contextRoot}#{td.value.endpointPath}"/>
+        <sun:tableColumn headerText="$resource{i18nhc.payaraRestEndpoint.endpointPath}" sort="endpointName" rowHeader="$boolean{true}" id="colPath">
+            <staticText id="namePath" value="#{td.value.endpointName}" />
         </sun:tableColumn>
 
-        <sun:tableColumn headerText="Request Method" sort="requestMethod" rowHeader="$boolean{true}" id="colMethod">
+        <sun:tableColumn headerText="$resource{i18nhc.payaraRestEndpoint.requestMethod}" sort="requestMethod" rowHeader="$boolean{true}" id="colMethod">
             <staticText id="nameMethod" value="#{td.value.requestMethod}" />
         </sun:tableColumn>
 
