@@ -142,7 +142,8 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
             Object values[] = new Object[2];
             values[0] = new Date(historicHealthCheckEvent.getOccurringTime());
             values[1] = constructMessage(historicHealthCheckEvent);
-            messages.put(((Date)values[0]).toString(), (String) values[1]);
+            messages.put("dateTime",values[0].toString());
+            messages.put("message", (String) values[1]);
             historic.add(messages);
             columnFormatter.addRow(values);
         }

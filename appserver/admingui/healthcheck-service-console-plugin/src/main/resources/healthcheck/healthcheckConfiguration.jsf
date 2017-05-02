@@ -108,7 +108,6 @@
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
-                <h:outputText value="#{requestScope.historic}"/>
         </sun:panelGroup>
     </facet>
 </sun:title>
@@ -144,23 +143,20 @@
         </sun:property>
         <h:outputText text="#{requestScope.historic}" />
     </sun:propertySheetSection>
-
-    <sun:propertySheetSection id="historicHealthChecks">
-        <h:outputText id="members" text="#{requestScope.historicRest}" />
-        <sun:property id="historicHealthChecksP">
-            
-        <sun:table id="historicHealthcheckTable" title="$resource{i18nhx.healthcheck.historic.table.name}" 
-                   rendered="#{pageSession.valueNotifierMap['notifierEnabled']==true}" >
-            <sun:tableRowGroup id="historicHealthcheckRowGroup" data="#{requestScope.historicRest}" sourceVar="td" 
-                   emptyDataMsg="$resource{i18nhx.healthcheck.historic.table.empty}" />
-            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.dateTime" rowHeader="$boolean{true}" id="col1">
-                <staticText id="time" value="#{td.key}" />
+    <sun:propertySheetSection>
+     <sun:property>            
+        <sun:table id="historicHealthcheckTable" title="$resource{i18nhx.healthcheck.historic.table.name}" >
+            <sun:tableRowGroup id="historicHealthcheckRowGroup" data={"$attribute{historic}"} sourceVar="td" 
+                   emptyDataMsg="$resource{i18nhx.healthcheck.historic.table.empty}">
+            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.dateTime" sort="dateTime" rowHeader="$boolean{true}" id="col1">
+                <staticText id="time" value="#{td.value.dateTime}" />
             </sun:tableColumn>
-            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.message" rowHeader="$boolean{true}" id="col2">
-                <staticText id="message" value="#{td.value}" />
+            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.message" sort="message" rowHeader="$boolean{true}" id="col2">
+                <staticText id="message" value="#{td.value.message}" />
             </sun:tableColumn>
+        </sun:tableRowGroup>
         </sun:table>
-        </sun:property>    
+     </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>
 </sun:form>
