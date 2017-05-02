@@ -167,6 +167,7 @@ public class ApplicationHandlers {
                 Map oneRow = new HashMap();
                 List<String> snifferList = AppUtil.getSnifferListOfModule(encodedAppName, encodedModuleName);
                 String moduleName = oneModule;
+                oneRow.put("appName", appName);
                 oneRow.put("moduleName", moduleName);
                 oneRow.put("name", " ----------- ");
                 oneRow.put("type", " ----------- ");
@@ -230,6 +231,7 @@ public class ApplicationHandlers {
                 }
                 for(Map.Entry<String,Object> e : props.entrySet()){
                     Map oneRow = new HashMap();
+                    oneRow.put("appName", appName);
                     oneRow.put("moduleName", moduleName);
                     oneRow.put("name", e.getKey());
                     oneRow.put("type", e.getValue());
@@ -245,12 +247,14 @@ public class ApplicationHandlers {
                         }
                     }
                     
-                    Map payaraAttrs = new HashMap();
-                    payaraAttrs.put("componentname", e.getKey());
-                    Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", payaraAttrs, "GET", null, false, false);
-                    Map payaraEndpointsExtraProps = (Map)((Map)((Map)payaraEndpointDataMap.get("data")).get("extraProperties"));
-                    if (payaraEndpointsExtraProps != null && payaraEndpointsExtraProps.get("endpointMap") != null) {
-                        oneRow.put("hasPayaraRestEndpoint", true);
+                    if(e.getValue().equals("JSP")) {
+                        Map payaraAttrs = new HashMap();
+                        payaraAttrs.put("componentname", e.getKey());
+                        Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", payaraAttrs, "GET", null, false, false);
+                        Map payaraEndpointsExtraProps = (Map)((Map)((Map)payaraEndpointDataMap.get("data")).get("extraProperties"));
+                        if (payaraEndpointsExtraProps != null && payaraEndpointsExtraProps.get("endpointMap") != null) {
+                            oneRow.put("hasPayaraRestEndpoint", true);
+                        }
                     }
                     
                     result.add(oneRow);

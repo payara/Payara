@@ -144,9 +144,12 @@ public class ListRestEndpointsCommand implements AdminCommand {
         // Get the Jersey applications from all of the modules (or only the one matching the given component name)
         Map<ServletContainer, String> jerseyApplicationMap = getSpecifiedJerseyApplications(componentName, modules);
 
-        // error out in the case of a non existent provided component
+        // error out in the case of a non existent provided component or no components at all
         if (jerseyApplicationMap.isEmpty()) {
             report.setMessage("Component " + componentName + " could not be found");
+            if(componentName == null) {
+                report.setMessage("Application " + appName + " has no deployed endpoints");
+            }
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -192,6 +195,8 @@ public class ListRestEndpointsCommand implements AdminCommand {
         for(String endpointPath : endpoints.keySet()) {
             report.appendMessage(endpoints.get(endpointPath) + "\t" + endpointPath + "\n");
         }
+        // Remove trailing spaces
+        report.setMessage(report.getMessage().trim());
 
         Properties extraProps = new Properties();
         extraProps.put("endpointMap", endpoints);
