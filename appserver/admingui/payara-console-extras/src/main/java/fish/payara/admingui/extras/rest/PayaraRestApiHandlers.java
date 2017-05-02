@@ -219,10 +219,6 @@ public class PayaraRestApiHandlers
                 if (messages == null) {
                     // Re-initialise to empty if members is not found
                     messages = new ArrayList<>();
-                } else {
-                    for (Map message : messages) {
-                        message.put("selected", false);
-                    }
                 }
             }
         }

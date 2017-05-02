@@ -59,23 +59,10 @@
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         
-        createMap(result="#{pageSession.historicMessages}");
-        
-        gf.restRequest(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/list-historic-healthchecks" method="GET" result="#requestScope.historicRest");
-        setPageSessionAttribute(key="insHistoric", value="#{requestScope.historicRest.data.extraProperties.historicmessages}");
         py.getHistoricHealthcheckMessages(parentEndpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}", result="#{requestScope.historic}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled", "notifierEnabled"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
-            if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
-                
-                
-                if( "!(#{pageSession.insHistoric} = #{null})" ){
-                    foreach(var="oneMessage" list="#{requestScope.insHistoric}"){
-                        mapPut(map="#{pageSession.historicMessages}"  key="#{pageSession.insHistoric.dateTime}" value="#{pageSession.insHistoric.message}");
-                    }            
-                }
-            }
         }
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
             setPageSessionAttribute(key="historicalTraceEnabledSelected", value="true");
@@ -141,20 +128,19 @@
             <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['historicalTraceStoreSize']}"/>
         </sun:property>
-        <h:outputText text="#{requestScope.historic}" />
     </sun:propertySheetSection>
     <sun:propertySheetSection>
      <sun:property>            
         <sun:table id="historicHealthcheckTable" title="$resource{i18nhx.healthcheck.historic.table.name}" >
             <sun:tableRowGroup id="historicHealthcheckRowGroup" data={"$attribute{historic}"} sourceVar="td" 
                    emptyDataMsg="$resource{i18nhx.healthcheck.historic.table.empty}">
-            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.dateTime" sort="dateTime" rowHeader="$boolean{true}" id="col1">
-                <staticText id="time" value="#{td.value.dateTime}" />
+            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.headings.dateTime}" sort="dateTime" rowHeader="$boolean{true}" id="col1">
+                <staticText id="dateTime" value="#{td.value.dateTime}" />
             </sun:tableColumn>
-            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.message" sort="message" rowHeader="$boolean{true}" id="col2">
+            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.headings.message}" sort="message" rowHeader="$boolean{true}" id="col2">
                 <staticText id="message" value="#{td.value.message}" />
             </sun:tableColumn>
-        </sun:tableRowGroup>
+          </sun:tableRowGroup>
         </sun:table>
      </sun:property>
     </sun:propertySheetSection>
