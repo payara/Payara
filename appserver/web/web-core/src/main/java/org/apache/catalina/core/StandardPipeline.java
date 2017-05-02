@@ -80,6 +80,8 @@ import java.util.ResourceBundle;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 
 /** CR 6411114 (Lifecycle implementation moved to ValveBase)
 import org.apache.tomcat.util.modeler.Registry;
@@ -650,7 +652,7 @@ public class StandardPipeline
                         resp = getResponse(request, response);
                     }
                     basic.invoke(req, resp);
-                    basic.postInvoke(req, resp);
+                    postInvoke(basic, req, resp);
                 }
             }
 
@@ -664,7 +666,7 @@ public class StandardPipeline
                     resp = getResponse(request, response);
                 }
 
-                savedValves[j].postInvoke(req, resp);
+                postInvoke(savedValves[j], req, resp);
             }
 
             savedValves = null;
@@ -705,6 +707,44 @@ public class StandardPipeline
     }
 
 
+    private void postInvoke(final GlassFishValve savedValve, final Request request, final Response response) throws IOException, ServletException{
+        if(request.getRequest().isAsyncSupported()){
+            request.getRequest().getAsyncContext().addListener(new AsyncListener() {
+                @Override
+                public void onComplete(AsyncEvent event) throws IOException {
+                    try { 
+                        savedValve.postInvoke(request, response);
+                    } catch (ServletException ex) {
+                        log.log(Level.SEVERE, LogFacade.INTERNAL_ERROR, ex);
+                    }
+                }
+
+                @Override
+                public void onTimeout(AsyncEvent event) throws IOException {
+                    try { 
+                        savedValve.postInvoke(request, response);
+                    } catch (ServletException ex) {
+                        log.log(Level.SEVERE, LogFacade.INTERNAL_ERROR, ex);
+                    }
+                }
+
+                @Override
+                public void onError(AsyncEvent event) throws IOException {
+                    try { 
+                        savedValve.postInvoke(request, response);
+                    } catch (ServletException ex) {
+                        log.log(Level.SEVERE, LogFacade.INTERNAL_ERROR, ex);
+                    }
+                }
+
+                @Override
+                public void onStartAsync(AsyncEvent event) throws IOException {}
+            });
+        } else {
+           savedValve.postInvoke(request, response); 
+        }
+    }
+    
     private Request getRequest(Request request) {
 	Request r = (Request)
 	    request.getNote(Globals.WRAPPED_REQUEST);
