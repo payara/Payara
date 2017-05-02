@@ -73,6 +73,7 @@ public enum RUNTIME_OPTION {
     deployfromgav(true),
     additionalrepository(true),
     outputuberjar(true, new FileValidator(false, false, false)),
+    copytouberjar(true, new DirectoryValidator(true,true, false)),
     systemproperties(true, new FileValidator(true, true, false)),
     disablephonehome(false),
     version(false),
