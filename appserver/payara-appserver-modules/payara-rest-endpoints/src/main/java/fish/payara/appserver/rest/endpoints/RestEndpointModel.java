@@ -80,38 +80,38 @@ public class RestEndpointModel {
     }
     
     private static String getPathAnnotation(AnnotatedElement element) {
-        Path[] annotations = element.getAnnotationsByType(Path.class);
+        Path annotation = element.getAnnotation(Path.class);
         
-        if (annotations == null || annotations.length == 0) {
+        if (annotation == null) {
             return "";
         }
         
-        return annotations[0].value();
+        return annotation.value();
     }
     
     private static String getRequestMethodAnnotation(AnnotatedElement element) {
-        GET[] get = element.getAnnotationsByType(GET.class);
-        if(get.length != 0) {
+        GET get = element.getAnnotation(GET.class);
+        if(get != null) {
             return HttpMethod.GET;
         }
-        POST[] post = element.getAnnotationsByType(POST.class);
-        if(post.length != 0) {
+        POST post = element.getAnnotation(POST.class);
+        if(post != null) {
             return HttpMethod.POST;
         }
-        PUT[] put = element.getAnnotationsByType(PUT.class);
-        if(put.length != 0) {
+        PUT put = element.getAnnotation(PUT.class);
+        if(put != null) {
             return HttpMethod.PUT;
         }
-        DELETE[] delete = element.getAnnotationsByType(DELETE.class);
-        if(delete.length != 0) {
+        DELETE delete = element.getAnnotation(DELETE.class);
+        if(delete != null) {
             return HttpMethod.DELETE;
         }
-        HEAD[] head = element.getAnnotationsByType(HEAD.class);
-        if(head.length != 0) {
+        HEAD head = element.getAnnotation(HEAD.class);
+        if(head != null) {
             return HttpMethod.HEAD;
         }
-        OPTIONS[] options = element.getAnnotationsByType(OPTIONS.class);
-        if(options.length != 0) {
+        OPTIONS options = element.getAnnotation(OPTIONS.class);
+        if(options != null) {
             return HttpMethod.OPTIONS;
         }
         return null;
