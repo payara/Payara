@@ -238,7 +238,7 @@ public class PayaraRestApiHandlers
                 // Get the result of the list-rest-endpoints command and get it's extra properties
                 Map attrMap = new HashMap();
                 attrMap.put("componentname", encodedComponentName);
-                Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, false, false);
+                Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, true, false);
                 Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
                 // Enter into the map the key of the component and whether it has endpoints or not
