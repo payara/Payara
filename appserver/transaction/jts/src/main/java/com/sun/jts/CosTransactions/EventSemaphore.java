@@ -149,11 +149,13 @@ public class EventSemaphore {
     
     synchronized public void waitTimeoutEvent(int cmtTimeout)
             throws InterruptedException {
+    	int retryinterval=1000;
 
         if (!posted) {
             long timeout = (System.currentTimeMillis() / 1000) + cmtTimeout;
             while (!posted && timeout - (System.currentTimeMillis() / 1000) > 0) {
-                wait(timeout - (System.currentTimeMillis() / 1000));
+                wait(retryinterval);
+               
             }
         }
     }
