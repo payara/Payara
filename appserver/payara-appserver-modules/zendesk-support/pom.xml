@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.172-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.payara-appserver-modules</groupId>
     <artifactId>zendesk-support</artifactId>
@@ -20,6 +20,12 @@
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>amx-core</artifactId>
+            <version>4.1.1.172-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
     </dependencies>

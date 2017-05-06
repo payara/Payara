@@ -46,12 +46,12 @@
   <parent>
     <groupId>fish.payara.extras.payara-micro</groupId>
     <artifactId>payara-micro-parent</artifactId>
-    <version>4.1.1.172-SNAPSHOT</version>
+    <version>4.1.2.172-SNAPSHOT</version>
   </parent>
   
   <groupId>fish.payara.micro</groupId>
   <artifactId>payara-micro</artifactId>
-  <version>4.1.1.172-SNAPSHOT</version>
+  <version>4.1.2.172-SNAPSHOT</version>
   <name>Payara Micro Distribution</name>
   <packaging>jar</packaging>
 
@@ -344,6 +344,14 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+          <!-- payara rest endpoint package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-rest-endpoints</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
         <!-- Add Payara Micro Core -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -398,32 +406,6 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-        <!-- Add Concurrency -->
-        <dependency>
-            <groupId>javax.enterprise.concurrent</groupId>
-            <artifactId>javax.enterprise.concurrent-api</artifactId>
-            <type>jar</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.enterprise.concurrent</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.concurrent</groupId>
-            <artifactId>concurrent-connector</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <optional>true</optional>
-        </dependency>        
-        <dependency>
-            <groupId>org.glassfish.main.concurrent</groupId>
-            <artifactId>concurrent-impl</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <optional>true</optional>
-        </dependency> 
         <!-- Add Hazelcast EJB Timer Store -->
         <dependency>
             <groupId>fish.payara.ejb.timer</groupId>

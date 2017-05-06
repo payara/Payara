@@ -1,7 +1,5 @@
-/*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+/* 
+ *     Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +41,13 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 
@@ -187,6 +187,95 @@ public class PayaraRestApiHandlers
                 }
             }
         }
+    }
+    
+    /**
+     * Gets the REST endpoints from a given app name and optional component name
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.getRestEndpoints",
+        input = {
+            @HandlerInput(name = "appName", type = String.class, required = true),
+            @HandlerInput(name = "componentName", type = String.class, required = false)},
+        output = {
+            @HandlerOutput(name = "result", type = java.util.List.class)})
+    public static void getRestEndpoints(HandlerContext handlerCtx) {
+        List result = new ArrayList();
+        try{
+            String appName = (String) handlerCtx.getInputValue("appName");
+            String encodedAppName = URLEncoder.encode(appName, "UTF-8");
+            String componentName = (String) handlerCtx.getInputValue("componentName");
+            String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
+            String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
+            
+            // get the extra properties from the list-rest-endpoints command, passing in the component name
+            Map attrMap = new HashMap();
+            attrMap.put("componentname", encodedComponentName);
+            Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, false, false);
+            Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+
+            // Check if the command returned any endpoints
+            if((Map)payaraEndpointsExtraProps.get("endpointMap") != null) {
+                Map<String, String> endpointMap = (Map)payaraEndpointsExtraProps.get("endpointMap");
+                for(String key : endpointMap.keySet()) {
+                    // Count through returned endpoints
+                    Map<String, String> rowMap = new HashMap<>();
+                    rowMap.put("endpointName", key);
+                    rowMap.put("requestMethod", endpointMap.get(key));
+                    result.add(rowMap);
+                }
+            }
+          }catch(Exception ex){
+            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getRestEndpoints") + ex.getLocalizedMessage());
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+                ex.printStackTrace();
+            }
+          }
+          handlerCtx.setOutputValue("result", result);
+    }
+    
+    /**
+     * Gets a Map of components and their REST endpoints from a given sub component list
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.hasRestEndpoints",
+        input = {
+            @HandlerInput(name = "appName", type = String.class, required = true),
+            @HandlerInput(name = "rowList", type = java.util.List.class, required = true)},
+        output = {
+            @HandlerOutput(name = "result", type = java.util.Map.class)})
+    public static void hasRestEndpoints(HandlerContext handlerCtx) {
+        Map result = new HashMap();
+        try{
+            String appName = (String) handlerCtx.getInputValue("appName");
+            String encodedAppName = URLEncoder.encode(appName, "UTF-8");
+            List rowList = (List) handlerCtx.getInputValue("rowList");
+            for(Object row : rowList) {
+                Map rowMap = (Map) row;
+                
+                String componentName = (String) rowMap.get("name");
+                String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
+                String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
+
+                // Get the result of the list-rest-endpoints command and get it's extra properties
+                Map attrMap = new HashMap();
+                attrMap.put("componentname", encodedComponentName);
+                Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, true, false);
+                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+
+                // Enter into the map the key of the component and whether it has endpoints or not
+                result.put(componentName, false);
+                if((Map)payaraEndpointsExtraProps.get("endpointMap") != null) {
+                    result.put(componentName, true);
+                }
+            }
+          }catch(Exception ex){
+            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.hasRestEndpoints") + ex.getLocalizedMessage());
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+                ex.printStackTrace();
+            }
+          }
+          handlerCtx.setOutputValue("result", result);
     }
     
     /**

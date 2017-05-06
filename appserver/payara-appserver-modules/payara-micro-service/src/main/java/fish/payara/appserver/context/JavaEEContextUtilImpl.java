@@ -41,6 +41,7 @@ package fish.payara.appserver.context;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.internal.api.JavaEEContextUtil;
@@ -81,25 +82,24 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
      * @return old ClassLoader, or null if no invocation has been created
      */
     @Override
-    public Context preInvoke() {
+    public Context pushContext() {
         ClassLoader oldClassLoader = Utility.getClassLoader();
         InvocationManager invMgr = serverContext.getInvocationManager();
         boolean invocationCreated = false;
-        if(invMgr.getCurrentInvocation() == null) {
-            invMgr.preInvoke(new ComponentInvocation(capturedInvocation.getComponentId(), ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
-                    capturedInvocation.getContainer(), capturedInvocation.getAppName(), capturedInvocation.getModuleName()));
+        if(invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
+            ComponentInvocation newInvocation = capturedInvocation.clone();
+            newInvocation.clearRegistry();
+            invMgr.preInvoke(newInvocation);
             invocationCreated = true;
         }
-        JndiNameEnvironment componentEnv = compEnvMgr.getCurrentJndiNameEnvironment();
-        if(invocationCreated && componentEnv instanceof BundleDescriptor) {
-            BundleDescriptor bd = (BundleDescriptor)componentEnv;
-            Utility.setContextClassLoader(bd.getClassLoader());
+        if(invocationCreated) {
+            Utility.setContextClassLoader(getInvocationClassLoader());
         }
         return new ContextImpl.Context(oldClassLoader, invocationCreated? invMgr.getCurrentInvocation() : null);
     }
 
     @Override
-    public void postInvoke(Context _ctx) {
+    public void popContext(Context _ctx) {
         ContextImpl.Context ctx = (ContextImpl.Context)_ctx;
         if (ctx.invocation != null) {
             getServerContext().getInvocationManager().postInvoke(ctx.invocation);
@@ -114,8 +114,8 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
      * @return new context that was created
      */
     @Override
-    public RequestContext preInvokeRequestContext() {
-        Context rootCtx = preInvoke();
+    public RequestContext pushRequestContext() {
+        Context rootCtx = pushContext();
         BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
         ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<String, Object>());
         if(context.ctx != null) {
@@ -131,13 +131,13 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
      * @param context to be popped
      */
     @Override
-    public void postInvokeRequestContext(RequestContext context) {
+    public void popRequestContext(RequestContext context) {
         ContextImpl.RequestContext ctx = (ContextImpl.RequestContext)context;
         if (ctx.ctx!= null) {
             ctx.ctx.deactivate();
             ctx.ctx.dissociate(ctx.storage);
         }
-        postInvoke(ctx.rootCtx);
+        popContext(ctx.rootCtx);
     }
 
     /**
@@ -178,6 +178,19 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         if(appInfo != null) {
             Utility.setContextClassLoader(appInfo.getAppClassLoader());
         }
+    }
+
+    @Override
+    public ClassLoader getInvocationClassLoader() {
+        JndiNameEnvironment componentEnv = compEnvMgr.getCurrentJndiNameEnvironment();
+        if(componentEnv instanceof BundleDescriptor) {
+            BundleDescriptor bd = (BundleDescriptor)componentEnv;
+            return bd.getClassLoader();
+        } else if (componentEnv instanceof EjbDescriptor) {
+            EjbDescriptor ed = (EjbDescriptor)componentEnv;
+            return ed.getEjbBundleDescriptor().getClassLoader();
+        }
+        return null;
     }
 
     private static String stripVersionSuffix(String name) {

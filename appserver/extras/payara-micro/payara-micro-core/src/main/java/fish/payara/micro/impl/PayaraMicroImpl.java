@@ -65,7 +65,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.net.JarURLConnection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.glassfish.embeddable.BootstrapProperties;
@@ -83,12 +82,14 @@ import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.runtime.BootCommands;
 import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.ValidationException;
+import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
+import org.glassfish.embeddable.CommandResult;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -1898,10 +1899,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         autoBindSsl = getBooleanProperty("payaramicro.autoBindSsl");
         generateLogo = getBooleanProperty("payaramicro.logo");
         logToFile = getBooleanProperty("payaramicro.logToFile");
+        userLogFile = getProperty("payaramicro.userLogFile");
         enableAccessLog = getBooleanProperty("payaramicro.enableAccessLog");
         enableAccessLogFormat = getBooleanProperty("payaramicro.logPropertiesFile");
         enableHealthCheck = getBooleanProperty("payaramicro.enableHealthCheck");
         httpPort = getIntegerProperty("payaramicro.port", Integer.MIN_VALUE);
+        sslPort = getIntegerProperty("payaramicro.sslPort", Integer.MIN_VALUE);
         hzMulticastGroup = getProperty("payaramicro.mcAddress");
         hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
         hostAware = getBooleanProperty("payaramicro.hostAware");
@@ -2044,6 +2047,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.hostAware", Boolean.toString(hostAware));
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
 
+        if (userLogFile != null) {
+            props.setProperty("payaramicro.userLogFile", userLogFile);
+        }
+        
         if (httpPort != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.port", Integer.toString(httpPort));
         }
@@ -2219,6 +2226,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         List<URL> urls = id.getApplicationURLS();
         for (URL url : urls) {
             sb.append(url.toString()).append('\n');
+        }
+        // Count through applications and print out their REST endpoints
+        for(ApplicationDescriptor app : id.getDeployedApplications()) {
+            sb.append("\n").append("'" + app.getName()).append("' REST Endpoints\n");
+            try {
+                CommandResult result = gf.getCommandRunner().run("list-rest-endpoints", app.getName());
+                sb.append(result.getOutput().replaceAll("PlainTextActionReporter(SUCCESS|FAILURE)", ""));
+            } catch (GlassFishException ex) {
+                // Really shouldn't happen, the command catches it's own errors most of the time
+                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, "Failed to get REST endpoints for application", ex);
+            }
+            sb.append("\n\n");
         }
         LOGGER.log(Level.INFO, sb.toString());
         if (generateLogo) {
