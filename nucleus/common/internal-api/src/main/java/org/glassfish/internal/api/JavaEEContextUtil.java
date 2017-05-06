@@ -53,7 +53,7 @@ public interface JavaEEContextUtil {
      *
      * @return old ClassLoader, or null if no invocation has been created
      */
-    Context preInvoke();
+    Context pushContext();
 
     /**
      * pushes invocation context onto the stack
@@ -61,20 +61,20 @@ public interface JavaEEContextUtil {
      *
      * @return new context that was created
      */
-    RequestContext preInvokeRequestContext();
+    RequestContext pushRequestContext();
 
     /**
      * context to pop from the stack
      *
      * @param ctx to be popped
      */
-    void postInvoke(Context ctx);
+    void popContext(Context ctx);
     /**
      * context to pop from the stack
      *
      * @param context to be popped
      */
-    void postInvokeRequestContext(RequestContext context);
+    void popRequestContext(RequestContext context);
 
     /**
      * @return application name or null if there is no invocation context
@@ -87,6 +87,12 @@ public interface JavaEEContextUtil {
      * @param appName
      */
     void setApplicationContext(String appName);
+
+    /**
+     * @return Class Loader that's associated with current invocation
+     *         or null if there is no current invocation
+     */
+    ClassLoader getInvocationClassLoader();
 
     interface Context {};
     interface RequestContext {};
