@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,12 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author mertcaliskan
@@ -129,13 +134,22 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
         HistoricHealthCheckEvent[] traces = eventStore.getTraces(first);
 
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
+        Properties extrasProps = new Properties();
+        ArrayList historic = new ArrayList<Map>();
+        
         for (HistoricHealthCheckEvent historicHealthCheckEvent : traces) {
+            LinkedHashMap<String, String> messages = new LinkedHashMap<String, String>();
             Object values[] = new Object[2];
             values[0] = new Date(historicHealthCheckEvent.getOccurringTime());
             values[1] = constructMessage(historicHealthCheckEvent);
+            messages.put("dateTime",values[0].toString());
+            messages.put("message", (String) values[1]);
+            historic.add(messages);
             columnFormatter.addRow(values);
         }
         actionReport.setMessage(columnFormatter.toString());
+        extrasProps.put("historicmessages", historic);
+        actionReport.setExtraProperties(extrasProps);
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
