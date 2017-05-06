@@ -68,5 +68,6 @@
         <module>notification-datadog-core</module>
         <module>zendesk-support</module>
         <module>environment-warning</module>
+        <module>payara-rest-endpoints</module>
     </modules>
 </project>

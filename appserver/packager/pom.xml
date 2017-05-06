@@ -178,6 +178,7 @@
         <module>zendesk-support</module>
         <module>payara-api</module>
         <module>environment-warning</module>
+        <module>payara-rest-endpoints</module>
     </modules>
 
     <build>

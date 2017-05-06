@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017] [Payara Foundation] -->
 
 <!--
 setAttribute(key="sectionTitle", value="#{listOfSection[0].sectionTitle}");
@@ -56,6 +57,7 @@ println("sectionDetail =  $attribute{sectionDetail}");
         gf.getSubComponents(appName="#{pageSession.appName}"  moduleList="#{pageSession.moduleList}" result="#{requestScope.listOfRows}");
         />
      <sun:tableRowGroup id="rowGroup1"  data={"$attribute{listOfRows}"} sourceVar="td">
+         
         <sun:tableColumn headerText="$resource{i18n.ComponentTable.colModule}" sort="moduleName" rowHeader="$boolean{true}" id="colModule">
             <staticText id="nameCol" value="#{td.value.moduleName}" />
         </sun:tableColumn>
@@ -73,6 +75,7 @@ println("sectionDetail =  $attribute{sectionDetail}");
         </sun:tableColumn>
 
         <sun:tableColumn headerText="$resource{i18n.ComponentTable.colAction}"  embeddedActions="#{true}" rowHeader="$boolean{true}" id="col3">
+            
             <sun:hyperlink id="endpointLink" rendered="#{td.value.hasEndpoint}" text="$resource{i18n.ComponentTable.viewEndPoint}"
                 url="#{request.contextPath}/common/applications/endpoint.jsf?appName=#{appName}&moduleName=#{td.value.moduleName}&compName=#{td.value.name}" />
 
@@ -90,3 +93,9 @@ println("sectionDetail =  $attribute{sectionDetail}");
     </sun:tableRowGroup>
 </sun:table>
 "<br /><br />
+
+<event>
+    <!afterCreate
+        includeIntegrations(type="org.glassfish.admingui:subComponentTablePage");
+        />
+</event>
