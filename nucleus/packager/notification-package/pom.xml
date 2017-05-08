@@ -58,12 +58,11 @@
             <artifactId>notification-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- Disable eventbus notifier
         <dependency>
             <groupId>fish.payara.nucleus</groupId>
             <artifactId>notification-eventbus-core</artifactId>
             <version>${project.version}</version>
-        </dependency> -->
+        </dependency>
     </dependencies>
 </project>
 
