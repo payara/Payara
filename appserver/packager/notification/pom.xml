@@ -105,12 +105,13 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        <!-- Disable eventbus notifier package
         <dependency>
            <groupId>fish.payara.admingui</groupId>
            <artifactId>eventbus-notifier-console-plugin</artifactId>
            <version>${project.version}</version>
            <optional>true</optional>
-        </dependency>
+        </dependency> -->
     </dependencies>
 </project>
 
