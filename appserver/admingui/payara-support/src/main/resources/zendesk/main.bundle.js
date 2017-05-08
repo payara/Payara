@@ -976,7 +976,7 @@ var LoginComponent = (function () {
      * shopSupport - Method to send the user to the support buy website
      */
     LoginComponent.prototype.shopSupport = function () {
-        window.open(this.payaraService.connectionData.shopURL);
+        window.open(this.loginService.connectionData.shopURL);
     };
     return LoginComponent;
 }());
@@ -1523,7 +1523,8 @@ var AppComponent = (function () {
         __WEBPACK_IMPORTED_MODULE_2_moment__["locale"](translate.getBrowserLang());
         //translate.use('es');moment.locale('es');
         this.loginService.connectionData = {
-            zendeskUrl: this.environment.zendesk.baseUrl
+            zendeskUrl: this.environment.zendesk.baseUrl,
+            shopURL: this.environment.payara.shopUrl
         };
         this.zendeskService.connectionData = {
             zendeskUrl: this.environment.zendesk.baseUrl,
@@ -1531,8 +1532,7 @@ var AppComponent = (function () {
             token: this.environment.zendesk.token
         };
         this.payaraService.connectionData = {
-            payaraURL: this.environment.payara.baseUrl,
-            shopURL: this.environment.payara.shopUrl,
+            payaraURL: this.environment.payara.baseUrl
         };
     }
     /**
