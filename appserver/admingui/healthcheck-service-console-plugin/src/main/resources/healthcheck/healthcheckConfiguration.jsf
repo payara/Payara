@@ -56,9 +56,9 @@
         gf.restRequest(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/get-healthcheck-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}");      
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.healthcheckConfiguration}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-                        
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");       
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});        
+        py.getHistoricHealthcheckMessages(parentEndpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
@@ -140,6 +140,22 @@
                 selectedItemsLabel="$resource{i18nhx.healthcheck.configuration.selectedNotifiers}">
             </sun:addRemove>
         </sun:property>
+   </sun:propertySheetSection>
+      
+   <sun:propertySheetSection id="histroic">
+     <sun:property>            
+        <sun:table id="historicHealthcheckTable" title="$resource{i18nhx.healthcheck.historic.table.name}" >
+            <sun:tableRowGroup id="historicHealthcheckRowGroup" data={"$attribute{historic}"} sourceVar="td" 
+                   emptyDataMsg="$resource{i18nhx.healthcheck.historic.table.empty}">
+            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.headings.dateTime}" sort="dateTime" rowHeader="$boolean{true}" id="col1">
+                <staticText id="dateTime" value="#{td.value.dateTime}" />
+            </sun:tableColumn>
+            <sun:tableColumn header="$resource{i18nhx.healthcheck.historic.table.headings.message}" sort="message" rowHeader="$boolean{true}" id="col2">
+                <staticText id="message" value="#{td.value.message}" />
+            </sun:tableColumn>
+          </sun:tableRowGroup>
+        </sun:table>
+     </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>
 </sun:form>

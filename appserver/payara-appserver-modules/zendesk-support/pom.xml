@@ -25,7 +25,7 @@
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>amx-core</artifactId>
-            <version>4.1.1.172-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>
