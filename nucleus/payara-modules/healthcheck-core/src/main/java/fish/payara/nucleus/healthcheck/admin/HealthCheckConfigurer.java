@@ -110,7 +110,8 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "enabled")
     private Boolean enabled;
 
-    @Param(name = "notifierEnabled")
+    @Deprecated
+    @Param(name = "notifierEnabled", optional = true)
     private Boolean notifierEnabled;
 
     @Param(name = "historicalTraceEnabled", optional = true)
