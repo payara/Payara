@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.api.admin.config;
 
 import org.jvnet.hk2.config.Attribute;
@@ -46,11 +45,11 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.beans.PropertyVetoException;
 import javax.validation.Payload;
-import javax.validation.constraints.NotNull;
 
 /**
- * An configured element which shows the time taken to deploy the application in seconds
- * 
+ * An configured element which shows the time taken to deploy the application in
+ * seconds
+ *
  * @author Matt Gill
  */
 @Configured
@@ -61,10 +60,9 @@ public interface ApplicationDeploymentTime extends ConfigBeanProxy, Payload {
      *
      * @return deployment time
      */
-    @Attribute(defaultValue = "-1.0", dataType = Double.class)
-    @NotNull
-    public String getDeploymentTime();
+    @Attribute(defaultValue = "0.0")
+    String getDeploymentTime();
 
-    public void setDeploymentTime(String value) throws PropertyVetoException;
-    
+    void setDeploymentTime(String value) throws PropertyVetoException;
+
 }
