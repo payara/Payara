@@ -62,6 +62,7 @@ import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
+import org.glassfish.api.admin.config.ApplicationDeploymentTime;
 
 
 @Configured
@@ -70,7 +71,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
     @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "redeploy")
 })
 @ContextRootCheck(message="{contextroot.duplicate}", payload=Application.class)
-public interface Application extends ApplicationName, PropertyBag {
+public interface Application extends ApplicationName, ApplicationDeploymentTime, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";           
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";

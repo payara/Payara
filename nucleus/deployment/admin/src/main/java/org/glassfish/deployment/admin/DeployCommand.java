@@ -174,6 +174,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
+        DeploymentCommandUtils.startTimer();
+        
         events.register(this);
 
         suppInfo
@@ -485,7 +487,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
             ApplicationInfo appInfo;
             appInfo = deployment.deploy(deploymentContext);
-
+            
             /*
              * Various deployers might have added to the downloadable or
              * generated artifacts.  Extract them and, if the command succeeded,
@@ -506,6 +508,10 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     downloadableArtifacts.record(appProps);
                     generatedArtifacts.record(appProps);
 
+                    // Set the application deploy time
+                    double timePassed = DeploymentCommandUtils.getTimePassedInSeconds();
+                    deploymentContext.getTransientAppMetaData("application", Application.class).setDeploymentTime(Double.toString(timePassed));
+                    
                     // register application information in domain.xml
                     deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
                     if (tracing != null) {
