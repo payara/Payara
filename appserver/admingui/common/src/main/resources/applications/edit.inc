@@ -109,10 +109,13 @@
         <sun:property id="deploymentOrderProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOrder}" helpText="$resource{i18n.deploy.deploymentOrderHelp}">
             <sun:textField id="deploymentOrder" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.deploymentOrder']}" text="#{pageSession.valueMap['deploymentOrder']}" />
         </sun:property>
+            
+        <sun:property id="deploymentTimeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentTime}" helpText="$resource{i18n.deploy.deploymentTimeHelp}">
+            <sun:staticText id="deploymentOrder" text="#{pageSession.valueMap['deploymentTime']}" />
+        </sun:property>
 
         <sun:property id="librariesProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Libraries}">
             <sun:staticText id="libraries" text="#{pageSession.valueMap['libraries']}"/>
-            
         </sun:property>
             
         <sun:property id="descProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">

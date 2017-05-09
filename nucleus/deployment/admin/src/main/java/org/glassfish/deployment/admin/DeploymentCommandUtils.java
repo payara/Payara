@@ -104,10 +104,15 @@ public class DeploymentCommandUtils {
     /**
      * Gets the time (in seconds) that has passed since the timer was started. 
      * If the timer hasn't been started yet you may get strange results.
+     * The time returned is to millisecond accuracy.
      * @return the time in seconds since timer start
      */
     public static double getTimePassedInSeconds() {
-        return (System.nanoTime() - startTime) / 1000000000.0;
+        double accurateDouble = (System.nanoTime() - startTime) / 1000000000.0;
+        
+        int decimalPlaces = 2;
+        
+        return Math.round(accurateDouble * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
     }
 
     /**
