@@ -1,7 +1,9 @@
 {
   "Payara Support": "Soporte Payara",
-  "Login": "Entrada",
   "Email address": "Dirección de email",
+  "Insert Zendesk`s email and password to get OauthToken to communicate": "Introduce el email y password de Zendesk para obtener OauthToken para comunicar",
+  "Password": "Password",
+  "Insert password to login into Zendesk, it not will be stored": "Introduce password para ingresar en Zendesk, no será almacenada",
   "Please sign in": "Por favor entre",
   "Sign in": "Entrar",
   "My requests":"Mis peticiones",
@@ -52,6 +54,7 @@
   "is required":"es obligatorio",
   "Request":"Petición",
   "Add files":"Añadir ficheros",
+  "Error! User or password invalid":"Error! Usuario o password inválido",
   "Error! User not found":"Error! Usuario no encontrado",
   "Error! Service Unavailable":"Error! Servicio no disponible",
   "invalid-email":"Email incorrecto! {{value}} no tiene un formato válido.",
