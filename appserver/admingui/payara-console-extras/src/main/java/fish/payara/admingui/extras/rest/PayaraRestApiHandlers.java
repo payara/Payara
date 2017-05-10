@@ -420,7 +420,7 @@ public class PayaraRestApiHandlers
         endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-healthchecks" : parentEndpoint 
                 + "/" + "list-historic-healthchecks";
         
-        Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, true);
+        Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, false);
         Map data = (Map) responseMap.get("data");
          
         // Extract the information from the Map and place it in a List for representation in the dataTable
