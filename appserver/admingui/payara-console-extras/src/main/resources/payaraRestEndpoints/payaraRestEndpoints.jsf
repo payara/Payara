@@ -91,7 +91,7 @@
     <sun:tableRowGroup id="rowGroup1"  data={"$attribute{listOfEndpoints}"} sourceVar="td">
 
         <sun:tableColumn headerText="$resource{i18nhc.payaraRestEndpoint.endpointPath}" sort="endpointName" rowHeader="$boolean{true}" id="colPath">
-            <staticText id="namePath" value="#{td.value.endpointName}" />
+            <staticText id="namePath" value="#{td.value.endpointPath}" />
         </sun:tableColumn>
 
         <sun:tableColumn headerText="$resource{i18nhc.payaraRestEndpoint.requestMethod}" sort="requestMethod" rowHeader="$boolean{true}" id="colMethod">

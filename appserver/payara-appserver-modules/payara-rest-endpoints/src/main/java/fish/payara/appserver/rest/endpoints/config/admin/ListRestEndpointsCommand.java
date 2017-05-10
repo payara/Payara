@@ -59,8 +59,9 @@ import fish.payara.appserver.rest.endpoints.RestEndpointModel;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -115,11 +116,15 @@ public class ListRestEndpointsCommand implements AdminCommand {
     //Provides methods to find other HK2 services
     @Inject
     private ServiceLocator habitat;
+    
+    private final String requestMethodName = "requestMethod";
+    private final String endpointPathName = "endpointPath";
+    private final String endpointListName = "endpointList";
 
     @Override
     public void execute(AdminCommandContext context) {
 
-        Map<String, String> endpoints = new LinkedHashMap<>(); // Map of endpoint -> HTTP method
+        List<Map<String, String>> endpoints = new ArrayList<>(); // Map of endpoint -> HTTP method
 
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -170,7 +175,10 @@ public class ListRestEndpointsCommand implements AdminCommand {
                 for (RestEndpointModel endpoint : classEndpoints) {
                     String endpointPath = appRoot + jerseyAppRoot + endpoint.getPath();
                     componentHasEndpoint = true;
-                    endpoints.put(endpointPath, endpoint.getRequestMethod());
+                    Map endpointMap = new HashMap<>();
+                    endpointMap.put(endpointPathName, endpointPath);
+                    endpointMap.put(requestMethodName, endpoint.getRequestMethod());
+                    endpoints.add(endpointMap);
                 }
             }
 
@@ -190,15 +198,28 @@ public class ListRestEndpointsCommand implements AdminCommand {
             return;
         }
         
+        Comparator sorter = new Comparator<Map<String, String>>() {
+            @Override
+            public int compare(Map<String, String> a, Map<String, String> b) {
+                int firstPass = a.get(endpointPathName).compareToIgnoreCase(b.get(endpointPathName));
+                
+                if(firstPass == 0) {
+                    return a.get(requestMethodName).compareToIgnoreCase(b.get(requestMethodName));
+                }
+                return firstPass;
+            }
+        };
+        Collections.sort(endpoints, sorter);
+        
         // Print out endpoints to log
-        for(String endpointPath : endpoints.keySet()) {
-            report.appendMessage(endpoints.get(endpointPath) + "\t" + endpointPath + "\n");
+        for(Map<String, String> endpoint : endpoints) {
+            report.appendMessage(endpoint.get(requestMethodName) + "\t" + endpoint.get(endpointPathName) + "\n");
         }
         // Remove trailing spaces
         report.setMessage(report.getMessage().trim());
 
         Properties extraProps = new Properties();
-        extraProps.put("endpointMap", endpoints);
+        extraProps.put(endpointListName, endpoints);
         report.setExtraProperties(extraProps);
     }
 
