@@ -52,83 +52,123 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
 /**
+ * A model representing the endpoint specified by a method contains a
+ * {@link RestEndpointModel#path path} and a
+ * {@link RestEndpointModel#requestMethod request method}
  *
  * @author Matt Gill
  */
 public class RestEndpointModel {
-    
+
+    /**
+     * The path of the endpoint
+     */
     private String path;
+
+    /**
+     * The request method associated with the endpoint
+     */
     private String requestMethod;
-    
-    private RestEndpointModel(String path, String requestMethod){
+
+    private RestEndpointModel(String path, String requestMethod) {
         this.path = path;
         this.requestMethod = requestMethod;
     }
-    
+
+    /**
+     * Gets the endpoint of a given method, relative to the jersey application
+     * root. Will return an endpoint path with a leading slash but no trailing
+     * slashes (e.g. /test/path/{name})
+     *
+     * @param method the method to parse
+     * @return a {@link RestEndpointModel} specific to the method
+     */
     public static RestEndpointModel generateFromMethod(Method method) {
-        Class enclosingClass = method.getDeclaringClass();
-        
-        String parentPath = getPathAnnotation(enclosingClass);
-        
-        String path = parentPath + getPathAnnotation(method).replaceAll("/$", "");
+        // Get the request method off the bat
         String requestMethod = getRequestMethodAnnotation(method);
-        if(requestMethod == null) {
+        if (requestMethod == null) {
             return null;
         }
         
+        // Get the class the method is in
+        Class enclosingClass = method.getDeclaringClass();
+
+        // Get the path associated with the class
+        String parentPath = getPathAnnotation(enclosingClass);
+
+        // Get the path associated with the method
+        String childPath = getPathAnnotation(method);
+
+        String path = parentPath + childPath;
+        if (childPath.equals("/")) {
+            path = parentPath;
+        }
+
         return new RestEndpointModel(path, requestMethod);
     }
-    
+
+    /**
+     * Gets the path associated with an element. Removes all trailing slashes.
+     *
+     * @param element the annotated element
+     * @return the path of the element
+     */
     private static String getPathAnnotation(AnnotatedElement element) {
         Path annotation = element.getAnnotation(Path.class);
-        
-        if (annotation == null) {
-            return "";
+
+        if (annotation == null || annotation.value().isEmpty()) {
+            return "/";
         }
-        
-        return annotation.value();
+
+        return "/" + annotation.value().replaceAll("^/", "").replaceAll("/$", "");
     }
-    
+
+    /**
+     * Reads request method annotations to determine the request method.
+     *
+     * @param element the annotated element
+     * @return the correct {@link HttpMethod}
+     */
     private static String getRequestMethodAnnotation(AnnotatedElement element) {
         GET get = element.getAnnotation(GET.class);
-        if(get != null) {
+        if (get != null) {
             return HttpMethod.GET;
         }
         POST post = element.getAnnotation(POST.class);
-        if(post != null) {
+        if (post != null) {
             return HttpMethod.POST;
         }
         PUT put = element.getAnnotation(PUT.class);
-        if(put != null) {
+        if (put != null) {
             return HttpMethod.PUT;
         }
         DELETE delete = element.getAnnotation(DELETE.class);
-        if(delete != null) {
+        if (delete != null) {
             return HttpMethod.DELETE;
         }
         HEAD head = element.getAnnotation(HEAD.class);
-        if(head != null) {
+        if (head != null) {
             return HttpMethod.HEAD;
         }
         OPTIONS options = element.getAnnotation(OPTIONS.class);
-        if(options != null) {
+        if (options != null) {
             return HttpMethod.OPTIONS;
         }
         return null;
     }
 
     /**
-     * @return the path
+     * @return the path of the endpoint.
      */
     public String getPath() {
         return path;
     }
 
     /**
-     * @return the requestMethod
+     * @return the {@link HttpMethod} of the endpoint.
      */
     public String getRequestMethod() {
         return requestMethod;
     }
-    
+
 }

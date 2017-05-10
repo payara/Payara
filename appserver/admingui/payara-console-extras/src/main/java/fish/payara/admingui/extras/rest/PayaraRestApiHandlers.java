@@ -215,15 +215,8 @@ public class PayaraRestApiHandlers
             Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
             // Check if the command returned any endpoints
-            if((Map)payaraEndpointsExtraProps.get("endpointMap") != null) {
-                Map<String, String> endpointMap = (Map)payaraEndpointsExtraProps.get("endpointMap");
-                for(String key : endpointMap.keySet()) {
-                    // Count through returned endpoints
-                    Map<String, String> rowMap = new HashMap<>();
-                    rowMap.put("endpointName", key);
-                    rowMap.put("requestMethod", endpointMap.get(key));
-                    result.add(rowMap);
-                }
+            if((List)payaraEndpointsExtraProps.get("endpointList") != null) {
+                result = (List<Map<String, String>>)payaraEndpointsExtraProps.get("endpointList");
             }
           }catch(Exception ex){
             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getRestEndpoints") + ex.getLocalizedMessage());
@@ -265,7 +258,7 @@ public class PayaraRestApiHandlers
 
                 // Enter into the map the key of the component and whether it has endpoints or not
                 result.put(componentName, false);
-                if((Map)payaraEndpointsExtraProps.get("endpointMap") != null) {
+                if((List)payaraEndpointsExtraProps.get("endpointList") != null) {
                     result.put(componentName, true);
                 }
             }
