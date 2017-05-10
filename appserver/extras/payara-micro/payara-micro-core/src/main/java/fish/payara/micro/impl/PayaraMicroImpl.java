@@ -141,6 +141,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean disablePhoneHome = false;
     private List<String> GAVs;
     private File uberJar;
+    private File copyDirectory;
     private Properties userSystemProperties;
     private Map<String, URL> deploymentURLsMap;
     private List<URL> repositoryURLs;
@@ -1162,6 +1163,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case outputuberjar:
                         uberJar = new File(value);
                         break;
+                    case copytouberjar:
+                        copyDirectory = new File(value);
+                        break;
                     case systemproperties: {
                         File propertiesFile = new File(value);
                         setSystemProperties(propertiesFile);
@@ -1968,6 +1972,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (deploymentRoot != null) {
             creator.setDeploymentDir(deploymentRoot);
+        }
+        
+        if (copyDirectory != null){
+            creator.setDirectoryToCopy(copyDirectory);
         }
 
         if (GAVs != null) {
