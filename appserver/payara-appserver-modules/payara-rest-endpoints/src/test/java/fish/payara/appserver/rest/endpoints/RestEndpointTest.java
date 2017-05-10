@@ -42,6 +42,8 @@ package fish.payara.appserver.rest.endpoints;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import org.junit.Test;
@@ -54,45 +56,156 @@ import static org.junit.Assert.assertEquals;
 public class RestEndpointTest {
 
     @Test
-    public void parseAnnotations() throws NoSuchMethodException {
-        RestEndpointModel endpoint1 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("returnNothing", null));
+    public void testClass1() throws NoSuchMethodException {
+        RestEndpointModel endpoint1 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("returnNothing"));
         assertEquals(endpoint1.getPath(), "/rootpath");
         assertEquals(endpoint1.getRequestMethod(), HttpMethod.GET);
-        
-        RestEndpointModel endpoint2 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("returnNothingAgain", null));
+
+        RestEndpointModel endpoint2 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("returnNothingAgain"));
         assertEquals(endpoint2.getPath(), "/rootpath");
         assertEquals(endpoint2.getRequestMethod(), HttpMethod.GET);
-        
-        RestEndpointModel endpoint3 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("returnAnother", null));
+
+        RestEndpointModel endpoint3 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("returnAnother"));
         assertEquals(endpoint3.getPath(), "/rootpath/another/{id}");
         assertEquals(endpoint3.getRequestMethod(), HttpMethod.POST);
-        
-        RestEndpointModel endpoint4 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("notAnEndpoint", null));
-        assertEquals(endpoint4, null);
+
+        RestEndpointModel endpoint4 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("deleteAnother"));
+        assertEquals(endpoint4.getPath(), "/rootpath/another/{id}");
+        assertEquals(endpoint4.getRequestMethod(), HttpMethod.DELETE);
+
+        RestEndpointModel endpoint5 = RestEndpointModel.generateFromMethod(new TestClass().getClass().getDeclaredMethod("notAnEndpoint"));
+        assertEquals(endpoint5, null);
     }
 
+    @Test
+    public void testClass2() throws NoSuchMethodException {
+        RestEndpointModel endpoint1 = RestEndpointModel.generateFromMethod(new TestClass2().getClass().getDeclaredMethod("returnNothing"));
+        assertEquals(endpoint1.getPath(), "/another");
+        assertEquals(endpoint1.getRequestMethod(), HttpMethod.GET);
+
+        RestEndpointModel endpoint2 = RestEndpointModel.generateFromMethod(new TestClass2().getClass().getDeclaredMethod("returnNothingAgain"));
+        assertEquals(endpoint2.getPath(), "/another");
+        assertEquals(endpoint2.getRequestMethod(), HttpMethod.GET);
+
+        RestEndpointModel endpoint3 = RestEndpointModel.generateFromMethod(new TestClass2().getClass().getDeclaredMethod("returnAnother"));
+        assertEquals(endpoint3.getPath(), "/another/{testid}");
+        assertEquals(endpoint3.getRequestMethod(), HttpMethod.POST);
+    }
+
+    @Test
+    public void testClass3() throws NoSuchMethodException {
+        RestEndpointModel endpoint1 = RestEndpointModel.generateFromMethod(new TestClass3().getClass().getDeclaredMethod("returnNothing"));
+        assertEquals(endpoint1.getPath(), "/");
+        assertEquals(endpoint1.getRequestMethod(), HttpMethod.HEAD);
+    }
+
+    /**
+     * Default test class.
+     */
     @Path("/rootpath")
     class TestClass {
 
+        /**
+         * Test the default case of having a root response.
+         *
+         * @return nothing
+         */
         @Path("/")
         @GET
         public Object returnNothing() {
             return null;
         }
 
+        /**
+         * Test the case of having no path annotation.
+         *
+         * @return nothing
+         */
         @GET
         public Object returnNothingAgain() {
             return null;
         }
 
+        /**
+         * Test the case of having an endpoint on the end.
+         *
+         * @return nothing
+         */
         @Path("/another/{id}")
         @POST
         public String returnAnother() {
-            return "Another";
+            return null;
         }
-        
+
+        /**
+         * Test the case of having the same endpoint with a different request method
+         *
+         * @return nothing
+         */
+        @Path("/another/{id}")
+        @DELETE
+        public String deleteAnother() {
+            return null;
+        }
+
+        /**
+         * Test the case of a method which isn't an endpoint.
+         *
+         * @return nothing
+         */
         public String notAnEndpoint() {
-            return "Null";
+            return null;
+        }
+    }
+
+    /**
+     * Test class for objects with no leading or trailing slashes.
+     */
+    @Path("another")
+    class TestClass2 {
+
+        /**
+         * Test the case of having a trailing slash.
+         *
+         * @return nothing
+         */
+        @Path("/")
+        @GET
+        public Object returnNothing() {
+            return null;
+        }
+
+        /**
+         * Test the case of having the default endpoint with no slashes at all.
+         *
+         * @return nothing
+         */
+        @GET
+        public Object returnNothingAgain() {
+            return null;
+        }
+
+        /**
+         * Test the case of having a parameter, but still no slashes
+         *
+         * @return nothing
+         */
+        @Path("{testid}")
+        @POST
+        public String returnAnother() {
+            return null;
+        }
+    }
+
+    /**
+     * Test class for objects at the jersey context root
+     */
+    @Path("/")
+    class TestClass3 {
+
+        @HEAD
+        public Object returnNothing() {
+            return null;
         }
     }
 }
