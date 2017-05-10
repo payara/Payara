@@ -1,7 +1,9 @@
 {
     "Payara Support": "Payara Support",
-    "Login": "Login",
     "Email address": "Email address",
+    "Insert Zendesk`s email and password to get OauthToken to communicate": "Insert Zendesk`s email and password to get OauthToken to communicate",
+    "Password": "Password",
+    "Insert password to login into Zendesk, it not will be stored": "Insert password to login into Zendesk, it not will be stored",
     "Please sign in": "Please sign in",
     "Sign in": "Sign in",
     "My requests":"My requests",
@@ -52,6 +54,7 @@
     "is required":"is required",
     "Request":"Request",
     "Add files":"Add files",
+    "Error! User or password invalid":"Error! User or password invalid",
     "Error! User not found":"Error! User not found",
     "Error! Service Unavailable":"Error! Service Unavailable",
     "invalid-email":"Invalid email! {{value}} has not a valid format.",
