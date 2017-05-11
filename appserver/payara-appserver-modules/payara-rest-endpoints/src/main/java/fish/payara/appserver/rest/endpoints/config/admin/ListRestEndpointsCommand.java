@@ -73,6 +73,7 @@ import org.glassfish.api.admin.RestParam;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.data.EngineRef;
 import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.jersey.servlet.ServletContainer;
 
@@ -116,7 +117,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
     //Provides methods to find other HK2 services
     @Inject
     private ServiceLocator habitat;
-    
+
     private final String requestMethodName = "requestMethod";
     private final String endpointPathName = "endpointPath";
     private final String endpointListName = "endpointList";
@@ -132,18 +133,25 @@ public class ListRestEndpointsCommand implements AdminCommand {
         // Get all deployed applications
         ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
 
+        // Get the deployed application with the provided name
+        ApplicationInfo appInfo = getSpecifiedApplication(appName, appRegistry);
+
         // Check if the given application exists
-        if (!appRegistry.getAllApplicationNames().contains(appName)) {
+        if (appInfo == null) {
             report.setMessage("Application " + appName + " is not registered");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-        // Get the deployed application with the provided name
-        ApplicationInfo appInfo = getSpecifiedApplication(appName, appRegistry);
-
         // Get the web modules from the given application (e.g. multiple wars in an ear)
         List<WebModule> modules = getWebModules(appInfo);
+
+        // Check if the given application exists
+        if (modules.isEmpty()) {
+            report.setMessage("Application " + appName + " contains no web modules");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
 
         // Get the Jersey applications from all of the modules (or only the one matching the given component name)
         Map<ServletContainer, String> jerseyApplicationMap = getSpecifiedJerseyApplications(componentName, modules);
@@ -151,8 +159,8 @@ public class ListRestEndpointsCommand implements AdminCommand {
         // error out in the case of a non existent provided component or no components at all
         if (jerseyApplicationMap.isEmpty()) {
             report.setMessage("Component " + componentName + " could not be found");
-            if(componentName == null) {
-                report.setMessage("Application " + appName + " has no deployed endpoints");
+            if (componentName == null) {
+                report.setMessage("Application " + appName + " has no deployed Jersey applications");
             }
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
@@ -165,8 +173,6 @@ public class ListRestEndpointsCommand implements AdminCommand {
 
             List<Class<?>> containedClasses = getClasses(jerseyApplication);
 
-            boolean componentHasEndpoint = false;
-
             // loop through all classes contained by given jersey application
             for (Class containedClass : containedClasses) {
                 List<RestEndpointModel> classEndpoints = getEndpointsForClass(containedClass);
@@ -174,7 +180,6 @@ public class ListRestEndpointsCommand implements AdminCommand {
                 // loop through endpoints in given class
                 for (RestEndpointModel endpoint : classEndpoints) {
                     String endpointPath = appRoot + jerseyAppRoot + endpoint.getPath();
-                    componentHasEndpoint = true;
                     Map endpointMap = new HashMap<>();
                     endpointMap.put(endpointPathName, endpointPath);
                     endpointMap.put(requestMethodName, endpoint.getRequestMethod());
@@ -182,37 +187,34 @@ public class ListRestEndpointsCommand implements AdminCommand {
                 }
             }
 
-            // error out in the case of an empty specified component
-            if (!componentHasEndpoint && jerseyApplication.getServletConfig().getServletName().equals(componentName)) {
-                report.setMessage("Component " + componentName + " has no deployed endpoints");
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-
         }
 
         // error out in the case of an empty application
         if (endpoints.isEmpty()) {
-            report.setMessage("Application " + appName + " has no deployed endpoints");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+            if(componentName == null) {
+                report.setMessage("Application " + appName + " has no deployed endpoints");
+            } else {
+                report.setMessage("Component " + componentName + " has no deployed endpoints");
+            }
+            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
-        
+
+        // Sort the endpoint list
         Comparator sorter = new Comparator<Map<String, String>>() {
             @Override
             public int compare(Map<String, String> a, Map<String, String> b) {
                 int firstPass = a.get(endpointPathName).compareToIgnoreCase(b.get(endpointPathName));
-                
-                if(firstPass == 0) {
+
+                if (firstPass == 0) {
                     return a.get(requestMethodName).compareToIgnoreCase(b.get(requestMethodName));
                 }
                 return firstPass;
             }
         };
         Collections.sort(endpoints, sorter);
-        
+
         // Print out endpoints to log
-        for(Map<String, String> endpoint : endpoints) {
+        for (Map<String, String> endpoint : endpoints) {
             report.appendMessage(endpoint.get(requestMethodName) + "\t" + endpoint.get(endpointPathName) + "\n");
         }
         // Remove trailing spaces
@@ -223,7 +225,19 @@ public class ListRestEndpointsCommand implements AdminCommand {
         report.setExtraProperties(extraProps);
     }
 
+    /**
+     * Gets the application specified from a given {@link ApplicationRegistry}.
+     * This function will return null if either parameters are null, or the
+     * application is not found.
+     *
+     * @param appName the name of the application to be found.
+     * @param appRegistry the application registry to search.
+     * @return the application.
+     */
     private ApplicationInfo getSpecifiedApplication(String appName, ApplicationRegistry appRegistry) {
+        if (appRegistry == null || appName == null) {
+            return null;
+        }
         // Loop through all deployed application names
         for (String applicationRegistryNameEntry : appRegistry.getAllApplicationNames()) {
             if (applicationRegistryNameEntry.equals(appName)) {
@@ -234,18 +248,37 @@ public class ListRestEndpointsCommand implements AdminCommand {
         return null;
     }
 
+    /**
+     * Gets the web modules associated with an application as a list.
+     *
+     * @param appInfo the application to search.
+     * @return a list of web modules.
+     */
     private List<WebModule> getWebModules(ApplicationInfo appInfo) {
+        if (appInfo == null) {
+            return null;
+        }
         List<WebModule> webModules = new ArrayList<>();
         // loop through all deployed modules in the application (e.g. multiple wars in one ear)
         for (ModuleInfo moduleInfo : appInfo.getModuleInfos()) {
-            WebApplication webApplication = (WebApplication) moduleInfo.getEngineRefForContainer(WebContainer.class).getApplicationContainer();
-            for (WebModule module : webApplication.getWebModules()) {
-                webModules.add(module);
+            EngineRef engineRef = moduleInfo.getEngineRefForContainer(WebContainer.class);
+            if (engineRef != null) {
+                WebApplication webApplication = (WebApplication) engineRef.getApplicationContainer();
+                for (WebModule module : webApplication.getWebModules()) {
+                    webModules.add(module);
+                }
             }
         }
         return webModules;
     }
 
+    /**
+     * Gets a map of Jersey container to the Jersey container name, from a given component name and list of web modules.
+     * If the component name is null, then this will return all Jersey applications.
+     * @param componentName the name of the Jersey component.
+     * @param modules a list of web modules.
+     * @return a map of Jersey containers to their names.
+     */
     private Map<ServletContainer, String> getSpecifiedJerseyApplications(String componentName, List<WebModule> modules) {
 
         Map<ServletContainer, String> jerseyApplicationMap = new HashMap<>();
@@ -278,15 +311,27 @@ public class ListRestEndpointsCommand implements AdminCommand {
         return jerseyApplicationMap;
     }
 
+    /**
+     * Gets the user defined classes associated with a Jersey application as a list.
+     * @param jerseyApplication the Jersey application.
+     * @return a list of classes.
+     */
     private List<Class<?>> getClasses(ServletContainer jerseyApplication) {
         List<Class<?>> classes = new ArrayList<>();
 
         for (Class jerseyClass : jerseyApplication.getConfiguration().getApplication().getClasses()) {
-            classes.add(jerseyClass);
+            if(!jerseyClass.getPackage().getName().contains("org.glassfish.jersey.server.wadl")) {
+                classes.add(jerseyClass);
+            }
         }
         return classes;
     }
 
+    /**
+     * Gets the endpoints for a given class.
+     * @param containerClass the class to search.
+     * @return a list of {@link RestEndpointModel}s.
+     */
     private List<RestEndpointModel> getEndpointsForClass(Class containerClass) {
         List<RestEndpointModel> endpoints = new ArrayList<>();
         // Loop through all of the methods directly declared in the class

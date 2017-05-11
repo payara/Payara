@@ -228,7 +228,7 @@ public class PayaraRestApiHandlers
     }
     
     /**
-     * Gets a Map of components and their REST endpoints from a given sub component list
+     * Gets a map of components and if they are a jersey application
      * @param handlerCtx 
      */
     @Handler(id = "py.hasRestEndpoints",
