@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,9 +54,9 @@ import org.apache.catalina.deploy.ContextResource;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.startup.ContextConfig;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.naming.NamingException;
@@ -77,34 +77,9 @@ public class WebModuleContextConfig extends ContextConfig {
 
     private static final String DEFAULT_DIGEST_ALGORITHM = "default-digest-algorithm";
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     protected static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Configured an authenticator for method {0}",
-            level = "FINEST")
-    public static final String AUTHENTICATOR_CONFIGURED = "AS-WEB-GLUE-00254";
-
-    @LogMessageInfo(
-            message = "[{0}] failed to unbind namespace",
-            level = "WARNING")
-    public static final String UNBIND_NAME_SPACE_ERROR = "AS-WEB-GLUE-00255";
-
-    @LogMessageInfo(
-            message = "No Realm with name [{0}] configured to authenticate against",
-            level = "WARNING")
-    public static final String MISSING_REALM = "AS-WEB-GLUE-00256";
-
-    @LogMessageInfo(
-            message = "Cannot configure an authenticator for method {0}",
-            level = "WARNING")
-    public static final String AUTHENTICATOR_MISSING = "AS-WEB-GLUE-00257";
-
-    @LogMessageInfo(
-            message = "Cannot instantiate an authenticator of class {0}",
-            level = "WARNING")
-    public static final String AUTHENTICATOR_INSTANTIATE_ERROR = "AS-WEB-GLUE-00258";
 
 
     public final static int CHILDREN = 0;
@@ -326,7 +301,7 @@ public class WebModuleContextConfig extends ContextConfig {
             String realmName = (context.getLoginConfig() != null) ?
                 context.getLoginConfig().getRealmName() : null;
             if (realmName != null && !realmName.isEmpty()) {
-                String msg = rb.getString(MISSING_REALM);
+                String msg = rb.getString(LogFacade.MISSING_REALM);
                 throw new LifecycleException(
                         MessageFormat.format(msg, realmName));
             }
@@ -370,7 +345,7 @@ public class WebModuleContextConfig extends ContextConfig {
             */
 
             if (authenticatorName == null) {
-                String msg = rb.getString(AUTHENTICATOR_MISSING);
+                String msg = rb.getString(LogFacade.AUTHENTICATOR_MISSING);
                 throw new LifecycleException(MessageFormat.format(msg,
                     loginConfig.getAuthMethod()));
             }
@@ -381,7 +356,7 @@ public class WebModuleContextConfig extends ContextConfig {
                 authenticator = (GlassFishValve)
                     authenticatorClass.newInstance();
             } catch (Exception e) {
-                    String msg = rb.getString(AUTHENTICATOR_INSTANTIATE_ERROR);
+                    String msg = rb.getString(LogFacade.AUTHENTICATOR_INSTANTIATE_ERROR);
                 throw new LifecycleException(
                     MessageFormat.format(msg, authenticatorName),
                     e);
@@ -394,7 +369,7 @@ public class WebModuleContextConfig extends ContextConfig {
                 ((ContainerBase) context).addValve(authenticator);
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST,
-                        AUTHENTICATOR_CONFIGURED,
+                        LogFacade.AUTHENTICATOR_CONFIGURED,
                         loginConfig.getAuthMethod());
                 }
             }
@@ -443,7 +418,7 @@ public class WebModuleContextConfig extends ContextConfig {
             try {
                 namingMgr.unbindFromComponentNamespace(webBundleDescriptor);
             } catch (javax.naming.NamingException ex) {
-                String msg = rb.getString(UNBIND_NAME_SPACE_ERROR);
+                String msg = rb.getString(LogFacade.UNBIND_NAME_SPACE_ERROR);
                 msg = MessageFormat.format(msg, context.getName());
                 logger.log(Level.WARNING, msg, ex);
             }        

@@ -218,7 +218,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
 
     private Class loadArrayClass(Bundle b, String cname) throws ClassNotFoundException {
         // We are never called with primitive types, so we don't have to check for primitive types.
-        assert(cname.charAt(0) == 'L'); // An array
+        assert(cname.charAt(0) == '['); // An array
         Class component;        // component class
         int dcount;            // dimension
         for (dcount = 1; cname.charAt(dcount) == '['; dcount++){

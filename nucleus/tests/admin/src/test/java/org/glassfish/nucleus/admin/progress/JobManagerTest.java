@@ -160,7 +160,7 @@ public class JobManagerTest {
                //restart
                assertTrue( nadmin("start-domain"));
                //configure-managed-jobs
-               assertTrue( nadmin("configure-managed-jobs","--job-retention-period=3s","--cleanup-initial-delay=2s",
+               assertTrue( nadmin("configure-managed-jobs","--job-retention-period=6s","--cleanup-initial-delay=2s",
                        "--cleanup-poll-interval=2s"));
                assertTrue(COMMAND1, nadmin(COMMAND1));
 

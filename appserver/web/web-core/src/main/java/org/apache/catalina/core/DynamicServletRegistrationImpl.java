@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,19 +50,14 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.text.MessageFormat;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
+
 
 public class DynamicServletRegistrationImpl
     extends ServletRegistrationImpl
     implements ServletRegistration.Dynamic {
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "Unable to configure {0} for servlet {1} of servlet context {2}, because this servlet context has already been initialized",
-        level = "WARNING"
-    )
-    public static final String DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00116";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     /**
      * Constructor
@@ -74,7 +69,7 @@ public class DynamicServletRegistrationImpl
 
     public void setLoadOnStartup(int loadOnStartup) {
         if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
+            String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
                                               new Object[] {"load-on-startup", wrapper.getName(), ctx.getName()});
             throw new IllegalStateException(msg);
         }
@@ -84,7 +79,7 @@ public class DynamicServletRegistrationImpl
 
     public void setAsyncSupported(boolean isAsyncSupported) {
         if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
+            String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
                                               new Object[] {"load-on-startup", wrapper.getName(), ctx.getName()});
             throw new IllegalStateException(msg);
         }
@@ -99,7 +94,7 @@ public class DynamicServletRegistrationImpl
 
     public void setMultipartConfig(MultipartConfigElement mpConfig) {
         if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
+            String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
                     new Object[] {"multipart-config", wrapper.getName(), ctx.getName()});
             throw new IllegalStateException(msg);
         }
@@ -113,7 +108,7 @@ public class DynamicServletRegistrationImpl
 
     public void setRunAsRole(String roleName) {
         if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
+            String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
                     new Object[] {"run-as", wrapper.getName(), ctx.getName()});
             throw new IllegalStateException(msg);
         }

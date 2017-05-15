@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.v3.services.impl.MapperUpdateListener;
 import com.sun.enterprise.web.WebContainer;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.config.serverbeans.ManagerProperties;
 import org.glassfish.web.config.serverbeans.WebContainerAvailability;
 import org.apache.catalina.LifecycleException;
@@ -76,18 +76,6 @@ import org.glassfish.grizzly.http.server.util.Mapper;
  * @author amyroh
  */
 public class WebConfigListener implements ConfigListener, MapperUpdateListener {
-
-    @LogMessageInfo(
-            message = "Web container config changed {0} {1} {2}",
-            level = "FINE")
-    public static final String CHANGE_INVOKED = "AS-WEB-GLUE-00114";
-
-    @LogMessageInfo(
-            message = "Exception processing HttpService configuration change",
-            level = "SEVERE",
-            cause = "An exception occurred during configuration change ",
-            action = "Check the exception for error")
-    public static final String EXCEPTION_WEB_CONFIG = "AS-WEB-GLUE-00115";
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     public HttpService httpService;
@@ -133,7 +121,7 @@ public class WebConfigListener implements ConfigListener, MapperUpdateListener {
             @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, CHANGE_INVOKED, new Object[] {type, tClass, t});
+                    logger.log(Level.FINE, LogFacade.CHANGE_INVOKED, new Object[] {type, tClass, t});
                 }
                 try {
                     if (tClass == HttpService.class) {
@@ -196,7 +184,7 @@ public class WebConfigListener implements ConfigListener, MapperUpdateListener {
                         // Ignore other unrelated events
                     }
                 } catch (LifecycleException le) {
-                    logger.log(Level.SEVERE, EXCEPTION_WEB_CONFIG, le);
+                    logger.log(Level.SEVERE, LogFacade.EXCEPTION_WEB_CONFIG, le);
                 }
                 return null;
             }

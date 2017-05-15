@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] Payara Foundation and/or affiliates
 -->
 
 <!-- sslPrepare.inc  -->
@@ -59,7 +60,7 @@ if (! #{requestScope.exist}){
          TODO: REST need to provide an endpoint to get the default value.
       -->
     createMap(result="#{pageSession.valueMap}");
-    mapPut(map="#{pageSession.valueMap}" key="ssl3Enabled" value="true");
+    mapPut(map="#{pageSession.valueMap}" key="ssl3Enabled" value="false");
     mapPut(map="#{pageSession.valueMap}" key="tlsEnabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="tls11Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="tls12Enabled" value="true");

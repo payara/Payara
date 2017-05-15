@@ -85,11 +85,11 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
                 <orb use-thread-pool-ids="thread-pool-1"></orb>
                 <iiop-listener id="orb-listener-1" enabled="false" address="0.0.0.0"></iiop-listener>
             </iiop-service>    
-            <admin-service system-jmx-connector-name="system">
+            <admin-service system-jmx-connector-name="system" type="das-and-server">
                 <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system" enabled="false"></jmx-connector>
                 <das-config></das-config>
             </admin-service>     
-            <connector-service shutdown-timeout-in-seconds="30">
+            <connector-service class-loading-policy="global" shutdown-timeout-in-seconds="30">
             </connector-service>
             <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
                 <ejb-timer-service ejb-timer-service="Hazelcast"></ejb-timer-service>

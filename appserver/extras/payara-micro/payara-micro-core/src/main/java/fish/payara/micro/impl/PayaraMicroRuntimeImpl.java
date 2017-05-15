@@ -21,9 +21,8 @@ import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
 import fish.payara.micro.event.CDIEventListener;
 import fish.payara.micro.event.PayaraClusterListener;
-import fish.payara.appserver.micro.services.PayaraInstance;
-import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
 import fish.payara.micro.ClusterCommandResult;
+import fish.payara.micro.PayaraInstance;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.micro.event.PayaraClusteredCDIEvent;
 import java.io.File;
@@ -140,7 +139,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         
         // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
         
-        Map<String,Future<ClusterCommandResultImpl>> commandResult = instanceService.executeClusteredASAdmin(command, args);
+        Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(command, args);
         Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
         for (String uuid : commandResult.keySet()) {
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
@@ -168,7 +167,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
             memberUUIDs.add(member.getMemberUUID());
         }
         
-        Map<String,Future<ClusterCommandResultImpl>> commandResult = instanceService.executeClusteredASAdmin(memberUUIDs,command, args);
+        Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(memberUUIDs,command, args);
         Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
         for (String uuid : commandResult.keySet()) {
             InstanceDescriptor id = instanceService.getDescriptor(uuid);

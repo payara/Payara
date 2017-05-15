@@ -40,14 +40,14 @@
     holder.
 -->
 
-<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.172-SNAPSHOT</version>
     </parent>
     <artifactId>payara-web</artifactId>
     <name>Payara Web Featureset</name>
@@ -151,6 +151,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        <!-- Notifiers -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>notification</artifactId>
@@ -159,7 +160,55 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-email</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-hipchat</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-slack</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-snmp</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-xmpp</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-datadog</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification-newrelic</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+      <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>asadmin-recorder</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
@@ -181,6 +230,27 @@
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>payara-micro</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <!-- zendesk support --><!-- Removed for now
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>zendesk-support</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>-->
+        <!-- environment warning -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>environment-warning</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <!-- payara rest endpoints -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-rest-endpoints</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

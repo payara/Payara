@@ -40,13 +40,14 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017] [Payara Foundation] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.172-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-nucleus</artifactId>
     <name>Glassfish Nucleus Package</name>
@@ -141,6 +142,16 @@
         <dependency>
            <groupId>org.glassfish.main.admin</groupId>
            <artifactId>payara-domain</artifactId>
+           <version>${project.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.glassfish.main.admin</groupId>
+           <artifactId>appserver-domain-web</artifactId>
+           <version>${project.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.glassfish.main.admin</groupId>
+           <artifactId>payara-domain-web</artifactId>
            <version>${project.version}</version>
        </dependency>
     </dependencies>

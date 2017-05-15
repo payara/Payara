@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,7 @@ import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.config.serverbeans.ContextParam;
 import org.glassfish.web.config.serverbeans.EnvEntry;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
@@ -69,41 +69,9 @@ import java.util.logging.Logger;
 
 public class WebApplication implements ApplicationContainer<WebBundleDescriptorImpl> {
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     protected static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Unknown error, loadWebModule returned null, file a bug",
-            level = "SEVERE",
-            cause = "An exception occurred writing to access log file",
-            action = "Check the exception for the error")
-    public static final String WEBAPP_UNKNOWN_ERROR = "AS-WEB-GLUE-00171";
-
-    @LogMessageInfo(
-            message = "Loading application [{0}] at [{1}]",
-            level = "INFO")
-    public static final String LOADING_APP = "AS-WEB-GLUE-00172";
-
-    @LogMessageInfo(
-            message = "App config customization specified to ignore descriptor's {0} {1} so it will not be present for the application",
-            level = "FINER")
-    public static final String IGNORE_DESCRIPTOR = "AS-WEB-GLUE-00173";
-
-    @LogMessageInfo(
-            message = "Overriding descriptor {0}",
-            level = "FINER")
-    public static final String OVERIDE_DESCRIPTOR = "AS-WEB-GLUE-00174";
-
-    @LogMessageInfo(
-            message = "Creating new {0}",
-            level = "FINER")
-    public static final String CREATE_DESCRIPTOR = "AS-WEB-GLUE-00175";
-
-    @LogMessageInfo(
-            message = "Exception during Coherence*Web shutdown for application [{0}]",
-            level = "WARNING")
-    public static final String EXCEPTION_SHUTDOWN_COHERENCE_WEB = "AS-WEB-GLUE-00176";
 
     private final WebContainer container;
     private final WebModuleConfig wmInfo;
@@ -169,7 +137,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
         }
 
         if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, LOADING_APP, new Object[] {wmInfo.getDescriptor().getName(), wmInfo.getDescriptor().getContextRoot()});
+            logger.log(Level.INFO, LogFacade.LOADING_APP, new Object[] {wmInfo.getDescriptor().getName(), wmInfo.getDescriptor().getContextRoot()});
         }
         
         return true;
@@ -477,7 +445,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
                             it.remove();
                             if (isFiner) {
                                 logger.log(Level.FINER,
-                                        IGNORE_DESCRIPTOR,
+                                        LogFacade.IGNORE_DESCRIPTOR,
                                         new Object[]{descriptorItemName, getName(descriptorItem)});
                             }
                         } else {
@@ -489,7 +457,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
                             try {
                                 setDescriptorItemValue(descriptorItem, customization);
                                 if (isFiner) {
-                                    logger.log(Level.FINER, OVERIDE_DESCRIPTOR,
+                                    logger.log(Level.FINER, LogFacade.OVERIDE_DESCRIPTOR,
                                             descriptorItemName + " " +
                                             getName(descriptorItem) + "=" +
                                             oldValue +
@@ -514,7 +482,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
                     T newItem = addDescriptorItem(customization);
                     if (isFiner) {
                         logger.log(Level.FINER,
-                                CREATE_DESCRIPTOR,
+                                LogFacade.CREATE_DESCRIPTOR,
                                 descriptorItemName + getName(newItem) + "=" + getValue(newItem));
                     }
                 } catch (Exception e) {
@@ -660,7 +628,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
                         }
                     } catch(Exception ex) {
                         if (logger.isLoggable(Level.WARNING)) {
-                            String msg = rb.getString(EXCEPTION_SHUTDOWN_COHERENCE_WEB);
+                            String msg = rb.getString(LogFacade.EXCEPTION_SHUTDOWN_COHERENCE_WEB);
                             msg = MessageFormat.format(msg, wmInfo.getDescriptor().getName());
                             logger.log(Level.WARNING, msg, ex);
                         }

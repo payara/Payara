@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,11 +59,10 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -91,17 +90,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateTransport implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "{0} transport already exists. Cannot add duplicate transport.",
-            level = "INFO")
-    protected static final String CREATE_TRANSPORT_FAIL_DUPLICATE = "AS-WEB-ADMIN-00022";
-
-    @LogMessageInfo(
-            message = "Failed to create transport {0}.",
-            level = "INFO")
-    protected static final String CREATE_TRANSPORT_FAIL = "AS-WEB-ADMIN-00023";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name = "transportname", primary = true)
     String transportName;
@@ -158,7 +147,7 @@ public class CreateTransport implements AdminCommand {
         for (Transport transport : transports.getTransport()) {
             if (transportName != null &&
                 transportName.equalsIgnoreCase(transport.getName())) {
-                report.setMessage(MessageFormat.format(rb.getString(CREATE_TRANSPORT_FAIL_DUPLICATE), transportName));
+                report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_TRANSPORT_FAIL_DUPLICATE), transportName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -191,7 +180,7 @@ public class CreateTransport implements AdminCommand {
                 }
             }, transports);
         } catch (TransactionFailure e) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_TRANSPORT_FAIL), transportName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_TRANSPORT_FAIL), transportName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

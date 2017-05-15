@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -144,6 +144,7 @@ public interface WebTagNames extends TagNames {
     public static final String LOCALE_ENCODING_MAPPING = "locale-encoding-mapping";
     public static final String LOCALE = "locale";
     public static final String ENCODING = "encoding";
+    public static final String DEFAULT_CONTEXT_PATH = "default-context-path";
 
     //ordering
     public static final String ABSOLUTE_ORDERING = "absolute-ordering";

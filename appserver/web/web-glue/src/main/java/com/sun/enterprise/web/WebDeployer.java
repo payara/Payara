@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.deployment.GenericHandler;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.jsp.JSPCompiler;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import javax.inject.Inject;
@@ -75,21 +75,9 @@ import java.util.logging.Logger;
 @Service
 public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Unable to load configuration of web module [{0}]",
-            level = "WARNING")
-    public static final String UNABLE_TO_LOAD_CONFIG = "AS-WEB-GLUE-00220";
-
-    @LogMessageInfo(
-            message = "Failed to precompile JSP pages of web module [{0}]",
-            level = "SEVERE",
-            cause = "An exception occurred precompiling JSP pages",
-            action = "Check the exception for the error")
-    public static final String JSPC_FAILED = "AS-WEB-GLUE-00221";
 
     @Inject
     ServerContext sc;
@@ -167,7 +155,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             wmInfo.setLocation(dc.getSourceDir());
             wmInfo.setObjectType(dc.getAppProps().getProperty(ServerTags.OBJECT_TYPE));
         } catch (Exception ex) {
-            String msg = rb.getString(UNABLE_TO_LOAD_CONFIG);
+            String msg = rb.getString(LogFacade.UNABLE_TO_LOAD_CONFIG);
             msg = MessageFormat.format(msg, wmInfo.getName());
             logger.log(Level.WARNING, msg, ex);
         }
@@ -231,7 +219,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                         DeployCommandParameters.class).libraries)); 
             JSPCompiler.compile(inDir, outDir, wbd, classpath.toString(), sc);
         } catch (DeploymentException de) {
-            String msg = rb.getString(JSPC_FAILED);
+            String msg = rb.getString(LogFacade.JSPC_FAILED);
             msg = MessageFormat.format(msg, wbd.getApplication().getName());
             logger.log(Level.SEVERE, msg, de);
             throw de;

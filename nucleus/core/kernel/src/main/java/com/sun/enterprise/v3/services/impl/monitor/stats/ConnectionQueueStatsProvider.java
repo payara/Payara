@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -290,8 +290,8 @@ public class ConnectionQueueStatsProvider implements StatsProvider {
                 shiftAverage(currentTime);
             }
 
-            int result = averageMinuteCounter;
-            final int statsToCount = Math.min(mins - 1, averageStatsPerMinute.length);
+            int result = 0;
+            final int statsToCount = Math.min(mins, averageStatsPerMinute.length);
             for(int i = 0; i < statsToCount; i++) {
                 result += averageStatsPerMinute[i];
             }

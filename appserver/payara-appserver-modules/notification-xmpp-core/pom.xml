@@ -41,7 +41,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.172-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
     <artifactId>notification-xmpp-core</artifactId>
@@ -62,11 +62,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smack-core</artifactId>
-            <version>${smack.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack-java7</artifactId>
@@ -92,16 +87,6 @@
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack-im</artifactId>
             <version>${smack.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jxmpp</groupId>
-            <artifactId>jxmpp-core</artifactId>
-            <version>${jxmpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jxmpp</groupId>
-            <artifactId>jxmpp-util-cache</artifactId>
-            <version>${jxmpp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.session.FileStore;
 import org.apache.catalina.session.PersistentManager;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.jvnet.hk2.annotations.Service;
 
@@ -53,18 +53,13 @@ import java.util.logging.Level;
 @Service(name="file")
 public class FileStrategyBuilder extends BasePersistenceStrategyBuilder {
 
-    @LogMessageInfo(
-            message = "Enabling file-based persistence for web module [{0}]''s sessions",
-            level = "INFO")
-    public static final String FILE_PERSISTENCE = "AS-WEB-GLUE-00093";
-
     public void initializePersistenceStrategy(
             Context ctx,
             SessionManager smBean,
             ServerConfigLookup serverConfigLookup) {
 
         if (_logger.isLoggable(Level.INFO)) {
-            _logger.log(Level.INFO, FILE_PERSISTENCE, ctx.getPath());
+            _logger.log(Level.INFO, LogFacade.FILE_PERSISTENCE, ctx.getPath());
         }
 
         super.initializePersistenceStrategy(ctx, smBean, serverConfigLookup);

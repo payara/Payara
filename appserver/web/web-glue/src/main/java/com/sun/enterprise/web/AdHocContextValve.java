@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@ package com.sun.enterprise.web;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.Wrapper;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.servlet.Servlet;
@@ -70,22 +70,12 @@ import java.util.logging.Logger;
  */
 public class AdHocContextValve implements GlassFishValve {
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
 
     private static final String VALVE_INFO =
         "com.sun.enterprise.web.AdHocContextValve";
-
-    @LogMessageInfo(
-            message = "Error processing request received on ad-hoc path {0}",
-            level = "WARNING")
-    private static final String ADHOC_SERVLET_SERVICE_ERROR = "AS-WEB-GLUE-00050";
-
-    @LogMessageInfo(
-            message = "No ad-hoc servlet configured to process ad-hoc path {0}",
-            level = "WARNING")
-    private static final String NO_ADHOC_SERVLET = "AS-WEB-GLUE-00051";
 
     // The web module with which this valve is associated
     private WebModule context;
@@ -132,7 +122,7 @@ public class AdHocContextValve implements GlassFishValve {
                 adHocServlet.service(hreq, hres);
             } catch (Throwable t) {
                 hres.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                String msg = rb.getString(ADHOC_SERVLET_SERVICE_ERROR);
+                String msg = rb.getString(LogFacade.ADHOC_SERVLET_SERVICE_ERROR);
                 msg = MessageFormat.format(
                             msg,
                             new Object[] { hreq.getServletPath() });
@@ -148,7 +138,7 @@ public class AdHocContextValve implements GlassFishValve {
             }
         } else {
             hres.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            String msg = rb.getString(NO_ADHOC_SERVLET);
+            String msg = rb.getString(LogFacade.NO_ADHOC_SERVLET);
             msg = MessageFormat.format(
                             msg,
                             new Object[] { hreq.getServletPath() });

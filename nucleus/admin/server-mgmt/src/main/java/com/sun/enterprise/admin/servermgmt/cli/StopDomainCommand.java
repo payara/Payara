@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -88,11 +90,12 @@ public class StopDomainCommand extends LocalDomainCommand {
         // NetUtils says that the getHost() --> isThisMe() rather than merely
         // checking for the magic "localhost" string.  Too risky to fool with it today.
 
-        if (programOpts.getHost().equals(CLIConstants.DEFAULT_HOSTNAME))
+        if (programOpts.getHost().equals(CLIConstants.DEFAULT_HOSTNAME)) {
             super.initDomain();
-        else if (userArgDomainName != null)   // remote case
+        } else if (userArgDomainName != null) {  // remote case
             throw new CommandException(
                     Strings.get("StopDomain.noDomainNameAllowed"));
+        }
     }
 
     @Override
@@ -102,9 +105,9 @@ public class StopDomainCommand extends LocalDomainCommand {
         if (isLocal()) {
             // if the local password isn't available, the domain isn't running
             // (localPassword is set by initDomain)
-            if (getServerDirs().getLocalPassword() == null)
+            if (getServerDirs().getLocalPassword() == null){
                 return dasNotRunning();
-
+            }
             programOpts.setHostAndPort(getAdminAddress());
             logger.finer("Stopping local domain on port "
                     + programOpts.getPort());

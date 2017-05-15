@@ -56,10 +56,10 @@ public class MulticastValidator extends Validator {
         try {
             InetAddress address = InetAddress.getByName(optionValue);
             if (!address.isMulticastAddress()) {
-                throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("notValidMC"),optionValue));
+                throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("notValidMC"),optionValue));
             }
         } catch (UnknownHostException ex) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("notValidMC"),optionValue), ex);
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("notValidMC"),optionValue), ex);
         }
         return true;
     }

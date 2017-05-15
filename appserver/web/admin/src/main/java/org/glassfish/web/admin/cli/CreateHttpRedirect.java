@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,11 +55,10 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -124,12 +123,7 @@ public class CreateHttpRedirect implements AdminCommand {
     @Inject
     Domain domain;
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "An http-redirect element for {0} already exists. Cannot add duplicate http-redirect.",
-            level = "INFO")
-    private static final String CREATE_HTTP_REDIRECT_FAIL_DUPLICATE = "AS-WEB-ADMIN-00016";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     // ----------------------------------------------- Methods from AdminCommand
 
@@ -151,12 +145,12 @@ public class CreateHttpRedirect implements AdminCommand {
             }
         }
         if (protocol == null) {
-            report.setMessage(MessageFormat.format(rb.getString(CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND), protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
         if (protocol.getHttpRedirect() != null) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_HTTP_REDIRECT_FAIL_DUPLICATE), protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_HTTP_REDIRECT_FAIL_DUPLICATE), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -172,7 +166,7 @@ public class CreateHttpRedirect implements AdminCommand {
                 }
             }, protocol);
         } catch (TransactionFailure e) {
-            report.setMessage(MessageFormat.format(rb.getString(CreateHttp.CREATE_HTTP_REDIRECT_FAIL), protocolName) +
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_HTTP_REDIRECT_FAIL), protocolName) +
                     (e.getMessage() == null ? "No reason given." : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);

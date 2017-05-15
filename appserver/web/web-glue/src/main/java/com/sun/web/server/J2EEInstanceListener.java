@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
@@ -81,36 +81,9 @@ import java.util.logging.Logger;
  */
 public final class J2EEInstanceListener implements InstanceListener {
 
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger _logger = LogFacade.getLogger();
 
     private static final ResourceBundle _rb = _logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "*** InstanceEvent: {0}",
-            level = "FINEST")
-    public static final String INSTANCE_EVENT = "AS-WEB-GLUE-00265";
-
-    @LogMessageInfo(
-            message = "Obtained securityContext implementation class {0}",
-            level = "FINE")
-    public static final String SECURITY_CONTEXT_OBTAINED = "AS-WEB-GLUE-00266";
-
-    @LogMessageInfo(
-            message = "Failed to obtain securityContext implementation class",
-            level = "FINE")
-    public static final String SECURITY_CONTEXT_FAILED = "AS-WEB-GLUE-00267";
-
-    @LogMessageInfo(
-            message = "Exception during processing of event of type {0} for web module {1}",
-            level = "SEVERE",
-            cause = "An exception occurred during processing event type",
-            action = "Check the exception for the error")
-    public static final String EXCEPTION_DURING_HANDLE_EVENT = "AS-WEB-GLUE-00268";
-
-    @LogMessageInfo(
-            message = "No ServerContext in WebModule [{0}]",
-            level = "WARNING")
-    public static final String NO_SERVER_CONTEXT = "AS-WEB-GLUE-00269";
 
     private InvocationManager im;
     private JavaEETransactionManager tm;
@@ -132,7 +105,7 @@ public final class J2EEInstanceListener implements InstanceListener {
 
         InstanceEvent.EventType eventType = event.getType();
         if(_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINEST, INSTANCE_EVENT, eventType);
+            _logger.log(Level.FINEST, LogFacade.INSTANCE_EVENT, eventType);
         }
         if (eventType.isBefore) {
             handleBeforeEvent(event, eventType);
@@ -147,7 +120,7 @@ public final class J2EEInstanceListener implements InstanceListener {
         }
         ServerContext serverContext = wm.getServerContext();
         if (serverContext == null) {
-            String msg = _rb.getString(NO_SERVER_CONTEXT);
+            String msg = _rb.getString(LogFacade.NO_SERVER_CONTEXT);
             msg = MessageFormat.format(msg, wm.getName());
             throw new IllegalStateException(msg);
         }
@@ -160,11 +133,11 @@ public final class J2EEInstanceListener implements InstanceListener {
         securityContext = serverContext.getDefaultServices().getService(AppServSecurityContext.class);
         if (securityContext != null) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, SECURITY_CONTEXT_OBTAINED, securityContext);
+                _logger.log(Level.FINE, LogFacade.SECURITY_CONTEXT_OBTAINED, securityContext);
             }
         } else {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, SECURITY_CONTEXT_FAILED);
+                _logger.log(Level.FINE, LogFacade.SECURITY_CONTEXT_FAILED);
             }
         }
     }
@@ -292,7 +265,7 @@ public final class J2EEInstanceListener implements InstanceListener {
             }
         } catch (Exception ex) {
             im.postInvoke(inv); // See CR 6920895
-            String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);
+            String msg = _rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
             msg = MessageFormat.format(msg, new Object[] { eventType, wm });
             throw new RuntimeException(msg, ex);
         }
@@ -360,7 +333,7 @@ public final class J2EEInstanceListener implements InstanceListener {
                 injectionMgr.destroyManagedObject(instance, false);
             }
         } catch (InjectionException ie) {
-            String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);
+            String msg = _rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
             msg = MessageFormat.format(msg, new Object[] { eventType, wm });
             _logger.log(Level.SEVERE, msg, ie);
         }
@@ -369,7 +342,7 @@ public final class J2EEInstanceListener implements InstanceListener {
         try {
             im.postInvoke(inv);
         } catch (Exception ex) {
-            String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);
+            String msg = _rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
             msg = MessageFormat.format(msg, new Object[] { eventType, wm });
             throw new RuntimeException(msg, ex);
         } finally {
@@ -402,7 +375,7 @@ public final class J2EEInstanceListener implements InstanceListener {
                             ((RealmInitializer)ra).logout();
                         }
                     } catch (Exception ex) {
-                        String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);
+                        String msg = _rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
                         msg = MessageFormat.format(msg, new Object[] { eventType, wm });
                         _logger.log(Level.SEVERE, msg,  ex);
                     }

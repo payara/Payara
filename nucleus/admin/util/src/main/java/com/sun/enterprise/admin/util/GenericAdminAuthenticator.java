@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or it's affiliates]
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
 import com.sun.enterprise.security.auth.realm.file.FileRealmUser;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
@@ -53,8 +52,6 @@ import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -475,8 +472,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             realm = as.getAuthRealmName();
 
         try {
-            loginAsAdmin(user, password, realm, host);
-            return null;
+            return loginAsAdmin(user, password, realm, host);
         } catch (LoginException e) {
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
                 ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during JMX auth\n  user={0}\n  host={1}\n  realm={2}",

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,11 +41,13 @@
 package org.glassfish.resources.javamail;
 
 import java.util.logging.Level;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * Capture JavaMail debug output.
  */
 public class MailLogOutputStream extends LogOutputStream {
+    @LoggerInfo(subsystem = "MAIL", description = "Java Mail Logger", publish=true)
     private static final String JAVAMAIL_DOMAIN = "javax.mail";
 
     public MailLogOutputStream() {

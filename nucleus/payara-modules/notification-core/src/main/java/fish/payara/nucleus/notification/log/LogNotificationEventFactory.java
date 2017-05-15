@@ -39,6 +39,7 @@
 package fish.payara.nucleus.notification.log;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.EventSource;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;

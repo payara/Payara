@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,9 @@ package fish.payara.micro.event;
 import fish.payara.micro.data.InstanceDescriptor;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Interface that classes must implement to be used as Clustered Events
@@ -118,4 +120,15 @@ public interface PayaraClusteredCDIEvent extends Serializable {
      */
     void setProperty(String name, String value);
     
+    /**
+     * Returns the set of qualifiers on the event
+     * @return 
+     */
+    public Set<Annotation> getQualifiers();
+    
+    /**
+     * Adds the set of qualifiers to the event
+     * @param qualifiers 
+     */
+    public void addQualifiers(Set<Annotation> qualifiers);
 }

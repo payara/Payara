@@ -40,6 +40,8 @@
 package fish.payara.micro.cmd.options;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,19 +58,27 @@ import java.util.Set;
 public class RuntimeOptions {
 
     private Map<RUNTIME_OPTION, List<String>> options;
-    static ResourceBundle bundle = ResourceBundle.getBundle("commandoptions");
+    static ResourceBundle commandoptions = ResourceBundle.getBundle("commandoptions");
+    static ResourceBundle commandlogstrings = ResourceBundle.getBundle("commandlogstrings");
 
     public static void printHelp() {
-        System.err.println();
+        ArrayList<String> output = new ArrayList<>();
         for (RUNTIME_OPTION option : RUNTIME_OPTION.values()) {
-            System.err.print("--" + option.name());
-            System.err.print(' ');
+            String entry = "--" + rightPad(option.name(), findLongestOption() + 3);
+            entry += " ";
             try {
-                System.err.println(bundle.getString(option.name()));
+                entry += commandoptions.getString(option.name());
             } catch (MissingResourceException mre){
                 //ignore as there is no description for this option
                 System.err.println();
             }
+            output.add(entry);
+        }
+        
+        //alphabetise
+        Collections.sort(output, String.CASE_INSENSITIVE_ORDER);
+        for (String s : output){
+            System.err.println(s);
         }
     }
     
@@ -105,15 +115,38 @@ public class RuntimeOptions {
                     }
                     values.add(value);
                 } catch (IllegalArgumentException iae) {
-                    throw new ValidationException(MessageFormat.format(bundle.getString("notValidArgument"),arg));
+                    throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArgument"),arg));
                 } catch (IndexOutOfBoundsException ex) {
-                    throw new ValidationException(MessageFormat.format(bundle.getString("expectedArgument"),arg));
+                    throw new ValidationException(MessageFormat.format(commandlogstrings.getString("expectedArgument"),arg));
                 } catch (ValidationException ve) {
                     throw new ValidationException(arg + " " + ve.getMessage(),ve);
                 }
             }
         }
     }
+    
+    private static int findLongestOption() {
 
+        int longest = 0;
+
+        for (RUNTIME_OPTION option : RUNTIME_OPTION.values()) {
+            if (option.name().length() > longest) {
+                longest = option.name().length();
+            }
+        }
+        return longest;
+    }
+
+    private static String rightPad(String toPad, int paddedLength) {
+
+        // return input if anything doesn't make sense
+        if (null == toPad || toPad.length() >= paddedLength || paddedLength < 1) {
+            return toPad;
+        }
+        for (int i = toPad.length(); i < paddedLength; i++) {
+            toPad += " ";
+        }
+        return toPad;
+    }
 
 }

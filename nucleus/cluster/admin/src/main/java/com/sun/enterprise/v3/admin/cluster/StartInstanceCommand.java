@@ -111,7 +111,7 @@ public class StartInstanceCommand implements AdminCommand {
 
     @Param(optional = true, obsolete = true)
     private String setenv;
-
+    
     private Logger logger;
 
     private Node   node;
@@ -235,7 +235,7 @@ public class StartInstanceCommand implements AdminCommand {
 
         command.add("--sync");
         command.add(sync);
-
+      
         if (debug) {
             command.add("--debug");
         }

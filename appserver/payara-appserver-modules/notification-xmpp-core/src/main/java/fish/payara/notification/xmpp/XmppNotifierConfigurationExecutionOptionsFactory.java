@@ -67,12 +67,12 @@ public class XmppNotifierConfigurationExecutionOptionsFactory
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
 
         executionOptions.setHost(notifierConfiguration.getHost());
-        executionOptions.setPort(notifierConfiguration.getPort());
+        executionOptions.setPort(Integer.parseInt(notifierConfiguration.getPort()));
         executionOptions.setServiceName(notifierConfiguration.getServiceName());
         executionOptions.setUsername(notifierConfiguration.getUsername());
         executionOptions.setPassword(notifierConfiguration.getPassword());
-        executionOptions.setSecurityDisabled(notifierConfiguration.getSecurityDisabled());
-        executionOptions.setRoomName(notifierConfiguration.getRoomName());
+        executionOptions.setSecurityDisabled(Boolean.valueOf(notifierConfiguration.getSecurityDisabled()));
+        executionOptions.setRoomId(notifierConfiguration.getRoomId());
 
         return executionOptions;
     }

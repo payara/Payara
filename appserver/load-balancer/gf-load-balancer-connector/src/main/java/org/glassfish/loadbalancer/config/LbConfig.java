@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -321,7 +321,7 @@ public interface LbConfig extends ConfigBeanProxy, PropertyBag, Payload {
             if(propertyValue == null){
                 return null;
             }
-            return new Date(Long.valueOf(propertyValue));
+            return new Date(Long.parseLong(propertyValue));
         }
 
         public static boolean setLastExported(LbConfig lc) {

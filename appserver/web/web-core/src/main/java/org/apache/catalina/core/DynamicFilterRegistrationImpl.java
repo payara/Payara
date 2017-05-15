@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,8 @@
 
 package org.apache.catalina.core;
 
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.deploy.FilterDef;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.FilterRegistration;
 import java.text.MessageFormat;
@@ -53,13 +53,7 @@ public class DynamicFilterRegistrationImpl
     extends FilterRegistrationImpl
     implements FilterRegistration.Dynamic {
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "Unable to configure {0} for filter {1} of servlet context {2}, because this servlet context has already been initialized",
-        level = "WARNING"
-    )
-    public static final String DYNAMIC_FILTER_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00115";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     /**
      * Constructor
@@ -71,7 +65,7 @@ public class DynamicFilterRegistrationImpl
 
     public void setAsyncSupported(boolean isAsyncSupported) {
         if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(DYNAMIC_FILTER_REGISTRATION_ALREADY_INIT),
+            String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_FILTER_REGISTRATION_ALREADY_INIT),
                                               new Object[] {"async-supported", filterDef.getFilterName(),
                                                             ctx.getName()});
             throw new IllegalStateException(msg);
