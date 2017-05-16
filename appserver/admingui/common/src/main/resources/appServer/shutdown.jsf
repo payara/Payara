@@ -69,7 +69,7 @@
 
 <sun:body id="body" onLoad="triggerShutdown();">
     <sun:form id="form">
-    <sun:button id="stopInstance" visible="true">
+    <sun:button id="stopInstance" visible="false">
         <!command
             println("=======stopInstance Called...");
             gf.restRequest(endpoint="#{sessionScope.REST_URL}/stop" method="POST");

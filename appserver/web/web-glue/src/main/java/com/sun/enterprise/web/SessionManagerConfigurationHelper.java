@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@ package com.sun.enterprise.web;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.web.session.PersistenceType;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.runtime.ManagerProperties;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.web.deployment.runtime.StoreProperties;
@@ -58,52 +58,7 @@ import java.util.logging.Logger;
  */
 public class SessionManagerConfigurationHelper {
 
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Web App Distributable {0}: {1}",
-            level = "FINEST")
-    public static final String WEB_APP_DISTRIBUTABLE = "AS-WEB-GLUE-00123";
-
-    @LogMessageInfo(
-            message = "AvailabilityGloballyEnabled = {0}",
-            level = "FINEST")
-    public static final String AVAILABILITY_GLOBALLY_ENABLED = "AS-WEB-GLUE-00124";
-
-    @LogMessageInfo(
-            message = "instance-level persistence-type = {0} instance-level persistenceFrequency = {1} instance-level persistenceScope = {2}",
-            level = "FINEST")
-    public static final String INSTANCE_LEVEL_INFO = "AS-WEB-GLUE-00125";
-
-    @LogMessageInfo(
-            message = "webAppLevelPersistenceType = {0} webAppLevelPersistenceFrequency = {1} webAppLevelPersistenceScope = {2}",
-            level = "FINEST")
-    public static final String WEB_APP_LEVEL_INFO = "AS-WEB-GLUE-00126";
-
-    @LogMessageInfo(
-            message = "IN WebContainer>>ConfigureSessionManager after web level check AFTER_WEB_PERSISTENCE-TYPE IS = {0} AFTER_WEB_PERSISTENCE_FREQUENCY IS = {1} AFTER_WEB_PERSISTENCE_SCOPE IS = {2}",
-            level = "FINEST")
-    public static final String AFTER_WEB_LEVEL_CHECK_INFO = "AS-WEB-GLUE-00127";
-
-    @LogMessageInfo(
-            message = "Is {0} a system app: {1}",
-            level = "FINEST")
-    public static final String IS_SYSTEM_APP = "AS-WEB-GLUE-00128";
-
-    @LogMessageInfo(
-            message = "SessionConfigurationHelper: Is AppDistributable {0}",
-            level = "FINEST")
-    public static final String IS_APP_DISTRIBUTABLE = "AS-WEB-GLUE-00129";
-
-    @LogMessageInfo(
-            message = "Invalid Session Management Configuration for non-distributable app [{0}] - defaulting to memory: persistence-type = [{1}] / persistenceFrequency = [{2}] / persistenceScope = [{3}]",
-            level = "INFO")
-    public static final String INVALID_SESSION_MANAGER_CONFIG = "AS-WEB-GLUE-00130";
-
-    @LogMessageInfo(
-            message = "IN WebContainer>>ConfigureSessionManager before builder factory FINAL_PERSISTENCE-TYPE IS = {0} FINAL_PERSISTENCE_FREQUENCY IS = {1} FINAL_PERSISTENCE_SCOPE IS = {2}",
-            level = "FINEST")
-    public static final String CONFIGURE_SESSION_MANAGER_FINAL = "AS-WEB-GLUE-00131";
+    private static final Logger _logger = LogFacade.getLogger();
 
 
 protected WebModule _ctx = null;
@@ -146,7 +101,7 @@ protected WebModule _ctx = null;
         }
         if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST,
-                    WEB_APP_DISTRIBUTABLE,
+                    LogFacade.WEB_APP_DISTRIBUTABLE,
                     new Object[] {getApplicationId(_ctx), isAppDistributable});
         }
 
@@ -157,7 +112,7 @@ protected WebModule _ctx = null;
         boolean isAvailabilityEnabled = 
             serverConfigLookup.calculateWebAvailabilityEnabledFromConfig(_ctx);
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINEST, AVAILABILITY_GLOBALLY_ENABLED, isAvailabilityEnabled);
+            _logger.log(Level.FINEST, LogFacade.AVAILABILITY_GLOBALLY_ENABLED, isAvailabilityEnabled);
         }
         if (isAvailabilityEnabled) {
             // These are the global defaults if nothing is
@@ -182,7 +137,7 @@ protected WebModule _ctx = null;
         }
         if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST,
-                    INSTANCE_LEVEL_INFO,
+                    LogFacade.INSTANCE_LEVEL_INFO,
                     new Object[] {insLevelPersistenceTypeString, persistenceFrequency, persistenceScope});
         }
         
@@ -199,7 +154,7 @@ protected WebModule _ctx = null;
             webAppLevelPersistenceScope = getPersistenceScope(_smBean);
             if (_logger.isLoggable(Level.FINEST)) {
                 _logger.log(Level.FINEST,
-                        WEB_APP_LEVEL_INFO,
+                        LogFacade.WEB_APP_LEVEL_INFO,
                         new Object[] {pType, webAppLevelPersistenceFrequency, webAppLevelPersistenceScope});
             }
         }
@@ -212,7 +167,7 @@ protected WebModule _ctx = null;
             persistenceScope = webAppLevelPersistenceScope;
         }
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINEST, AFTER_WEB_LEVEL_CHECK_INFO,
+            _logger.log(Level.FINEST, LogFacade.AFTER_WEB_LEVEL_CHECK_INFO,
                     new Object[] {persistence.getType(), persistenceFrequency, persistenceScope});
         }
         
@@ -233,11 +188,11 @@ protected WebModule _ctx = null;
         if (!isAppDistributable && persistence != PersistenceType.MEMORY) {
             String wmName = getApplicationId(_ctx);
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.log(Level.FINEST, IS_SYSTEM_APP, new Object[] {wmName, isSystemApp(wmName)});
+                _logger.log(Level.FINEST, LogFacade.IS_SYSTEM_APP, new Object[] {wmName, isSystemApp(wmName)});
             }
 
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.log(Level.FINEST, IS_APP_DISTRIBUTABLE, isAppDistributable);
+                _logger.log(Level.FINEST, LogFacade.IS_APP_DISTRIBUTABLE, isAppDistributable);
             }
             // Suppress log error msg for default-web-module
             // log message only if availabilityenabled = true is attempted
@@ -248,7 +203,7 @@ protected WebModule _ctx = null;
                 if (_logger.isLoggable(Level.INFO)) {
                     Object[] params = { getApplicationId(_ctx), persistence.getType(), frequency, scope };
                     _logger.log(Level.INFO,
-                                INVALID_SESSION_MANAGER_CONFIG,
+                                LogFacade.INVALID_SESSION_MANAGER_CONFIG,
                                 params); 
                 }
             }    
@@ -270,7 +225,7 @@ protected WebModule _ctx = null;
         
         if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST,
-                    CONFIGURE_SESSION_MANAGER_FINAL,
+                    LogFacade.CONFIGURE_SESSION_MANAGER_FINAL,
                     new Object[] {persistence.getType(), frequency, scope});
         }
         

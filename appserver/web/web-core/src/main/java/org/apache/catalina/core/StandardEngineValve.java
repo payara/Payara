@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,10 +60,10 @@ package org.apache.catalina.core;
 
 
 import org.apache.catalina.Host;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.valves.ValveBase;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -97,13 +97,7 @@ final class StandardEngineValve
     private static final String info =
         "org.apache.catalina.core.StandardEngineValve/1.0";
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "No Host matches server name {0}",
-        level = "WARNING"
-    )
-    public static final String NO_HOST_MATCH = "AS-WEB-CORE-00197";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     // ------------------------------------------------------------- Properties
 
@@ -189,7 +183,7 @@ final class StandardEngineValve
             // BEGIN S1AS 4878272
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_BAD_REQUEST);
-            String msg = MessageFormat.format(rb.getString(NO_HOST_MATCH), request.getRequest().getServerName());
+            String msg = MessageFormat.format(rb.getString(LogFacade.NO_HOST_MATCH), request.getRequest().getServerName());
             response.setDetailMessage(msg);
             // END S1AS 4878272
             return null;

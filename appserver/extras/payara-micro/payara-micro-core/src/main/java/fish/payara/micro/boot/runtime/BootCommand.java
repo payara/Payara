@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.boot.runtime;
 
+import com.hazelcast.logging.Logger;
+import java.util.logging.Level;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandResult.ExitStatus;
 import org.glassfish.embeddable.CommandRunner;
@@ -62,6 +64,7 @@ public class BootCommand {
         boolean result = true;
         CommandResult asadminResult = runner.run(command, arguments);
         if (asadminResult.getExitStatus().equals(ExitStatus.FAILURE)) {
+            Logger.getLogger(BootCommand.class).log(Level.WARNING, "Boot Command " + command + " failed " + asadminResult.getOutput());
             result = false;
         }
         return result;

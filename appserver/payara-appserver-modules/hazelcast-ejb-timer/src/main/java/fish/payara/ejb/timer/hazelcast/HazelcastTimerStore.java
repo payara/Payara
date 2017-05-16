@@ -35,7 +35,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +84,7 @@ public class HazelcastTimerStore extends EJBTimerService {
 
     private void removeTimers(Set<TimerPrimaryKey> timerIdsToRemove) {
         for (TimerPrimaryKey timerPrimaryKey : timerIdsToRemove) {
-            removeTimer((HZTimer) pkCache.get(timerPrimaryKey));
+            removeTimer((HZTimer) pkCache.get(timerPrimaryKey.timerId));
         }
     }
 
@@ -93,7 +92,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     protected void _createTimer(TimerPrimaryKey timerId, long containerId, long applicationId, Object timedObjectPrimaryKey, String server_name, Date initialExpiration, long intervalDuration, EJBTimerSchedule schedule, TimerConfig timerConfig) throws Exception {
         if (timerConfig.isPersistent()) {
             
-            pkCache.put(timerId, new HZTimer(timerId, containerId, applicationId, timedObjectPrimaryKey, this.serverName, ownerIdOfThisServer_, initialExpiration, intervalDuration, schedule, timerConfig));
+            pkCache.put(timerId.timerId, new HZTimer(timerId, containerId, applicationId, timedObjectPrimaryKey, this.serverName, ownerIdOfThisServer_, initialExpiration, intervalDuration, schedule, timerConfig));
 
             // add to container cache
             HashSet<TimerPrimaryKey> keysForContainer = (HashSet<TimerPrimaryKey>) containerCache.get(containerId);
@@ -146,7 +145,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         }
 
         for (TimerPrimaryKey timerId : timerIds) {
-            pkCache.remove(timerId);
+            pkCache.remove(timerId.timerId);
         }
         logger.log(Level.INFO, "Destroyed {0} timers for application {1}", new Object[]{timerIds.size(), applicationId});
         timerIds.clear();
@@ -175,7 +174,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         // Check non-persistent timers first
         if (!cancelNonPersistentTimer(timerId)) {
 
-            HZTimer timer = (HZTimer) pkCache.get(timerId);
+            HZTimer timer = (HZTimer) pkCache.get(timerId.timerId);
             if (timer != null) {
 
                 TransactionManager tm = ejbContainerUtil.getTransactionManager();
@@ -200,7 +199,7 @@ public class HazelcastTimerStore extends EJBTimerService {
             return super.getInfo(timerId);
         }
 
-        HZTimer timer = (HZTimer) pkCache.get(timerId);
+        HZTimer timer = (HZTimer) pkCache.get(timerId.timerId);
 
         if (timer == null) {
             throw new FinderException("Unable to find timer " + timerId);
@@ -249,7 +248,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         if (timers != null) {
             HashSet<HZTimer> timersToCancel = new HashSet<>();
             for (TimerPrimaryKey timer : timers) {
-                HZTimer hzTimer = (HZTimer) pkCache.get(primaryKey);
+                HZTimer hzTimer = (HZTimer) pkCache.get(((TimerPrimaryKey)primaryKey).timerId);
                 if (hzTimer != null && hzTimer.getTimedObjectPk().equals(primaryKey)) {
                     timersToCancel.add(hzTimer);
                 }
@@ -313,7 +312,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     @Override
     protected void expungeTimer(TimerPrimaryKey timerId, boolean removeTimerBean) {
 
-        HZTimer timer = (HZTimer) pkCache.get(timerId);
+        HZTimer timer = (HZTimer) pkCache.get(timerId.timerId);
         if (timer != null) {
             removeTimer(timer);
         }
@@ -355,7 +354,7 @@ public class HazelcastTimerStore extends EJBTimerService {
             Collection<TimerPrimaryKey> timersForTimedObject = (Collection<TimerPrimaryKey>) containerCache.get(containerId);
             if (timersForTimedObject != null) {
                 for (TimerPrimaryKey timer : timersForTimedObject) {
-                    HZTimer hzTimer = (HZTimer) pkCache.get(timer);
+                    HZTimer hzTimer = (HZTimer) pkCache.get(timer.timerId);
                     if (hzTimer != null && hzTimer.getTimedObjectPk().equals(timedObjectPrimaryKey)) {
                         timerIdsForTimedObject.add(timer);
                     }
@@ -437,7 +436,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     protected boolean isValidTimerForThisServer(TimerPrimaryKey timerId, RuntimeTimerState timerState) {
         boolean result = true;
         if (timerState.isPersistent()) {
-            HZTimer timer = (HZTimer) pkCache.get(timerId);
+            HZTimer timer = (HZTimer) pkCache.get(timerId.timerId);
             if (timer == null || !timer.getMemberName().equals(serverName)) {
                 result = false;
             }
@@ -493,10 +492,10 @@ public class HazelcastTimerStore extends EJBTimerService {
 
         TransactionManager tm = ejbContainerUtil.getTransactionManager();
 
-        HashMap<TimerPrimaryKey, HZTimer> toRestore = new HashMap<>();
+        HashMap<String, HZTimer> toRestore = new HashMap<>();
         int totalTimersMigrated = 0;
 
-        for (TimerPrimaryKey pk : (Collection<TimerPrimaryKey>) pkCache.keySet()) {
+        for (String pk : (Collection<String>) pkCache.keySet()) {
             HZTimer hZTimer = (HZTimer) pkCache.get(pk);
             if (hZTimer.getOwnerId().equals(fromOwnerId)) {
                 toRestore.put(pk, hZTimer);
@@ -505,7 +504,7 @@ public class HazelcastTimerStore extends EJBTimerService {
             }
         }
 
-        for (TimerPrimaryKey pk : toRestore.keySet()) {
+        for (String pk : toRestore.keySet()) {
             pkCache.put(pk, toRestore.get(pk));
             totalTimersMigrated++;
         }
@@ -569,7 +568,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         Collection<TimerPrimaryKey> deadKeys = new HashSet<>();
         if (containerKeys != null) {
             for (TimerPrimaryKey containerKey : containerKeys) {
-                HZTimer timer = (HZTimer) pkCache.get(containerKey);
+                HZTimer timer = (HZTimer) pkCache.get(containerKey.timerId);
                 if (timer != null && timer.getMemberName().equals(this.serverName)) {
                     activeTimers.add(timer);
                 } else if (timer == null) {
@@ -643,14 +642,14 @@ public class HazelcastTimerStore extends EJBTimerService {
     protected void resetLastExpiration(TimerPrimaryKey timerId, RuntimeTimerState timerState
     ) {
         if (timerState.isPersistent()) {
-            HZTimer timer = (HZTimer) pkCache.get(timerId);
+            HZTimer timer = (HZTimer) pkCache.get(timerId.timerId);
             if (null == timer) {
                 return;
             }
 
             Date now = new Date();
             timer.setLastExpiration(now);
-            pkCache.put(timer.getKey(), timer);
+            pkCache.put(timer.getKey().timerId, timer);
 
             // Since timer was successfully delivered, update
             // last delivery time in database if that option is
@@ -691,7 +690,7 @@ public class HazelcastTimerStore extends EJBTimerService {
             // @@@ We can't assume this server instance owns the persistent timer
             // so always ask the database.  Investigate possible use of
             // timer cache for optimization.
-            HZTimer timer = (HZTimer) pkCache.get(timerId);
+            HZTimer timer = (HZTimer) pkCache.get(timerId.timerId);
             if (timer != null) {
                 // Make sure timer hasn't been cancelled within the current tx.
                 exists = true;
@@ -709,7 +708,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     }
 
     private HZTimer getPersistentTimer(TimerPrimaryKey timerId) throws FinderException {
-        HZTimer result = (HZTimer) pkCache.get(timerId);
+        HZTimer result = (HZTimer) pkCache.get(timerId.timerId);
         if (result == null) {
             throw new FinderException("Unable to find timer " + timerId);
         }
@@ -717,7 +716,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     }
 
     private void removeTimer(HZTimer timer) {
-        pkCache.remove(timer.getKey());
+        pkCache.remove(timer.getKey().timerId);
 
         Collection<TimerPrimaryKey> keys = (Collection<TimerPrimaryKey>) applicationCache.get(timer.getApplicationId());
         if (keys != null) {
@@ -756,7 +755,7 @@ public class HazelcastTimerStore extends EJBTimerService {
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(HazelcastTimerStore.class.getClassLoader());
-        HZTimer timer = (HZTimer) pkCache.get(timerId);
+        HZTimer timer = (HZTimer) pkCache.get(timerId.timerId);
         if (timer != null && timer.getMemberName().equals(this.serverName)) {
             result = true;
         }

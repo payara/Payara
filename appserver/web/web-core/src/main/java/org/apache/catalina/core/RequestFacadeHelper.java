@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,11 +41,11 @@
 package org.apache.catalina.core;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.connector.SessionTracker;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -68,19 +68,7 @@ public class RequestFacadeHelper {
 
     private Response response;
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "Must not use request object outside the scope of a servlet's service or a filter's doFilter method",
-        level = "WARNING"
-    )
-    public static final String VALIDATE_REQUEST_EXCEPTION = "AS-WEB-CORE-00125";
-
-    @LogMessageInfo(
-        message = "Null response object",
-        level = "WARNING"
-    )
-    public static final String VALIDATE_RESPONSE_EXCEPTION = "AS-WEB-CORE-00126";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     public RequestFacadeHelper(Request request) {
         this.request = request;
@@ -169,13 +157,13 @@ public class RequestFacadeHelper {
 
     private void validateRequest() {
         if (request == null) {
-            throw new IllegalStateException(rb.getString(VALIDATE_REQUEST_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.VALIDATE_REQUEST_EXCEPTION));
         }
     }
 
     private void validateResponse() {
         if (response == null) {
-            throw new IllegalStateException(rb.getString(VALIDATE_RESPONSE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.VALIDATE_RESPONSE_EXCEPTION));
         }
     }
 }

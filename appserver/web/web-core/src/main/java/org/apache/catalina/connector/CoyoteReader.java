@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,8 +58,7 @@
 
 package org.apache.catalina.connector;
 
-import org.apache.catalina.core.StandardServer;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -83,14 +82,8 @@ public class CoyoteReader
     private static final char[] LINE_SEP = { '\r', '\n' };
     private static final int MAX_LINE_LENGTH = 4096;
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Failed to skip {0} characters in the underlying buffer of CoyoteReader on readLine().",
-            level = "WARNING"
-    )
-    public static final String FAILED_SKIP_CHARS_IN_BUFFER = "AS-WEB-CORE-00044";
 
     // ----------------------------------------------------- Instance Variables
 
@@ -138,7 +131,7 @@ public class CoyoteReader
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         ib.close();
     }
@@ -148,7 +141,7 @@ public class CoyoteReader
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         return ib.read();
     }
@@ -158,7 +151,7 @@ public class CoyoteReader
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         return ib.read(cbuf, 0, cbuf.length);
     }
@@ -168,7 +161,7 @@ public class CoyoteReader
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         return ib.read(cbuf, off, len);
     }
@@ -178,7 +171,7 @@ public class CoyoteReader
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         return ib.skip(n);
     }
@@ -188,7 +181,7 @@ public class CoyoteReader
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         return ib.ready();
     }
@@ -197,7 +190,7 @@ public class CoyoteReader
     public boolean markSupported() {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         return true;
     }
@@ -207,7 +200,7 @@ public class CoyoteReader
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         ib.mark(readAheadLimit);
     }
@@ -217,7 +210,7 @@ public class CoyoteReader
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         ib.reset();
     }
@@ -228,7 +221,7 @@ public class CoyoteReader
 
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
 
         if (lineBuffer == null) {
@@ -283,7 +276,7 @@ public class CoyoteReader
             } else {
                 reset();
                 if (skip(skip) != skip && log.isLoggable(Level.WARNING)) {
-                    log.log(Level.WARNING, FAILED_SKIP_CHARS_IN_BUFFER, skip);
+                    log.log(Level.WARNING, LogFacade.FAILED_SKIP_CHARS_IN_BUFFER, skip);
                 }
             }
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package com.sun.enterprise.connectors.jms.system;
 
 import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.connectors.jms.JMSLoggerInfo;
 import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -57,6 +58,7 @@ import java.util.logging.Logger;
 import java.util.*;
 import java.lang.reflect.Method;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.logging.LogHelper;
 
 
 import org.glassfish.resources.config.ExternalJndiResource;
@@ -78,7 +80,7 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
     static final String JMS_QUEUE_CONNECTION_FACTORY = "javax.jms.QueueConnectionFactory";
     static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";
 
-    private static final Logger _logger = Logger.getLogger(ActiveJmsResourceAdapter.JMS_MAIN_LOGGER);
+    private static final Logger _logger = JMSLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LegacyJmsRecoveryResourceHandler.class);
 
 
@@ -114,7 +116,8 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
                         //So we need to explicitly load that rar and create the resources
 
                     } catch (Exception ex) {
-                        _logger.log(Level.SEVERE, "error.loading.connector.resources.during.recovery", jndiResource.getJndiName());
+                        _logger.log(Level.SEVERE, JMSLoggerInfo.LOAD_RESOURCES_ERROR,
+                                new Object[]{jndiResource.getJndiName()});
                         if (_logger.isLoggable(Level.FINE)) {
                             _logger.log(Level.FINE, ex.toString(), ex);
                         }
@@ -122,7 +125,7 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
                 }
             }
         } catch (NamingException ne) {
-            _logger.log(Level.SEVERE, "error.loading.connector.resources.during.recovery", ne.getMessage());
+            _logger.log(Level.SEVERE, JMSLoggerInfo.LOAD_RESOURCES_ERROR, new Object[]{ne.getMessage()});
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, ne.toString(), ne);
             }
@@ -133,7 +136,7 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
             try {
                  closeXAConnection(obj);
             } catch (Exception ex) {
-                _logger.log(Level.WARNING, "Connector Resource could not be closed", ex);
+                LogHelper.log(_logger, Level.WARNING, JMSLoggerInfo.CLOSE_CONNECTION_FAILED, ex);
             }
         }
     }

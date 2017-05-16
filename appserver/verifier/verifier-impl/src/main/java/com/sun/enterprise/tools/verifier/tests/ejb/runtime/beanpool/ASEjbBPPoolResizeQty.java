@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -89,7 +89,7 @@ public class ASEjbBPPoolResizeQty extends ASEjbBeanPool
                                 "FAILED [AS-EJB bean-pool] : resize-quantity cannot be empty"));
                         }else
                         {
-                            int resizeQtyVal = Integer.valueOf(poolResizeQty).intValue();
+                            int resizeQtyVal = Integer.parseInt(poolResizeQty);
                             if (resizeQtyVal < 0  || resizeQtyVal > Integer.MAX_VALUE)
                             {
                                 addErrorDetails(result, compName);
@@ -103,7 +103,7 @@ public class ASEjbBPPoolResizeQty extends ASEjbBeanPool
                                 if (maxPoolSize!=null)
                                 {
                                     try{
-                                        poolSizeVal = Integer.valueOf(maxPoolSize).intValue();
+                                        poolSizeVal = Integer.parseInt(maxPoolSize);
                                     }catch(NumberFormatException nfe){
                                         oneFailed = true;
                                         addErrorDetails(result, compName);

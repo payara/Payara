@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -112,10 +112,10 @@ public class ListBatchJobExecutions
         extraProps.put("listBatchJobExecutions", jobExecutions);
         if (executionId != null) {
             JobOperator jobOperator = getJobOperatorFromBatchRuntime();
-            JobExecution je = jobOperator.getJobExecution(Long.valueOf(executionId));
+            JobExecution je = jobOperator.getJobExecution(Long.parseLong(executionId));
             if (instanceId != null) {
-                JobInstance ji = jobOperator.getJobInstance(Long.valueOf(executionId));
-                if (ji.getInstanceId() != Long.valueOf(instanceId)) {
+                JobInstance ji = jobOperator.getJobInstance(Long.parseLong(executionId));
+                if (ji.getInstanceId() != Long.parseLong(instanceId)) {
                     throw new RuntimeException("executionid " + executionId
                     + " is not associated with the specified instanceid (" + instanceId + ")"
                     + "; did you mean " + ji.getInstanceId() + " ?");
@@ -129,7 +129,7 @@ public class ListBatchJobExecutions
                 logger.log(Level.FINE, "Exception while getting jobExecution details: ", ex);
             }
         } else if (instanceId != null) {
-            for (JobExecution je : getJobExecutionForInstance(Long.valueOf(instanceId))) {
+            for (JobExecution je : getJobExecutionForInstance(Long.parseLong(instanceId))) {
                 try {
                     if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
                         jobExecutions.add(handleJob(je, columnFormatter));
@@ -269,7 +269,7 @@ public class ListBatchJobExecutions
                     st = new StringTokenizer(cf.toString(), "\n");
                     break;
                 case STEP_COUNT:
-                    long exeId = executionId == null ? je.getExecutionId() : Long.valueOf(executionId);
+                    long exeId = executionId == null ? je.getExecutionId() : Long.parseLong(executionId);
                     data = jobOperator.getStepExecutions(exeId) == null
                         ? 0 : jobOperator.getStepExecutions(exeId).size();
                     break;

@@ -61,8 +61,10 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.connectors.jms.JMSLoggerInfo;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 
 @Service
@@ -81,7 +83,7 @@ public class JMSConfigListener implements ConfigListener{
     //private Cluster cluster;
     private ActiveJmsResourceAdapter aresourceAdapter;
 
-    private static final Logger _logger = Logger.getLogger(ActiveJmsResourceAdapter.JMS_MAIN_LOGGER);
+    private static final Logger _logger = JMSLoggerInfo.getLogger();
 
     // String Manager for Localization
     private static StringManager sm
@@ -116,7 +118,9 @@ public class JMSConfigListener implements ConfigListener{
             Object oldValue = event.getOldValue();
             Object newValue = event.getNewValue();
 
-        _logger.log(Level.FINE, "In JMSConfigListener " + eventName + oldValue + newValue);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "In JMSConfigListener " + eventName + oldValue + newValue);
+        }
         if (oldValue != null && oldValue.equals(newValue)) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Event " + eventName
@@ -181,7 +185,7 @@ public class JMSConfigListener implements ConfigListener{
                                 }
                                 return unprocessedEvents.size() > 0 ? new UnprocessedChangeEvents(unprocessedEvents) : null;
                             } catch (Exception e) {
-                                _logger.log(Level.WARNING, "Failed to start Grizlly proxy for MQ broker", e);
+                                LogHelper.log(_logger, Level.WARNING, JMSLoggerInfo.GRIZZLY_START_FAILURE, e);
                             }
                         }
                     }
@@ -233,7 +237,9 @@ public class JMSConfigListener implements ConfigListener{
                    }//
              } // else skip
             if (event.getSource() instanceof Server) {
-               _logger.log(Level.FINE, "In JMSConfigListener - recieved cluster event " + event.getSource());
+               if (_logger.isLoggable(Level.FINE)) {
+                   _logger.log(Level.FINE, "In JMSConfigListener - recieved cluster event " + event.getSource());
+               }
                Server changedServer = (Server) event.getSource();
                if (thisServer.isDas())return null;
 
@@ -260,12 +266,11 @@ public class JMSConfigListener implements ConfigListener{
         try{
             addressList.setup(true);
         }catch(Exception ex){
-            _logger.log(Level.WARNING, "failed to create addresslist " + ex.getLocalizedMessage());
+            _logger.log(Level.WARNING, JMSLoggerInfo.ADDRESSLIST_SETUP_FAIL, 
+                    new Object[]{ex.getLocalizedMessage()});
             ex.printStackTrace();
         }
         return addressList.toString();
-
-
     }
      private JmsHost getDefaultJmsHost(JmsService jmsService){
 

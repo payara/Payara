@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,10 +72,12 @@ public class RequestProbeProvider {
 
     @Probe(name="dataReceivedEvent")
     public void dataReceivedEvent(
-        @ProbeParam("size") int size) {}
+        @ProbeParam("size") int size,
+        @ProbeParam("hostName") String hostName) {}
 
     @Probe(name="dataSentEvent")
     public void dataSentEvent(
-        @ProbeParam("size") long size) {}
+        @ProbeParam("size") long size,
+        @ProbeParam("hostName") String hostName) {}
 
 }

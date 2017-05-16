@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,7 +87,7 @@ public class ASEjbBCResizeQuantity extends ASEjbBeanCache
 
                         }else
                         {
-                            int resizeQtyVal = Integer.valueOf(resizeQty).intValue();
+                            int resizeQtyVal = Integer.parseInt(resizeQty);
                             if (resizeQtyVal < 1  || resizeQtyVal > Integer.MAX_VALUE)
                             {
                               addErrorDetails(result, compName);
@@ -100,7 +100,7 @@ public class ASEjbBCResizeQuantity extends ASEjbBeanCache
                                 if (maxCacheSize!=null)
                                 {
                                     try{
-                                        cacheSizeVal = Integer.valueOf(maxCacheSize).intValue();
+                                        cacheSizeVal = Integer.parseInt(maxCacheSize);
 
                                     }catch(NumberFormatException nfe){
                                         addErrorDetails(result, compName);

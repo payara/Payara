@@ -24,6 +24,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
@@ -76,9 +77,6 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
     RequestTracingService service;
 
     @Inject
-    NotifierExecutionOptionsFactory factory;
-
-    @Inject
     ServiceLocator habitat;
 
     @Inject
@@ -86,6 +84,9 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
 
     @Inject
     protected Target targetUtil;
+
+    @Inject
+    NotifierExecutionOptionsFactoryStore factoryStore;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
@@ -157,7 +158,7 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
             
             if (dynamic) {
                 Notifier dynamicNotifier = requestTracingServiceConfiguration.getNotifierByType(notifierService.getNotifierType());
-                NotifierExecutionOptions build = factory.build(dynamicNotifier);
+                NotifierExecutionOptions build = factoryStore.get(notifierService.getType()).build(dynamicNotifier);
                 if (server.isDas()) {
                     if (targetUtil.getConfig(target).isDas()) {
                         if (notifierEnabled) {

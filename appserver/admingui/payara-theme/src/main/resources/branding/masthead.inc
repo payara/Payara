@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-   Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+   Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] 
 -->
 
 <sun:masthead id="Masthead" productImageURL="#{request.contextPath}/resource/community-theme/images/masthead-product_name_open.png" 
@@ -50,9 +50,14 @@
               roleInfo="#{domainName}" roleInfoLabel="$resource{i18n.masthead.domainInfoLabel}"
               serverInfo="#{hostName}" serverInfoLabel="$resource{i18n.masthead.serverInfoLabel}"
               dateTime="$boolean{false}" notificationMsg="$attribute{null}">
-
-
-
+    
+        <h:panelGroup layout="block" id="environmentWarningBar" rendered="#{sessionScope.environmentWarningBarEnabled}" style="text-align:center;background-color:#{sessionScope.environmentWarningBarBackgroundColour}">
+            <sun:staticText id="environmentWarningBarMessage"
+                           style="color:#{sessionScope.environmentWarningBarTextColour};"
+                           text="#{sessionScope.environmentWarningBarMessage}"
+                           toolTip="#{sessionScope.environmentWarningBarMessage}">
+            </sun:staticText>
+        </h:panelGroup>
     <!facet consoleLink>
         <sun:hyperlink id="homeLink" toolTip="$resource{i18n.homeLinkTooltip}" target="_top" text="$resource{i18n.masthead.Home}" url="#{request.contextPath}/common/index.jsf" />
     </facet>

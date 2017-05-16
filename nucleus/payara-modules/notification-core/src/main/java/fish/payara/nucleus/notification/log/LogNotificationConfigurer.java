@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
 import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -68,6 +69,9 @@ import java.beans.PropertyVetoException;
 })
 public class LogNotificationConfigurer extends BaseNotificationConfigurer<LogNotifierConfiguration, LogNotifierService> implements AdminCommand {
 
+    @Param(name = "useSeparateLogFile", defaultValue = "false")
+    private String useSeparateLogFile;
+
     @Override
     public void execute(AdminCommandContext context) {
         super.execute(context);
@@ -76,6 +80,9 @@ public class LogNotificationConfigurer extends BaseNotificationConfigurer<LogNot
     protected void applyValues(LogNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
+        }
+        if (this.useSeparateLogFile != null) {
+            configuration.useSeparateLogFile(Boolean.parseBoolean(this.useSeparateLogFile));
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,19 @@
  */
 package fish.payara.micro.cdi.extension;
 
+import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
 import fish.payara.micro.cdi.ClusteredCDIEventBus;
 import fish.payara.appserver.micro.services.PayaraClusteredCDIEventImpl;
 import fish.payara.micro.event.CDIEventListener;
 import fish.payara.micro.event.PayaraClusteredCDIEvent;
-import fish.payara.appserver.micro.services.PayaraInstance;
+import fish.payara.micro.PayaraInstance;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -64,13 +67,13 @@ import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 /**
  *
- * @author steve
+ * @author Steve Millidge (Payara Services Limited)
  */
 @ApplicationScoped
 public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIEventBus {
@@ -84,12 +87,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @Resource
     private ManagedExecutorService managedExecutorService;
 
-    private ComponentInvocation capturedInvocation;
+    private JavaEEContextUtil ctxUtil;
 
-    private InvocationManager im;
-
-    private ClassLoader capturedClassLoader;
-    
     private final static String INSTANCE_PROPERTY = "InstanceName";
     
     private final static String EVENT_PROPERTY = "EventName";
@@ -97,9 +96,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @PostConstruct
     void postConstruct() {
         runtime.addCDIListener(this);
-        capturedClassLoader = Thread.currentThread().getContextClassLoader();
-        im = Globals.getDefaultHabitat().getService(InvocationManager.class);
-        capturedInvocation = im.getCurrentInvocation();
+        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
         if (managedExecutorService == null) {
             try {
                 InitialContext ctx = new InitialContext();
@@ -114,8 +111,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @PreDestroy
     void preDestroy() {
         runtime.removeCDIListener(this);
-        capturedClassLoader = null;
-        capturedInvocation = null;
+        ctxUtil = null;
     }
     
     public void onStart(@Observes @Initialized(ApplicationScoped.class) ServletContext init) {
@@ -130,12 +126,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         
         // try again
 
-        if (im == null) {
-            im = Globals.getDefaultHabitat().getService(InvocationManager.class);
-        }
-        
-        if (capturedInvocation == null) {
-            capturedInvocation = im.getCurrentInvocation(); 
+        if (ctxUtil.getApplicationName() == null) {
+            ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
         }
         
         if (managedExecutorService == null) {
@@ -169,21 +161,18 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                 return;
         }
 
-        // as we are on the hazelcast thread we need to establish the invocation manager
-        ComponentInvocation newInvocation = new ComponentInvocation(capturedInvocation.getComponentId(),
-                capturedInvocation.getInvocationType(),
-                capturedInvocation.getContainer(),
-                capturedInvocation.getAppName(),
-                capturedInvocation.getModuleName());
-        final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+        Context ctx = ctxUtil.pushContext();
         try {
-            Thread.currentThread().setContextClassLoader(capturedClassLoader);
-            im.preInvoke(newInvocation);
-
             managedExecutorService.submit(new Runnable() {
                 @Override
                 public void run() {
+                    ClassLoader oldCL = Utility.getClassLoader();
                     try {
+                        Utility.setContextClassLoader(ctxUtil.getInvocationClassLoader());
+                        
+                        // create the set of qualifiers for the event
+                        // first add Inbound qualifier with the correct properties                                                
+                        Set<Annotation> qualifiers = new HashSet<>();
                         Serializable eventPayload = event.getPayload();
                         Inbound inbound = new Inbound() {
                             @Override
@@ -196,15 +185,27 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                                 return Inbound.class;
                             }
                         };
-                        bm.fireEvent(eventPayload,inbound);
+                        qualifiers.add(inbound);
+                        
+                        // Now create Qualifiers for the sent event qualifiers
+                        Set<Annotation> receivedQualifiers = event.getQualifiers();
+                        for (Annotation receivedQualifier : receivedQualifiers) {
+                            // strip out OutBound as we don't want it even though it was sent over
+                            if (!(receivedQualifier instanceof Outbound)) {
+                                qualifiers.add(receivedQualifier);
+                            }
+                        }
+                        Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
+                        bm.fireEvent(eventPayload,annotations);
                     } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.FINE, "Received event which could not be deserialized", ex);
+                        Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Received Event but could not process it", ex);
+                    } finally {
+                        Utility.setContextClassLoader(oldCL);
                     }
                 }
             });
         } finally {
-            Thread.currentThread().setContextClassLoader(oldTCCL);
-            im.postInvoke(newInvocation);
+            ctxUtil.popContext(ctx);
         }
     }
 
@@ -228,6 +229,12 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
             clusteredEvent.setLoopBack(loopBack);
             clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
             clusteredEvent.setProperty(INSTANCE_PROPERTY, serializeArray(instanceName));
+            
+            Set<Annotation> qualifiers = meta.getQualifiers();
+            if (qualifiers != null && !qualifiers.isEmpty()) {
+                clusteredEvent.addQualifiers(qualifiers);
+            }
+            
             runtime.publishCDIEvent(clusteredEvent);
         } catch (IOException ex) {
         }

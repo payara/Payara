@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.services.impl;
 
 import java.beans.PropertyChangeEvent;
@@ -50,6 +51,7 @@ import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 
 import org.jvnet.hk2.config.Changed;
@@ -81,14 +83,16 @@ import org.glassfish.grizzly.impl.SafeFutureImpl;
  * @author Alexey Stashok
  */
 public class DynamicConfigListener implements ConfigListener {
+
     private static final String ADMIN_LISTENER = "admin-listener";
+    private static final String OFF = "OFF";
     private GrizzlyService grizzlyService;
     private Config config;
     private final Logger logger;
     private static final int RECONFIG_LOCK_TIMEOUT_SEC = 30;
     private static final ReentrantLock reconfigLock = new ReentrantLock();
-    private static final Map<Integer, FutureImpl> reconfigByPortLock =
-            new HashMap<Integer, FutureImpl>();
+    private static final Map<Integer, FutureImpl> reconfigByPortLock
+            = new HashMap<Integer, FutureImpl>();
 
     public DynamicConfigListener(final Config parent, final Logger logger) {
         config = parent;
@@ -98,65 +102,71 @@ public class DynamicConfigListener implements ConfigListener {
     @Override
     public synchronized UnprocessedChangeEvents changed(final PropertyChangeEvent[] events) {
         return ConfigSupport.sortAndDispatch(
-            events, new Changed() {
-                @Override
-                public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type,
+                events, new Changed() {
+            @Override
+            public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type,
                     Class<T> tClass, T t) {
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, "NetworkConfig changed {0} {1} {2}",
-                                new Object[]{type, tClass, t});
-                    }
-                    if (tClass == NetworkListener.class && t instanceof NetworkListener) {
-                        return processNetworkListener(type, (NetworkListener) t, events);
-                    } else if (tClass == Http.class && t instanceof Http) {
-                        return processProtocol(type, (Protocol) t.getParent(), events);
-                    } else if (tClass == FileCache.class && t instanceof FileCache) {
-                        return processProtocol(type, (Protocol) t.getParent().getParent(), null);
-                    } else if (tClass == Ssl.class && t instanceof Ssl) {
-                        /*
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "NetworkConfig changed {0} {1} {2}",
+                            new Object[]{type, tClass, t});
+                }
+                if (tClass == NetworkListener.class && t instanceof NetworkListener) {
+                    return processNetworkListener(type, (NetworkListener) t, events);
+                } else if (tClass == Http.class && t instanceof Http) {
+                    return processProtocol(type, (Protocol) t.getParent(), events);
+                } else if (tClass == FileCache.class && t instanceof FileCache) {
+                    return processProtocol(type, (Protocol) t.getParent().getParent(), null);
+                } else if (tClass == Ssl.class && t instanceof Ssl) {
+                    /*
                          * Make sure the SSL parent is in fact a protocol.  It could
                          * be a jmx-connector.
-                         */
-                        final ConfigBeanProxy parent = t.getParent();
-                        if (parent instanceof Protocol) {
-                            return processProtocol(type, (Protocol) parent, null);
-                        }
-                    } else if (tClass == Protocol.class && t instanceof Protocol) {
-                        return processProtocol(type, (Protocol) t, null);
-                    } else if (tClass == ThreadPool.class && t instanceof ThreadPool) {
-                        NotProcessed notProcessed = null;
-                        for (NetworkListener listener : ((ThreadPool) t).findNetworkListeners()) {
+                     */
+                    final ConfigBeanProxy parent = t.getParent();
+                    if (parent instanceof Protocol) {
+                        return processProtocol(type, (Protocol) parent, null);
+                    }
+                } else if (tClass == Protocol.class && t instanceof Protocol) {
+                    return processProtocol(type, (Protocol) t, null);
+                } else if (tClass == ThreadPool.class && t instanceof ThreadPool) {
+                    NotProcessed notProcessed = null;
+                    for (NetworkListener listener : ((ThreadPool) t).findNetworkListeners()) {
                             notProcessed = processNetworkListener(type, listener, null);
-                        }
-                        return notProcessed;
-                    } else if (tClass == Transport.class && t instanceof Transport) {
-                        NotProcessed notProcessed = null;
-                        for (NetworkListener listener : ((Transport) t).findNetworkListeners()) {
-                            notProcessed = processNetworkListener(type, listener, null);
-                        }
-                        return notProcessed;
-                    } else if (tClass == VirtualServer.class 
-                                    && t instanceof VirtualServer 
-                                    && !grizzlyService.hasMapperUpdateListener()) {
-                        return processVirtualServer(type, (VirtualServer) t);
-                    } else if (tClass == SystemProperty.class && t instanceof SystemProperty) {
-                        NetworkConfig networkConfig = config.getNetworkConfig();
+                    }
+                    
+                    MonitoringService ms = config.getMonitoringService();
+                    String level = ms.getModuleMonitoringLevels().getThreadPool();
+                    if (level != null && (!level.equals(OFF)) && notProcessed == null){
+                        notProcessed = new NotProcessed("Monitoring not set with new admin pool");
+                    }
+                    return notProcessed;
+                } else if (tClass == Transport.class && t instanceof Transport) {
+                    NotProcessed notProcessed = null;
+                    for (NetworkListener listener : ((Transport) t).findNetworkListeners()) {
+                        notProcessed = processNetworkListener(type, listener, null);
+                    }
+                    return notProcessed;
+                } else if (tClass == VirtualServer.class
+                        && t instanceof VirtualServer
+                        && !grizzlyService.hasMapperUpdateListener()) {
+                    return processVirtualServer(type, (VirtualServer) t);
+                } else if (tClass == SystemProperty.class && t instanceof SystemProperty) {
+                    NetworkConfig networkConfig = config.getNetworkConfig();
                         if ((networkConfig != null) && ((SystemProperty)t).getName().endsWith("LISTENER_PORT")) {
-                            for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
+                        for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
                                 if (listener.getPort().equals(((SystemProperty)t).getValue())) {
                                     return processNetworkListener(Changed.TYPE.CHANGE, listener, events);
                                 }
                             }
                         }
                         return null;
-                    }
-                    return null;
                 }
-            }, logger);
+                return null;
+            }
+        }, logger);
     }
 
     private <T extends ConfigBeanProxy> NotProcessed processNetworkListener(Changed.TYPE type,
-        NetworkListener listener, PropertyChangeEvent[] changedProperties) {
+            NetworkListener listener, final PropertyChangeEvent[] changedProperties) {
 
         if (findConfigName(listener).equals(findConfigName(config))) {
 
@@ -169,7 +179,7 @@ public class DynamicConfigListener implements ConfigListener {
                     if (isAdminListener && ports[ports.length - 1] == -1) {
                         return null;
                     }
-                    
+
                     final Future future = grizzlyService.createNetworkProxy(listener);
                     if (future != null) {
                         future.get(RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
@@ -183,8 +193,10 @@ public class DynamicConfigListener implements ConfigListener {
                         grizzlyService.removeNetworkProxy(listener);
                     }
                 } else if (type == Changed.TYPE.CHANGE) {
+                    // If the listener is the admin listener
                     if (isAdminListener) {
                         final boolean dynamic = isAdminDynamic(changedProperties);
+                        // If configuration is dynamic then make the change
                         if (dynamic) {
                             GrizzlyProxy proxy = (GrizzlyProxy) grizzlyService.lookupNetworkProxy(listener);
                             if (proxy != null) {
@@ -194,9 +206,21 @@ public class DynamicConfigListener implements ConfigListener {
                                 return null;
                             }
                         }
+                        // Otherwise return the unprocessed event, describing the changed values.
+                        if (!isRedundantChange(changedProperties)) {
+                            StringBuilder eventsMessage = new StringBuilder();
+                            /* Add list of changed events to an events message.
+                            *  Usually only one message is sent to this method at a time, so the for loop should only run once,
+                            *  but it's there just in case.
+                            */
+                            for (PropertyChangeEvent event : changedProperties) {
+                                eventsMessage.append("\"" + event.getPropertyName() + "\" changed from \"" + event.getOldValue() + "\" to \"" + event.getNewValue() + "\".\n");
+                            }
+                            return new NotProcessed(listener.getThreadPool() + " attribute " + eventsMessage.toString());
+                        }
                         return null;
                     }
-                    
+
                     // Restart the network listener
                     grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
                 }
@@ -213,10 +237,33 @@ public class DynamicConfigListener implements ConfigListener {
 
     private String findConfigName(final ConfigBeanProxy child) {
         ConfigBeanProxy bean = child;
-        while(bean != null && ! (bean instanceof Config)) {
+        while (bean != null && !(bean instanceof Config)) {
             bean = bean.getParent();
         }
         return bean != null ? ((Config) bean).getName() : "";
+    }
+
+    /**
+     * Checks if a signalled event change is redundant
+     * e.g. first event on startup is always changing admin-thread-pool name from admin-thread-pool to itself,
+     * which is redundant.
+     * @param events List of events to check for redundancy
+     * @return boolean true if event change is redundant, false otherwise
+     */
+    private boolean isRedundantChange(PropertyChangeEvent[] events) {
+        boolean redundant = true;
+
+        if(events == null || events.length == 0) {
+            return redundant;
+        }
+
+        for (PropertyChangeEvent event : events) {
+            if (!event.getNewValue().equals(event.getOldValue())) {
+                redundant = false;
+            }
+        }
+
+        return redundant;
     }
 
     private boolean isAdminDynamic(PropertyChangeEvent[] events) {
@@ -257,7 +304,8 @@ public class DynamicConfigListener implements ConfigListener {
     }
 
     /**
-     * Lock TCP ports, which will take part in the reconfiguration to avoid collisions
+     * Lock TCP ports, which will take part in the reconfiguration to avoid
+     * collisions
      */
     private Lock acquirePortLock(NetworkListener listener) throws InterruptedException, TimeoutException {
         final boolean isLoggingFinest = logger.isLoggable(Level.FINEST);
@@ -359,6 +407,7 @@ public class DynamicConfigListener implements ConfigListener {
     }
 
     private static final class Lock {
+
         private final int[] ports;
 
         public Lock(int... ports) {

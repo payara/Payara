@@ -88,10 +88,10 @@ public class StartClusterCommand implements AdminCommand {
 
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
-
+   
     @Override
     public void execute(AdminCommandContext context) {
-
+     
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
 
@@ -108,12 +108,12 @@ public class StartClusterCommand implements AdminCommand {
 
         ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain,
                 runner);
-
+       
         try {
             // Run start-instance against each instance in the cluster
-            String commandName = "start-instance";
+            String commandName = "start-instance";          
             clusterHelper.runCommand(commandName, null, clusterName, context,
-                    verbose);
+                    verbose);           
         }
         catch (CommandException e) {
             String msg = e.getLocalizedMessage();

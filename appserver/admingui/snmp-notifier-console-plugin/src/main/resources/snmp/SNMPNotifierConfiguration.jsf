@@ -33,12 +33,13 @@
                 method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
-        
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
+
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
-    /> 
+        setPageSessionAttribute(key="dynamic", value="true");
+    />
 </event>
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
@@ -51,7 +52,8 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                     <!command
                         mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                        prepareSuccessfulMsg();
+                        mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                prepareSuccessfulMsg();
                         gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-snmp-configure" 
                                 attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                         />
@@ -95,7 +97,7 @@
                           label="$resource{i18nsnn.notifier.snmp.configuration.hostLabel}"  
                           helpText="$resource{i18nsnn.notifier.snmp.configuration.hostLabelHelpText}">
                 <sun:textField id="hostField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['host']}" styleClass="required"  
+                               text="#{pageSession.valueMap['hostName']}" styleClass="required"
                                required="#{true}"/>
             </sun:property>
             <sun:property id="portProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 

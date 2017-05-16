@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,11 +62,10 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -85,17 +84,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteNetworkListener implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "{0} Network Listener doesn't exist.",
-            level = "INFO")
-    protected static final String DELETE_NETWORK_LISTENER_NOT_EXISTS = "AS-WEB-ADMIN-00030";
-
-    @LogMessageInfo(
-            message = "Deletion of NetworkListener {0} failed.",
-            level = "INFO")
-    protected static final String DELETE_NETWORK_LISTENER_FAIL = "AS-WEB-ADMIN-00031";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name = "networkListenerName", primary = true)
     String networkListenerName;
@@ -142,7 +131,7 @@ public class DeleteNetworkListener implements AdminCommand {
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (TransactionFailure e) {
-            report.setMessage(MessageFormat.format(rb.getString(DELETE_NETWORK_LISTENER_FAIL), networkListenerName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_NETWORK_LISTENER_FAIL), networkListenerName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }
@@ -155,7 +144,7 @@ public class DeleteNetworkListener implements AdminCommand {
             }
         }
         if (listenerToBeRemoved == null) {
-            report.setMessage(MessageFormat.format(rb.getString(DELETE_NETWORK_LISTENER_NOT_EXISTS), networkListenerName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_NETWORK_LISTENER_NOT_EXISTS), networkListenerName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
         }

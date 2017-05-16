@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 <!--
   modules used to build glassfish packages
@@ -50,7 +50,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.172</version>
     </parent>
 
     <developers>
@@ -113,6 +113,7 @@
         <module>requesttracing-package</module>
         <module>asadmin-recorder-package</module>
         <module>notification-package</module>
+        <module>payara-api-package</module>
     </modules>
 
     <build>

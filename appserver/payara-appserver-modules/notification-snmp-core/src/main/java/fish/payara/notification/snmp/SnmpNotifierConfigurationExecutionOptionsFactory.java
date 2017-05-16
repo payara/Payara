@@ -68,7 +68,7 @@ public class SnmpNotifierConfigurationExecutionOptionsFactory
         executionOptions.setOid(notifierConfiguration.getOid());
         executionOptions.setVersion(notifierConfiguration.getVersion());
         executionOptions.setHost(notifierConfiguration.getHost());
-        executionOptions.setPort(notifierConfiguration.getPort());
+        executionOptions.setPort(Integer.parseInt(notifierConfiguration.getPort()));
 
         return executionOptions;
     }

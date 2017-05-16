@@ -47,13 +47,13 @@
   <parent>
     <groupId>org.glassfish.main.extras</groupId>
     <artifactId>extras</artifactId>
-    <version>4.1.1.172-SNAPSHOT</version>
+    <version>4.1.2.172</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <groupId>fish.payara.extras</groupId>
   <artifactId>payara-embedded-web</artifactId>
-  <version>4.1.1.172-SNAPSHOT</version>
+  <version>4.1.2.172</version>
   <name>Embedded Payara Web</name>
       <packaging>jar</packaging>
 

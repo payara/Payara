@@ -45,10 +45,26 @@
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.172</version>
     </parent>
     <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-boot</artifactId>
     <description>Payara Micro Boot</description>
     <packaging>glassfish-jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-api</artifactId>
+            <version>${hk2.version}</version>
+            <type>jar</type>
+            <optional>true</optional>
+	</dependency>
+	<dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <type>jar</type>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 </project>

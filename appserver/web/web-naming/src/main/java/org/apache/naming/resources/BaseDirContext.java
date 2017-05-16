@@ -59,6 +59,7 @@
 package org.apache.naming.resources;
 
 import java.util.Hashtable;
+import java.util.ResourceBundle;
 
 import javax.naming.Binding;
 import javax.naming.Context;
@@ -75,6 +76,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import org.apache.naming.LogFacade;
 import org.apache.naming.NameParserImpl;
 
 /**
@@ -86,9 +88,7 @@ import org.apache.naming.NameParserImpl;
 
 public abstract class BaseDirContext implements DirContext {
 
-
-    // -------------------------------------------------------------- Constants
-
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     // ----------------------------------------------------------- Constructors
 
@@ -192,7 +192,7 @@ public abstract class BaseDirContext implements DirContext {
 	// Validate the format of the proposed document root
 	if (docBase == null)
 	    throw new IllegalArgumentException
-                (FileDirContext.rb.getString(FileDirContext.RESOURCES_NULL));
+                (rb.getString(LogFacade.RESOURCES_NULL));
 
 	// Change the document root property
 	this.docBase = docBase;

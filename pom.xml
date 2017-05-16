@@ -45,7 +45,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-main-aggregator</artifactId>
-    <version>4.1.1.172-SNAPSHOT</version>
+    <version>4.1.2.172</version>
     <packaging>pom</packaging>
     
     <name>Payara Project</name>
@@ -70,6 +70,7 @@
             <modules>
                 <module>nucleus</module>
                 <module>appserver</module>
+                <module>api</module>
             </modules>
         </profile>
         <profile>
@@ -103,6 +104,7 @@
             <modules>
                 <module>nucleus</module>
                 <module>appserver</module>
+                <module>api</module>
             </modules>
         </profile>
     </profiles>

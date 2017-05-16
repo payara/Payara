@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
@@ -67,6 +68,7 @@ import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.context.AnnotationContext;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.ejb.deployment.descriptor.DummyEjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -188,6 +190,9 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         String elementName = getAnnotatedName(annotation);
         if (elementName.length() == 0) {
             elementName = ejbClass.getSimpleName();            
+        }
+        else {
+            elementName = (String)TranslatedConfigView.getTranslatedValue(elementName);
         }
 
         EjbBundleDescriptorImpl currentBundle = (EjbBundleDescriptorImpl) ctx.getDescriptor();

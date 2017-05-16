@@ -22,7 +22,7 @@
    <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.172</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.payara-modules</groupId>
@@ -70,6 +70,18 @@
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
             <version>1.0.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>admin-cli</artifactId>
+            <version>${project.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>

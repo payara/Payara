@@ -68,11 +68,10 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -92,22 +91,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteVirtualServer implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "{0} delete failed.",
-            level = "INFO")
-    protected static final String DELETE_VIRTUAL_SERVER_FAIL = "AS-WEB-ADMIN-00043";
-
-    @LogMessageInfo(
-            message = "Specified virtual server, {0}, doesn''t exist.",
-            level = "INFO")
-    protected static final String DELETE_VIRTUAL_SERVER_NOT_EXISTS = "AS-WEB-ADMIN-00044";
-
-    @LogMessageInfo(
-            message = "Specified virtual server, {0}, can not be deleted because it is referenced from http listener, {1}.",
-            level = "INFO")
-    protected static final String DELETE_VIRTUAL_SERVER_REFERENCED = "AS-WEB-ADMIN-00045";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
@@ -147,7 +131,7 @@ public class DeleteVirtualServer implements AdminCommand {
         networkConfig = config.getNetworkConfig();
 
         if(!exists()) {
-            report.setMessage(MessageFormat.format(rb.getString(DELETE_VIRTUAL_SERVER_NOT_EXISTS), vsid));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_VIRTUAL_SERVER_NOT_EXISTS), vsid));
             report.setActionExitCode(ExitCode.FAILURE);
             return;
         }
@@ -155,7 +139,7 @@ public class DeleteVirtualServer implements AdminCommand {
         // reference check
         String referencedBy = getReferencingListener();
         if(referencedBy != null && referencedBy.length() != 0) {
-            report.setMessage(MessageFormat.format(rb.getString(DELETE_VIRTUAL_SERVER_REFERENCED), vsid, referencedBy));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_VIRTUAL_SERVER_REFERENCED), vsid, referencedBy));
             report.setActionExitCode(ExitCode.FAILURE);
             return;
         }
@@ -180,7 +164,7 @@ public class DeleteVirtualServer implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
         } catch(TransactionFailure e) {
-            report.setMessage(MessageFormat.format(rb.getString(DELETE_VIRTUAL_SERVER_FAIL), vsid));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_VIRTUAL_SERVER_FAIL), vsid));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }

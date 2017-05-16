@@ -61,11 +61,10 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -84,22 +83,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteTransport implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "{0} transport is being used in the network listener {1}.",
-            level = "INFO")
-    protected static final String DELETE_TRANSPORT_BEINGUSED = "AS-WEB-ADMIN-00040";
-
-    @LogMessageInfo(
-            message = "Deletion of Transport {0} failed.",
-            level = "INFO")
-    protected static final String DELETE_TRANSPORT_FAIL = "AS-WEB-ADMIN-00041";
-
-    @LogMessageInfo(
-            message = "{0} transport doesn''t exist.",
-            level = "INFO")
-    protected static final String DELETE_TRANSPORT_NOT_EXISTS = "AS-WEB-ADMIN-00042";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name="transportname", primary=true)
     String transportName;
@@ -143,7 +127,7 @@ public class DeleteTransport implements AdminCommand {
             }
 
             if (transportToBeRemoved == null) {
-                report.setMessage(MessageFormat.format(rb.getString(DELETE_TRANSPORT_NOT_EXISTS), transportName));
+                report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_TRANSPORT_NOT_EXISTS), transportName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -157,7 +141,7 @@ public class DeleteTransport implements AdminCommand {
               if (transportToBeRemoved.getName().equals(nwlsnr.getTransport())) {
                   report.setMessage(
                           MessageFormat.format(
-                                  rb.getString(DELETE_TRANSPORT_BEINGUSED),
+                                  rb.getString(LogFacade.DELETE_TRANSPORT_BEINGUSED),
                                   transportName,
                                   nwlsnr.getName()));
                   report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -173,7 +157,7 @@ public class DeleteTransport implements AdminCommand {
             }, transports);
             
         } catch(TransactionFailure e) {
-            report.setMessage(MessageFormat.format(rb.getString(DELETE_TRANSPORT_FAIL), transportName) +
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_TRANSPORT_FAIL), transportName) +
                     "  " + e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);

@@ -18,7 +18,7 @@ package fish.payara.appserver.micro.services.asadmin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.appserver.micro.services.PayaraInstance;
+import fish.payara.appserver.micro.services.PayaraInstanceImpl;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ import org.jvnet.hk2.annotations.Service;
 public class ListHazelcastClusterMembersCommand implements AdminCommand
 {
     @Inject
-    private PayaraInstance payaraInstance;
+    private PayaraInstanceImpl payaraInstance;
     
     @Param(name = "type", optional = true, acceptableValues = "micro,server")
     private String type;

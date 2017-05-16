@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -199,7 +199,7 @@ public class StandaloneTest  extends BaseSeleniumTestClass {
             return;
         }
 
-        this.selectAllTableRows(ID_INSTANCE_TABLE);
+        this.selectAllTableRows(ID_INSTANCE_TABLE, 0);
         chooseOkOnNextConfirmation();
         pressButton("propertyForm:instancesTable:topActionsGroup1:button3");
         waitForButtonDisabled("propertyForm:instancesTable:topActionsGroup1:button3");
@@ -220,7 +220,7 @@ public class StandaloneTest  extends BaseSeleniumTestClass {
          */
 
         // Delete all instances
-        deleteAllTableRows(ID_INSTANCE_TABLE );  //"propertyForm:instancesTable");
+        deleteAllTableRows(ID_INSTANCE_TABLE, 0);  //"propertyForm:instancesTable");
     }
 
     public void startInstance(String instanceName) {

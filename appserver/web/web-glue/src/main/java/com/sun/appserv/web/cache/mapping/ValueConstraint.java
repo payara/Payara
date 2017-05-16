@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 /** ValueConstraint class represents a field's value constraint; 
  *  supports common matching expressions. 
@@ -55,52 +55,12 @@ public class ValueConstraint {
         "", "'equals'", "'greater'", "'lesser'", "'not-equals'", "'in-range'"
     };
 
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger _logger = LogFacade.getLogger();
 
     /**
      * The resource bundle containing the localized message strings.
      */
     private static final ResourceBundle _rb = _logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "''greater'' expression requires a numeric value; please check your value {0}",
-            level = "WARNING")
-    private static final String GREATER_EXP_REQ_NUMERIC = "AS-WEB-GLUE-00017";
-
-    @LogMessageInfo(
-            message = "''lesser'' expression requires a numeric value; please check your value [{0}]",
-            level = "WARNING")
-    private static final String LESSER_EXP_REQ_NUMERIC = "AS-WEB-GLUE-00018";
-
-    @LogMessageInfo(
-            message = "illegal value [{0}] expr [{1}]",
-            level = "WARNING")
-    private static final String ILLEGAL_VALUE_EXP = "AS-WEB-GLUE-00019";
-
-    @LogMessageInfo(
-            message = "illegal in-range constraint; specify a valid range (xxx-yyy) value [{0}]",
-            level = "WARNING")
-    private static final String ILLEGAL_VALUE_RANGE = "AS-WEB-GLUE-00020";
-
-    @LogMessageInfo(
-            message = "missing separator in the ''in-range'' constraint; [{0}]",
-            level = "WARNING")
-    private static final String MISSING_RANGE_SEP = "AS-WEB-GLUE-00021";
-
-    @LogMessageInfo(
-            message = "''in-range'' constraint requires numeric values for the lower bound [{0}]",
-            level = "WARNING")
-    private static final String LOWER_RANGE_REQ_NUMBER = "AS-WEB-GLUE-00022";
-
-    @LogMessageInfo(
-            message = "''in-range'' constraint requires a value for the upper bound of the range; check your value [{0}]",
-            level = "WARNING")
-    private static final String RANGE_REQ_UPPER_BOUND= "AS-WEB-GLUE-00023";
-
-    @LogMessageInfo(
-            message = "''in-range'' constraint requires numeric values for the upper bound [{0}]",
-            level = "WARNING")
-    private static final String UPPER_RANGE_REQ_NUMBER = "AS-WEB-GLUE-00024";
 
     // field values to match 
     private String matchValue = null; 
@@ -133,7 +93,7 @@ public class ValueConstraint {
             try {
                 minValue = Float.parseFloat(value);
             } catch (NumberFormatException nfe) {
-                String msg = _rb.getString(GREATER_EXP_REQ_NUMERIC);
+                String msg = _rb.getString(LogFacade.GREATER_EXP_REQ_NUMERIC);
                 Object[] params = { value };
                 msg = MessageFormat.format(msg, params);
 
@@ -145,7 +105,7 @@ public class ValueConstraint {
             try {
                 maxValue = Float.parseFloat(value);
             } catch (NumberFormatException nfe) {
-                String msg = _rb.getString(LESSER_EXP_REQ_NUMERIC);
+                String msg = _rb.getString(LogFacade.LESSER_EXP_REQ_NUMERIC);
                 Object[] params = { value };
                 msg = MessageFormat.format(msg, params);
 
@@ -159,7 +119,7 @@ public class ValueConstraint {
             parseRangeValue(value);
         }
         else {
-            String msg = _rb.getString(ILLEGAL_VALUE_EXP);
+            String msg = _rb.getString(LogFacade.ILLEGAL_VALUE_EXP);
             Object[] params = { value, expr };
             msg = MessageFormat.format(msg, params);
 
@@ -185,7 +145,7 @@ public class ValueConstraint {
         float val1, val2;
 
         if (value == null || value.length() <= 2) {
-            String msg = _rb.getString(ILLEGAL_VALUE_RANGE);
+            String msg = _rb.getString(LogFacade.ILLEGAL_VALUE_RANGE);
             Object[] params = { value };
             msg = MessageFormat.format(msg, params);
 
@@ -200,7 +160,7 @@ public class ValueConstraint {
            separator = value.indexOf('-', 0); 
         }
         if (separator == -1) {
-            String msg = _rb.getString(MISSING_RANGE_SEP);
+            String msg = _rb.getString(LogFacade.MISSING_RANGE_SEP);
             Object[] params = { value };
             msg = MessageFormat.format(msg, params);
 
@@ -212,7 +172,7 @@ public class ValueConstraint {
         try {
             val1 = Float.parseFloat(sval1);
         } catch (NumberFormatException nfe) {
-            String msg = _rb.getString(LOWER_RANGE_REQ_NUMBER);
+            String msg = _rb.getString(LogFacade.LOWER_RANGE_REQ_NUMBER);
             Object[] params = { sval1 };
             msg = MessageFormat.format(msg, params);
 
@@ -221,7 +181,7 @@ public class ValueConstraint {
 
         // is max value specified at all?
         if (separator == value.length()){
-            String msg = _rb.getString(RANGE_REQ_UPPER_BOUND);
+            String msg = _rb.getString(LogFacade.RANGE_REQ_UPPER_BOUND);
             Object[] params = { value };
             msg = MessageFormat.format(msg, params);
 
@@ -232,7 +192,7 @@ public class ValueConstraint {
         try {
             val2 = Float.parseFloat(sval2);
         } catch (NumberFormatException nfe) {
-            String msg = _rb.getString(UPPER_RANGE_REQ_NUMBER);
+            String msg = _rb.getString(LogFacade.UPPER_RANGE_REQ_NUMBER);
             Object[] params = { sval2 };
             msg = MessageFormat.format(msg, params);
 

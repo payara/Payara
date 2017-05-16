@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,8 +58,7 @@
 
 package org.apache.tomcat.util.digester;
 
-
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.xml.sax.Attributes;
 
@@ -72,12 +71,6 @@ import java.util.logging.Level;
  */
 
 public class SetPropertyRule extends Rule {
-
-    @LogMessageInfo(
-            message = "[SetPropertyRule]{0} Setting property {1} to {2} did not find a matching property.",
-            level = "WARNING"
-    )
-    public static final String PROPERTY_RULE_NOT_FIND_MATCHING_PROPERTY = "AS-WEB-CORE-00534";
 
 
     // ----------------------------------------------------------- Constructors
@@ -176,7 +169,7 @@ public class SetPropertyRule extends Rule {
         if (!digester.isFakeAttribute(top, actualName) 
                 && !IntrospectionUtils.setProperty(top, actualName, actualValue) 
                 && digester.getRulesValidation()) {
-            digester.log.log(Level.WARNING, PROPERTY_RULE_NOT_FIND_MATCHING_PROPERTY,
+            digester.log.log(Level.WARNING, LogFacade.PROPERTY_RULE_NOT_FIND_MATCHING_PROPERTY,
                              new Object[] {digester.match, name, value});
         }
 

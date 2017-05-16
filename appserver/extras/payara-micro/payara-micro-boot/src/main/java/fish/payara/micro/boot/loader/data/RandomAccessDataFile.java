@@ -154,6 +154,22 @@ public class RandomAccessDataFile implements RandomAccessData {
 			return doRead(b, off, len);
 		}
 
+        @Override
+        public int available() throws IOException {
+            RandomAccessFile file = this.file;
+            if (file == null) {
+                file = RandomAccessDataFile.this.filePool.acquire();
+                file.seek(RandomAccessDataFile.this.offset + this.position);
+            }
+            try {
+                return (int) (file.length() - this.position);
+            } finally {
+                if (this.file == null) {
+                    RandomAccessDataFile.this.filePool.release(file);
+                }
+            }
+        }
+
 		/**
 		 * Perform the actual read.
 		 * @param b the bytes to read or {@code null} when reading a single byte
