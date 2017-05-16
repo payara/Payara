@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 4.1.1.171!
+Thank you for downloading Payara Server 4.1.2.172!
 
 Here are a few short steps to get you started...
 
@@ -47,13 +47,13 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://payara.gitbooks.io/payara-server/content/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 4.1.1 Release Notes as they contain important information: https://github.com/payara/Payara/wiki/Release-Notes-(Payara-4.1.1.171)
+Make sure to also check the Payara Server 4.1.2 Release Notes as they contain important information: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-172.html
 
 
 5. Documentation 
 ================
 
-Payara Server 4.1.1 Releases Notes: https://github.com/payara/Payara/wiki/Release-Notes-(Payara-4.1.1.171)
+Payara Server 4.1.2 Releases Notes: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-172.html
 
 Payara Server Documentation: https://payara.gitbooks.io/payara-server/content/
 
