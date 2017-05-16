@@ -55,7 +55,7 @@ import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- *
+ * This class encapsulates the process of resolving the actual endpoint of the Payara Fang application.
  * @author Andrew Pielage
  */
 public class PayaraFangEndpointDecider {

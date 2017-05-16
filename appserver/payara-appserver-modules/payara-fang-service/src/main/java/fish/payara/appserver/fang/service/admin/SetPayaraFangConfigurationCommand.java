@@ -40,9 +40,7 @@
 
 package fish.payara.appserver.fang.service.admin;
 
-import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.appserver.fang.service.configuration.PayaraFangConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
@@ -51,8 +49,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.FailurePolicy;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -94,6 +90,9 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
     @Param(optional = true)
     String name;
     
+    @Param(optional = true, alias = "securityenabled")
+    Boolean securityEnabled;
+    
     @Inject
     private Target targetUtil;
     
@@ -122,6 +121,10 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
                         
                         if (name != null) {
                             configProxy.setApplicationName(name);
+                        }
+                        
+                        if (securityEnabled != null) {
+                            configProxy.setSecurityEnabled(securityEnabled.toString());
                         }
                         
                         return null;

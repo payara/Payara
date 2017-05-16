@@ -57,15 +57,20 @@ public interface PayaraFangConfiguration extends ConfigBeanProxy, ConfigExtensio
      * Checks if Payara Fang is enabled or not
      * @return true if enabled
      */
-    @Attribute(defaultValue="false", dataType = Boolean.class)
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue="/fang")
+    @Attribute(defaultValue = "/fang")
     String getContextRoot();
     void setContextRoot(String contextRoot) throws PropertyVetoException;
     
-    @Attribute(defaultValue="__fang")
+    @Attribute(defaultValue = "__fang")
     String getApplicationName();
     void setApplicationName(String name) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getSecurityEnabled();
+    void setSecurityEnabled(String value) throws PropertyVetoException;
+    
 }

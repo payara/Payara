@@ -78,7 +78,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * The adapter class for the Payara Fang application.
  * @author Andrew Pielage
  */
 @Service
@@ -131,6 +131,7 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
             logger.log(Level.INFO, "Payara Fang Console cannot initialise", ex);
         }
         
+        // If the app exists in the domain.xml AND it's registered to this instance
         if (appExistsInConfig() && (domain.getSystemApplicationReferencedFrom(env.getInstanceName(), 
                 fangServiceConfiguration.getApplicationName()) != null)) {
             setStateMsg(PayaraFangAdapterState.NOT_LOADED);
@@ -148,42 +149,42 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         return (getSystemApplicationConfig(contextRoot) != null);
     }
     
+    /**
+     * Gets the application config for the system application with the matching name or context root (in that order).
+     * @return The application config, or null if there is no matching application
+     */
     public Application getSystemApplicationConfig() {
         // First, check if there is an app registered for this server with the given application name
         Application application = domain.getSystemApplicationReferencedFrom(env.getInstanceName(), 
                 fangServiceConfiguration.getApplicationName());
         
         // If the app hasn't been registered to the instance yet, the previous check will return null, so check for one 
-        // with a matching context root instead (as these are also unique)
+        // with a matching context root instead (as these are also unique and saves us creating an extra app entry)
         if (application == null) {
-            application = getApplicationWithMatchingContextRoot();
+            application = getApplicationWithMatchingContextRoot(getContextRoot());
         }
         
         return application;
     }
     
-    public Application getSystemApplicationConfig(String contextRoot) {      
-        // check for an app with a matching context root
+    /**
+     * Gets the application config for the system application with the matching context root. This method is used over the 
+     * overloaded method if you want to skip trying to get the application config based on the application name, such as
+     * if you've reconfigured the application.
+     * @param contextRoot The context root of the application
+     * @return The application config, or null if there is no matching application.
+     */
+    public Application getSystemApplicationConfig(String contextRoot) {
         Application application = getApplicationWithMatchingContextRoot(contextRoot);
         
         return application;
     }
     
-    private Application getApplicationWithMatchingContextRoot() {
-        Application application = null;
-        String contextRoot = getContextRoot();
-
-        SystemApplications systemApplications = domain.getSystemApplications();
-        for (Application systemApplication : systemApplications.getApplications()) {
-            if (systemApplication.getContextRoot().equals(contextRoot)) {
-                application = systemApplication;
-                break;
-            }
-        }
-        
-        return application;
-    }
-    
+    /**
+     * Helper method that searches through all system applications for one with a matching context root.
+     * @param contextRoot The context root fo the application.
+     * @return The application config, or null if there are no applications with a matching context root.
+     */
     private Application getApplicationWithMatchingContextRoot(String contextRoot) {
         Application application = null;
 
@@ -416,7 +417,7 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
     public void setRegistered(boolean isRegistered) {
         this.isRegistered = isRegistered;
     }
-    
+
     public boolean isAppRegistered() {
         return appRegistered;
     }
@@ -425,6 +426,11 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         this.appRegistered = true;
     }
     
+    /**
+     * Overloaded method that checks if an application with the provided context root has been registered to this instance.
+     * @param contextRoot The context root to match.
+     * @return True if an application has been registered to this instance.
+     */
     public boolean isAppRegistered(String contextRoot) {
         boolean registered = false;
         Application application = getSystemApplicationConfig(contextRoot);

@@ -65,7 +65,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- *
+ * Loader class for the Payara Fang application. Handles registering and actual loading of the application.
  * @author Andrew Pielage
  */
 public class PayaraFangLoader extends Thread {
@@ -78,6 +78,18 @@ public class PayaraFangLoader extends Thread {
     private static final Logger LOGGER = Logger.getLogger(PayaraFangLoader.class.getName());
     private final List<String> vss;
     private final boolean dynamicStart;
+    
+    PayaraFangLoader(PayaraFangAdapter payaraFangAdapter, ServiceLocator habitat, Domain domain, 
+            ServerEnvironmentImpl serverEnv, String contextRoot, String applicationName, List<String> vss) {
+        this.payaraFangAdapter = payaraFangAdapter;
+        this.habitat = habitat;
+        this.domain = domain;
+        this.serverEnv = serverEnv;
+        this.contextRoot = contextRoot;
+        this.applicationName = applicationName;
+        this.vss = vss;
+        this.dynamicStart = false;
+    }
     
     PayaraFangLoader(PayaraFangAdapter payaraFangAdapter, ServiceLocator habitat, Domain domain, 
             ServerEnvironmentImpl serverEnv, String contextRoot, String applicationName, List<String> vss, 
@@ -126,8 +138,6 @@ public class PayaraFangLoader extends Thread {
                     createAndRegisterApplication();
                 }
             }
-            
-            
             
             loadApplication();
         } catch (Exception ex) {

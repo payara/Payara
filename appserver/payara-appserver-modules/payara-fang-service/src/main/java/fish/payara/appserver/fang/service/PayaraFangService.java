@@ -64,7 +64,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
- *
+ * The core service for the Payara Fang application. Handles starting and reconfiguration of the application.
  * @author Andrew Pielage
  */
 @Service(name = "payara-fang")
@@ -73,7 +73,6 @@ public class PayaraFangService implements ConfigListener {
     
     public static final String DEFAULT_FANG_APP_NAME = "__fang";
     private boolean startAttempted = false;
-    private boolean dynamicStart = false;
     private String contextRoot;
     
     @Inject
@@ -108,6 +107,17 @@ public class PayaraFangService implements ConfigListener {
         try {
             new PayaraFangLoader(payaraFangAdapter, habitat, domain, serverEnv, 
                     contextRoot, payaraFangConfiguration.getApplicationName(), 
+                    payaraFangAdapter.getVirtualServers()).start();
+        } catch (Exception ex) {
+            throw new RuntimeException("Unable to load Payara Fang!", ex);
+        }
+    }
+    
+    private void loadApplication(boolean dynamicStart) {
+        startAttempted = true;
+        try {
+            new PayaraFangLoader(payaraFangAdapter, habitat, domain, serverEnv, 
+                    contextRoot, payaraFangConfiguration.getApplicationName(), 
                     payaraFangAdapter.getVirtualServers(), dynamicStart).start();
         } catch (Exception ex) {
             throw new RuntimeException("Unable to load Payara Fang!", ex);
@@ -117,9 +127,7 @@ public class PayaraFangService implements ConfigListener {
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
-        
-        // Reset dynamicStart to default value
-        dynamicStart = false;
+        boolean dynamicStart = false;
         
         for (PropertyChangeEvent propertyChangeEvent : propertyChangeEvents) {
             // Check that the property change event is for us.
@@ -129,9 +137,10 @@ public class PayaraFangService implements ConfigListener {
                 if (!propertyChangeEvent.getOldValue().equals(propertyChangeEvent.getNewValue())) {
                     // If the application hasn't attempted to start yet
                     if (!startAttempted) {
-                        // We can only get here if enabled was false at server start, so it's safe to assume that enabled
-                        // is being set to true
+                        // We can only get here if enabled was false at server start, so in the case of the enabled 
+                        // property, we don't need to compare it to the current value - it can only be true
                         if (propertyChangeEvent.getPropertyName().equals("enabled")) {
+                            // Flag that we want to dynamically start Payara Fang
                             dynamicStart = true;
                         } else if (propertyChangeEvent.getPropertyName().equals("context-root")) {
                             // If we haven't attempted to start the app yet, grab the new context root
@@ -141,7 +150,7 @@ public class PayaraFangService implements ConfigListener {
                             contextRoot = endpointDecider.getContextRoot();
                         }
                     } else {
-                        // If a startup has been attempted, just throw an unprocessed change event
+                        // If a startup has been attempted, just throw an unprocessed change event as we need to restart
                         unprocessedChanges.add(new UnprocessedChangeEvent(propertyChangeEvent, 
                                 "Payara Fang redeploy required"));
                     }
@@ -151,9 +160,10 @@ public class PayaraFangService implements ConfigListener {
         
         // This should only be true if Payara Fang was not enabled at startup, and we've just enabled the service
         if (dynamicStart) {
-            loadApplication();
+            loadApplication(true);
         }
         
+        // If we need to restart, throw an unprocessed change event
         if (unprocessedChanges.isEmpty()) {
             return null;
         } else {
@@ -161,8 +171,7 @@ public class PayaraFangService implements ConfigListener {
         }
     }
     
-    private boolean isCurrentInstanceMatchTarget(PropertyChangeEvent propertyChangeEvent) {
-        
+    private boolean isCurrentInstanceMatchTarget(PropertyChangeEvent propertyChangeEvent) {       
         // If we are an instance then the change will apply to us as it has been
         // replicated directly to us by the DAS
         if (serverEnv.isInstance()) {
