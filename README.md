@@ -32,6 +32,31 @@ In summary Payara Server provides;
 * Optimised for production and operations
 * Quarterly Patch Releases / Bug Fixes
 
+## Supported JDKs and OSs
+
+Payara Server currently supports the following JDKs:
+
+* Oracle JDK
+* Azul Zulu
+* OpenJDK
+* IBM J9
+
+Payara Server currently supports the following OSs
+
+* Windows 7
+* Windows 8.1
+* Windows 10
+* Windows Server 2008
+* Windows Server 2012
+* Windows Server 2016
+* Ubuntu
+* Debian
+* CentOS
+* OpenSUSE
+* SUSE
+* SLES
+* AIX
+
 GlassFish is a trademark of Oracle Corporation.
 Payara is a trademark of Payara Foundation.
 
