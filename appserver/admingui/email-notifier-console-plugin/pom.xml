@@ -4,13 +4,13 @@
   <parent>
     <artifactId>admingui</artifactId>
     <groupId>fish.payara.admingui</groupId>
-    <version>4.1.2.172</version>
+    <version>4.1.2.173-SNAPSHOT</version>
   </parent>
 
   <groupId>fish.payara.admingui</groupId>
   <artifactId>email-notifier-console-plugin</artifactId>
   <packaging>glassfish-jar</packaging>
-  <version>4.1.2.172</version>
+  <version>4.1.2.173-SNAPSHOT</version>
 
   <name>Email Notifier Console Plugin</name>
 
