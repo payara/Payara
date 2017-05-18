@@ -45,12 +45,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
     <artifactId>admingui</artifactId>
     <groupId>fish.payara.admingui</groupId>
-    <version>4.1.2.172</version>
+    <version>4.1.2.173-SNAPSHOT</version>
   </parent>
 
   <artifactId>jmx-monitoring-plugin</artifactId>
   <packaging>glassfish-jar</packaging>
-  <version>4.1.2.172</version>
+  <version>4.1.2.173-SNAPSHOT</version>
 
   <name>JMX Monitoring Plugin</name>
 

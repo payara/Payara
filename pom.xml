@@ -45,7 +45,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-main-aggregator</artifactId>
-    <version>4.1.2.172</version>
+    <version>4.1.2.173-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>Payara Project</name>
@@ -54,7 +54,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
 	<url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-      <tag>payara-server-4.1.2.172</tag>
+      <tag>payara-server-4.1.2.173-SNAPSHOT</tag>
   </scm>
     
     <profiles>
