@@ -59,7 +59,9 @@ Payara Server currently supports the following OSs
 
 ## Tested Platforms
 
-Payara Server is tested on the following platforms. While not all environments are tested, if it is on a supported JVM we will provide support for customers and address issues reported by the community. Other platforms can always be supported in the future:
+While not all environments are tested, if it is on a supported JVM we will provide support for customers and address issues reported by the community. Other platforms can always be supported in the future.
+
+Payara Server is currently tested on the following platforms:
 
 |			|Oracle JDK	|Azul Zulu	|OpenJDK	|IBM J9	|
 |---			|---		|---		|---		|---	|
