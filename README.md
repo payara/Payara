@@ -57,5 +57,25 @@ Payara Server currently supports the following OSs
 * SLES
 * AIX
 
+## Tested Platforms
+
+Payara Server is tested on the following platforms. While not all environments are tested, if it is on a supported JVM we will provide support for customers and address issues reported by the community. Other platforms can always be supported in the future.:
+
+|			|Oracle JDK	|Azul Zulu	|OpenJDK	|IBM J9	|
+|---			|---		|---		|---		|---	|
+|Windows 7		|✓		|✓		|		|	|
+|Windows 8.1		|		|✓		|		|	|
+|Windows 10		|✓		|✓		|		|	|
+|Windows Server 2008	|		|✓		|		|	|
+|Windows Server 2012	|✓		|✓		|		|	|
+|Windows Server 2016	|✓		|✓		|		|	|
+|Ubuntu			|✓		|✓		|✓		|	|
+|Debian			|✓		|		|		|	|
+|CentOS			|✓		|		|		|	|
+|OpenSUSE		|		|		|		|	|
+|SUSE			|		|		|		|	|
+|AIX			|		|		|		|✓	|
+|MacOS			|✓		|		|		|	|
+
 GlassFish is a trademark of Oracle Corporation.
 Payara is a trademark of Payara Foundation.
