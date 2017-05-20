@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
@@ -55,11 +55,17 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.Handler;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.jvnet.hk2.annotations.Service;
 
@@ -85,12 +91,40 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     // root, but that context root must not be used by any web application.  
     // So if the context root portion of the request is in this set, we know
     // the call is for an ejb.
-    private Set<String> ejbContextRoots = new HashSet<String>();
-    
+    private Set<String> ejbContextRoots = new HashSet<>();
 
     // This keeps the list for each service
-    private final Map<String, ServletAdapterList> adapterListMap = new HashMap<String, ServletAdapterList>();
+    private final Map<String, ServletAdapterList> adapterListMap = new HashMap<>();
 
+    private @Inject Events eventService;
+
+    // initialize runtime EJBs after all of it's dependencies have been loaded
+    private final EventListener el = new EventListener() {
+        @Override
+        public void event(EventListener.Event event) {
+            if(event.is(Deployment.APPLICATION_LOADED)) {
+                try {
+                    for(Map.Entry<String, EjbRuntimeEndpointInfo> endpoint : webServiceEjbEndpoints.entrySet()) {
+                        if(!hasMappingFileUri(endpoint.getValue().getEndpoint())) {
+                            endpoint.getValue().initRuntimeInfo(adapterListMap.get(endpoint.getKey()));
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, LogUtils.EJB_POSTPROCESSING_ERROR, e);
+                }
+            }
+        }
+    };
+
+    @PostConstruct
+    void init() {
+        eventService.register(el);
+    }
+
+    @PreDestroy
+    void destroy() {
+        eventService.unregister(el);
+    }
 
     @Override
     public void registerEndpoint(WebServiceEndpoint webserviceEndpoint,
@@ -117,15 +151,10 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
 
         // notify monitoring layers that a new endpoint is being created.
         WebServiceEngineImpl engine = WebServiceEngineImpl.getInstance();
-        if (endpoint.getEndpoint().getWebService().getMappingFileUri()!=null) {
+        if (hasMappingFileUri(endpoint.getEndpoint())) {
             engine.createHandler((com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate)null, endpoint.getEndpoint());
         } else {
             engine.createHandler(endpoint.getEndpoint());
-            try {
-                endpoint.initRuntimeInfo(adapterListMap.get(uri));
-            } catch (Exception e) {
-                logger.log(Level.WARNING,LogUtils.EJB_POSTPROCESSING_ERROR, e);
-            }
         }
     }
 
@@ -176,7 +205,6 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         WebServiceEngineImpl engine = WebServiceEngineImpl.getInstance();
 
         engine.removeHandler(endpoint.getEndpoint());
-
     }
     
     /**
@@ -254,5 +282,9 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
             }
             ejbContextRoots = contextRoots;
         }
+    }
+
+    private static boolean hasMappingFileUri(WebServiceEndpoint endpoint) {
+        return endpoint.getWebService().getMappingFileUri() != null;
     }
 }
