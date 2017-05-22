@@ -120,6 +120,13 @@
                  <sun:textField id="Timeout" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbSettings.timeout']}" style="padding-bottom 8pt" text="#{pageSession.valueMap['poolIdleTimeoutInSeconds']}" />
                  <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
              </sun:property>
+             <sun:property id="LimitInstances"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejbLite.ejbSettings.limitInstanceLabel}" helpText="$resource{i18n_ejbLite.ejbSettings.limitInstanceHelp}">
+                 <sun:checkbox id="LimitInstances" selected="#{pageSession.limitInstancesEnabled}" selectedValue="true" />
+             </sun:property>
+             <sun:property id="MaxWaitTimeMillisProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejbLite.ejbSettings.maxWaitTimeMillisLabel}" helpText="$resource{i18n_ejbLite.ejbSettings.maxWaitTimeMillisHelp}">
+                 <sun:textField id="MaxWaitTimeMillis" disabled="#{pageSession.limitInstancesEnabled}" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbSettings.maxWaitTimeMillis']}" style="padding-bottom 8pt" text="#{pageSession.valueMap['maxWaitTimeMillis']}" />
+                 <sun:staticText id="milli" style="padding: 8pt" text="$resource{i18n.common.Milliseconds}"/>
+             </sun:property>
          </sun:propertySheetSection>
          <!-- Cache Settings section -->
          <sun:propertySheetSection id="cacheSettingSection" label="$resource{i18n_ejbLite.ejbSettings.cacheSettingsLabel}">

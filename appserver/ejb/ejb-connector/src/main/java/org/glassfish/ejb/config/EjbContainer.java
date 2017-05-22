@@ -54,6 +54,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.quality.ToDo;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import org.glassfish.api.admin.config.PropertyDesc;
@@ -242,6 +243,43 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      *              {@link String }
      */
     void setPoolIdleTimeoutInSeconds(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the maxWaitTimeInMillis property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue="0")
+    @Min(value=0)    
+    @Max(value=30000)
+    String getMaxWaitTimeInMillis();
+
+    /**
+     * Sets the value of the maxWaitTimeInMillis property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setMaxWaitTimeInMillis(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the limitInstances property.
+     *
+     * @return possible object is
+     *         {@link Boolean }
+     */
+    @Attribute(defaultValue = "false")
+    @Pattern(regexp = "true|false")
+    String getLimitInstances();
+
+    /**
+     * Sets the value of the limitInstances property.
+     *
+     * @param value allowed object is
+     *              {@link Boolean }
+     */
+    void setLimitInstances(Boolean value) throws PropertyVetoException;
 
     /**
      * Gets the value of the cacheIdleTimeoutInSeconds property.
