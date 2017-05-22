@@ -76,8 +76,10 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
                     outputStream.write((message.getSubject() + "\n" + message.getMessage()).getBytes(Charsets.UTF8_CHARSET));
                     if (connection.getResponseCode() != 204) {
                         logger.log(Level.SEVERE,
-                                "Error occurred while connecting Hipchat. Check your room name and token. HTTP response code",
-                                connection.getResponseCode());
+                                "Error occurred while connecting Hipchat. Check your room name and token. HTTP response code: "
+                                        + connection.getResponseCode());
+                    } else {
+                        logger.log(Level.FINE, "Message successfully sent");
                     }
                 }
             }
