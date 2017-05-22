@@ -37,7 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.notification.datadog;
+package fish.payara.nucleus.notification.log;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
@@ -55,12 +55,12 @@ import org.glassfish.internal.api.Target;
  *
  * @author jonathan coustick
  */
-public class TestDatadogNotifier extends TestNotifier {
-        
-    private static final String MESSAGE = "Datadog notifier test";
+public class TestLogNotifier extends TestNotifier {
     
-    @Param(name = "key", optional = true)
-     private String key;
+    private static final String MESSAGE = "Log notifier test";
+    
+    @Param(name = "topicName", optional = false)
+    private Boolean topicName;
     
     @Param(name = "target", optional = true, defaultValue = "server")
     private String target;
@@ -69,7 +69,7 @@ public class TestDatadogNotifier extends TestNotifier {
     private Target targetUtil;
 
     @Inject
-    DatadogNotificationEventFactory factory;
+    LogNotificationEventFactory factory;
     
     @Override
     public void execute(AdminCommandContext context) {
@@ -83,43 +83,34 @@ public class TestDatadogNotifier extends TestNotifier {
             return;
         }
         
-        DatadogNotifierConfiguration hipchatConfig = config.getExtensionByType(DatadogNotifierConfiguration.class);
+        LogNotifierConfiguration logConfig = config.getExtensionByType(LogNotifierConfiguration.class);
         
-        if (key == null){
-                key = hipchatConfig.getKey();
+        if (useSeparateLogFile == null){
+                useSeparateLogFile = Boolean.parseBoolean(logConfig.getUseSeparateLogFile());
         }
         //prepare hipchat message
-        DatadogNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
+        LogNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
-        DatadogMessageQueue queue = new DatadogMessageQueue();
-        queue.addMessage(new DatadogMessage(event, event.getSubject(), event.getMessage()));
-        DatadogNotifierConfigurationExecutionOptions options = new DatadogNotifierConfigurationExecutionOptions();
-        options.setKey(key);
+        LogNotifierConfigurationExecutionOptions options = new LogNotifierConfigurationExecutionOptions();
+        options.setUseSeparateLogFile(useSeparateLogFile);
         
-        DatadogNotificationRunnable notifierRun = new DatadogNotificationRunnable(queue, options);
         //set up logger to store result
-        Logger logger = Logger.getLogger(DatadogNotificationRunnable.class.getCanonicalName());
+        LogNotifierService service = new LogNotifierService();
+        Logger logger = Logger.getLogger(LogNotifierService.class.getCanonicalName());
         BlockingQueueHandler bqh = new BlockingQueueHandler(10);
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
         logger.setLevel(Level.FINE);
         logger.addHandler(bqh);
-        //send message, this occurs in its own thread
-        Thread notifierThread = new Thread(notifierRun, "test-datadog-notifier-thread");
-        notifierThread.start();
-        try {
-            notifierThread.join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(TestDatadogNotifier.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            logger.setLevel(oldLevel);
-        }
+        service.handleNotification(event);
+
+        logger.setLevel(oldLevel);
         LogRecord message = bqh.poll();
         bqh.clear();
         if (message == null){
             //something's gone wrong
-            Logger.getGlobal().log(Level.SEVERE, "Failed to send Datadog message");
-            actionReport.setMessage("Failed to send Datadog message");
+            Logger.getGlobal().log(Level.SEVERE, "Failed to send Log message");
+            actionReport.setMessage("Failed to send Log message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         } else {;
             actionReport.setMessage(message.getMessage());
