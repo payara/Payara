@@ -42,11 +42,13 @@ package fish.payara.nucleus.notification;
 import org.glassfish.api.admin.AdminCommand;
 
 /**
- *
+ * Superclass for testing of notifiers. This is not part of the test suite, and
+ * is instead used after configuring a notifier to make sure that it is working
+ * and will be used by end users.
  * @author jonathan coustick
  */
 public abstract class TestNotifier implements AdminCommand {
     
-    protected static final String SUBJECT = "Notifier Test";    
+    protected static final String SUBJECT = "Payara Notifier Test";    
     
 }
