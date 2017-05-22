@@ -250,7 +250,7 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(defaultValue="0")
+    @Attribute(defaultValue="6000")
     @Min(value=0)    
     @Max(value=30000)
     String getMaxWaitTimeInMillis();
