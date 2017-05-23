@@ -36,26 +36,23 @@ In summary Payara Server provides:
 
 Payara Server currently supports the following JDKs:
 
-* Oracle JDK
-* Azul Zulu
-* OpenJDK
-* IBM J9
+* Oracle JDK 7/8
+* Azul Zulu 7/8
+* OpenJDK 7/8
+* IBM J9 7/8
 
 Payara Server currently supports the following OSs
 
-* Windows 7
-* Windows 8.1
-* Windows 10
-* Windows Server 2008
-* Windows Server 2012
-* Windows Server 2016
-* Ubuntu
-* Debian
-* CentOS
-* OpenSUSE
-* SUSE
-* SLES
-* AIX
+* Windows 7+
+* Windows Server 2008+
+* Ubuntu 14.04 (Trusty Tahr)+
+* Debian 7 (Wheezy)+
+* CentOS 6+
+* RHEL 5+
+* OpenSUSE 42.2+
+* SUSE 11.4 & 12.2+
+* AIX 7.3 TL3+
+* MacOS(OSX) 10.10.5 (Yosemite)+
 
 ## Tested Platforms
 
@@ -63,21 +60,22 @@ While not all environments are tested, if it is on a supported JVM we will provi
 
 Payara Server is currently tested on the following platforms:
 
-|			|Oracle JDK	|Azul Zulu	|OpenJDK	|IBM J9	|
-|---			|---		|---		|---		|---	|
-|Windows 7		|✓		|✓		|		|	|
-|Windows 8.1		|		|✓		|		|	|
-|Windows 10		|✓		|✓		|		|	|
-|Windows Server 2008	|		|✓		|		|	|
-|Windows Server 2012	|✓		|✓		|		|	|
-|Windows Server 2016	|✓		|✓		|		|	|
-|Ubuntu			|✓		|✓		|✓		|	|
-|Debian			|✓		|		|		|	|
-|CentOS			|✓		|		|		|	|
-|OpenSUSE		|		|		|		|	|
-|SUSE			|		|		|		|	|
-|AIX			|		|		|		|✓	|
-|MacOS			|✓		|		|		|	|
+|                       |Oracle JDK     |Azul Zulu      |OpenJDK        |IBM J9 |
+|---                    |---            |---            |---            |---    |
+|Windows 7              |✓              |✓              |               |       |
+|Windows 8.1            |               |✓              |               |       |
+|Windows 10             |✓              |✓              |               |       |
+|Windows Server 2008    |               |✓              |               |       |
+|Windows Server 2012    |✓              |✓              |               |       |
+|Windows Server 2016    |✓              |✓              |               |       |
+|Ubuntu 14.04, 16.04    |✓              |✓              |✓              |       |
+|Debian 7               |✓              |               |               |       |
+|CentOS 6               |✓              |               |               |       |
+|RHEL                   |               |               |               |       |
+|OpenSUSE 42.2          |✓              |               |               |       |
+|SUSE 11.4, 12.2        |✓              |               |               |       |
+|AIX 7.3 TL3            |               |               |               |✓      |
+|MacOS(OSX) 10.10.5     |✓              |               |               |       |
 
 GlassFish is a trademark of Oracle Corporation.
 Payara is a trademark of Payara Foundation.
