@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.config;
 
@@ -248,20 +249,20 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * Gets the value of the maxWaitTimeInMillis property.
      *
      * @return possible object is
-     *         {@link String }
+     *         {@link Integer }
      */
-    @Attribute(defaultValue="6000")
+    @Attribute(defaultValue="6000", dataType = Integer.class)
     @Min(value=0)    
     @Max(value=30000)
-    String getMaxWaitTimeInMillis();
+    Integer getMaxWaitTimeInMillis();
 
     /**
      * Sets the value of the maxWaitTimeInMillis property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *              {@link Integer }
      */
-    void setMaxWaitTimeInMillis(String value) throws PropertyVetoException;
+    void setMaxWaitTimeInMillis(Integer value) throws PropertyVetoException;
 
     /**
      * Gets the value of the limitInstances property.
@@ -269,9 +270,8 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @return possible object is
      *         {@link Boolean }
      */
-    @Attribute(defaultValue = "false")
-    @Pattern(regexp = "true|false")
-    String getLimitInstances();
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    Boolean getLimitInstances();
 
     /**
      * Sets the value of the limitInstances property.
