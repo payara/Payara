@@ -73,7 +73,7 @@ holder.
                 gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-datadog-notifier-configuration?target=#{pageSession.configName}" method="GET" 
                     attrs="#{pageSession.valueMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
-                    prepareAlertMsg(summary="$resource{i18ndn.notifier.datdog.msg.success}", type="success");
+                    prepareAlertMsg(summary="$resource{i18ndn.notifier.datadog.msg.success}", type="success");
                 } 
                 />
         </sun:button>

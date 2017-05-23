@@ -80,7 +80,7 @@ public class TestLogNotifier extends TestNotifier {
     
     private static final String MESSAGE = "Log notifier test";
     
-    @Param(name = "useSeparateLogFile", optional = false)
+    @Param(name = "useSeparateLogFile", optional = true)
     private Boolean useSeparateLogFile;
 
     @Inject
