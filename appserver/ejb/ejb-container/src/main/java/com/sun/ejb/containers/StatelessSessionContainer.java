@@ -779,8 +779,8 @@ public class StatelessSessionContainer
 
         public PoolProperties(EjbContainer ejbContainer, BeanPoolDescriptor beanPoolDes) {
 
-            maxWaitTimeInMillis = Integer.parseInt(ejbContainer.getMaxWaitTimeInMillis());
-            if(!Boolean.valueOf(ejbContainer.getLimitInstances())) {
+            maxWaitTimeInMillis = ejbContainer.getMaxWaitTimeInMillis();
+            if(!ejbContainer.getLimitInstancesEnabled()) {
                 maxWaitTimeInMillis = -1;
             }
             maxPoolSize = Integer.parseInt(ejbContainer.getMaxPoolSize());

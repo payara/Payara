@@ -63,7 +63,7 @@
 
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
 
-        setPageSessionAttribute(key="convertToFalseList", value={"limitInstances"});
+        setPageSessionAttribute(key="convertToFalseList", value={"limitInstancesEnabled"});
         gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
 
@@ -123,8 +123,8 @@
                  <sun:textField id="Timeout" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbSettings.timeout']}" style="padding-bottom 8pt" text="#{pageSession.valueMap['poolIdleTimeoutInSeconds']}" />
                  <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
              </sun:property>
-             <sun:property id="LimitInstances"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejbLite.ejbSettings.limitInstanceLabel}" helpText="$resource{i18n_ejbLite.ejbSettings.limitInstanceHelp}">
-                 <sun:checkbox id="LimitInstances" selected="#{pageSession.valueMap['limitInstances']}" selectedValue="true" />
+             <sun:property id="LimitInstancesEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejbLite.ejbSettings.limitInstancesEnabledLabel}" helpText="$resource{i18n_ejbLite.ejbSettings.limitInstancesEnabledHelp}">
+                 <sun:checkbox id="LimitInstancesEnabled" selected="#{pageSession.valueMap['limitInstancesEnabled']}" selectedValue="true" />
              </sun:property>
              <sun:property id="MaxWaitTimeMillisProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejbLite.ejbSettings.maxWaitTimeMillisLabel}" helpText="$resource{i18n_ejbLite.ejbSettings.maxWaitTimeMillisHelp}">
                  <sun:textField id="MaxWaitTimeMillis" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbSettings.maxWaitTimeMillis']}" style="padding-bottom 8pt" text="#{pageSession.valueMap['maxWaitTimeInMillis']}" />
