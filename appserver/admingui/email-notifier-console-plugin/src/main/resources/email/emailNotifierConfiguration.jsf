@@ -46,12 +46,12 @@
 #include "/payaraExtras/notification/notificationConfigTabs.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nemn.notifier.email.configuration.pageTitle}" 
                helpText="$resource{i18nemn.notifier.email.configuration.pageHelpText}" >
-        <sun:button id = "test" text="$resource{i18nen.notifier.email.buttons.test}">
+        <sun:button id = "test" text="$resource{i18nemn.notifier.email.buttons.test}">
             <!command
                 gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-email-notifier-configuration?target=#{pageSession.configName}" method="GET" 
                     attrs="#{pageSession.valueMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
-                    prepareAlertMsg(summary="$resource{i18nen.notifier.email.msg.success}", type="success");
+                    prepareAlertMsg(summary="$resource{i18nemn.notifier.email.msg.success}", type="success");
                 } 
                 />
         </sun:button>

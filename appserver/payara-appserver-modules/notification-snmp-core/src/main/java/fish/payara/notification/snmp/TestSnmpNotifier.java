@@ -37,12 +37,11 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.snmp;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
 import fish.payara.nucleus.notification.TestNotifier;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -50,44 +49,22 @@ import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  *
  * @author jonathan coustick
  */
-@Service(name = "test-hipchat-notifier-configuration")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "test-hipchat-notifier-configuration",
-                description = "Tests HipChat Notifier Configuration")
-})
-public class TestHipchatNotifier extends TestNotifier {
-
-    private static final String MESSAGE = "Hipchat notifier test";
+public class TestSnmpNotifier extends TestNotifier {
+    private static final String MESSAGE = "Snmp notifier test";
     
-    @Param(name = "roomName", optional = true)
-     private String roomName;
+    @Param(name = "key", optional = true)
+     private String key;
  
-    @Param(name = "token", optional = true)
-    private String token;
+    @Param(name = "accountId", optional = true)
+    private String accountId;
 
     @Inject
-    HipchatNotificationEventFactory factory;
+    SnmpNotificationEventFactory factory;
     
     @Override
     public void execute(AdminCommandContext context) {
@@ -101,38 +78,38 @@ public class TestHipchatNotifier extends TestNotifier {
             return;
         }
         
-        HipchatNotifierConfiguration hipchatConfig = config.getExtensionByType(HipchatNotifierConfiguration.class);
+        SnmpNotifierConfiguration hipchatConfig = config.getExtensionByType(SnmpNotifierConfiguration.class);
         
-        if (roomName == null){
-                roomName = hipchatConfig.getRoomName();
+        if (key == null){
+                key = hipchatConfig.getKey();
         }
-        if (token == null){
-            token = hipchatConfig.getToken();
+        if (accountId == null){
+            accountId = hipchatConfig.getAccountId();
         }
         //prepare hipchat message
-        HipchatNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
+        SnmpNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
-        HipchatMessageQueue queue = new HipchatMessageQueue();
-        queue.addMessage(new HipchatMessage(event, event.getSubject(), event.getMessage()));
-        HipchatNotifierConfigurationExecutionOptions options = new HipchatNotifierConfigurationExecutionOptions();
-        options.setRoomName(roomName);
-        options.setToken(token);
+        SnmpMessageQueue queue = new SnmpMessageQueue();
+        queue.addMessage(new SnmpMessage(event, event.getSubject(), event.getMessage()));
+        SnmpNotifierConfigurationExecutionOptions options = new SnmpNotifierConfigurationExecutionOptions();
+        options.setKey(key);
+        options.setAccountId(accountId);
         
-        HipchatNotificationRunnable notifierRun = new HipchatNotificationRunnable(queue, options);
+        SnmpNotificationRunnable notifierRun = new SnmpNotificationRunnable(queue, options);
         //set up logger to store result
-        Logger logger = Logger.getLogger(HipchatNotificationRunnable.class.getCanonicalName());
+        Logger logger = Logger.getLogger(SnmpNotificationRunnable.class.getCanonicalName());
         BlockingQueueHandler bqh = new BlockingQueueHandler(10);
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
         logger.setLevel(Level.FINE);
         logger.addHandler(bqh);
         //send message, this occurs in its own thread
-        Thread notifierThread = new Thread(notifierRun, "test-hipchat-notifier-thread");
+        Thread notifierThread = new Thread(notifierRun, "test-newrelic-notifier-thread");
         notifierThread.start();
         try {
             notifierThread.join();
         } catch (InterruptedException ex) {
-            Logger.getLogger(TestHipchatNotifier.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TestSnmpNotifier.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             logger.setLevel(oldLevel);
         }
@@ -140,8 +117,8 @@ public class TestHipchatNotifier extends TestNotifier {
         bqh.clear();
         if (message == null){
             //something's gone wrong
-            Logger.getLogger(TestHipchatNotifier.class.getName()).log(Level.SEVERE, "Failed to send HipChat message");
-            actionReport.setMessage("Failed to send HipChat message");
+            Logger.getLogger(TestSnmpNotifier.class.getName()).log(Level.SEVERE, "Failed to send SNMP message");
+            actionReport.setMessage("Failed to send SNMP message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         } else {
             actionReport.setMessage(message.getMessage());
@@ -155,7 +132,4 @@ public class TestHipchatNotifier extends TestNotifier {
         }
         
     }
-    
-    
-    
 }

@@ -47,12 +47,12 @@
 #include "/payaraExtras/notification/notificationConfigTabs.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nebn.notifier.eventbus.configuration.pageTitle}" 
                helpText="$resource{i18nebn.notifier.eventbus.configuration.pageHelpText}" >
-        <sun:button id = "test" text="$resource{i18nhn.notifier.eventbus.buttons.test}">
+        <sun:button id = "test" text="$resource{i18nebn.notifier.eventbus.buttons.test}">
             <!command 
                 gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-eventbus-notifier-configuration?target=#{pageSession.configName}" method="GET" 
                     attrs="#{pageSession.valueMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
-                    prepareAlertMsg(summary="$resource{i18nhn.notifier.eventbus.msg.success}", type="success");
+                    prepareAlertMsg(summary="$resource{i18nebn.notifier.eventbus.msg.success}", type="success");
                 } 
                 />
         </sun:button>

@@ -37,62 +37,42 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.email;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
 import fish.payara.nucleus.notification.TestNotifier;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.mail.Session;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  *
  * @author jonathan coustick
  */
-@Service(name = "test-hipchat-notifier-configuration")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "test-hipchat-notifier-configuration",
-                description = "Tests HipChat Notifier Configuration")
-})
-public class TestHipchatNotifier extends TestNotifier {
+public class TestEmailNotifier extends TestNotifier {
 
-    private static final String MESSAGE = "Hipchat notifier test";
+    private static final String MESSAGE = "Email notifier test";
     
-    @Param(name = "roomName", optional = true)
-     private String roomName;
+    @Param(name = "jndiName", optional = true)
+     private String jndiName;
  
-    @Param(name = "token", optional = true)
-    private String token;
+    @Param(name = "to", optional = true)
+    private String to;
 
     @Inject
-    HipchatNotificationEventFactory factory;
+    EmailNotificationEventFactory factory;
     
     @Override
     public void execute(AdminCommandContext context) {
         
-        ActionReport actionReport = context.getActionReport();
+        /*ActionReport actionReport = context.getActionReport();
         
         Config config = targetUtil.getConfig(target);
         if (config == null) {
@@ -101,26 +81,26 @@ public class TestHipchatNotifier extends TestNotifier {
             return;
         }
         
-        HipchatNotifierConfiguration hipchatConfig = config.getExtensionByType(HipchatNotifierConfiguration.class);
+        EmailNotifierConfiguration hipchatConfig = config.getExtensionByType(EmailNotifierConfiguration.class);
         
-        if (roomName == null){
-                roomName = hipchatConfig.getRoomName();
+        if (jndiName == null){
+                jndiName = hipchatConfig.getJndiName();
         }
-        if (token == null){
-            token = hipchatConfig.getToken();
+        if (to == null){
+            to = hipchatConfig.getTo();
         }
         //prepare hipchat message
-        HipchatNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
+        EmailNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
-        HipchatMessageQueue queue = new HipchatMessageQueue();
-        queue.addMessage(new HipchatMessage(event, event.getSubject(), event.getMessage()));
-        HipchatNotifierConfigurationExecutionOptions options = new HipchatNotifierConfigurationExecutionOptions();
-        options.setRoomName(roomName);
-        options.setToken(token);
+        EmailMessageQueue queue = new EmailMessageQueue();
+        queue.addMessage(new EmailMessage(event, event.getSubject(), event.getMessage()));
+        EmailNotifierConfigurationExecutionOptions options = new EmailNotifierConfigurationExecutionOptions();
+        options.setJndiName(jndiName);
+        options.setTo(to);
         
-        HipchatNotificationRunnable notifierRun = new HipchatNotificationRunnable(queue, options);
+        EmailNotificationRunnable notifierRun = new EmailNotificationRunnable(queue,new Session(),  options);
         //set up logger to store result
-        Logger logger = Logger.getLogger(HipchatNotificationRunnable.class.getCanonicalName());
+        Logger logger = Logger.getLogger(EmailNotificationRunnable.class.getCanonicalName());
         BlockingQueueHandler bqh = new BlockingQueueHandler(10);
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
@@ -132,7 +112,7 @@ public class TestHipchatNotifier extends TestNotifier {
         try {
             notifierThread.join();
         } catch (InterruptedException ex) {
-            Logger.getLogger(TestHipchatNotifier.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TestEmailNotifier.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             logger.setLevel(oldLevel);
         }
@@ -140,10 +120,10 @@ public class TestHipchatNotifier extends TestNotifier {
         bqh.clear();
         if (message == null){
             //something's gone wrong
-            Logger.getLogger(TestHipchatNotifier.class.getName()).log(Level.SEVERE, "Failed to send HipChat message");
-            actionReport.setMessage("Failed to send HipChat message");
+            Logger.getLogger(TestEmailNotifier.class.getName()).log(Level.SEVERE, "Failed to send hipchat message");
+            actionReport.setMessage("Failed to send hipchat message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        } else {
+        } else {;
             actionReport.setMessage(message.getMessage());
             if (message.getLevel()==Level.FINE){
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);               
@@ -152,10 +132,6 @@ public class TestHipchatNotifier extends TestNotifier {
             }
             
             
-        }
-        
+        }*/
     }
-    
-    
-    
 }

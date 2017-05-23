@@ -82,8 +82,9 @@ public class XmppNotificationRunnable extends NotificationRunnable<XmppMessageQu
 
                     multiUserChat.sendMessage(message);
                 }
+                logger.log(Level.FINE, "Message sent successfully");
             }
-            catch (XMPPException.XMPPErrorException | SmackException e) {
+            catch (XMPPException | SmackException e) {
                 logger.log(Level.SEVERE, "Error occurred while sending message to room", e);
             }
         }

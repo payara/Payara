@@ -37,12 +37,14 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.xmpp;
 
+import com.google.common.base.Strings;
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
 import fish.payara.nucleus.notification.TestNotifier;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -58,14 +60,18 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Target;
+import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
+import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  *
  * @author jonathan coustick
  */
-@Service(name = "test-hipchat-notifier-configuration")
+@Service(name = "test-xmpp-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -73,21 +79,36 @@ import org.jvnet.hk2.annotations.Service;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "test-hipchat-notifier-configuration",
-                description = "Tests HipChat Notifier Configuration")
+                path = "test-xmpp-notifier-configuration",
+                description = "Tests XMPP Notifier Configuration")
 })
-public class TestHipchatNotifier extends TestNotifier {
-
-    private static final String MESSAGE = "Hipchat notifier test";
+public class TestXmppNotifier extends TestNotifier {
     
-    @Param(name = "roomName", optional = true)
-     private String roomName;
- 
-    @Param(name = "token", optional = true)
-    private String token;
+      private static final String MESSAGE = "XMPP notifier test";
+    
+    @Param(name = "hostName", optional = true)
+    private String hostName;
+
+    @Param(name = "port", defaultValue = "5222", optional = true)
+    private Integer port;
+
+    @Param(name = "serviceName", optional = true)
+    private String serviceName;
+
+    @Param(name = "username", optional = true)
+    private String username;
+
+    @Param(name = "password", optional = true)
+    private String password;
+
+    @Param(name = "securityDisabled", defaultValue = "false", optional = true)
+    private Boolean securityDisabled;
+
+    @Param(name = "roomId", optional = true)
+    private String roomId;
 
     @Inject
-    HipchatNotificationEventFactory factory;
+    XmppNotificationEventFactory factory;
     
     @Override
     public void execute(AdminCommandContext context) {
@@ -101,47 +122,97 @@ public class TestHipchatNotifier extends TestNotifier {
             return;
         }
         
-        HipchatNotifierConfiguration hipchatConfig = config.getExtensionByType(HipchatNotifierConfiguration.class);
+        XmppNotifierConfiguration xmppConfig = config.getExtensionByType(XmppNotifierConfiguration.class);
         
-        if (roomName == null){
-                roomName = hipchatConfig.getRoomName();
+        if (hostName == null){
+                hostName = xmppConfig.getHost();
         }
-        if (token == null){
-            token = hipchatConfig.getToken();
+        if (port == null){
+            port = Integer.parseInt(xmppConfig.getPort());
         }
-        //prepare hipchat message
-        HipchatNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
+        if (serviceName == null){
+            serviceName = xmppConfig.getServiceName();
+        }
+        if (username == null){
+            username = xmppConfig.getUsername();
+        }
+        if (password == null){
+            password = xmppConfig.getPassword();
+        }
+        if (securityDisabled == null){
+            securityDisabled = Boolean.valueOf(xmppConfig.getSecurityDisabled());
+        }
+        if (roomId == null){
+            roomId = xmppConfig.getRoomId();
+        }
+        //prepare xmpp message
+        XmppNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
+        event.setEventType(SUBJECT);
+        XmppMessageQueue queue = new XmppMessageQueue();
+        queue.addMessage(new XmppMessage(event, event.getSubject(), event.getMessage()));
+        XmppNotifierConfigurationExecutionOptions options = new XmppNotifierConfigurationExecutionOptions();
+        options.setHost(hostName);
+        options.setPort(port);
+        options.setServiceName(serviceName);
+        if (!Strings.isNullOrEmpty(username)){
+            options.setUsername(username);
+        }
+        if (!Strings.isNullOrEmpty(password)){
+            options.setPassword(password);
+        }
+        options.setSecurityDisabled(securityDisabled);
+        options.setRoomId(roomId);
         
-        HipchatMessageQueue queue = new HipchatMessageQueue();
-        queue.addMessage(new HipchatMessage(event, event.getSubject(), event.getMessage()));
-        HipchatNotifierConfigurationExecutionOptions options = new HipchatNotifierConfigurationExecutionOptions();
-        options.setRoomName(roomName);
-        options.setToken(token);
+        XMPPTCPConnection connection = null;
+        try {
+            //Create connection
+            XMPPTCPConnectionConfiguration configuration = XMPPTCPConnectionConfiguration.builder()
+                    .setSecurityMode(options.getSecurityDisabled()
+                            ? ConnectionConfiguration.SecurityMode.disabled
+                            : ConnectionConfiguration.SecurityMode.required)
+                    .setServiceName(options.getServiceName())
+                    .setHost(options.getHost())
+                    .setPort(options.getPort())
+                    .build();
+            connection = new XMPPTCPConnection(configuration);
+            connection.connect();
+            if (options.getUsername() != null && options.getPassword() != null) {
+                connection.login(options.getUsername(), options.getPassword());
+            } else {
+                connection.login();
+            }
+        } catch (SmackException | IOException | XMPPException ex) {
+            actionReport.setMessage(ex.getMessage());
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            queue.resetQueue();
+            return;
+        }
         
-        HipchatNotificationRunnable notifierRun = new HipchatNotificationRunnable(queue, options);
+        XmppNotificationRunnable notifierRun = new XmppNotificationRunnable(queue, options, connection);
         //set up logger to store result
-        Logger logger = Logger.getLogger(HipchatNotificationRunnable.class.getCanonicalName());
+        Logger logger = Logger.getLogger(XmppNotificationRunnable.class.getCanonicalName());
         BlockingQueueHandler bqh = new BlockingQueueHandler(10);
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
         logger.setLevel(Level.FINE);
         logger.addHandler(bqh);
         //send message, this occurs in its own thread
-        Thread notifierThread = new Thread(notifierRun, "test-hipchat-notifier-thread");
+        Thread notifierThread = new Thread(notifierRun, "test-xmpp-notifier-thread");
         notifierThread.start();
         try {
             notifierThread.join();
         } catch (InterruptedException ex) {
-            Logger.getLogger(TestHipchatNotifier.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TestXmppNotifier.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             logger.setLevel(oldLevel);
+            
         }
         LogRecord message = bqh.poll();
         bqh.clear();
         if (message == null){
             //something's gone wrong
-            Logger.getLogger(TestHipchatNotifier.class.getName()).log(Level.SEVERE, "Failed to send HipChat message");
-            actionReport.setMessage("Failed to send HipChat message");
+            Logger.getGlobal().log(Level.SEVERE, "Failed to send XMPP message");
+            actionReport.setMessage("Failed to send XMPP message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         } else {
             actionReport.setMessage(message.getMessage());
@@ -151,11 +222,8 @@ public class TestHipchatNotifier extends TestNotifier {
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
             
-            
         }
         
     }
-    
-    
     
 }
