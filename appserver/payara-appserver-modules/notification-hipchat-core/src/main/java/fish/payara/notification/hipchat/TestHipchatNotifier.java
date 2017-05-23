@@ -74,7 +74,7 @@ import org.jvnet.hk2.annotations.Service;
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
                 path = "test-hipchat-notifier-configuration",
-                description = "Tests Hipchat Notifier Configuration")
+                description = "Tests HipChat Notifier Configuration")
 })
 public class TestHipchatNotifier extends TestNotifier {
 
@@ -85,12 +85,6 @@ public class TestHipchatNotifier extends TestNotifier {
  
     @Param(name = "token", optional = true)
     private String token;
-    
-    @Param(name = "target", optional = true, defaultValue = "server")
-    private String target;
-    
-    @Inject
-    private Target targetUtil;
 
     @Inject
     HipchatNotificationEventFactory factory;
@@ -115,8 +109,7 @@ public class TestHipchatNotifier extends TestNotifier {
         if (token == null){
             token = hipchatConfig.getToken();
         }
-        //prepare hipchate message
-        //HipchatNotificationEventFactory factory = new HipchatNotificationEventFactory();
+        //prepare hipchat message
         HipchatNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
         HipchatMessageQueue queue = new HipchatMessageQueue();
@@ -147,11 +140,10 @@ public class TestHipchatNotifier extends TestNotifier {
         bqh.clear();
         if (message == null){
             //something's gone wrong
-            Logger.getGlobal().log(Level.SEVERE, "Failed to send hipchat message");
-            actionReport.setMessage("Failed to send hipchat message");
+            Logger.getGlobal().log(Level.SEVERE, "Failed to send HipChat message");
+            actionReport.setMessage("Failed to send HipChat message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         } else {
-            //Logger.getGlobal().log(message);
             actionReport.setMessage(message.getMessage());
             if (message.getLevel()==Level.FINE){
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);               

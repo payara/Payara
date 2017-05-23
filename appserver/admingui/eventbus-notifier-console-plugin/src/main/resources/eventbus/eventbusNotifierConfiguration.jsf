@@ -48,6 +48,15 @@
     <sun:title id="propertyContentPage" title="$resource{i18nebn.notifier.eventbus.configuration.pageTitle}" 
                helpText="$resource{i18nebn.notifier.eventbus.configuration.pageHelpText}" >
         <!facet pageButtonsTop>
+        <sun:button id = "test" text="$resource{i18nhn.notifier.eventbus.buttons.test}">
+            <!command 
+                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-eventbus-notifier-configuration?target=#{pageSession.configName}" method="GET" 
+                    attrs="#{pageSession.valueMap}" result="#{requestScope.result}");
+                if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
+                    prepareAlertMsg(summary="$resource{i18nhn.notifier.eventbus.msg.success}", type="success");
+                } 
+                />
+        </sun:button>
             <sun:panelGroup id="topButtons">
                 <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >

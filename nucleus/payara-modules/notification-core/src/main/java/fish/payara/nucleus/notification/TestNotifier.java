@@ -39,7 +39,10 @@
  */
 package fish.payara.nucleus.notification;
 
+import javax.inject.Inject;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.internal.api.Target;
 
 /**
  * Superclass for testing of notifiers. This is not part of the test suite, and
@@ -48,6 +51,21 @@ import org.glassfish.api.admin.AdminCommand;
  * @author jonathan coustick
  */
 public abstract class TestNotifier implements AdminCommand {
+    
+    //These params are to prevent errors in the admin console when these values
+    //have been set for the notifier.
+    @Deprecated
+    @Param(name= "enabled", optional = true, obsolete = true)
+    protected boolean enabled;
+    @Deprecated
+    @Param(name= "dynamic", optional = true, obsolete = true)
+    protected boolean dynamic;
+    
+    @Param(name = "target", optional = true, defaultValue = "server")
+    protected String target;
+    
+    @Inject
+    protected Target targetUtil;
     
     protected static final String SUBJECT = "Payara Notifier Test";    
     

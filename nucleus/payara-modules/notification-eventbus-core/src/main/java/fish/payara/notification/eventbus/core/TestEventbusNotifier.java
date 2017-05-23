@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.notification.eventbus.EventbusMessage;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
 import fish.payara.nucleus.notification.TestNotifier;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.log.LogNotificationEvent;
 import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
 import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
@@ -55,24 +56,38 @@ import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  *
  * @author jonathan coustick
  */
+@Service(name = "test-eventbus-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "test-eventbus-notifier-configuration",
+                description = "Tests Eventbus Notifier Configuration")
+})
 public class TestEventbusNotifier extends TestNotifier {
     
     private static final String MESSAGE = "Eventbus notifier test";
     
     @Param(name = "topicName", optional = false)
     private String topicName;
-    
-    @Param(name = "target", optional = true, defaultValue = "server")
-    private String target;
-    
-    @Inject
-    private Target targetUtil;
 
     @Inject
     EventbusNotificationEventFactory factory;
