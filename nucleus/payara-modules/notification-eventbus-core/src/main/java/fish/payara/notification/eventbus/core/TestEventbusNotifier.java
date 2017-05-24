@@ -128,7 +128,7 @@ public class TestEventbusNotifier extends TestNotifier {
         logger.addHandler(bqh);
         logger.setLevel(oldLevel);
         LogRecord message = bqh.poll();
-        bqh.clear();
+        logger.removeHandler(bqh);
         if (message == null){
             //something's gone wrong
             Logger.getGlobal().log(Level.SEVERE, "Failed to send Eventbus message");

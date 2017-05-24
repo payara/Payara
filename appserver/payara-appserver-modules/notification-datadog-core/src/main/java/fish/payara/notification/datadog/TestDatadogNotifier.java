@@ -114,7 +114,7 @@ public class TestDatadogNotifier extends TestNotifier {
         DatadogNotificationRunnable notifierRun = new DatadogNotificationRunnable(queue, options);
         //set up logger to store result
         Logger logger = Logger.getLogger(DatadogNotificationRunnable.class.getCanonicalName());
-        BlockingQueueHandler bqh = new BlockingQueueHandler(10);
+        BlockingQueueHandler bqh = new BlockingQueueHandler();
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
         logger.setLevel(Level.FINE);
@@ -130,7 +130,7 @@ public class TestDatadogNotifier extends TestNotifier {
             logger.setLevel(oldLevel);
         }
         LogRecord message = bqh.poll();
-        bqh.clear();
+        logger.removeHandler(bqh);
         if (message == null){
             //something's gone wrong
             Logger.getGlobal().log(Level.SEVERE, "Failed to send Datadog message");

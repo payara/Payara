@@ -191,7 +191,7 @@ public class TestXmppNotifier extends TestNotifier {
         XmppNotificationRunnable notifierRun = new XmppNotificationRunnable(queue, options, connection);
         //set up logger to store result
         Logger logger = Logger.getLogger(XmppNotificationRunnable.class.getCanonicalName());
-        BlockingQueueHandler bqh = new BlockingQueueHandler(10);
+        BlockingQueueHandler bqh = new BlockingQueueHandler();
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
         logger.setLevel(Level.FINE);
@@ -204,11 +204,13 @@ public class TestXmppNotifier extends TestNotifier {
         } catch (InterruptedException ex) {
             Logger.getLogger(TestXmppNotifier.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
+            connection.disconnect();
             logger.setLevel(oldLevel);
             
         }
         LogRecord message = bqh.poll();
         bqh.clear();
+        logger.removeHandler(bqh);
         if (message == null){
             //something's gone wrong
             Logger.getGlobal().log(Level.SEVERE, "Failed to send XMPP message");

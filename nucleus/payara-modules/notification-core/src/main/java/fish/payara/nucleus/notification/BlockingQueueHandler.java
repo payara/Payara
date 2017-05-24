@@ -62,7 +62,6 @@ public class BlockingQueueHandler extends Handler implements BlockingQueue<LogRe
     public BlockingQueueHandler(){
         super();
         queue = new ArrayBlockingQueue<LogRecord>(1);
-        ArrayBlockingQueue q;
     }
     
     /**
@@ -72,7 +71,6 @@ public class BlockingQueueHandler extends Handler implements BlockingQueue<LogRe
     public BlockingQueueHandler(int size){
         super();
         queue = new ArrayBlockingQueue<LogRecord>(size);
-        ArrayBlockingQueue q;
     }
     
     @Override

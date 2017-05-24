@@ -121,10 +121,10 @@ public class TestLogNotifier extends TestNotifier {
 
         logger.setLevel(oldLevel);
         LogRecord message = bqh.poll();
-        bqh.clear();
+        logger.removeHandler(bqh);
         if (message == null){
             //something's gone wrong
-            Logger.getGlobal().log(Level.SEVERE, "Failed to send Log message");
+            Logger.getLogger(TestLogNotifier.class.getCanonicalName()).log(Level.SEVERE, "Failed to send Log message");
             actionReport.setMessage("Failed to send Log message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         } else {;

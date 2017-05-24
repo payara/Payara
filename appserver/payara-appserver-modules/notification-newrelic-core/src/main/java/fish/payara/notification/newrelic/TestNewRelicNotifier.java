@@ -120,7 +120,7 @@ public class TestNewRelicNotifier extends TestNotifier {
         NewRelicNotificationRunnable notifierRun = new NewRelicNotificationRunnable(queue, options);
         //set up logger to store result
         Logger logger = Logger.getLogger(NewRelicNotificationRunnable.class.getCanonicalName());
-        BlockingQueueHandler bqh = new BlockingQueueHandler(10);
+        BlockingQueueHandler bqh = new BlockingQueueHandler();
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
         logger.setLevel(Level.FINE);
@@ -136,7 +136,7 @@ public class TestNewRelicNotifier extends TestNotifier {
             logger.setLevel(oldLevel);
         }
         LogRecord message = bqh.poll();
-        bqh.clear();
+        logger.removeHandler(bqh);
         if (message == null){
             //something's gone wrong
             Logger.getLogger(TestNewRelicNotifier.class.getName()).log(Level.SEVERE, "Failed to send New Relic message");

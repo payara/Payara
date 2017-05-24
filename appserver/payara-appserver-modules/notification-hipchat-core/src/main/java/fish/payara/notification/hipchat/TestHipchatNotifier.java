@@ -137,7 +137,7 @@ public class TestHipchatNotifier extends TestNotifier {
             logger.setLevel(oldLevel);
         }
         LogRecord message = bqh.poll();
-        bqh.clear();
+        logger.removeHandler(bqh);
         if (message == null){
             //something's gone wrong
             Logger.getLogger(TestHipchatNotifier.class.getName()).log(Level.SEVERE, "Failed to send HipChat message");

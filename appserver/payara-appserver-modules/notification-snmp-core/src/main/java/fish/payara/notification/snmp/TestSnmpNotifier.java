@@ -68,7 +68,7 @@ public class TestSnmpNotifier extends TestNotifier {
     
     @Override
     public void execute(AdminCommandContext context) {
-        
+        /*
         ActionReport actionReport = context.getActionReport();
         
         Config config = targetUtil.getConfig(target);
@@ -129,7 +129,7 @@ public class TestSnmpNotifier extends TestNotifier {
             }
             
             
-        }
+        }*/
         
     }
 }
