@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.appserver.payara-fang</groupId>
         <artifactId>payara-fang-parent</artifactId>
-        <version>4.1.2.172-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver.payara-fang</groupId>
     <artifactId>payara-fang-service</artifactId>
@@ -70,24 +70,6 @@
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.security</groupId>
-            <artifactId>security</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
-            <artifactId>rest-client</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.admingui</groupId>
-            <artifactId>console-common</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
