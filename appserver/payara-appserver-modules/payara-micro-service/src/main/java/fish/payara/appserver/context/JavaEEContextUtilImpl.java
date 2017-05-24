@@ -217,6 +217,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         capturedInvocation = new ComponentInvocation();
         capturedInvocation.componentId = componentId;
         capturedInvocation.setJNDIEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
+        capturedInvocation.setComponentInvocationType(ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION);
     }
 
 
