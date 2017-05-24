@@ -44,19 +44,20 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.util.Utility;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import java.util.HashMap;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ApplicationRegistry;
 import org.jboss.weld.context.bound.BoundRequestContext;
 import org.jvnet.hk2.annotations.Service;
 
@@ -67,13 +68,18 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @PerLookup
-public class JavaEEContextUtilImpl implements JavaEEContextUtil {
+public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     @PostConstruct
     void init() {
-        capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
-        if(capturedInvocation != null) {
-            capturedInvocation = capturedInvocation.clone();
-        }
+        serverContext = Globals.getDefaultHabitat().getService(ServerContext.class);
+        compEnvMgr = Globals.getDefaultHabitat().getService(ComponentEnvManager.class);
+
+        doSetInstanceContext();
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        init();
     }
 
     /**
@@ -141,48 +147,62 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     }
 
     /**
-     * @return application name or null if there is no invocation context
+     * set context class loader by component ID
      */
     @Override
-    public String getApplicationName() {
-        ComponentInvocation ci = serverContext.getInvocationManager().getCurrentInvocation();
-        return ci != null? ci.getModuleName() : null;
-    }
-
-    /**
-     * set context class loader by appName
-     *
-     * @param appName
-     */
-    @Override
-    public void setApplicationContext(String appName) {
-        if(appName == null) {
-            return;
+    public void setApplicationClassLoader() {
+        ClassLoader cl = null;
+        if(capturedInvocation != null && capturedInvocation.getJNDIEnvironment() != null) {
+            cl = getClassLoaderForEnvironment((JndiNameEnvironment)capturedInvocation.getJNDIEnvironment());
         }
-        ApplicationInfo appInfo = appRegistry.get(appName);
-
-        // try plain non-versioned app first
-        if(appInfo == null) {
-            appName = stripVersionSuffix(appName);
-            appInfo = appRegistry.get(appName);
+        else if(componentId != null) {
+            cl = getClassLoaderForEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
         }
-        // for versioned applications, search app registry and strip out the version number
-        if(appInfo == null) {
-            for(String regAppName : appRegistry.getAllApplicationNames()) {
-                if(stripVersionSuffix(regAppName).equals(appName)) {
-                    appInfo = appRegistry.get(regAppName);
-                    break;
-                }
-            }
-        }
-        if(appInfo != null) {
-            Utility.setContextClassLoader(appInfo.getAppClassLoader());
+        if(cl != null) {
+            Utility.setContextClassLoader(cl);
         }
     }
 
     @Override
     public ClassLoader getInvocationClassLoader() {
         JndiNameEnvironment componentEnv = compEnvMgr.getCurrentJndiNameEnvironment();
+        return getClassLoaderForEnvironment(componentEnv);
+    }
+
+    @Override
+    public void setInstanceContext() {
+        componentId = null;
+        doSetInstanceContext();
+    }
+
+    @Override
+    public String getInvocationComponentId() {
+        ComponentInvocation inv = serverContext.getInvocationManager().getCurrentInvocation();
+        return inv != null? inv.getComponentId() : null;
+    }
+
+    @Override
+    public JavaEEContextUtil setInstanceComponentId(String componentId) {
+        this.componentId = componentId;
+        if(componentId != null) {
+            createInvocationContext();
+        }
+        return this;
+    }
+
+    private void doSetInstanceContext() {
+        capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
+        if(capturedInvocation != null) {
+            capturedInvocation = capturedInvocation.clone();
+            componentId = capturedInvocation.getComponentId();
+        }
+        else if(componentId != null) {
+            // deserialized version
+            createInvocationContext();
+        }
+    }
+
+    private ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
         if(componentEnv instanceof BundleDescriptor) {
             BundleDescriptor bd = (BundleDescriptor)componentEnv;
             return bd.getClassLoader();
@@ -193,14 +213,16 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         return null;
     }
 
-    private static String stripVersionSuffix(String name) {
-        int delimiterIndex = name.lastIndexOf(':');
-        return delimiterIndex != -1? name.substring(0, delimiterIndex) : name;
+    private void createInvocationContext() {
+        capturedInvocation = new ComponentInvocation();
+        capturedInvocation.componentId = componentId;
+        capturedInvocation.setJNDIEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
     }
 
 
-    private @Inject @Getter(AccessLevel.PACKAGE) ServerContext serverContext;
-    private ComponentInvocation capturedInvocation;
-    private @Inject ComponentEnvManager compEnvMgr;
-    private @Inject ApplicationRegistry appRegistry;
+    private transient @Getter(AccessLevel.PACKAGE) ServerContext serverContext;
+    private transient ComponentEnvManager compEnvMgr;
+    private transient ComponentInvocation capturedInvocation;
+    private String componentId;
+    private static final long serialVersionUID = 1L;
 }

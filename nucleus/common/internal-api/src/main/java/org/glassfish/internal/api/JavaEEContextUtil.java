@@ -77,22 +77,32 @@ public interface JavaEEContextUtil {
     void popRequestContext(RequestContext context);
 
     /**
-     * @return application name or null if there is no invocation context
+     * set context class loader by internal state of this instance
      */
-    String getApplicationName();
+    void setApplicationClassLoader();
 
     /**
-     * set context class loader by appName
-     *
-     * @param appName
+     * Sets the state of this instance from current invocation context
      */
-    void setApplicationContext(String appName);
+    void setInstanceContext();
+
+    /**
+     * sets component ID for this instance and re-generates the invocation based on it
+     *
+     * @param componentId
+     * @return self for fluent API
+     */
+    JavaEEContextUtil setInstanceComponentId(String componentId);
 
     /**
      * @return Class Loader that's associated with current invocation
      *         or null if there is no current invocation
      */
     ClassLoader getInvocationClassLoader();
+    /**
+     * @return component ID for this instance
+     */
+    String getInvocationComponentId();
 
     interface Context {};
     interface RequestContext {};

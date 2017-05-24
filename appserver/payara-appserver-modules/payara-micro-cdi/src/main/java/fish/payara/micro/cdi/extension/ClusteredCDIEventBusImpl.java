@@ -126,8 +126,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         
         // try again
 
-        if (ctxUtil.getApplicationName() == null) {
-            ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+        if (ctxUtil.getInvocationComponentId() == null) {
+            ctxUtil.setInstanceContext();
         }
         
         if (managedExecutorService == null) {
