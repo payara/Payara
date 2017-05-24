@@ -98,12 +98,12 @@ public class TestDatadogNotifier extends TestNotifier {
             return;
         }
         
-        DatadogNotifierConfiguration hipchatConfig = config.getExtensionByType(DatadogNotifierConfiguration.class);
+        DatadogNotifierConfiguration datadogConfig = config.getExtensionByType(DatadogNotifierConfiguration.class);
         
         if (key == null){
-                key = hipchatConfig.getKey();
+                key = datadogConfig.getKey();
         }
-        //prepare hipchat message
+        //prepare Datadog message
         DatadogNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
         DatadogMessageQueue queue = new DatadogMessageQueue();

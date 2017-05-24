@@ -103,7 +103,7 @@ public class TestLogNotifier extends TestNotifier {
         if (useSeparateLogFile == null){
                 useSeparateLogFile = Boolean.parseBoolean(logConfig.getUseSeparateLogFile());
         }
-        //prepare hipchat message
+        //prepare log message
         LogNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
         LogNotifierConfigurationExecutionOptions options = new LogNotifierConfigurationExecutionOptions();

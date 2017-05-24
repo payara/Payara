@@ -73,11 +73,11 @@ import org.jvnet.hk2.annotations.Service;
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
                 path = "test-newrelic-notifier-configuration",
-                description = "Tests Datadog Notifier Configuration")
+                description = "Tests New Relic Notifier Configuration")
 })
 public class TestNewRelicNotifier extends TestNotifier {
     
-    private static final String MESSAGE = "NewRelic notifier test";
+    private static final String MESSAGE = "New Relic notifier test";
     
     @Param(name = "key", optional = true)
      private String key;
@@ -100,15 +100,15 @@ public class TestNewRelicNotifier extends TestNotifier {
             return;
         }
         
-        NewRelicNotifierConfiguration hipchatConfig = config.getExtensionByType(NewRelicNotifierConfiguration.class);
+        NewRelicNotifierConfiguration newRelicConfig = config.getExtensionByType(NewRelicNotifierConfiguration.class);
         
         if (key == null){
-                key = hipchatConfig.getKey();
+                key = newRelicConfig.getKey();
         }
         if (accountId == null){
-            accountId = hipchatConfig.getAccountId();
+            accountId = newRelicConfig.getAccountId();
         }
-        //prepare hipchat message
+        //prepare NewRelic message
         NewRelicNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         event.setEventType(SUBJECT);
         NewRelicEventMessageQueue queue = new NewRelicEventMessageQueue();

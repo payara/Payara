@@ -104,15 +104,15 @@ public class TestEmailNotifier extends TestNotifier {
             return;
         }
         
-        EmailNotifierConfiguration hipchatConfig = config.getExtensionByType(EmailNotifierConfiguration.class);
+        EmailNotifierConfiguration emailConfig = config.getExtensionByType(EmailNotifierConfiguration.class);
         
         if (jndiName == null){
-                jndiName = hipchatConfig.getJndiName();
+                jndiName = emailConfig.getJndiName();
         }
         if (to == null){
-            to = hipchatConfig.getTo();
+            to = emailConfig.getTo();
         }
-        //prepare hipchat message
+        //prepare email
         EmailNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
         EmailMessageQueue queue = new EmailMessageQueue();

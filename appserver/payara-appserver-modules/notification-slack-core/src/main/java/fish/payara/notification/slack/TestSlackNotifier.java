@@ -76,7 +76,7 @@ import org.jvnet.hk2.annotations.Service;
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
                 path = "test-slack-notifier-configuration",
-                description = "Tests Email Notifier Configuration")
+                description = "Tests Slack Notifier Configuration")
 })
 public class TestSlackNotifier extends TestNotifier {
     
@@ -106,18 +106,18 @@ public class TestSlackNotifier extends TestNotifier {
             return;
         }
         
-        SlackNotifierConfiguration hipchatConfig = config.getExtensionByType(SlackNotifierConfiguration.class);
+        SlackNotifierConfiguration slackConfig = config.getExtensionByType(SlackNotifierConfiguration.class);
         
         if (token1 == null){
-                token1 = hipchatConfig.getToken1();
+                token1 = slackConfig.getToken1();
         }
         if (token2 == null){
-                token2 = hipchatConfig.getToken2();
+                token2 = slackConfig.getToken2();
         }
         if (token3 == null){
-                token3 = hipchatConfig.getToken3();
+                token3 = slackConfig.getToken3();
         }
-        //prepare hipchat message
+        //prepare Slack message
         SlackNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
         SlackMessageQueue queue = new SlackMessageQueue();
@@ -136,7 +136,7 @@ public class TestSlackNotifier extends TestNotifier {
         logger.setLevel(Level.FINE);
         logger.addHandler(bqh);
         //send message, this occurs in its own thread
-        Thread notifierThread = new Thread(notifierRun, "test-email-notifier-thread");
+        Thread notifierThread = new Thread(notifierRun, "test-slack-notifier-thread");
         notifierThread.start();
         try {
             notifierThread.join();

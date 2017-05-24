@@ -78,7 +78,7 @@ import org.jvnet.hk2.annotations.Service;
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
                 path = "test-jms-notifier-configuration",
-                description = "Tests Email Notifier Configuration")
+                description = "Tests JMS Notifier Configuration")
 })
 public class TestJmsNotifier extends TestNotifier {
     private static final String MESSAGE = "JMS notifier test";
@@ -116,28 +116,28 @@ public class TestJmsNotifier extends TestNotifier {
             return;
         }
         
-        JmsNotifierConfiguration hipchatConfig = config.getExtensionByType(JmsNotifierConfiguration.class);
+        JmsNotifierConfiguration jmsConfig = config.getExtensionByType(JmsNotifierConfiguration.class);
         
         if (contextFactoryClass == null){
-                contextFactoryClass = hipchatConfig.getContextFactoryClass();
+                contextFactoryClass = jmsConfig.getContextFactoryClass();
         }
         if (connectionFactoryName == null){
-                connectionFactoryName = hipchatConfig.getConnectionFactoryName();
+                connectionFactoryName = jmsConfig.getConnectionFactoryName();
         }
         if (queueName == null){
-                queueName = hipchatConfig.getQueueName();
+                queueName = jmsConfig.getQueueName();
         }
         if (url == null){
-                url = hipchatConfig.getUrl();
+                url = jmsConfig.getUrl();
         }
         if (username == null){
-                username = hipchatConfig.getUsername();
+                username = jmsConfig.getUsername();
         }
         if (password == null){
-                password = hipchatConfig.getPassword();
+                password = jmsConfig.getPassword();
         }
        
-        //prepare hipchat message
+        //prepare JMS message
         JmsNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
         JmsMessageQueue queue = new JmsMessageQueue();
@@ -172,7 +172,7 @@ public class TestJmsNotifier extends TestNotifier {
         logger.setLevel(Level.FINE);
         logger.addHandler(bqh);
         //send message, this occurs in its own thread
-        Thread notifierThread = new Thread(notifierRun, "test-email-notifier-thread");
+        Thread notifierThread = new Thread(notifierRun, "test-jms-notifier-thread");
         notifierThread.start();
         try {
             notifierThread.join();

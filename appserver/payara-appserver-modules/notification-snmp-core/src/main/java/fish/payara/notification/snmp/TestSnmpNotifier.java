@@ -81,10 +81,10 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
                 path = "test-snmp-notifier-configuration",
-                description = "Tests Email Notifier Configuration")
+                description = "Tests SNMP Notifier Configuration")
 })
 public class TestSnmpNotifier extends TestNotifier {
-    private static final String MESSAGE = "Snmp notifier test";
+    private static final String MESSAGE = "SNMP notifier test";
     
     @Param(name = "community", defaultValue = "public", optional = true)
     private String community;
@@ -133,7 +133,7 @@ public class TestSnmpNotifier extends TestNotifier {
         if (port == null){
             port = snmpConfig.hashCode();
         }
-        //prepare hipchat message
+        //prepare SNMP message
         SnmpNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
         SnmpMessageQueue queue = new SnmpMessageQueue();
@@ -178,7 +178,7 @@ public class TestSnmpNotifier extends TestNotifier {
         logger.setLevel(Level.FINE);
         logger.addHandler(bqh);
         //send message, this occurs in its own thread
-        Thread notifierThread = new Thread(notifierRun, "test-newrelic-notifier-thread");
+        Thread notifierThread = new Thread(notifierRun, "test-snmp-notifier-thread");
         notifierThread.start();
         try {
             notifierThread.join();

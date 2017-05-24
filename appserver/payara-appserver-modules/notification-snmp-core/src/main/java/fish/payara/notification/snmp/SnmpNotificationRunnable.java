@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -95,6 +95,7 @@ public class SnmpNotificationRunnable extends NotificationRunnable<SnmpMessageQu
                 pdu.add(new VariableBinding(oidInstance, new OctetString(message.getSubject() + "\n" + message.getMessage())));
 
                 snmp.send(pdu, communityTarget);
+                logger.log(Level.FINE, "Message sent seuccessfully");
             }
             catch (IOException e) {
                 logger.log(Level.SEVERE, "IO Error while sending SNMP message", e);

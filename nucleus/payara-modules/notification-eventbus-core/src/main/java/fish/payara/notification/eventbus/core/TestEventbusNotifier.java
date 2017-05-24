@@ -41,14 +41,11 @@ package fish.payara.notification.eventbus.core;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.notification.eventbus.EventbusMessage;
+import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
 import fish.payara.nucleus.notification.TestNotifier;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import fish.payara.nucleus.notification.log.LogNotificationEvent;
-import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
-import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
-import fish.payara.nucleus.notification.log.LogNotifierConfigurationExecutionOptions;
-import fish.payara.nucleus.notification.log.LogNotifierService;
+import fish.payara.nucleus.eventbus.EventBus;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -92,6 +89,9 @@ public class TestEventbusNotifier extends TestNotifier {
     @Inject
     EventbusNotificationEventFactory factory;
     
+    @Inject
+    EventBus eventbus;
+    
     @Override
     public void execute(AdminCommandContext context) {
         
@@ -109,40 +109,24 @@ public class TestEventbusNotifier extends TestNotifier {
         if (topicName == null){
                 topicName = eventbusConfig.getTopicName();
         }
-        //prepare hipchat message
+        //prepare eventbus message
         EventbusNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
-        EventbusMessageQueue queue = new EventbusMessageQueue();
-        queue.addMessage(new EventbusMessageImpl(event, event.getSubject(), event.getMessage()));
+        EventbusMessageImpl mesg = new EventbusMessageImpl(event, event.getSubject(), event.getMessage());
         EventbusNotifierConfigurationExecutionOptions options = new EventbusNotifierConfigurationExecutionOptions();
         options.setTopicName(topicName);
-        EventbusNotifierService service = new EventbusNotifierService();
+        
         //set up logger to store result
         
         Logger logger = Logger.getLogger(EventbusNotifierService.class.getCanonicalName());
         BlockingQueueHandler bqh = new BlockingQueueHandler(10);
         bqh.setLevel(Level.FINE);
-        service.handleNotification(event);
-        Level oldLevel = logger.getLevel();
-        logger.setLevel(Level.FINE);
-        logger.addHandler(bqh);
-        logger.setLevel(oldLevel);
-        LogRecord message = bqh.poll();
-        logger.removeHandler(bqh);
-        if (message == null){
-            //something's gone wrong
-            Logger.getGlobal().log(Level.SEVERE, "Failed to send Eventbus message");
-            actionReport.setMessage("Failed to send Eventbus message");
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        } else {;
-            actionReport.setMessage(message.getMessage());
-            if (message.getLevel()==Level.FINE){
-                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);               
-            } else {
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            }
-            
-            
+        if (eventbus.publish(options.getTopicName(), new ClusterMessage<>(mesg))){
+            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        } else {
+            actionReport.setMessage("Error sending message. Is Hazelcast enabled?");
+            Logger.getGlobal().log(Level.SEVERE, "Error sending message. Is Hazelcast enabled?");
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);       
         }
         
     }
