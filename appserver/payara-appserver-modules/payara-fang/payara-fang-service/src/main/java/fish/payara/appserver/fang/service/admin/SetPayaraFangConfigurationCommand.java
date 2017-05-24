@@ -42,13 +42,20 @@ package fish.payara.appserver.fang.service.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.appserver.fang.service.configuration.PayaraFangConfiguration;
+import fish.payara.appserver.fang.service.security.FangAuthModule;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.security.auth.Subject;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -76,7 +83,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class SetPayaraFangConfigurationCommand implements AdminCommand {
 
-    private final static Logger LOGGER = Logger.getLogger(SetPayaraFangConfigurationCommand.class.getName());
+    private static final String AUTH_MODULE_NAME = "FangAuthModule";
+    private static final String DEFAULT_USER_NAME = "fang";
+    private static final Logger LOGGER = Logger.getLogger(SetPayaraFangConfigurationCommand.class.getName());
     
     @Param(optional = true, defaultValue = "server-config")
     String target;
@@ -102,10 +111,29 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
     @Inject
     ServerEnvironment serverEnv;
     
+    @Inject
+    CommandRunner commandRunner;
+    
     @Override
     public void execute(AdminCommandContext context) {
         Config targetConfig = targetUtil.getConfig(target);
         PayaraFangConfiguration fangConfiguration = targetConfig.getExtensionByType(PayaraFangConfiguration.class);    
+        
+        // Get the value of securityEnabled
+        if (securityEnabled == null) {
+            securityEnabled = Boolean.parseBoolean(fangConfiguration.getSecurityEnabled());
+        }
+        
+        // If security is enabled and the required message security provider is not present, create it
+        if (securityEnabled && !messageSecurityProviderExists(context.getActionReport().addSubActionsReport(), 
+                context.getSubject())) {
+            createRequiredMessageSecurityProvider(context.getActionReport().addSubActionsReport(), context.getSubject());
+        }
+        
+        // Create the default user if it doesn't exist
+        if (!defaultFangUserExists(context.getActionReport().addSubActionsReport(), context.getSubject())) {
+            createDefaultFangUser(context.getActionReport().addSubActionsReport(), context.getSubject());
+        }
         
         try {
             ConfigSupport.apply(new SingleConfigCode<PayaraFangConfiguration>(){
@@ -133,5 +161,76 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
         } catch (TransactionFailure ex) {
             context.getActionReport().failure(LOGGER, "Failed to update Payara Fang configuration", ex);
         }
-    }  
+    }
+    
+    private boolean messageSecurityProviderExists(ActionReport subActionReport, Subject subject) {
+        boolean exists = false;
+        
+        CommandInvocation invocation = commandRunner.getCommandInvocation("list-message-security-providers", 
+                subActionReport, subject);
+        
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("layer", "HttpServlet");
+        
+        invocation.parameters(parameters).execute();
+        
+        for (MessagePart message : subActionReport.getTopMessagePart().getChildren()) {
+            if (message.getMessage().equals(AUTH_MODULE_NAME)) {
+                exists = true;
+                break;
+            }
+        }
+        
+        return exists;
+    }
+     
+    private void createRequiredMessageSecurityProvider(ActionReport subActionReport, Subject subject) {
+        CommandInvocation invocation = commandRunner.getCommandInvocation("create-message-security-provider", 
+                subActionReport, subject);
+         
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("classname", FangAuthModule.class.getName());
+        parameters.add("isdefaultprovider", "false");
+        parameters.add("layer", "HttpServlet");
+        parameters.add("providertype", "server");
+        parameters.add("target", target);
+        parameters.add("requestauthsource", "sender");
+        parameters.add("DEFAULT", AUTH_MODULE_NAME);
+
+        
+        invocation.parameters(parameters).execute();
+     }
+    
+    private boolean defaultFangUserExists(ActionReport subActionReport, Subject subject) {
+        boolean exists = false;
+        
+        CommandInvocation invocation = commandRunner.getCommandInvocation("list-file-users", subActionReport, subject);
+        
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("authrealmname", "file");
+        
+        invocation.parameters(parameters).execute();
+        
+        for (MessagePart message : subActionReport.getTopMessagePart().getChildren()) {
+            if (message.getMessage().equals(DEFAULT_USER_NAME)) {
+                exists = true;
+                break;
+            }
+        }
+        
+        return exists;
+    }
+    
+    private void createDefaultFangUser(ActionReport subActionReport, Subject subject) {
+        CommandInvocation invocation = commandRunner.getCommandInvocation("create-file-user", subActionReport, subject);
+         
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("groups", "fang");
+        parameters.add("userpassword", "fang");
+        parameters.add("target", target);
+        parameters.add("authrealmname", "file");
+        parameters.add("DEFAULT", DEFAULT_USER_NAME);
+        
+        invocation.parameters(parameters).execute();
+    }
 }

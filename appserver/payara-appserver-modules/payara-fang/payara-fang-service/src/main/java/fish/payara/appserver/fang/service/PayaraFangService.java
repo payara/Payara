@@ -95,7 +95,7 @@ public class PayaraFangService implements ConfigListener {
     @PostConstruct
     private void postConstruct() {
         contextRoot = payaraFangAdapter.getContextRoot();
-        payaraFangConfiguration = habitat.getService(PayaraFangConfiguration.class);
+        payaraFangConfiguration = habitat.getService(PayaraFangConfiguration.class);      
         
         if (payaraFangConfiguration.getEnabled().equals("true")) {
             loadApplication();
