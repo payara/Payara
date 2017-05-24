@@ -69,6 +69,6 @@
         <module>zendesk-support</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
-        <module>payara-fang-service</module>
+        <module>payara-fang</module>
     </modules>
 </project>
