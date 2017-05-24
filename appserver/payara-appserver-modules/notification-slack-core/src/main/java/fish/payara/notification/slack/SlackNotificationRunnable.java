@@ -81,6 +81,8 @@ public class SlackNotificationRunnable extends NotificationRunnable<SlackMessage
                     if (connection.getResponseCode() != 200) {
                         logger.log(Level.SEVERE, "Error occurred while connecting Slack. " +
                                 "Check your tokens. HTTP response code: " + connection.getResponseCode());
+                    } else {
+                        logger.log(Level.FINE, "Message sent successfully");
                     }
                 }
             }

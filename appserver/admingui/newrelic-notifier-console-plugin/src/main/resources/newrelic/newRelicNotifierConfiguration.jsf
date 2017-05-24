@@ -66,7 +66,7 @@ holder.
 #include "/payaraExtras/notification/notificationConfigTabs.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nrn.notifier.newrelic.configuration.pageTitle}"
                helpText="$resource{i18nrn.notifier.newrelic.configuration.pageHelpText}" >
-        <sun:button id = "test" text="$resource{i18nrn.newrelic.datadog.buttons.test}">
+        <sun:button id = "test" text="$resource{i18nrn.newrelic.buttons.test}">
             <!command 
                 gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-newrelic-notifier-configuration?target=#{pageSession.configName}" method="GET" 
                     attrs="#{pageSession.valueMap}" result="#{requestScope.result}");

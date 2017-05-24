@@ -37,7 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.notification.email;
+package fish.payara.notification.slack;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
@@ -61,14 +61,13 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  *
  * @author jonathan coustick
  */
-@Service(name = "test-email-notifier-configuration")
+@Service(name = "test-slack-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -76,21 +75,24 @@ import org.jvnet.hk2.annotations.Service;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "test-email-notifier-configuration",
+                path = "test-slack-notifier-configuration",
                 description = "Tests Email Notifier Configuration")
 })
-public class TestEmailNotifier extends TestNotifier {
-
-    private static final String MESSAGE = "Email notifier test";
+public class TestSlackNotifier extends TestNotifier {
     
-    @Param(name = "jndiName", optional = true)
-     private String jndiName;
+        private static final String MESSAGE = "Slack notifier test";
+    
+    @Param(name = "token1", optional = true)
+    private String token1;
  
-    @Param(name = "to", optional = true)
-    private String to;
+    @Param(name = "token2", optional = true)
+    private String token2;
+    
+    @Param(name = "token3", optional = true)
+    private String token3;
 
     @Inject
-    EmailNotificationEventFactory factory;
+    SlackNotificationEventFactory factory;
     
     @Override
     public void execute(AdminCommandContext context) {
@@ -104,36 +106,30 @@ public class TestEmailNotifier extends TestNotifier {
             return;
         }
         
-        EmailNotifierConfiguration hipchatConfig = config.getExtensionByType(EmailNotifierConfiguration.class);
+        SlackNotifierConfiguration hipchatConfig = config.getExtensionByType(SlackNotifierConfiguration.class);
         
-        if (jndiName == null){
-                jndiName = hipchatConfig.getJndiName();
+        if (token1 == null){
+                token1 = hipchatConfig.getToken1();
         }
-        if (to == null){
-            to = hipchatConfig.getTo();
+        if (token2 == null){
+                token2 = hipchatConfig.getToken2();
+        }
+        if (token3 == null){
+                token3 = hipchatConfig.getToken3();
         }
         //prepare hipchat message
-        EmailNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
+        SlackNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
-        EmailMessageQueue queue = new EmailMessageQueue();
-        queue.addMessage(new EmailMessage(event, event.getSubject(), event.getMessage()));
-        EmailNotifierConfigurationExecutionOptions options = new EmailNotifierConfigurationExecutionOptions();
-        options.setJndiName(jndiName);
-        options.setTo(to);
-        Session session;
+        SlackMessageQueue queue = new SlackMessageQueue();
+        queue.addMessage(new SlackMessage(event, event.getSubject(), event.getMessage()));
+        SlackNotifierConfigurationExecutionOptions options = new SlackNotifierConfigurationExecutionOptions();
+        options.setToken1(token1);
+        options.setToken2(token2);
+        options.setToken3(token3);
         
-        try {
-            InitialContext initialContext = new InitialContext();
-            session = (Session) initialContext.lookup(jndiName);
-        } catch (NamingException ex) {
-            Logger.getLogger(TestEmailNotifier.class.getName()).log(Level.SEVERE, "Unable to find session" + jndiName);
-            context.getActionReport().setMessage("Unable to find session: " + jndiName);
-            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        EmailNotificationRunnable notifierRun = new EmailNotificationRunnable(queue, session,  options);
+        SlackNotificationRunnable notifierRun = new SlackNotificationRunnable(queue, options);
         //set up logger to store result
-        Logger logger = Logger.getLogger(EmailNotificationRunnable.class.getCanonicalName());
+        Logger logger = Logger.getLogger(SlackNotificationRunnable.class.getCanonicalName());
         BlockingQueueHandler bqh = new BlockingQueueHandler(10);
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
@@ -145,7 +141,7 @@ public class TestEmailNotifier extends TestNotifier {
         try {
             notifierThread.join();
         } catch (InterruptedException ex) {
-            Logger.getLogger(TestEmailNotifier.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TestSlackNotifier.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             logger.setLevel(oldLevel);
         }
@@ -153,8 +149,8 @@ public class TestEmailNotifier extends TestNotifier {
         logger.removeHandler(bqh);
         if (message == null){
             //something's gone wrong
-            Logger.getLogger(TestEmailNotifier.class.getName()).log(Level.SEVERE, "Failed to send email");
-            actionReport.setMessage("Failed to send email message");
+            Logger.getLogger(TestSlackNotifier.class.getName()).log(Level.SEVERE, "Failed to send Slack message");
+            actionReport.setMessage("Failed to send Slack message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         } else {            
             if (message.getLevel()==Level.FINE){

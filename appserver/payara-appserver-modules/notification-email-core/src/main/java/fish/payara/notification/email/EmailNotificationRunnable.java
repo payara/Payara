@@ -75,6 +75,7 @@ public class EmailNotificationRunnable extends NotificationRunnable<EmailMessage
                 message.setText(emailMessage.getMessage());
 
                 Transport.send(message);
+                logger.log(Level.FINE, "Email successfully sent");
             }
             catch (IllegalArgumentException e) {
                 logger.log(Level.SEVERE, "mail configuration properties are not provided carefully.", e);

@@ -47,6 +47,15 @@
 #include "/payaraExtras/notification/notificationConfigTabs.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nsn.notifier.slack.configuration.pageTitle}" 
                helpText="$resource{i18nsn.notifier.slack.configuration.pageHelpText}" >
+        <sun:button id = "test" text="$resource{i18nsn.notifier.slack.buttons.test}">
+            <!command 
+                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-slack-notifier-configuration?target=#{pageSession.configName}" method="GET" 
+                    attrs="#{pageSession.valueMap}" result="#{requestScope.result}");
+                if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
+                    prepareAlertMsg(summary="$resource{i18nsn.notifier.slack.msg.success}", type="success");
+                } 
+                />
+        </sun:button>
         <!facet pageButtonsTop>
             <sun:panelGroup id="topButtons">
                 <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
