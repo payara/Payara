@@ -80,7 +80,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class TestSlackNotifier extends TestNotifier {
     
-        private static final String MESSAGE = "Slack notifier test";
+    private static final String MESSAGE = "Slack notifier test";
     
     @Param(name = "token1", optional = true)
     private String token1;
@@ -152,12 +152,11 @@ public class TestSlackNotifier extends TestNotifier {
             Logger.getLogger(TestSlackNotifier.class.getName()).log(Level.SEVERE, "Failed to send Slack message");
             actionReport.setMessage("Failed to send Slack message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        } else {            
+        } else {       
+            actionReport.setMessage(message.getMessage());
             if (message.getLevel()==Level.FINE){
-                actionReport.setMessage(message.getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);               
             } else {
-                actionReport.setMessage(message.getMessage() + message.getThrown().getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
             

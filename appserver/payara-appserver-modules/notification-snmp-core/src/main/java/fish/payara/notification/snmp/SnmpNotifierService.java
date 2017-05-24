@@ -74,9 +74,9 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
 
     private static Logger logger = Logger.getLogger(SnmpNotifierService.class.getCanonicalName());
 
-    private static final String ADDRESS_SEPARATOR = "/";
-    private static final String version1  = "v1";
-    private static final String version2c = "v2c";
+    static final String ADDRESS_SEPARATOR = "/";
+    static final String version1  = "v1";
+    static final String version2c = "v2c";
     private Snmp snmp;
     private SnmpNotifierConfigurationExecutionOptions execOptions;
 
@@ -134,7 +134,7 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
         }
     }
 
-    private int decideOnSnmpVersion(String version) throws InvalidSnmpVersion {
+    static int decideOnSnmpVersion(String version) throws InvalidSnmpVersion {
         switch (version) {
             case version1:
                 return SnmpConstants.version1;

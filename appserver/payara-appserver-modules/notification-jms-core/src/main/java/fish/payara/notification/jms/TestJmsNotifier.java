@@ -37,18 +37,21 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.notification.snmp;
+package fish.payara.notification.jms;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import fish.payara.notification.snmp.exception.InvalidSnmpVersion;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
 import fish.payara.nucleus.notification.TestNotifier;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -61,18 +64,12 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.snmp4j.CommunityTarget;
-import org.snmp4j.Snmp;
-import org.snmp4j.TransportMapping;
-import org.snmp4j.smi.OctetString;
-import org.snmp4j.smi.UdpAddress;
-import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 /**
  *
  * @author jonathan coustick
  */
-@Service(name = "test-snmp-notifier-configuration")
+@Service(name = "test-jms-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -80,29 +77,32 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "test-snmp-notifier-configuration",
+                path = "test-jms-notifier-configuration",
                 description = "Tests Email Notifier Configuration")
 })
-public class TestSnmpNotifier extends TestNotifier {
-    private static final String MESSAGE = "Snmp notifier test";
+public class TestJmsNotifier extends TestNotifier {
+    private static final String MESSAGE = "JMS notifier test";
     
-    @Param(name = "community", defaultValue = "public", optional = true)
-    private String community;
+    @Param(name = "contextFactoryClass", optional = true)
+    private String contextFactoryClass;
 
-    @Param(name = "oid", defaultValue = ".1.3.6.1.2.1.1.8", optional = true)
-    private String oid;
+    @Param(name = "connectionFactoryName", optional = true)
+    private String connectionFactoryName;
 
-    @Param(name = "version", defaultValue = "v2c", optional = true, acceptableValues = "v1,v2c")
-    private String version;
+    @Param(name = "queueName", optional = true)
+    private String queueName;
 
-    @Param(name = "hostName", optional = true)
-    private String hostName;
+    @Param(name = "url", optional = true)
+    private String url;
 
-    @Param(name = "port", defaultValue = "162", optional = true)
-    private Integer port;
+    @Param(name = "username", optional = true)
+    private String username;
+
+    @Param(name = "password", optional = true)
+    private String password;
 
     @Inject
-    SnmpNotificationEventFactory factory;
+    JmsNotificationEventFactory factory;
     
     @Override
     public void execute(AdminCommandContext context) {
@@ -116,94 +116,87 @@ public class TestSnmpNotifier extends TestNotifier {
             return;
         }
         
-        SnmpNotifierConfiguration snmpConfig = config.getExtensionByType(SnmpNotifierConfiguration.class);
+        JmsNotifierConfiguration hipchatConfig = config.getExtensionByType(JmsNotifierConfiguration.class);
         
-        if (community == null){
-                community = snmpConfig.getCommunity();
+        if (contextFactoryClass == null){
+                contextFactoryClass = hipchatConfig.getContextFactoryClass();
         }
-        if (oid == null){
-            oid = snmpConfig.getOid();
+        if (connectionFactoryName == null){
+                connectionFactoryName = hipchatConfig.getConnectionFactoryName();
         }
-        if (version == null){
-            version = snmpConfig.getVersion();
+        if (queueName == null){
+                queueName = hipchatConfig.getQueueName();
         }
-        if (hostName == null){
-            hostName = snmpConfig.getHost();
+        if (url == null){
+                url = hipchatConfig.getUrl();
         }
-        if (port == null){
-            port = snmpConfig.hashCode();
+        if (username == null){
+                username = hipchatConfig.getUsername();
         }
+        if (password == null){
+                password = hipchatConfig.getPassword();
+        }
+       
         //prepare hipchat message
-        SnmpNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
+        JmsNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
         
-        SnmpMessageQueue queue = new SnmpMessageQueue();
-        queue.addMessage(new SnmpMessage(event, event.getSubject(), event.getMessage()));
-        SnmpNotifierConfigurationExecutionOptions options = new SnmpNotifierConfigurationExecutionOptions();
-        options.setCommunity(community);
-        options.setOid(oid);
-        options.setVersion(version);
-        options.setHost(hostName);
-        options.setPort(port);
-        SnmpNotificationRunnable notifierRun = null;
+        JmsMessageQueue queue = new JmsMessageQueue();
+        queue.addMessage(new JmsMessage(event, event.getSubject(), event.getMessage()));
+        JmsNotifierConfigurationExecutionOptions options = new JmsNotifierConfigurationExecutionOptions();
+        options.setContextFactoryClass(contextFactoryClass);
+        options.setConnectionFactoryName(connectionFactoryName);
+        options.setQueueName(queueName);
+        options.setUrl(url);
+        options.setUsername(username);
+        options.setPassword(password);
+        
+        JmsNotificationRunnable notifierRun = null;
         try {
-                TransportMapping transport = new DefaultUdpTransportMapping();
-                Snmp snmp = new Snmp(transport);
-                CommunityTarget cTarget = new CommunityTarget();
+            InitialContext ctx = new InitialContext();
+            ConnectionFactory connectionFactory = (ConnectionFactory) ctx.lookup(options.getConnectionFactoryName());
+            Connection connection = connectionFactory.createConnection();
+            notifierRun = new JmsNotificationRunnable(queue, options, connection);
+        } catch (NamingException | JMSException ex) {
+            Logger.getLogger(TestJmsNotifier.class.getName()).log(Level.SEVERE, null, ex);
+            actionReport.setMessage(ex.getMessage());
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
 
-                cTarget.setCommunity(new OctetString(options.getCommunity()));
-                int snmpVersion = SnmpNotifierService.decideOnSnmpVersion(options.getVersion());
-                cTarget.setVersion(snmpVersion);
-                cTarget.setAddress(new UdpAddress(options.getHost() + SnmpNotifierService.ADDRESS_SEPARATOR + options.getPort()));
-                
-                notifierRun = new SnmpNotificationRunnable(queue, options, snmp, cTarget, snmpVersion);
-        }
-        catch (IOException e) {
-                Logger.getLogger(TestSnmpNotifier.class.getCanonicalName()).log(Level.SEVERE, "Error occurred while creating UDP transport", e);
-                actionReport.setMessage("Error occurred while creating UDP transport");
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            }
-        catch (InvalidSnmpVersion invalidSnmpVersion) {
-                Logger.getLogger(TestSnmpNotifier.class.getCanonicalName()).log(Level.SEVERE, "Error occurred while configuring SNMP version: " + invalidSnmpVersion.getMessage());
-                actionReport.setMessage("Error occurred while configuring SNMP version: " + invalidSnmpVersion.getMessage());
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        }
-                
-                
         
         //set up logger to store result
-        Logger logger = Logger.getLogger(SnmpNotificationRunnable.class.getCanonicalName());
+        Logger logger = Logger.getLogger(JmsNotificationRunnable.class.getCanonicalName());
         BlockingQueueHandler bqh = new BlockingQueueHandler(10);
         bqh.setLevel(Level.FINE);
         Level oldLevel = logger.getLevel();
         logger.setLevel(Level.FINE);
         logger.addHandler(bqh);
         //send message, this occurs in its own thread
-        Thread notifierThread = new Thread(notifierRun, "test-newrelic-notifier-thread");
+        Thread notifierThread = new Thread(notifierRun, "test-email-notifier-thread");
         notifierThread.start();
         try {
             notifierThread.join();
         } catch (InterruptedException ex) {
-            Logger.getLogger(TestSnmpNotifier.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TestJmsNotifier.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             logger.setLevel(oldLevel);
         }
         LogRecord message = bqh.poll();
-        bqh.clear();
+        logger.removeHandler(bqh);
         if (message == null){
             //something's gone wrong
-            Logger.getLogger(TestSnmpNotifier.class.getName()).log(Level.SEVERE, "Failed to send SNMP message");
-            actionReport.setMessage("Failed to send SNMP message");
+            Logger.getLogger(TestJmsNotifier.class.getName()).log(Level.SEVERE, "Failed to send JMS message");
+            actionReport.setMessage("Failed to send JMS message");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        } else {
-            actionReport.setMessage(message.getMessage());
+        } else {       
             if (message.getLevel()==Level.FINE){
+                actionReport.setMessage(message.getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);               
             } else {
+                actionReport.setMessage(message.getMessage() + message.getThrown().getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
             
-            
         }
-        
     }
 }

@@ -71,6 +71,7 @@ public class JmsNotificationRunnable extends NotificationRunnable<JmsMessageQueu
                 JmsMessage jmsMessage = queue.getMessage();
                 message.setText(jmsMessage.getSubject() + "\n" + jmsMessage.getMessage());
                 producer.send(message);
+                logger.log(Level.FINE, "Message successfully sent");
             } catch (JMSException e) {
                 logger.log(Level.SEVERE, "Error occurred while creating session", e);
             }
