@@ -735,12 +735,13 @@ public class ApplicationHandlers {
         String appType = "other";
         if (! GuiUtil.isEmpty(snifferMap.get("web"))){
             appType="war";
-        }if (! GuiUtil.isEmpty(snifferMap.get("ejb"))){
+        } else
+        if (! GuiUtil.isEmpty(snifferMap.get("ejb"))){
             appType="ejb";
-        }else
+        } else
         if (! GuiUtil.isEmpty(snifferMap.get("connector"))){
             appType="rar";
-        }else
+        } else
         if (! GuiUtil.isEmpty(snifferMap.get("appclient"))){
             appType="appclient";
         }
