@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast.contextproxy;
 
+import java.io.Serializable;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
 import javax.cache.processor.EntryProcessor;
@@ -55,7 +56,7 @@ import lombok.RequiredArgsConstructor;
  * @param <T>
  */
 @RequiredArgsConstructor
-public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>{
+public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>, Serializable {
     @Override
     public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
         Context ctx = null;
@@ -70,4 +71,5 @@ public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>{
 
     private final EntryProcessor<K, V, T> delegate;
     private final JavaEEContextUtil ctxUtil;
+    private static final long serialVersionUID = 1L;
 }
