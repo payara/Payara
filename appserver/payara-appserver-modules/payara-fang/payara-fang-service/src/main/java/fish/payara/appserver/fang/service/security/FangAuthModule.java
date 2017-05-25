@@ -73,12 +73,9 @@ public class FangAuthModule implements ServerAuthModule {
     private CallbackHandler handler = null;
     private boolean securityEnabled = false;
 
-//    private static final String SAVED_SUBJECT = "Saved_Subject";
+    private static final String DEFAULT_USER_NAME = "fang";
     private static final String ORIG_REQUEST_PATH = "origRequestPath";
     private static final String LOGIN_PAGE = "/login.xhtml";
-//    private static final String ERROR_PAGE = "/error.xhtml";
-//    private static final String RESPONSE_TYPE = "application/json";
-//    private static final String USER_NAME = "userName";
     private static final Class[] SUPPORTED_MESSAGE_TYPES = new Class[] {HttpServletRequest.class, 
             HttpServletResponse.class };
     
@@ -179,7 +176,7 @@ public class FangAuthModule implements ServerAuthModule {
             // Continue...
             return AuthStatus.SUCCESS;
         } else {
-            Callback[] callbacks = new Callback[] { new CallerPrincipalCallback(clientSubject, "wibbles") };
+            Callback[] callbacks = new Callback[] { new CallerPrincipalCallback(clientSubject, DEFAULT_USER_NAME) };
 
             try {
                 handler.handle(callbacks);

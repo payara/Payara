@@ -41,6 +41,8 @@
 package fish.payara.appserver.fang.service.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import fish.payara.appserver.fang.service.configuration.PayaraFangConfiguration;
 import fish.payara.appserver.fang.service.security.FangAuthModule;
 import java.beans.PropertyVetoException;
@@ -114,27 +116,28 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
     @Inject
     CommandRunner commandRunner;
     
+    @Inject
+    Domain domain;
+    
     @Override
     public void execute(AdminCommandContext context) {
         Config targetConfig = targetUtil.getConfig(target);
         PayaraFangConfiguration fangConfiguration = targetConfig.getExtensionByType(PayaraFangConfiguration.class);    
         
-        // Get the value of securityEnabled
-        if (securityEnabled == null) {
-            securityEnabled = Boolean.parseBoolean(fangConfiguration.getSecurityEnabled());
-        }
+        ActionReport actionReport = context.getActionReport();
+        Subject subject = context.getSubject();
         
-        // If security is enabled and the required message security provider is not present, create it
-        if (securityEnabled && !messageSecurityProviderExists(context.getActionReport().addSubActionsReport(), 
+        // If the required message security provider is not present, create it
+        if (!messageSecurityProviderExists(actionReport.addSubActionsReport(), 
                 context.getSubject())) {
-            createRequiredMessageSecurityProvider(context.getActionReport().addSubActionsReport(), context.getSubject());
+            createRequiredMessageSecurityProvider(actionReport.addSubActionsReport(), subject);
         }
         
         // Create the default user if it doesn't exist
-        if (!defaultFangUserExists(context.getActionReport().addSubActionsReport(), context.getSubject())) {
-            createDefaultFangUser(context.getActionReport().addSubActionsReport(), context.getSubject());
+        if (!defaultFangUserExists(actionReport.addSubActionsReport(), subject)) {
+            createDefaultFangUser(actionReport.addSubActionsReport(), subject);
         }
-        
+
         try {
             ConfigSupport.apply(new SingleConfigCode<PayaraFangConfiguration>(){
                     @Override
@@ -161,13 +164,25 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
         } catch (TransactionFailure ex) {
             context.getActionReport().failure(LOGGER, "Failed to update Payara Fang configuration", ex);
         }
+        
+        // If security is enabled but secure admin isn't, prompt a warning
+        if (Boolean.parseBoolean(fangConfiguration.getSecurityEnabled())
+                && !SecureAdmin.Util.isEnabled(domain.getSecureAdmin())) {
+            actionReport.appendMessage("\n---WARNING---\nSecure Admin is not enabled! - it is highly "
+                    + "recommended that you do so to properly secure Payara Fang.\n");
+        }
+        
+        // If everything has passed, scrap the subaction reports as we don't want to print them out
+        if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
+            actionReport.getSubActionsReport().clear();
+        }
     }
     
     private boolean messageSecurityProviderExists(ActionReport subActionReport, Subject subject) {
         boolean exists = false;
         
         CommandInvocation invocation = commandRunner.getCommandInvocation("list-message-security-providers", 
-                subActionReport, subject);
+                subActionReport, subject, false);
         
         ParameterMap parameters = new ParameterMap();
         parameters.add("layer", "HttpServlet");
@@ -186,7 +201,7 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
      
     private void createRequiredMessageSecurityProvider(ActionReport subActionReport, Subject subject) {
         CommandInvocation invocation = commandRunner.getCommandInvocation("create-message-security-provider", 
-                subActionReport, subject);
+                subActionReport, subject, false);
          
         ParameterMap parameters = new ParameterMap();
         parameters.add("classname", FangAuthModule.class.getName());
@@ -204,7 +219,8 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
     private boolean defaultFangUserExists(ActionReport subActionReport, Subject subject) {
         boolean exists = false;
         
-        CommandInvocation invocation = commandRunner.getCommandInvocation("list-file-users", subActionReport, subject);
+        CommandInvocation invocation = commandRunner.getCommandInvocation("list-file-users", subActionReport, subject, 
+                false);
         
         ParameterMap parameters = new ParameterMap();
         parameters.add("authrealmname", "file");
@@ -222,7 +238,8 @@ public class SetPayaraFangConfigurationCommand implements AdminCommand {
     }
     
     private void createDefaultFangUser(ActionReport subActionReport, Subject subject) {
-        CommandInvocation invocation = commandRunner.getCommandInvocation("create-file-user", subActionReport, subject);
+        CommandInvocation invocation = commandRunner.getCommandInvocation("create-file-user", subActionReport, subject, 
+                false);
          
         ParameterMap parameters = new ParameterMap();
         parameters.add("groups", "fang");

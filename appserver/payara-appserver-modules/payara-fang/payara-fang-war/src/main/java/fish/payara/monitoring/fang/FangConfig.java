@@ -60,9 +60,7 @@ public class FangConfig extends Application {
     }
 
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(fish.payara.monitoring.fang.resource
-                .FangStateResource.class);
-        resources.add(fish.payara.monitoring.fang.resource
-                .MBeanReadResource.class);
+        resources.add(fish.payara.monitoring.fang.resource.FangStateResource.class);
+        resources.add(fish.payara.monitoring.fang.resource.MBeanReadResource.class);
     }
 }

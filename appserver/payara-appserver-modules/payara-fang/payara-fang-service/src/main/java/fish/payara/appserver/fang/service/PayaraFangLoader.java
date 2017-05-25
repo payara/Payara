@@ -49,7 +49,6 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.SystemApplications;
 import com.sun.enterprise.v3.server.ApplicationLoaderService;
 import fish.payara.appserver.fang.service.adapter.PayaraFangAdapter;
-import fish.payara.appserver.fang.service.adapter.PayaraFangAdapterState;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.List;
@@ -141,7 +140,6 @@ public class PayaraFangLoader extends Thread {
             
             loadApplication();
         } catch (Exception ex) {
-            payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_REGISTERED);
             LOGGER.log(Level.WARNING, "Problem while attempting to register or load Payara Fang!", ex);
         }
     }
@@ -151,8 +149,6 @@ public class PayaraFangLoader extends Thread {
      * @throws Exception 
      */
     private void createAndRegisterApplication() throws Exception {
-        // Update the adapter state
-        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.REGISTERING);
         LOGGER.log(Level.FINE, "Registering the Payara Fang Application...");
 
         // Create the system application entry and application-ref in the config
@@ -210,14 +206,10 @@ public class PayaraFangLoader extends Thread {
         Server server = domain.getServerNamed(serverEnv.getInstanceName());
         ConfigSupport.apply(code, domain.getSystemApplications(), server);
 
-        // Update the adapter state
-        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
         LOGGER.log(Level.FINE, "Payara Fang Registered.");
     }
     
     private void registerApplication() throws Exception {
-        // Update the adapter state
-        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.REGISTERING);
         LOGGER.log(Level.FINE, "Registering the Payara Fang Application...");
 
         // Create the application-ref entry in the domain.xml
@@ -254,7 +246,6 @@ public class PayaraFangLoader extends Thread {
         ConfigSupport.apply(code, domain.getSystemApplications(), server);
 
         // Update the adapter state
-        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
         LOGGER.log(Level.FINE, "Payara Fang Registered.");
     }
 
@@ -278,7 +269,7 @@ public class PayaraFangLoader extends Thread {
         ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
         ApplicationInfo appInfo = appRegistry.get(applicationName);
         if (appInfo != null && appInfo.isLoaded()) {
-            payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADED);
+            LOGGER.log(Level.FINE, "Payara Fang already loaded.");
             return;
         }
         
@@ -293,18 +284,16 @@ public class PayaraFangLoader extends Thread {
         if (config == null) {
             throw new IllegalStateException("Payara Fang has no system app entry!");
         }
-        
-        // Update adapter state
-        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADING);
 
         // Load the Payara Fang Application
         String instanceName = serverEnv.getInstanceName();
         ApplicationRef ref = domain.getApplicationRefInServer(instanceName, applicationName);
         habitat.getService(ApplicationLoaderService.class).processApplication(config, ref);
 
-        // Update adapter state and mark as registered
-        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.LOADED);
+        // Mark as registered
         payaraFangAdapter.setAppRegistered(true);
+        
+        LOGGER.log(Level.FINE, "Payara Fang Loaded.");
     }
     
     private void checkAndResolveApplicationName(SystemApplications systemApplications) {
@@ -348,8 +337,6 @@ public class PayaraFangLoader extends Thread {
     private void reconfigureSystemApplication() throws Exception {
         Application systemApplication = payaraFangAdapter.getSystemApplicationConfig();
         
-        // Update the adapter state
-        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.RECONFIGURING);
         LOGGER.log(Level.FINE, "Reconfiguring the Payara Fang Application...");        
 
         // Reconfigure the system-application entry in the domain.xml
@@ -365,8 +352,6 @@ public class PayaraFangLoader extends Thread {
         
         ConfigSupport.apply(code, systemApplication);
 
-        // Update the adapter state
-        payaraFangAdapter.setStateMsg(PayaraFangAdapterState.NOT_LOADED);
         LOGGER.log(Level.FINE, "Payara Fang Reconfigured.");
     }
 }

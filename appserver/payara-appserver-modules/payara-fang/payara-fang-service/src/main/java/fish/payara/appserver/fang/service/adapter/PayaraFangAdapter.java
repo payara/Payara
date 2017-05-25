@@ -40,7 +40,6 @@
 
 package fish.payara.appserver.fang.service.adapter;
 
-import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -51,10 +50,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +64,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.event.Events;
 import org.glassfish.grizzly.http.Method;
-import org.glassfish.grizzly.http.io.OutputBuffer;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
@@ -83,7 +79,6 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public final class PayaraFangAdapter extends HttpHandler implements Adapter {
-    private PayaraFangAdapterState stateMsg = PayaraFangAdapterState.UNINITIALISED;
     private boolean isRegistered = false;
     private boolean appRegistered = false;
     private ResourceBundle bundle;
@@ -134,10 +129,7 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         // If the app exists in the domain.xml AND it's registered to this instance
         if (appExistsInConfig() && (domain.getSystemApplicationReferencedFrom(env.getInstanceName(), 
                 fangServiceConfiguration.getApplicationName()) != null)) {
-            setStateMsg(PayaraFangAdapterState.NOT_LOADED);
             setAppRegistered(true);
-        } else {
-            setStateMsg(PayaraFangAdapterState.NOT_REGISTERED);
         }
     }
     
@@ -199,15 +191,6 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         return application;
     }
     
-    public PayaraFangAdapterState getStateMsg() {
-        return stateMsg;
-    }
-    
-    public void setStateMsg(PayaraFangAdapterState msg) {
-        stateMsg = msg;
-        logger.log(Level.FINE, msg.toString());
-    }
-    
     @Override
     public void service(Request request, Response response) throws Exception {
         bundle = getResourceBundle(request.getLocale());
@@ -230,8 +213,6 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
             return;
         }
         
-        logRequest(request);
-        
         if (isResourceRequest(request)) {
             try {
                 handleResourceRequest(request, response);
@@ -250,43 +231,6 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         }
         
         response.setContentType("text/html; charset=UTF-8");
-
-        String serverVersion = Version.getFullVersion();
-
-        if ("/testifbackendisready.html".equals(request.getRequestURI())) {
-            // Replace state token
-            String status = getStateMsg().getI18NKey();
-            try {
-                // Try to get a localized version of this key
-                status = bundle.getString(status);
-            } catch (MissingResourceException ex) {
-                // Use the non-localized String version of the status
-                status = getStateMsg().toString();
-            }
-            
-            String wkey = PayaraFangAdapterState.WELCOME_TO.getI18NKey();
-            
-            try {
-                // Try to get a localized version of this key
-                serverVersion = bundle.getString(wkey) + " " + serverVersion + ".";
-            } catch (MissingResourceException ex) {
-                // Use the non-localized String version of the status
-                serverVersion = PayaraFangAdapterState.WELCOME_TO.toString() + " " + serverVersion + ".";
-            }
-            
-            status += "\n" + serverVersion;
-            
-            try {
-                OutputBuffer ob = getOutputBuffer(response);
-                byte[] bytes = (":::" + status).getBytes("UTF-8");
-                response.setContentLength(bytes.length);
-                ob.write(bytes, 0, bytes.length);
-                ob.flush();
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, "Unable to serve resource: {0}. Cause: {1}", ex);
-            }
-        }       
-        // TODO: Handle application not being there
     }
     
     private ResourceBundle getResourceBundle(Locale locale) {
@@ -309,18 +253,6 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
         }
         
         return sb.toString();
-    }
-
-    private void logRequest(Request request) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "PayaraFangAdapter's STATE IS: {0}", getStateMsg());
-            logger.log(Level.FINE, "Current Thread: {0}", Thread.currentThread().getName());
-            
-            for (final String name : request.getParameterNames()) {
-                final String values = Arrays.toString(request.getParameterValues(name));
-                logger.log(Level.FINE, "Parameter name: {0} values: {1}", new Object[]{name, values});
-            }
-        }
     }
     
     private boolean isResourceRequest(Request request) {
@@ -374,13 +306,6 @@ public final class PayaraFangAdapter extends HttpHandler implements Adapter {
             byteArrayOutputStream.writeTo(outputStream);
             outputStream.flush();
         }
-    }
-    
-    private OutputBuffer getOutputBuffer(Response response) {
-        response.setStatus(202);
-        response.setContentType("text/html");
-        response.setCharacterEncoding("UTF-8");
-        return response.getOutputBuffer();
     }
     
     @Override

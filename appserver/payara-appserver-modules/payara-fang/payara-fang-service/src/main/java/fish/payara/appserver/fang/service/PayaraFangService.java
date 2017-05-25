@@ -149,7 +149,7 @@ public class PayaraFangService implements ConfigListener {
                                     payaraFangConfiguration);
                             contextRoot = endpointDecider.getContextRoot();
                         }
-                    } else if (!propertyChangeEvent.getPropertyName().equals("securityEnabled")) {
+                    } else if (!propertyChangeEvent.getPropertyName().equals("security-enabled")) {
                         // If a startup has been attempted and the changed property isn't securityEnabled, throw an 
                         // unprocessed change event as we need to restart
                         unprocessedChanges.add(new UnprocessedChangeEvent(propertyChangeEvent, 
