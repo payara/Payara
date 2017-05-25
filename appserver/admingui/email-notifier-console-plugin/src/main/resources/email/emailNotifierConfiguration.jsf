@@ -67,8 +67,11 @@ holder.
                helpText="$resource{i18nemn.notifier.email.configuration.pageHelpText}" >
         <sun:button id = "test" text="$resource{i18nemn.notifier.email.buttons.test}">
             <!command
+                mapCopy(source="#{pageSession.valueMap}" dest="#{pageSession.attrsMap}");
+                mapRemove(map="#{pageSession.attrsMap}" key="enabled");
+                mapRemove(map="#{pageSession.attrsMap}" key="dynamic");
                 gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-email-notifier-configuration?target=#{pageSession.configName}" method="GET" 
-                    attrs="#{pageSession.valueMap}" result="#{requestScope.result}");
+                    attrs="#{pageSession.attrsMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
                     prepareAlertMsg(summary="$resource{i18nemn.notifier.email.msg.success}", type="success");
                 } 

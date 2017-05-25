@@ -72,9 +72,12 @@ holder.
     <sun:title id="propertyContentPage" title="$resource{i18nxn.notifier.xmpp.configuration.pageTitle}" 
                helpText="$resource{i18nxn.notifier.xmpp.configuration.pageHelpText}" >
         <sun:button id = "test" text="$resource{i18nxn.notifier.xmpp.buttons.test}">
-            <!command 
+            <!command
+                mapCopy(source="#{pageSession.valueMap}" dest="#{pageSession.attrsMap}");
+                mapRemove(map="#{pageSession.attrsMap}" key="enabled");
+                mapRemove(map="#{pageSession.attrsMap}" key="dynamic");
                 gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-xmpp-notifier-configuration?target=#{pageSession.configName}" method="GET" 
-                    attrs="#{pageSession.valueMap}" result="#{requestScope.result}");
+                    attrs="#{pageSession.attrsMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
                     prepareAlertMsg(summary="$resource{i18nxn.notifier.xmpp.msg.success}", type="success");
                 } 

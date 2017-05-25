@@ -37,27 +37,31 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.notification;
+package fish.payara.admingui.extras;
 
-import javax.inject.Inject;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.internal.api.Target;
+import com.sun.jsftemplating.annotation.Handler;
+import com.sun.jsftemplating.annotation.HandlerInput;
+import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import java.util.Map;
 
 /**
- * Superclass for testing of notifiers. This is not part of the test suite, and
- * is instead used after configuring a notifier to make sure that it is working
- * and will be used by end users.
+ *
  * @author jonathan coustick
  */
-public abstract class TestNotifier implements AdminCommand {
+public class PayaraUtilHandlers {
     
-    @Param(name = "target", optional = true, defaultValue = "server")
-    protected String target;
-    
-    @Inject
-    protected Target targetUtil;
-    
-    protected static final String SUBJECT = "Payara Notifier Test";    
+    /**
+     * 
+     * @param context 
+     */
+    @Handler(id = "mapRemove",
+            input={@HandlerInput(name="map", type = Map.class, required=true),
+                @HandlerInput(name="key", type=Object.class, required=true)
+            })
+    public static void mapRemove(HandlerContext context){
+        Map map = (Map) context.getInputValue("map");
+        Object key = context.getInputValue("key");
+        map.remove(key);
+    }
     
 }
