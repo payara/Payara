@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] Payara Foundation and/or affiliates
 -->
 
 <!-- full/adminObjectAttr.inc -->
@@ -64,7 +65,11 @@
 
         <sun:property id="userProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.user}" helpText="$resource{i18njmail.javaMail.userHelp}">
             <sun:textField id="user" styleClass="required" text="#{pageSession.valueMap['user']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.javaMail.user']}" required="#{true}" /> 
-        </sun:property>   
+        </sun:property>
+                
+        <sun:property id="passwordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.password}" helpText="$resource{i18njmail.javaMail.passwordHelp}">
+            <sun:textField id="password" styleClass="required" text="#{pageSession.valueMap['password']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.javaMail.password']}" required="#{false}" /> 
+        </sun:property> 
 
         <sun:property id="fromProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.returnAddr}" helpText="$resource{i18njmail.javaMail.returnAddrHelp}">
             <sun:textField id="from" styleClass="required" text="#{pageSession.valueMap['from']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.javaMail.returnAddr']}" required="#{true}" /> 

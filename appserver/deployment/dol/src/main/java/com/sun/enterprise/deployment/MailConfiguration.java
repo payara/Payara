@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment;
@@ -66,6 +68,7 @@ public class MailConfiguration implements Serializable {
                                                     "mail.transport.protocol";
     private static final String MAIL_HOST = "mail.host";
     private static final String MAIL_USER = "mail.user";
+    private static final String MAIL_PASSWORD = "mail.password";
     private static final String MAIL_FROM = "mail.from";
     private static final String MAIL_DEBUG = "mail.debug";
 
@@ -73,6 +76,7 @@ public class MailConfiguration implements Serializable {
     private static final String MAIL_SUFFIX_CLASS = ".class";
     private static final String MAIL_SUFFIX_HOST = ".host";
     private static final String MAIL_SUFFIX_USER = ".user";
+    private static final String MAIL_SUFFIX_PASSWORD = ".password";
     private static final char MAIL_DELIM = '.';
 
     /**
@@ -87,6 +91,7 @@ public class MailConfiguration implements Serializable {
     private String transportProtocolClass = null;
     private String mailHost = null;
     private String username = null;
+    private String password = null;
     private String mailFrom = null;
     private boolean debug = false;
 
@@ -149,6 +154,7 @@ public class MailConfiguration implements Serializable {
         transportProtocolClass = mailResource.getTransportProtocolClass();
         mailHost = mailResource.getMailHost();
         username = mailResource.getUsername();
+        password = mailResource.getPassword();
         mailFrom = mailResource.getMailFrom();
         debug = mailResource.isDebug();
         if (_logger.isLoggable(Level.FINE)) {
@@ -158,25 +164,29 @@ public class MailConfiguration implements Serializable {
             _logger.fine("transportProtocolClass " + transportProtocolClass);
             _logger.fine("mailHost " + mailHost);
             _logger.fine("username " + username);
+            _logger.fine("password has been set.");//Not displayed
             _logger.fine("mailFrom " + mailFrom);
             _logger.fine("debug " + debug);
         }
 
         // JavaMail doesn't default this one properly
-        if (transportProtocol == null)
+        if (transportProtocol == null){
             transportProtocol = "smtp";
-
+        }
         // Save to Property list
         put(MAIL_HOST, mailHost);
         put(MAIL_USER, username);
+        put(MAIL_PASSWORD, password);
         put(MAIL_STORE_PROTOCOL, storeProtocol);
         put(MAIL_TRANSPORT_PROTOCOL, transportProtocol);
-        if (storeProtocol != null)
+        if (storeProtocol != null){
             put(MAIL_PREFIX + storeProtocol + MAIL_SUFFIX_CLASS,
                                                         storeProtocolClass);
-        if (transportProtocol != null)
+        }
+        if (transportProtocol != null){
             put(MAIL_PREFIX + transportProtocol + MAIL_SUFFIX_CLASS,
                                                         transportProtocolClass);
+        }
         put(MAIL_FROM, mailFrom);
         put(MAIL_DEBUG, (debug ? "true" : "false"));
 
@@ -188,12 +198,13 @@ public class MailConfiguration implements Serializable {
             String name = property.getName();
             String value = (String)property.getValue();
 
-            if (name.startsWith(PROP_NAME_PREFIX_LEGACY))
+            if (name.startsWith(PROP_NAME_PREFIX_LEGACY)){
                 name = name.replace(PROP_NAME_DELIM_LEGACY, MAIL_DELIM);
-
+            }
             put(name, value);
-            if (_logger.isLoggable(Level.FINE))
+            if (_logger.isLoggable(Level.FINE)){
                 _logger.fine("mail property: " + name + " = " + value);
+            }
         }
     }
 
@@ -214,6 +225,14 @@ public class MailConfiguration implements Serializable {
      */
     public String getUsername() {
 	return this.username;
+    }
+    
+    /**
+     * Get the password for the mail session the server will provide.
+     * @return the password.
+     */
+    public String getPassword(){
+        return this.password;
     }
     
     /** 

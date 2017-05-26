@@ -62,6 +62,9 @@ public class MailSessionAuthenticator extends Authenticator {
         String protocol = getRequestingProtocol();
         if(protocol != null) {
             String password = props.getProperty("mail." + protocol + ".password");
+            if (password == null){
+                password = props.getProperty("mail.password");
+            }
             String username = getDefaultUserName();
             if(password != null && username != null) {
                 authenticator = new PasswordAuthentication(username, password);

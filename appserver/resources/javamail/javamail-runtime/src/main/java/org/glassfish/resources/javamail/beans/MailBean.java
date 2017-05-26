@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.beans;
@@ -45,13 +47,14 @@ import org.glassfish.resources.api.JavaEEResource;
 import org.glassfish.resources.api.JavaEEResourceBase;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
+//Renamed from MailResource to avoid confusion with org.glassfish.resources.javamail.config.MailResource
 /**
- * Resource info for MailResource.
+ * Resource info for MailBean.
  * IASRI #4650786
  *
  * @author James Kong
  */
-public class MailResource extends JavaEEResourceBase implements MailResourceIntf {
+public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
 
     private String resType_;
     private String factoryClass_;
@@ -62,15 +65,16 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
     private String transportProtocolClass_;
     private String mailHost_;
     private String username_;
+    private String password_;
     private String mailFrom_;
     private boolean debug_;
 
-    public MailResource(ResourceInfo resourceInfo) {
+    public MailBean(ResourceInfo resourceInfo) {
         super(resourceInfo);
     }
 
     protected JavaEEResource doClone(ResourceInfo resourceInfo) {
-        MailResource clone = new MailResource(resourceInfo);
+        MailBean clone = new MailBean(resourceInfo);
         clone.setResType(getResType());
         clone.setFactoryClass(getFactoryClass());
         return clone;
@@ -147,6 +151,14 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
 
     public void setUsername(String username) {
         username_ = username;
+    }
+    
+    public String getPassword() {
+        return password_;
+    }
+    
+    public void setPassword(String password) {
+        password_ = password;
     }
 
     public String getMailFrom() {

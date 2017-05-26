@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
  package com.sun.enterprise.deployment.interfaces;
@@ -45,12 +47,12 @@
  public interface MailResourceIntf { 
 	
     public String getName();
+
+    public String getDescription();
 	
-	public String getDescription();
+    public boolean isEnabled();
 	
-	public boolean isEnabled();
-	
-	public Set getProperties();
+    public Set getProperties();
 	
     public int getType();
     
@@ -69,6 +71,8 @@
     public String getMailHost();
     
     public String getUsername();
+    
+    public String getPassword();
     
     public String getMailFrom();
 

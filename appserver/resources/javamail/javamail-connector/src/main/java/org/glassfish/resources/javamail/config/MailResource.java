@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.config;
@@ -191,6 +193,22 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      */
     public void setUser(String value) throws PropertyVetoException;
 
+    /**
+     * Gets the value of the password property
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute
+    public String getPassword();
+    
+    /**
+     * Sets the value of the password property
+     * 
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setPassword(String value) throws PropertyVetoException;
+    
     /**
      * Gets the value of the from property.
      *
