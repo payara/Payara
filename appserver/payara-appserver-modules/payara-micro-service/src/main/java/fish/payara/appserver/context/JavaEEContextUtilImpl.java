@@ -85,7 +85,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     /**
      * pushes Java EE invocation context
      *
-     * @return old ClassLoader, or null if no invocation has been created
+     * @return the new context
      */
     @Override
     public Context pushContext() {
@@ -101,16 +101,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         if(invocationCreated) {
             Utility.setContextClassLoader(getInvocationClassLoader());
         }
-        return new ContextImpl.Context(oldClassLoader, invocationCreated? invMgr.getCurrentInvocation() : null);
-    }
-
-    @Override
-    public void popContext(Context _ctx) {
-        ContextImpl.Context ctx = (ContextImpl.Context)_ctx;
-        if (ctx.invocation != null) {
-            getServerContext().getInvocationManager().postInvoke(ctx.invocation);
-            Utility.setContextClassLoader(ctx.classLoader);
-        }
+        return new ContextImpl.Context(oldClassLoader, invocationCreated? invMgr.getCurrentInvocation() : null, invMgr);
     }
 
     /**
@@ -120,7 +111,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
      * @return new context that was created
      */
     @Override
-    public RequestContext pushRequestContext() {
+    public Context pushRequestContext() {
         Context rootCtx = pushContext();
         BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
         ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<String, Object>());
@@ -129,21 +120,6 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             context.ctx.activate();
         }
         return context;
-    }
-
-    /**
-     * context to pop from the stack
-     *
-     * @param context to be popped
-     */
-    @Override
-    public void popRequestContext(RequestContext context) {
-        ContextImpl.RequestContext ctx = (ContextImpl.RequestContext)context;
-        if (ctx.ctx!= null) {
-            ctx.ctx.deactivate();
-            ctx.ctx.dissociate(ctx.storage);
-        }
-        popContext(ctx.rootCtx);
     }
 
     /**

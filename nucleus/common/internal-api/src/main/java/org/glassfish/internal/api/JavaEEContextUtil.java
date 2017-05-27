@@ -49,32 +49,21 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface JavaEEContextUtil {
     /**
-     * pushes Java EE invocation context
+     * pushes Java EE invocation context onto the invocation stack
+     * use Lombok @Cleanup or try-with-resources to pop the context
      *
-     * @return old ClassLoader, or null if no invocation has been created
+     * @return the new context that was created
      */
     Context pushContext();
 
     /**
      * pushes invocation context onto the stack
      * Also creates Request scope
+     * use Lombok @Cleanup or try-with-resources to pop the context
      *
      * @return new context that was created
      */
-    RequestContext pushRequestContext();
-
-    /**
-     * context to pop from the stack
-     *
-     * @param ctx to be popped
-     */
-    void popContext(Context ctx);
-    /**
-     * context to pop from the stack
-     *
-     * @param context to be popped
-     */
-    void popRequestContext(RequestContext context);
+    Context pushRequestContext();
 
     /**
      * set context class loader by internal state of this instance
@@ -100,10 +89,13 @@ public interface JavaEEContextUtil {
      */
     ClassLoader getInvocationClassLoader();
     /**
-     * @return component ID for this instance
+     * @return component ID for the current invocation (not this instance), not null
      */
     String getInvocationComponentId();
 
-    interface Context {};
-    interface RequestContext {};
+    interface Context extends Closeable {};
+    interface Closeable extends AutoCloseable {
+        @Override
+        public void close();
+    }
 }

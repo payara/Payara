@@ -41,7 +41,6 @@ package fish.payara.nucleus.hazelcast.contextproxy;
 
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
-import org.glassfish.internal.api.JavaEEContextUtil.RequestContext;
 import java.util.Collection;
 import java.util.Map;
 import javax.cache.Cache;
@@ -52,6 +51,7 @@ import javax.cache.integration.CacheLoader;
 import javax.cache.integration.CacheLoaderException;
 import javax.cache.integration.CacheWriter;
 import javax.cache.integration.CacheWriterException;
+import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -80,15 +80,9 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         return new Factory<CacheLoader<K, V>>() {
             @Override
             public CacheLoader<K, V> create() {
-                Context ctx = null;
-                try {
-                    ctx = ctxUtil.pushContext();
-                    final CacheLoader<K, V> loader = fact.create();
-                    return new CacheLoaderImpl(loader);
-                }
-                finally {
-                    ctxUtil.popContext(ctx);
-                }
+                @Cleanup Context ctx = ctxUtil.pushContext();
+                final CacheLoader<K, V> loader = fact.create();
+                return new CacheLoaderImpl(loader);
             }
             
             class CacheLoaderImpl implements CacheLoader<K, V> {
@@ -98,26 +92,14 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
 
                 @Override
                 public V load(K k) throws CacheLoaderException {
-                    RequestContext context = null;
-                    try {
-                        context = ctxUtil.pushRequestContext();
-                        return loader.load(k);
-                    }
-                    finally {
-                        ctxUtil.popRequestContext(context);
-                    }
+                    @Cleanup Context context = ctxUtil.pushRequestContext();
+                    return loader.load(k);
                 }
 
                 @Override
                 public Map<K, V> loadAll(Iterable<? extends K> itrbl) throws CacheLoaderException {
-                    RequestContext context = null;
-                    try {
-                        context = ctxUtil.pushRequestContext();
-                        return loader.loadAll(itrbl);
-                    }
-                    finally {
-                        ctxUtil.popRequestContext(context);
-                    }
+                    @Cleanup Context context = ctxUtil.pushRequestContext();
+                    return loader.loadAll(itrbl);
                 }
 
                 private final CacheLoader<K, V> loader;
@@ -131,66 +113,36 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         return new Factory<CacheWriter<? super K, ? super V>>() {
             @Override
             public CacheWriter<K, V> create() {
-                Context ctx = null;
-                try {
-                    ctx = ctxUtil.pushContext();
-                    @SuppressWarnings("unchecked")
-                    final CacheWriter<K, V> delegate = (CacheWriter<K, V>) fact.create();
-                    return new CacheWriterImpl(delegate);
-                }
-                finally {
-                    ctxUtil.popContext(ctx);
-                }
+                @Cleanup Context ctx = ctxUtil.pushContext();
+                @SuppressWarnings("unchecked")
+                final CacheWriter<K, V> delegate = (CacheWriter<K, V>) fact.create();
+                return new CacheWriterImpl(delegate);
             }
 
             @RequiredArgsConstructor
             class CacheWriterImpl implements CacheWriter<K, V> {
                 @Override
                 public void write(Cache.Entry<? extends K, ? extends V> entry) throws CacheWriterException {
-                    RequestContext context = null;
-                    try {
-                        context = ctxUtil.pushRequestContext();
-                        delegate.write(entry);
-                    }
-                    finally {
-                        ctxUtil.popRequestContext(context);
-                    }
+                    @Cleanup Context context = ctxUtil.pushRequestContext();
+                    delegate.write(entry);
                 }
 
                 @Override
                 public void writeAll(Collection<Cache.Entry<? extends K, ? extends V>> clctn) throws CacheWriterException {
-                    RequestContext context = null;
-                    try {
-                        context = ctxUtil.pushRequestContext();
-                        delegate.writeAll(clctn);
-                    }
-                    finally {
-                        ctxUtil.popRequestContext(context);
-                    }
+                    @Cleanup Context context = ctxUtil.pushRequestContext();
+                    delegate.writeAll(clctn);
                 }
 
                 @Override
                 public void delete(Object o) throws CacheWriterException {
-                    RequestContext context = null;
-                    try {
-                        context = ctxUtil.pushRequestContext();
-                        delegate.delete(o);
-                    }
-                    finally {
-                        ctxUtil.popRequestContext(context);
-                    }
+                    @Cleanup Context context = ctxUtil.pushRequestContext();
+                    delegate.delete(o);
                 }
 
                 @Override
                 public void deleteAll(Collection<?> clctn) throws CacheWriterException {
-                    RequestContext context = null;
-                    try {
-                        context = ctxUtil.pushRequestContext();
-                        delegate.deleteAll(clctn);
-                    }
-                    finally {
-                        ctxUtil.popRequestContext(context);
-                    }
+                    @Cleanup Context context = ctxUtil.pushRequestContext();
+                    delegate.deleteAll(clctn);
                 }
 
                 private final CacheWriter<K, V> delegate;

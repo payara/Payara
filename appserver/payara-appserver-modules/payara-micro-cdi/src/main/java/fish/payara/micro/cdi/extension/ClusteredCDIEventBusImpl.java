@@ -161,8 +161,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                 return;
         }
 
-        Context ctx = ctxUtil.pushContext();
-        try {
+        try(Context ctx = ctxUtil.pushContext()) {
             managedExecutorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -204,8 +203,6 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                     }
                 }
             });
-        } finally {
-            ctxUtil.popContext(ctx);
         }
     }
 
