@@ -112,7 +112,6 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.LogFacade;
-import org.glassfish.ejb.api.EJBInvocation;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
