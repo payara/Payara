@@ -51,7 +51,6 @@
   
   <groupId>fish.payara.micro</groupId>
   <artifactId>payara-micro</artifactId>
-  <version>4.1.2.173-SNAPSHOT</version>
   <name>Payara Micro Distribution</name>
   <packaging>jar</packaging>
 
