@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 /*
  * ApplicationHandlers.java
@@ -735,12 +735,13 @@ public class ApplicationHandlers {
         String appType = "other";
         if (! GuiUtil.isEmpty(snifferMap.get("web"))){
             appType="war";
-        }if (! GuiUtil.isEmpty(snifferMap.get("ejb"))){
+        } else
+        if (! GuiUtil.isEmpty(snifferMap.get("ejb"))){
             appType="ejb";
-        }else
+        } else
         if (! GuiUtil.isEmpty(snifferMap.get("connector"))){
             appType="rar";
-        }else
+        } else
         if (! GuiUtil.isEmpty(snifferMap.get("appclient"))){
             appType="appclient";
         }
