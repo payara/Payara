@@ -1791,11 +1791,21 @@ public final class StatefulSessionContainer
         if( allowSerializedAccess ) {
 
             // Check for loopback call to avoid deadlock.
+            
+            // TODO: It's not entirely clear why this check is there, since the StatefulWriteLock is a
+            //       a reentrant lock that is only granted to the current thread. holdCount > 1
+            //       can only be true if the same thread holds the lock, but why would this deadlock?
+            //       What is this exactly protecting against?
             if( sc.getStatefulWriteLock().getHoldCount() > 1 ) {
-
-                throw new IllegalLoopbackException("Illegal Reentrant Access : Attempt to make " +
-                        "a loopback call on method '" + inv.beanMethod + " for stateful session bean " +
-                        ejbDescriptor.getName());
+                
+                String calleeEjbName = inv.invocationInfo.ejbName;
+                String callerEjbName = getCallerEjbName();
+                
+                if (!calleeEjbName.equals(callerEjbName)) {
+                    throw new IllegalLoopbackException("Illegal Reentrant Access : Attempt to make " +
+                            "a loopback call on method '" + inv.beanMethod + " for stateful session bean " +
+                            ejbDescriptor.getName());
+                }
             }
 
         } else {
@@ -1814,6 +1824,16 @@ public final class StatefulSessionContainer
                 throw new EJBException(conEx);
             }
         }
+    }
+    
+    private String getCallerEjbName() {
+        // Current invocation represents the invocation of the bean (if any) that calls this container 
+        ComponentInvocation callerInvocation = invocationManager.getCurrentInvocation();
+        if (callerInvocation instanceof EjbInvocation) {
+            return ((EjbInvocation) callerInvocation).invocationInfo.ejbName;
+        }
+        
+        return null;
     }
 
     protected void postInvokeTx(EjbInvocation inv) throws Exception {

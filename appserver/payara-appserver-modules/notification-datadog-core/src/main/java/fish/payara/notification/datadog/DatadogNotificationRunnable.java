@@ -76,7 +76,7 @@ public class DatadogNotificationRunnable extends NotificationRunnable<DatadogMes
                     ObjectMapper objectMapper = new ObjectMapper();
                     objectMapper.writeValue(outputStream, message);
 
-                    if (connection.getResponseCode() < 200 && connection.getResponseCode() >= 300) {
+                    if (connection.getResponseCode() < 200 || connection.getResponseCode() >= 300) {
                         logger.log(Level.SEVERE, "Error occurred while connecting Datadog. " +
                                 "Check your parameters. HTTP response code: " + connection.getResponseCode());
                     }
