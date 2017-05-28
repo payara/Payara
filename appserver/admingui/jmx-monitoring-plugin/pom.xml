@@ -50,7 +50,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
   <artifactId>jmx-monitoring-plugin</artifactId>
   <packaging>glassfish-jar</packaging>
-  <version>4.1.2.173-SNAPSHOT</version>
 
   <name>JMX Monitoring Plugin</name>
 
