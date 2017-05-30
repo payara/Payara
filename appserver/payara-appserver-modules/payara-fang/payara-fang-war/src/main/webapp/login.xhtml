@@ -42,19 +42,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html">
     <h:head>
-        <title>Login Form</title>
+        <title>Payara Fang Login</title>
     </h:head>
     <h:body>
-        <h2>Hello, please log in:</h2>
         <form name="loginForm" method="POST" action="rest">
-            <p><strong>Please type your user name: </strong>
+            <p><strong>Username: </strong>
                 <input type="text" name="j_username" size="25"/></p>
-            <p><strong>Please type your password: </strong>
+            <p><strong>Password: </strong>
                 <input type="password" size="15" name="j_password"/></p>
-            <p>
-                <input type="submit" value="Submit"/>
-                <input type="reset" value="Reset"/></p>
-        </form>       
-    </h:body>
+            <p><input type="submit" value="Submit"/></p>
+        </form>
+    </h:body>  
 </html>
 
