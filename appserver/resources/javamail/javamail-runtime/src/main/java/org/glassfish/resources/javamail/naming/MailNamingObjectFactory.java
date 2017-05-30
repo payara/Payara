@@ -75,7 +75,6 @@ public class MailNamingObjectFactory implements ObjectFactory {
 
         // Note: javax.mail.Session is not serializable,
         // but we need to get a new instance on every lookup.
-        
         Properties props = config.getMailProperties();
         javax.mail.Session s = javax.mail.Session.getInstance(props, new MailSessionAuthenticator(props));
         if("smtps".equals(props.getProperty("mail.transport.protocol"))) {
