@@ -67,12 +67,14 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
     private String username_;
     private String password_;
     private String mailFrom_;
+    private boolean auth_;
     private boolean debug_;
 
     public MailBean(ResourceInfo resourceInfo) {
         super(resourceInfo);
     }
 
+    @Override
     protected JavaEEResource doClone(ResourceInfo resourceInfo) {
         MailBean clone = new MailBean(resourceInfo);
         clone.setResType(getResType());
@@ -81,14 +83,17 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
     }
 
     //unused implementation ie., com.sun.enterprise.deployment.MailConfiguration uses this, but is unused in-turn.
+    @Override
     public String getName() {
         return getResourceInfo().getName();
     }
 
+    @Override
     public int getType() {
         return JavaEEResource.MAIL_RESOURCE;
     }
 
+    @Override
     public String getResType() {
         return resType_;
     }
@@ -97,6 +102,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         resType_ = resType;
     }
 
+    @Override
     public String getFactoryClass() {
         return factoryClass_;
     }
@@ -105,6 +111,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         factoryClass_ = factoryClass;
     }
 
+    @Override
     public String getStoreProtocol() {
         return storeProtocol_;
     }
@@ -113,6 +120,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         storeProtocol_ = storeProtocol;
     }
 
+    @Override
     public String getStoreProtocolClass() {
         return storeProtocolClass_;
     }
@@ -121,6 +129,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         storeProtocolClass_ = storeProtocolClass;
     }
 
+    @Override
     public String getTransportProtocol() {
         return transportProtocol_;
     }
@@ -129,6 +138,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         transportProtocol_ = transportProtocol;
     }
 
+    @Override
     public String getTransportProtocolClass() {
         return transportProtocolClass_;
     }
@@ -137,6 +147,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         transportProtocolClass_ = transportProtocolClass;
     }
 
+    @Override
     public String getMailHost() {
         return mailHost_;
     }
@@ -145,6 +156,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         mailHost_ = mailHost;
     }
 
+    @Override
     public String getUsername() {
         return username_;
     }
@@ -153,6 +165,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         username_ = username;
     }
     
+    @Override
     public String getPassword() {
         return password_;
     }
@@ -160,7 +173,17 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
     public void setPassword(String password) {
         password_ = password;
     }
-
+    
+    @Override
+    public boolean getAuth(){
+        return auth_;
+    }
+    
+    public void setAuth(boolean auth){
+        auth_ = auth;
+    }
+    
+    @Override
     public String getMailFrom() {
         return mailFrom_;
     }
@@ -169,6 +192,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         mailFrom_ = mailFrom;
     }
 
+    @Override
     public boolean isDebug() {
         return debug_;
     }
@@ -177,6 +201,7 @@ public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
         debug_ = debug;
     }
 
+    @Override
     public String toString() {
         return "< Mail Resource : " + getResourceInfo() + " , " + getResType() + "... >";
     }

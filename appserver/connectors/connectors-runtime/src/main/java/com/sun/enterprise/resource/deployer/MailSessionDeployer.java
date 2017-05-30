@@ -472,6 +472,18 @@ public class MailSessionDeployer implements ResourceDeployer {
         }
         
         @Override
+        public String getAuth(){
+            return desc.getAuth();
+        }
+        
+        @Override
+        public void setAuth(String value) throws PropertyVetoException {
+            //do nothing
+        }
+        
+
+        
+        @Override
         public String getFrom() {
             return desc.getFrom();
         }

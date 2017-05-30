@@ -68,9 +68,13 @@
         </sun:property>
                 
         <sun:property id="passwordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.password}" helpText="$resource{i18njmail.javaMail.passwordHelp}">
-            <sun:textField id="password" styleClass="required" text="#{pageSession.valueMap['password']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.javaMail.password']}" required="#{false}" /> 
+            <sun:textField id="password" text="#{pageSession.valueMap['password']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.javaMail.password']}" required="#{false}" /> 
         </sun:property> 
 
+        <sun:property id="authProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.auth}"  helpText="$resource{i18njmail.javaMail.authHelp}">
+            <sun:checkbox selected="#{pageSession.valueMap['auth']}" label="$resource{i18n.common.Enabled}" selectedValue="true"/>
+       </sun:property>
+                
         <sun:property id="fromProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.returnAddr}" helpText="$resource{i18njmail.javaMail.returnAddrHelp}">
             <sun:textField id="from" styleClass="required" text="#{pageSession.valueMap['from']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.javaMail.returnAddr']}" required="#{true}" /> 
         </sun:property>   

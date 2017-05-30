@@ -80,7 +80,7 @@
     setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedName}");
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
 
-    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "debug"});
+    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "debug", "auth"});
     setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
     gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
     setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");

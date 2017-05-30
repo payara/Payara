@@ -195,6 +195,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
 
     /**
      * Gets the value of the password property
+     * 
      * @return possible object is
      *         {@link String }
      */
@@ -208,6 +209,23 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *              {@link String }
      */
     public void setPassword(String value) throws PropertyVetoException;
+    
+    /**
+     * Gets the value of the auth property
+     * 
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(dataType = Boolean.class)
+    public String getAuth();
+    
+    /**
+     * Sets the value of the auth property
+     * 
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setAuth(String value) throws PropertyVetoException;
     
     /**
      * Gets the value of the from property.

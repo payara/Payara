@@ -55,6 +55,7 @@ public class MailSessionDescriptor extends ResourceDescriptor {
     private String transportProtocol;
     private String user;
     private String password;
+    private String auth;
     private String host;
     private String from;
     private Properties properties = new Properties();
@@ -126,6 +127,14 @@ public class MailSessionDescriptor extends ResourceDescriptor {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+    
+    public String getAuth(){
+        return auth;
+    }
+    
+    public void setAuth(String auth){
+        this.auth = auth;
     }
 
     public String getHost() {

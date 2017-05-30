@@ -92,6 +92,9 @@ public class CreateJavaMailResource implements AdminCommand {
     @Param(name="password", optional=true)
     private String mailPassword;
     
+    @Param(name="auth", optional=true, defaultValue="false")
+    private Boolean auth;
+    
     @Param(name="fromaddress",alias="from")
     private String fromAddress;
 
@@ -148,6 +151,7 @@ public class CreateJavaMailResource implements AdminCommand {
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_HOST, mailHost);
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_USER, mailUser);
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_PASSWORD, mailPassword);
+        attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_AUTH, auth.toString());
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_FROM_ADDRESS, fromAddress);
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_STORE_PROTO, storeProtocol);
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_STORE_PROTO_CLASS, storeProtocolClass);

@@ -74,6 +74,8 @@
     
     public String getPassword();
     
+    public boolean getAuth();
+    
     public String getMailFrom();
 
     public boolean isDebug();

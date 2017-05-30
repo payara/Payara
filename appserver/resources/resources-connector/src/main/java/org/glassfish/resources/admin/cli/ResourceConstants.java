@@ -150,6 +150,8 @@ public final class ResourceConstants {
     
     public static final String MAIL_PASSWORD = "password";
 
+    public static final String MAIL_AUTH = "auth";
+    
     public static final String MAIL_FROM_ADDRESS = "from";
 
     public static final String MAIL_STORE_PROTO = "store-protocol";

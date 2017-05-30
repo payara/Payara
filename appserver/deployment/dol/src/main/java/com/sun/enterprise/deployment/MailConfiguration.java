@@ -77,6 +77,7 @@ public class MailConfiguration implements Serializable {
     private static final String MAIL_SUFFIX_HOST = ".host";
     private static final String MAIL_SUFFIX_USER = ".user";
     private static final String MAIL_SUFFIX_PASSWORD = ".password";
+    private static final String MAIL_SUFFIX_AUTH = ".auth";
     private static final char MAIL_DELIM = '.';
 
     /**
@@ -92,6 +93,7 @@ public class MailConfiguration implements Serializable {
     private String mailHost = null;
     private String username = null;
     private String password = null;
+    private boolean auth = false;
     private String mailFrom = null;
     private boolean debug = false;
 
@@ -155,6 +157,7 @@ public class MailConfiguration implements Serializable {
         mailHost = mailResource.getMailHost();
         username = mailResource.getUsername();
         password = mailResource.getPassword();
+        auth = mailResource.getAuth();
         mailFrom = mailResource.getMailFrom();
         debug = mailResource.isDebug();
         if (_logger.isLoggable(Level.FINE)) {
@@ -165,6 +168,7 @@ public class MailConfiguration implements Serializable {
             _logger.fine("mailHost " + mailHost);
             _logger.fine("username " + username);
             _logger.fine("password has been set.");//Not displayed
+            _logger.fine("auth" + auth);
             _logger.fine("mailFrom " + mailFrom);
             _logger.fine("debug " + debug);
         }
@@ -179,6 +183,7 @@ public class MailConfiguration implements Serializable {
         put(MAIL_PASSWORD, password);
         put(MAIL_STORE_PROTOCOL, storeProtocol);
         put(MAIL_TRANSPORT_PROTOCOL, transportProtocol);
+
         if (storeProtocol != null){
             put(MAIL_PREFIX + storeProtocol + MAIL_SUFFIX_CLASS,
                                                         storeProtocolClass);
@@ -186,6 +191,7 @@ public class MailConfiguration implements Serializable {
         if (transportProtocol != null){
             put(MAIL_PREFIX + transportProtocol + MAIL_SUFFIX_CLASS,
                                                         transportProtocolClass);
+            put(MAIL_PREFIX + transportProtocol + MAIL_SUFFIX_AUTH, Boolean.toString(auth));
         }
         put(MAIL_FROM, mailFrom);
         put(MAIL_DEBUG, (debug ? "true" : "false"));
@@ -233,6 +239,14 @@ public class MailConfiguration implements Serializable {
      */
     public String getPassword(){
         return this.password;
+    }
+    
+    /**
+     * Get whether authentication is enabled for the mail session the server will provide
+     * @return the authentication status. 
+     */
+    public boolean getAuth(){
+        return this.auth;
     }
     
     /** 

@@ -77,6 +77,7 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
     private String mailHost = null;
     private String mailUser = null;
     private String mailPassword = null;
+    private String auth = null;
     private String fromAddress = null;
     private String jndiName = null;
     private String storeProtocol = null;
@@ -179,6 +180,7 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
         newResource.setFrom(fromAddress);
         newResource.setUser(mailUser);
         newResource.setPassword(mailPassword);
+        newResource.setAuth(auth);
         newResource.setHost(mailHost);
         newResource.setEnabled(enabled);
         newResource.setStoreProtocol(storeProtocol);
@@ -206,6 +208,7 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
         mailHost = (String) attributes.get(MAIL_HOST);
         mailUser = (String) attributes.get(MAIL_USER);
         mailPassword = (String) attributes.get(MAIL_PASSWORD);
+        auth = (String) attributes.get(MAIL_AUTH);
         fromAddress = (String) attributes.get(MAIL_FROM_ADDRESS);
         storeProtocol = (String) attributes.get(MAIL_STORE_PROTO);
         storeProtocolClass = (String) attributes.get(MAIL_STORE_PROTO_CLASS);

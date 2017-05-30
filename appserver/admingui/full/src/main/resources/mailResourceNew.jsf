@@ -58,7 +58,7 @@
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
         gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", valueMap="#{pageSession.valueMap}");
 
-        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "debug"});
+        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "debug", "auth"});
         //set the following for including buttons.inc
         setPageSessionAttribute(key="edit" value="#{false}" );
         setPageSessionAttribute(key="showDefaultButton" value="#{true}" );

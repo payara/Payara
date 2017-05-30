@@ -282,6 +282,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
         mailResource.setMailHost(mailResourceConfig.getHost());
         mailResource.setUsername(mailResourceConfig.getUser());
         mailResource.setPassword(mailResourceConfig.getPassword());
+        mailResource.setAuth(Boolean.valueOf(mailResourceConfig.getAuth()));
         mailResource.setMailFrom(mailResourceConfig.getFrom());
         mailResource.setDebug(Boolean.valueOf(mailResourceConfig.getDebug()));
 
