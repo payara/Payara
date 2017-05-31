@@ -185,4 +185,13 @@ public class GFLauncherLogger {
     action = "NA",
     level = "INFO")
     public static final String COMMAND_LINE = "NCLS-GFLAUNCHER-00005";
+    
+    @LogMessageInfo(
+            message =
+    "Using Payara default value \"{1}\" for JVM option: {0}",
+    comment = "JVM Info",
+    cause = "JVM Option not present in domain.xml",
+    action = "Override the Payara default by adding the JVM option to your config",
+    level = "FINE")
+    public static final String DEFAULT_JVM_OPTION = "PAYARA-GFLAUNCHER-00001";
 }
