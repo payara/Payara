@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -216,53 +216,22 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return null;
     }
 
-    public ApplicationInfo deploy(final ExtendedDeploymentContext context) {
-        return deploy(null, context);
-    }
-
-    public ApplicationInfo deploy(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
-
-        long operationStartTime = Calendar.getInstance().getTimeInMillis();
-
-        events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_START, context), false);
+    @Override
+    public ApplicationInfo prepare(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
+        events.send(new Event<>(Deployment.DEPLOYMENT_START, context), false);
         final ActionReport report = context.getActionReport();
-
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
-
         final String appName = commandParams.name();
-        if (commandParams.origin == OpsParams.Origin.deploy && 
-            appRegistry.get(appName) != null) {
-            report.setMessage(localStrings.getLocalString("appnamenotunique","Application name {0} is already in use. Please pick a different name.", appName));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return null;                
-        }
+        ApplicationInfo appInfo;
 
-        // if the virtualservers param is not defined, set it to all
-        // defined virtual servers minus __asadmin on that target
-        if (commandParams.virtualservers == null) {
-            commandParams.virtualservers = DeploymentUtils.getVirtualServers(
-                commandParams.target, env, domain);
-        }
-        
-        if (commandParams.enabled == null) {
-            commandParams.enabled = Boolean.TRUE;
-        }
-
-        if (commandParams.altdd != null) {
-            context.getSource().addArchiveMetaData(DeploymentProperties.ALT_DD, commandParams.altdd);
-        }
-
-        if (commandParams.runtimealtdd != null) {
-            context.getSource().addArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, commandParams.runtimealtdd);
-        }
-
+        final ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
         ProgressTracker tracker = new ProgressTracker() {
             @Override
             public void actOn(Logger logger) {
                 //loaded is used instead of started to include more modules to
                 //stop. In some modules, the setup and cleanup steps are not
                 //fully symmetric, and to ensure thorough cleanup, we need to
-                //call module.stop() for started modules, and modules that are 
+                //call module.stop() for started modules, and modules that are
                 //loaded but may not be started. Issue 18263
                 for (EngineRef module : get("loaded", EngineRef.class)) {
                     try {
@@ -275,7 +244,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     PreDestroy.class.cast(context).preDestroy();
                 } catch (Exception e) {
                     // ignore
-                }                
+                }
                 for (EngineRef module : get("loaded", EngineRef.class)) {
                     try {
                         module.unload(context);
@@ -299,10 +268,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         // ignore
                     }
                 }
-                // comment this out for now as the interceptor seems to use 
+                // comment this out for now as the interceptor seems to use
                 // a different hook to roll back failure
                 // notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.REPLICATION, context);
-                
+
                 if (!commandParams.keepfailedstubs) {
                     try {
                         context.clean();
@@ -315,27 +284,52 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
         };
 
-        context.addTransientAppMetaData(ExtendedDeploymentContext.TRACKER, 
-            tracker);
-        context.setPhase(DeploymentContextImpl.Phase.PREPARE);
-        ApplicationInfo appInfo = null;
         try {
+            if (commandParams.origin == OpsParams.Origin.deploy
+                    && appRegistry.get(appName) != null) {
+                report.setMessage(localStrings.getLocalString("appnamenotunique", "Application name {0} is already in use. Please pick a different name.", appName));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return null;
+            }
+
+            // if the virtualservers param is not defined, set it to all
+            // defined virtual servers minus __asadmin on that target
+            if (commandParams.virtualservers == null) {
+                commandParams.virtualservers = DeploymentUtils.getVirtualServers(
+                        commandParams.target, env, domain);
+            }
+
+            if (commandParams.enabled == null) {
+                commandParams.enabled = Boolean.TRUE;
+            }
+
+            if (commandParams.altdd != null) {
+                context.getSource().addArchiveMetaData(DeploymentProperties.ALT_DD, commandParams.altdd);
+            }
+
+            if (commandParams.runtimealtdd != null) {
+                context.getSource().addArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, commandParams.runtimealtdd);
+            }
+
+            context.addTransientAppMetaData(ExtendedDeploymentContext.TRACKER, tracker);
+            context.setPhase(DeploymentContextImpl.Phase.PREPARE);
+
             ArchiveHandler handler = context.getArchiveHandler();
             if (handler == null) {
-                handler = getArchiveHandler(context.getSource(), 
-                    commandParams.type);
+                handler = getArchiveHandler(context.getSource(),
+                        commandParams.type);
                 context.setArchiveHandler(handler);
             }
 
-            if (handler==null) {
-                report.setMessage(localStrings.getLocalString("unknownarchivetype","Archive type of {0} was not recognized",context.getSourceDir()));
+            if (handler == null) {
+                report.setMessage(localStrings.getLocalString("unknownarchivetype", "Archive type of {0} was not recognized", context.getSourceDir()));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return null;
             }
 
             DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
 
-            if (tracing!=null) {
+            if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
             }
 
@@ -343,194 +337,219 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 getDeployableTypes(context);
             }
 
-            if (tracing!=null) {
+            if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.PARSING_DONE);
             }
 
-            // containers that are started are not stopped even if 
+            // containers that are started are not stopped even if
             // the deployment fail, the main reason
             // is that some container do not support to be restarted.
-            if (sniffers!=null && logger.isLoggable(Level.FINE)) {
+            if (sniffers != null && logger.isLoggable(Level.FINE)) {
                 for (Sniffer sniffer : sniffers) {
                     logger.fine("Before Sorting" + sniffer.getModuleType());
                 }
             }
- 
+
             sniffers = getSniffers(handler, sniffers, context);
 
             ClassLoaderHierarchy clh = habitat.getService(ClassLoaderHierarchy.class);
-            if (tracing!=null) {
+            if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_HIERARCHY);
             }
 
             context.createDeploymentClassLoader(clh, handler);
             events.send(new Event<DeploymentContext>(Deployment.AFTER_DEPLOYMENT_CLASSLOADER_CREATION, context), false);
-            
-            if (tracing!=null) {
+
+            if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
             }
 
-            final ClassLoader cloader = context.getClassLoader();
-            final ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
-            try {
-                Thread.currentThread().setContextClassLoader(cloader);
-                
-                List<EngineInfo> sortedEngineInfos =
-                    setupContainerInfos(handler, sniffers, context);
-                if (tracing!=null) {
-                    tracing.addMark(DeploymentTracing.Mark.CONTAINERS_SETUP_DONE);
-                }
+            Thread.currentThread().setContextClassLoader(context.getClassLoader());
 
-                if (logger.isLoggable(Level.FINE)) {
-                    for (EngineInfo info : sortedEngineInfos) {
-                        logger.fine("After Sorting " + info.getSniffer().getModuleType());
-                    }
-                }
-                if (sortedEngineInfos ==null || sortedEngineInfos.isEmpty()) {
-                    report.failure(logger, localStrings.getLocalString("unknowncontainertype","There is no installed container capable of handling this application {0}",context.getSource().getName()));
-                    tracker.actOn(logger);
-                    return null;
-                }
-
-
-                // create a temporary application info to hold metadata
-                // so the metadata could be accessed at classloader 
-                // construction time through ApplicationInfo
-                ApplicationInfo tempAppInfo = new ApplicationInfo(events, 
-                    context.getSource(), appName);
-                for (Object m : context.getModuleMetadata()) {
-                    tempAppInfo.addMetaData(m);
-                }
-                tempAppInfo.setIsJavaEEApp(sortedEngineInfos);
-                // set the flag on the archive to indicate whether it's 
-                // a JavaEE archive or not
-                context.getSource().setExtraData(Boolean.class, tempAppInfo.isJavaEEApp());
-                appRegistry.add(appName, tempAppInfo);
-
-                try {
-                    notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.PREPARE, context);
-                } catch(Throwable interceptorException) {
-                    report.failure(logger, "Exception while invoking the lifecycle interceptor", null);
-                    report.setFailureCause(interceptorException);
-                    logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, interceptorException);
-                    tracker.actOn(logger);
-                    return null;
-                }
-
-                events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
-
-                context.createApplicationClassLoader(clh, handler);
-                
-                events.send(new Event<DeploymentContext>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
-                
-                if (tracing!=null) {
-                    tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
-                }
-
-                    // this is a first time deployment as opposed as load following an unload event,
-                    // we need to create the application info
-                    // todo : we should come up with a general Composite API solution
-                    ModuleInfo moduleInfo = null;
-                    try {
-                          moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
-                          // Now that the prepare phase is done, any artifacts 
-                          // should be available.  Go ahead and create the
-                          // downloadable client JAR.  We want to do this now, or
-                          // at least before the load and start phases, because
-                          // (for example) the app client deployer start phase
-                          // needs to find all generated files when it runs.
-                          final ClientJarWriter cjw = new ClientJarWriter(context);
-                          cjw.run();
-                    } catch(Throwable prepareException) {
-                        prepareException.printStackTrace();
-                        report.failure(logger, "Exception while preparing the app", null);
-                        report.setFailureCause(prepareException);
-                        logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, prepareException);
-                        tracker.actOn(logger);
-                        return null;
-                    }
-
-                    // the deployer did not take care of populating the application info, this
-                    // is not a composite module.
-                    appInfo=context.getModuleMetaData(ApplicationInfo.class);
-                    if (appInfo==null) {
-                        appInfo = new ApplicationInfo(events, context.getSource(), appName);
-                        appInfo.addModule(moduleInfo);
-
-                        for (Object m : context.getModuleMetadata()) {
-                            moduleInfo.addMetaData(m);
-                            appInfo.addMetaData(m);
-                        }
-                    } else {
-                        for (EngineRef ref : moduleInfo.getEngineRefs()) {
-                            appInfo.add(ref);
-                        }
-                    }
-
-                // remove the temp application info from the registry
-                // first, then register the real one
-                appRegistry.remove(appName);
-                appInfo.setIsJavaEEApp(sortedEngineInfos);
-                appRegistry.add(appName, appInfo);
-
-                notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.PREPARE, context);
-
-                if (tracing!=null) {
-                    tracing.addMark(DeploymentTracing.Mark.PREPARED);
-                }
-                
-                // send the APPLICATION_PREPARED event
-                // set the phase and thread context classloader properly 
-                // before sending the event
-                context.setPhase(DeploymentContextImpl.Phase.PREPARED);
-                Thread.currentThread().setContextClassLoader(context.getClassLoader());
-                appInfo.setAppClassLoader(context.getClassLoader());
-                events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, context), false);
-
-                // now were falling back into the mainstream loading/starting sequence, at this
-                // time the containers are set up, all the modules have been prepared in their
-                // associated engines and the application info is created and registered
-                if (loadOnCurrentInstance(context)) {
-                    appInfo.setLibraries(commandParams.libraries());
-                    try {
-                        notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.LOAD, context);
-                        appInfo.load(context, tracker);
-                        notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.LOAD, context);
-                        
-                        notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
-                        appInfo.start(context, tracker);
-                        notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
-                    } catch(Throwable loadException) {
-                        logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
-                        report.failure(logger, "Exception while loading the app", null);
-                        report.setFailureCause(loadException);
-                        tracker.actOn(logger);
-                        return null;
-                    }
-                }
-                return appInfo;
-            } finally {
-                context.postDeployClean(false /* not final clean-up yet */);
-                Thread.currentThread().setContextClassLoader(currentCL);
+            List<EngineInfo> sortedEngineInfos
+                    = setupContainerInfos(handler, sniffers, context);
+            if (tracing != null) {
+                tracing.addMark(DeploymentTracing.Mark.CONTAINERS_SETUP_DONE);
             }
 
-        } catch (Throwable e) {
+            if (logger.isLoggable(Level.FINE)) {
+                for (EngineInfo info : sortedEngineInfos) {
+                    logger.fine("After Sorting " + info.getSniffer().getModuleType());
+                }
+            }
+            if (sortedEngineInfos == null || sortedEngineInfos.isEmpty()) {
+                report.failure(logger, localStrings.getLocalString("unknowncontainertype", "There is no installed container capable of handling this application {0}", context.getSource().getName()));
+                tracker.actOn(logger);
+                return null;
+            }
+
+            // create a temporary application info to hold metadata
+            // so the metadata could be accessed at classloader
+            // construction time through ApplicationInfo
+            ApplicationInfo tempAppInfo = new ApplicationInfo(events,
+                    context.getSource(), appName);
+            for (Object m : context.getModuleMetadata()) {
+                tempAppInfo.addMetaData(m);
+            }
+            tempAppInfo.setIsJavaEEApp(sortedEngineInfos);
+            // set the flag on the archive to indicate whether it's
+            // a JavaEE archive or not
+            context.getSource().setExtraData(Boolean.class, tempAppInfo.isJavaEEApp());
+            appRegistry.add(appName, tempAppInfo);
+
+            try {
+                notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.PREPARE, context);
+            } catch (Throwable interceptorException) {
+                report.failure(logger, "Exception while invoking the lifecycle interceptor", null);
+                report.setFailureCause(interceptorException);
+                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, interceptorException);
+                tracker.actOn(logger);
+                return null;
+            }
+
+            events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
+
+            context.createApplicationClassLoader(clh, handler);
+
+            events.send(new Event<DeploymentContext>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
+
+            if (tracing != null) {
+                tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
+            }
+
+            // this is a first time deployment as opposed as load following an unload event,
+            // we need to create the application info
+            // todo : we should come up with a general Composite API solution
+            ModuleInfo moduleInfo = null;
+            try {
+                moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
+                // Now that the prepare phase is done, any artifacts
+                // should be available.  Go ahead and create the
+                // downloadable client JAR.  We want to do this now, or
+                // at least before the load and start phases, because
+                // (for example) the app client deployer start phase
+                // needs to find all generated files when it runs.
+                final ClientJarWriter cjw = new ClientJarWriter(context);
+                cjw.run();
+            } catch (Throwable prepareException) {
+                prepareException.printStackTrace();
+                report.failure(logger, "Exception while preparing the app", null);
+                report.setFailureCause(prepareException);
+                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, prepareException);
+                tracker.actOn(logger);
+                return null;
+            }
+
+            // the deployer did not take care of populating the application info, this
+            // is not a composite module.
+            appInfo = context.getModuleMetaData(ApplicationInfo.class);
+            if (appInfo == null) {
+                appInfo = new ApplicationInfo(events, context.getSource(), appName);
+                appInfo.addModule(moduleInfo);
+
+                for (Object m : context.getModuleMetadata()) {
+                    moduleInfo.addMetaData(m);
+                    appInfo.addMetaData(m);
+                }
+            } else {
+                for (EngineRef ref : moduleInfo.getEngineRefs()) {
+                    appInfo.add(ref);
+                }
+            }
+
+            // remove the temp application info from the registry
+            // first, then register the real one
+            appRegistry.remove(appName);
+            appInfo.setIsJavaEEApp(sortedEngineInfos);
+            appRegistry.add(appName, appInfo);
+
+            notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.PREPARE, context);
+
+            if (tracing != null) {
+                tracing.addMark(DeploymentTracing.Mark.PREPARED);
+            }
+
+            // send the APPLICATION_PREPARED event
+            // set the phase and thread context classloader properly
+            // before sending the event
+            context.setPhase(DeploymentContextImpl.Phase.PREPARED);
+            Thread.currentThread().setContextClassLoader(context.getClassLoader());
+            appInfo.setAppClassLoader(context.getClassLoader());
+            events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, context), false);
+
+            if (loadOnCurrentInstance(context)) {
+                appInfo.setLibraries(commandParams.libraries());
+                try {
+                    notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.LOAD, context);
+                    appInfo.load(context, tracker);
+                    notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.LOAD, context);
+                } catch (Throwable loadException) {
+                    logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
+                    report.failure(logger, "Exception while loading the app", null);
+                    report.setFailureCause(loadException);
+                    tracker.actOn(logger);
+                    return null;
+                }
+            }
+        } catch (Exception e) {
             report.failure(logger, localStrings.getLocalString("error.deploying.app", "Exception while deploying the app [{0}]", appName), null);
             report.setFailureCause(e);
             logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, e);
             tracker.actOn(logger);
             return null;
         } finally {
-            if (report.getActionExitCode()==ActionReport.ExitCode.SUCCESS) {
-                events.send(new Event<ApplicationInfo>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
-                long operationTime = Calendar.getInstance().getTimeInMillis() - operationStartTime;
-                if (appInfo != null) {
-                    deploymentLifecycleProbeProvider.applicationDeployedEvent(appName, getApplicationType(appInfo), String.valueOf(operationTime));
-                }
-            } else {
-                events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_FAILURE, context));
+            context.postDeployClean(false /* not final clean-up yet */);
+            Thread.currentThread().setContextClassLoader(currentCL);
+            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
+                events.send(new Event<>(Deployment.DEPLOYMENT_FAILURE, context));
             }
         }
+        return appInfo;
+    }
+
+    @Override
+    public void initialize(ApplicationInfo appInfo, Collection<? extends Sniffer> sniffers, ExtendedDeploymentContext context) {
+        if(appInfo == null) {
+            return;
+        }
+        final ActionReport report = context.getActionReport();
+        ProgressTracker tracker = context.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
+        // now were falling back into the mainstream loading/starting sequence, at this
+        // time the containers are set up, all the modules have been prepared in their
+        // associated engines and the application info is created and registered
+        if (loadOnCurrentInstance(context)) {
+            try {
+                notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
+                appInfo.start(context, tracker);
+                notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
+            } catch (Throwable loadException) {
+                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
+                report.failure(logger, "Exception while loading the app", null);
+                report.setFailureCause(loadException);
+                tracker.actOn(logger);
+            } finally {
+                if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
+                    events.send(new Event<>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
+                } else {
+                    events.send(new Event<>(Deployment.DEPLOYMENT_FAILURE, context));
+                }
+            }
+        }
+    }
+
+    public ApplicationInfo deploy(final ExtendedDeploymentContext context) {
+        return deploy(null, context);
+    }
+
+    public ApplicationInfo deploy(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
+        long operationStartTime = Calendar.getInstance().getTimeInMillis();
+        ApplicationInfo appInfo = prepare(sniffers, context);
+        if(appInfo != null) {
+            initialize(appInfo, sniffers, context);
+            long operationTime = Calendar.getInstance().getTimeInMillis() - operationStartTime;
+            deploymentLifecycleProbeProvider.applicationDeployedEvent(appInfo.getName(), getApplicationType(appInfo), String.valueOf(operationTime));
+        }
+        return appInfo;
     }
 
     @Override
