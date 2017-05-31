@@ -654,7 +654,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setSlowQueryThresholdInSeconds(String value) throws PropertyVetoException;
-
+    
     /**
      * Gets the value of the lazyConnectionEnlistment property.
      *
@@ -934,7 +934,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * @return possible object is
      *         {@link String }
      */
-    @Attribute
+    @Attribute (defaultValue = "fish.payara.jdbc.SilentSqlTraceListener")
     String getSqlTraceListeners();
 
     /**

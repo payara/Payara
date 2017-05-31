@@ -1475,13 +1475,23 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                     "jdbc-connection-pool",
                     PluginPoint.SERVER,
                     poolMonitoringSubTreeRoot, jdbcStatsProvider);
-            if(jdbcStatsProvider.getSqlTraceCache() != null) {
+            if(jdbcStatsProvider.getFreqSqlTraceCache() != null) {
                 if(_logger.isLoggable(Level.FINEST)) {
-                    _logger.finest("Scheduling timer task for sql trace caching");
+                    _logger.finest("Scheduling timer task for frequent sql trace caching");
                 }
                 Timer timer = ((com.sun.gjc.spi.ResourceAdapterImpl) ra).getTimer();
-                jdbcStatsProvider.getSqlTraceCache().scheduleTimerTask(timer);
+                jdbcStatsProvider.getFreqSqlTraceCache().scheduleTimerTask(timer);
             }
+            
+            if (jdbcStatsProvider.getSlowSqlTraceCache() != null) {
+                if (_logger.isLoggable(Level.FINEST)) {
+                    _logger.finest("Scheduling timer task for slow sql trace caching");
+                }
+                
+                Timer timer = ((com.sun.gjc.spi.ResourceAdapterImpl) ra).getTimer();
+                jdbcStatsProvider.getSlowSqlTraceCache().scheduleTimerTask(timer);
+            }
+            
             if(_logger.isLoggable(Level.FINEST)) {
                 _logger.finest("Registered JDBCRA Stats Provider");
             }
@@ -1494,12 +1504,20 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             _logger.finest("MCF Destroyed");
         }
         if(jdbcStatsProvider != null) {
-            if(jdbcStatsProvider.getSqlTraceCache() != null) {
+            if(jdbcStatsProvider.getFreqSqlTraceCache() != null) {
                 if(_logger.isLoggable(Level.FINEST)) {
-                    _logger.finest("Canceling timer task for sql trace caching");
+                    _logger.finest("Canceling timer task for frequent sql trace caching");
                 }
-                jdbcStatsProvider.getSqlTraceCache().cancelTimerTask();
+                jdbcStatsProvider.getFreqSqlTraceCache().cancelTimerTask();
             }
+            
+            if(jdbcStatsProvider.getSlowSqlTraceCache() != null) {
+                if(_logger.isLoggable(Level.FINEST)) {
+                    _logger.finest("Canceling timer task for slow sql trace caching");
+                }
+                jdbcStatsProvider.getSlowSqlTraceCache().cancelTimerTask();
+            }
+            
             StatsProviderManager.unregister(jdbcStatsProvider);
             jdbcStatsProvider = null;
             if(_logger.isLoggable(Level.FINEST)) {
