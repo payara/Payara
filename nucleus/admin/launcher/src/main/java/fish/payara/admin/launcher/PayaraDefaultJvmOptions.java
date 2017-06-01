@@ -43,7 +43,7 @@ package fish.payara.admin.launcher;
  *
  * @author Andrew Pielage
  */
-public class PayaraJvmOptionDefaults {
+public class PayaraDefaultJvmOptions {
     public static final String GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY="org.glassfish.grizzly.DEFAULT_MEMORY_MANAGER";
     public static final String GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE="org.glassfish.grizzly.memory.HeapMemoryManager";
 }
