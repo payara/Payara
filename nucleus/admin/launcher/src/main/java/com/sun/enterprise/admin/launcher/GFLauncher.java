@@ -819,7 +819,7 @@ public abstract class GFLauncher {
                 parser.getProfilerSystemProperties());
 
         List<String> rawJvmOptions = parser.getJvmOptions();
-        rawJvmOptions.addAll(getSpecialSystemProperties()); 
+        rawJvmOptions.addAll(getSpecialSystemProperties());
         if (profiler.isEnabled()) {
             rawJvmOptions.addAll(profiler.getJvmOptions());
         }
