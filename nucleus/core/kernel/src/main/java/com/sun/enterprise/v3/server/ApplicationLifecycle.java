@@ -217,7 +217,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     @Override
-    public ApplicationInfo prepare(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
+    public ApplicationDeployment prepare(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
         events.send(new Event<>(Deployment.DEPLOYMENT_START, context), false);
         final ActionReport report = context.getActionReport();
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
@@ -498,13 +498,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             tracker.actOn(logger);
             return null;
         } finally {
-            context.postDeployClean(false /* not final clean-up yet */);
             Thread.currentThread().setContextClassLoader(currentCL);
             if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
+                context.postDeployClean(false /* not final clean-up yet */);
                 events.send(new Event<>(Deployment.DEPLOYMENT_FAILURE, context));
             }
         }
-        return appInfo;
+        return new ApplicationDeployment(appInfo, context);
     }
 
     @Override
@@ -528,6 +528,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 report.setFailureCause(loadException);
                 tracker.actOn(logger);
             } finally {
+                context.postDeployClean(false /* not final clean-up yet */);
                 if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
                     events.send(new Event<>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
                 } else {
@@ -537,13 +538,16 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    @Override
     public ApplicationInfo deploy(final ExtendedDeploymentContext context) {
         return deploy(null, context);
     }
 
+    @Override
     public ApplicationInfo deploy(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
         long operationStartTime = Calendar.getInstance().getTimeInMillis();
-        ApplicationInfo appInfo = prepare(sniffers, context);
+        ApplicationDeployment rv = prepare(sniffers, context);
+        ApplicationInfo appInfo = rv != null? rv.appInfo : null;
         if(appInfo != null) {
             initialize(appInfo, sniffers, context);
             long operationTime = Calendar.getInstance().getTimeInMillis() - operationStartTime;
