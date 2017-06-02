@@ -37,9 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
@@ -58,7 +62,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -236,11 +239,13 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             }
         }
 
+        List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
+        // process the deployed applications
         Iterator iter = DeploymentOrder.getApplicationDeployments();
         while (iter.hasNext()) {
           Application app = (Application)iter.next();
           ApplicationRef appRef = server.getApplicationRef(app.getName());
-          processApplication(app, appRef);
+          appDeployments.addAll(processApplication(app, appRef));
         }
 
         // does the user want us to run a particular application
@@ -302,15 +307,16 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     }
                     ExtendedDeploymentContext depContext = deployment.getBuilder(logger, parameters, report).source(sourceArchive).build();
                     
-                    ApplicationInfo appInfo = deployment.deploy(depContext);
-                    if (appInfo==null) {
+                    Deployment.ApplicationDeployment appDeployment = deployment.prepare(null, depContext);
+                    if (appDeployment==null) {
 
                         logger.log(Level.SEVERE, KernelLoggerInfo.cantFindApplicationInfo, sourceFile.getAbsolutePath());
                     }
-                } catch(RuntimeException e) {
+                    else {
+                        appDeployments.add(appDeployment);
+                    }
+                } catch(RuntimeException | IOException e) {
                     logger.log(Level.SEVERE, KernelLoggerInfo.deployException, e);
-                } catch(IOException ioe) {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.deployException, ioe);                    
                 } finally {
                     if (sourceArchive!=null) {
                         try {
@@ -322,8 +328,13 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                 }
             }
         }
-        events.send(new Event<DeploymentContext>(Deployment.ALL_APPLICATIONS_PROCESSED, null));
+        events.send(new Event<>(Deployment.ALL_APPLICATIONS_LOADED, null), false);
 
+        for(Deployment.ApplicationDeployment depl : appDeployments) {
+            deployment.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
+        }
+
+        events.send(new Event<>(Deployment.ALL_APPLICATIONS_PROCESSED, null));
     }
 
     private void initializeRuntimeDependencies() {
@@ -345,7 +356,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
     }
 
 
-    public void processApplication(Application app, ApplicationRef appRef) {
+    public List<Deployment.ApplicationDeployment> processApplication(Application app, ApplicationRef appRef) {
 
         long operationStartTime = Calendar.getInstance().getTimeInMillis();
 
@@ -357,7 +368,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         // lifecycle modules are loaded separately
         if (Boolean.valueOf(app.getDeployProperties().getProperty
             (ServerTags.IS_LIFECYCLE))) {
-            return;
+            return ImmutableList.of();
         }
 
         URI uri;
@@ -365,8 +376,9 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             uri = new URI(source);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.cantDetermineLocation, e.getLocalizedMessage());
-            return;
+            return ImmutableList.of();
         }
+        List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         File sourceFile = new File(uri);
         if (sourceFile.exists()) {
             try {
@@ -403,8 +415,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
                     new ApplicationConfigInfo(app).store(depContext.getAppProps());
 
-                    deployment.deploy(deployment.getSniffersFromApp(app), depContext);
-                    loadApplicationForTenants(app, appRef, report);
+                    appDeployments.add(deployment.prepare(deployment.getSniffersFromApp(app), depContext));
+                    appDeployments.addAll(loadApplicationForTenants(app, appRef, report));
                     if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
                         if (tracing!=null) {
                             tracing.print(System.out);
@@ -431,6 +443,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         } else {
             logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
         }
+        return FluentIterable.from(appDeployments).filter(Predicates.notNull()).toList();
     }
 
 
@@ -542,10 +555,11 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         }
     }
 
-    private void loadApplicationForTenants(Application app, ApplicationRef appRef, ActionReport report) {
+    private List<Deployment.ApplicationDeployment> loadApplicationForTenants(Application app, ApplicationRef appRef, ActionReport report) {
         if (app.getAppTenants() == null) {
-            return;
+            return ImmutableList.of();
         }
+        List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         for (AppTenant tenant : app.getAppTenants().getAppTenant()) {
             DeployCommandParameters commandParams = app.getDeployParameters(appRef);
             commandParams.contextroot = tenant.getContextRoot();
@@ -571,7 +585,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     deploymentContext.getAppProps().putAll(tenant.getDeployProperties());
                     deploymentContext.setModulePropsMap(app.getModulePropertiesMap());
                     deploymentContext.setTenant(tenant.getTenant(), app.getName());
-                    deployment.deploy(deployment.getSniffersFromApp(app), deploymentContext);
+                    appDeployments.add(deployment.prepare(deployment.getSniffersFromApp(app), deploymentContext));
                 } else {
                     logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, app.getLocation());
                 }
@@ -589,6 +603,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                 }
             }
         }
+        return ImmutableList.copyOf(appDeployments);
     }
 
     private boolean loadAppOnDAS(String appName) {

@@ -26,5 +26,6 @@ public class HazelcastEvents
 {
     public static final EventTypes HAZELCAST_BOOTSTRAP_COMPLETE = EventTypes.create("hazelcast_bootstrap_complete");
     public static final EventTypes HAZELCAST_SHUTDOWN_COMPLETE = EventTypes.create("hazelcast_shutdown_complete");
+    public static final EventTypes HAZELCAST_SHUTDOWN_STARTED = EventTypes.create("hazelcast_shutdown_started");
     public static final EventTypes HAZELCAST_GENERATED_NAME_CHANGE = EventTypes.create("hazelcast_generated_name_change");
 }
