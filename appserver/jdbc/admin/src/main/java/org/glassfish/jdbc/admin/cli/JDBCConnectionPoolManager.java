@@ -312,7 +312,14 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         statementcachesize = (String) attrList.get(STATEMENT_CACHE_SIZE);
         validationclassname = (String) attrList.get(VALIDATION_CLASSNAME);
         initsql = (String) attrList.get(INIT_SQL);
+        
+        // Can't be set to null as the default value is now the SilentSqlTraceListener class, which requires statement 
+        // wrapping to be enabled
         sqltracelisteners = (String) attrList.get(SQL_TRACE_LISTENERS);
+        if (sqltracelisteners == null) {
+            sqltracelisteners = "";
+        }
+        
         pooling = (String) attrList.get(POOLING);
         ping = (String) attrList.get(PING);
         driverclassname = (String) attrList.get(DRIVER_CLASSNAME);
