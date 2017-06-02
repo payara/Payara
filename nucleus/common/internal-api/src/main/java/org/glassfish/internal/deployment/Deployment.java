@@ -184,6 +184,15 @@ public interface Deployment {
 
     }
 
+    static class ApplicationDeployment {
+        public ApplicationDeployment(ApplicationInfo appInfo, ExtendedDeploymentContext context) {
+            this.appInfo = appInfo;
+            this.context = context;
+        }
+
+        public final ApplicationInfo appInfo;
+        public final ExtendedDeploymentContext context;
+    }
 
     /**
      * triggered when all applications are loaded, but not yet initialized
@@ -208,7 +217,7 @@ public interface Deployment {
         DeploymentContext context,
         ProgressTracker tracker) throws Exception;
 
-    public ApplicationInfo prepare(final Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context);
+    public ApplicationDeployment prepare(final Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context);
     public void initialize(ApplicationInfo appInfo, final Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context);
 
     public ApplicationInfo deploy(final ExtendedDeploymentContext context);

@@ -20,7 +20,6 @@ package fish.payara.appserver.micro.services;
 import fish.payara.micro.PayaraInstance;
 import fish.payara.micro.event.PayaraClusterListener;
 import fish.payara.micro.event.CDIEventListener;
-import com.sun.enterprise.deployment.Application;
 import fish.payara.appserver.micro.services.command.AsAdminCallable;
 import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
 import fish.payara.micro.data.ApplicationDescriptor;
@@ -44,14 +43,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -60,6 +57,7 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
@@ -112,6 +110,11 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     
     @Inject
     private HazelcastCore hazelcast;
+
+    private boolean serverReady = false;
+
+    @Inject
+    private ApplicationRegistry appRegistry;
     
     @Override
     public String getInstanceName() {
@@ -190,7 +193,6 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         events.register(this);
         myListeners = new HashSet<>(1);
         myCDIListeners = new HashSet<>(1);       
-        initialiseInstanceDescriptor();
     }
 
     /**
@@ -201,37 +203,24 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     @SuppressWarnings({"unchecked"})
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
+            serverReady = true;
             initialiseInstanceDescriptor();
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, me);
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
-
+            for(String appName : appRegistry.getAllApplicationNames()) {
+                me.addApplication(new ApplicationDescriptorImpl(appRegistry.get(appName)));
+            }
+            cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
         } 
         // Adds the application to the clustered register of deployed applications
         else if (event.is(Deployment.APPLICATION_LOADED)) {
-            if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
+            if (serverReady && event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
                 me.addApplication(new ApplicationDescriptorImpl(applicationInfo));
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
         }
-        // ensures the same application id is used when there is a deployment 
-        // if the application id is in the cluster keyed by application name
-        else if (event.is(Deployment.APPLICATION_PREPARED)) {
-            if (event.hook() != null && event.hook() instanceof DeploymentContext) {
-                DeploymentContext deploymentContext = (DeploymentContext) event.hook();
-                Application app = deploymentContext.getModuleMetaData(Application.class);
-                if(app != null) {
-                    Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
-                    if (appID != null) {
-                        app.setUniqueId(appID);
-                    } else {
-                        cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), app.getUniqueId());
-                    }
-                }
-            }
-        } 
-        
         // removes the application from the clustered registry of applications
         else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
@@ -239,7 +228,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                 me.removeApplication(new ApplicationDescriptorImpl(applicationInfo));
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
-        } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
+        } else if (event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED)) {
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, me);
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getClusteredStore().remove(INSTANCE_STORE_NAME, myCurrentID);
