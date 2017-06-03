@@ -504,7 +504,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 events.send(new Event<>(Deployment.DEPLOYMENT_FAILURE, context));
             }
         }
-        return new ApplicationDeployment(appInfo, context);
+        ApplicationDeployment depl = new ApplicationDeployment(appInfo, context);
+        appRegistry.addTransient(depl);
+        return depl;
     }
 
     @Override
@@ -512,6 +514,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if(appInfo == null) {
             return;
         }
+        appRegistry.removeTransient(appInfo.getName());
         final ActionReport report = context.getActionReport();
         ProgressTracker tracker = context.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
         // now were falling back into the mainstream loading/starting sequence, at this
