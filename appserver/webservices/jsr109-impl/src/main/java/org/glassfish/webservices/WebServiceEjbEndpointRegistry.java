@@ -43,6 +43,7 @@ package org.glassfish.webservices;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
@@ -105,7 +106,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         public void event(EventListener.Event event) {
             if(event.is(Deployment.APPLICATION_LOADED)) {
                 try {
-                    String loadedAppName = ((ApplicationInfo)event.hook()).getName();
+                    String loadedAppName = ((ApplicationInfo)event.hook()).getMetaData(Application.class).getName();
                     for(Map.Entry<String, EjbRuntimeEndpointInfo> endpoint : webServiceEjbEndpoints.entrySet()) {
                         String endpointAppName = endpoint.getValue().getEndpoint().getEjbComponentImpl().getEjbBundleDescriptor().getName();
                         if(loadedAppName.equals(endpointAppName) && !hasMappingFileUri(endpoint.getValue().getEndpoint())) {
