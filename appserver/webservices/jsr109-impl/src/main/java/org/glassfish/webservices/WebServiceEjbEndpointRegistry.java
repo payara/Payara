@@ -65,6 +65,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
+import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.jvnet.hk2.annotations.Service;
@@ -104,8 +105,10 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         public void event(EventListener.Event event) {
             if(event.is(Deployment.APPLICATION_LOADED)) {
                 try {
+                    String loadedAppName = ((ApplicationInfo)event.hook()).getName();
                     for(Map.Entry<String, EjbRuntimeEndpointInfo> endpoint : webServiceEjbEndpoints.entrySet()) {
-                        if(!hasMappingFileUri(endpoint.getValue().getEndpoint())) {
+                        String endpointAppName = endpoint.getValue().getEndpoint().getEjbComponentImpl().getEjbBundleDescriptor().getName();
+                        if(loadedAppName.equals(endpointAppName) && !hasMappingFileUri(endpoint.getValue().getEndpoint())) {
                             endpoint.getValue().initRuntimeInfo(adapterListMap.get(endpoint.getKey()));
                         }
                     }
