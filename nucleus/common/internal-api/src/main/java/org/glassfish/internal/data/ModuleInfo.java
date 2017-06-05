@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
@@ -296,7 +297,7 @@ public class ModuleInfo {
                     }
                 } catch(Exception e) { 
                     DeployCommandParameters dcp = context.getCommandParameters(DeployCommandParameters.class);
-                    if(dcp.isSkipDSFailure() && isDSFailure(e)){
+                    if (dcp.isSkipDSFailure() && isDSFailure(e)) {
                         logger.log(Level.WARNING, "Resource communication failure exception skipped while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
                     } else {
                         logger.log(Level.SEVERE, "Exception while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
@@ -317,10 +318,10 @@ public class ModuleInfo {
         }
     }
     
-    private boolean isDSFailure(Exception ex){
+    private boolean isDSFailure(Exception ex) {
         Throwable cause = ex;
-        while(cause!=null){
-            if(cause.getMessage()!=null && cause.getMessage().contains(DS_FAILURE_MESSAGE)){
+        while (cause != null) {
+            if (cause.getMessage() != null && cause.getMessage().contains(DS_FAILURE_MESSAGE)) {
                 return true;
             }
             cause = cause.getCause();

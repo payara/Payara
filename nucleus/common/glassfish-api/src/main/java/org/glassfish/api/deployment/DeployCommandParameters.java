@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.deployment;
 
@@ -97,7 +98,7 @@ public class DeployCommandParameters extends OpsParams {
       return retrieve;
     }
     
-    @Param(name=ParameterNames.SKIP_DS_FAILURE, optional=true, defaultValue="false")
+    @Param(name = ParameterNames.SKIP_DS_FAILURE, optional = true, defaultValue = "false")
     public Boolean skipDSFailure = false;
     public Boolean isSkipDSFailure() {
         return skipDSFailure;
