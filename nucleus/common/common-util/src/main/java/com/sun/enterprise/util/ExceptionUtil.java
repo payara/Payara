@@ -37,13 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
 
 /**
  * Useful utilities for Exceptions
@@ -51,6 +49,8 @@ import java.util.Set;
  */
 public final class ExceptionUtil
 {
+    private final static String DS_FAILURE_MESSAGE = "java.sql.SQLException: Error in allocating a connection. Cause: Connection could not be allocated because: Communications link failure";
+  
     private ExceptionUtil()
     {
         // disallow instantiation
@@ -126,6 +126,17 @@ public final class ExceptionUtil
 
 
         return (buf.toString());
+    }
+
+    public static boolean isDSFailure(Exception ex) {
+        Throwable cause = ex;
+        while (cause != null) {
+            if (cause.getMessage() != null && cause.getMessage().contains(DS_FAILURE_MESSAGE)) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 
 }

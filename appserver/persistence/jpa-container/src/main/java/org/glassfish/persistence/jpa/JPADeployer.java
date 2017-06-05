@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.jpa;
 
@@ -44,6 +45,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.module.bootstrap.StartupContext;
+import com.sun.enterprise.util.ExceptionUtil;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.event.EventListener;
@@ -219,11 +221,19 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                         throw new RuntimeException(e);
                     }
 
-
-                    PersistenceUnitLoader puLoader = new PersistenceUnitLoader(pud, providerContainerContractInfo);
-                    // Store the puLoader in context. It is retrieved to execute java2db and to
-                    // store the loaded emfs in a JPAApplicationContainer object for cleanup
-                    context.addTransientAppMetaData(getUniquePuIdentifier(pud), puLoader );
+                    try {
+                        PersistenceUnitLoader puLoader = new PersistenceUnitLoader(pud, providerContainerContractInfo);
+                        // Store the puLoader in context. It is retrieved to execute java2db and to
+                        // store the loaded emfs in a JPAApplicationContainer object for cleanup
+                        context.addTransientAppMetaData(getUniquePuIdentifier(pud), puLoader);
+                    } catch (Exception e) {
+                        DeployCommandParameters dcp = context.getCommandParameters(DeployCommandParameters.class);
+                        if (dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)) {
+                            logger.log(Level.WARNING, "Resource communication failure exception skipped while loading the pu " + pud.getName(), e);
+                        } else {
+                            throw e;
+                        }
+                    }
                 }
             }
         };

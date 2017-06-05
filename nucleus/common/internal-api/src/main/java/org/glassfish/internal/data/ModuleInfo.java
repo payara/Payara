@@ -44,6 +44,7 @@ package org.glassfish.internal.data;
 import com.sun.enterprise.config.serverbeans.Engine;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.ExceptionUtil;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -96,7 +97,6 @@ public class ModuleInfo {
     private boolean started=false;
     private ClassLoader moduleClassLoader;
     private Set<ClassLoader> classLoaders = new HashSet<ClassLoader>();
-    private final static String DS_FAILURE_MESSAGE = "java.sql.SQLException: Error in allocating a connection. Cause: Connection could not be allocated because: Communications link failure";
     
   
     public ModuleInfo(final Events events, String name, Collection<EngineRef> refs, 
@@ -297,7 +297,7 @@ public class ModuleInfo {
                     }
                 } catch(Exception e) { 
                     DeployCommandParameters dcp = context.getCommandParameters(DeployCommandParameters.class);
-                    if (dcp.isSkipDSFailure() && isDSFailure(e)) {
+                    if(dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)){
                         logger.log(Level.WARNING, "Resource communication failure exception skipped while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
                     } else {
                         logger.log(Level.SEVERE, "Exception while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
@@ -317,18 +317,7 @@ public class ModuleInfo {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
         }
     }
-
-    private boolean isDSFailure(Exception ex) {
-        Throwable cause = ex;
-        while (cause != null) {
-            if (cause.getMessage() != null && cause.getMessage().contains(DS_FAILURE_MESSAGE)) {
-                return true;
-            }
-            cause = cause.getCause();
-        }
-        return false;
-    }
-    
+ 
     public synchronized void stop(ExtendedDeploymentContext context, Logger logger) {
 
         if (!started)
