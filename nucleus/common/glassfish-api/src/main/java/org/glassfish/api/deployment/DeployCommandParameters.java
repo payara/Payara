@@ -96,6 +96,12 @@ public class DeployCommandParameters extends OpsParams {
     public String getRetrieve() {
       return retrieve;
     }
+    
+    @Param(name=ParameterNames.SKIP_DS_FAILURE, optional=true, defaultValue="false")
+    public Boolean skipDSFailure = false;
+    public Boolean isSkipDSFailure() {
+        return skipDSFailure;
+    }
 
     @Param(optional=true)
     public String dbvendorname = null;
@@ -179,7 +185,7 @@ public class DeployCommandParameters extends OpsParams {
 
     @Param(optional=true, defaultValue="true")
     public Boolean logReportedErrors = false;
-  public Boolean isLogReportedErrors() {
+    public Boolean isLogReportedErrors() {
       return logReportedErrors;
     }
 
@@ -254,6 +260,7 @@ public class DeployCommandParameters extends OpsParams {
         public static final String LOCATION = "location";
         public static final String ENABLED = "enabled";
         public static final String PRECOMPILE_JSP = "precompilejsp";
+        public static final String SKIP_DS_FAILURE = "skipdsfailure";
         public static final String DEPLOYMENT_PLAN = "deploymentplan";
         public static final String DEPLOYMENT_ORDER = "deploymentorder";
         public static final String ALT_DD = "altdd";
