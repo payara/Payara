@@ -8,9 +8,9 @@ Here are a few short steps to get you started...
 
 Payara Server currently requires on of the following JDKs:
 
-* Oracle JDK 8 Update 5+
-* Azul Zulu 8
-* OpenJDK 8
+* Oracle JDK 7/8 Update 5+
+* Azul Zulu 7/8
+* OpenJDK 7/8
 
 For IBM J9 support, please download Payara Blue from http://www.payara.fish/downloads
 
