@@ -59,6 +59,7 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
+import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
 
 /**
  * This is the main Launcher class designed for external and internal usage.
@@ -825,6 +826,21 @@ public abstract class GFLauncher {
         jvmOptions = new JvmOptions(rawJvmOptions);
         if (info.isDropInterruptedCommands()) {
             jvmOptions.sysProps.put(SystemPropertyConstants.DROP_INTERRUPTED_COMMANDS, Boolean.TRUE.toString());
+        }
+        
+        // PAYARA-1681 - Add default Payara JVM options if an override isn't in place
+        addDefaultJvmOptions();
+    }
+    
+    private void addDefaultJvmOptions() {
+        if (!jvmOptions.getCombinedMap().containsKey(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY)) {
+            jvmOptions.sysProps.put(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY, 
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
+            
+            // Log that we've made the change
+            GFLauncherLogger.fine(GFLauncherLogger.DEFAULT_JVM_OPTION, 
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY,
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
         }
     }
 
