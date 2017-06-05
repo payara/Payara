@@ -69,7 +69,7 @@ import java.beans.PropertyVetoException;
 })
 public class LogNotificationConfigurer extends BaseNotificationConfigurer<LogNotifierConfiguration, LogNotifierService> implements AdminCommand {
 
-    @Param(name = "useSeparateLogFile", defaultValue = "false")
+    @Param(name = "useSeparateLogFile", defaultValue = "false", optional = true)
     private String useSeparateLogFile;
 
     @Override
