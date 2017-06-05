@@ -56,12 +56,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author mertcaliskan
@@ -110,11 +105,6 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }      
-        if (!service.isHistoricalTraceEnabled()) {
-            actionReport.setMessage("Health Check Historical Trace is not enabled!");
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
         else {
             if (server.isDas()) {
                 if (targetUtil.getConfig(target).isDas()) {
@@ -135,18 +125,21 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
 
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         Properties extrasProps = new Properties();
-        ArrayList historic = new ArrayList<Map>();
-        
-        for (HistoricHealthCheckEvent historicHealthCheckEvent : traces) {
-            LinkedHashMap<String, String> messages = new LinkedHashMap<String, String>();
-            Object values[] = new Object[2];
-            values[0] = new Date(historicHealthCheckEvent.getOccurringTime());
-            values[1] = constructMessage(historicHealthCheckEvent);
-            messages.put("dateTime",values[0].toString());
-            messages.put("message", (String) values[1]);
-            historic.add(messages);
-            columnFormatter.addRow(values);
+        List historic = new ArrayList<>();
+
+        if (traces != null) {
+            for (HistoricHealthCheckEvent historicHealthCheckEvent : traces) {
+                LinkedHashMap<String, String> messages = new LinkedHashMap<String, String>();
+                Object values[] = new Object[2];
+                values[0] = new Date(historicHealthCheckEvent.getOccurringTime());
+                values[1] = constructMessage(historicHealthCheckEvent);
+                messages.put("dateTime",values[0].toString());
+                messages.put("message", (String) values[1]);
+                historic.add(messages);
+                columnFormatter.addRow(values);
+            }
         }
+
         actionReport.setMessage(columnFormatter.toString());
         extrasProps.put("historicmessages", historic);
         actionReport.setExtraProperties(extrasProps);
