@@ -56,7 +56,7 @@ Make sure to also check the Payara Server 4.1.2 Release Notes as they contain im
 5. Documentation 
 ================
 
-Payara Server 4.1.2 Releases Notes: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-172.html
+Payara Server 4.1.2.172 Releases Notes: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-172.html
 
 Payara Server Documentation: https://payara.gitbooks.io/payara-server/content/
 
