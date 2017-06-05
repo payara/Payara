@@ -102,7 +102,6 @@ public class HistoricHealthCheckEventRetriever implements AdminCommand {
 
         if (!service.isEnabled()){
             actionReport.setMessage("Health Check service is not enabled");
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }      
         else {
