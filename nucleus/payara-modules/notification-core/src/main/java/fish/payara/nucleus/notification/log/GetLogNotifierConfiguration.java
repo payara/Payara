@@ -68,7 +68,7 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
 
     @Override
     protected String listConfiguration(LogNotifierConfiguration configuration) {
-        String headers[] = {"Enabled"};
+        String headers[] = {"Enabled", "Use Separate Log File"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         Object values[] = new Object[2];
 
