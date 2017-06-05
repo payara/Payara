@@ -32,7 +32,7 @@ In summary Payara Blue provides;
 * Optimised for production and operations
 * Quarterly Patch Releases / Bug Fixes
 
-## Supports JDKs and OSs
+## Supported JDKs and OSs
 
 Payara Blue currently supports the following JDKs:
 
