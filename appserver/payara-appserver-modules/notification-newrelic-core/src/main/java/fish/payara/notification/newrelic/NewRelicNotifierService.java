@@ -80,9 +80,5 @@ public class NewRelicNotifierService extends QueueBasedNotifierService<NewRelicN
         executionOptions = (NewRelicNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
         scheduleExecutor(new NewRelicNotificationRunnable(queue, executionOptions));
     }
-
-    @Override
-    public void shutdown() {
-        super.reset();
-    }
+    
 }

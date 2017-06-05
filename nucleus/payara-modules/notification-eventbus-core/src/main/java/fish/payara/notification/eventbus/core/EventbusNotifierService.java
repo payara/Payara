@@ -86,8 +86,4 @@ public class EventbusNotifierService extends QueueBasedNotifierService<EventbusN
         executionOptions = (EventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
     }
 
-    @Override
-    public void shutdown() {
-        super.reset();
-    }
 }
