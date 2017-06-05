@@ -123,7 +123,7 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
 
     @Override
     public void shutdown() {
-        super.reset();
+        super.shutdown();
         if (snmp != null) {
             try {
                 snmp.close();
