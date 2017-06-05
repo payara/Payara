@@ -6,9 +6,13 @@ Here are a few short steps to get you started...
 0. Prerequisite
 ===============
 
-Payara Server 5 requires Oracle JDK 8 Update 5+. 
-Check http://www.oracle.com/technetwork/java/javase/downloads/index.html to download the JDK.
+Payara Server 5 currently requires one of the following JDKs:
 
+* Oracle JDK 8 Update 5+
+* Azul Zulu 8
+* OpenJDK 8
+
+For IBM J9 support, please download Payara Blue from http://www.payara.fish.downloads
 
 1. Installing Payara Server
 ===========================
