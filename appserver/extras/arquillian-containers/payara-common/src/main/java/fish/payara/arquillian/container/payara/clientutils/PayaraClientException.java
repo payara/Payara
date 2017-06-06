@@ -25,7 +25,7 @@ public class PayaraClientException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Construct a new instance with the supplied message
+     * Construct a new instance with {@code null} as its detail message.
      */
     public PayaraClientException() {
         super();
@@ -34,8 +34,7 @@ public class PayaraClientException extends RuntimeException {
     /**
      * Construct a new instance with the supplied message
      *
-     * @param message
-     *     the message
+     * @param message the message
      */
     public PayaraClientException(String message) {
         super(message);
@@ -44,10 +43,8 @@ public class PayaraClientException extends RuntimeException {
     /**
      * Construct a new instance with the supplied message and cause
      *
-     * @param message
-     *     the message
-     * @param cause
-     *     the Throwable that caused the exception to be thrown
+     * @param message the message
+     * @param cause the Throwable that caused the exception to be thrown
      */
     public PayaraClientException(String message, Throwable cause) {
         super(message, cause);
@@ -56,8 +53,7 @@ public class PayaraClientException extends RuntimeException {
     /**
      * Construct a new instance with the supplied cause
      *
-     * @param cause
-     *     the Throwable that caused the exception to be thrown
+     * @param cause the Throwable that caused the exception to be thrown
      */
     public PayaraClientException(Throwable cause) {
         super(cause);
