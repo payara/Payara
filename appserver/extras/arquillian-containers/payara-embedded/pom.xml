@@ -6,10 +6,10 @@
     <parent>
         <groupId>fish.payara.arquillian</groupId>
         <artifactId>parent-payara-containers</artifactId>
-        <version>171-beta1</version>
+        <version>1.0-beta1</version>
     </parent>
 
-    <artifactId>payara-embedded-container</artifactId>
+    <artifactId>arquillian-payara-server-4-embedded</artifactId>
     <name>Arquillian Container Payara Embedded</name>
 
     <description>

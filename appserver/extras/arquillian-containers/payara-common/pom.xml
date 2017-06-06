@@ -5,10 +5,10 @@
     <parent>
         <groupId>fish.payara.arquillian</groupId>
         <artifactId>parent-payara-containers</artifactId>
-        <version>171-beta1</version>
+        <version>1.0-beta1</version>
     </parent>
 
-    <artifactId>payara-container-common</artifactId>
+    <artifactId>payara-container-4-common</artifactId>
     <name>Arquillian Container Payara Common Services</name>
 
     <dependencies>
