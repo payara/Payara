@@ -340,20 +340,16 @@ public class PayaraClientService implements PayaraClient {
     }
 
     /**
-     * Get the contextroot associated with the application
+     * Get the context root associated with the application
      *
-     * @param name
-     *     - application name
+     * @param name - application name
      *
      * @return contextRoot attribute of the application
      */
     private String getApplicationContextRoot(String name) {
-        String path = APPLICATION_RESOURCE.replace("{name}", name);
-        Map<String, String> applicationAttributes = getClientUtil().getAttributes(path);
-
-        // pull the contextRoot from the applicasion's attributes
-        String contextRoot = ((Object) applicationAttributes.get("contextRoot")).toString();
-        return contextRoot;
+        // Pull the contextRoot from the application's attributes
+        return getClientUtil().getAttributes(APPLICATION_RESOURCE.replace("{name}", name))
+                              .get("contextRoot");
     }
 
     private String resolveWebModuleContextRoot(String componentName, List<Map<String, Object>> modules) {
