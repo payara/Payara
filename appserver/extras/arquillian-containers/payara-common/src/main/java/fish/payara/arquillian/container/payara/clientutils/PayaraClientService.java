@@ -62,7 +62,7 @@ public class PayaraClientService implements PayaraClient {
     private static final String INSTANCE_LIST               = "/list-instances";
     
     /**
-     * the REST resource path template to retrieve the list of server instances
+     * the REST resource path template to retrieve the list of applications
      */
     private static final String APPLICATION                 = "/applications/application";
     private static final String APPLICATION_RESOURCE        = "/applications/application/{name}";
