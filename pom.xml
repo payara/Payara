@@ -118,6 +118,11 @@
                         <version>3.0.1</version>
                         <configuration>
                             <excludeResources>true</excludeResources>
+                            <excludes>**/*.properties</excludes>
+                            <excludes>**/*.jnlp</excludes>
+                            <excludes>**/*.class</excludes>
+                            <excludes>**/*.html</excludes>
+                            <includePom>false</includePom>
                         </configuration>
                         <executions>
                             <execution>
@@ -128,7 +133,8 @@
                                     <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>payara-4.1.2.173-SNAPSHOT</finalName>                                
+                                    <finalName>payara-4.1.2.173-SNAPSHOT</finalName>    
+                                    <includePom>false</includePom>                            
                                 </configuration>
                             </execution>
                         </executions>
