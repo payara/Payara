@@ -145,7 +145,7 @@ public class CommonPayaraManager<C extends CommonPayaraConfiguration> {
         deployform.field("name", name, TEXT_PLAIN_TYPE);
 
         // Add the target field (the default is "server" - Admin Server)
-        deployform.field("target", this.configuration.getTarget(), TEXT_PLAIN_TYPE);
+        deployform.field("target", configuration.getTarget(), TEXT_PLAIN_TYPE);
 
         // Add the libraries field (optional)
         if (configuration.getLibraries() != null) {
@@ -154,11 +154,11 @@ public class CommonPayaraManager<C extends CommonPayaraConfiguration> {
 
         // Add the properties field (optional)
         if (configuration.getProperties() != null) {
-            deployform.field("properties", this.configuration.getProperties(), TEXT_PLAIN_TYPE);
+            deployform.field("properties", configuration.getProperties(), TEXT_PLAIN_TYPE);
         }
 
         // Add the type field (optional, the only valid value is "osgi", other values are ommited)
-        if (this.configuration.getType() != null && "osgi".equals(configuration.getType())) {
+        if (configuration.getType() != null && "osgi".equals(configuration.getType())) {
             deployform.field("type", configuration.getType(), TEXT_PLAIN_TYPE);
         }
     }
