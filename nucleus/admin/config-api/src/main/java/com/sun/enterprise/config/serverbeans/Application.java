@@ -63,7 +63,7 @@ import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
-import org.glassfish.api.admin.config.ApplicationDeploymentTime;
+import fish.payara.api.admin.config.ApplicationDeploymentTime;
 
 
 @Configured
