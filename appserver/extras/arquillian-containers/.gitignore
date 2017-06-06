@@ -1,0 +1,25 @@
+# Eclipse
+.project
+.classpath
+.settings/
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea
+
+# Maven
+target/
+
+# TestNG
+test-output/
+
+# JBoss AS
+transaction.log
+
+# GlassFish CommandRunner Test
+derby.log
+my_database/
+
+.autoenv.zsh

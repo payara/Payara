@@ -1,0 +1,1 @@
+This directory is meant to be the docroot of a Glassfish instanceRoot. It need not have any files or sub-directories for the purpose of testing.
