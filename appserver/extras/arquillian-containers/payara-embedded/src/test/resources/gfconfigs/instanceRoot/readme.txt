@@ -1,4 +1,4 @@
-This directory is meant to be a Glassfish instanceRoot. As of Glassfish 3.1, this is expected to contain the following two sub-directories:
+This directory is meant to be a Payara instanceRoot. This is expected to contain the following two sub-directories:
 
 * config
 * docroot

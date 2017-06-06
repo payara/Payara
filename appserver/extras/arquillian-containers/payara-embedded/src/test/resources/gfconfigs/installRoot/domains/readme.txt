@@ -1,1 +1,1 @@
-This directory is meant to be the Glassfish domains directory in an installRoot. It need not have any sub-directories for the purpose of testing.
+This directory is meant to be the Payara domains directory in an installRoot. It need not have any sub-directories for the purpose of testing.

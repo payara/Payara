@@ -1,4 +1,4 @@
-This directory is meant to represent the necessary files in a Glassfish 3.1 installRoot.
+This directory is meant to represent the necessary files in a Payara installRoot.
 As of now, these are:
 
 * domains
