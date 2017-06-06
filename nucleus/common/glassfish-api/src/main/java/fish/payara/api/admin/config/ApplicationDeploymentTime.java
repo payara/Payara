@@ -60,7 +60,7 @@ public interface ApplicationDeploymentTime extends ConfigBeanProxy, Payload {
      *
      * @return deployment time
      */
-    @Attribute
+    @Attribute(dataType = Integer.class)
     String getDeploymentTime();
 
     void setDeploymentTime(String value) throws PropertyVetoException;

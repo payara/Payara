@@ -174,7 +174,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        
         events.register(this);
 
         suppInfo
@@ -487,7 +486,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
             ApplicationInfo appInfo;
             appInfo = deployment.deploy(deploymentContext);
-            
+
             /*
              * Various deployers might have added to the downloadable or
              * generated artifacts.  Extract them and, if the command succeeded,
