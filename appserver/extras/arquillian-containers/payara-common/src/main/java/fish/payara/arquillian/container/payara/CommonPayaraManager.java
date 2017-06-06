@@ -53,20 +53,20 @@ public class CommonPayaraManager<C extends CommonPayaraConfiguration> {
 
     private C configuration;
 
-    private PayaraClient glassFishClient;
+    private PayaraClient payaraClient;
 
     private String deploymentName;
 
     public CommonPayaraManager(C configuration) {
         this.configuration = configuration;
 
-        // Start up the GlassFishClient service layer
-        this.glassFishClient = new PayaraClientService(configuration);
+        // Start up the PayaraClient service layer
+        payaraClient = new PayaraClientService(configuration);
     }
 
     public void start() throws LifecycleException {
         try {
-            glassFishClient.startUp();
+            payaraClient.startUp();
         } catch (PayaraClientException e) {
             log.severe(e.getMessage());
             throw new LifecycleException(e.getMessage());
@@ -85,7 +85,7 @@ public class CommonPayaraManager<C extends CommonPayaraConfiguration> {
         try {
             InputStream deployment = archive.as(ZipExporter.class).exportAsInputStream();
 
-            // Build up the POST form to send to Glassfish
+            // Build up the POST form to send to Payara
             final FormDataMultiPart form = new FormDataMultiPart();
             form.bodyPart(new StreamDataBodyPart("id", deployment, archiveName));
 
@@ -93,7 +93,7 @@ public class CommonPayaraManager<C extends CommonPayaraConfiguration> {
             addDeployFormFields(deploymentName, form);
 
             // Do Deploy the application on the remote Payara
-            HTTPContext httpContext = glassFishClient.doDeploy(deploymentName, form);
+            HTTPContext httpContext = payaraClient.doDeploy(deploymentName, form);
             protocolMetaData.addContext(httpContext);
         } catch (PayaraClientException e) {
             throw new DeploymentException("Could not deploy " + archiveName, e);
@@ -111,19 +111,19 @@ public class CommonPayaraManager<C extends CommonPayaraConfiguration> {
         deploymentName = createDeploymentName(archive.getName());
         
         try {
-            // Build up the POST form to send to Glassfish
+            // Build up the POST form to send to Payara
             FormDataMultiPart form = new FormDataMultiPart();
             form.field("target", configuration.getTarget(), TEXT_PLAIN_TYPE);
             form.field("operation", DELETE_OPERATION, TEXT_PLAIN_TYPE);
             
-            glassFishClient.doUndeploy(deploymentName, form);
+            payaraClient.doUndeploy(deploymentName, form);
         } catch (PayaraClientException e) {
             throw new DeploymentException("Could not undeploy " + archive.getName(), e);
         }
     }
 
     public boolean isDASRunning() {
-        return glassFishClient.isDASRunning();
+        return payaraClient.isDASRunning();
     }
 
     private String createDeploymentName(String archiveName) {
