@@ -174,7 +174,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        DeploymentCommandUtils.startTimer();
         
         events.register(this);
 
@@ -341,6 +340,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
      */
     @Override
     public void execute(AdminCommandContext context) {
+        long timeTakenToDeploy = 0;
         try {
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
             Collection<Interceptor> interceptors = habitat.getAllServices(Interceptor.class);
@@ -509,8 +509,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     generatedArtifacts.record(appProps);
 
                     // Set the application deploy time
-                    double timePassed = DeploymentCommandUtils.getTimePassedInSeconds();
-                    deploymentContext.getTransientAppMetaData("application", Application.class).setDeploymentTime(Double.toString(timePassed));
+                    timeTakenToDeploy = timing.elapsed();
+                    deploymentContext.getTransientAppMetaData("application", Application.class).setDeploymentTime(Long.toString(timeTakenToDeploy));
                     
                     // register application information in domain.xml
                     deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
@@ -569,7 +569,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         "deploy.done",
                         "Deployment of {0} done is {1} ms",
                         name,
-                        timing.elapsed()));
+                        timeTakenToDeploy));
             } else if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
                 String errorMessage = report.getMessage();
                 Throwable cause = report.getFailureCause();

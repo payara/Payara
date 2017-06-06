@@ -90,31 +90,6 @@ public class DeploymentCommandUtils {
     final private static String COPY_IN_PLACE_ARCHIVE_PROP_NAME = "copy.inplace.archive";
     
     private static final List<String> LIST_CONTAINING_DOMAIN = new ArrayList<String>(Arrays.asList(DeploymentUtils.DOMAIN_TARGET_NAME));
-    
-    /** Temporary variable for calculating time passed when deploying an app. */
-    private static long startTime = System.nanoTime();
-    
-    /**
-     * Starts a timer. You should call {@link getTimePassedInSeconds()} to then 
-     * get the time that has passed since the timer started.
-     */
-    public static void startTimer() {
-        startTime = System.nanoTime();
-    }
-    
-    /**
-     * Gets the time (in seconds) that has passed since the timer was started. 
-     * If the timer hasn't been started yet you may get strange results.
-     * The time returned is to millisecond accuracy.
-     * @return the time in seconds since timer start
-     */
-    public static double getTimePassedInSeconds() {
-        double accurateDouble = (System.nanoTime() - startTime) / 1000000000.0;
-        
-        int decimalPlaces = 2;
-        
-        return Math.round(accurateDouble * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
-    }
 
     /**
      * Replicates an enable or disable command to all instances in the cluster
