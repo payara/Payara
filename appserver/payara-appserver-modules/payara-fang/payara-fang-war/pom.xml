@@ -43,13 +43,13 @@
     <parent>
         <groupId>fish.payara.appserver.payara-fang</groupId>
         <artifactId>payara-fang-parent</artifactId>
-        <version>4.1.2.172-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     </parent>
     
     <artifactId>payara-fang-war</artifactId>
     <packaging>war</packaging>
     <name>Payara Fang War</name>
-    <version>0.0.1-ALPHA</version>
+    <version>1.0.0-Beta</version>
     
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
