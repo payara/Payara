@@ -89,6 +89,13 @@
     </properties>
 
     <dependencies>
+    
+        <dependency>
+           	<groupId>org.glassfish.main.web</groupId>
+           	<artifactId>web-glue</artifactId>
+           	<version>4.1</version>
+           	<scope>provided</scope>      
+       </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
