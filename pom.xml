@@ -58,6 +58,13 @@
         <tag>payara-server-4.1.2.173-SNAPSHOT</tag>
     </scm>
     
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+    
     <profiles>
         <profile>
             <id>release-phase2</id>
@@ -141,9 +148,8 @@
                     </plugin>
                 </plugins>
             </build>
-            
         </profile>
-        
+             
         <profile>
             <id>javadoc</id>
             <activation>
@@ -187,6 +193,73 @@
                                     <!-- Specific configuration for the aggregate report -->
                                     <finalName>payara-4.1.2.173-SNAPSHOT</finalName>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>javadoc-jdk8+</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <javadoc.options>-Xdoclint:none</javadoc.options>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>stage-nexus</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>stage-nexus</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>payara-staging</serverId>
+                            <deployURL>https://nexus.payara.fish/content/repositories/payara-staging/ </deployURL>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>gpgsign</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>gpgsign</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
