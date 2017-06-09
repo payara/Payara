@@ -160,7 +160,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
         if (jerseyApplicationMap.isEmpty()) {
             report.setMessage("Component " + componentName + " could not be found");
             if (componentName == null) {
-                report.setMessage("Application " + appName + " has no deployed Jersey applications");
+                report.setMessage("Application " + appName + " has no deployed JAX-RS applications");
             }
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
