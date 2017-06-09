@@ -243,7 +243,10 @@ public class GlassFishMain {
                 CommandRunner cmdRunner = gf.getCommandRunner();
                 
                 while (line != null) {
-                    if (!(line.isEmpty() || line.contains("#"))) {
+                    if (!line.isEmpty()) {
+                        if(line.contains("#")) {
+                            line = line.split("#")[0];
+                        }
                         runCommand(cmdRunner, line);
                     }
                     line = reader.readLine();
