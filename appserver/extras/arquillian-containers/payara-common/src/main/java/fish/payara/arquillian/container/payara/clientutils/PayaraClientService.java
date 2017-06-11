@@ -182,7 +182,7 @@ public class PayaraClientService implements PayaraClient {
      * - Get the node addresses list associated with the target - Pull the server instances status
      * form mgm API - In case of cluster tries to fund an instance which has RUNNING status
      *
-     * @return none
+     * 
      */
     public void startUp() throws PayaraClientException {
 
@@ -335,8 +335,8 @@ public class PayaraClientService implements PayaraClient {
     /**
      * Undeploy the component
      *
-     * @param name - application name form - form that include the target & operation fields
-     *
+     * @param name - application name form - form that include the target and operation fields
+     * @param form - form containing the data
      * @return resultMap
      */
     public Map<String, Object> doUndeploy(String name, FormDataMultiPart form) {
@@ -449,7 +449,7 @@ public class PayaraClientService implements PayaraClient {
     /**
      * Get the list of server instances of the cluster
      *
-     * @param target
+     * @param target the target
      * @return server instances map
      */
     protected Map<String, String> getServerInstances(String target) {
@@ -459,7 +459,7 @@ public class PayaraClientService implements PayaraClient {
     /**
      * Get the serverAttributes map of a server
      *
-     * @param name of the server
+     * @param server of the server
      * @return serverAttributes map
      * nodeRef:		- reference to the node object
      * configRef:		- reference to the server's configuration object
@@ -472,7 +472,7 @@ public class PayaraClientService implements PayaraClient {
     /**
      * Get the clusterAttributes map of a cluster
      *
-     * @param name of the cluster
+     * @param cluster of the cluster
      * @return serverAttributes map
      * configRef:      - reference to the cluster's configuration object
      * ...
@@ -555,16 +555,17 @@ public class PayaraClientService implements PayaraClient {
      * if we have more then one server instance on the same node.
      *
      * @param server name
-     * secure: false - http port number, true - https port number
+     * @param defaultPort port used as no port found
+     * @param secure false - http port number, true - https port number
      * @return http/https port number. If the attribute is not defined, gives back the default port
      */
-    protected int getServerInstanceHttpPort(String server, int default_port, boolean secure) {
+    protected int getServerInstanceHttpPort(String server, int defaultPort, boolean secure) {
         String httpListener = (!secure) ? "HTTP_LISTENER_PORT" : "HTTP_SSL_LISTENER_PORT";
 
         String value = getClientUtil().getAttributes(HTTP_LISTENER_INS.replace("{server}", server).replace("{http-listener}", httpListener))
                                       .get("value");
 
-        return value != null ? Integer.parseInt(value) : default_port;
+        return value != null ? Integer.parseInt(value) : defaultPort;
     }
 
     /**

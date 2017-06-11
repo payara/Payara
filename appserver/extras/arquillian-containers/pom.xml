@@ -60,15 +60,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
-    <!-- 
-    <parent>
-        <groupId>org.glassfish.main.extras</groupId>
-        <artifactId>extras</artifactId>
-        <version>4.1.2.173-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-     -->
 
     <groupId>fish.payara.arquillian</groupId>
     <artifactId>parent-payara-containers</artifactId>
@@ -89,12 +80,21 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.source>1.7</maven.compiler.source>
     </properties>
+    
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <modules>
         <module>payara-common</module>
-        <!-- <module>payara-managed</module> -->
+        <module>payara-managed</module>
         <module>payara-remote</module>
+        <!-- 
         <module>payara-embedded</module>
+         -->
     </modules>
 
     <dependencyManagement>
@@ -150,6 +150,78 @@
 
     <build>
         <plugins>
+        
+            <!-- Configure the jar with the binaries. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <URL>${project.url}</URL>
+                            <Extension-Name>${project.artifactId}</Extension-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            
+            <!-- Configure the jar with the sources. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Configure the jar with the javadoc. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.4</version>
+                <configuration>
+                    <javadocVersion>${javadoc.version}</javadocVersion>
+                    <notimestamp>true</notimestamp>
+                    <splitindex>true</splitindex>
+                    <doctitle>OmniFaces API documentation</doctitle>
+                    <links>
+                        <link>https://docs.oracle.com/javaee/${javaee.version}/api/</link>
+                    </links>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Configure snapshot deployment to Sonatype. -->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+        
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>

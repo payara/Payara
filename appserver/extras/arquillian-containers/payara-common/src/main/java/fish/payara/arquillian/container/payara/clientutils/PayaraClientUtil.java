@@ -248,8 +248,8 @@ public class PayaraClientUtil {
     /**
      * Marshalling a Payara Mng API response XML document to a java Map object
      *
-     * @param XML
-     *     document
+     * @param document the XMl document to be converted
+     *     
      *
      * @return map containing the XML doc representation in java map format
      */

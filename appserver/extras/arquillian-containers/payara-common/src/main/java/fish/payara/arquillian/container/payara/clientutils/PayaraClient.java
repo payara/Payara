@@ -75,7 +75,7 @@ public interface PayaraClient {
     /**
      * Start-up the server
      * 
-     * <p>
+     * 
      * <ul>
      *   <li>   Get the node addresses list associated with the target
      *   <li>    Check the status of the target server instance
@@ -90,7 +90,8 @@ public interface PayaraClient {
      * of Payara
      *
      * @param name - name of the application form - a form of MediaType.MULTIPART_FORM_DATA_TYPE
-     *
+     * @param form - form containing data to be deployed
+     * @throws DeploymentException if something goes wrong with the deployment
      * @return subComponents - a map of SubComponents of the application
      */
     public HTTPContext doDeploy(String name, FormDataMultiPart form) throws DeploymentException;
@@ -99,13 +100,14 @@ public interface PayaraClient {
      * Do undeploy the application
      *
      * @param name - application name
-     *
+     * @param form - form
      * @return responseMap
      */
     public Map<String, Object> doUndeploy(String name, FormDataMultiPart form);
 
     /**
      * Verify whether the Domain Administration Server is running.
+     * @return true if the DAS is running, false otherwise
      */
     public boolean isDASRunning();
 }

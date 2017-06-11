@@ -115,7 +115,7 @@ public class NodeAddress {
     }
 
     /**
-     * @return none
+     * @param serverName name of the server
      */
     public void setServerName(String serverName) {
         this.serverName = serverName;
@@ -129,7 +129,7 @@ public class NodeAddress {
     }
 
     /**
-     * @return none
+     * @param host the host
      */
     public void setHost(String host) {
         this.host = host;
@@ -143,7 +143,7 @@ public class NodeAddress {
     }
 
     /**
-     * @return none
+     * @param httpPort the http port
      */
     public void setHttpPort(int httpPort) {
         this.httpPort = httpPort;
@@ -157,10 +157,10 @@ public class NodeAddress {
     }
 
     /**
-     * @return none
+     * @param httpsPort the port used for https
      */
-    public void setHttpsPort(int secure_port) {
-        this.httpsPort = secure_port;
+    public void setHttpsPort(int httpsPort) {
+        this.httpsPort = httpsPort;
     }
 
     public URI getURI() {
