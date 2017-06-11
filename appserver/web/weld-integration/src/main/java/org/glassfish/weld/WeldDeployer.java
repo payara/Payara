@@ -477,7 +477,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             archiveName = BeanDeploymentArchiveImpl.stripMavenVersion(archiveName);
         }
         if(!context.getArchiveHandler().getArchiveType().isEmpty()) {
-            archiveName = String.format("%s.%s", archiveName, context.getArchiveHandler().getArchiveType());
+            archiveName = String.format("%s.%s", BeanDeploymentArchiveImpl.stripApplicationVersion(archiveName), context.getArchiveHandler().getArchiveType());
         }
         
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);

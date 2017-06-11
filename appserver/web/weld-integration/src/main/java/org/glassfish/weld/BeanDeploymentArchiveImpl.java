@@ -828,6 +828,14 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return sb.toString();
     }
 
+    static String stripApplicationVersion(String appName) {
+        int idx = appName.lastIndexOf(':');
+        if (idx < 0) {
+            return appName;
+        }
+        return appName.substring(0, idx);
+    }
+
     static String stripMavenVersion(String name) {
         int suffixIdx = name.lastIndexOf('-');
         if(suffixIdx > 0) {
