@@ -57,7 +57,6 @@
 package fish.payara.arquillian.container.payara.managed;
 
 import static java.lang.Runtime.getRuntime;
-import static java.util.Collections.emptyList;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -85,7 +84,7 @@ class PayaraServerControl {
         "more information please refer to relevant issues for existing workarounds: https://java.net/jira/browse/GLASSFISH-21004 " +
         "https://issues.apache.org/jira/browse/DERBY-6438";
 
-    private static final List<String> NO_ARGS = emptyList();
+    private static final List<String> NO_ARGS = new ArrayList<>();
 
     private PayaraManagedContainerConfiguration config;
     private Thread shutdownHook;
@@ -166,8 +165,7 @@ class PayaraServerControl {
         getRuntime().addShutdownHook(shutdownHook);
     }
 
-    private void executeAdminDomainCommand(String description, String adminCmd, List<String> args,
-        ProcessOutputConsumer consumer) throws LifecycleException {
+    private void executeAdminDomainCommand(String description, String adminCmd, List<String> args, ProcessOutputConsumer consumer) throws LifecycleException {
         if (config.getDomain() != null) {
             args.add(config.getDomain());
         }
@@ -175,8 +173,7 @@ class PayaraServerControl {
         executeAdminCommand(description, adminCmd, args, consumer);
     }
 
-    private void executeAdminCommand(String description, String command, List<String> args,
-        ProcessOutputConsumer consumer) throws LifecycleException {
+    private void executeAdminCommand(String description, String command, List<String> args, ProcessOutputConsumer consumer) throws LifecycleException {
         final List<String> cmd = buildCommand(command, args);
 
         if (config.isOutputToConsole()) {
