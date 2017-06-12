@@ -152,6 +152,8 @@
         <guava.version>18.0</guava.version>
         <soteria.version>1.0-m01</soteria.version>
         <ozark.version>20160715</ozark.version>
+        <jsonb-api.version>1.0.0-RC2</jsonb-api.version>
+        <yasson.version>1.0.0-RC1</yasson.version>
     </properties>
 
     <modules>
@@ -511,6 +513,19 @@
                             <specImplVersion>${ozark.version}</specImplVersion>
                             <apiPackage>javax.mvc-api</apiPackage>
                             <implNamespace>rg.glassfish.ozark</implNamespace>
+                         </spec>
+                         <spec>
+                            <artifact>
+                                <groupId>javax.json.bind</groupId>
+                                <artifactId>javax.json.bind-api</artifactId>
+                                <version>${jsonb-api.version}</version>
+                            </artifact>
+                            <nonFinal>false</nonFinal>
+                            <jarType>api</jarType>
+                            <specVersion>${jsonb-api.version}</specVersion>
+                            <specImplVersion>${yasson.version}</specImplVersion>
+                            <apiPackage>javax.json.bind</apiPackage>
+                            <implNamespace>org.eclipse</implNamespace>
                          </spec>
                     </specs>
                 </configuration>
@@ -1138,6 +1153,16 @@
                 <groupId>javax.mvcc</groupId>
                 <artifactId>javax.mvc-api</artifactId>
                 <version>${ozark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse</groupId>
+                <artifactId>yasson</artifactId>
+                <version>${yasson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.json.bind</groupId>
+                <artifactId>javax.json.bind-api</artifactId>
+                <version>${jsonb-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
