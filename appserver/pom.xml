@@ -138,9 +138,9 @@
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
         <tyrus.version>1.13</tyrus.version>
-        <jsonp-api.version>1.0</jsonp-api.version>
-        <jsonp-ri.version>1.0.4</jsonp-ri.version>
-        <jsonp-jaxrs.version>1.0</jsonp-jaxrs.version>
+        <jsonp-api.version>1.1</jsonp-api.version>
+        <jsonp-ri.version>1.1</jsonp-ri.version>
+        <jsonp-jaxrs.version>1.1</jsonp-jaxrs.version>
         <concurrent-api.version>1.0</concurrent-api.version>
         <concurrent.version>1.0.payara-p1</concurrent.version>
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
