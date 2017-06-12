@@ -212,6 +212,7 @@ public class GlassFishMain {
             });
 
         }
+        
         /**
          * Runs a command read from a string
          * @param cmdRunner
@@ -219,13 +220,34 @@ public class GlassFishMain {
          * @throws GlassFishException 
          */
         private void runCommand(CommandRunner cmdRunner, String line) throws GlassFishException, IOException {
+            
+            line = cleanCommand(line);
+            if(line == null) {
+                return;
+            }
+            
             System.out.println("Running command: " + line);
-            String[] tokens = line.split("\\s");
+            String[] tokens = line.split("\\s+");
             CommandResult result = cmdRunner.run(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
             System.out.println(result.getOutput());
             if(result.getFailureCause() != null) {
                 result.getFailureCause().printStackTrace();
             }
+        }
+        
+        /**
+         * Cleans a command read from a string
+         * @param line
+         */
+        private String cleanCommand(String line) {
+            if(line == null) {
+                return null;
+            }
+            line = line.replaceAll("#.*", ""); // Removes comments
+            if (line.isEmpty() || line.replaceAll("\\s", "").isEmpty()) {
+                return null;
+            }
+            return line;
         }
  
         /**
@@ -243,12 +265,7 @@ public class GlassFishMain {
                 CommandRunner cmdRunner = gf.getCommandRunner();
                 
                 while (line != null) {
-                    if (!line.isEmpty()) {
-                        if(line.contains("#")) {
-                            line = line.split("#")[0];
-                        }
-                        runCommand(cmdRunner, line);
-                    }
+                    runCommand(cmdRunner, line);
                     line = reader.readLine();
                 }
             } catch (IOException ex) {
