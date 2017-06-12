@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
 
 package com.sun.gjc.spi;
 
@@ -53,6 +53,8 @@ import com.sun.gjc.util.StatementLeakDetector;
 import com.sun.logging.LogDomains;
 import fish.payara.jdbc.RequestTracingListener;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.resource.NotSupportedException;
@@ -210,7 +212,10 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         tuneStatementLeakTracing(poolInfo, statementLeakTimeout, statementLeakReclaim);
         
         try {
-            requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+            RunLevelController runLevelController = Globals.getDefaultHabitat().getService(RunLevelController.class);
+            if (runLevelController != null && runLevelController.getCurrentRunLevel() == StartupRunLevel.VAL) {
+                requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+            }
         } catch (NullPointerException ex) {
             _logger.log(Level.INFO, "Error retrieving Request Tracing service "
                     + "during initialisation of ManagedConnectionImpl - NullPointerException");
