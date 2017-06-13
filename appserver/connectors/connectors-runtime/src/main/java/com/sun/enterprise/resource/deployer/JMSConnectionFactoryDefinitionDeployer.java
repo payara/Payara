@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.resource.deployer;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
@@ -69,6 +69,9 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.sun.appserv.connectors.internal.api.ConnectorConstants.LOCAL_TRANSACTION_TX_SUPPORT_STRING;
+import static com.sun.appserv.connectors.internal.api.ConnectorConstants.NO_TRANSACTION_TX_SUPPORT_STRING;
+import static com.sun.appserv.connectors.internal.api.ConnectorConstants.XA_TRANSACTION_TX_SUPPORT_STRING;
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 @Service
@@ -306,6 +309,26 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
             return null;
         }
 
+        @Override
+        public Property addProperty(Property property) {
+            return null;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            return null;
+        }
+
         public Property getProperty(String name) {
             return null;
         }
@@ -480,11 +503,34 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         }
 
         public String getTransactionSupport() {
+            
             String transactionSupport = desc.getProperty(PROPERTY_PREFIX + "transaction-support");
+            
+            if (desc.isTransactionSet()) {
+                
+                // The spec annotation JMSConnectionFactoryDefinition only has true/false
+                // for transaction support. But the proprietary properties distinguisg
+                // between none, local and xa 
+                
+                if (desc.isTransactional()) {
+                    // If transactional == true, look at the transaction-support property to see 
+                    // if the transaction type is additionally specified
+                    
+                    if (LOCAL_TRANSACTION_TX_SUPPORT_STRING.equals(transactionSupport)) {
+                        return transactionSupport;
+                    }
+                    
+                    return XA_TRANSACTION_TX_SUPPORT_STRING;
+                } 
+                
+                return NO_TRANSACTION_TX_SUPPORT_STRING;
+            }
+            
+            
             if (isValidProperty(transactionSupport)) {
                 return transactionSupport;
             } else {
-                return "NoTransaction";
+                return NO_TRANSACTION_TX_SUPPORT_STRING;
             }
         }
 
@@ -676,6 +722,29 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
             }
 
             return jmsConnectionFactoryProperties;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            desc.getProperties().put(property.getName(), property);
+            return property;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return getProperty(s);
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            Property property = lookupProperty(s);
+            desc.getProperties().remove(s);
+            return property;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            return removeProperty(property.getName());
         }
 
         public Property getProperty(String name) {

@@ -514,6 +514,26 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         }
 
         @Override
+        public Property addProperty(Property property) {
+            return null;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            return null;
+        }
+
+        @Override
         public Property getProperty(String name) {
             return null;
         }
@@ -986,6 +1006,29 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             }
 
             return dataSourceProperties;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            desc.getProperties().put(property.getName(), property);
+            return property;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return getProperty(s);
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            Property property = lookupProperty(s);
+            desc.getProperties().remove(s);
+            return property;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            return removeProperty(property.getName());
         }
 
         private boolean isStandardPropertiesSet(DataSourceDefinitionDescriptor desc){

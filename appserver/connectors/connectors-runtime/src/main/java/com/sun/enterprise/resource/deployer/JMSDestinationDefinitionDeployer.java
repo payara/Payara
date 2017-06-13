@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource.deployer;
 
@@ -343,6 +344,29 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
             }
 
             return jmsDestinationProperties;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            desc.getProperties().put(property.getName(), property);
+            return property;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return getProperty(s);
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            Property property = lookupProperty(s);
+            desc.getProperties().remove(s);
+            return property;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            return removeProperty(property.getName());
         }
 
         public Property getProperty(String name) {

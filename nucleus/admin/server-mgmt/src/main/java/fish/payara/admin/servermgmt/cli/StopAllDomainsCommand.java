@@ -83,19 +83,14 @@ public class StopAllDomainsCommand extends StopDomainCommand {
             for (String domain : domainsList){
                 setConfig(domain);
                 RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
-                if (kill){
-                    
-                } else {
-                    logger.fine("Stopping domain " + domain);
-                    try {
+                logger.fine("Stopping domain " + domain);
+                try {
                     cmd.executeAndReturnOutput("stop-domain","--force", force.toString());
-                    } catch (Exception e){
-                        //System.out.println(e.getLocalizedMessage());
-                    }
-                    logger.fine("Stopped domain");
+                } catch (Exception e){
+                    //System.out.println(e.getLocalizedMessage());
                 }
-                
-            }          
+                logger.fine("Stopped domain");
+            }      
         return 0;
         } catch (Exception ex) {
             throw new CommandException(ex.getLocalizedMessage());

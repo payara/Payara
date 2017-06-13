@@ -320,7 +320,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
         List<Class<?>> classes = new ArrayList<>();
 
         for (Class jerseyClass : jerseyApplication.getConfiguration().getApplication().getClasses()) {
-            if(!jerseyClass.getPackage().getName().contains("org.glassfish.jersey.server.wadl")) {
+            if(jerseyClass.getPackage() == null || !jerseyClass.getPackage().getName().contains("org.glassfish.jersey.server.wadl")) {
                 classes.add(jerseyClass);
             }
         }

@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 /*
@@ -125,6 +124,7 @@ public class ApplicationHandlers {
             oneRow.put("enableURL", DeployUtil.getTargetEnableInfo(oneAppName, true, true));
             oneRow.put("sniffers", engines);
             oneRow.put("deploymentOrder", RestUtil.getAttributesMap(prefix+encodedName).get("deploymentOrder"));
+            oneRow.put("deploymentTime", RestUtil.getAttributesMap(prefix+encodedName).get("deploymentTime"));
 
             List sniffersList = GuiUtil.parseStringList(engines, ",");
             oneRow.put("sniffersList", sniffersList);

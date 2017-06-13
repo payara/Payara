@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.services.impl;
 
@@ -225,6 +226,29 @@ public class DummyNetworkListener implements NetworkListener {
     @Override
     public List<Property> getProperty() {
         return properties;
+    }
+
+    @Override
+    public Property addProperty(Property property) {
+        properties.add(property);
+        return property;
+    }
+
+    @Override
+    public Property lookupProperty(String s) {
+        return getProperty(s);
+    }
+
+    @Override
+    public Property removeProperty(String s) {
+        Property property = getProperty(s);
+        return removeProperty(property);
+    }
+
+    @Override
+    public Property removeProperty(Property property) {
+        properties.remove(property);
+        return property;
     }
 
     @Override

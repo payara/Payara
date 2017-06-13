@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import java.io.File;
@@ -187,7 +187,28 @@ public class ListComponentsCommandTest {
         }
 
        public List<Property> getProperty() {return null;}
-  public void setResources(Resources res){}
+
+        @Override
+        public Property addProperty(Property property) {
+            return null;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            return null;
+        }
+
+        public void setResources(Resources res){}
         public Resources getResources(){return null;}
 
 
@@ -222,8 +243,24 @@ public class ListComponentsCommandTest {
         public void setDescription(String value) throws PropertyVetoException{}
         public String getDeploymentOrder() { return "100"; }
         public void setDeploymentOrder(String value) throws PropertyVetoException {}
+        public String getDeploymentTime() { return "0"; }
+        public void setDeploymentTime(String value) throws PropertyVetoException {}
         public List<Engine> getEngine(){ return null;}
         public List<Property> getProperty(){ return null;}
+        @Override
+        public Property addProperty(Property property) { return null; }
+        @Override
+        public Property lookupProperty(String s) {
+                return null;
+            }
+        @Override
+        public Property removeProperty(String s) {
+                return null;
+            }
+        @Override
+        public Property removeProperty(Property property) {
+                return null;
+            }
         public <T extends ApplicationConfig> T getApplicationConfig(Class<T> type) {return null;}
         public List<ApplicationConfig> getApplicationConfigs() {return null;}
         public Map<String, Properties> getModulePropertiesMap() {return null;}
@@ -286,8 +323,21 @@ public class ListComponentsCommandTest {
         public String getDescription() {return "";}
         public void setDescription(String value) {}
         public List<Property> getProperty() {return null;}
-
-            //config.serverbeans.Modules
+        @Override
+        public Property addProperty(Property property) { return null; }
+        @Override
+        public Property lookupProperty(String s) {
+            return null;
+        }
+        @Override
+        public Property removeProperty(String s) {
+            return null;
+        }
+        @Override
+        public Property removeProperty(Property property) {
+            return null;
+        }
+        //config.serverbeans.Modules
         public String getName() { 
             return "hello";
         }
