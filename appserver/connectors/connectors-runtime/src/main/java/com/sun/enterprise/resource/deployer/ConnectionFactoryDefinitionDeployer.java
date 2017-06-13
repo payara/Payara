@@ -680,7 +680,6 @@ public class ConnectionFactoryDefinitionDeployer implements ResourceDeployer {
             throw new UnsupportedOperationException();
         }
 
-
         public Property getProperty(String name) {
             String value = desc.getProperty(name);
             return new ConnectionFactoryProperty(name, value);

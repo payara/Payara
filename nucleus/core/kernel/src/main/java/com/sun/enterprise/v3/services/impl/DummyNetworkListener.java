@@ -231,7 +231,6 @@ public class DummyNetworkListener implements NetworkListener {
     @Override
     public Property addProperty(Property property) {
         throw new UnsupportedOperationException();
-
     }
 
     @Override

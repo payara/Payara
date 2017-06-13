@@ -69,10 +69,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
