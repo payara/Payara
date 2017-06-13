@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -36,43 +36,33 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+package fish.payara.api.admin.config;
 
-package org.glassfish.resources.javamail;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
-import java.util.Properties;
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
+import java.beans.PropertyVetoException;
+import javax.validation.Payload;
 
 /**
+ * An configured element which shows the time taken to deploy the application in
+ * seconds
  *
- * @author peterw99
+ * @author Matt Gill
  */
-public class MailSessionAuthenticator extends Authenticator {
+@Configured
+public interface ApplicationDeploymentTime extends ConfigBeanProxy, Payload {
 
-    private final Properties props;
+    /**
+     * Time taken to deploy the application.
+     *
+     * @return deployment time
+     */
+    @Attribute(dataType = Integer.class)
+    String getDeploymentTime();
 
-    public MailSessionAuthenticator(Properties props) {
-        this.props = props;
-    }
-
-    @Override
-    protected PasswordAuthentication getPasswordAuthentication() {
-        PasswordAuthentication authenticator = null;
-        String protocol = getRequestingProtocol();
-        if(protocol != null) {
-            String password = props.getProperty("mail." + protocol + ".password");
-            if (password == null){
-                password = props.getProperty("mail.password");
-            }
-            String username = getDefaultUserName();
-            if(password != null && username != null) {
-                authenticator = new PasswordAuthentication(username, password);
-            }
-        }
-        return authenticator;
-    }
+    void setDeploymentTime(String value) throws PropertyVetoException;
 
 }

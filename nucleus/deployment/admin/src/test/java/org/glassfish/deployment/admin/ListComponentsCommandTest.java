@@ -38,7 +38,6 @@
  * holder.
  */
 // Portions Copyright [2017] [Payara Foundation and/or its affiliates]
-
 package org.glassfish.deployment.admin;
 
 import java.io.File;
@@ -244,6 +243,8 @@ public class ListComponentsCommandTest {
         public void setDescription(String value) throws PropertyVetoException{}
         public String getDeploymentOrder() { return "100"; }
         public void setDeploymentOrder(String value) throws PropertyVetoException {}
+        public String getDeploymentTime() { return "0"; }
+        public void setDeploymentTime(String value) throws PropertyVetoException {}
         public List<Engine> getEngine(){ return null;}
         public List<Property> getProperty(){ return null;}
         @Override

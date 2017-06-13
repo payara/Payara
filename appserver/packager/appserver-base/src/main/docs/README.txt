@@ -6,17 +6,20 @@ Here are a few short steps to get you started...
 0. Prerequisite
 ===============
 
-Payara Server 4.1.1 requires Oracle JDK 7 Update 65+ or Oracle JDK 8 Update 5+. 
-Check http://www.oracle.com/technetwork/java/javase/downloads/index.html to download the JDK.
+Payara Server currently requires on of the following JDKs:
 
+* Oracle JDK 7/8 Update 5+
+* Azul Zulu 7/8
+* OpenJDK 7/8
+
+For IBM J9 support, please download Payara Blue from http://www.payara.fish/downloads
 
 1. Installing Payara Server
 ===========================
 
 Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-4.1.1.171.zip
 
-
-The default domain called 'domain1' is installed and preconfigured.
+The default domain called 'domain1' is already installed and preconfigured.
 
 
 2. Starting Payara Server
@@ -53,7 +56,7 @@ Make sure to also check the Payara Server 4.1.2 Release Notes as they contain im
 5. Documentation 
 ================
 
-Payara Server 4.1.2 Releases Notes: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-172.html
+Payara Server 4.1.2.172 Releases Notes: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-172.html
 
 Payara Server Documentation: https://payara.gitbooks.io/payara-server/content/
 

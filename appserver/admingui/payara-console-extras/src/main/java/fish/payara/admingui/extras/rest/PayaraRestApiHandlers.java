@@ -374,33 +374,47 @@ public class PayaraRestApiHandlers
         Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
         Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
         List<String> enabledNotifiers = Arrays.asList(enabled);
+
+        boolean forRequestTracing = false;
+        boolean forHealthCheck = false;
+
         for (String notifier : notifiers){
             String name = notifier.split("-")[1];
             String restEndpoint;
             if (endpoint.contains("request-tracing-service-configuration")){
                 restEndpoint = endpoint + "/requesttracing-" + name + "-notifier-configure";
+                forRequestTracing = true;
             } else if (endpoint.contains("health-check-service-configuration")){
                 restEndpoint = endpoint + "/healthcheck-" + name + "-notifier-configure";
+                forHealthCheck = true;
             } else {
                 //Unknown service being configured
                 throw new UnknownConfigurationException();
             }
             
-            HashMap<String, Object> attrs = new HashMap<String, Object>();
+            HashMap<String, Object> attrs = new HashMap<>();
             if (enabledNotifiers.contains(notifier)){
                 attrs.put("enabled", "true");                
             } else {
                 attrs.put("enabled", "false");
             }
-            if (dynamic){
-                attrs.put("dynamic", "true");
-            } else {
-                attrs.put("dynamic", "false");
-            }
+            //PAYARA-1616 go silent, bootstrap will take place after iteration.
+            attrs.put("dynamic", "false");
             RestUtil.restRequest(restEndpoint, attrs, "post", handlerCtx, quiet, throwException);
         }
+        // PAYARA-1616
+        // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for enabled notifier.
+        if (dynamic){
+            if (forRequestTracing) {
+                String restEndpoint = endpoint + "/bootstrap-requesttracing";
+                RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
+            }
+            if (forHealthCheck) {
+                String restEndpoint = endpoint +  "/bootstrap-healthcheck";
+                RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
+            }
+        }
     }
-  
   
     @Handler(id = "py.getHistoricHealthcheckMessages",
             input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),

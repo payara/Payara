@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.beans;
@@ -45,13 +47,14 @@ import org.glassfish.resources.api.JavaEEResource;
 import org.glassfish.resources.api.JavaEEResourceBase;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
+//Renamed from MailResource to avoid confusion with org.glassfish.resources.javamail.config.MailResource
 /**
- * Resource info for MailResource.
+ * Resource info for MailBean.
  * IASRI #4650786
  *
  * @author James Kong
  */
-public class MailResource extends JavaEEResourceBase implements MailResourceIntf {
+public class MailBean extends JavaEEResourceBase implements MailResourceIntf {
 
     private String resType_;
     private String factoryClass_;
@@ -62,29 +65,35 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
     private String transportProtocolClass_;
     private String mailHost_;
     private String username_;
+    private String password_;
     private String mailFrom_;
+    private boolean auth_;
     private boolean debug_;
 
-    public MailResource(ResourceInfo resourceInfo) {
+    public MailBean(ResourceInfo resourceInfo) {
         super(resourceInfo);
     }
 
+    @Override
     protected JavaEEResource doClone(ResourceInfo resourceInfo) {
-        MailResource clone = new MailResource(resourceInfo);
+        MailBean clone = new MailBean(resourceInfo);
         clone.setResType(getResType());
         clone.setFactoryClass(getFactoryClass());
         return clone;
     }
 
     //unused implementation ie., com.sun.enterprise.deployment.MailConfiguration uses this, but is unused in-turn.
+    @Override
     public String getName() {
         return getResourceInfo().getName();
     }
 
+    @Override
     public int getType() {
         return JavaEEResource.MAIL_RESOURCE;
     }
 
+    @Override
     public String getResType() {
         return resType_;
     }
@@ -93,6 +102,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         resType_ = resType;
     }
 
+    @Override
     public String getFactoryClass() {
         return factoryClass_;
     }
@@ -101,6 +111,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         factoryClass_ = factoryClass;
     }
 
+    @Override
     public String getStoreProtocol() {
         return storeProtocol_;
     }
@@ -109,6 +120,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         storeProtocol_ = storeProtocol;
     }
 
+    @Override
     public String getStoreProtocolClass() {
         return storeProtocolClass_;
     }
@@ -117,6 +129,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         storeProtocolClass_ = storeProtocolClass;
     }
 
+    @Override
     public String getTransportProtocol() {
         return transportProtocol_;
     }
@@ -125,6 +138,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         transportProtocol_ = transportProtocol;
     }
 
+    @Override
     public String getTransportProtocolClass() {
         return transportProtocolClass_;
     }
@@ -133,6 +147,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         transportProtocolClass_ = transportProtocolClass;
     }
 
+    @Override
     public String getMailHost() {
         return mailHost_;
     }
@@ -141,6 +156,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         mailHost_ = mailHost;
     }
 
+    @Override
     public String getUsername() {
         return username_;
     }
@@ -148,7 +164,26 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
     public void setUsername(String username) {
         username_ = username;
     }
-
+    
+    @Override
+    public String getPassword() {
+        return password_;
+    }
+    
+    public void setPassword(String password) {
+        password_ = password;
+    }
+    
+    @Override
+    public boolean getAuth(){
+        return auth_;
+    }
+    
+    public void setAuth(boolean auth){
+        auth_ = auth;
+    }
+    
+    @Override
     public String getMailFrom() {
         return mailFrom_;
     }
@@ -157,6 +192,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         mailFrom_ = mailFrom;
     }
 
+    @Override
     public boolean isDebug() {
         return debug_;
     }
@@ -165,6 +201,7 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
         debug_ = debug;
     }
 
+    @Override
     public String toString() {
         return "< Mail Resource : " + getResourceInfo() + " , " + getResType() + "... >";
     }
