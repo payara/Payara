@@ -751,7 +751,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return cdiAnnotatedClassNames.contains(className);
     }
 
-
+    @SuppressWarnings("unchecked")
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         WeldBootstrap wb = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP,
                                                            WeldBootstrap.class);

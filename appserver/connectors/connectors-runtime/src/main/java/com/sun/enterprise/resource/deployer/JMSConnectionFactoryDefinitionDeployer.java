@@ -38,7 +38,6 @@
  * holder.
  */
 // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
-
 package com.sun.enterprise.resource.deployer;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
@@ -307,6 +306,26 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         }
 
         public List<Property> getProperty() {
+            return null;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            return null;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
             return null;
         }
 
@@ -703,6 +722,29 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
             }
 
             return jmsConnectionFactoryProperties;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            desc.getProperties().put(property.getName(), property);
+            return property;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return getProperty(s);
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            Property property = lookupProperty(s);
+            desc.getProperties().remove(s);
+            return property;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            return removeProperty(property.getName());
         }
 
         public Property getProperty(String name) {

@@ -779,6 +779,26 @@ public class VersioningUtilsTest {
         }
 
         @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public Property getProperty(String name) {
             throw new UnsupportedOperationException("Not supported yet.");
         }

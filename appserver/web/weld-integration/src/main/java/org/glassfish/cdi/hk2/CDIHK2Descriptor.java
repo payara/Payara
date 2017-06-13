@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.cdi.hk2;
 
 import java.lang.annotation.Annotation;
@@ -129,6 +131,11 @@ public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
 
     @Override
     public Class<?> getImplementationClass() {
+        return bean.getBeanClass();
+    }
+
+    @Override
+    public Type getImplementationType() {
         return bean.getBeanClass();
     }
 

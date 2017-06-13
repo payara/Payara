@@ -39,6 +39,7 @@
  *
  * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource.deployer;
 
@@ -68,10 +69,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -540,6 +538,29 @@ public class MailSessionDeployer implements ResourceDeployer {
             for (String key : desc.getProperties().stringPropertyNames())
                 props.add(new MailSessionProperty(key, desc.getProperty(key)));
             return props;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            desc.getProperties().put(property.getName(), property);
+            return property;
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            return (Property) desc.getProperties().get(s);
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            Property property = lookupProperty(s);
+            desc.getProperties().remove(s);
+            return property;
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            return removeProperty(property.getName());
         }
 
         @Override
