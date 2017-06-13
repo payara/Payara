@@ -76,6 +76,10 @@
     <sun:tableColumn headerText="$resource{i18n.deployTable.colDeploymentOrder}"  sort="deploymentOrder"   id="colorder">
         <staticText id="order" value="#{td.value.deploymentOrder}" />
     </sun:tableColumn>
+
+    <sun:tableColumn headerText="$resource{i18n.deployTable.colDeploymentTime}"  sort="deploymentTime"   id="coltime">
+        <staticText id="time" value="#{td.value.deploymentTime}" />
+    </sun:tableColumn>
         
     <sun:tableColumn rendered="#{!pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colStatus}" sort="enableURL"  id="col2">
         <sun:hyperlink rendered="#{!pageSession.onlyDASExist}" id="targetLink" text="#{td.value.enableURL}" url="#{targetLink}?appName=#{td.value.encodedName}&listPageLink=#{pageSession.listPageLink}" />
