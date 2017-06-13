@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
     <artifactId>glassfish-parent</artifactId>
@@ -58,7 +58,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-      <tag>payara-server-4.1.1.172-SNAPSHOT</tag>
+      <tag>payara-server-4.1.2.173-SNAPSHOT</tag>
   </scm>
     
     <properties>
@@ -96,8 +96,8 @@
         <version_suffix>#badassfish</version_suffix>
         <major_version>4</major_version>
         <minor_version>1</minor_version>
-        <update_version>1</update_version>
-        <payara_version>172-SNAPSHOT</payara_version>
+        <update_version>2</update_version>
+        <payara_version>173-SNAPSHOT</payara_version>
         <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
         
@@ -121,7 +121,7 @@
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
         <jaxb.version>2.2.12-b141219.1637</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
-        <eclipselink.version>2.6.4.payara-p1</eclipselink.version>
+        <eclipselink.version>2.6.4.payara-p2</eclipselink.version>
         <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
         <javax-persistence-api.version>2.1.0</javax-persistence-api.version> 
         <dbschema.version>3.1.1</dbschema.version>
@@ -133,7 +133,7 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld-api.version>2.4.Final</weld-api.version>
         <weld.version>2.4.2.Final</weld.version>
-        <jboss.classfilewriter.version>1.1.2.Final</jboss.classfilewriter.version>
+        <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
         <tyrus.version>1.13.1</tyrus.version>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -61,6 +61,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.*;
 import java.util.logging.Formatter;
 import javax.inject.Inject;
+
+import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.PostConstruct;
@@ -652,7 +654,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
             if (handlerClassName.equals(GFFileHandler.class.getName())) {
                 gfFileHandler = (GFFileHandler) handler;
-            } else {
+            }
+            else if (!handlerClassName.equals(PayaraNotificationFileHandler.class.getName())) {
                 customHandlers.add(handler);
             }
         }
@@ -675,7 +678,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     }
 
     private Formatter getCustomFormatter(String formatterClassName, 
-            GFFileHandler gfFileHandler) 
+            GFFileHandler gfFileHandler)
     {
         try {
             Class customFormatterClass = 

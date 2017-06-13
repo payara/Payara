@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.packager</groupId>
     <artifactId>payara-api-package</artifactId>
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${payara.api.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

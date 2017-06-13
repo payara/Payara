@@ -60,11 +60,11 @@ public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>{
     public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
         Context ctx = null;
         try {
-            ctx = ctxUtil.preInvoke();
+            ctx = ctxUtil.pushContext();
             return delegate.process(me, os);
         }
         finally {
-            ctxUtil.postInvoke(ctx);
+            ctxUtil.popContext(ctx);
         }
     }
 

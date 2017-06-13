@@ -41,47 +41,13 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.nucleus</groupId>
     <artifactId>notification-eventbus-core</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Eventbus Notification Implementation</name>
     <description>Eventbus Notification Implementation</description>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                        <configuration>
-                            <instructions>
-                                <Import-Package>
-                                    javax.inject,
-                                    org.glassfish.hk2.api,
-                                    org.jvnet.hk2.config,
-                                    org.glassfish.hk2.runlevel,
-                                    fish.payara.notification.eventbus,
-                                    fish.payara.nucleus.eventbus,
-                                    fish.payara.nucleus.notification.admin,
-                                    fish.payara.nucleus.notification.configuration,
-                                    fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service
-                                </Import-Package>
-                            </instructions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>
@@ -94,12 +60,6 @@
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.api</groupId>
-            <artifactId>payara-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>

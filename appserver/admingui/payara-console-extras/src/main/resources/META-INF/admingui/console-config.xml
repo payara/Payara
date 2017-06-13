@@ -135,5 +135,13 @@
         parentId="domainTabs"
         content="environmentWarning/environmentWarningTabsDomain.jsf"
     />
+    
+    <integration-point
+        id="payaraRestEndpointLink"
+        type="org.glassfish.admingui:subComponentTablePage"
+        priority="40"
+        parentId="col3"
+        content="payaraRestEndpoints/payaraRestEndpointsApplication.jsf"
+    />
 
 </console-config>

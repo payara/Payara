@@ -44,26 +44,12 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
     <artifactId>requesttracing-api</artifactId>
     <name>Request Tracing CDI API</name>
     <description>Request Tracing CDI API</description>
-
-    <repositories>
-        <repository>
-            <id>payara-snapshot</id>
-            <name>Payara Snapshot</name>
-            <url>https://raw.github.com/payara/Payara_Snapshots/master</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>
@@ -118,7 +104,7 @@
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${payara.api.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

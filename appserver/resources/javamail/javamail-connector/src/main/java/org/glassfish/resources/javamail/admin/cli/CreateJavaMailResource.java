@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.admin.cli;
@@ -87,6 +89,12 @@ public class CreateJavaMailResource implements AdminCommand {
     @Param(name="mailuser", alias="user")
     private String mailUser;
 
+    @Param(name="password", optional=true)
+    private String mailPassword;
+    
+    @Param(name="auth", optional=true, defaultValue="false")
+    private Boolean auth;
+    
     @Param(name="fromaddress",alias="from")
     private String fromAddress;
 
@@ -142,6 +150,8 @@ public class CreateJavaMailResource implements AdminCommand {
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME, jndiName);
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_HOST, mailHost);
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_USER, mailUser);
+        attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_PASSWORD, mailPassword);
+        attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_AUTH, auth.toString());
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_FROM_ADDRESS, fromAddress);
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_STORE_PROTO, storeProtocol);
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.MAIL_STORE_PROTO_CLASS, storeProtocolClass);

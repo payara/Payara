@@ -68,7 +68,7 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
 
     @Override
     protected String listConfiguration(XmppNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Host", "Port", "Service Name", "Username", "Password", "Security Disabled", "Room Name"};
+        String headers[] = {"Enabled", "Host", "Port", "Service Name", "Username", "Password", "Security Disabled", "Room ID"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         Object values[] = new Object[8];
 

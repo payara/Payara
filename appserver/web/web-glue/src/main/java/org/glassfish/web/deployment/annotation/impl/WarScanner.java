@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.impl;
 
@@ -190,10 +191,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
     }
 
     private boolean isScan(String className, ClassLoader commonCL) throws IOException {
-        boolean result = false;
-        //XXX TBD ignore delegate in sun-web.xml in this moment
-        String resourceName = "/" + className.replace(".", "/") + ".class";
-        return (commonCL.getResource(resourceName) != null);
+        return commonCL.getResource(className.replace(".", "/") + ".class") != null;
     }
 }
  

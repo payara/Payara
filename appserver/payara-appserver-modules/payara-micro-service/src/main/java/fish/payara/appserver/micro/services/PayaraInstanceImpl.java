@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -122,6 +123,8 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         this.instanceName = instanceName;
         me.setInstanceName(instanceName);
     }
+    
+    
 
     @Override
     public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable) {
@@ -130,7 +133,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     @Override
     public <T extends Serializable> Map<String, Future<T>> runCallable(Callable<T> callable) {
-        return cluster.getExecService().runCallable(callable);
+        return cluster.getExecService().runCallableAllMembers(callable);
     }
 
     @Override
@@ -141,7 +144,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     @Override
     public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
-        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(callable);
+        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallableAllMembers(callable);
         return result;
     }
 
@@ -187,7 +190,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         events.register(this);
         myListeners = new HashSet<>(1);
         myCDIListeners = new HashSet<>(1);       
-        initialiseInstanceDescriptor();   
+        initialiseInstanceDescriptor();
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,10 @@ package fish.payara.nucleus.notification.log;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
+
+import java.beans.PropertyVetoException;
 
 /**
  * Configuration class with the aim to configure log notification specific parameters.
@@ -52,4 +55,8 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 @NotifierConfigurationType(type = NotifierType.LOG)
 public interface LogNotifierConfiguration extends NotifierConfiguration {
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getUseSeparateLogFile();
+    void useSeparateLogFile(Boolean useSeperateLogFile) throws PropertyVetoException;
 }

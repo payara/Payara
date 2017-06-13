@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.container.common.impl.util;
 
+import com.sun.enterprise.admin.util.ClassUtil;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 
 import com.sun.enterprise.container.common.spi.util.GlassFishInputStreamHandler;
@@ -145,12 +146,14 @@ class GlassFishObjectInputStream extends ObjectInputStream
         if( clazz == null ) {
             try {
                 // First try app class loader
-                clazz = appLoader.loadClass(desc.getName());
+                if(ClassUtil.classnameIsArray(desc.getName())) {
+                    clazz = Class.forName(desc.getName(), false, appLoader);
+                } else {
+                    clazz = appLoader.loadClass(desc.getName());
+                }
             }  catch (ClassNotFoundException e) {
-
                 clazz = super.resolveClass(desc);
             }
-
         }
 
         return clazz;

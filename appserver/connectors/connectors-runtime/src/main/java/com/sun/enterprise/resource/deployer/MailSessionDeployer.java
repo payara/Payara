@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 // Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
@@ -460,6 +462,28 @@ public class MailSessionDeployer implements ResourceDeployer {
             //do nothing
         }
 
+        @Override
+        public String getPassword(){
+            return desc.getPassword();
+        }
+        
+        @Override
+        public void setPassword(String value){
+            //do nothing
+        }
+        
+        @Override
+        public String getAuth(){
+            return desc.getAuth();
+        }
+        
+        @Override
+        public void setAuth(String value) throws PropertyVetoException {
+            //do nothing
+        }
+        
+
+        
         @Override
         public String getFrom() {
             return desc.getFrom();

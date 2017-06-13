@@ -67,9 +67,9 @@ import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 /**
  *
@@ -87,12 +87,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @Resource
     private ManagedExecutorService managedExecutorService;
 
-    private ComponentInvocation capturedInvocation;
+    private JavaEEContextUtil ctxUtil;
 
-    private InvocationManager im;
-
-    private ClassLoader capturedClassLoader;
-    
     private final static String INSTANCE_PROPERTY = "InstanceName";
     
     private final static String EVENT_PROPERTY = "EventName";
@@ -100,9 +96,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @PostConstruct
     void postConstruct() {
         runtime.addCDIListener(this);
-        capturedClassLoader = Utility.getClassLoader();
-        im = Globals.getDefaultHabitat().getService(InvocationManager.class);
-        capturedInvocation = im.getCurrentInvocation();
+        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
         if (managedExecutorService == null) {
             try {
                 InitialContext ctx = new InitialContext();
@@ -117,8 +111,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @PreDestroy
     void preDestroy() {
         runtime.removeCDIListener(this);
-        capturedClassLoader = null;
-        capturedInvocation = null;
+        ctxUtil = null;
     }
     
     public void onStart(@Observes @Initialized(ApplicationScoped.class) ServletContext init) {
@@ -133,12 +126,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         
         // try again
 
-        if (im == null) {
-            im = Globals.getDefaultHabitat().getService(InvocationManager.class);
-        }
-        
-        if (capturedInvocation == null) {
-            capturedInvocation = im.getCurrentInvocation(); 
+        if (ctxUtil.getApplicationName() == null) {
+            ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
         }
         
         if (managedExecutorService == null) {
@@ -172,23 +161,14 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                 return;
         }
 
-        // as we are on the hazelcast thread we need to establish the invocation manager
-        ComponentInvocation newInvocation = new ComponentInvocation(capturedInvocation.getComponentId(),
-                capturedInvocation.getInvocationType(),
-                capturedInvocation.getContainer(),
-                capturedInvocation.getAppName(),
-                capturedInvocation.getModuleName());
-        final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+        Context ctx = ctxUtil.pushContext();
         try {
-            Utility.setContextClassLoader(capturedClassLoader);
-            im.preInvoke(newInvocation);
-
             managedExecutorService.submit(new Runnable() {
                 @Override
                 public void run() {
                     ClassLoader oldCL = Utility.getClassLoader();
                     try {
-                        Utility.setContextClassLoader(capturedClassLoader);
+                        Utility.setContextClassLoader(ctxUtil.getInvocationClassLoader());
                         
                         // create the set of qualifiers for the event
                         // first add Inbound qualifier with the correct properties                                                
@@ -225,8 +205,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                 }
             });
         } finally {
-            Utility.setContextClassLoader(oldTCCL);
-            im.postInvoke(newInvocation);
+            ctxUtil.popContext(ctx);
         }
     }
 

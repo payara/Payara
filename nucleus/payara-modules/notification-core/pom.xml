@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.1.172-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>notification-core</artifactId>
@@ -74,20 +74,6 @@
         </resources>
     </build>
 
-    <repositories>
-        <repository>
-            <id>payara-snapshot</id>
-            <name>Payara Snapshot</name>
-            <url>https://raw.github.com/payara/Payara_Snapshots/master</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
@@ -104,6 +90,18 @@
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>logging</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>javax.ejb</groupId>
             <artifactId>javax.ejb-api</artifactId>

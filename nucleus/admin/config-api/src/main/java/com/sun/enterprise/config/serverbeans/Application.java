@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.config.serverbeans;
 
 import java.beans.PropertyVetoException;
@@ -62,7 +63,7 @@ import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
-
+import fish.payara.api.admin.config.ApplicationDeploymentTime;
 
 @Configured
 @RestRedirects({
@@ -70,7 +71,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
     @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "redeploy")
 })
 @ContextRootCheck(message="{contextroot.duplicate}", payload=Application.class)
-public interface Application extends ApplicationName, PropertyBag {
+public interface Application extends ApplicationName, ApplicationDeploymentTime, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";           
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";

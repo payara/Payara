@@ -41,6 +41,15 @@
 
 package com.sun.ejb.containers;
 
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.DESTROYED;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.INVOKING;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.PASSIVATED;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.READY;
+import static com.sun.ejb.spi.sfsb.util.SFSBVersionManager.NO_VERSION;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
+import static javax.persistence.SynchronizationType.SYNCHRONIZED;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -61,6 +70,7 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.CreateException;
@@ -79,6 +89,19 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.ejb.LogFacade;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.CheckpointAtEndOfMethodDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import org.glassfish.flashlight.provider.ProbeProviderFactory;
+import org.glassfish.ha.store.api.BackingStore;
+import org.glassfish.ha.store.api.BackingStoreException;
+import org.glassfish.ha.store.util.SimpleMetadata;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 import com.sun.appserv.util.cache.CacheListener;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
@@ -88,6 +111,7 @@ import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.MethodLockInfo;
 import com.sun.ejb.base.stats.HAStatefulSessionStoreMonitor;
 import com.sun.ejb.base.stats.StatefulSessionStoreMonitor;
+import com.sun.ejb.containers.EJBContextImpl.BeanState;
 import com.sun.ejb.containers.util.cache.LruSessionCache;
 import com.sun.ejb.monitoring.probes.EjbCacheProbeProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
@@ -106,26 +130,11 @@ import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.util.Utility;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.ejb.LogFacade;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.CheckpointAtEndOfMethodDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
-import org.glassfish.flashlight.provider.ProbeProviderFactory;
-import org.glassfish.ha.store.api.BackingStore;
-import org.glassfish.ha.store.api.BackingStoreException;
-import org.glassfish.ha.store.util.SimpleMetadata;
-import org.glassfish.logging.annotation.LogMessageInfo;
-
-import static com.sun.ejb.containers.EJBContextImpl.BeanState;
-import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-import static javax.persistence.SynchronizationType.*;
 
 /**
  * This class provides container functionality specific to stateful
@@ -279,8 +288,6 @@ public final class StatefulSessionContainer
 
     private final static long CONCURRENCY_NOT_ALLOWED = 0;
     private final static long BLOCK_INDEFINITELY = -1;
-
-    private long instanceCount = 1;
 
     private ArrayList passivationCandidates = new ArrayList();
     private Object asyncTaskSemaphore = new Object();
@@ -1602,208 +1609,246 @@ public final class StatefulSessionContainer
      * Called from preInvoke which is called from the EJBObject
      * for local and remote invocations.
      */
-    public ComponentContext _getContext(EjbInvocation inv) {
-        EJBLocalRemoteObject ejbo = inv.ejbObject;
-        SessionContextImpl sc = ejbo.getContext();
-        Serializable sessionKey = (Serializable) ejbo.getKey();
+    public ComponentContext _getContext(EjbInvocation ejbInvocation) {
+        
+        EJBLocalRemoteObject ejbObject = ejbInvocation.ejbObject;
+        Serializable sessionKey = (Serializable) ejbObject.getKey();
 
         if (_logger.isLoggable(TRACE_LEVEL)) {
-            logTraceInfo(inv, sessionKey, "Trying to get context");
+            logTraceInfo(ejbInvocation, sessionKey, "Trying to get context");
         }
 
-        if (sc == null) {
-            // This is possible if the EJB was destroyed or passivated.
-            // Try to activate it again.
-            sc = (SessionContextImpl) sessionBeanCache.lookupEJB(
-                    sessionKey, this, ejbo);
-        }
+        SessionContextImpl sessionContext = getSessionContext(ejbInvocation, ejbObject, sessionKey);
 
-        if ((sc == null) || (sc.getState() == BeanState.DESTROYED)) {
-            if (_logger.isLoggable(TRACE_LEVEL)) {
-                logTraceInfo(inv, sessionKey, "Context already destroyed");
-            }
-            // EJB2.0 section 7.6
-            throw new NoSuchObjectLocalException("The EJB does not exist."
-                    + " session-key: " + sessionKey);
-        }
+        MethodLockInfo lockInfo = ejbInvocation.invocationInfo.methodLockInfo;
+        boolean allowSerializedAccess = isAllowSerializedAccess(lockInfo);
 
-        MethodLockInfo lockInfo = inv.invocationInfo.methodLockInfo;
-        boolean allowSerializedAccess = 
-                (lockInfo == null) || (lockInfo.getTimeout() != CONCURRENCY_NOT_ALLOWED);
+        if (allowSerializedAccess) {
 
-        if( allowSerializedAccess ) {
-
-            boolean blockWithTimeout =
-                    (lockInfo != null) && (lockInfo.getTimeout() != BLOCK_INDEFINITELY);
-
-            if( blockWithTimeout ) {
-                try {
-                    boolean acquired = sc.getStatefulWriteLock().tryLock(lockInfo.getTimeout(),
-                            lockInfo.getTimeUnit());
-                    if( !acquired ) {
-                        String msg = "Serialized access attempt on method " + inv.beanMethod +
-                            " for ejb " + ejbDescriptor.getName() + " timed out after " +
-                             + lockInfo.getTimeout() + " " + lockInfo.getTimeUnit();
-                        throw new ConcurrentAccessTimeoutException(msg);
-                    }
-
-                } catch(InterruptedException ie)  {
-                    String msg = "Serialized access attempt on method " + inv.beanMethod +
-                            " for ejb " + ejbDescriptor.getName() + " was interrupted within " +
-                             + lockInfo.getTimeout() + " " + lockInfo.getTimeUnit();
-                    ConcurrentAccessException cae = new ConcurrentAccessTimeoutException(msg);
-                    cae.initCause(ie);
-                    throw cae;
-                }
-            } else {
-                sc.getStatefulWriteLock().lock();
-            }
+            aquireStatefulLockOrThrow(ejbInvocation, sessionContext, lockInfo);
 
             // Explicitly set state to track that we're holding the lock for this invocation.
             // No matter what we need to ensure that the lock is released.   In some
             // cases releaseContext() isn't called so for safety we'll have more than one
             // place that can potentially release the lock.  The invocation state will ensure
             // we don't accidently unlock too many times. 
-            inv.setHoldingSFSBSerializedLock(true);
+            ejbInvocation.setHoldingSFSBSerializedLock(true);
         }
 
         SessionContextImpl context = null;
 
         try {
+            synchronized (sessionContext) {
 
-            synchronized (sc) {
-
-                SessionContextImpl newSC = sc;
-                if (sc.getState() == BeanState.PASSIVATED) {
+                SessionContextImpl newSessionContext = sessionContext;
+                if (sessionContext.getState() == PASSIVATED) {
+                    
                     // This is possible if the EJB was passivated after
                     // the last lookupEJB. Try to activate it again.
-                    newSC = (SessionContextImpl) sessionBeanCache.lookupEJB(
-                            sessionKey, this, ejbo);
-                    if (newSC == null) {
+                    newSessionContext = (SessionContextImpl) sessionBeanCache.lookupEJB(
+                        sessionKey, this, ejbObject);
+                    
+                    if (newSessionContext == null) {
                         if (_logger.isLoggable(TRACE_LEVEL)) {
-                            logTraceInfo(inv, sessionKey, "Context does not exist");
+                            logTraceInfo(ejbInvocation, sessionKey, "Context does not exist");
                         }
                         // EJB2.0 section 7.6
                         throw new NoSuchObjectLocalException(
-                                "The EJB does not exist. key: " + sessionKey);
+                            "The EJB does not exist. key: " + sessionKey);
                     }
                     // Swap any stateful lock that was set on the original sc
-                    newSC.setStatefulWriteLock(sc);
+                    newSessionContext.setStatefulWriteLock(sessionContext);
                 }
-                // acquire the lock again, in case a new sc was returned.
-                synchronized (newSC) { //newSC could be same as sc
+                
+                // Acquire the lock again, in case a new session context was returned.
+                synchronized (newSessionContext) { // newSessionContext could be same as sc
+                    
                     // Check & set the state of the EJB
-                    if (newSC.getState() == BeanState.DESTROYED) {
+                    if (newSessionContext.getState() == DESTROYED) {
                         if (_logger.isLoggable(TRACE_LEVEL)) {
-                            logTraceInfo(inv, sessionKey, "Got destroyed context");
+                            logTraceInfo(ejbInvocation, sessionKey, "Got destroyed context");
                         }
-                        throw new NoSuchObjectLocalException
-                                ("The EJB does not exist. session-key: " + sessionKey);
-                    } else if (newSC.getState() == BeanState.INVOKING) {
-                        handleConcurrentInvocation(allowSerializedAccess, inv, newSC, sessionKey);
+                        
+                        throw new NoSuchObjectLocalException("The EJB does not exist. session-key: " + sessionKey);
+                    } else if (newSessionContext.getState() == INVOKING) {
+                        handleConcurrentInvocation(allowSerializedAccess, ejbInvocation, newSessionContext, sessionKey);
                     }
-                    if (newSC.getState() == BeanState.READY) {
+                    
+                    if (newSessionContext.getState() == READY) {
                         decrementMethodReadyStat();
                     }
+                    
                     if (isHAEnabled) {
-                        doVersionCheck(inv, sessionKey, sc);
+                        doVersionCheck(ejbInvocation, sessionKey, sessionContext);
                     }
-                    newSC.setState(BeanState.INVOKING);
-                    context = newSC;
+                    
+                    newSessionContext.setState(INVOKING);
+                    context = newSessionContext;
                 }
             }
 
-            // touch the context here so timestamp is set & timeout is prevented
+            // Touch the context here so timestamp is set & timeout is prevented
             context.touch();
 
-            if ((context.existsInStore()) && (removalGracePeriodInSeconds > 0)) {
-                long now = System.currentTimeMillis();
-                long threshold = now - (removalGracePeriodInSeconds * 1000L);
-                if (context.getLastPersistedAt() <= threshold) {
-                    try {
-                        backingStore.updateTimestamp(sessionKey, now);
-                        context.setLastPersistedAt(System.currentTimeMillis());
-                    } catch (BackingStoreException sfsbEx) {
-                        _logger.log(Level.WARNING, COULDNT_UPDATE_TIMESTAMP_FOR_EXCEPTION,
-                                new Object[]{sessionKey, sfsbEx});
-                        _logger.log(Level.FINE,
-                                "Couldn't update timestamp for: " + sessionKey, sfsbEx);
-                    }
-                }
+            if (context.existsInStore() && removalGracePeriodInSeconds > 0) {
+                updateLastPersistedTime(context, sessionKey);
             }
 
             if (_logger.isLoggable(TRACE_LEVEL)) {
-                logTraceInfo(inv, context, "Got Context!!");
+                logTraceInfo(ejbInvocation, context, "Got Context!!");
             }
-        } catch(RuntimeException t) {
+        } catch (RuntimeException t) {
 
-            // releaseContext isn't called if this method throws an exception,
+            // ReleaseContext isn't called if this method throws an exception,
             // so make sure to release any sfsb lock
-            releaseSFSBSerializedLock(inv, sc);    
+            releaseSFSBSerializedLock(ejbInvocation, sessionContext);    
 
             throw t;
         }
 
         return context;
     }
+    
+    private void updateLastPersistedTime(SessionContextImpl context, Serializable sessionKey) {
+        long now = System.currentTimeMillis();
+        long threshold = now - (removalGracePeriodInSeconds * 1000L);
+        
+        if (context.getLastPersistedAt() <= threshold) {
+            try {
+                backingStore.updateTimestamp(sessionKey, now);
+                context.setLastPersistedAt(System.currentTimeMillis());
+            } catch (BackingStoreException sfsbEx) {
+                _logger.log(WARNING, COULDNT_UPDATE_TIMESTAMP_FOR_EXCEPTION,
+                    new Object[]{sessionKey, sfsbEx});
+                _logger.log(FINE,
+                    "Couldn't update timestamp for: " + sessionKey, sfsbEx);
+            }
+        }
+    }
+    
+    private void aquireStatefulLockOrThrow(EjbInvocation ejbInvocation, SessionContextImpl sessionContext, MethodLockInfo lockInfo) {
+        if (isBlockWithTimeout(lockInfo)) {
+            try {
+                if (!isAquireLockWithTimeout(sessionContext, lockInfo)) {
+                    throw new ConcurrentAccessTimeoutException(
+                        "Serialized access attempt on method " + ejbInvocation.beanMethod +
+                        " for ejb " + ejbDescriptor.getName() + 
+                        " timed out after " + lockInfo.getTimeout() + " " + lockInfo.getTimeUnit());
+                }
+
+            } catch (InterruptedException ie) {
+                throw (ConcurrentAccessTimeoutException) new ConcurrentAccessTimeoutException(
+                    "Serialized access attempt on method " + ejbInvocation.beanMethod + " for ejb " + ejbDescriptor.getName() + 
+                    " was interrupted within " + +lockInfo.getTimeout() + " " + lockInfo.getTimeUnit()).initCause(ie);
+            }
+        } else {
+            sessionContext.getStatefulWriteLock().lock();
+        }
+    }
+    
+    private boolean isAquireLockWithTimeout(SessionContextImpl sessionContext, MethodLockInfo lockInfo) throws InterruptedException {
+        return sessionContext.getStatefulWriteLock()
+                             .tryLock(lockInfo.getTimeout(), lockInfo.getTimeUnit());
+    }
+    
+    private boolean isAllowSerializedAccess(MethodLockInfo lockInfo) {  
+        return lockInfo == null || lockInfo.getTimeout() != CONCURRENCY_NOT_ALLOWED;
+    }
+    
+    private boolean isBlockWithTimeout(MethodLockInfo lockInfo) {
+        return lockInfo != null && lockInfo.getTimeout() != BLOCK_INDEFINITELY;
+    }
+    
+    private SessionContextImpl getSessionContext(EjbInvocation ejbInvocation, EJBLocalRemoteObject ejbObject, Serializable sessionKey) {
+        
+        SessionContextImpl sessionContext = ejbObject.getContext();
+        
+        if (sessionContext == null) {
+            // This is possible if the EJB was destroyed or passivated.
+            // Try to activate it again.
+            sessionContext = (SessionContextImpl) sessionBeanCache.lookupEJB(sessionKey, this, ejbObject);
+        }
+
+        if (sessionContext == null || sessionContext.getState() == DESTROYED) {
+            if (_logger.isLoggable(TRACE_LEVEL)) {
+                logTraceInfo(ejbInvocation, sessionKey, "Context already destroyed");
+            }
+            
+            // EJB2.0 section 7.6
+            throw new NoSuchObjectLocalException(
+                "The EJB does not exist." + " session-key: " + sessionKey);
+        }
+        
+        return sessionContext;
+    }
 
     public boolean isHAEnabled() {
         return isHAEnabled;
     }
 
-    private void doVersionCheck(EjbInvocation inv, Object sessionKey,
-                                SessionContextImpl sc) {
-        EJBLocalRemoteObject ejbLRO = inv.ejbObject;
-        long clientVersion = SFSBVersionManager.NO_VERSION;
-        if ((!inv.isLocal) && (sfsbVersionManager != null)) {
+    private void doVersionCheck(EjbInvocation ejbInvocation, Object sessionKey, SessionContextImpl sessionContext) {
+        EJBLocalRemoteObject ejbObject = ejbInvocation.ejbObject;
+        
+        long clientVersion = NO_VERSION;
+        
+        if (!ejbInvocation.isLocal && sfsbVersionManager != null) {
             clientVersion = sfsbVersionManager.getRequestClientVersion();
             sfsbVersionManager.clearRequestClientVersion();
             sfsbVersionManager.clearResponseClientVersion();
         }
 
-        if (ejbLRO != null) {
-            if (clientVersion ==
-                    sfsbVersionManager.NO_VERSION) {
-                clientVersion = ejbLRO.getSfsbClientVersion();
+        if (ejbObject != null) {
+            if (clientVersion == NO_VERSION) {
+                clientVersion = ejbObject.getSfsbClientVersion();
             }
 
-            long ctxVersion = sc.getVersion();
+            long ctxVersion = sessionContext.getVersion();
             if (_logger.isLoggable(TRACE_LEVEL)) {
-                _logger.log(TRACE_LEVEL, "doVersionCheck(): for: {" + ejbDescriptor.getName()
-                        + "." + inv.method.getName() + " <=> " + sessionKey + "} clientVersion: "
-                        + clientVersion + " == " + ctxVersion);
+                _logger.log(TRACE_LEVEL, 
+                    "doVersionCheck(): for: {" + ejbDescriptor.getName() + "." + 
+                    ejbInvocation.method.getName() + " <=> " + sessionKey + "} clientVersion: " + 
+                    clientVersion + " == " + ctxVersion);
             }
+            
             if (clientVersion > ctxVersion) {
                 throw new NoSuchObjectLocalException(
-                        "Found only a stale version " + " clientVersion: "
-                                + clientVersion + " contextVersion: "
-                                + ctxVersion);
+                    "Found only a stale version " + " clientVersion: " + clientVersion + 
+                    " contextVersion: " + ctxVersion);
             }
         }
     }
 
-    private void handleConcurrentInvocation(boolean allowSerializedAccess,
-                                            EjbInvocation inv, SessionContextImpl sc, Object sessionKey) {
+    private void handleConcurrentInvocation(boolean allowSerializedAccess, EjbInvocation inv, SessionContextImpl sc, Object sessionKey) {
         if (_logger.isLoggable(TRACE_LEVEL)) {
             logTraceInfo(inv, sessionKey, "Another invocation in progress");
         }
 
-        if( allowSerializedAccess ) {
+        if (allowSerializedAccess) {
 
             // Check for loopback call to avoid deadlock.
-            if( sc.getStatefulWriteLock().getHoldCount() > 1 ) {
-
-                throw new IllegalLoopbackException("Illegal Reentrant Access : Attempt to make " +
-                        "a loopback call on method '" + inv.beanMethod + " for stateful session bean " +
-                        ejbDescriptor.getName());
+            
+            // TODO: It's not entirely clear why this check is there, since the StatefulWriteLock is a
+            //       a reentrant lock that is only granted to the current thread. holdCount > 1
+            //       can only be true if the same thread holds the lock, but why would this deadlock?
+            //       What is this exactly protecting against?
+            if (sc.getStatefulWriteLock().getHoldCount() > 1) {
+                
+                String calleeEjbName = inv.invocationInfo.ejbName;
+                String callerEjbName = getCallerEjbName();
+                
+                if (!calleeEjbName.equals(callerEjbName)) {
+                    throw new IllegalLoopbackException("Illegal Reentrant Access : Attempt to make " +
+                            "a loopback call on method '" + inv.beanMethod + " for stateful session bean " +
+                            ejbDescriptor.getName());
+                }
             }
 
         } else {
-
             String errMsg = "Concurrent Access attempt on method " +
-                    inv.beanMethod + " of SessionBean " + ejbDescriptor.getName() +
-                    " is prohibited.  SFSB instance is executing another request. "
-                + "[session-key: " + sessionKey + "]";
+                inv.beanMethod + " of SessionBean " + ejbDescriptor.getName() +
+                " is prohibited.  SFSB instance is executing another request. " + 
+                "[session-key: " + sessionKey + "]";
+            
             ConcurrentAccessException conEx = new ConcurrentAccessException(errMsg);
 
             if (inv.isBusinessInterface) {
@@ -1814,6 +1859,16 @@ public final class StatefulSessionContainer
                 throw new EJBException(conEx);
             }
         }
+    }
+    
+    private String getCallerEjbName() {
+        // Current invocation represents the invocation of the bean (if any) that calls this container 
+        ComponentInvocation callerInvocation = invocationManager.getCurrentInvocation();
+        if (callerInvocation instanceof EjbInvocation) {
+            return ((EjbInvocation) callerInvocation).invocationInfo.ejbName;
+        }
+        
+        return null;
     }
 
     protected void postInvokeTx(EjbInvocation inv) throws Exception {
@@ -1842,16 +1897,13 @@ public final class StatefulSessionContainer
                 Transaction tx = sc.getTransaction();
 
                 if (tx != null) {
-                    ContainerSynchronization sync =
-                            ejbContainerUtilImpl.getContainerSync(tx);
-                    sync.removeBean(sc);
+                    ejbContainerUtilImpl.getContainerSync(tx).removeBean(sc);
                 }
 
             }
         }
 
         super.postInvokeTx(inv);
-
     }
 
     /**

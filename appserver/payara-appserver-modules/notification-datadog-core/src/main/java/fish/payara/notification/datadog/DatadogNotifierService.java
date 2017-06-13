@@ -81,8 +81,4 @@ public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNot
         scheduleExecutor(new DatadogNotificationRunnable(queue, executionOptions));
     }
 
-    @Override
-    public void shutdown() {
-        super.reset();
-    }
 }

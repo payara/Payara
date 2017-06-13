@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.monitor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -157,10 +158,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
             tryToRegister(spInfo);
         }
         catch (RuntimeException rte) {
-            logger.log(Level.WARNING, ListenerRegistrationFailed,
-                    new Object[]{spInfo.getStatsProvider().getClass().getName()});
-            if (logger.isLoggable(Level.FINE))
-                logger.log(Level.FINE, "Listener registration failed", rte);
+            //This occurs due to lazy loading of the stats provider, is retried automatically and then succeeds
+            logger.log(Level.FINE, ListenerRegistrationFailed, new Object[]{spInfo.getStatsProvider().getClass().getName()});
+            logger.log(Level.FINE, "Listener registration failed", rte);
             FutureStatsProviders.add(spInfo);
         }
     }

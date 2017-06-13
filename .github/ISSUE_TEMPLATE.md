@@ -54,4 +54,5 @@ Providing context helps us come up with a solution that is most useful for your 
 - **Edition**: <!-- Full/Web/Blue/Micro -->
 - **JDK Version**: <!-- 6/7/8 uXX - Oracle/IBM/OpenJDK -->
 - **Operating System**: <!-- Windows / Linux / Mac -->
+- **Database**: <!-- Oracle/MySQL/MariaDB/PostGres/DB2/SQL Server -->
 
