@@ -95,7 +95,7 @@ public class SnmpNotificationRunnable extends NotificationRunnable<SnmpMessageQu
                 pdu.add(new VariableBinding(oidInstance, new OctetString(message.getSubject() + "\n" + message.getMessage())));
 
                 snmp.send(pdu, communityTarget);
-                logger.log(Level.FINE, "Message sent seuccessfully");
+                logger.log(Level.FINE, "Message sent successfully");
             }
             catch (IOException e) {
                 logger.log(Level.SEVERE, "IO Error while sending SNMP message", e);
