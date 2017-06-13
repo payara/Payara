@@ -136,7 +136,7 @@ public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
 
     @Override
     public Type getImplementationType() {
-        return bean.getBeanClass();
+         throw new UnsupportedOperationException();
     }
 
     @SuppressWarnings("unchecked")

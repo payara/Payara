@@ -311,17 +311,17 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         @Override
         public Property addProperty(Property property) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property lookupProperty(String s) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property removeProperty(String s) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -726,25 +726,22 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         @Override
         public Property addProperty(Property property) {
-            desc.getProperties().put(property.getName(), property);
-            return property;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property lookupProperty(String s) {
-            return getProperty(s);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property removeProperty(String s) {
-            Property property = lookupProperty(s);
-            desc.getProperties().remove(s);
-            return property;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property removeProperty(Property property) {
-            return removeProperty(property.getName());
+            throw new UnsupportedOperationException();
         }
 
         public Property getProperty(String name) {

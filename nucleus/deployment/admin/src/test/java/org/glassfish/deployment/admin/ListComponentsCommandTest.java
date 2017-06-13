@@ -190,22 +190,22 @@ public class ListComponentsCommandTest {
 
         @Override
         public Property addProperty(Property property) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property lookupProperty(String s) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property removeProperty(String s) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property removeProperty(Property property) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         public void setResources(Resources res){}
@@ -247,21 +247,30 @@ public class ListComponentsCommandTest {
         public void setDeploymentTime(String value) throws PropertyVetoException {}
         public List<Engine> getEngine(){ return null;}
         public List<Property> getProperty(){ return null;}
+
+
         @Override
-        public Property addProperty(Property property) { return null; }
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
         @Override
         public Property lookupProperty(String s) {
-                return null;
-            }
+            throw new UnsupportedOperationException();
+        }
+
         @Override
         public Property removeProperty(String s) {
-                return null;
-            }
+            throw new UnsupportedOperationException();
+        }
+
         @Override
         public Property removeProperty(Property property) {
-                return null;
-            }
+            throw new UnsupportedOperationException();
+        }
+
         public <T extends ApplicationConfig> T getApplicationConfig(Class<T> type) {return null;}
+
         public List<ApplicationConfig> getApplicationConfigs() {return null;}
         public Map<String, Properties> getModulePropertiesMap() {return null;}
 
@@ -323,20 +332,29 @@ public class ListComponentsCommandTest {
         public String getDescription() {return "";}
         public void setDescription(String value) {}
         public List<Property> getProperty() {return null;}
+
+
         @Override
-        public Property addProperty(Property property) { return null; }
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
         @Override
         public Property lookupProperty(String s) {
-            return null;
+            throw new UnsupportedOperationException();
         }
+
         @Override
         public Property removeProperty(String s) {
-            return null;
+            throw new UnsupportedOperationException();
         }
+
         @Override
         public Property removeProperty(Property property) {
-            return null;
+            throw new UnsupportedOperationException();
         }
+
+
         //config.serverbeans.Modules
         public String getName() { 
             return "hello";

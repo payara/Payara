@@ -542,25 +542,22 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public Property addProperty(Property property) {
-            desc.getProperties().put(property.getName(), property);
-            return property;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property lookupProperty(String s) {
-            return (Property) desc.getProperties().get(s);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property removeProperty(String s) {
-            Property property = lookupProperty(s);
-            desc.getProperties().remove(s);
-            return property;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Property removeProperty(Property property) {
-            return removeProperty(property.getName());
+            throw new UnsupportedOperationException();
         }
 
         @Override
