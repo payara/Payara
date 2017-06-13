@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.gjc.spi;
 
 import com.sun.appserv.connectors.internal.spi.MCFLifecycleListener;
@@ -71,6 +72,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1180,7 +1182,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             if (sqlTraceDelegator == null) {
                 sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
             }
-            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((long) (threshold*1000)));
+            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((long)(threshold * 1000), TimeUnit.MILLISECONDS));
         }
     }
     
