@@ -214,7 +214,7 @@
         <mockito.version>2.2.6</mockito.version>
         <lombok.version>1.16.14</lombok.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
-        <jdk.version>1.7.0-09</jdk.version>
+        <jdk.version>1.8.0</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <javadoc.skip>false</javadoc.skip>
         <javadoc.version>2.10.3</javadoc.version>
