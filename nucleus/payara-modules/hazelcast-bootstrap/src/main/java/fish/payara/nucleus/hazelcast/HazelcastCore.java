@@ -186,7 +186,7 @@ public class HazelcastCore implements EventListener {
 
     @Override
     public void event(Event event) {
-        log.log(LogLevel.INFO, "Event Name: {0}, Event Type: {1}", new Object[] { event.name(), event.type().toString()});
+        log.log(LogLevel.FINER, "Event Name: {0}, Event Type: {1}", new Object[] { event.name(), event.type().getHookType() != null? event.hook() : "<none>"});
         if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
             shutdownHazelcast();
         } else if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
