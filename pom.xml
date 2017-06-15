@@ -198,16 +198,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>javadoc-jdk8+</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <javadoc.options>-Xdoclint:none</javadoc.options>
-            </properties>
-        </profile>
 
         <profile>
             <id>gpgsign</id>
