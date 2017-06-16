@@ -122,6 +122,11 @@
         <weld.version>2.4.2.Final</weld.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
         
+        <!-- Java EE Security API -->
+        <javax.security.enterprise-spec.version>1.0-b06</javax.security.enterprise-spec.version>
+        <javax.security.enterprise-api.version>1.0-b06</javax.security.enterprise-api.version>
+        <soteria.version>1.0-b06</soteria.version>
+        
         <!-- JACC -->
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
         
@@ -297,6 +302,23 @@
                             <apiPackage>javax.faces</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
+                        
+                        <!-- Java EE Security API -->
+                        <spec>
+                            <artifact>
+                                <groupId>javax.security.enterprise</groupId>
+                                <artifactId>javax.security.enterprise-api</artifactId>
+                                <version>${javax.security-api.version}</version>
+                            </artifact>
+                            <nonFinal>false</nonFinal>
+                            <jarType>api</jarType>
+                            <specVersion>${javax.security.enterprise-spec.version}</specVersion>
+                            <specImplVersion>${soteria.version}</specImplVersion>
+                            <apiPackage>javax.security.enterprise</apiPackage>
+                            <implNamespace>org.glassfish.soteria</implNamespace>
+                        </spec>
+                        
+                        <!-- JACC -->
                         <spec>
                             <artifact>
                                 <groupId>javax.security.jacc</groupId>
@@ -309,6 +331,8 @@
                             <specImplVersion>${javax.security.jacc-api.version}</specImplVersion>
                             <apiPackage>javax.security.jacc</apiPackage>
                         </spec>
+                        
+                        <!-- JASPIC -->
                         <spec>
                             <artifact>
                                 <groupId>javax.security.auth.message</groupId>
@@ -605,11 +629,28 @@
                 <artifactId>javax.enterprise.deploy-api</artifactId>
                 <version>${javax.enterprise.deploy-api.version}</version>
             </dependency>
+            
+            <!-- Java EE Security API -->
+            <dependency>
+                <groupId>javax.security.enterprise</groupId>
+                <artifactId>javax.security.enterprise-api</artifactId>
+                <version>${javax.security.enterprise-api.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>soteria</artifactId>
+                <version>${soteria.version}</version>
+            </dependency>
+            
+            <!-- JACC -->
             <dependency>
                 <groupId>javax.security.jacc</groupId>
                 <artifactId>javax.security.jacc-api</artifactId>
                 <version>${javax.security.jacc-api.version}</version>
-            </dependency>            
+            </dependency>
+            
+            <!-- JASPIC -->        
             <dependency>
                 <groupId>javax.security.auth.message</groupId>
                 <artifactId>javax.security.auth.message-api</artifactId>
@@ -620,6 +661,8 @@
                 <artifactId>javax.faces</artifactId>
                 <version>${mojarra.version}</version>
             </dependency>
+            
+            <!-- JPA -->
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>javax.persistence</artifactId>

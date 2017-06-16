@@ -78,7 +78,18 @@
       </license>
     </licenses>
 
+
     <repositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+    
         <repository>
             <id>jvnet-nexus-releases</id>
             <name>Java.net Releases Repositories</name>
@@ -90,6 +101,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        
         <repository>
             <id>jvnet-nexus-staging</id>
             <name>Java.net Staging Repositories</name>
@@ -101,6 +113,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        
         <repository>
             <id>jvnet-nexus-promoted</id>
             <name>Java.net Promoted Repositories</name>
@@ -112,11 +125,12 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        
         <repository>
            <id>payara-patched-externals</id>
-	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
+	       <name>Payara Patched Externals</name>
+	       <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+	       <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
            	<releases>
            		<enabled>true</enabled>
            	</releases>
@@ -124,7 +138,20 @@
                 	<enabled>false</enabled>
             	</snapshots>
         </repository>
+        
+        <repository>
+           <id>javaee-security-spec-bintray</id>
+           <name>Soteria Bintray</name>
+           <url>https://dl.bintray.com/javaee-security-spec/maven/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+         </repository>
     </repositories>
+    
     <pluginRepositories>
         <pluginRepository>
             <id>jvnet-nexus-promoted</id>
