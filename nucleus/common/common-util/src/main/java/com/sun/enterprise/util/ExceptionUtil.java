@@ -49,7 +49,7 @@ import java.util.ArrayList;
  */
 public final class ExceptionUtil
 {
-    private final static String DS_FAILURE_MESSAGE = "java.sql.SQLException: Error in allocating a connection. Cause: Connection could not be allocated because: Communications link failure";
+    private final static String DS_FAILURE_MESSAGE = "java.sql.SQLException: Error in allocating a connection. Cause: Connection could not be allocated";
   
     private ExceptionUtil()
     {
