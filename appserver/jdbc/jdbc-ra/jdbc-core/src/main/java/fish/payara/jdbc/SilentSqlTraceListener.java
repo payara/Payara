@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,40 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.jdbc;
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
-
-package com.sun.gjc.monitoring;
-
-import org.glassfish.external.probe.provider.annotations.Probe;
-import org.glassfish.external.probe.provider.annotations.ProbeParam;
-import org.glassfish.external.probe.provider.annotations.ProbeProvider;
+import org.glassfish.api.jdbc.SQLTraceListener;
+import org.glassfish.api.jdbc.SQLTraceRecord;
 
 /**
- * Provider interface for JDBCRA sql tracing related probes.
- *
- * @author Shalini M
+ * An SQL Trace Listener that simply does nothing to act as a default.
+ * @author Andrew Pielage
  */
-@ProbeProvider(moduleProviderName=JdbcRAConstants.GLASSFISH,
-moduleName=JdbcRAConstants.JDBCRA, probeProviderName=JdbcRAConstants.SQL_TRACING_PROBE)
-public class SQLTraceProbeProvider {
-
-    /**
-     * Emits probe event/notification that the given connection pool
-     * <code>poolName</code>has got an event to cache a sql query
-     *
-     * @param poolName for which sql query should be cached
-     * @param appName
-     * @param moduleName
-     * @param sql sql query that should be cached
-     * @param executionTime the sql query execution time
-     */
-    @Probe(name=JdbcRAConstants.TRACE_SQL)
-    public void traceSQLEvent(@ProbeParam("poolName") String poolName, 
-            @ProbeParam("appName") String appName,
-            @ProbeParam("moduleName") String moduleName, 
-            @ProbeParam("sql") String sql, 
-            @ProbeParam("executionTime") long executionTime) {
-
+public class SilentSqlTraceListener implements SQLTraceListener {
+    
+    @Override
+    public void sqlTrace(SQLTraceRecord record) {
+        // Do nothing, we want to be silent
     }
 }

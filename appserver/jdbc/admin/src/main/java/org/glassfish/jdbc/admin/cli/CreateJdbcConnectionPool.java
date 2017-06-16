@@ -132,7 +132,7 @@ public class CreateJdbcConnectionPool implements AdminCommand {
     @Param(name="creationRetryInterval", alias = "connectionCreationRetryIntervalInSeconds",  optional=true, defaultValue = "10")
     String creationretryinterval = "10";
 
-    @Param(name = "sqlTraceListeners", optional=true)
+    @Param(name = "sqlTraceListeners", optional=true, defaultValue = "fish.payara.jdbc.SilentSqlTraceListener")
     String sqltracelisteners;
     
     @Param(name="statementTimeout", alias = "statementTimeoutInSeconds",  optional=true, defaultValue = "-1")
