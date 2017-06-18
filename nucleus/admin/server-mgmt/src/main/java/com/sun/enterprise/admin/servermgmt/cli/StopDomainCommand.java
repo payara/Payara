@@ -230,7 +230,7 @@ public class StopDomainCommand extends LocalDomainCommand {
         return (System.currentTimeMillis() - startTime) > WAIT_FOR_DAS_TIME_MS;
     }
 
-    private int kill() throws CommandException {
+    protected int kill() throws CommandException {
         File prevPid = null;
         String pids = null;
 

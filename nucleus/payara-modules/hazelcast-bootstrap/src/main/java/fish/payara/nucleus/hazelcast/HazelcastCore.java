@@ -322,8 +322,8 @@ public class HazelcastCore implements EventListener {
                     List<String> takenNames = new ArrayList<>();
                     for (com.hazelcast.core.Member member : clusterMembers) {
                         if (member != theInstance.getCluster().getLocalMember()
-                                && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(
-                                        memberGroup)) {
+                                && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE) != null 
+                                && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(memberGroup)) {
                             takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
                         }
                     }

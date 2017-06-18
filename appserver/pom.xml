@@ -210,7 +210,13 @@
         
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
+<<<<<<< HEAD
         
+=======
+        <weld-api.version>2.4.Final</weld-api.version>
+        <weld.version>2.4.2.SP1</weld.version>
+        <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
+>>>>>>> refs/heads/master
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>19.0</guava.version>
