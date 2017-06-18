@@ -322,7 +322,7 @@
         javax.transaction-api.jar
         javax.xml.rpc-api.jar
         webservices-osgi.jar
-        weld-osgi-bundle-glassfish4.jar
+        weld-osgi-bundle.jar
         jersey-mvc-jsp.jar
       </param-value>
     </init-param>

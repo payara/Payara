@@ -47,7 +47,7 @@ import org.easymock.EasyMockSupport;
 import static junit.framework.Assert.*;
 import static org.easymock.EasyMock.*;
 
-import org.jboss.weld.el.WeldELContextListener;
+import org.jboss.weld.module.web.el.WeldELContextListener;
 import org.junit.Test;
 
 import javax.el.ELResolver;
@@ -64,7 +64,8 @@ import java.util.Iterator;
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
 public class WeldContextListenerTest {
-    @Test
+    
+	@Test
     public void testcontextInitialized() throws Exception {
         EasyMockSupport mockSupport = new EasyMockSupport();
 

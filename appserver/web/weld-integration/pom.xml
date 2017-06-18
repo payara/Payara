@@ -43,12 +43,14 @@
 <!-- Portions Copyright [2016] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
-	<groupId>org.glassfish.main.web</groupId>
-    	<artifactId>web</artifactId>
+	   <groupId>org.glassfish.main.web</groupId>
+    	   <artifactId>web</artifactId>
         <version>4.1.2.173-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+    
     <artifactId>weld-integration</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -122,7 +124,6 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-osgi-bundle</artifactId>
-            <classifier>glassfish4</classifier>
             <exclusions>
                 <exclusion>
                     <groupId>org.jboss.weld</groupId>
@@ -130,7 +131,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.weld</groupId>
-                    <artifactId>weld-core</artifactId>
+                    <artifactId>weld-core-impl</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.weld</groupId>

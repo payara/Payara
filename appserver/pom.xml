@@ -44,12 +44,14 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
         <version>4.1.2.173-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
+    
     <artifactId>glassfish-parent</artifactId>
     <packaging>pom</packaging>
     <name>Payara Appserver Parent Project</name>
@@ -58,8 +60,8 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-      <tag>payara-server-4.1.2.173-SNAPSHOT</tag>
-  </scm>
+        <tag>payara-server-4.1.2.173-SNAPSHOT</tag>
+    </scm>
     
     <properties>
         
@@ -120,10 +122,10 @@
         <javax.interceptor-api.version>1.2</javax.interceptor-api.version>
         
         <!-- CDI -->
-        <cdi-api.version>1.2</cdi-api.version>
+        <cdi-api.version>2.0</cdi-api.version>
         <javax.inject.version>1</javax.inject.version>
-        <weld-api.version>2.4.Final</weld-api.version>
-        <weld.version>2.4.2.Final</weld.version>
+        <weld-api.version>3.0.Final</weld-api.version>
+        <weld.version>3.0.0.Final</weld.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
         
         <!-- Java EE Security API -->
@@ -256,8 +258,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>   
                      
@@ -798,7 +800,6 @@
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-osgi-bundle</artifactId>
                 <version>${weld.version}</version>
-                <classifier>glassfish4</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.classfilewriter</groupId>
@@ -813,7 +814,7 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
-                <artifactId>weld-se-core</artifactId>
+                <artifactId>weld-se-shaded</artifactId>
                 <version>${weld.version}</version>
             </dependency>
             <dependency>
@@ -1021,7 +1022,7 @@
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-cdi</artifactId>
-                <version>1.0.3</version>
+                <version>1.0.4</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>

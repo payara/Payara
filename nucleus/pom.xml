@@ -127,6 +127,18 @@
         </repository>
         
         <repository>
+            <id>jvnet-nexus-1074</id>
+            <name>Java.net orgglassfish-1074 Repositories</name>
+            <url>https://maven.java.net/content/repositories/orgglassfish-1074/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <repository>
            <id>payara-patched-externals</id>
 	       <name>Payara Patched Externals</name>
 	       <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>

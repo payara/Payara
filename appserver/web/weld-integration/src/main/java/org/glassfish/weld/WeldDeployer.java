@@ -117,17 +117,18 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     // Note...this constant is also defined in org.apache.catalina.connector.AsyncContextImpl.  If it changes here it must
     // change there as well.  The reason it is duplicated is so that a dependency from web-core to gf-weld-connector
     // is not necessary.
-    private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
-
-    static final String WELD_TERMINATION_LISTENER = "org.jboss.weld.servlet.WeldTerminalListener";
+    private static final String WELD_LISTENER = "org.jboss.weld.module.web.servlet.WeldListener";
+    												   
+    static final String WELD_TERMINATION_LISTENER = "org.jboss.weld.module.web.servlet.WeldTerminalListener";
 
     private static final String WELD_SHUTDOWN = "weld_shutdown";
 
     //This constant is used to indicate if bootstrap shutdown has been called or not.
     private static final String WELD_BOOTSTRAP_SHUTDOWN = "weld_bootstrap_shutdown";
 
-    private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.servlet.ConversationFilter";
+    private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.module.web.servlet.ConversationFilter";
     private static final String WELD_CONVERSATION_FILTER_NAME = "CDI Conversation Filter";
+    
     @Inject
     private Events events;
 
