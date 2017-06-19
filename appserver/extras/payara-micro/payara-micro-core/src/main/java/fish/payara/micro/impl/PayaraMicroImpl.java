@@ -991,13 +991,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             dumpFinalStatus(end - start);
             return runtime;
         } catch (Exception ex) {
-            Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, "DEBUG: bootstap failed, ready to shutdown");
             try {
                 gf.dispose();
             } catch (GlassFishException ex1) {
                 Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex1);
             }
-            
             throw new BootstrapException(ex.getMessage(), ex);
         }
     }
