@@ -55,7 +55,9 @@
     <name>Grizzly Glassfish Extra modules</name>  
     <modules>
         <module>grizzly-container</module>
+        <!-- 
         <module>glassfish-spdy</module>
+         -->
         <module>glassfish-grizzly-extra-all</module>
     </modules>
 </project>
