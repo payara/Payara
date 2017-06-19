@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.sun.enterprise.deployment.Application;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
@@ -343,17 +345,23 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
             }
         }
 
-        WebFragmentDescriptor mergedWebFragment = null;
-        for (WebFragmentDescriptor wf : wfList) {
-            if (mergedWebFragment == null) {
-                mergedWebFragment = wf;
-            } else {
-                mergedWebFragment.addWebBundleDescriptor(wf);
+        WebFragmentDescriptor mergedWebFragment = new WebFragmentDescriptor();
+        mergedWebFragment.setExists(false);
+        Iterable<WebFragmentDescriptor> filteredWfList = Iterables.filter(wfList, new Predicate<WebFragmentDescriptor>() {
+            @Override
+            public boolean apply(WebFragmentDescriptor input) {
+                return input.isExists();
             }
+        });
+        for (WebFragmentDescriptor wf : filteredWfList) {
+            if(mergedWebFragment.isExists() == false) {
+                mergedWebFragment.setExists(true);
+                mergedWebFragment.setDistributable(wf.isDistributable());
+            }
+            mergedWebFragment.addWebBundleDescriptor(wf);
         }
 
-        if (mergedWebFragment != null) {
-            mergedWebFragment.setExists(true);
+        if (mergedWebFragment.isExists()) {
             descriptor.addWebBundleDescriptor(mergedWebFragment);
 
             // if there any mapping stubs left, there is something invalid referenced from web.xml

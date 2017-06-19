@@ -262,14 +262,13 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         // combine login config with conflict resolution check
         combineLoginConfiguration(webBundleDescriptor);
 
-        if (!defaultDescriptor) {
-            if (webBundleDescriptor.isExists()) {
-                boolean otherDistributable = webBundleDescriptor.isDistributable();
-                // the only way distributable is true is when
-                // all of it's web fragments are true
-                // The Servlet spec (section 8.2.3):
-                setDistributable(distributable && otherDistributable);
-            }
+        if (!defaultDescriptor && webBundleDescriptor.isExists()) {
+            // ignore non-fragment (plane archive) files
+            boolean otherDistributable = webBundleDescriptor.isDistributable();
+            // the only way distributable is true is when
+            // all of it's web fragments are true
+            // The Servlet spec (section 8.2.3):
+            setDistributable(distributable && otherDistributable);
         }
 
         combinePostConstructDescriptors(webBundleDescriptor);
