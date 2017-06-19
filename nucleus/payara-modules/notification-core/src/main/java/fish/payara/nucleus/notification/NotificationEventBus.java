@@ -16,6 +16,8 @@ package fish.payara.nucleus.notification;
 import com.google.common.eventbus.EventBus;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -37,7 +39,11 @@ public class NotificationEventBus {
     }
 
     public void unregister(BaseNotifierService notifier) {
-        eventBus.unregister(notifier);
+        try {
+            eventBus.unregister(notifier);
+        } catch (IllegalArgumentException e){
+            Logger.getLogger(NotificationEventBus.class.getCanonicalName()).log(Level.WARNING, "Tried to unregister" + notifier.toString() + ", it may not have been previously registered");
+        }
     }
 
     void postEvent(NotificationEvent event) {
