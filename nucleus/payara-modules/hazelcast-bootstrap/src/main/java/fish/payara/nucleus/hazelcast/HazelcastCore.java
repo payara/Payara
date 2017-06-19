@@ -235,6 +235,7 @@ public class HazelcastCore implements EventListener {
                     config = new Config();
                 }
                 config.setClassLoader(clh.getCommonClassLoader());
+                config.setTenantControl(new PayaraHazelcastTenant());
                 if(ctxUtil == null) {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Application Object Serialization Not Available");
                 }
@@ -256,6 +257,7 @@ public class HazelcastCore implements EventListener {
                 }
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
+                config.setTenantControl(new PayaraHazelcastTenant());
                 if(ctxUtil != null) {
                     SerializationConfig serializationConfig = new SerializationConfig()
                             .setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(
