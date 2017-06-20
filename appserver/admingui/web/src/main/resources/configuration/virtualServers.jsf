@@ -45,82 +45,89 @@
 
 <!initPage
     setResourceBundle(key="i18n_web" bundle="org.glassfish.web.admingui.Strings");
-	setResourceBundle(key="help_web" bundle="org.glassfish.web.admingui.Helplinks");
-/>
+    setResourceBundle(key="help_web" bundle="org.glassfish.web.admingui.Helplinks");
+    />
 <!composition template="/templates/default.layout"  
     guiTitle="$resource{i18n_web.vs.ListPageTitle}"
     guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:virtualServers');">
 
-<!define name="content">
-    <event>
+<!define name="content">s
+<event>
     <!beforeCreate
         getRequestValue(key="configName" value=>$page{configName} );
-        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
-        setPageSessionAttribute(key="childType" value="virtual-server");
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/http-service");
-        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
-        setPageSessionAttribute(key="rest-api" value="true");
-        gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="id", result="#{requestScope.listOfRows}");
-        createMap(result="#{pageSession.valueMap}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18n_web.msg.JS.confirmDeleteVS}");
-        setPageSessionAttribute(key="createLink" value="#{request.contextPath}/web/configuration/virtualServerNew.jsf?configName=#{configName}");
-        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/web/configuration/virtualServers.jsf?configName=#{configName}");
-        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/web/configuration/virtualServerEdit.jsf?configName=#{configName}");
-        setPageSessionAttribute(key="tableTitle" value="$resource{i18n_web.vs.TableTitle}");
-        setPageSessionAttribute(key="additionalDeleteHandler" value="checkVsOfAppRef");
-        setPageSessionAttribute(key="additionalDeleteHandlerArgs" value="");
+    urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
+    setPageSessionAttribute(key="childType" value="virtual-server");
+    setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/http-service");
+    setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+    setPageSessionAttribute(key="rest-api" value="true");
+    createMap(result="#{pageSession.valueMap}");
+    mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+    setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18n_web.msg.JS.confirmDeleteVS}");
+    setPageSessionAttribute(key="createLink" value="#{request.contextPath}/web/configuration/virtualServerNew.jsf?configName=#{configName}");
+    setPageSessionAttribute(key="listLink" value="#{request.contextPath}/web/configuration/virtualServers.jsf?configName=#{configName}");
+    setPageSessionAttribute(key="editLink" value="#{request.contextPath}/web/configuration/virtualServerEdit.jsf?configName=#{configName}");
+    setPageSessionAttribute(key="tableTitle" value="$resource{i18n_web.vs.TableTitle}");
+    setPageSessionAttribute(key="additionalDeleteHandler" value="checkVsOfAppRef");
+    setPageSessionAttribute(key="additionalDeleteHandlerArgs" value="");
+    py.getVirtualServersAttributes(configName="#{pageSession.configName}" sessionScopeRestURL="#{sessionScope.REST_URL}", parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="id", result="#{requestScope.newListOfRows}");
     />
-    </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:virtualServers");</script>
+    
+    <!-- Old Table from line 63 : gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="id", result="#{requestScope.listOfRows}"); -->
+</event>
+"<script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID + ":configurations:#{pageSession.encodedConfigName}:virtualServers");</script>"
 
-    <sun:form id="propertyForm">
+<sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
-        <sun:title id="propertyContentPage" title="$resource{i18n_web.vs.ListPageTitle}"
-                 helpText="$resource{i18n_web.vs.ListPageHelp}" />
+    <sun:title id="propertyContentPage" title="$resource{i18n_web.vs.ListPageTitle}"
+               helpText="$resource{i18n_web.vs.ListPageHelp}" />
 #include "/common/shared/configNameSection.inc"
-        <sun:table id="configs" title="#{tableTitle}"
-            deselectMultipleButton="$boolean{true}"
-            deselectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
-            selectMultipleButton="$boolean{true}"
-            selectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
-            <!afterCreate
-                getClientId(component="$this{component}" clientId=>$page{tableId});
-            />
+    <sun:table id="configs" title="#{tableTitle}"
+               deselectMultipleButton="$boolean{true}"
+               deselectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+               selectMultipleButton="$boolean{true}"
+               selectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{tableId});
+        />
 
 #include "/common/shared/listTableConfigButtons.inc"
 
-           <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{listOfRows}"} sourceVar="td">
-             <!afterCreate
-                 getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
-                />
+        <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{newListOfRows}"} sourceVar="td">
+            <!afterCreate
+                getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
+            />
             <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col0">
-                    <sun:checkbox id="select"
-                        toolTip="$resource{i18n.common.select}"
-                        selected="#{td.value.selected}"
-                        selectedValue="$boolean{true}"
-                        onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
-                    />
+                <sun:checkbox id="select"
+                              toolTip="$resource{i18n.common.select}"
+                              selected="#{td.value.selected}"
+                              selectedValue="$boolean{true}"
+                              onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
+                              />
             </sun:tableColumn>
 
             <sun:tableColumn headerText="$resource{i18n.common.name.header}" sort="name" rowHeader="$boolean{true}" id="col1">
                 <sun:hyperlink id="link" text="#{td.value.name}"
-                    url="#{pageSession.editLink}&name=#{td.value.name}" />
+                               url="#{pageSession.editLink}&name=#{td.value.name}" />
             </sun:tableColumn>
 
-                 <sun:tableColumn headerText="$resource{i18n_web.vs.StateTableColumn}" sort="state" rowHeader="$boolean{false}" id="col2">
+            <sun:tableColumn headerText="$resource{i18n_web.vs.StateTableColumn}" sort="state" rowHeader="$boolean{false}" id="col2">
                 <staticText id="stateCol"  value="#{td.value.state}" />
             </sun:tableColumn>
 
             <sun:tableColumn headerText="$resource{i18n_web.vs.DefaultWebTableColumn}"  sort="defaultWebModule" rowHeader="$boolean{false}" id="col3">
+                // Should this ID be stateCol?
                 <staticText id="stateCol"  value="#{td.value.defaultWebModule}" />
             </sun:tableColumn>
-        </sun:tableRowGroup>
-        </sun:table>
 
-<sun:hidden id="helpKey" value="$resource{help_web.virtualServers}" />
-            </sun:form>
-            "<br>
+            <sun:tableColumn headerText="Context Root" sort="contextRoot" rowHeader="$boolean{false}" id="col4">
+                <staticText id="contextCol"  value="#{td.value.contextRoot}" />
+            </sun:tableColumn>
+        </sun:tableRowGroup>
+    </sun:table>
+
+    <sun:hidden id="helpKey" value="$resource{help_web.virtualServers}" />
+</sun:form>
+"<br>
 #include "/common/shared/changeButtonsJS.inc"
 </define>
 </composition>
