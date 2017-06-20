@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.2.173-SNAPSHOT</version>
+        <version>5.1.2.173-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
     
@@ -60,13 +60,13 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-        <tag>payara-server-4.1.2.173-SNAPSHOT</tag>
+        <tag>payara-server-5.1.2.173-SNAPSHOT</tag>
     </scm>
     
     <properties>
         
         <!-- Java EE -->
-        <javaee.major_version>7</javaee.major_version>
+        <javaee.major_version>8</javaee.major_version>
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
@@ -182,7 +182,7 @@
         <version_prefix />
 
         <version_suffix>#badassfish</version_suffix>
-        <major_version>4</major_version>
+        <major_version>5</major_version>
         <minor_version>1</minor_version>
         <update_version>2</update_version>
         <payara_version>173-SNAPSHOT</payara_version>
@@ -280,8 +280,8 @@
                                 <version>${mail.version}</version>
                             </artifact>
                             <jarType>impl</jarType>
-                            <specVersion>1.5</specVersion>
-                            <implVersion>1.5.0</implVersion>
+                            <specVersion>1.6</specVersion>
+                            <implVersion>1.6.0</implVersion>
                             <apiPackage>javax.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
                         </spec>
@@ -373,6 +373,8 @@
                             <specImplVersion>${javax.security.auth.message-api.version}</specImplVersion>
                             <apiPackage>javax.security.auth.message</apiPackage>
                         </spec>
+                        
+                        <!-- JSTL -->
                         <spec>
                             <artifact>
                                 <groupId>javax.servlet.jsp.jstl</groupId>
@@ -385,6 +387,8 @@
                             <specImplVersion>1.2.1</specImplVersion>
                             <apiPackage>javax.servlet.jsp.jstl</apiPackage>
                         </spec>
+                        
+                        <!-- JTA -->
                         <spec>
                             <artifact>
                                 <groupId>javax.transaction</groupId>
@@ -397,6 +401,8 @@
                             <specImplVersion>${javax.transaction-api.version}</specImplVersion>
                             <apiPackage>javax.transaction</apiPackage>
                         </spec>
+                        
+                        <!-- BATCH -->
                         <spec>
                             <artifact>
                                 <groupId>javax.batch</groupId>
@@ -409,6 +415,8 @@
 			                <specImplVersion>${javax.batch-api.version}</specImplVersion>
                             <apiPackage>javax.batch</apiPackage>
                         </spec>
+                        
+                        <!-- JMS -->
                         <spec>
                             <artifact>
                                 <groupId>javax.jms</groupId>
@@ -421,6 +429,8 @@
                             <specImplVersion>${jms-api.version}</specImplVersion>
                             <apiPackage>javax.jms</apiPackage>
                         </spec>
+                        
+                        <!-- Concurrency Utils -->
                         <spec>
                             <artifact>
                                 <groupId>javax.enterprise.concurrent</groupId>
@@ -433,6 +443,8 @@
                             <specImplVersion>${concurrent-api.version}</specImplVersion>
                             <apiPackage>javax.enterprise.concurrent</apiPackage>
                         </spec>
+                        
+                        <!-- Servlet -->
                         <spec>
                             <artifact>
                                 <groupId>javax.servlet</groupId>
@@ -445,6 +457,8 @@
                             <specImplVersion>${servlet-api.version}</specImplVersion>
                             <apiPackage>javax.servlet</apiPackage>
                         </spec>
+                        
+                        <!-- Common Annotations -->
                         <spec>
                             <artifact>
                                 <groupId>javax.annotation</groupId>
@@ -457,6 +471,8 @@
                             <specImplVersion>${javax.annotation-api.version}</specImplVersion>
                             <apiPackage>javax.annotation</apiPackage>
                         </spec>
+                        
+                        <!-- WebSocket -->
                         <spec>
                             <artifact>
                                 <groupId>javax.websocket</groupId>
@@ -469,6 +485,8 @@
                             <specImplVersion>${websocket-api.version}</specImplVersion>
                             <apiPackage>javax.websocket</apiPackage>
                         </spec>
+                        
+                        <!-- JAX-RS -->
                         <spec>
                             <artifact>
                                 <groupId>javax.ws.rs</groupId>
@@ -481,6 +499,8 @@
                             <specImplVersion>${jax-rs-api.impl.version}</specImplVersion>
                             <apiPackage>javax.ws.rs</apiPackage>
                         </spec>
+                        
+                        <!-- EJB -->
                         <spec>
                             <artifact>
                                 <groupId>javax.ejb</groupId>
@@ -493,6 +513,8 @@
 			                <specImplVersion>${javax.ejb-api.version}</specImplVersion>
                             <apiPackage>javax.ejb</apiPackage>
                         </spec>
+                        
+                        <!-- Interceptor -->
                         <spec>
                             <artifact>
                                 <groupId>javax.interceptor</groupId>

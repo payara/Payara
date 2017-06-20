@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.concurrent</groupId>
         <artifactId>concurrent</artifactId>
-        <version>4.1.2.173-SNAPSHOT</version>
+        <version>5.1.2.173-SNAPSHOT</version>
     </parent>    
     <artifactId>concurrent-connector</artifactId>
     <packaging>glassfish-jar</packaging>
