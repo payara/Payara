@@ -129,15 +129,22 @@ public class DynamicConfigListener implements ConfigListener {
                     return processProtocol(type, (Protocol) t, null);
                 } else if (tClass == ThreadPool.class && t instanceof ThreadPool) {
                     NotProcessed notProcessed = null;
-                    for (NetworkListener listener : ((ThreadPool) t).findNetworkListeners()) {
+                    ThreadPool threadPool = (ThreadPool) t;
+                    for (NetworkListener listener : threadPool.findNetworkListeners()) {
                             notProcessed = processNetworkListener(type, listener, null);
                     }
                     
+                    // Throw an unprocessed event change if one hasn't already if HTTP or ThreadPool monitoring is enabled. 
                     MonitoringService ms = config.getMonitoringService();
-                    String level = ms.getModuleMonitoringLevels().getThreadPool();
-                    if (level != null && (!level.equals(OFF)) && notProcessed == null){
-                        notProcessed = new NotProcessed("Monitoring not set with new admin pool");
+                    String threadPoolLevel = ms.getModuleMonitoringLevels().getThreadPool();
+                    String httpServiceLevel = ms.getModuleMonitoringLevels().getHttpService();
+                    
+                    if (((threadPoolLevel != null && !threadPoolLevel.equals(OFF)) 
+                            || (httpServiceLevel != null && !httpServiceLevel.equals(OFF))) && notProcessed == null) {
+                        notProcessed = new NotProcessed("Monitoring statistics will be incorrect for " 
+                                + threadPool.getName() + " until restart due to changed attribute(s).");
                     }
+                    
                     return notProcessed;
                 } else if (tClass == Transport.class && t instanceof Transport) {
                     NotProcessed notProcessed = null;
@@ -221,8 +228,32 @@ public class DynamicConfigListener implements ConfigListener {
                         return null;
                     }
 
-                    // Restart the network listener
-                    grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
+                    // Only restart the network listener if something hasn't changed
+                    if (!isRedundantChange(changedProperties)) {
+                        MonitoringService ms = config.getMonitoringService();
+                        String level = ms.getModuleMonitoringLevels().getHttpService();
+                        
+                        // We only need to throw an unprocessed change event if monitoring is enabled for the HTTP service
+                        if (level != null && (!level.equals(OFF))) {
+                            String eventsMessage = "Monitoring statistics will be incorrect for " 
+                                    + listener.findHttpProtocolName() + " until restart due to changed attribute(s): ";
+                            
+                            // Add list of changed events. Usually only one message is sent to this method at a time, 
+                            // so the for loop should only run once, but it's there just in case.
+                            for (PropertyChangeEvent event : changedProperties) {
+                                eventsMessage += ("\"" + event.getPropertyName() + "\" changed from \"" 
+                                        + event.getOldValue() + "\" to \"" + event.getNewValue() + "\".\n");
+                            }
+                        
+                            // Still restart the network listener, as it's only the monitoring that breaks.
+                            grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
+                            
+                            return new NotProcessed(eventsMessage);
+                        } else {
+                            // Restart the network listener without throwing an unprocessed change
+                            grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
+                        }
+                    }
                 }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Network listener configuration error. Type: " + type, e);
