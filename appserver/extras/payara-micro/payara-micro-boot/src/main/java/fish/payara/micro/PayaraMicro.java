@@ -354,8 +354,12 @@ public class PayaraMicro {
         return result;
     }
     
-    public static void main(String ... args) throws Exception {
-        PayaraMicroLauncher.main(args);
+    public static void main(String ... args) {
+        try {
+            PayaraMicroLauncher.main(args);
+        } catch (Exception ex) {
+            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     private PayaraMicro() {
