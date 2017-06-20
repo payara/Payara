@@ -264,8 +264,10 @@ public class ListRestEndpointsCommand implements AdminCommand {
             EngineRef engineRef = moduleInfo.getEngineRefForContainer(WebContainer.class);
             if (engineRef != null) {
                 WebApplication webApplication = (WebApplication) engineRef.getApplicationContainer();
-                for (WebModule module : webApplication.getWebModules()) {
-                    webModules.add(module);
+                if (webApplication != null) {
+                    for (WebModule module : webApplication.getWebModules()) {
+                        webModules.add(module);
+                    }
                 }
             }
         }

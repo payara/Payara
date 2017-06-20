@@ -1,0 +1,1 @@
+This directory should contain a sample sun-resources XML file named sun-resources.xml for the purpose of verifying the sunResourcesXml property in arquillian.xml.
