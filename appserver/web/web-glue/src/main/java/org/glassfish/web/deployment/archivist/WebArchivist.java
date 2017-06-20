@@ -41,8 +41,6 @@
 
 package org.glassfish.web.deployment.archivist;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.sun.enterprise.deployment.Application;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
@@ -347,21 +345,16 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
 
         WebFragmentDescriptor mergedWebFragment = new WebFragmentDescriptor();
         mergedWebFragment.setExists(false);
-        Iterable<WebFragmentDescriptor> filteredWfList = Iterables.filter(wfList, new Predicate<WebFragmentDescriptor>() {
-            @Override
-            public boolean apply(WebFragmentDescriptor input) {
-                return input.isExists();
-            }
-        });
-        for (WebFragmentDescriptor wf : filteredWfList) {
-            if(mergedWebFragment.isExists() == false) {
+        for (WebFragmentDescriptor wf : wfList) {
+            // we have the first fragment that's contains the web-fragment.xml file
+            if(!mergedWebFragment.isExists() && wf.isExists()) {
                 mergedWebFragment.setExists(true);
                 mergedWebFragment.setDistributable(wf.isDistributable());
             }
             mergedWebFragment.addWebBundleDescriptor(wf);
         }
 
-        if (mergedWebFragment.isExists()) {
+        if (!wfList.isEmpty()) {
             descriptor.addWebBundleDescriptor(mergedWebFragment);
 
             // if there any mapping stubs left, there is something invalid referenced from web.xml

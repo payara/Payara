@@ -263,7 +263,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         combineLoginConfiguration(webBundleDescriptor);
 
         if (!defaultDescriptor && webBundleDescriptor.isExists()) {
-            // ignore non-fragment (plane archive) files
+            // ignore non-fragment (plain archive) files
             boolean otherDistributable = webBundleDescriptor.isDistributable();
             // the only way distributable is true is when
             // all of it's web fragments are true
