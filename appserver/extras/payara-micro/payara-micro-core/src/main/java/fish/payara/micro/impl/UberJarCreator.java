@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -230,7 +230,17 @@ public class UberJarCreator {
                 jos.flush();
                 jos.closeEntry();
             }
-
+            
+            if (!libs.isEmpty()) {
+                for (File lib : libs){
+                    JarEntry libEntry = new JarEntry(lib.getAbsolutePath());
+                    jos.putNextEntry(libEntry);
+                    Files.copy(lib, jos);
+                    jos.flush();
+                    jos.closeEntry();
+                }
+            }
+            
             if (deployments != null) {
                 for (File deployment : deployments) {
                     JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
@@ -255,11 +265,11 @@ public class UberJarCreator {
             }
             
             if (copyDirectory != null) {
-                String basePath = copyDirectory.getPath().replaceAll(copyDirectory + "$", "");
+                String basePath = copyDirectory.getCanonicalPath().replaceAll(copyDirectory + "$", "");
                 List<File> filesToCopy = fillFiles(copyDirectory);
                 for (File file : filesToCopy) {
                     
-                        JarEntry deploymentEntry = new JarEntry(copyDirectory + file.getPath().replace(basePath, ""));
+                        JarEntry deploymentEntry = new JarEntry(copyDirectory + file.getCanonicalPath().replace(basePath, ""));
                         jos.putNextEntry(deploymentEntry);
                         Files.copy(file, jos);
                         jos.flush();
@@ -352,7 +362,7 @@ public class UberJarCreator {
      * @param directory The parent directory to search within
      * @return 
      */
-    public List<File> fillFiles(File directory){
+    public static List<File> fillFiles(File directory){
         List<File> allFiles = new LinkedList<File>();
         for (File file : directory.listFiles()){
             if (file.isDirectory()){
