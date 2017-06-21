@@ -12,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package fish.payara.micro.boot.loader;
