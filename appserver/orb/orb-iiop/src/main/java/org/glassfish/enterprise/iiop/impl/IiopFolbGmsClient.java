@@ -108,6 +108,9 @@ public class IiopFolbGmsClient implements CallBack {
     private Map<String, ClusterInstanceInfo> currentMembers;
 
     private GroupInfoService gis;
+    
+    private static final String USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY = 
+            "fish.payara.iiop.gmsClient.useNodeHostForLocalNode";
 
     private void fineLog( String fmt, Object... args ) {
         if(_logger.isLoggable(Level.FINE)) {
@@ -357,7 +360,7 @@ public class IiopFolbGmsClient implements CallBack {
         if (nodes != null) {
             Node node = nodes.getNode( nodeName ) ;
             if (node != null) {
-                if (node.isLocal()) {
+                if (node.isLocal() && !Boolean.getBoolean(USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY)) {
                     try {
                         hostName = InetAddress.getLocalHost().getHostName() ;
                     } catch (UnknownHostException exc) {
