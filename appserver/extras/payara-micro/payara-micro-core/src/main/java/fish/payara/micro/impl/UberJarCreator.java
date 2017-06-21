@@ -233,7 +233,7 @@ public class UberJarCreator {
             
             if (!libs.isEmpty()) {
                 for (File lib : libs){
-                    JarEntry libEntry = new JarEntry(lib.getAbsolutePath());
+                    JarEntry libEntry = new JarEntry("MICRO-INF/lib/" + lib.getName());
                     jos.putNextEntry(libEntry);
                     Files.copy(lib, jos);
                     jos.flush();

@@ -1115,12 +1115,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case rootdir:
                         rootDir = new File(value);
                         break;
-                    case libraries:
+                    case addlibs:
                         File library = new File(value);
                         if (libraries == null) {
                             libraries = new LinkedList<>();
                         }
-                        libraries.add(library);
+                        if (library.isDirectory()){
+                            List<File> allFiles= UberJarCreator.fillFiles(library);
+                            for (File lib : allFiles){
+                                libraries.add(lib);
+                            }
+                        } else {
+                            libraries.add(library);
+                        }
                         break;
                     case deploy:
                         File deployment = new File(value);
@@ -1337,6 +1344,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         } catch (MalformedURLException ex) {
                             LOGGER.log(Level.SEVERE, null, ex);
                         }
+                    } else {
+                        LOGGER.log(Level.WARNING, "Unable to read file " + lib.getName());
                     }
 
                 }
