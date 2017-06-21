@@ -35,7 +35,7 @@ import fish.payara.micro.boot.loader.jar.JarFile;
  * @author Dave Syer
  * @author Andy Wilkinson
  */
-public class LaunchedURLClassLoader extends URLClassLoader {
+public class LaunchedURLClassLoader extends OpenURLClassLoader {
 
 	/**
 	 * Create a new {@link LaunchedURLClassLoader} instance.
@@ -179,5 +179,5 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 			((JarFile) jarFile).clearCache();
 		}
 	}
-
+        
 }

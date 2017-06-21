@@ -59,7 +59,7 @@ import java.util.logging.Logger;
  *
  * @author steve
  */
-public class ExplodedURLClassloader extends URLClassLoader {
+public class ExplodedURLClassloader extends OpenURLClassLoader {
 
     private final File explodedDir;
     private boolean deleteOnExit = false;
@@ -150,9 +150,5 @@ public class ExplodedURLClassloader extends URLClassLoader {
         }
 
     }
-    
-    @Override
-    public void addURL(URL url){
-        super.addURL(url);
-    }
+     
 }

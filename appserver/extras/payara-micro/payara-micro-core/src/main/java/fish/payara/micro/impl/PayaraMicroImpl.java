@@ -80,6 +80,8 @@ import com.sun.enterprise.server.logging.ODLLogFormatter;
 import fish.payara.micro.PayaraMicroRuntime;
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.loader.ExplodedURLClassloader;
+import fish.payara.micro.boot.loader.LaunchedURLClassLoader;
+import fish.payara.micro.boot.loader.OpenURLClassLoader;
 import fish.payara.micro.boot.runtime.BootCommands;
 import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.ValidationException;
@@ -90,6 +92,7 @@ import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLClassLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import org.glassfish.embeddable.CommandResult;
@@ -1334,21 +1337,25 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         Deployer deployer = gf.getDeployer();
 
         //add libraries to deployment
-        if (libraries != null) {       
-                ExplodedURLClassloader loader = (ExplodedURLClassloader) this.getClass().getClassLoader();
+        if (libraries != null) {                  
+            try {
+                OpenURLClassLoader loader = (OpenURLClassLoader) this.getClass().getClassLoader();
+                
                 for (File lib : libraries) {
                     if (lib.exists() && lib.canRead()) {
-                        try {
+                        
                             loader.addURL(lib.toURI().toURL());
+                            //method.invoke(urlClassLoader, new Object[]{lib.toURI().toURL()});
                             LOGGER.log(Level.INFO, "Added " + lib.getPath() + " to classpath");
-                        } catch (MalformedURLException ex) {
-                            LOGGER.log(Level.SEVERE, null, ex);
-                        }
+                        
                     } else {
                         LOGGER.log(Level.WARNING, "Unable to read file " + lib.getName());
                     }
 
                 }
+            } catch (SecurityException | IllegalArgumentException | MalformedURLException ex) {
+                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         // search MICRO-INF/deploy for deployments
