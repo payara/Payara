@@ -40,6 +40,7 @@
 package fish.payara.micro.impl;
 
 import com.google.common.io.Files;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -58,6 +59,8 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 /**
  *
@@ -233,7 +236,17 @@ public class UberJarCreator {
             
             if (!libs.isEmpty()) {
                 for (File lib : libs){
+                    JarFile f = new JarFile(lib);
                     JarEntry libEntry = new JarEntry("MICRO-INF/lib/" + lib.getName());
+                    libEntry.setMethod(JarEntry.STORED);
+                    libEntry.setSize(lib.length());
+                    
+                    CheckedInputStream check = new CheckedInputStream(new FileInputStream(lib), new CRC32());
+                    BufferedInputStream in = new BufferedInputStream(check);
+                    while (in.read(new byte[30]) != -1){
+                        //read in file completly
+                    }
+                    libEntry.setCrc(check.getChecksum().getValue());
                     jos.putNextEntry(libEntry);
                     Files.copy(lib, jos);
                     jos.flush();
