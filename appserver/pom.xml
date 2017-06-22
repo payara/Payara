@@ -79,8 +79,8 @@
         <jsp-impl.version>2.3.3-b02</jsp-impl.version>
         
         <!-- JSTL -->
-        <jstl-impl.version>1.2.4</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
+        <jstl-impl.version>1.2.5-b03</jstl-impl.version>
         
         <!-- JSF -->
         <javax.faces-spec.version>2.3</javax.faces-spec.version>
@@ -109,7 +109,7 @@
         <eclipselink.version>2.6.4.payara-p2</eclipselink.version>
         
         <!-- JTA -->
-        <javax.transaction-api.version>1.2</javax.transaction-api.version>
+        <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
         
         <!-- Concurrency -->
         <concurrent-api.version>1.0</concurrent-api.version>

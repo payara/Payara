@@ -115,33 +115,38 @@ public class CommandRunnerImpl implements CommandRunner {
     private static final String OLD_PASSWORD_PARAM_PREFIX = "AS_ADMIN_";
 
     private static final InjectionManager injectionMgr = new InjectionManager();
+    
     @Inject
     private ServiceLocator habitat;
+    
     @Inject
     private ServerContext sc;
+    
     @Inject
     private Domain domain;
+    
     @Inject
     private ServerEnvironment serverEnv;
+    
     @Inject
     private ProcessEnvironment processEnv;
+    
     @Inject
     private InstanceStateService state;
+    
     @Inject
     private AdminCommandLock adminLock;
+    
     @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
 
-
-    //private final Map<Class<? extends AdminCommand>, String> commandModelEtagMap = new WeakHashMap<Class<? extends AdminCommand>, String>();
     private final Map<NameCommandClassPair, String> commandModelEtagMap = new IdentityHashMap<NameCommandClassPair, String>();
 
     @Inject
     private CommandSecurityChecker commandSecurityChecker;
     
-    private static final LocalStringManagerImpl adminStrings =
-            new LocalStringManagerImpl(CommandRunnerImpl.class);
-    private static volatile Validator beanValidator = null;
+    private static final LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(CommandRunnerImpl.class);
+    private static volatile Validator beanValidator;
 
     /**
      * Returns an initialized ActionReport instance for the passed type or
