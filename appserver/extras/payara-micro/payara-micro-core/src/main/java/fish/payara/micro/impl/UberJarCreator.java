@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.micro.impl;
 
 import com.google.common.io.Files;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -58,6 +59,8 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 /**
  *
@@ -337,6 +340,28 @@ public class UberJarCreator {
                         }
                     }
 
+                }
+                
+                File applicationsDir = new File(domainDir, "applications");
+                if (applicationsDir.exists()){
+                    for (File app : fillFiles(applicationsDir)){
+                        String path = app.getPath();
+                        if (path.endsWith(".war") || path.endsWith(".jar") || path.endsWith(".rar")){
+                            JarEntry appEntry = new JarEntry("MICRO-INF/deploy/" + app.getName());
+                            appEntry.setMethod(JarEntry.STORED);
+                            appEntry.setSize(app.length());
+                            CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
+                            BufferedInputStream in = new BufferedInputStream(check);
+                            while (in.read(new byte[300]) != -1){
+                            //read in file completly
+                            }
+                            appEntry.setCrc(check.getChecksum().getValue());
+                            jos.putNextEntry(appEntry);
+                            Files.copy(app, jos);
+                            jos.flush();
+                            jos.closeEntry();
+                        }
+                    }
                 }
             }
             LOGGER.info("Built Uber Jar " + outputFile.getAbsolutePath() + " in " + (System.currentTimeMillis() - start) + " (ms)");
