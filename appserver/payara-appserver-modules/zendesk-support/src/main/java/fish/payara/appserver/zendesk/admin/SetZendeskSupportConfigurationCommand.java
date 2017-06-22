@@ -79,7 +79,7 @@ public class SetZendeskSupportConfigurationCommand implements AdminCommand {
     private Target targetUtil;
     
     @Inject
-    ZendeskSupportService zendeskSupport;
+    private ZendeskSupportService zendeskSupport;
     
     @Param(name = "emailAddress", alias = "emailaddress", optional = true)
     private String emailAddress;
