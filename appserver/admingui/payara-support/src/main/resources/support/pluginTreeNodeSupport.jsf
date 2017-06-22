@@ -44,8 +44,11 @@
     text="$resource{i18nhs.support.tree}"
     url="/payara_support/support/support.jsf"
     imageURL="/resource/images/support.png"
+    rendered="#{requestScope.enabled}"
     >
      <!beforeCreate
         setResourceBundle(key="i18nhs" bundle="fish.payara.admingui.support.Strings");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/server-config/zendesk-support-configuration/get-zendesk-support-configuration" method="get" result="#{requestScope.resp}");
+        setAttribute(key="enabled" value="#{requestScope.resp.data.extraProperties.zendeskSupportConfiguration.enabled}");
     />
 </sun:treeNode>
