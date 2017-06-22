@@ -40,14 +40,18 @@
     holder.
 
 -->
+<!-- Portions Copyright [2016, 2017] [Payara Foundation] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>4.1.2.173-SNAPSHOT</version>
+        <version>5.0.173-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
+    
     <artifactId>gf-client-module</artifactId>
     <packaging>glassfish-jar</packaging>
      <!-- the main artifact is the OSGi module JAR -->
@@ -77,10 +81,6 @@
 
         <standalone.classifier>lib</standalone.classifier>
         <acc.osgi.module.classifier>module</acc.osgi.module.classifier>
-<!--
-        <config-xsd-dir>src/main/resources</config-xsd-dir>
-        <config-xsd-file>sun-application-client-container_1_2.xsd</config-xsd-file>
--->
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
 
@@ -442,7 +442,7 @@
           <version>${project.version}</version>
       </dependency>
 
-      <!-- as of EE 7, JSON needs to be available to clients -->
+      <!-- As of EE 7, JSON needs to be available to clients -->
       <dependency>
         <scope>runtime</scope>
         <groupId>org.glassfish</groupId>
@@ -452,7 +452,7 @@
       <!-- CDI support -->
       <dependency>
           <groupId>org.jboss.weld.se</groupId>
-          <artifactId>weld-se-core</artifactId>
+          <artifactId>weld-se-shaded</artifactId>
       </dependency>
       <dependency>
           <groupId>javax.enterprise</groupId>

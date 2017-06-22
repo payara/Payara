@@ -67,7 +67,7 @@ class AsyncContextImpl implements AsyncContext {
     // Note...this constant is also defined in org.glassfish.weld.WeldDeployer.  If it changes here it must
     // change there as well.  The reason it is duplicated is so that a dependency from web-core to gf-weld-connector
     // is not necessary.
-    private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
+    private static final String WELD_LISTENER = "org.jboss.weld.module.web.servlet.WeldListener";
 
 
     /*

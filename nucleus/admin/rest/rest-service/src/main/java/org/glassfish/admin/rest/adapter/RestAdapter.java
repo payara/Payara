@@ -70,6 +70,7 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.ProxiedRestAdapter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.jersey.inject.hk2.Hk2ReferencingFactory;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.Method;
@@ -279,7 +280,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             protected void configure() {
                 bindFactory(SubjectReferenceFactory.class).to(new TypeLiteral<Ref<Subject>>() {
                 }).in(PerLookup.class);
-                bindFactory(ReferencingFactory.<Subject>referenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
+                
+                bindFactory(Hk2ReferencingFactory.<Subject>referenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
                 }).in(RequestScoped.class);
             }
         });

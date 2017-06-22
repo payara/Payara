@@ -44,7 +44,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.2.173-SNAPSHOT</version>
+        <version>5.0.173-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
     <artifactId>requesttracing-api</artifactId>
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
-            <version>1.2</version>
+            <version>2.0</version>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>
