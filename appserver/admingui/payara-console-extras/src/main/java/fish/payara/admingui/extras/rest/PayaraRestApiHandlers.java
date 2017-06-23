@@ -468,7 +468,7 @@ public class PayaraRestApiHandlers
         String configName = (String) handlerCtx.getInputValue("configName");
         String sessionScopeRestURL = (String) handlerCtx.getInputValue("sessionScopeRestURL");
         sessionScopeRestURL = sessionScopeRestURL.endsWith("/") ? sessionScopeRestURL : sessionScopeRestURL + "/";
-        String serverName = "server";
+        String serverName = "";
        
         try {
             List<Map> table = RestUtil.buildChildEntityList(
@@ -483,8 +483,6 @@ public class PayaraRestApiHandlers
                 String configRef = (String) RestUtil.getAttributesMap(instance).get("configRef");
                 if (configRef.equals(configName)) {
                     serverName = instance.substring(instance.lastIndexOf("/") + 1);
-                } else {
-                    serverName = "server";
                 }
             }
             
@@ -513,7 +511,7 @@ public class PayaraRestApiHandlers
                         } else {
                             contextRoots += RestUtil.getAttributesMap(application).get("contextRoot");
                         }
-                    }
+                    } // else get docroot
                 }
                 
                 for (Map row : table) {
