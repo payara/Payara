@@ -53,7 +53,7 @@
     guiTitle="$resource{i18n_web.vs.ListPageTitle}"
     guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:virtualServers');">
 
-<!define name="content">s
+<!define name="content">
 <event>
     <!beforeCreate
         getRequestValue(key="configName" value=>$page{configName} );
