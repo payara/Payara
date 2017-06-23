@@ -346,9 +346,8 @@ public class UberJarCreator {
                 if (applicationsDir.exists()){
                     for (File app : fillFiles(applicationsDir)){
                         String path = app.getPath();
-                        if (path.endsWith(".war") || path.endsWith(".jar") || path.endsWith(".rar")){
+                        if (path.endsWith(".war") || path.endsWith(".jar") || path.endsWith(".rar") || path.endsWith(".ear")){
                             JarEntry appEntry = new JarEntry("MICRO-INF/deploy/" + app.getName());
-                            appEntry.setMethod(JarEntry.STORED);
                             appEntry.setSize(app.length());
                             CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
                             BufferedInputStream in = new BufferedInputStream(check);
