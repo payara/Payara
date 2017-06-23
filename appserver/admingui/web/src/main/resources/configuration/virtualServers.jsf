@@ -72,7 +72,6 @@
     py.getVirtualServersAttributes(configName="#{pageSession.configName}" sessionScopeRestURL="#{sessionScope.REST_URL}", parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="id", result="#{requestScope.newListOfRows}");
     />
     
-    <!-- Old Table from line 63 : gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="id", result="#{requestScope.listOfRows}"); -->
 </event>
 "<script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID + ":configurations:#{pageSession.encodedConfigName}:virtualServers");</script>"
 

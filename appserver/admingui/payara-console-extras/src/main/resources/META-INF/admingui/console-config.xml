@@ -143,13 +143,5 @@
         parentId="col3"
         content="payaraRestEndpoints/payaraRestEndpointsApplication.jsf"
     />
-    
-    <integration-point
-        id="getVirtualServersAttributes"
-        type="org.glassfish.admingui:subComponentTablePage"
-        priority="30"
-        parentId="id"
-        content="XXX"
-    />
 
 </console-config>
