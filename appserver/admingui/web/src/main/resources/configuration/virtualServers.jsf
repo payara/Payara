@@ -114,7 +114,6 @@
             </sun:tableColumn>
 
             <sun:tableColumn headerText="$resource{i18n_web.vs.DefaultWebTableColumn}"  sort="defaultWebModule" rowHeader="$boolean{false}" id="col3">
-                // Should this ID be stateCol?
                 <staticText id="stateCol"  value="#{td.value.defaultWebModule}" />
             </sun:tableColumn>
 
