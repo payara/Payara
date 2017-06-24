@@ -70,8 +70,25 @@ public class CacheManagerProxy implements CacheManager {
         return ctxUtil != null? new CacheProxy<>(cache, ctxUtil) : cache;
     }
 
+    @Override
+    public <K, V> Cache<K, V> getCache(String cacheName) {
+        JavaEEContextUtil ctxUtil = serverContext.getDefaultServices().getService(JavaEEContextUtil.class);
+        Cache<K, V> cache = delegate.getCache(cacheName);
+        return cache != null? new CacheProxy<>(cache, ctxUtil) : null;
+    }
+
+    @Override
+    public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
+        JavaEEContextUtil ctxUtil = serverContext.getDefaultServices().getService(JavaEEContextUtil.class);
+        Cache<K, V> cache = delegate.getCache(cacheName, keyType, valueType);
+        return cache != null? new CacheProxy<>(cache, ctxUtil) : null;
+    }
+
+
     private interface Exclusions {
         public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException;
+        public <K, V> Cache<K, V> getCache(String cacheName);
+        public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType);
     }
 
 
