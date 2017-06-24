@@ -41,12 +41,14 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.resources</groupId>
         <artifactId>javamail</artifactId>
         <version>5.0.173-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>javamail-connector</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -64,6 +66,7 @@
             </roles>
         </developer>
     </developers>
+    
     <build>
         <resources>
             <resource>
@@ -78,6 +81,7 @@
             </resource>
         </resources>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -101,23 +105,33 @@
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-       
+        
         <dependency>
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>security-services</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
         <dependency>
             <groupId>org.glassfish.main.tests</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>
+    
 </project>

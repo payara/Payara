@@ -40,23 +40,25 @@
 
 package org.glassfish.diagnostics.context.impl;
 
-import junit.framework.Assert;
-import org.glassfish.diagnostics.context.ContextManager;
-import org.junit.Test;
+import static java.lang.System.out;
+import static org.junit.Assert.assertNotNull;
 
 import javax.inject.Inject;
 
-public class ContextImplIntegrationTest
-    extends org.jvnet.hk2.testing.junit.HK2Runner
-{
-  @Inject
-  private ContextManager mContextManager;
+import org.glassfish.diagnostics.context.ContextManager;
+import org.junit.Test;
+import org.jvnet.hk2.testing.junit.HK2Runner;
 
-  @Test
-  public void testInjectionOccurred()
-  {
-    System.out.println("mContextManager instance of " + mContextManager.getClass().getName());
-    Assert.assertNotNull("mContextManager should have been injected, but it is still null.", mContextManager);
-  }
+public class ContextImplIntegrationTest extends HK2Runner {
+	
+	@Inject
+	private ContextManager mContextManager;
+
+	@Test
+	public void testInjectionOccurred() {
+		assertNotNull("mContextManager should have been injected, but it is still null.", mContextManager);
+		
+		out.println("mContextManager instance of " + mContextManager.getClass().getName());
+	}
 
 }
