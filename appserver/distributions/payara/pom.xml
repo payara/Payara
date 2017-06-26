@@ -43,15 +43,18 @@
 <!-- Portions Copyright [2016-2017] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>distributions</artifactId>
         <version>5.1.2.173-SNAPSHOT</version>
     </parent>
+    
     <groupId>fish.payara.distributions</groupId>
     <artifactId>payara</artifactId>
     <name>Payara Distribution</name>
     <packaging>glassfish-distribution</packaging>
+    
     <description>This pom describes how to assemble the Payara Distribution</description>
 
     <distributionManagement>
@@ -60,6 +63,7 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+    
     <properties>
         <deploy.skip>false</deploy.skip>
     </properties>
@@ -75,6 +79,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
@@ -91,11 +96,11 @@
                             <goal>exec</goal>
                         </goals>
                     </execution>
-
                 </executions>
             </plugin>
         </plugins>
     </build>
+    
     <profiles>
         <profile>
             <id>ips</id>
@@ -119,6 +124,7 @@
                 </plugins>
             </build>
         </profile>
+        
         <profile>
             <id>DeploySnapshot</id>
             <activation>
@@ -143,7 +149,6 @@
                 </plugins>
             </build>
         </profile>
-        
     </profiles>
 
     <dependencies>

@@ -41,7 +41,7 @@
 -exportcontents: \
                         org.glassfish.appclient.client; \
                         org.glassfish.appclient.client.acc; \
-                        org.glassfish.appclient.client.acc.callbackhandler;
+                        org.glassfish.appclient.client.acc.callbackhandler; \
                         org.glassfish.appclient.common; version=${project.osgi.version}
 
 # GLASSFISH-20977
