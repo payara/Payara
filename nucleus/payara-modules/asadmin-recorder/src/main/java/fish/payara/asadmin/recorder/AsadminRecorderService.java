@@ -52,9 +52,11 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service (name = "asadmin-recorder")
 @RunLevel(StartupRunLevel.VAL)
 public class AsadminRecorderService implements EventListener {
+    private static final List<String> FILTERED_PARAMETERS = Arrays.asList("userpassword");
+    
     private List<String> filteredCommands;
     private String filteredCommandsString;
-    
+       
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional
@@ -81,20 +83,22 @@ public class AsadminRecorderService implements EventListener {
         
         String asadminCommand = commandName;
         String mandatoryOption = "";
-        for (Map.Entry<String, List<String>> parameter : 
-                parameters.entrySet()) {
-            if (parameter.getKey().equals("DEFAULT")) {
-                // This can have sub-parameters, so loop through and add spaces
-                // between the sub-parameters.
-                for (int i = 0; i < parameter.getValue().size(); i++) {
-                    mandatoryOption += parameter.getValue().get(i);
-                    if (i != (parameter.getValue().size() - 1)) {
-                        mandatoryOption += " ";
-                    }
-                }    
-            } else {
-                asadminCommand += " --" + parameter.getKey() + "="
-                    + parameter.getValue().get(0); 
+        for (Map.Entry<String, List<String>> parameter : parameters.entrySet()) {
+            // Check for broken parameters
+            if (!FILTERED_PARAMETERS.contains(parameter.getKey())) {
+                if (parameter.getKey().equals("DEFAULT")) {
+                    // This can have sub-parameters, so loop through and add spaces
+                    // between the sub-parameters.
+                    for (int i = 0; i < parameter.getValue().size(); i++) {
+                        mandatoryOption += parameter.getValue().get(i);
+                        if (i != (parameter.getValue().size() - 1)) {
+                            mandatoryOption += " ";
+                        }
+                    }    
+                } else {
+                    asadminCommand += " --" + parameter.getKey() + "="
+                        + parameter.getValue().get(0); 
+                }
             }
         }
 
