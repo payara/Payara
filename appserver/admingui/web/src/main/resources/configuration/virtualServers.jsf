@@ -119,7 +119,7 @@
                 <staticText id="stateCol"  value="#{td.value.defaultWebModule}" />
             </sun:tableColumn>
 
-            <sun:tableColumn headerText="Context Root" sort="contextRoot" rowHeader="$boolean{false}" id="col4">
+            <sun:tableColumn headerText="$resource{i18n_web.vs.ContextRootTableColumn" sort="contextRoot" rowHeader="$boolean{false}" id="col4">
                 <staticText id="contextCol"  value="#{td.value.contextRoot}" />
             </sun:tableColumn>
         </sun:tableRowGroup>
