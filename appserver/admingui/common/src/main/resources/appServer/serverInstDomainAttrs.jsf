@@ -108,7 +108,7 @@
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
-            </sun:button><h:outputText value="#{pageSession.zendeskenabled}"/>
+            </sun:button>
         </sun:panelGroup>
     </facet>
     </sun:title>
