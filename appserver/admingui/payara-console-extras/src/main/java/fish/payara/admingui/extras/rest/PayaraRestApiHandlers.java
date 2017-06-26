@@ -478,45 +478,58 @@ public class PayaraRestApiHandlers
                     (List)handlerCtx.getInputValue("includeList"),
                     (String)handlerCtx.getInputValue("id"));
             
-            List<String> instances = RestUtil.getChildList(sessionScopeRestURL + "servers/server");
-            for (String instance : instances) {
-                String configRef = (String) RestUtil.getAttributesMap(instance).get("configRef");
-                if (configRef.equals(configName)) {
-                    serverName = instance.substring(instance.lastIndexOf("/") + 1);
-                }
-            }
-            
-            String deployedApplicationsEndpoint = sessionScopeRestURL + "servers/server/" + serverName + "/application-ref";
-            List<String> deployedApplications = RestUtil.getChildList(deployedApplicationsEndpoint);
-            List<String> virtualServers = RestUtil.getChildList(parentEndpoint + "/" + childType);
-            List<String> applications = RestUtil.getChildList(sessionScopeRestURL + "applications/application");
-            
-            for (String virtualServer : virtualServers) {         
-                String instanceName = virtualServer.substring(virtualServer.lastIndexOf("/") + 1);
-                
-                for (int i = 0; i < deployedApplications.size(); i++) {
-                    deployedApplications.set(i, deployedApplications.get(i)
-                            .substring(deployedApplications.get(i).lastIndexOf("/") + 1));
-                }
-                
-                String contextRoots = "";
-                
-                for (String application : applications) {
-                    String applicationName = application.substring(application.lastIndexOf("/") + 1);
-                    if (deployedApplications.contains(applicationName) 
-                            && instanceName.equals((String) RestUtil.getAttributesMap(
-                                deployedApplicationsEndpoint + "/" + applicationName).get("virtualServers"))) {
-                        if (!contextRoots.equals("")) {
-                            contextRoots += "<br>" + RestUtil.getAttributesMap(application).get("contextRoot");
-                        } else {
-                            contextRoots += RestUtil.getAttributesMap(application).get("contextRoot");
-                        }
-                    } // else get docroot
-                }
-                
+            if (configName.equals("default-config")) {
                 for (Map row : table) {
-                    if (row.get("name").equals(instanceName)) {
-                        row.put("contextRoot", contextRoots);
+                    row.put("contextRoot", "");
+                }
+            } else {
+                List<String> instances = RestUtil.getChildList(sessionScopeRestURL + "servers/server");
+                for (String instance : instances) {
+                    String configRef = (String) RestUtil.getAttributesMap(instance).get("configRef");
+                    if (configRef.equals(configName)) {
+                        serverName = instance.substring(instance.lastIndexOf("/") + 1);
+                    }
+                }
+                String deployedApplicationsEndpoint = sessionScopeRestURL + "servers/server/" + serverName 
+                        + "/application-ref";
+
+                List<String> deployedApplications = RestUtil.getChildList(deployedApplicationsEndpoint);
+                List<String> virtualServers = RestUtil.getChildList(parentEndpoint + "/" + childType);
+                List<String> applications = RestUtil.getChildList(sessionScopeRestURL + "applications/application");
+
+                for (String virtualServer : virtualServers) {         
+                    String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf("/") + 1);
+
+                    for (int i = 0; i < deployedApplications.size(); i++) {
+                        deployedApplications.set(i, deployedApplications.get(i)
+                                .substring(deployedApplications.get(i).lastIndexOf("/") + 1));
+                    }
+
+                    String contextRoots = "";
+
+                    for (String application : applications) {
+                        String applicationName = application.substring(application.lastIndexOf("/") + 1);
+                        String[] deployedVirtualServers; 
+                        if (RestUtil.get(deployedApplicationsEndpoint + "/" + applicationName).isSuccess()) {
+                            deployedVirtualServers = ((String) RestUtil.getAttributesMap(
+                                    deployedApplicationsEndpoint + "/" + applicationName).get("virtualServers")).split(",");
+                            for (String deployedVirtualServer : deployedVirtualServers) {
+                                if (!deployedVirtualServer.equals("") && deployedApplications.contains(applicationName) 
+                                        && virtualServerName.equals(deployedVirtualServer)) {
+                                    if (!contextRoots.equals("")) {
+                                        contextRoots += "<br>" + RestUtil.getAttributesMap(application).get("contextRoot");
+                                    } else {
+                                        contextRoots += RestUtil.getAttributesMap(application).get("contextRoot");
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    for (Map row : table) {
+                        if (row.get("name").equals(virtualServerName)) {
+                            row.put("contextRoot", contextRoots);
+                        }
                     }
                 }
             }
