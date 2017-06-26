@@ -102,8 +102,9 @@ public class AsadminRecorderService implements EventListener {
         String mandatoryOption = "";
         
         // prepend passwordfile option if present
-        if (!asadminRecorderConfiguration.getPasswordFile().equals("")) {
-            asadminCommand = " --passwordfile=" + asadminRecorderConfiguration.getPasswordFile() + " " + asadminCommand;
+        if (!asadminRecorderConfiguration.getPrependPasswordFile().equals("")) {
+            asadminCommand = " --passwordfile=" + asadminRecorderConfiguration.getPrependPasswordFile() + " " 
+                    + asadminCommand;
         }
         
         for (Map.Entry<String, List<String>> parameter : parameters.entrySet()) {

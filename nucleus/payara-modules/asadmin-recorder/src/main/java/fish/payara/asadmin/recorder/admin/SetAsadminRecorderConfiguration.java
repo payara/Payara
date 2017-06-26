@@ -73,7 +73,7 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
     @Param(name = "filteredCommands", optional = true)
     private String filteredCommands;
     
-    @Param(name = "passwordfile", optional = true)
+    @Param(name = "prependpasswordfile", optional = true)
     private String passwordFile;
     
     @Override
@@ -112,7 +112,7 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
                     }
                     
                     if (passwordFile != null) {
-                        asadminRecorderConfigurationProxy.setPasswordFile(passwordFile);
+                        asadminRecorderConfigurationProxy.setPrependPasswordFile(passwordFile);
                     }
                     
                     return null;
