@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates.] -->
+
 <!-- configuration/virtualServers.jsf -->
 
 
@@ -51,7 +53,7 @@
     guiTitle="$resource{i18n_web.vs.ListPageTitle}"
     guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.configName}:virtualServers');">
 
-<!define name="content">s
+<!define name="content">
 <event>
     <!beforeCreate
         getRequestValue(key="configName" value=>$page{configName} );
