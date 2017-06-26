@@ -202,7 +202,7 @@ public class UberJarCreator {
                 } else {
                     JarEntry newEntry = new JarEntry(entry.getName());
                     if (entry.getName().endsWith("jar") || entry.getName().endsWith("rar")) {
-                        newEntry.setMethod(entry.STORED);
+                        newEntry.setMethod(JarEntry.STORED);
                         newEntry.setSize(entry.getSize());
                         newEntry.setCrc(entry.getCrc());
                         if (entry.getMethod() == JarEntry.STORED) {
@@ -243,7 +243,7 @@ public class UberJarCreator {
                     
                     CheckedInputStream check = new CheckedInputStream(new FileInputStream(lib), new CRC32());
                     BufferedInputStream in = new BufferedInputStream(check);
-                    while (in.read(new byte[30]) != -1){
+                    while (in.read(new byte[3000]) != -1){
                         //read in file completly
                     }
                     libEntry.setCrc(check.getChecksum().getValue());

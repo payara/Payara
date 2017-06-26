@@ -59,7 +59,7 @@ public class PayaraMicro {
 
     /**
      * Obtains the static singleton instance of the Payara Micro Server. If it
-     * does not exist it will be create.
+     * does not exist it will be created.
      *
      * @return The singleton instance
      */

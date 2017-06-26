@@ -90,9 +90,6 @@ import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URLClassLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import org.glassfish.embeddable.CommandResult;
@@ -983,6 +980,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             configurePhoneHome();
             configureHealthCheck();
 
+            // Add additional libraries
+            addLibraries();
+            
             // boot the server
             preBootCommands.executeCommands(gf.getCommandRunner());
             gf.start();
@@ -1118,7 +1118,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case rootdir:
                         rootDir = new File(value);
                         break;
-                    case addlibs:
+                    case addjars:
                         File library = new File(value);
                         if (libraries == null) {
                             libraries = new LinkedList<>();
@@ -1335,28 +1335,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         // Deploy from within the jar first.
         int deploymentCount = 0;
         Deployer deployer = gf.getDeployer();
-
-        //add libraries to deployment
-        if (libraries != null) {                  
-            try {
-                OpenURLClassLoader loader = (OpenURLClassLoader) this.getClass().getClassLoader();
-                
-                for (File lib : libraries) {
-                    if (lib.exists() && lib.canRead()) {
-                        
-                            loader.addURL(lib.toURI().toURL());
-                            //method.invoke(urlClassLoader, new Object[]{lib.toURI().toURL()});
-                            LOGGER.log(Level.INFO, "Added " + lib.getPath() + " to classpath");
-                        
-                    } else {
-                        LOGGER.log(Level.WARNING, "Unable to read file " + lib.getName());
-                    }
-
-                }
-            } catch (SecurityException | IllegalArgumentException | MalformedURLException ex) {
-                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
 
         // search MICRO-INF/deploy for deployments
         // if there is a deployment called ROOT deploy to the root context /
@@ -2354,6 +2332,27 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             return defaultValue;
         } else {
             return Long.decode(property);
+        }
+    }
+
+    /**
+     * Adds libraries to the classlader
+     */
+    private void addLibraries() {
+        if (libraries != null) {                  
+            try {
+                OpenURLClassLoader loader = (OpenURLClassLoader) this.getClass().getClassLoader();
+                for (File lib : libraries) {
+                    if (lib.exists() && lib.canRead() && lib.getName().endsWith(".jar")) {
+                        loader.addURL(lib.toURI().toURL());
+                        LOGGER.log(Level.INFO, "Added " + lib.getPath() + " to classpath");   
+                    } else {
+                        LOGGER.log(Level.WARNING, "Unable to read jar " + lib.getName());
+                    }
+                }
+            } catch (SecurityException | IllegalArgumentException | MalformedURLException ex) {
+                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
