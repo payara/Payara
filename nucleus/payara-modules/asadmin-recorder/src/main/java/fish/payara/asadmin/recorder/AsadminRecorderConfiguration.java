@@ -68,4 +68,8 @@ public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExt
             + "set-asadmin-recorder-configuration,asadmin-recorder-enabled")
     public String getFilteredCommands();
     public void setFilteredCommands(String filteredCommands);
+    
+    @Attribute(defaultValue = "")
+    public String getPasswordFile();
+    public void setPasswordFile(String passwordFile);
 }

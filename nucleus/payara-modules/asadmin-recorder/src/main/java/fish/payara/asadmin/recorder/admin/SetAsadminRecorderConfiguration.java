@@ -73,6 +73,9 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
     @Param(name = "filteredCommands", optional = true)
     private String filteredCommands;
     
+    @Param(name = "passwordfile", optional = true)
+    private String passwordFile;
+    
     @Override
     public void execute(AdminCommandContext context) {
         try {
@@ -106,6 +109,10 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
                     if (filteredCommands != null) {
                         asadminRecorderConfigurationProxy.
                                 setFilteredCommands(filteredCommands);
+                    }
+                    
+                    if (passwordFile != null) {
+                        asadminRecorderConfigurationProxy.setPasswordFile(passwordFile);
                     }
                     
                     return null;
