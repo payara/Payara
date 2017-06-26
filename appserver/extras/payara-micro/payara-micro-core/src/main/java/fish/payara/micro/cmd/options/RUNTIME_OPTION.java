@@ -58,7 +58,7 @@ public enum RUNTIME_OPTION {
     clusterpassword(true),
     hostaware(false),
     startport(true, new PortValidator()),
-    addjars(true, new FileSystemItemValidator(true, true, false, true, true)),
+    addjars(true, new SeperatedFilesValidator(true, true, false, true, true)),
     rootdir(true, new DirectoryValidator(true, true, true)),
     deploymentdir(true, new DirectoryValidator(true, true, false)),
     domainconfig(true, new FileValidator(true, true, true)),

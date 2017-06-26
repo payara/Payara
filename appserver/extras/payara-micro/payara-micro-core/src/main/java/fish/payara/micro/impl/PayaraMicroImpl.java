@@ -1119,17 +1119,20 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         rootDir = new File(value);
                         break;
                     case addjars:
-                        File library = new File(value);
-                        if (libraries == null) {
-                            libraries = new LinkedList<>();
-                        }
-                        if (library.isDirectory()){
-                            List<File> allFiles= UberJarCreator.fillFiles(library);
-                            for (File lib : allFiles){
-                                libraries.add(lib);
+                        String[] alljars = value.split(":");
+                        for (String jarname : alljars) {
+                            File library = new File(jarname);
+                            if (libraries == null) {
+                                libraries = new LinkedList<>();
                             }
-                        } else {
-                            libraries.add(library);
+                            if (library.isDirectory()) {
+                                List<File> allFiles = UberJarCreator.fillFiles(library);
+                                for (File lib : allFiles) {
+                                    libraries.add(lib);
+                                }
+                            } else {
+                                libraries.add(library);
+                            }
                         }
                         break;
                     case deploy:
@@ -2345,9 +2348,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 for (File lib : libraries) {
                     if (lib.exists() && lib.canRead() && lib.getName().endsWith(".jar")) {
                         loader.addURL(lib.toURI().toURL());
-                        LOGGER.log(Level.INFO, "Added " + lib.getPath() + " to classpath");   
+                        LOGGER.log(Level.INFO, "Added " + lib.getAbsolutePath() + " to classpath");   
                     } else {
-                        LOGGER.log(Level.WARNING, "Unable to read jar " + lib.getName());
+                        LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());
                     }
                 }
             } catch (SecurityException | IllegalArgumentException | MalformedURLException ex) {
