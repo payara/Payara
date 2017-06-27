@@ -43,7 +43,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.0.173-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
     <artifactId>environment-warning</artifactId>
     <name>Payara Environment Warning Package</name>
