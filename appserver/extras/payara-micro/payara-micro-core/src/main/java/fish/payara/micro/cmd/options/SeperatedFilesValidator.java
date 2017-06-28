@@ -40,7 +40,7 @@
 package fish.payara.micro.cmd.options;
 
 /**
- *
+ * @since 4.1.2.173
  * @author jonathan coustick
  */
 public class SeperatedFilesValidator extends FileSystemItemValidator {
@@ -57,7 +57,6 @@ public class SeperatedFilesValidator extends FileSystemItemValidator {
         }
         
         return false;
-        
     }
     
 }
