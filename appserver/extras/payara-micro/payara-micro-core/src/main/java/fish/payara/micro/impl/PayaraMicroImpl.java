@@ -990,7 +990,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             long end = System.currentTimeMillis();
             dumpFinalStatus(end - start);
             return runtime;
-        } catch (GlassFishException ex) {
+        } catch (Exception ex) {
+            try {
+                gf.dispose();
+            } catch (GlassFishException ex1) {
+                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex1);
+            }
             throw new BootstrapException(ex.getMessage(), ex);
         }
     }

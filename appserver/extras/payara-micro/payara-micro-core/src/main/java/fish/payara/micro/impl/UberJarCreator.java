@@ -199,10 +199,12 @@ public class UberJarCreator {
                 } else {
                     JarEntry newEntry = new JarEntry(entry.getName());
                     if (entry.getName().endsWith("jar") || entry.getName().endsWith("rar")) {
-                        newEntry.setMethod(JarEntry.STORED);
+                        newEntry.setMethod(entry.STORED);
                         newEntry.setSize(entry.getSize());
                         newEntry.setCrc(entry.getCrc());
-                        newEntry.setCompressedSize(entry.getCompressedSize());
+                        if (entry.getMethod() == JarEntry.STORED) {
+                            newEntry.setCompressedSize(entry.getCompressedSize());
+                        }
                     }
                     jos.putNextEntry(newEntry);
                     InputStream is = jFile.getInputStream(entry);

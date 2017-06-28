@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.v3.server;
@@ -73,6 +75,7 @@ import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.common.util.Constants;
+import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.Descriptor;
 import org.glassfish.hk2.api.DynamicConfiguration;
@@ -210,6 +213,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         
     }
 
+    @Override
     public synchronized void start() {
         ClassLoader origCL = Thread.currentThread().getContextClassLoader();
         try {
@@ -217,16 +221,24 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             Thread.currentThread().setContextClassLoader(
                     commonCLS.getCommonClassLoader());
             doStart();
+        } catch (GlassFishException ex) {
+            throw new RuntimeException (ex);
         } finally {
             // reset the context classloader. See issue GLASSFISH-15775
             Thread.currentThread().setContextClassLoader(origCL);
         }
     }
 
-    private void doStart() {
+    private void doStart() throws GlassFishException {
 
-        run();
+        if (!run()){
+            //startup failed
+            logger.log(Level.SEVERE, "Failed to start, exiting");
+            throw new GlassFishException("Server failed to start");
+        }
 
+        //if (appInstanceListener.)
+        
         final CountDownLatch latch = new CountDownLatch(1);
 
         // spwan a non-daemon thread that waits indefinitely for shutdown request.
@@ -272,11 +284,16 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
     }
 
-    public void run() {
+    /**
+     * 
+     * @return True is startup succeeded, false if an error occurred preventing
+     * the server from starting
+     */
+    public boolean run() {
         
         if (context==null) {
             System.err.println("Startup context not provided, cannot continue");
-            return;
+            return false;
         }
 
         if (platform==null) {
@@ -314,7 +331,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         
         if (!proceedTo(InitRunLevel.VAL)) {
             appInstanceListener.stopRecordingTimes();
-            return;
+            return false;
         }
         
         if (!logger.isLoggable(level)) {
@@ -330,12 +347,12 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         appInstanceListener.startRecordingFutures();
         if (!proceedTo(StartupRunLevel.VAL)) {
             appInstanceListener.stopRecordingTimes();
-            return;
+            return false;
         }
         
         if (!postStartupJob()) {
             appInstanceListener.stopRecordingTimes();
-            return;
+            return false;
         }
         
         if (logger.isLoggable(level)) {
@@ -347,7 +364,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         
         if (!proceedTo(PostStartupRunLevel.VAL)) {
             appInstanceListener.stopRecordingTimes();
-            return;
+            return false;
         }
         
         if (logger.isLoggable(level)) {
@@ -356,8 +373,13 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             logger.log(level, "PostStartup level done in " +
                 (postStartupFinishTime - startupFinishTime) + " ms");
         }
+        return true;
     }
     
+    /**
+     * 
+     * @return True if started successfully, false otherwise
+     */
     private boolean postStartupJob() {
         LinkedList<Future<Result<Thread>>> futures = appInstanceListener.getFutures();
 

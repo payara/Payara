@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- iiopListenerEdit.jsf -->
@@ -65,7 +66,7 @@
         gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
         //set the following for including buttons.inc
-        setPageSessionAttribute(key="convertToFalseList" value={"securityEnabled" "enabled"})
+        setPageSessionAttribute(key="convertToFalseList" value={"securityEnabled" "enabled" "lazyInit"})
         setPageSessionAttribute(key="edit" value="#{true}" )
         setPageSessionAttribute(key="showDefaultButton" value="#{true}" )
         setPageSessionAttribute(key="showCancelButton" value="#{true}" )

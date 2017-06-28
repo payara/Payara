@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.orb.admin.config;
 
@@ -55,11 +56,8 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.grizzly.config.dom.Ssl;
 import static org.glassfish.config.support.Constants.NAME_REGEX;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.Payload;
@@ -225,7 +223,7 @@ public interface IiopListener extends ConfigBeanProxy, PropertyBag, Payload {
      *
      * @param value true if the listener is to be started lazily; false otherwise
      */
-    void String(boolean value);
+    void setLazyInit(boolean value) throws PropertyVetoException;
     
     /**
     	Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}

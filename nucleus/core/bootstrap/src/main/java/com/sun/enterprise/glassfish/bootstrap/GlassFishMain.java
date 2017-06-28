@@ -174,13 +174,7 @@ public class GlassFishMain {
                             continue;
                         }
                         CommandRunner cmdRunner = gf.getCommandRunner();
-                        String[] tokens = command.split("\\s");
-                        CommandResult result = cmdRunner.run(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
-                        System.out.println(result.getExitStatus());
-                        System.out.println(result.getOutput());
-                        if (result.getFailureCause() != null) {
-                            result.getFailureCause().printStackTrace();
-                        }
+                        runCommand(cmdRunner, command);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -218,6 +212,43 @@ public class GlassFishMain {
             });
 
         }
+        
+        /**
+         * Runs a command read from a string
+         * @param cmdRunner
+         * @param line
+         * @throws GlassFishException 
+         */
+        private void runCommand(CommandRunner cmdRunner, String line) throws GlassFishException, IOException {
+            
+            line = cleanCommand(line);
+            if(line == null) {
+                return;
+            }
+            
+            System.out.println("Running command: " + line);
+            String[] tokens = line.split("\\s+");
+            CommandResult result = cmdRunner.run(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
+            System.out.println(result.getOutput());
+            if(result.getFailureCause() != null) {
+                result.getFailureCause().printStackTrace();
+            }
+        }
+        
+        /**
+         * Cleans a command read from a string
+         * @param line
+         */
+        private String cleanCommand(String line) {
+            if(line == null) {
+                return null;
+            }
+            line = line.replaceAll("#.*", ""); // Removes comments
+            if (line.isEmpty() || line.replaceAll("\\s", "").isEmpty()) {
+                return null;
+            }
+            return line;
+        }
  
         /**
          * Runs a series of commands from a file
@@ -230,25 +261,11 @@ public class GlassFishMain {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 
                 System.out.println("Reading in commandments from " + file);
-                String line = reader.readLine();;
+                String line = reader.readLine();
+                CommandRunner cmdRunner = gf.getCommandRunner();
+                
                 while (line != null) {
-                    
-                        String[] commmandParts = cleanCommand(line);
-                        CommandRunner runner = gf.getCommandRunner();
-                        CommandResult result;
-                        if (!(commmandParts[0].isEmpty() || commmandParts[0].equals(" "))){
-                            
-                            if (commmandParts.length == 1){
-                                result = runner.run(commmandParts[0]);
-                            } else {
-                                String[] argv = commmandParts[1].split(" ");
-                                result = runner.run(commmandParts[0], argv);
-                            }
-                            System.out.println(result.getOutput());
-                            if (result.getFailureCause() != null){
-                                throw result.getFailureCause();
-                            }
-                        }
+                    runCommand(cmdRunner, line);
                     line = reader.readLine();
                 }
             } catch (IOException ex) {
@@ -256,22 +273,6 @@ public class GlassFishMain {
             } catch (Throwable ex) {
                 Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-        
-        /**
-         * Cleans up a single line command to be space-seperated, comments removed etc.
-         * @param command
-         * @return 
-         */
-        private String[] cleanCommand(String command){
-            String line = command.split("#")[0];
-            line = line.trim();
-            if (!line.startsWith("set ")){
-                line = line.replaceAll("=", " ");
-            }            
-            line = line.replaceAll("(\\s+)", " ");
-            String[] split = line.split(" ", 2);
-            return split;
         }
         
 
