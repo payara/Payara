@@ -18,13 +18,14 @@
  -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.batch</groupId>
         <artifactId>batch</artifactId>
         <version>5.1.2.173-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>payara-jbatch</artifactId>
     <packaging>jar</packaging>
     <name>IBM JBatch Combined</name>
@@ -55,7 +56,30 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <markersDirectory>${project.build.directory}/dependencies/dependency-maven-plugin-markers</markersDirectory>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.ibm.jbatch</groupId>
+                                    <artifactId>com.ibm.jbatch.container</artifactId>
+                                    <outputDirectory>${project.build.directory}/dependencies/com.ibm.jbatch.container</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -65,18 +89,7 @@
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            com.ibm.jbatch.jsl.model,
-                            com.ibm.jbatch.spi.services,
-                            com.ibm.jbatch.container.services,
-                            com.ibm.jbatch.container.servicesmanager,
-                            com.ibm.jbatch.container.context.impl,
-                            com.ibm.jbatch.container.impl,
-                            com.ibm.jbatch.container.jobinstance,
-                            com.ibm.jbatch.container.persistence,
-                            com.ibm.jbatch.container.util,
-                            com.ibm.jbatch.container.exception,
-                            com.ibm.jbatch.container.status,
-                            com.ibm.jbatch.spi
+                            com.ibm.jbatch.*
                         </Export-Package>
                         <Import-Package>
                             com.ibm.websphere.asynchbeans;resolution:=optional,
@@ -92,7 +105,7 @@
                             javax.enterprise.context;resolution:=optional,
                             javax.enterprise.context.spi;resolution:=optional,
                             javax.enterprise.inject;resolution:=optional,
-                            javax.enterprise.event;version="[1.0,2)";resolution:=optional,
+                            javax.enterprise.event;version="[2.0,3)";resolution:=optional,
                             javax.enterprise.inject.spi;resolution:=optional,
                             javax.enterprise.util;resolution:=optional,
                             javax.inject;version="[1.0,2)",
@@ -117,6 +130,7 @@
                         </Import-Package>
                         <Private-Package>*</Private-Package>
                         <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
+                        <Include-Resource>META-INF/services/=${project.build.directory}/dependencies/com.ibm.jbatch.container/META-INF/services</Include-Resource>
                     </instructions>
                     
                     <supportedProjectTypes>
@@ -141,14 +155,13 @@
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.spi</artifactId>
-            <version>${com.ibm.jbatch.spi.version}</version>
         </dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.container</artifactId>
-            <version>${com.ibm.jbatch.container.version}</version>
         </dependency>     
     </dependencies>
+    
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->
