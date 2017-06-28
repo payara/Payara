@@ -223,7 +223,7 @@ public interface IiopListener extends ConfigBeanProxy, PropertyBag, Payload {
      *
      * @param value true if the listener is to be started lazily; false otherwise
      */
-    void setLazyInit(boolean value) throws PropertyVetoException;
+    void setLazyInit(String value) throws PropertyVetoException;
     
     /**
     	Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}

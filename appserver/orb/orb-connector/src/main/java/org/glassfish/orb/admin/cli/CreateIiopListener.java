@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.orb.admin.cli;
@@ -111,6 +113,9 @@ public class CreateIiopListener implements AdminCommand {
     @Param(name="listener_id", primary=true, alias="id")
     String listener_id;
 
+    @Param(name="lazyInit", optional=true, defaultValue="false")
+    Boolean lazyInit;
+    
     @Inject
     Configs configs;
 
@@ -175,6 +180,7 @@ public class CreateIiopListener implements AdminCommand {
                         newListener.setPort(iiopport);
                         newListener.setSecurityEnabled(securityenabled.toString());
                         newListener.setEnabled(enabled.toString());
+                        newListener.setLazyInit(Boolean.toString(lazyInit));
 
                         //add properties
                         if (properties != null) {
