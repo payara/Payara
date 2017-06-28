@@ -53,7 +53,7 @@ public final class FangState {
 
     // Values
     private static final String AGENT_NAME = "Fang";
-    private static final String AGENT_VERSION = "0.0.1-Alpha";
+    private static final String AGENT_VERSION = "1.0.0-Beta";
     private static final String AGENT_TYPE = "war";
 
     public static String getAgentNameKey() {
