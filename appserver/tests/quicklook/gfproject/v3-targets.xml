@@ -86,7 +86,7 @@
 <target name="restart-server-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin" outputproperty="message1">
         <arg value="restart-domain"/>
-        <arg value="domain2"/>
+        <arg value="test-domain"/>
     </exec>
     <echo message="${message1}"/>
 </target>
@@ -97,7 +97,7 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="restart-domain"/>
-        <arg value="domain2"/>
+        <arg value="test-domain"/>
     </exec>
     <echo message="${message1}"/>
 </target>
@@ -162,7 +162,7 @@
     <exec executable="${glassfish.home}/bin/asadmin">
     <env key="GlassFish_Platform" value="Felix"/>
         <arg value="start-domain"/>
-	<arg value="domain2"/>
+	<arg value="test-domain"/>
     </exec>
 </target>
 
@@ -172,7 +172,7 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="start-domain"/>
-	<arg value="domain2"/>
+	<arg value="test-domain"/>
     </exec>
     <!-- JRuby deplyment needs GF start server to be fully done. 
          Introduce a delay for now and will investigate futher.  -->
@@ -188,7 +188,7 @@
     <echo message="stopping server on unix ..."/>
     <exec executable="${glassfish.home}/bin/asadmin">        
         <arg value="stop-domain"/>
-        <arg value="domain2"/>
+        <arg value="test-domain"/>
     </exec>
 </target>
 
@@ -198,7 +198,7 @@
     <arg value="/c"/>
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="stop-domain"/>
-        <arg value="domain2"/>
+        <arg value="test-domain"/>
     </exec>
 </target>
     
