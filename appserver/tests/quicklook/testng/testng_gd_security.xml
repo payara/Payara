@@ -59,7 +59,7 @@
 <!-- AMX -->
   <parameter name="amx.debug" value="true"/>
 <!-- AMX: port of the JMX RMI -->
-  <parameter name="amx.rmiport" value="5086"/>
+  <parameter name="amx.rmiport" value="8686"/>
 
 <!-- AMX -->
   <test name="amx_tests">

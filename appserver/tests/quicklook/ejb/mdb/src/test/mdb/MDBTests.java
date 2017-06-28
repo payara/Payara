@@ -75,7 +75,7 @@ public class MDBTests {
     @Parameters({ "MDB_APP_DIR" })
     @Test(dependsOnMethods = { "deployJMSAppTest" })
     public void runJMSAppTest(String mdbAppDir) throws Exception {
-        cmd = APPCLIENT+ " -targetserver"+" localhost:5037"+" -client "+ cwd + File.separator +mdbAppDir+mdbApp+"Client.jar "
+        cmd = APPCLIENT+ " -targetserver"+" localhost:3700"+" -client "+ cwd + File.separator +mdbAppDir+mdbApp+"Client.jar "
            + "-name ejb-ejb30-hello-mdb-client " ;
         execReturn = RtExec.execute(cmd);
         Assert.assertEquals(execReturn, true, "Run appclient against JMS APP failed ...");
