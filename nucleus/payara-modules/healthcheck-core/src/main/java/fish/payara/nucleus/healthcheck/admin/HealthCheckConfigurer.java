@@ -188,6 +188,9 @@ public class HealthCheckConfigurer implements AdminCommand {
         if (notifierEnabled != null) {
             params.add("enabled", notifierEnabled.toString());
         }
+        if (notifierEnabled == null && enabled != null) {
+            params.add("enabled", enabled.toString());
+        }
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem

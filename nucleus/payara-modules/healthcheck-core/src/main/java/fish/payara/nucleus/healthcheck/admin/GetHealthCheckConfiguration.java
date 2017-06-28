@@ -289,9 +289,16 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", thresholdDiagnosticsChecker.getEnabled());
         extraPropsMap.put("time", thresholdDiagnosticsChecker.getTime());
         extraPropsMap.put("unit", thresholdDiagnosticsChecker.getUnit());
-        extraPropsMap.put("thresholdCritical", thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL).getValue());
-        extraPropsMap.put("thresholdWarning", thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING).getValue());
-        extraPropsMap.put("thresholdGood", thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD).getValue());
+
+        if (thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL) != null) {
+            extraPropsMap.put("thresholdCritical", thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL).getValue());
+        }
+        if (thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING) != null) {
+            extraPropsMap.put("thresholdWarning", thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING).getValue());
+        }
+        if (thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD) != null) {
+            extraPropsMap.put("thresholdGood", thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD).getValue());
+        }
 
         // Get the checker type
         ConfigView view = ConfigSupport.getImpl(thresholdDiagnosticsChecker);
