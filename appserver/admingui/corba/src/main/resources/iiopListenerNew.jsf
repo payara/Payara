@@ -63,7 +63,7 @@
         //set the following for including buttons.inc
         setPageSessionAttribute(key="convertToFalseList" value={"securityEnabled" "enabled" "lazyInit"})
         setPageSessionAttribute(key="edit" value="#{false}" );
-        setPageSessionAttribute(key="skipAttrsList" value={"Enabled", "Port", "Security-enabled"});
+        setPageSessionAttribute(key="skipAttrsList" value={"Enabled", "Port", "Security-enabled", "lazyInit"});
         setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
         setPageSessionAttribute(key="showCancelButton" value="#{true}" );
         setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
