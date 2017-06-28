@@ -511,18 +511,21 @@ public class PayaraRestApiHandlers
                         String applicationName = application.substring(application.lastIndexOf("/") + 1);
                         String[] deployedVirtualServers; 
                         if (RestUtil.get(deployedApplicationsEndpoint + "/" + applicationName).isSuccess()) {
-                            deployedVirtualServers = ((String) RestUtil.getAttributesMap(
-                                    deployedApplicationsEndpoint + "/" + applicationName).get("virtualServers")).split(",");
-                            for (String deployedVirtualServer : deployedVirtualServers) {
-                                if (!deployedVirtualServer.equals("") && deployedApplications.contains(applicationName) 
-                                        && virtualServerName.equals(deployedVirtualServer)) {
-                                    if (!contextRoots.equals("")) {
-                                        contextRoots += "<br>" + RestUtil.getAttributesMap(application).get("contextRoot");
-                                    } else {
-                                        contextRoots += RestUtil.getAttributesMap(application).get("contextRoot");
+                            String deployedVirtualServersString = ((String) RestUtil.getAttributesMap(
+                                    deployedApplicationsEndpoint + "/" + applicationName).get("virtualServers"));
+			    if (deployedVirtualServersString != null) {
+			    	deployedVirtualServers = deployedVirtualServersString.split(",");
+                                for (String deployedVirtualServer : deployedVirtualServers) {
+    	                            if (!deployedVirtualServer.equals("") && deployedApplications.contains(applicationName) 
+        	                            && virtualServerName.equals(deployedVirtualServer)) {
+                	                if (!contextRoots.equals("")) {
+                        	            contextRoots += "<br>" + RestUtil.getAttributesMap(application).get("contextRoot");
+                                	} else {
+                                            contextRoots += RestUtil.getAttributesMap(application).get("contextRoot");
+	                                }
                                     }
-                                }
-                            }
+                            	}
+			    }
                         }
                     }
 

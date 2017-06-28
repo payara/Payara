@@ -75,7 +75,7 @@
     />
     
 </event>
-"<script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID + ":configurations:#{pageSession.encodedConfigName}:virtualServers");</script>"
+"<script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID + ":configurations:#{pageSession.encodedConfigName}:virtualServers");</script>
 
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
@@ -119,7 +119,7 @@
                 <staticText id="stateCol"  value="#{td.value.defaultWebModule}" />
             </sun:tableColumn>
 
-            <sun:tableColumn headerText="$resource{i18n_web.vs.ContextRootTableColumn" sort="contextRoot" rowHeader="$boolean{false}" id="col4">
+            <sun:tableColumn headerText="$resource{i18n_web.vs.ContextRootTableColumn}" sort="contextRoot" rowHeader="$boolean{false}" id="col4">
                 <staticText id="contextCol"  value="#{td.value.contextRoot}" />
             </sun:tableColumn>
         </sun:tableRowGroup>
