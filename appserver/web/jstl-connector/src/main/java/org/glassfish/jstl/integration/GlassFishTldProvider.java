@@ -94,7 +94,7 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
      */
     @SuppressWarnings("unchecked")
     public Map<URI, List<String>> getTldMap() {
-        return (Map<URI, List<String>>)((HashMap)tldMap).clone();
+        return (Map<URI, List<String>>)((HashMap<URI, List<String>>)tldMap).clone();
     }
 
     /**

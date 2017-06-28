@@ -47,9 +47,7 @@ Bundle-Activator: com.sun.enterprise.glassfish.bootstrap.osgi.GlassFishMainActiv
 # to install and start this bundle in a vanilla OSGi environment and then bootstrap
 # rest of GlassFish bundles. Please contact Sahoo or Bhavani before you make any change in this 
 # bundle's manifest.
-Import-Package: \
-    org.glassfish.embeddable.*,
-    org.osgi.*
+Import-Package: org.glassfish.embeddable.*, org.osgi.*
 
 DynamicImport-Package: *
 
