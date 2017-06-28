@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.adapter;
 
@@ -50,6 +51,7 @@ import java.util.logging.Logger;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -208,7 +210,10 @@ final class InstallerThread extends Thread {
         String sn = env.getInstanceName();
 // FIXME: An exception may not be thrown... check for errors!
         ApplicationRef ref = domain.getApplicationRefInServer(sn, AdminConsoleAdapter.ADMIN_APP_NAME);
-        habitat.<ApplicationLoaderService>getService(ApplicationLoaderService.class).processApplication(config, ref);
+        Deployment lifecycle = habitat.getService(Deployment.class);
+        for(Deployment.ApplicationDeployment depl : habitat.getService(ApplicationLoaderService.class).processApplication(config, ref)) {
+            lifecycle.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
+        }
 
         // Set adapter state
         adapter.setStateMsg(AdapterState.APPLICATION_LOADED);

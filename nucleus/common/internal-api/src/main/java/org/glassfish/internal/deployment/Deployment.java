@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -63,9 +64,7 @@ import com.sun.enterprise.config.serverbeans.ApplicationRef;
 
 import java.io.IOException;
 import java.io.File;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -185,7 +184,21 @@ public interface Deployment {
 
     }
 
+    static class ApplicationDeployment {
+        public ApplicationDeployment(ApplicationInfo appInfo, ExtendedDeploymentContext context) {
+            this.appInfo = appInfo;
+            this.context = context;
+        }
 
+        public final ApplicationInfo appInfo;
+        public final ExtendedDeploymentContext context;
+    }
+
+    /**
+     * triggered when all applications are loaded, but not yet initialized
+     * Useful to find out when all classes are available in the class loader
+     */
+    public final EventTypes<DeploymentContext> ALL_APPLICATIONS_LOADED = EventTypes.create("All_Applications_Loaded", DeploymentContext.class);
 
     /**
      * The following asynchronous event is sent after all applications are 
@@ -203,6 +216,9 @@ public interface Deployment {
         List<EngineInfo> sortedEngineInfos, String moduleName,
         DeploymentContext context,
         ProgressTracker tracker) throws Exception;
+
+    public ApplicationDeployment prepare(final Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context);
+    public void initialize(ApplicationInfo appInfo, final Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context);
 
     public ApplicationInfo deploy(final ExtendedDeploymentContext context);
     public ApplicationInfo deploy(final Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context);
