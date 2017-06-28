@@ -104,21 +104,21 @@
 
 <target name="create-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message">
-	<arg line="create-jdbc-connection-pool --port 5048 --datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:connectionAttributes=\;create\=true:Password=APP:User=APP QLJdbcPool"/>
+	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:connectionAttributes=\;create\=true:Password=APP:User=APP QLJdbcPool"/>
     </exec>
     <echo message="${message}"/>
 </target>
 
 <target name="ping-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message1">
-        <arg line="ping-connection-pool --port 5048 QLJdbcPool"/>
+        <arg line="ping-connection-pool --port 4848 QLJdbcPool"/>
     </exec>
     <echo message="${message1}"/>
 </target>
 
 <target name="delete-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message1">
-	<arg line="delete-jdbc-connection-pool --port 5048 QLJdbcPool"/>
+	<arg line="delete-jdbc-connection-pool --port 4848 QLJdbcPool"/>
     </exec>
     <echo message="${message1}"/>
 </target>
@@ -215,7 +215,7 @@
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
     <arg value="deploy"/>
     <arg value="--port"/>
-    <arg value="5048"/>
+    <arg value="4848"/>
     <arg line="${dist.dir}/${app.file.ext}"/>   
    </exec>  
 </target>
@@ -224,7 +224,7 @@
   <exec executable="${glassfish.home}/bin/asadmin" failonerror="false">
     <arg value="deploy"/>
     <arg value="--port"/>
-    <arg value="5048"/>
+    <arg value="4848"/>
 	
     <arg line="${dist.dir}/${app.file.ext}"/>
   </exec>
@@ -242,7 +242,7 @@
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
     <arg value="deploy"/>
     <arg value="--port"/>
-    <arg value="5048"/>
+    <arg value="4848"/>
     <arg value="--upload"/>
     <arg line="${dist.dir}/${app.file.ext}"/>   
    </exec>  
@@ -252,7 +252,7 @@
   <exec executable="${glassfish.home}/bin/asadmin" failonerror="false">
     <arg value="deploy"/>
     <arg value="--port"/>
-    <arg value="5048"/>
+    <arg value="4848"/>
     <arg value="--upload"/>
     <arg line="${dist.dir}/${app.file.ext}"/>
   </exec>
@@ -270,7 +270,7 @@
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
     <arg value="deploy"/>
     <arg value="--port"/>
-    <arg value="5048"/>
+    <arg value="4848"/>
     <arg value="--force=true"/>
     <arg line="${dist.dir}/${app.file.ext}"/>
    </exec> 
@@ -280,7 +280,7 @@
   <exec executable="${glassfish.home}/bin/asadmin" failonerror="false">
     <arg value="deploy"/>
     <arg value="--port"/>
-    <arg value="5048"/>
+    <arg value="4848"/>
     <arg value="--force=true"/>
     <arg line="${dist.dir}/${app.file.ext}"/>
   </exec>
@@ -299,7 +299,7 @@
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
     <arg value="undeploy"/>  
     <arg value="--port"/>
-    <arg value="5048"/>  
+    <arg value="4848"/>  
     <arg value="${app.file}"/>
   </exec>  
 </target>
@@ -308,7 +308,7 @@
   <exec executable="${glassfish.home}/bin/asadmin">
     <arg value="undeploy"/>
     <arg value="--port"/>
-    <arg value="5048"/>
+    <arg value="4848"/>
     <arg line="--target server"/>
     <arg value="${app.file}"/>
   </exec>      

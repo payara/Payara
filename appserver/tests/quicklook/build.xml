@@ -619,7 +619,7 @@
 	<arg value="domain2"/>
     </exec>
     <waitfor maxwait="30" maxwaitunit="second" checkevery="500">
-        <http url="http://localhost:5048/"/>
+        <http url="http://localhost:4848/"/>
     </waitfor> 
 </target>
 
