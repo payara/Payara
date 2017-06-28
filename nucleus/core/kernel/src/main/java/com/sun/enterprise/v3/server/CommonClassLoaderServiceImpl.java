@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -105,6 +105,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
 
     private static final String SERVER_EXCLUDED_ATTR_NAME = "GlassFish-ServerExcluded";
 
+    @Override
     public void postConstruct() {
         APIClassLoader = acls.getAPIClassLoader();
         assert (APIClassLoader != null);
@@ -168,7 +169,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
                     urls.toArray(new URL[urls.size()]), APIClassLoader);
             commonClassLoader.enableCurrentBeforeParent();
         } else {
-            logger.logp(Level.FINE, "CommonClassLoaderManager",
+            logger.logp(Level.SEVERE, "CommonClassLoaderManager",
                     "Skipping creation of CommonClassLoader " +
                             "as there are no libraries available",
                     "urls = {0}", new Object[]{urls});
@@ -216,6 +217,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         }
 
         return Arrays.asList(derbyLib.listFiles(new FilenameFilter(){
+            @Override
             public boolean accept(File dir, String name) {
                 // Include only files having .jar extn and exclude all localisation jars, because they are
                 // already mentioned in the Class-Path header of the main jars
@@ -227,6 +229,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
     private static class JarFileFilter implements FilenameFilter {
         private final String JAR_EXT = ".jar"; // NOI18N
 
+        @Override
         public boolean accept(File dir, String name) {
             return name.endsWith(JAR_EXT);
         }

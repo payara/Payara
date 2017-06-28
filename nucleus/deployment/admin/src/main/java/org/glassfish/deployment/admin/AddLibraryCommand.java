@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.deployment.admin;
@@ -61,6 +63,8 @@ import org.glassfish.hk2.api.PerLookup;
 import javax.inject.Inject;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
+import com.sun.enterprise.v3.server.CommonClassLoaderServiceImpl;
 import com.sun.enterprise.v3.server.DomainXmlPersistence;
 
 import java.util.logging.Logger;
@@ -71,6 +75,16 @@ import java.io.File;
 import java.beans.PropertyChangeEvent;
 import org.glassfish.api.admin.AccessRequired;
 
+/**
+ * An asadmin command to add a new library to the libs directory of the domain by uploading a file.
+ * <p>
+ * It will then attempt to load the new classes dynamically. If there is a file with that name already existing,
+ * then it will do nothing, and the new library will not be used until the library is reloaded. Similarly, if there
+ * is a class in the new library that has the same full name as a class already existing then it won't be loaded.
+ * 
+ * @since 3.1.2
+ * @version 4.1.2.173
+ */
 @Service(name="add-library")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
@@ -95,13 +109,17 @@ public class AddLibraryCommand implements AdminCommand {
 
     @Inject 
     UnprocessedConfigListener ucl; 
+    
+    @Inject
+    CommonClassLoaderServiceImpl commonClsLdr;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AddLibraryCommand.class);    
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
+        final Logger logger = Logger.getLogger("org.glassfish.deployment.admin");
 
         File libDir = env.getLibPath();
 
@@ -117,17 +135,31 @@ public class AddLibraryCommand implements AdminCommand {
             List<UnprocessedChangeEvent> unprocessed = 
                 new ArrayList<UnprocessedChangeEvent>();
 
-            StringBuffer msg = new StringBuffer();
+            StringBuilder msg = new StringBuilder();
+            
+            ClassLoader commonLoader = commonClsLdr.getCommonClassLoader();
+            CurrentBeforeParentClassLoader loader = null;
+            if (commonLoader instanceof CurrentBeforeParentClassLoader){
+                loader = (CurrentBeforeParentClassLoader) commonLoader;
+            }
 
             for (File libraryFile : files) {
                 if (libraryFile.exists()) {
-                    DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile(
+                    logger.log(Level.SEVERE, "ready to add new library");
+                    File result = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile(
                         libDir, libraryFile, logger, env);
-                    PropertyChangeEvent pe = new PropertyChangeEvent(libDir, 
-                        "add-library", null, libraryFile);
-                    UnprocessedChangeEvent uce = new UnprocessedChangeEvent(
-                        pe, "add-library");
-                    unprocessed.add(uce);
+                    
+                    if (loader != null ){
+                        loader.addURL(result.toURI().toURL());
+                        logger.log(Level.FINE, "added library to classloader",loader);  
+                    } else {
+                        PropertyChangeEvent pe = new PropertyChangeEvent(libDir,
+                                "add-library", null, libraryFile);
+                        UnprocessedChangeEvent uce = new UnprocessedChangeEvent(
+                                pe, "add-library");
+                        unprocessed.add(uce);
+                        logger.log(Level.FINER, "library not added to classloader");
+                    }
                 } else {
                     msg.append(localStrings.getLocalString("lfnf","Library file not found", libraryFile.getAbsolutePath()));
                 }
@@ -138,14 +170,15 @@ public class AddLibraryCommand implements AdminCommand {
                 report.setMessage(msg.toString());
             }
 
-            // set the restart required flag
-            UnprocessedChangeEvents uces = new UnprocessedChangeEvents(
-                unprocessed);
-            List<UnprocessedChangeEvents> ucesList = 
-                new ArrayList<UnprocessedChangeEvents>();
-            ucesList.add(uces);
-            ucl.unprocessedTransactedEvents(ucesList); 
-
+            if (!unprocessed.isEmpty()) {
+                // set the restart required flag
+                UnprocessedChangeEvents uces = new UnprocessedChangeEvents(
+                        unprocessed);
+                List<UnprocessedChangeEvents> ucesList
+                        = new ArrayList<UnprocessedChangeEvents>();
+                ucesList.add(uces);
+                ucl.unprocessedTransactedEvents(ucesList);
+            }
             // touch the domain.xml so instances restart will synch 
             // over the libraries.
             dxp.touch();
