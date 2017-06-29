@@ -204,7 +204,7 @@
         
         <!-- Servlet -->
         <servlet-api.version>3.1.0</servlet-api.version>
-        <grizzly.version>2.4.0-beta8</grizzly.version>
+        <grizzly.version>2.4.0-beta9</grizzly.version>
         
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
