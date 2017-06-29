@@ -2344,18 +2344,27 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void addLibraries() {
         if (libraries != null) {                  
             try {
-                OpenURLClassLoader loader = (OpenURLClassLoader) this.getClass().getClassLoader();
                 for (File lib : libraries) {
-                    if (lib.exists() && lib.canRead() && lib.getName().endsWith(".jar")) {
-                        loader.addURL(lib.toURI().toURL());
-                        LOGGER.log(Level.INFO, "Added " + lib.getAbsolutePath() + " to classpath");   
-                    } else {
-                        LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());
-                    }
+                    addLibrary(lib);
                 }
-            } catch (SecurityException | IllegalArgumentException | MalformedURLException ex) {
+            } catch (SecurityException | IllegalArgumentException ex) {
                 Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+    }
+    
+    @Override
+    public void addLibrary(File lib) {
+        OpenURLClassLoader loader = (OpenURLClassLoader) this.getClass().getClassLoader();
+        if (lib.exists() && lib.canRead() && lib.getName().endsWith(".jar")) {
+            try {
+                loader.addURL(lib.toURI().toURL());
+                LOGGER.log(Level.INFO, "Added " + lib.getAbsolutePath() + " to classpath");
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());
         }
     }
 

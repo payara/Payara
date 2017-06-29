@@ -372,12 +372,11 @@ public class PayaraMicro {
     /**
      * Adds the library to the classloader and loads it
      * 
-     * @param url The URL or filepath of the library to add
+     * @param lib The URL or filepath of the library to add
      * @since 4.1.2.173
      */
-    public void addLibrary(URL url){  
-        OpenURLClassLoader classLoader = (OpenURLClassLoader) this.getClass().getClassLoader();
-        classLoader.addURL(url);
+    public void addLibrary(File lib){  
+        wrappee.addLibrary(lib);
     }
     
 }
