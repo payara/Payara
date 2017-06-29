@@ -112,7 +112,7 @@ public class AddLibraryCommand implements AdminCommand {
     
     @Inject
     CommonClassLoaderServiceImpl commonClsLdr;
-
+    
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AddLibraryCommand.class);    
 
     @Override
@@ -145,11 +145,12 @@ public class AddLibraryCommand implements AdminCommand {
 
             for (File libraryFile : files) {
                 if (libraryFile.exists()) {
-                    logger.log(Level.SEVERE, "ready to add new library");
+                    logger.log(Level.FINER, "ready to add new library");
                     File result = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile(
                         libDir, libraryFile, logger, env);
                     
-                    if (loader != null ){
+                    //Applib is its own classloader which does not have a method to load files,
+                    if (loader != null && !type.equals("applibs")){
                         loader.addURL(result.toURI().toURL());
                         logger.log(Level.FINE, "added library to classloader",loader);  
                     } else {

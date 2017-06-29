@@ -169,7 +169,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
                     urls.toArray(new URL[urls.size()]), APIClassLoader);
             commonClassLoader.enableCurrentBeforeParent();
         } else {
-            logger.logp(Level.SEVERE, "CommonClassLoaderManager",
+            logger.logp(Level.FINE, "CommonClassLoaderManager",
                     "Skipping creation of CommonClassLoader " +
                             "as there are no libraries available",
                     "urls = {0}", new Object[]{urls});
