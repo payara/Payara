@@ -230,8 +230,8 @@
         <!-- Other -->
         
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <hk2.version>2.5.0-b36</hk2.version>
-        <hk2.plugin.version>2.5.0-b36</hk2.plugin.version>
+        <hk2.version>2.5.0-b38</hk2.version>
+        <hk2.plugin.version>2.5.0-b38</hk2.plugin.version>
 
         <glassfish-corba.version>4.0.1.payara-p6</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
