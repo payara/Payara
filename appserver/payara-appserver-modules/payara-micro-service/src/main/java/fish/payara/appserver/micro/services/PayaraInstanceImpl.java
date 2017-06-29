@@ -218,7 +218,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         // ensures the same application id is used when there is a deployment 
         // if the application id is in the cluster keyed by application name
         else if (event.is(Deployment.APPLICATION_PREPARED)) {
-            if (event.hook() != null && event.hook() instanceof DeploymentContext) {
+            if (environment.isMicro() && event.hook() != null && event.hook() instanceof DeploymentContext) {
                 DeploymentContext deploymentContext = (DeploymentContext) event.hook();
                 Application app = deploymentContext.getModuleMetaData(Application.class);
                 if(app != null) {
