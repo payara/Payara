@@ -35,7 +35,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
  */
+
 package fish.payara.asadmin.recorder;
 
 import java.io.BufferedWriter;
@@ -102,7 +104,7 @@ public class AsadminRecorderService implements EventListener {
         String mandatoryOption = "";
         
         // prepend passwordfile option if present
-        if (!asadminRecorderConfiguration.getPrependPasswordFile().equals("")) {
+        if (asadminRecorderConfiguration.getPrependPasswordFile() != null && !asadminRecorderConfiguration.getPrependPasswordFile().equals("")) {
             asadminCommand = " --passwordfile=" + asadminRecorderConfiguration.getPrependPasswordFile() + " " 
                     + asadminCommand;
         }
