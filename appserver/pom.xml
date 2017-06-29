@@ -95,9 +95,9 @@
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
         <jaxb.version>2.2.12-b141219.1637</jaxb.version>
         
-        <!-- JAX-P -->
-        <jsonb-api.version>1.0.0-RC2</jsonb-api.version>
-        <yasson.version>1.0.0-RC2</yasson.version>
+        <!-- JAX-B -->
+        <jsonb-api.version>1.0</jsonb-api.version>
+        <yasson.version>1.0</yasson.version>
         
         <!-- JSON-P -->
         <jsonp-api.version>1.1</jsonp-api.version>
