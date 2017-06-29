@@ -64,7 +64,7 @@ public class GetAsadminRecorderConfiguration implements AdminCommand
     
     private final String target = "server";
     private final String[] headers = {"Enabled", "Filter Commands", 
-            "Output Location", "Filtered Commands"};
+            "Output Location", "Filtered Commands", "Password File"};
             
     @Override
     public void execute(AdminCommandContext context)
