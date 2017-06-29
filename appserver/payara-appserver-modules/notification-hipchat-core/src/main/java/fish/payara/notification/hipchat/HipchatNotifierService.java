@@ -75,10 +75,12 @@ public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNot
     @Override
     public void bootstrap() {
         register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
-
-        initializeExecutor();
         executionOptions = (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        scheduleExecutor(new HipchatNotificationRunnable(queue, executionOptions));
+        if (executionOptions != null && executionOptions.isEnabled()){
+            initializeExecutor();
+            scheduleExecutor(new HipchatNotificationRunnable(queue, executionOptions));
+        }
+        
     }
 
 }
