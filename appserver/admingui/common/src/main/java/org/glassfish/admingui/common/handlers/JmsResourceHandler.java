@@ -91,6 +91,7 @@ public class JmsResourceHandler {
 				String endpoint = prefix + encodedName;
 				Map attrs = (Map) getAttributesMap(endpoint);
 				
+				String description = null;
 				if (isConnectionFactory) {
 					String poolName = URLEncoder.encode((String) attrs.get("poolName"), "UTF-8");
 					String e1 = (String) getSessionValue("REST_URL") + "/resources/connector-connection-pool/" + poolName;
@@ -102,15 +103,16 @@ public class JmsResourceHandler {
 					one.put("logicalJndiName", lname == null ? "" : lname);
 					one.put("encodedPoolName", poolName);
 					one.put("objectType", (String) attrs.get("objectType"));
+					description = (String) poolAttrs.get("description");
 				} else {
 					one.put("resType", (String) attrs.get("resType"));
+					description = (String) attrs.get("description");
 				}
 				
 				one.put("selected", false);
 				one.put("enabled", (String) attrs.get("enabled"));
 				one.put("encodedName", encodedName);
-				String desc = (String) attrs.get("description");
-				one.put("description", (desc == null) ? "" : desc);
+				one.put("description", description == null ? "" : description);
 			}
 		} catch (Exception ex) {
 			getLogger().info(getCommonMessage("log.error.getJMSResources") + ex.getLocalizedMessage());
