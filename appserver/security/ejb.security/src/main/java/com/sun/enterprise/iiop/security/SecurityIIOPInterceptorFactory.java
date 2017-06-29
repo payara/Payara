@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.iiop.security;
 
@@ -57,6 +58,7 @@ import org.omg.PortableInterceptor.ORBInitInfoPackage.DuplicateName;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
 import javax.inject.Inject;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
 
 /**
  *
@@ -81,6 +83,7 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
     private ProcessEnvironment penv;
 
     private AlternateSecurityInterceptorFactory altSecFactory;
+    private @Inject ClassLoaderHierarchy clh;
     
     // are we supposed to add the interceptor and then return or just return an instance ?.
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
@@ -123,7 +126,14 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
 
     private synchronized boolean createAlternateSecurityInterceptorFactory() {
         try {
-            Class clazz = Thread.currentThread().getContextClassLoader().loadClass(interceptorFactory);
+            Class<?> clazz;
+            try {
+                clazz = Thread.currentThread().getContextClassLoader().loadClass(interceptorFactory);
+            }
+            catch(ClassNotFoundException cnfe) {
+                // if not found in the thread context, try the Common class loader
+                clazz = clh.getCommonClassLoader().loadClass(interceptorFactory);
+            }
             if (AlternateSecurityInterceptorFactory.class.isAssignableFrom(clazz) &&
                     !clazz.isInterface()) {
                 altSecFactory = (AlternateSecurityInterceptorFactory) clazz.newInstance();

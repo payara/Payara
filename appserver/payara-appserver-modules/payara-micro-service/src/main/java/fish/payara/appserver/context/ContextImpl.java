@@ -39,9 +39,11 @@
  */
 package fish.payara.appserver.context;
 
+import com.sun.enterprise.util.Utility;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.jboss.weld.context.bound.BoundRequestContext;
 
@@ -53,13 +55,31 @@ import org.jboss.weld.context.bound.BoundRequestContext;
 class ContextImpl {
     @RequiredArgsConstructor
     public static class Context implements JavaEEContextUtil.Context {
-        final ClassLoader classLoader;
-        final ComponentInvocation invocation;
+        @Override
+        public void close() {
+            if (invocation != null) {
+                invMgr.postInvoke(invocation);
+                Utility.setContextClassLoader(oldClassLoader);
+            }
+        }
+
+        private final ClassLoader oldClassLoader;
+        private final ComponentInvocation invocation;
+        private final InvocationManager invMgr;
     }
 
     @RequiredArgsConstructor
-    public static class RequestContext implements JavaEEContextUtil.RequestContext{
-        final JavaEEContextUtil.Context rootCtx;
+    public static class RequestContext implements JavaEEContextUtil.Context {
+        @Override
+        public void close() {
+            if (ctx != null) {
+                ctx.deactivate();
+                ctx.dissociate(storage);
+            }
+            rootCtx.close();
+        }
+
+        private final JavaEEContextUtil.Context rootCtx;
         final BoundRequestContext ctx;
         final Map<String, Object> storage;
     }

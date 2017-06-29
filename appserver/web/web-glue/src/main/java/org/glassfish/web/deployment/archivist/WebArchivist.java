@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
@@ -343,17 +343,18 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
             }
         }
 
-        WebFragmentDescriptor mergedWebFragment = null;
+        WebFragmentDescriptor mergedWebFragment = new WebFragmentDescriptor();
+        mergedWebFragment.setExists(false);
         for (WebFragmentDescriptor wf : wfList) {
-            if (mergedWebFragment == null) {
-                mergedWebFragment = wf;
-            } else {
-                mergedWebFragment.addWebBundleDescriptor(wf);
+            // we have the first fragment that's contains the web-fragment.xml file
+            if(!mergedWebFragment.isExists() && wf.isExists()) {
+                mergedWebFragment.setExists(true);
+                mergedWebFragment.setDistributable(wf.isDistributable());
             }
+            mergedWebFragment.addWebBundleDescriptor(wf);
         }
 
-        if (mergedWebFragment != null) {
-            mergedWebFragment.setExists(true);
+        if (!wfList.isEmpty()) {
             descriptor.addWebBundleDescriptor(mergedWebFragment);
 
             // if there any mapping stubs left, there is something invalid referenced from web.xml

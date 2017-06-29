@@ -77,6 +77,7 @@ public class MicroGlassFish implements GlassFish {
         
         status = Status.STOPPING;
         kernel.stop();
+        habitat.shutdown();
         status = Status.STOPPED;
     }
 
