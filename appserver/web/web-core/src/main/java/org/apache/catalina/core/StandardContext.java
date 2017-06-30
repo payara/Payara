@@ -3666,13 +3666,45 @@ public class StandardContext
      * Adds the servlet with the given name and jsp file to this servlet
      * context.
      */
+    /*
+     * Adds the servlet with the given name and jsp file to this servlet
+     * context.
+     */
     @Override
-    public ServletRegistration.Dynamic addJspFile(
-            String servletName, String jspFile) {
+	public ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) {
 
-        //XXX TODO
-        return null;
-    }
+		if (isContextInitializedCalled) {
+			String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+			        new Object[] { "addJspFile", getName() });
+			throw new IllegalStateException(msg);
+		}
+
+		if (servletName == null || servletName.length() == 0) {
+			throw new IllegalArgumentException(rb.getString(LogFacade.NULL_EMPTY_SERVLET_NAME_EXCEPTION));
+		}
+
+		synchronized (children) {
+			if (findChild(servletName) == null) {
+				DynamicServletRegistrationImpl regis = (DynamicServletRegistrationImpl) servletRegisMap.get(servletName);
+				Wrapper wrapper = null;
+				if (regis == null) {
+					wrapper = createWrapper();
+				} else {
+					// Override an existing registration
+					wrapper = regis.getWrapper();
+				}
+				wrapper.setJspFile(jspFile);
+				wrapper.setName(servletName);
+				addChild(wrapper, true, (null == regis));
+				if (null == regis) {
+					regis = (DynamicServletRegistrationImpl) servletRegisMap.get(servletName);
+				}
+				return regis;
+			} else {
+				return null;
+			}
+		}
+	}
 
     /**
      * This method is overridden in web-glue to also remove the given

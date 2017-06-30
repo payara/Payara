@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -2395,11 +2395,11 @@ class DynamicWebServletRegistrationImpl
                     wrapper.setServletClass(clazz);
                 }
                 processServletAnnotations(clazz, wbd, wcd, wrapper);
-            } else {
+            } else if (wrapper.getJspFile() == null) {
                 // Should never happen
                 throw new RuntimeException(
                     "Programmatic servlet registration without any " +
-                    "supporting servlet class");
+                    "supporting servlet class or jsp file");
             }
         }
     }
@@ -2493,8 +2493,10 @@ class DynamicWebServletRegistrationImpl
     }
 
     void postProcessAnnotations() {
-        // should not be null
         Class<? extends Servlet> clazz = wrapper.getServletClass();
+		if (clazz == null) {
+			return;
+		}
 
         // Process RunAs
         if (wcd.getRunAsIdentity() == null) {

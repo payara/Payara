@@ -92,10 +92,10 @@
         <tyrus.version>1.13.1</tyrus.version>
         
         <!-- JAX-B -->
-        <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
-        <jaxb.version>2.2.12-b141219.1637</jaxb.version>
+        <jaxb-api.version>2.3.0</jaxb-api.version>
+        <jaxb.version>2.3.0-b170624.2321</jaxb.version>
         
-        <!-- JAX-B -->
+        <!-- JSON-B -->
         <jsonb-api.version>1.0</jsonb-api.version>
         <yasson.version>1.0</yasson.version>
         
@@ -150,7 +150,11 @@
         
         <!-- EJB -->        
         <javax.ejb-api.version>3.2</javax.ejb-api.version>
-        <jaxws-api.version>2.2.8</jaxws-api.version>
+        
+        <!-- JAX-WS -->
+        <jaxws-api.version>2.3.0</jaxws-api.version>
+        <!-- 2.3.2-b608.payara-p3 --> 
+        <webservices.version>2.4.0-b170626.1307</webservices.version>
         
         <!-- Web Services Metadata  -->
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
@@ -197,7 +201,6 @@
         
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        <webservices.version>2.3.2-b608.payara-p3</webservices.version>
         
         <stax2-api.version>3.1.1</stax2-api.version>
         

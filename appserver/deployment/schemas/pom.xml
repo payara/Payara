@@ -40,73 +40,24 @@
     holder.
 
 -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>deployment</artifactId>
         <version>5.1.2.173-SNAPSHOT</version>
     </parent>
+    
     <artifactId>schemas</artifactId>
     <packaging>distribution-fragment</packaging>
     <name>Set of schemas for Java EE</name>
-    
+
     <properties>
-	  <jpa.schema.temp.location>${project.build.directory}/jpaSchemaFiles</jpa.schema.temp.location>
-	</properties>
-	<build>
-        <plugins>
-		 <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-				  <execution>
-					<id>unpack</id> 
-					<goals>
-					  <goal>unpack</goal> <!-- bids to process-sources phase by default -->
-					</goals>
-					<!-- 
-						Extract orm*.xsd and persistence*.xsd into a temp location from javax.persistence.jar. 
-						The files would be extracted as javax/persistence/{file} under the location. 
-						It is not possible to specify to exclude javax/persistence prefix while extracting the file. 
-						The ant task below would copy the files under classes/glassfish/lib/schemas so that it
-						can be picked up in packaging phase.
-					-->
-					<configuration>
-						<artifactItems>
-						 <artifactItem>
-						   <groupId>org.eclipse.persistence</groupId>
-						   <artifactId>javax.persistence</artifactId>
-						   <includes>javax/persistence/orm*.xsd, javax/persistence/persistence*.xsd</includes>
-						   <outputDirectory>${jpa.schema.temp.location}</outputDirectory>
-						 </artifactItem>
-					   </artifactItems>
-					</configuration>
-				  </execution>
-				</executions>
-			  </plugin>
-     		<plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <configuration>
-                            <tasks>
-								<copy todir="${project.build.directory}/classes/glassfish/lib/schemas" flatten="true">
-								  <fileset dir="${jpa.schema.temp.location}/javax/persistence" />
-								 </copy> 
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+        <jpa.schema.temp.location>${project.build.directory}/jpaSchemaFiles</jpa.schema.temp.location>
+    </properties>
+    
     <developers>
         <developer>
             <id>hzhang_jn</id>
@@ -118,6 +69,7 @@
                 <role>developer</role>
             </roles>
         </developer>
+        
         <developer>
             <id>tjquinn</id>
             <name>Tim Quinn</name>
@@ -128,4 +80,62 @@
             </roles>
         </developer>
     </developers>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <goals>
+                            <goal>unpack</goal> <!-- bids to process-sources phase by default -->
+                        </goals>
+                        <!-- 
+                            Extract orm*.xsd and persistence*.xsd into a 
+                            temp location from javax.persistence.jar. The files would be extracted as 
+                            javax/persistence/{file} under the location. It is not possible to specify 
+                            to exclude javax/persistence prefix while extracting the file. The ant task 
+                            below would copy the files under classes/glassfish/lib/schemas so that it 
+                            can be picked up in packaging phase. 
+                        -->
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.eclipse.persistence</groupId>
+                                    <artifactId>javax.persistence</artifactId>
+                                    <includes>javax/persistence/orm*.xsd,
+                                        javax/persistence/persistence*.xsd
+                                    </includes>
+                                    <outputDirectory>${jpa.schema.temp.location}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                <artifactId>maven-antrun-extended-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <copy todir="${project.build.directory}/classes/glassfish/lib/schemas" flatten="true">
+                                    <fileset dir="${jpa.schema.temp.location}/javax/persistence" />
+                                </copy>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
 </project>
