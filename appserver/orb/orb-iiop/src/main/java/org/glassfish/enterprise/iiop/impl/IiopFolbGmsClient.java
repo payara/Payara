@@ -365,8 +365,10 @@ public class IiopFolbGmsClient implements CallBack {
         if (nodes != null) {
             Node node = nodes.getNode( nodeName ) ;
             if (node != null) {
-                if (node.isLocal() && (!Boolean.getBoolean(USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY) 
-                        || !Boolean.parseBoolean(iservice.getOrb().getPropertyValue(
+                // If this is the local node, and the useNodeHostForLocalNode property has not been set at the ORB or 
+                // System level, use the local host name
+                if ((node.isLocal() && !Boolean.getBoolean(USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY)) 
+                        && (node.isLocal() && !Boolean.parseBoolean(iservice.getOrb().getPropertyValue(
                                 USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY, "false")))) {
                     try {
                         hostName = InetAddress.getLocalHost().getHostName() ;
