@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
 import com.sun.enterprise.config.serverbeans.Engine;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.ExceptionUtil;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +62,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener.Event;
@@ -292,9 +295,14 @@ public class ModuleInfo {
                         logger.log(Level.SEVERE, "Module not started " +  engine.getApplicationContainer().toString());
                         throw new Exception( "Module not started " +  engine.getApplicationContainer().toString());
                     }
-                } catch(Exception e) {
-                    logger.log(Level.SEVERE, "Exception while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
-                    throw e;
+                } catch(Exception e) { 
+                    DeployCommandParameters dcp = context.getCommandParameters(DeployCommandParameters.class);
+                    if(dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)){
+                        logger.log(Level.WARNING, "Resource communication failure exception skipped while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
+                    } else {
+                        logger.log(Level.SEVERE, "Exception while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
+                        throw e;
+                    }
                 }
                 if (tracing!=null) {
                     tracing.addContainerMark(DeploymentTracing.ContainerMark.STARTED,
@@ -309,7 +317,7 @@ public class ModuleInfo {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
         }
     }
-
+ 
     public synchronized void stop(ExtendedDeploymentContext context, Logger logger) {
 
         if (!started)
