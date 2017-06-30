@@ -108,6 +108,11 @@ public class IiopFolbGmsClient implements CallBack {
     private Map<String, ClusterInstanceInfo> currentMembers;
 
     private GroupInfoService gis;
+    
+    private static final String USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY = "useNodeHostForLocalNode";
+    
+    private static final String USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY = "fish.payara.iiop.gmsClient." 
+            + USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY;
 
     private void fineLog( String fmt, Object... args ) {
         if(_logger.isLoggable(Level.FINE)) {
@@ -352,12 +357,17 @@ public class IiopFolbGmsClient implements CallBack {
         final int weight = Integer.parseInt( server.getLbWeight() ) ;
         fineLog( "getClusterInstanceInfo: weight {0}", weight ) ;
 
+        final IiopService iservice = config.getExtensionByType(IiopService.class) ;
+        fineLog( "getClusterInstanceInfo: iservice {0}", iservice ) ;
+        
         final String nodeName = server.getNodeRef() ;
         String hostName = nodeName ;
         if (nodes != null) {
             Node node = nodes.getNode( nodeName ) ;
             if (node != null) {
-                if (node.isLocal()) {
+                if (node.isLocal() && (!Boolean.getBoolean(USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY) 
+                        || !Boolean.parseBoolean(iservice.getOrb().getPropertyValue(
+                                USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY, "false")))) {
                     try {
                         hostName = InetAddress.getLocalHost().getHostName() ;
                     } catch (UnknownHostException exc) {
@@ -371,9 +381,6 @@ public class IiopFolbGmsClient implements CallBack {
         }
 
         fineLog( "getClusterInstanceInfo: host {0}", hostName ) ;
-
-        final IiopService iservice = config.getExtensionByType(IiopService.class) ;
-        fineLog( "getClusterInstanceInfo: iservice {0}", iservice ) ;
 
         final List<IiopListener> listeners = iservice.getIiopListener() ;
         fineLog( "getClusterInstanceInfo: listeners {0}", listeners ) ;
