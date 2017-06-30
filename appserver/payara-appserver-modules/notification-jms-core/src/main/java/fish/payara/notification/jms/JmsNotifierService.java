@@ -83,7 +83,7 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
         try {
             executionOptions = (JmsNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-            if (executionOptions != null) {
+            if (executionOptions != null && executionOptions.isEnabled()) {
                 initializeExecutor();
 
                 final Properties env = new Properties();
