@@ -108,6 +108,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private Set<SecurityRoleDescriptor> securityRoles;
     private Set<SecurityConstraint> securityConstraints;
     private String contextRoot;
+    private String requestCharacterEncoding;
+    private String responseCharacterEncoding;
     private LoginConfiguration loginConfiguration;
     private Set<EnvironmentEntry> environmentEntries;
     private LocaleEncodingMappingListDescriptor localeEncodingMappingListDesc = null;
@@ -166,14 +168,22 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         if (getWelcomeFilesSet().size() == 0) {
             getWelcomeFilesSet().addAll(webBundleDescriptor.getWelcomeFilesSet());
         }
+        
+		if (requestCharacterEncoding == null) {
+			requestCharacterEncoding = webBundleDescriptor.getRequestCharacterEncoding();
+		}
+		
+		if (responseCharacterEncoding == null) {
+			responseCharacterEncoding = webBundleDescriptor.getResponseCharacterEncoding();
+		}
+        
         addCommonWebBundleDescriptor(webBundleDescriptor, true);
     }
 
     /**
      * This method combines all except welcome file set for two webBundleDescriptors.
      */
-    private void addCommonWebBundleDescriptor(WebBundleDescriptor wbd,
-            boolean defaultDescriptor) {
+	private void addCommonWebBundleDescriptor(WebBundleDescriptor wbd, boolean defaultDescriptor) {
         super.addBundleDescriptor(wbd);
 
         WebBundleDescriptorImpl webBundleDescriptor = (WebBundleDescriptorImpl) wbd;
@@ -332,15 +342,44 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return contextRoot;
     }
 
-    /**
-     * Set the name of my context root.
-     */
-    public void setContextRoot(String contextRoot) {
-        if (getModuleDescriptor() != null) {
-            getModuleDescriptor().setContextRoot(contextRoot);
-        }
-        this.contextRoot = contextRoot;
-    }
+	/**
+	 * Set the name of my context root.
+	 */
+	public void setContextRoot(String contextRoot) {
+		if (getModuleDescriptor() != null) {
+			getModuleDescriptor().setContextRoot(contextRoot);
+		}
+		this.contextRoot = contextRoot;
+	}
+
+	/**
+	 * return the request encoding
+	 */
+	public String getRequestCharacterEncoding() {
+		return requestCharacterEncoding;
+	}
+
+	/**
+	 * Set the request encoding
+	 */
+	public void setRequestCharacterEncoding(String requestCharacterEncoding) {
+		this.requestCharacterEncoding = requestCharacterEncoding;
+	}
+
+	/**
+	 * return the response encoding
+	 */
+	public String getResponseCharacterEncoding() {
+		return responseCharacterEncoding;
+	}
+
+	/**
+	 * Set the response encoding
+	 */
+	public void setResponseCharacterEncoding(String responseCharacterEncoding) {
+		this.responseCharacterEncoding = responseCharacterEncoding;
+	}
+ 
 
     /**
      * Return the Set of Web COmponent Descriptors (JSP or JavaServlets) in me.

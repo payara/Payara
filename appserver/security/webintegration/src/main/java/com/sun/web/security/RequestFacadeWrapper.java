@@ -100,10 +100,25 @@ class RequestFacadeWrapper extends RequestFacade implements HttpServletRequest {
     public int getIntHeader(String name) {
         return servletRequest.getIntHeader(name);
     }
+    
+    @Override
+    public Map<String, String> getTrailerFields() {
+        return servletRequest.getTrailerFields();
+    }
+
+    @Override
+    public boolean isTrailerFieldsReady() {
+        return servletRequest.isTrailerFieldsReady();
+    }
 
     @Override
     public String getMethod() {
         return servletRequest.getMethod();
+    }
+    
+    @Override
+    public HttpServletMapping getServletMapping() {
+    		return servletRequest.getHttpServletMapping(); 
     }
 
     @Override

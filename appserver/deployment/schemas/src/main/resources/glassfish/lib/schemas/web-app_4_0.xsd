@@ -11,7 +11,7 @@
 
       DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
       
-      Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
+      Copyright (c) 2009-2017 Oracle and/or its affiliates. All rights reserved.
       
       The contents of this file are subject to the terms of either the GNU
       General Public License Version 2 only ("GPL") or the Common Development
@@ -285,31 +285,35 @@
           <xsd:documentation>
 
             When specified, this element provides a default context path
-            of the web application. The default context path starts
-            with a / character. If it is not rooted at the root of the
-            server's name space, the path does not end with a / character.
+            of the web application. An empty value for this element must cause
+            the web application to be deployed at the root for the container.
+            Otherwise, the default context path must start with
+            a “/“ character but not end with a “/“ character.
+            Servlet containers may provide vendor specific configuration
+            options that allows specifying a value that overrides the value
+            specified here.
             
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-            <xsd:element name="request-encoding"
+      <xsd:element name="request-character-encoding"
                    type="javaee:string">
         <xsd:annotation>
           <xsd:documentation>
 
             When specified, this element provides a default request
-            encoding of the web application.
+            character encoding of the web application.
             
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="response-encoding"
+      <xsd:element name="response-character-encoding"
                    type="javaee:string">
         <xsd:annotation>
           <xsd:documentation>
 
             When specified, this element provides a default response
-            encoding of the web application.
+            character encoding of the web application.
             
           </xsd:documentation>
         </xsd:annotation>

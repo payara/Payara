@@ -73,6 +73,11 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 import javax.servlet.http.PushBuilder;
+
+import static java.security.AccessController.doPrivileged;
+import static org.apache.catalina.LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION;
+import static org.apache.catalina.security.SecurityUtil.isPackageProtectionEnabled;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -81,6 +86,7 @@ import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.SecurityPermission;
 import java.util.*;
+import javax.servlet.http.HttpServletMapping;
 
 
 /**
@@ -434,6 +440,14 @@ public class RequestFacade
 
         return request.getInputStream();
     }
+    
+	public HttpServletMapping getServletMapping() {
+		if (request == null) {
+			throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+		}
+
+		return request.getHttpServletMapping();
+	}
 
     @Override
     public String getParameter(String name) {
@@ -734,27 +748,42 @@ public class RequestFacade
 
     @Override
     public Enumeration<String> getHeaderNames() {
-
         if (request == null) {
-            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
         }
 
-        if (SecurityUtil.isPackageProtectionEnabled()){
-            return AccessController.doPrivileged(
-                new GetHeaderNamesPrivilegedAction());
-        } else {
-            return request.getHeaderNames();
-        }             
+        if (isPackageProtectionEnabled()) {
+            return doPrivileged(new GetHeaderNamesPrivilegedAction());
+        }
+            
+        return request.getHeaderNames();
     }
 
     @Override
     public int getIntHeader(String name) {
-
         if (request == null) {
-            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
         }
 
         return request.getIntHeader(name);
+    }
+    
+    @Override
+    public Map<String, String> getTrailerFields() {
+        if (request == null) {
+            throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+        }
+
+        return request.getTrailerFields();
+    }
+
+    @Override
+    public boolean isTrailerFieldsReady() {
+        if (request == null) {
+            throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+        }
+
+        return request.isTrailerFieldsReady();
     }
 
     @Override
@@ -1161,8 +1190,8 @@ public class RequestFacade
     }
 
     @Override
-    public PushBuilder getPushBuilder() {
-        return request.getPushBuilder();
+    public PushBuilder newPushBuilder() {
+        return request.newPushBuilder();
     }
 
 

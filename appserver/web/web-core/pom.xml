@@ -42,13 +42,14 @@
 -->
 <!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.web</groupId>
-    	<artifactId>web</artifactId>
+    	    <artifactId>web</artifactId>
         <version>5.1.2.173-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>web-core</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -56,7 +57,7 @@
 
     <developers>
         <developer>
-            <id>swchan2</id>
+            <id>shingwaichan</id>
             <name>Shing Wai Chan</name>
             <url>http://weblogs.java.net/blog/swchan2</url>
             <organization>Oracle</organization>
@@ -69,6 +70,15 @@
             <id>amyroh</id>
             <name>Amy Roh</name>
             <url>http://weblogs.java.net/blog/amyroh</url>
+            <organization>Oracle</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>edburns</id>
+            <name>Ed Burns</name>
+            <url>http://ridingthecrest.com/blog/</url>
             <organization>Oracle</organization>
             <roles>
                 <role>developer</role>
