@@ -39,12 +39,27 @@
  */
 package fish.payara.microprofile.config.spi;
 
+import fish.payara.microprofile.config.source.ApplicationConfigSource;
+import fish.payara.microprofile.config.source.ClusterConfigSource;
+import fish.payara.microprofile.config.source.ConfigConfigSource;
+import fish.payara.microprofile.config.source.DomainConfigSource;
+import fish.payara.microprofile.config.source.ModuleConfigSource;
+import fish.payara.microprofile.config.source.PropertiesConfigSource;
+import fish.payara.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import java.util.List;
+import java.util.Properties;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.WeakHashMap;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  *
@@ -54,22 +69,69 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     
     private final MicroprofileConfigService configService;
     private final InvocationManager invocationManager;
+    private final ServerContext context;
+    private WeakHashMap<ClassLoader,Config> registeredConfigs;
     
     public ConfigProviderResolverImpl() {
         configService = Globals.getDefaultHabitat().getService(MicroprofileConfigService.class);
         invocationManager = Globals.getDefaultHabitat().getService(InvocationManager.class);
-        
+        context = Globals.getDefaultHabitat().getService(ServerContext.class);
+        registeredConfigs = new WeakHashMap<>();
     }
-    
 
     @Override
     public Config getConfig() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        Config result = registeredConfigs.get(Thread.currentThread().getContextClassLoader());
+        if (result == null) {
+            ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+            String appName = currentInvocation.getAppName();
+            String moduleName = currentInvocation.getModuleName();
+            String serverName = context.getInstanceName();
+            String configName = context.getConfigBean().getConfig().getName();
+            // build config hierachy
+            SortedSet<ConfigSource> sources = new TreeSet();
+            sources.add(new DomainConfigSource());
+            sources.add(new ClusterConfigSource());
+            sources.add(new ConfigConfigSource(configName));
+            sources.add(new ServerConfigSource(serverName));
+            sources.add(new ApplicationConfigSource(appName));
+            sources.add(new ModuleConfigSource(appName, moduleName));
+            for (Properties props : configService.getDeployedApplicationProperties(appName)) {
+                sources.add(new PropertiesConfigSource(props, appName));
+            }
+            result = new PayaraConfig(sources);
+            registeredConfigs.put(Thread.currentThread().getContextClassLoader(), result);
+        }
+        return result;
     }
 
     @Override
     public Config getConfig(ClassLoader loader) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Config result = registeredConfigs.get(loader);
+        if (result == null) {
+            // TBD search the application registry for the given classloader
+            
+            
+            ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+            String appName = currentInvocation.getAppName();
+            String moduleName = currentInvocation.getModuleName();
+            String serverName = context.getInstanceName();
+            String configName = context.getConfigBean().getConfig().getName();
+            // build config hierachy
+            SortedSet<ConfigSource> sources = new TreeSet();
+            sources.add(new DomainConfigSource());
+            sources.add(new ClusterConfigSource());
+            sources.add(new ConfigConfigSource(configName));
+            sources.add(new ServerConfigSource(serverName));
+            sources.add(new ApplicationConfigSource(appName));
+            sources.add(new ModuleConfigSource(appName, moduleName));
+            for (Properties props : configService.getDeployedApplicationProperties(appName)) {
+                sources.add(new PropertiesConfigSource(props, appName));
+            }
+            
+        }
+        return result;
     }
 
     @Override

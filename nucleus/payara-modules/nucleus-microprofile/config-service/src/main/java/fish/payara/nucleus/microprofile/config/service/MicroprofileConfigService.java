@@ -49,10 +49,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -346,6 +350,15 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         return result;
     }
     
+    public SortedSet<Properties> getDeployedApplicationProperties(String applicationName) {
+        ApplicationInfo info = applicationRegistry.get(applicationName);
+        SortedSet<Properties> result = null;
+        if (info != null) {
+            result = info.getTransientAppMetaData(METADATA_KEY, SortedSet.class);
+        }
+        return result;
+    }
+    
     public String getDeployedApplicationProperty(String applicationName, String name) {
         String result = null;
         ApplicationInfo info = applicationRegistry.get(applicationName);
@@ -370,7 +383,91 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
     public MicroprofileConfigConfiguration getConfig() {
         return configuration;
     }
+
+    public Map<String, String> getEnvironmentPropertyMap() {
+        return System.getenv();
+    }
+
+    public Map<String, String> getSystemPropertiesMap() {
+        Properties props = System.getProperties();
+        HashMap<String, String> result = new HashMap<>(props.size());
+        for (String propertyName : props.stringPropertyNames()) {
+            result.put(propertyName, props.getProperty(propertyName));
+        }
+        return result;
+    }
+
+    public Map<String, String> getDomainProperyMap() {
+        List<Property> properties = domainConfiguration.getProperty();
+        HashMap<String,String> result = new HashMap<>(properties.size());
+        for (Property property : properties) {
+            result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+        }
+        return result;
+    }
+
+    public Map<String, String> getConfigPropertyMap(String configName) {
+        Config config = domainConfiguration.getConfigNamed(configName);
+        HashMap<String,String> result = new HashMap<>();
+        if (config != null) {
+            List<Property> properties = config.getProperty();
+            for (Property property : properties) {
+                result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+            }
+        }
+        return result;
+    }
     
+    public Map<String, String> getServerPropertyMap(String configName) {
+        Server config = domainConfiguration.getServerNamed(configName);
+        HashMap<String, String> result = new HashMap<>();
+        if (config != null) {
+            List<Property> properties = config.getProperty();
+            for (Property property : properties) {
+                result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+            }
+        }
+        return result;
+    }
+    
+    
+    
+    public Map<String, String> getApplicationPropertyMap(String configName) {
+        Application config = domainConfiguration.getApplications().getApplication(configName);
+        HashMap<String, String> result = new HashMap<>();
+        if (config != null) {
+            List<Property> properties = config.getProperty();
+            for (Property property : properties) {
+                result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+            }
+        }
+        return result;
+    }
+    
+    public Map<String, String> getModulePropertyMap(String configName, String moduleName) {
+        Application config = domainConfiguration.getApplications().getApplication(configName);
+        HashMap<String, String> result = new HashMap<>();
+        if (config != null) {
+            Module module = config.getModule(moduleName);
+            if (module != null) {
+                List<Property> properties = module.getProperty();
+                for (Property property : properties) {
+                    result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                }
+            }
+        }
+        return result;
+    }
+    
+    public Map<String,String> getClusteredPropertyMap() {
+        Map<Serializable, Serializable> map = clusterStore.getMap(CLUSTERED_CONFIG_STORE);
+        HashMap<String,String> result = new HashMap<>();
+        for (Serializable key : map.keySet()) {
+            result.put((String)key, (String)map.get(key));
+        }
+        return result;
+    }
+
     private class ConfigPropertiesComparator implements Comparator<Properties> {
 
         @Override
