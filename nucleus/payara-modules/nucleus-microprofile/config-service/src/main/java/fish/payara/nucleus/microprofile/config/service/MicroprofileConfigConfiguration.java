@@ -37,54 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.spi;
+package fish.payara.nucleus.microprofile.config.service;
 
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigBuilder;
-import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
 /**
- *
+ * @since 4.1.2.173
  * @author Steve Millidge (Payara Foundation)
  */
-public class ConfigProviderResolverImpl extends ConfigProviderResolver {
+@Configured(name="microprofile-config")
+public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, ConfigExtension {
     
-    private final MicroprofileConfigService configService;
-    private final InvocationManager invocationManager;
+    @Attribute(defaultValue = "110", dataType = Integer.class)
+    Integer getDomainOrdinality();
+    public void setDomainOrdinality(Integer message);
+
+    @Attribute(defaultValue = "120", dataType = Integer.class)
+    Integer getConfigOrdinality();
+    public void setConfigOrdinality(Integer message);    
     
-    public ConfigProviderResolverImpl() {
-        configService = Globals.getDefaultHabitat().getService(MicroprofileConfigService.class);
-        invocationManager = Globals.getDefaultHabitat().getService(InvocationManager.class);
-        
-    }
-    
+    @Attribute(defaultValue = "130", dataType = Integer.class)
+    Integer getServerOrdinality();
+    public void setServerOrdinality(Integer message);
 
-    @Override
-    public Config getConfig() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    @Attribute(defaultValue = "140", dataType = Integer.class)
+    Integer getApplicationOrdinality();
+    public void setApplicationOrdinality(Integer message);    
 
-    @Override
-    public Config getConfig(ClassLoader loader) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    @Attribute(defaultValue = "150", dataType = Integer.class)
+    Integer getModuleOrdinality();
+    public void setModuleOrdinality(Integer message);    
 
-    @Override
-    public ConfigBuilder getBuilder() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void registerConfig(Config config, ClassLoader classLoader) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void releaseConfig(Config config) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    @Attribute(defaultValue = "160", dataType = Integer.class)
+    Integer getClusterOrdinality();
+    public void setClusterOrdinality(Integer message);    
     
 }
