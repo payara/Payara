@@ -38,5 +38,6 @@
         <module>asadmin-recorder</module>
         <module>service-exemplar</module>
         <module>notification-eventbus-core</module>
+        <module>nucleus-microprofile</module>
     </modules>
 </project>

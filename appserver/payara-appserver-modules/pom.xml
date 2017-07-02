@@ -70,5 +70,6 @@
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
         <module>payara-fang</module>
+        <module>microprofile</module>
     </modules>
 </project>
