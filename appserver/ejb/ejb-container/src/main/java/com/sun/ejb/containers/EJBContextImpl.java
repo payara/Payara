@@ -218,7 +218,7 @@ public abstract class EJBContextImpl
         jcdiInjectionContext = ctx;
     }
 
-    JCDIService.JCDIInjectionContext getJCDIInjectionContext() {
+    JCDIService.JCDIInjectionContext<?> getJCDIInjectionContext() {
         return jcdiInjectionContext;
     }
 

@@ -117,13 +117,12 @@ import javax.enterprise.inject.Vetoed;
 /**
  * This class implements part of the com.sun.ejb.Container interface.
  * It implements the container's side of the EJB-to-Container
- * contract definweed by the EJB 2.0 spec.
+ * contract defined by the EJB 2.0 spec.
  * It contains code shared by SessionBeans, EntityBeans and MessageDrivenBeans.
  * Its subclasses provide the remaining implementation of the
  * container functionality.
  *
  */
-
 public abstract class BaseContainer implements Container, EjbContainerFacade, JavaEEContainer {
    
     public enum ContainerType {
@@ -1696,16 +1695,21 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         Object[] interceptorInstances = null;
 
-        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
-	    jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
+        if ((jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
+            
+            jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
             Class[] interceptorClasses = interceptorManager.getInterceptorClasses();
             interceptorInstances = new Object[interceptorClasses.length];
 
-            for(int i = 0; i < interceptorClasses.length; i++) {
+            for (int i = 0; i < interceptorClasses.length; i++) {
                 // 299 impl will instantiate and inject the instance, but PostConstruct
                 // is still our responsibility
                 interceptorInstances[i] =
-                            jcdiService.createInterceptorInstance(interceptorClasses[i], ejbBundle);
+                        jcdiService.createInterceptorInstance(
+                            interceptorClasses[i], 
+                            ejbBundle, 
+                            context.getJCDIInjectionContext(),
+                            context.getContainer().getEjbDescriptor().getInterceptorClasses());
             }
 
             interceptorManager.initializeInterceptorInstances(interceptorInstances);
@@ -1718,19 +1722,17 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             interceptorInstances = interceptorManager.createInterceptorInstances();
 
             for (Object interceptorInstance : interceptorInstances) {
-				injectionManager.injectInstance(interceptorInstance,
-						ejbDescriptor, false);
+                injectionManager.injectInstance(interceptorInstance, ejbDescriptor, false);
 			}
         }
 
         context.setInterceptorInstances(interceptorInstances);
-
     }
 
     protected void cleanupInstance(EJBContextImpl context) {
 
-        JCDIService.JCDIInjectionContext jcdiCtx = context.getJCDIInjectionContext();
-        if( jcdiCtx != null ) {
+        JCDIService.JCDIInjectionContext<?> jcdiCtx = context.getJCDIInjectionContext();
+        if (jcdiCtx != null) {
             jcdiCtx.cleanup(false);
         }
 

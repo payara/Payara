@@ -57,26 +57,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
-Start and stop JMX connectors.
+ * Start and stop JMX connectors.
  */
-final class JMXMPConnectorStarter extends ConnectorStarter
-{
-    JMXMPConnectorStarter(
-        final MBeanServer mbeanServer, 
-        final String address, 
-        final int port, 
-        final boolean securityEnabled, 
-        final ServiceLocator habitat, 
-        final BootAMXListener bootListener)
-    {
+final class JMXMPConnectorStarter extends ConnectorStarter {
+    JMXMPConnectorStarter(final MBeanServer mbeanServer, final String address, final int port, final boolean securityEnabled,
+            final ServiceLocator habitat, final BootAMXListener bootListener) {
         super(mbeanServer, address, port, securityEnabled, habitat, bootListener);
     }
 
-
-    public synchronized JMXConnectorServer start()
-    {
-        if (mConnectorServer != null)
-        {
+    public synchronized JMXConnectorServer start() {
+        if (mConnectorServer != null) {
             return mConnectorServer;
         }
 
@@ -85,27 +75,18 @@ final class JMXMPConnectorStarter extends ConnectorStarter
 
         int port = mPort;
         int tryCount = 0;
-        while (tryCount < TRY_COUNT)
-        {
-            try
-            {
+        while (tryCount < TRY_COUNT) {
+            try {
                 mConnectorServer = startJMXMPConnectorServer(port);
                 break;
-            }
-            catch (final java.net.BindException e)
-            {
-            }
-            catch (final Exception e)
-            {
+            } catch (final java.net.BindException e) {
+            } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
 
-            if (port < 1000)
-            {
-                port += 1000;   // in case it's a permissions thing
-            }
-            else
-            {
+            if (port < 1000) {
+                port += 1000; // in case it's a permissions thing
+            } else {
                 port = port + 1;
             }
         }
@@ -114,75 +95,53 @@ final class JMXMPConnectorStarter extends ConnectorStarter
 
     public static final String JMXMP = "jmxmp";
 
-    private JMXConnectorServer startJMXMPConnectorServer(final int port)
-        throws MalformedURLException, IOException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException
-    {
+    private JMXConnectorServer startJMXMPConnectorServer(final int port) throws MalformedURLException, IOException,
+            InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
         final Map<String, Object> env = new HashMap<String, Object>();
         env.put("jmx.remote.protocol.provider.pkgs", "com.sun.jmx.remote.protocol");
         env.put("jmx.remote.protocol.provider.class.loader", this.getClass().getClassLoader());
-        env.put("jmx.remote.rmi.server.credential.types", new String[] {
-                    String[].class.getName(),
-                    String.class.getName() });        
-        
+        env.put("jmx.remote.rmi.server.credential.types", new String[] { String[].class.getName(), String.class.getName() });
+
         JMXAuthenticator authenticator = getAccessController();
-        if (authenticator != null)
-        {
+        if (authenticator != null) {
             env.put("jmx.remote.authenticator", authenticator);
         }
 
-        final JMXServiceURL serviceURL = new JMXServiceURL("service:jmx:" + JMXMP + "://" +hostname() + ":" + port);
+        final JMXServiceURL serviceURL = new JMXServiceURL("service:jmx:" + JMXMP + "://" + hostname() + ":" + port);
         JMXConnectorServer jmxmp = null;
 
         boolean startedOK = false;
-        try
-        {
+        try {
             jmxmp = new JMXMPConnectorServer(serviceURL, env, mMBeanServer);
-            if ( mBootListener != null )
-            {
-                jmxmp.addNotificationListener(mBootListener, null, serviceURL.toString() );
+            if (mBootListener != null) {
+                jmxmp.addNotificationListener(mBootListener, null, serviceURL.toString());
             }
 
             jmxmp.start();
             startedOK = true;
-        }
-        catch (final Exception e)
-        {
+        } catch (final Exception e) {
             e.printStackTrace();
-        }
-        finally
-        {
+        } finally {
             // we do it this way so that the original exeption will be thrown out
-            if (!startedOK)
-            {
-                try
-                {
-                    if (jmxmp != null)
-                    {
+            if (!startedOK) {
+                try {
+                    if (jmxmp != null) {
                         jmxmp.stop();
                     }
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     ignore(e);
                 }
             }
         }
 
-        mJMXServiceURL  = serviceURL;
+        mJMXServiceURL = serviceURL;
         mConnectorServer = jmxmp;
 
         // verify
-        //final JMXConnector jmxc = JMXConnectorFactory.connect(serviceURL, null);
-        //jmxc.getMBeanServerConnection().getMBeanCount();
-        //jmxc.close();
+        // final JMXConnector jmxc = JMXConnectorFactory.connect(serviceURL, null);
+        // jmxc.getMBeanServerConnection().getMBeanCount();
+        // jmxc.close();
 
         return mConnectorServer;
     }
 }
-
-
-
-
-
-
-
