@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,8 +62,8 @@ package org.apache.catalina.core;
 public class Constants {
 
     public static final String Package = "org.apache.catalina.core";
-    public static final int MAJOR_VERSION = 3;
-    public static final int MINOR_VERSION = 1;
+    public static final int MAJOR_VERSION = 4;
+    public static final int MINOR_VERSION = 0;
 
     public static final String JSP_SERVLET_CLASS =
         "org.apache.jasper.servlet.JspServlet";

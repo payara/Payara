@@ -59,6 +59,8 @@
 
 package org.apache.catalina.connector;
 
+import static java.lang.Integer.parseInt;
+
 import java.io.BufferedReader;
 import java.io.CharConversionException;
 import java.io.File;
@@ -101,7 +103,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
+import javax.servlet.http.PushBuilder;
 import javax.servlet.http.WebConnection;
+import javax.servlet.http.MappingMatch;
+import javax.servlet.http.HttpServletMapping;
 
 import com.sun.appserv.ProxyHandler;
 import org.apache.catalina.Context;
@@ -116,6 +121,7 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.authenticator.AuthenticatorBase;
+import org.apache.catalina.core.ApplicationPushBuilder;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
@@ -141,6 +147,7 @@ import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.grizzly.http.util.MessageBytes;
+import org.glassfish.grizzly.http2.Http2Stream;
 import org.glassfish.grizzly.memory.Buffers;
 import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.web.valve.GlassFishValve;
@@ -748,6 +755,20 @@ public class Request
             if (p != null) {
                 hostValve = p.getBasic();
             }
+            
+			try {
+				String reqEncoding = this.servletContext.getRequestCharacterEncoding();
+				if (reqEncoding != null) {
+					setCharacterEncoding(reqEncoding);
+				}
+				String resEncoding = this.servletContext.getResponseCharacterEncoding();
+				if (resEncoding != null) {
+					getResponse().getResponse().setCharacterEncoding(resEncoding);
+				}
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+            
         }
         // START GlassFish 896
         initSessionTracker();
@@ -802,6 +823,11 @@ public class Request
     public void setHost(Host host) {
         mappingData.host = host;
     }
+    
+	@Override
+	public HttpServletMapping getHttpServletMapping() {
+		return new MappingImpl(mappingData);
+	}
 
     /**
      * Return descriptive information about this Request implementation and
@@ -2527,15 +2553,25 @@ public class Request
      *  cannot be converted to an integer
      */
     @Override
-    public int getIntHeader(String name) {
+    public int getIntHeader(String headerName) {
 
-        String value = getHeader(name);
-        if (value == null) {
+        String header = getHeader(headerName);
+        if (header == null) {
             return -1;
-        } else {
-            return Integer.parseInt(value);
-        }
+        } 
+            
+        return parseInt(header);
+    }
+    
+    @Override
+    public Map<String, String> getTrailerFields() {
+        return coyoteRequest.getTrailers();
+    }
 
+    @Override
+    public boolean isTrailerFieldsReady() {
+        // TODO
+        return true;
     }
 
     /**
@@ -2571,6 +2607,19 @@ public class Request
             return servletContext.getRealPath(getPathInfo());
         }
 
+    }
+    
+    @Override
+    public PushBuilder newPushBuilder() {
+        Http2Stream http2Stream = null;
+        if (coyoteRequest != null) {
+            http2Stream = (Http2Stream) coyoteRequest.getAttribute(Http2Stream.HTTP2_STREAM_ATTRIBUTE);
+        }
+        if (http2Stream != null && http2Stream.isPushEnabled()) {
+            return new ApplicationPushBuilder(this);
+        } else {
+            return null;
+        }
     }
 
     /**

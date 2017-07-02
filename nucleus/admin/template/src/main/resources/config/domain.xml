@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2013-2017 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -70,15 +70,18 @@
   <system-applications/>
   <applications/>
   <resources/>
+  
   <servers>
     <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%"> 
       <resource-ref ref="jdbc/__TimerPool" />
       <resource-ref ref="jdbc/__default" />
     </server>
   </servers>
+  
   <nodes>
     <node name="localhost-%%%DOMAIN_NAME%%%" type="CONFIG" node-host="localhost" install-dir="${com.sun.aas.productRoot}"/>
   </nodes>
+ 
  <configs>
    <config name="%%%CONFIG_MODEL_NAME%%%">
       <!--%%%TOKENS_HERE%%%-->
@@ -155,6 +158,7 @@
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
         <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-client</jvm-options>
+        <jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
@@ -166,7 +170,7 @@
         <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
         <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
         <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
-	<jvm-options>-DANTLR_USE_DIRECT_CLASS_LOADING=true</jvm-options>
+	    <jvm-options>-DANTLR_USE_DIRECT_CLASS_LOADING=true</jvm-options>
         <!-- Configure post startup bundle list here. This is a comma separated list of bundle sybolic names. -->
         <!-- Configuration of various third-party OSGi bundles like
              Felix Remote Shell, FileInstall, etc. -->
@@ -209,6 +213,7 @@
             <http default-virtual-server="server" max-connections="250">
               <file-cache enabled="false"></file-cache>
             </http>
+            <http2></http2>
             <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>
           </protocol>
           <protocol name="admin-listener">
@@ -302,6 +307,7 @@
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-XX:MaxPermSize=192m</jvm-options>
              <jvm-options>-server</jvm-options>
+             <jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
              <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
@@ -345,41 +351,49 @@
              <!-- End of OSGi bundle configurations -->
          </java-config>
          <availability-service/>
+         
          <network-config>
              <protocols>
                  <protocol name="http-listener-1">
                      <http default-virtual-server="server">
                          <file-cache />
                      </http>
-		     <ssl ssl3-enabled="false" />
+		             <ssl ssl3-enabled="false" />
                  </protocol>
+                 
                  <protocol security-enabled="true" name="sec-admin-listener">
                      <http default-virtual-server="__asadmin" encoded-slash-enabled="true">
                        <file-cache></file-cache>
                      </http>
                      <ssl client-auth="want" ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="glassfish-instance" renegotiate-on-client-auth-want="false"></ssl>
-                   </protocol>
-                   <protocol name="admin-http-redirect">
+                 </protocol>
+                   
+                 <protocol name="admin-http-redirect">
                      <http-redirect secure="true"></http-redirect>
-                   </protocol>
-                   <protocol name="pu-protocol">
+                 </protocol>
+                   
+                 <protocol name="pu-protocol">
                      <port-unification>
                        <protocol-finder protocol="sec-admin-listener" name="http-finder" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
                        <protocol-finder protocol="admin-http-redirect" name="admin-http-redirect" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
                      </port-unification>
                  </protocol>
+                 
                  <protocol security-enabled="true" name="http-listener-2">
                      <http default-virtual-server="server">
                          <file-cache />
                      </http>
+                     <http2></http2>
                      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as" />
                  </protocol>
+                 
                  <protocol name="admin-listener">
                      <http default-virtual-server="__asadmin" max-connections="250">
                          <file-cache enabled="false" />
                      </http>
                  </protocol>
              </protocols>
+             
              <network-listeners>
                  <network-listener address="0.0.0.0" port="${HTTP_LISTENER_PORT}" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool" />
                  <network-listener address="0.0.0.0" port="${HTTP_SSL_LISTENER_PORT}" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool" />
@@ -389,6 +403,7 @@
                  <transport name="tcp" />
              </transports>
          </network-config>
+         
          <thread-pools>
              <thread-pool name="http-thread-pool" />
              <thread-pool min-thread-pool-size="2" max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />

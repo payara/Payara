@@ -149,7 +149,13 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         } else if (WebTagNames.DEFAULT_CONTEXT_PATH.equals(element.getQName())) {
             WebBundleDescriptor bundleDesc = getDescriptor();
             bundleDesc.setContextRoot(value);
-        } else {
+		} else if (WebTagNames.REQUEST_CHARACTER_ENCODING.equals(element.getQName())) {
+			WebBundleDescriptor bundleDesc = getDescriptor();
+			bundleDesc.setRequestCharacterEncoding(value);
+		} else if (WebTagNames.RESPONSE_CHARACTER_ENCODING.equals(element.getQName())) {
+			WebBundleDescriptor bundleDesc = getDescriptor();
+			bundleDesc.setResponseCharacterEncoding(value);
+		} else {
             super.setElementValue(element, value);
         }
     }
