@@ -206,6 +206,11 @@ public interface Deployment {
      */
     public final EventTypes<DeploymentContext> ALL_APPLICATIONS_PROCESSED= EventTypes.create("All_Applications_Processed", DeploymentContext.class);
 
+    /**
+     * All applications are now stopped / unloaded in the process of server shutdown
+     */
+    public final EventTypes<DeploymentContext> ALL_APPLICATIONS_STOPPED = EventTypes.create("All_Applications_Stopped", DeploymentContext.class);
+
     public DeploymentContextBuilder getBuilder(Logger loggger, OpsParams params, ActionReport report);
 
     public ArchiveHandler getArchiveHandler(ReadableArchive archive) throws IOException;

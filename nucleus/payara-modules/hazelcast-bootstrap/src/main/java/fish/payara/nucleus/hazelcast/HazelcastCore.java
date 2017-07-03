@@ -40,7 +40,6 @@
 package fish.payara.nucleus.hazelcast;
 
 import org.glassfish.internal.api.JavaEEContextUtil;
-import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
@@ -77,7 +76,6 @@ import lombok.extern.java.Log;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.logging.LogLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -187,7 +185,7 @@ public class HazelcastCore implements EventListener {
     @Override
     public void event(Event event) {
         log.log(LogLevel.FINER, "Event Name: {0}, Event Type: {1}", new Object[] { event.name(), event.type().getHookType() != null? event.hook() : "<none>"});
-        if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
+        if (event.is(Deployment.ALL_APPLICATIONS_STOPPED)) {
             shutdownHazelcast();
         } else if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
             ClassLoader oldCL = Utility.getClassLoader();
@@ -364,7 +362,7 @@ public class HazelcastCore implements EventListener {
 
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
-            hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);
+            hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
             events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
             bindToJNDI();
             booted = true;
