@@ -37,55 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.spi;
+package fish.payara.microprofile.config.source;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import org.eclipse.microprofile.config.Config;
+import java.util.HashMap;
+import java.util.Map;
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.eclipse.microprofile.config.spi.Converter;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class PayaraConfig implements Config {
-    
-    private final List<ConfigSource> configSources;
-    private final List<Converter> converters;
-
-    public PayaraConfig(List<ConfigSource> configSources, List<Converter> converters) {
-        this.configSources = configSources;
-        this.converters = converters;
-        Collections.sort(configSources, new ConfigSourceComparator());
-    }   
+public class DottedNamesConfigSource extends PayaraConfigSource implements ConfigSource{
 
     @Override
-    public <T> T getValue(String propertyName, Class<T> propertyType) {
-        String result = null;
-        for (ConfigSource configSource : configSources) {
-            result = configSource.getValue(propertyName); 
-            if (result != null) {
-                break;
-            }
-        }
-        return (T) result;
+    public Map<String, String> getProperties() {
+        // returns empty map as it is too musch to work out all dotted names and their values
+        return new HashMap<>();
     }
 
     @Override
-    public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
+    public int getOrdinal() {
+        return 50;
+    }
+
+    @Override
+    public String getValue(String propertyName) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Iterable<String> getPropertyNames() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Iterable<ConfigSource> getConfigSources() {
-        return configSources;
+    public String getName() {
+        return "DottedNames";
     }
     
 }
