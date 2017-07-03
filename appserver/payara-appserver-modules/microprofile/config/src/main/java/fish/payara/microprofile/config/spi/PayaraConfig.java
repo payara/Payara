@@ -39,8 +39,9 @@
  */
 package fish.payara.microprofile.config.spi;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
-import java.util.SortedSet;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
@@ -50,15 +51,23 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
  */
 public class PayaraConfig implements Config {
     
-    private SortedSet<ConfigSource> configSources;
+    private final List<ConfigSource> configSources;
 
-    public PayaraConfig(SortedSet<ConfigSource> configSources) {
+    public PayaraConfig(List<ConfigSource> configSources) {
         this.configSources = configSources;
+        Collections.sort(configSources, new ConfigSourceComparator());
     }   
 
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String result = null;
+        for (ConfigSource configSource : configSources) {
+            result = configSource.getValue(propertyName); 
+            if (result != null) {
+                break;
+            }
+        }
+        return (T) result;
     }
 
     @Override
