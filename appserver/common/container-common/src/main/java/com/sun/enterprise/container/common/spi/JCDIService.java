@@ -40,43 +40,74 @@
 
 package com.sun.enterprise.container.common.spi;
 
+import java.util.Set;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.InjectionTarget;
+import javax.naming.NamingException;
+import javax.servlet.ServletContext;
+
+import org.jvnet.hk2.annotations.Contract;
 
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
-import org.jvnet.hk2.annotations.Contract;
-
-import javax.naming.NamingException;
-import javax.servlet.ServletContext;
+import com.sun.enterprise.deployment.EjbInterceptor;
 
 /**
  */
 @Contract
 public interface JCDIService {
 
-    public boolean isCurrentModuleJCDIEnabled();
+    boolean isCurrentModuleJCDIEnabled();
+    boolean isJCDIEnabled(BundleDescriptor bundle);
+    boolean isCDIScoped(Class<?> clazz);
 
-    public boolean isJCDIEnabled(BundleDescriptor bundle);
+    void setELResolver(ServletContext servletContext) throws NamingException;
 
-    public boolean isCDIScoped(Class<?> clazz);
+    <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle);
+    <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle, boolean invokePostConstruct);
 
-    public void setELResolver(ServletContext servletContext) throws NamingException;
+    /**
+     * Create an inteceptor instance for an ejb.
+     * 
+     * @param interceptorClass The interceptor class.
+     * @param bundle The ejb bundle.
+     * @param ejbContext The ejb context.
+     * @param ejbInterceptors All of the ejb interceptors for the ejb.
+     *
+     * @return The interceptor instance.
+     */
+    <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle, JCDIInjectionContext<?> ejbContext,
+            Set<EjbInterceptor> ejbInterceptors);
 
-    public <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle);
-    public <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle,
-                                                    boolean invokePostConstruct);
+    <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc);
+    <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance);
 
-    public void injectManagedObject(Object managedObject, BundleDescriptor bundle);
-
-    public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle);
-
-    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc);
-    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance);
-
-    public <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx);
+    <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx);
+    void injectManagedObject(Object managedObject, BundleDescriptor bundle);
 
     public interface JCDIInjectionContext<T> {
-        public T getInstance();
-        public void cleanup(boolean callPreDestroy);
+        T getInstance();
+
+        /**
+         * @return The injection target.
+         */
+        InjectionTarget<T> getInjectionTarget();
+
+        /**
+         * @return The creational context.
+         */
+        CreationalContext<T> getCreationalContext();
+
+        /**
+         * Add a dependent context to this context so that the dependent context can be cleaned up when this one is.
+         *
+         * @param dependentContext
+         *            The dependenct context.
+         */
+        void addDependentContext(JCDIInjectionContext<?> dependentContext);
+        
+        void cleanup(boolean callPreDestroy);
     }
 
 }
