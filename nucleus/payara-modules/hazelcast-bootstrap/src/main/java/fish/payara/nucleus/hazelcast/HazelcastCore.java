@@ -361,7 +361,7 @@ public class HazelcastCore implements EventListener {
 
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
-            hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);
+            hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
             events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
             bindToJNDI();
             booted = true;
