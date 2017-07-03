@@ -54,12 +54,10 @@ import java.net.URL;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.SortedSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -147,7 +145,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         {
             // TO DO look for microprofile config files in the application classloader
             ApplicationInfo info = (ApplicationInfo) event.hook();
-            SortedSet<Properties> appConfigProperties = new ConcurrentSkipListSet<>(new ConfigPropertiesComparator());
+            LinkedList<Properties> appConfigProperties = new LinkedList<>();
             info.addTransientAppMetaData(METADATA_KEY, appConfigProperties);
             try {
                 Enumeration<URL> resources = info.getAppClassLoader().getResources("META-INF/microprofile-config.properties");
@@ -350,11 +348,11 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         return result;
     }
     
-    public SortedSet<Properties> getDeployedApplicationProperties(String applicationName) {
+    public List<Properties> getDeployedApplicationProperties(String applicationName) {
         ApplicationInfo info = applicationRegistry.get(applicationName);
-        SortedSet<Properties> result = null;
+        List<Properties> result = null;
         if (info != null) {
-            result = info.getTransientAppMetaData(METADATA_KEY, SortedSet.class);
+            result = info.getTransientAppMetaData(METADATA_KEY, LinkedList.class);
         }
         return result;
     }
@@ -363,7 +361,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         String result = null;
         ApplicationInfo info = applicationRegistry.get(applicationName);
         if (info != null) {
-            SortedSet<Properties> metadata = info.getTransientAppMetaData(METADATA_KEY, SortedSet.class);
+            LinkedList<Properties> metadata = info.getTransientAppMetaData(METADATA_KEY, LinkedList.class);
             if (metadata != null) {
                 for (Properties properties : metadata) {
                     result = properties.getProperty(name);
@@ -466,18 +464,6 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
             result.put((String)key, (String)map.get(key));
         }
         return result;
-    }
-
-    private class ConfigPropertiesComparator implements Comparator<Properties> {
-
-        @Override
-        public int compare(Properties o1, Properties o2) {
-            // look for the ordinal property
-            int o1Ordinal = Integer.parseInt(o1.getProperty(ORDINAL_PROPERTY,DEFAULT_ORDINAL_VALUE));
-            int o2Ordinal = Integer.parseInt(o2.getProperty(ORDINAL_PROPERTY,DEFAULT_ORDINAL_VALUE));
-            return o1Ordinal - o2Ordinal;
-        }
-        
     }
 
 }

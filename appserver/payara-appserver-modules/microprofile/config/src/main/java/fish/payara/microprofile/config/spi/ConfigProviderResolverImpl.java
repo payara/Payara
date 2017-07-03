@@ -43,93 +43,120 @@ import fish.payara.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.microprofile.config.source.ClusterConfigSource;
 import fish.payara.microprofile.config.source.ConfigConfigSource;
 import fish.payara.microprofile.config.source.DomainConfigSource;
+import fish.payara.microprofile.config.source.EnvironmentConfigSource;
 import fish.payara.microprofile.config.source.ModuleConfigSource;
 import fish.payara.microprofile.config.source.PropertiesConfigSource;
 import fish.payara.microprofile.config.source.ServerConfigSource;
+import fish.payara.microprofile.config.source.SystemPropertyConfigSource;
 import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
  */
+@Service(name = "microprofile-config-provider") // this specifies that the classis an HK2 service
+@RunLevel(StartupRunLevel.VAL) 
 public class ConfigProviderResolverImpl extends ConfigProviderResolver {
+
+    private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
     
-    private final MicroprofileConfigService configService;
-    private final InvocationManager invocationManager;
-    private final ServerContext context;
-    private WeakHashMap<ClassLoader,Config> registeredConfigs;
+    @Inject
+    private MicroprofileConfigService configService;
     
+    @Inject
+    private InvocationManager invocationManager;
+    
+    @Inject
+    private  ServerContext context;
+    
+    @Inject
+    private ApplicationRegistry appRegistry;
+
     public ConfigProviderResolverImpl() {
-        configService = Globals.getDefaultHabitat().getService(MicroprofileConfigService.class);
-        invocationManager = Globals.getDefaultHabitat().getService(InvocationManager.class);
-        context = Globals.getDefaultHabitat().getService(ServerContext.class);
-        registeredConfigs = new WeakHashMap<>();
+    }
+    
+    @PostConstruct
+    public void postConstruct() {
+      ConfigProviderResolver.setInstance(this);
     }
 
     @Override
     public Config getConfig() {
-        
-        Config result = registeredConfigs.get(Thread.currentThread().getContextClassLoader());
+        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+        String appName = currentInvocation.getAppName();
+        ApplicationInfo info = appRegistry.get(appName);
+        Config result = info.getTransientAppMetaData(METADATA_KEY, Config.class);
         if (result == null) {
-            ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-            String appName = currentInvocation.getAppName();
             String moduleName = currentInvocation.getModuleName();
             String serverName = context.getInstanceName();
             String configName = context.getConfigBean().getConfig().getName();
             // build config hierachy
-            SortedSet<ConfigSource> sources = new TreeSet();
+            LinkedList<ConfigSource> sources = new LinkedList<>();
             sources.add(new DomainConfigSource());
             sources.add(new ClusterConfigSource());
             sources.add(new ConfigConfigSource(configName));
             sources.add(new ServerConfigSource(serverName));
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));
+            sources.add(new EnvironmentConfigSource());
+            sources.add(new SystemPropertyConfigSource());
             for (Properties props : configService.getDeployedApplicationProperties(appName)) {
                 sources.add(new PropertiesConfigSource(props, appName));
             }
             result = new PayaraConfig(sources);
-            registeredConfigs.put(Thread.currentThread().getContextClassLoader(), result);
+            info.addTransientAppMetaData(METADATA_KEY, result);
         }
         return result;
     }
 
     @Override
     public Config getConfig(ClassLoader loader) {
-        Config result = registeredConfigs.get(loader);
-        if (result == null) {
-            // TBD search the application registry for the given classloader
-            
-            
-            ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-            String appName = currentInvocation.getAppName();
-            String moduleName = currentInvocation.getModuleName();
-            String serverName = context.getInstanceName();
-            String configName = context.getConfigBean().getConfig().getName();
-            // build config hierachy
-            SortedSet<ConfigSource> sources = new TreeSet();
-            sources.add(new DomainConfigSource());
-            sources.add(new ClusterConfigSource());
-            sources.add(new ConfigConfigSource(configName));
-            sources.add(new ServerConfigSource(serverName));
-            sources.add(new ApplicationConfigSource(appName));
-            sources.add(new ModuleConfigSource(appName, moduleName));
-            for (Properties props : configService.getDeployedApplicationProperties(appName)) {
-                sources.add(new PropertiesConfigSource(props, appName));
+        Config result = null;
+        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+        String appName = currentInvocation.getAppName();
+        ApplicationInfo appInfo = appRegistry.get(appName);
+        if (appInfo != null && appInfo.getClassLoaders().contains(loader)) {
+            result = appInfo.getTransientAppMetaData(appName, Config.class);
+            if (result == null) {
+                String moduleName = currentInvocation.getModuleName();
+                String serverName = context.getInstanceName();
+                String configName = context.getConfigBean().getConfig().getName();
+                // build config hierachy
+                LinkedList<ConfigSource> sources = new LinkedList<>();
+                sources.add(new DomainConfigSource());
+                sources.add(new ClusterConfigSource());
+                sources.add(new ConfigConfigSource(configName));
+                sources.add(new ServerConfigSource(serverName));
+                sources.add(new ApplicationConfigSource(appName));
+                sources.add(new ModuleConfigSource(appName, moduleName));
+                for (Properties props : configService.getDeployedApplicationProperties(appName)) {
+                    sources.add(new PropertiesConfigSource(props, appName));
+                }
             }
-            
         }
         return result;
     }
@@ -148,5 +175,5 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     public void releaseConfig(Config config) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }
