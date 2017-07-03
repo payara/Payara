@@ -108,7 +108,7 @@
         <sun:textField id="filteredCommands" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['filteredCommands']}" />
     </sun:property>
     <sun:property id="passwordFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.passwordFile}"  helpText="$resource{i18nar.asadminRecorder.configuration.passwordFileHelp}">
-        <sun:textField id="passwordFile" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['passwordFile']}" />
+        <sun:textField id="passwordFile" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['prependedPasswordFile']}" />
     </sun:property>
 </sun:propertySheetSection>
 

@@ -70,6 +70,6 @@ public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExt
     public void setFilteredCommands(String filteredCommands);
     
     @Attribute()
-    public String getPrependPasswordFile();
-    public void setPrependPasswordFile(String passwordFile);
+    public String getPrependedPasswordFile();
+    public void setPrependedPasswordFile(String passwordFile);
 }

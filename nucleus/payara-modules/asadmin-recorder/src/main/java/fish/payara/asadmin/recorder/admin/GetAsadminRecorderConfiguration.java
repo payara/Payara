@@ -87,7 +87,7 @@ public class GetAsadminRecorderConfiguration implements AdminCommand
     
     private final String target = "server";
     private final String[] headers = {"Enabled", "Filter Commands", 
-            "Output Location", "Filtered Commands", "Password File"};
+            "Output Location", "Filtered Commands", "Prepended Password File"};
             
     @Override
     public void execute(AdminCommandContext context)
@@ -111,7 +111,8 @@ public class GetAsadminRecorderConfiguration implements AdminCommand
                 asadminRecorderConfiguration.filterCommands(), 
                 asadminRecorderConfiguration.getOutputLocation(),
                 asadminRecorderConfiguration.getFilteredCommands(),
-                asadminRecorderConfiguration.getPrependPasswordFile()};
+                (asadminRecorderConfiguration.getPrependedPasswordFile().equals("") 
+                    ? asadminRecorderConfiguration.getPrependedPasswordFile() : "N/A")};
         
         columnFormatter.addRow(values);
         
@@ -121,7 +122,7 @@ public class GetAsadminRecorderConfiguration implements AdminCommand
         map.put("filterCommands", values[1]);
         map.put("outputLocation", values[2]);
         map.put("filteredCommands", values[3]);
-        map.put("prependPasswordFile", values[4]);
+        map.put("prependedPasswordFile", values[4]);
         extraProps.put("getAsadminRecorderConfiguration",map);
         
         actionReport.setExtraProperties(extraProps);
