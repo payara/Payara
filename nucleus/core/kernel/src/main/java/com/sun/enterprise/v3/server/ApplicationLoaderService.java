@@ -496,6 +496,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         for (EngineInfo engineInfo : containerRegistry.getContainers()) {
             engineInfo.stop(logger);
         }
+        events.send(new Event<>(Deployment.ALL_APPLICATIONS_STOPPED, null), false);
     }
 
     private void stopApplication(Application app, ApplicationInfo appInfo) {
