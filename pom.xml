@@ -76,9 +76,9 @@
                 </property>
             </activation>
             <modules>
+		<module>api</module>
                 <module>nucleus</module>
                 <module>appserver</module>
-                <module>api</module>
             </modules>
         </profile>
         <profile>
