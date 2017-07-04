@@ -42,6 +42,7 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.config.TenantControl;
 import java.io.IOException;
 import java.io.Serializable;
+import javax.cache.CacheManager;
 import lombok.RequiredArgsConstructor;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -118,7 +119,9 @@ public class PayaraHazelcastTenant implements TenantControl {
             if(payaraEvent.is(Deployment.MODULE_STOPPED)) {
                 ModuleInfo moduleInfo = (ModuleInfo)payaraEvent.hook();
                 if(destroyEvent != null && moduleInfo.getName().equals(moduleName)) {
-                    destroyEvent.destroy();
+                    CacheManager mgr = Globals.getDefaultHabitat().getService(HazelcastCore.class)
+                            .getCachingProvider().getCacheManager();
+                    destroyEvent.destroy(mgr);
                 }
             }
         }
