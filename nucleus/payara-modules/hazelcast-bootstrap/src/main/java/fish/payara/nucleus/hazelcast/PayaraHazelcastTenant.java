@@ -40,9 +40,17 @@
 package fish.payara.nucleus.hazelcast;
 
 import com.hazelcast.config.TenantControl;
+import java.io.IOException;
+import java.io.Serializable;
+import lombok.RequiredArgsConstructor;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import org.glassfish.internal.data.ModuleInfo;
+import org.glassfish.internal.deployment.Deployment;
 
 /**
  * Java EE Context support for JCache with Hazelcast
@@ -51,12 +59,31 @@ import org.glassfish.internal.api.JavaEEContextUtil.Context;
  */
 public class PayaraHazelcastTenant implements TenantControl {
     public PayaraHazelcastTenant() {
+        this(null);
+    }
+
+    public PayaraHazelcastTenant(final DestroyEvent event) {
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+        if(event != null) {
+            destroyEventListener = new SerializableEventListenerImpl(event,
+                    Globals.getDefaultHabitat().getService(InvocationManager.class)
+                            .getCurrentInvocation().getModuleName());
+        } else {
+            destroyEventListener = null;
+        }
+        init();
     }
 
     @Override
-    public TenantControl saveCurrentTenant() {
-        return new PayaraHazelcastTenant();
+    public TenantControl saveCurrentTenant(DestroyEvent event) {
+        return new PayaraHazelcastTenant(event);
+    }
+
+    @Override
+    public void unregister() {
+        if(destroyEventListener != null) {
+            events.unregister(destroyEventListener);
+        }
     }
 
     @Override
@@ -70,7 +97,40 @@ public class PayaraHazelcastTenant implements TenantControl {
         };
     }
 
+    private void init() {
+        events = Globals.getDefaultHabitat().getService(Events.class);
+        if(destroyEventListener != null) {
+            events.register(destroyEventListener);
+        }
+    }
+
+    private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        init();
+    }
+
+    private interface SerializableEventListener extends EventListener, Serializable {};
+
+    @RequiredArgsConstructor
+    private static class SerializableEventListenerImpl implements SerializableEventListener {
+        @Override
+        public void event(EventListener.Event payaraEvent) {
+            if(payaraEvent.is(Deployment.MODULE_STOPPED)) {
+                ModuleInfo moduleInfo = (ModuleInfo)payaraEvent.hook();
+                if(destroyEvent != null && moduleInfo.getName().equals(moduleName)) {
+                    destroyEvent.destroy();
+                }
+            }
+        }
+
+        private final DestroyEvent destroyEvent;
+        private final String moduleName;
+        private static final long serialVersionUID = 1L;
+    }
+
 
     private final JavaEEContextUtil ctxUtil;
+    private final EventListener destroyEventListener;
+    private transient Events events;
     private static final long serialVersionUID = 1L;
 }
