@@ -39,28 +39,32 @@
  */
 package fish.payara.microprofile.config.spi;
 
-import com.sun.tools.doclint.Entity;
+import fish.payara.microprofile.config.converters.BooleanConverter;
+import fish.payara.microprofile.config.converters.DoubleConverter;
+import fish.payara.microprofile.config.converters.DurationConverter;
+import fish.payara.microprofile.config.converters.FloatConverter;
+import fish.payara.microprofile.config.converters.InstantConverter;
+import fish.payara.microprofile.config.converters.IntegerConverter;
+import fish.payara.microprofile.config.converters.LocalDateConverter;
+import fish.payara.microprofile.config.converters.LocalDateTimeConverter;
+import fish.payara.microprofile.config.converters.LocalTimeConverter;
+import fish.payara.microprofile.config.converters.LongConverter;
+import fish.payara.microprofile.config.converters.OffsetDateTimeConverter;
+import fish.payara.microprofile.config.converters.OffsetTimeConverter;
 import fish.payara.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.microprofile.config.source.ClusterConfigSource;
 import fish.payara.microprofile.config.source.ConfigConfigSource;
 import fish.payara.microprofile.config.source.DomainConfigSource;
-import fish.payara.microprofile.config.source.DottedNamesConfigSource;
 import fish.payara.microprofile.config.source.EnvironmentConfigSource;
 import fish.payara.microprofile.config.source.ModuleConfigSource;
 import fish.payara.microprofile.config.source.PropertiesConfigSource;
 import fish.payara.microprofile.config.source.ServerConfigSource;
 import fish.payara.microprofile.config.source.SystemPropertyConfigSource;
 import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.WeakHashMap;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.eclipse.microprofile.config.Config;
@@ -71,9 +75,7 @@ import org.eclipse.microprofile.config.spi.Converter;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -195,12 +197,15 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     @Override
     public void registerConfig(Config config, ClassLoader classLoader) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ApplicationInfo appInfo = getAppInfo(classLoader);
+        appInfo.addTransientAppMetaData(METADATA_KEY, config);
     }
 
     @Override
     public void releaseConfig(Config config) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ApplicationInfo appInfo = getAppInfo(Thread.currentThread().getContextClassLoader());
+        appInfo.removeTransientAppMetaData(METADATA_KEY);
+        
     }
 
     List<ConfigSource> getDiscoveredSources(ApplicationInfo appInfo) {
@@ -220,7 +225,21 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     }
 
     private List<Converter> getDefaultConverters() {
-        return new LinkedList<>();
+        LinkedList<Converter> result = new LinkedList<>();
+        result.add(new BooleanConverter());
+        result.add(new IntegerConverter());
+        result.add(new LongConverter());
+        result.add(new FloatConverter());
+        result.add(new DoubleConverter());
+        result.add(new DurationConverter());
+        result.add(new LocalTimeConverter());
+        result.add(new LocalDateConverter());
+        result.add(new LocalDateTimeConverter());
+        result.add(new OffsetDateTimeConverter());
+        result.add(new OffsetTimeConverter());
+        result.add(new InstantConverter());
+        return result;
+        
     }
 
     private List<Converter> getDiscoveredConverters(ApplicationInfo appInfo) {

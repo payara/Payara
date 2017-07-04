@@ -39,9 +39,15 @@
  */
 package fish.payara.microprofile.config.spi;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import javax.annotation.Priority;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
@@ -53,39 +59,109 @@ import org.eclipse.microprofile.config.spi.Converter;
 public class PayaraConfig implements Config {
     
     private final List<ConfigSource> configSources;
-    private final List<Converter> converters;
+    private final HashMap<Type, Converter> converters;
 
-    public PayaraConfig(List<ConfigSource> configSources, List<Converter> converters) {
+    public PayaraConfig(List<ConfigSource> configSources, List<Converter> convertersList) {
         this.configSources = configSources;
-        this.converters = converters;
+        this.converters = new HashMap<>();
+        for (Converter converter : convertersList) {
+            // add each converter to the map for later lookup
+            Type types[] = converter.getClass().getGenericInterfaces();
+            for (Type type : types) {
+                if (type instanceof ParameterizedType) {
+                    Type args[] = ((ParameterizedType) type).getActualTypeArguments();
+                    if (args.length == 1) {
+                        // check if there is one there already
+                        Type cType = args[0];
+                        Converter old = converters.get(cType);
+                        if (old != null) {
+                            if (getPriority(converter) > getPriority(old)) {
+                                this.converters.put(cType, converter);                                
+                            }
+                        }else {
+                            this.converters.put(cType, converter);
+                        }
+                    }
+                }
+            }
+        }
         Collections.sort(configSources, new ConfigSourceComparator());
     }   
 
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
-        String result = null;
-        for (ConfigSource configSource : configSources) {
-            result = configSource.getValue(propertyName); 
-            if (result != null) {
-                break;
-            }
+        String result = getValue(propertyName);
+        
+        if (result == null) {
+            throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
-        return (T) result;
+        
+        if (String.class.equals(propertyType)) {
+            return (T) result;
+        }
+        
+        // find a converter
+        Converter<T> converter = converters.get(propertyType);
+        if (converter == null) {
+            throw new IllegalArgumentException("No converter for class " + propertyType);
+        }
+        
+        return converter.convert(result);
     }
 
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String strValue = getValue(propertyName);
+        
+        if(String.class.equals(propertyType)) {
+            return (Optional<T>) Optional.ofNullable(strValue);
+        }
+        
+        Converter<T> converter = getConverter(propertyType);
+        if (converter == null) {
+            throw new IllegalArgumentException("No converter for class " + propertyType);
+        }
+        return Optional.ofNullable(converter.convert(strValue));
     }
 
     @Override
     public Iterable<String> getPropertyNames() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        LinkedList<String> result = new LinkedList<>();
+        for (ConfigSource configSource : configSources) {
+            result.addAll(configSource.getProperties().keySet());
+        }
+        return result;
     }
 
     @Override
     public Iterable<ConfigSource> getConfigSources() {
         return configSources;
+    }
+    
+    
+    private String getValue(String propertyName) {
+        String result = null;
+        for (ConfigSource configSource : configSources) {
+            result = configSource.getValue(propertyName);
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
+    }
+    
+    private <T> Converter<T> getConverter(Class<T> propertyType) {
+        Converter<T> result = null;
+        return result;
+    }
+    
+    private int getPriority(Converter converter) {
+        int result = 100;
+        Priority annotation = converter.getClass().getAnnotation(Priority.class);
+        if (annotation != null) {
+            result = annotation.value();
+        }
+        return result;
     }
     
 }
