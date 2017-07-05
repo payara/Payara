@@ -361,6 +361,27 @@ public class UberJarCreator {
                     }
 
                 }
+                
+                File applicationsDir = new File(domainDir, "applications");
+                if (applicationsDir.exists()){
+                    for (File app : fillFiles(applicationsDir)){
+                        String path = app.getPath();
+                        if (path.endsWith(".war") || path.endsWith(".jar") || path.endsWith(".rar") || path.endsWith(".ear")){
+                            JarEntry appEntry = new JarEntry("MICRO-INF/deploy/" + app.getName());
+                            appEntry.setSize(app.length());
+                            CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
+                            BufferedInputStream in = new BufferedInputStream(check);
+                            while (in.read(new byte[300]) != -1){
+                            //read in file completly
+                            }
+                            appEntry.setCrc(check.getChecksum().getValue());
+                            jos.putNextEntry(appEntry);
+                            Files.copy(app, jos);
+                            jos.flush();
+                            jos.closeEntry();
+                        }
+                    }
+                }
             }
             LOGGER.info("Built Uber Jar " + outputFile.getAbsolutePath() + " in " + (System.currentTimeMillis() - start) + " (ms)");
 
