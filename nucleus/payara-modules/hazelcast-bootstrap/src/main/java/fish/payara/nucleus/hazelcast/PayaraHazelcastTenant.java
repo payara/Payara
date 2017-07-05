@@ -121,7 +121,9 @@ public class PayaraHazelcastTenant implements TenantControl {
                 if(destroyEvent != null && moduleInfo.getName().equals(moduleName)) {
                     CacheManager mgr = Globals.getDefaultHabitat().getService(HazelcastCore.class)
                             .getCachingProvider().getCacheManager();
-                    destroyEvent.destroy(mgr);
+                    if(destroyEvent.getContextType().isAssignableFrom(mgr.getClass())) {
+                        destroyEvent.destroy(mgr);
+                    }
                 }
             }
         }
