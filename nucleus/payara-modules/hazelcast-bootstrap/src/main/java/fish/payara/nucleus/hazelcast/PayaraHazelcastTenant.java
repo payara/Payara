@@ -119,10 +119,13 @@ public class PayaraHazelcastTenant implements TenantControl {
             if(payaraEvent.is(Deployment.MODULE_STOPPED)) {
                 ModuleInfo moduleInfo = (ModuleInfo)payaraEvent.hook();
                 if(destroyEvent != null && moduleInfo.getName().equals(moduleName)) {
-                    CacheManager mgr = Globals.getDefaultHabitat().getService(HazelcastCore.class)
-                            .getCachingProvider().getCacheManager();
-                    if(destroyEvent.getContextType().isAssignableFrom(mgr.getClass())) {
-                        destroyEvent.destroy(mgr);
+                    HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+                    CacheManager cacheMgr = hzCore.getCachingProvider().getCacheManager();
+                    if(destroyEvent.getContextType().isAssignableFrom(hzCore.getInstance().getClass())) {
+                        destroyEvent.destroy(hzCore.getInstance());
+                    }
+                    else if(destroyEvent.getContextType().isAssignableFrom(cacheMgr.getClass())) {
+                        destroyEvent.destroy(cacheMgr);
                     }
                 }
             }
