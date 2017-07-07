@@ -1,8 +1,7 @@
 <!--
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-   Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -137,6 +136,16 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                 availableItemsLabel="$resource{i18nrt.requestTracing.configuration.availableNotifiers}"
                 selectedItemsLabel="$resource{i18nrt.requestTracing.configuration.selectedNotifiers}">
             </sun:addRemove>
+        </sun:property>
+
+        <sun:property>
+            <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text.prefix}" />
+            <sun:hyperlink
+                    toolTip="$resource{i18nrt.requestTracing.link.to.notification.page.text}"
+                    url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
+                <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text}" />
+            </sun:hyperlink>
+            <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text.suffix}" />
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>
