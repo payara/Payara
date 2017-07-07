@@ -59,8 +59,8 @@
 
 <sun:form id="propertyForm">
 
-    #include "/common/appServer/serverInstTabs.inc"
-    #include "/common/shared/alertMsg_1.inc"
+#include "/common/appServer/serverInstTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
 
     <sun:title id="propertyContentPage" title="$resource{i18nar.asadminRecorder.configurationTitle}" helpText="$resource{i18nar.asadminRecorder.configurationTitleHelp}" >
         <!facet pageButtonsTop>
