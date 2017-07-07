@@ -20,7 +20,7 @@
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18nar" bundle="fish.payara.admingui.extras.Strings");
-/>
+    />
 <!composition template="/templates/default.layout"  guiTitle="Asadmin Recorder Configuration">
 
 <!define name="content">
@@ -40,21 +40,27 @@
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-asadmin-recorder-configuration"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getAsadminRecorderConfiguration}");
-                
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled","filterCommands"});                
+
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","enabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","filterCommands"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","prependOptions"});
+        
         if (#{pageSession.valueMap['enabled']}=true) {
-            setPageSessionAttribute(key="enabledSelected", value="true");
+        setPageSessionAttribute(key="enabledSelected", value="true");
         }
         if (#{pageSession.valueMap['filterCommands']}=true) {
-            setPageSessionAttribute(key="filterCommandsSelected", value="true");
+        setPageSessionAttribute(key="filterCommandsSelected", value="true");
         } 
+        if (#{pageSession.prependCommands['prependOptions']}=true) {
+        setPageSessionAttribute(key="prependOptionsSelected", value="true");
+        }
         />
 </event>
 
 <sun:form id="propertyForm">
 
-#include "/common/appServer/serverInstTabs.inc"
-#include "/common/shared/alertMsg_1.inc"
+    #include "/common/appServer/serverInstTabs.inc"
+    #include "/common/shared/alertMsg_1.inc"
 
     <sun:title id="propertyContentPage" title="$resource{i18nar.asadminRecorder.configurationTitle}" helpText="$resource{i18nar.asadminRecorder.configurationTitleHelp}" >
         <!facet pageButtonsTop>
@@ -64,9 +70,10 @@
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="filterCommands" value="#{pageSession.filterCommandsSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="prependOptions" value="#{pageSession.prependOptionsSelected}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-asadmin-recorder-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-    
+
                     />
             </sun:button>
         </sun:panelGroup>
@@ -85,6 +92,12 @@
     </sun:property>
     <sun:property id="filteredCommandsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.filteredCommands}"  helpText="$resource{i18nar.asadminRecorder.configuration.filteredCommandsHelp}">
         <sun:textField id="filteredCommands" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['filteredCommands']}" />
+    </sun:property>
+    <sun:property id="prependOptions" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependCommands}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependOptionsHelp}">
+        <sun:checkbox id="prependOptions" selected="#{pageSession.prependOptionsSelected}" selectedValue="true" />
+    </sun:property>
+    <sun:property id="prependedOptions" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependedCommands}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependedOptionsHelp}">
+        <sun:textField id="prependedOptions" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['prependedOptions']}" />
     </sun:property>
 </sun:propertySheetSection>
 

@@ -58,8 +58,7 @@ public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExt
     public String filterCommands();
     public void setFilterCommands(Boolean filterCommands);
     
-    @Attribute(defaultValue = 
-            "${com.sun.aas.instanceRoot}/asadmin-commands.txt")
+    @Attribute(defaultValue = "${com.sun.aas.instanceRoot}/asadmin-commands.txt")
     public String getOutputLocation();
     public void setOutputLocation(String outputLocation);
     
@@ -68,4 +67,12 @@ public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExt
             + "set-asadmin-recorder-configuration,asadmin-recorder-enabled")
     public String getFilteredCommands();
     public void setFilteredCommands(String filteredCommands);
+    
+    @Attribute(defaultValue= "false", dataType = Boolean.class)
+    public String prependOptions();
+    public void setPrependOptions(Boolean prependOptions);
+    
+    @Attribute()
+    public String getPrependedOptions();
+    public void setPrependedOptions(String prependedOptions);
 }

@@ -54,8 +54,7 @@ import org.jvnet.hk2.config.TransactionFailure;
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
             path = "set-asadmin-recorder-configuration",
-            description = "Sets the configuration for the asadmin command "
-                    + "recorder service")
+            description = "Sets the configuration for the asadmin command recorder service")
 })
 public class SetAsadminRecorderConfiguration implements AdminCommand {
     @Inject
@@ -73,13 +72,17 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
     @Param(name = "filteredCommands", optional = true)
     private String filteredCommands;
     
+    @Param(name = "prependOptions", optional = true)
+    private Boolean prependOptions;
+    
+    @Param(name = "prependedOptions", optional = true)
+    private String prependedOptions;
+    
     @Override
     public void execute(AdminCommandContext context) {
         try {
-            ConfigSupport.apply(new 
-                    SingleConfigCode<AsadminRecorderConfiguration>() {
-                public Object run(AsadminRecorderConfiguration 
-                        asadminRecorderConfigurationProxy) 
+            ConfigSupport.apply(new SingleConfigCode<AsadminRecorderConfiguration>() {
+                public Object run(AsadminRecorderConfiguration asadminRecorderConfigurationProxy) 
                         throws PropertyVetoException, TransactionFailure {
                     
                     if (enabled != null) {
@@ -87,8 +90,7 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
                     }
                     
                     if (filterCommands != null) {
-                        asadminRecorderConfigurationProxy.
-                                setFilterCommands(filterCommands);
+                        asadminRecorderConfigurationProxy.setFilterCommands(filterCommands);
                     }
                         
                     if (outputLocation != null) {
@@ -98,22 +100,26 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
                         if (!outputLocation.endsWith(".txt")) {
                             outputLocation += ".txt";
                         }
-
-                        asadminRecorderConfigurationProxy.
-                                setOutputLocation(outputLocation);
+                        asadminRecorderConfigurationProxy.setOutputLocation(outputLocation);
                     }
                     
                     if (filteredCommands != null) {
-                        asadminRecorderConfigurationProxy.
-                                setFilteredCommands(filteredCommands);
+                        asadminRecorderConfigurationProxy.setFilteredCommands(filteredCommands);
+                    }
+                    
+                    if (prependOptions != null) {
+                        asadminRecorderConfigurationProxy.setPrependOptions(prependOptions);
+                    }
+                    
+                    if (prependedOptions != null) {
+                        asadminRecorderConfigurationProxy.setPrependedOptions(prependedOptions);
                     }
                     
                     return null;
                 }
             }, asadminRecorderConfiguration);          
         } catch (TransactionFailure ex) {
-            Logger.getLogger(SetAsadminRecorderConfiguration.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            Logger.getLogger(SetAsadminRecorderConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }   
     }
 }
