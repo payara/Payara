@@ -44,6 +44,7 @@ package com.sun.gjc.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Maintains the Sql Tracing Cache used to store SQL statements used by the
@@ -76,7 +77,11 @@ public class FrequentSQLTraceCache extends SQLTraceCache {
                 trace.setNumExecutions(trace.getNumExecutions() + 1);
                 trace.setLastUsageTime(System.currentTimeMillis());
             } else {
-                cache.put(cacheObj.getQueryName(), cacheObj);
+                if (cache.size() <= maxStoredEntries){
+                    cache.put(cacheObj.getQueryName(), cacheObj);
+                } else {
+                    _logger.log(Level.WARNING, "Frequent SQL Trace Cache full, {0} not stored", cacheObj.getQueryName());
+                }
             }
         }
     }
