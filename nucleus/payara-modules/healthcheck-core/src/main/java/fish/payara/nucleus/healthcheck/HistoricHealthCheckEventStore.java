@@ -47,8 +47,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Collections;
-import java.util.SortedSet;
+import java.util.NavigableSet;
 import java.util.logging.Level;
 
 /**
@@ -68,20 +67,17 @@ public class HistoricHealthCheckEventStore {
     @Inject
     private ServerEnvironment serverEnv;
 
-    private HazelcastInstance instance;
-
-    private SortedSet<HistoricHealthCheckEvent> historicStore;
+    private NavigableSet<HistoricHealthCheckEvent> historicStore;
 
     void initialize(int storeSize) {
-        historicStore = Collections.synchronizedSortedSet(new BoundedTreeSet<HistoricHealthCheckEvent>(storeSize));
+        historicStore = new BoundedTreeSet<>(storeSize);
 
         if (hzCore.isEnabled()) {
-            instance = hzCore.getInstance();
+            HazelcastInstance instance = hzCore.getInstance();
             String instanceName = serverEnv.getInstanceName();
-            IMap<String, SortedSet<HistoricHealthCheckEvent>> map
-                    = instance.getMap(HISTORIC_HEALTHCHECK_EVENT_STORE);
+            IMap<String, NavigableSet<HistoricHealthCheckEvent>> map = instance.getMap(HISTORIC_HEALTHCHECK_EVENT_STORE);
             if (map != null) {
-                SortedSet<HistoricHealthCheckEvent> instanceHistoricStore = map.get(instanceName);
+                NavigableSet<HistoricHealthCheckEvent> instanceHistoricStore = map.get(instanceName);
                 if (instanceHistoricStore == null) {
                     map.put(instanceName, historicStore);
                 }
@@ -116,6 +112,10 @@ public class HistoricHealthCheckEventStore {
             }
         }
         return result;
+    }
+
+    public NavigableSet<HistoricHealthCheckEvent> getHistoricStore() {
+        return historicStore;
     }
 }
 

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,56 +36,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.domain;
+package fish.payara.nucleus.requesttracing;
+
+import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
+import org.glassfish.internal.api.Globals;
+
+import java.util.Iterator;
+import java.util.NavigableSet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mertcaliskan
  */
-public class HistoricRequestEvent implements Comparable<HistoricRequestEvent> {
+final public class HistoricRequestTracingCleanupTask implements Runnable {
 
-    private long elapsedTime;
-    private String message;
+    private final long timeLimit;
 
-    public HistoricRequestEvent(long elapsedTime, String message) {
-        this.elapsedTime = elapsedTime;
-        this.message = message;
+    HistoricRequestTracingCleanupTask(long timeLimit) {
+        this.timeLimit = timeLimit;
     }
 
-    public long getElapsedTime() {
-        return elapsedTime;
-    }
+    public void run() {
+        HistoricRequestTracingEventStore store = Globals.getDefaultHabitat().getService(HistoricRequestTracingEventStore.class);
+        NavigableSet<HistoricRequestTracingEvent> historicStore = store.getHistoricStore();
+        Iterator<HistoricRequestTracingEvent> iterator = historicStore.descendingIterator();
 
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public int compareTo(HistoricRequestEvent e) {
-        return Long.compare(e.elapsedTime, elapsedTime);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        HistoricRequestEvent that = (HistoricRequestEvent) o;
-
-        return elapsedTime == that.elapsedTime && (message != null ? message.equals(that.message) : that.message == null);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (elapsedTime ^ (elapsedTime >>> 32));
-        result = 31 * result + (message != null ? message.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "HistoricRequestEvent{" +
-                "elapsedTime=" + elapsedTime +
-                ", message='" + message + '\'' +
-                '}';
+        while(iterator.hasNext()) {
+            HistoricRequestTracingEvent event = iterator.next();
+            long upTimeInMillis = System.currentTimeMillis() - event.getOccurringTime();
+            if (TimeUnit.MILLISECONDS.toSeconds(upTimeInMillis) > timeLimit) {
+                historicStore.remove(event);
+            }
+        }
     }
 }

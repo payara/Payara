@@ -75,8 +75,8 @@ import java.util.*;
 })
 public class HistoricHealthCheckEventRetriever implements AdminCommand {
 
-    public static final String SEPARATOR = " - ";
-    private final String headers[] = {"Occurring Date", "Health Check Message"};
+    private static final String SEPARATOR = " - ";
+    private static final String headers[] = {"Occurring Date", "Health Check Message"};
 
     @Inject
     protected Target targetUtil;

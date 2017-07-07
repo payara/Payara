@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,23 +42,22 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.notification.domain.BoundedTreeSet;
-import fish.payara.nucleus.requesttracing.domain.HistoricRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Collections;
-import java.util.SortedSet;
+import java.util.NavigableSet;
 
 /**
- * Stores historic request traces with descending elapsed time. Comparator is implemented on {@link HistoricRequestEvent}
+ * Stores historic request traces with descending elapsed time. Comparator is implemented on {@link HistoricRequestTracingEvent}
  *
  * @author mertcaliskan
  */
 @Service
 @Singleton
-public class HistoricRequestEventStore {
+public class HistoricRequestTracingEventStore {
 
     private static final String HISTORIC_REQUEST_EVENT_STORE = "HISTORIC_REQUEST_EVENT_STORE";
 
@@ -70,18 +69,18 @@ public class HistoricRequestEventStore {
 
     private HazelcastInstance instance;
 
-    private SortedSet<HistoricRequestEvent> historicStore;
+    private NavigableSet<HistoricRequestTracingEvent> historicStore;
 
     void initialize(int storeSize) {
-        historicStore = Collections.synchronizedSortedSet(new BoundedTreeSet<HistoricRequestEvent>(storeSize));
+        historicStore = new BoundedTreeSet<>(storeSize);
 
         if (hzCore.isEnabled()) {
             instance = hzCore.getInstance();
             String instanceName = serverEnv.getInstanceName();
-            IMap<String, SortedSet<HistoricRequestEvent>> map
+            IMap<String, NavigableSet<HistoricRequestTracingEvent>> map
                     = instance.getMap(HISTORIC_REQUEST_EVENT_STORE);
             if (map != null) {
-                SortedSet<HistoricRequestEvent> instanceHistoricStore = map.get(instanceName);
+                NavigableSet<HistoricRequestTracingEvent> instanceHistoricStore = map.get(instanceName);
                 if (instanceHistoricStore == null) {
                     map.put(instanceName, historicStore);
                 } else {
@@ -92,27 +91,31 @@ public class HistoricRequestEventStore {
     }
 
     void addTrace(long elapsedTime, String message) {
-        historicStore.add(new HistoricRequestEvent(elapsedTime, message));
+        historicStore.add(new HistoricRequestTracingEvent(System.currentTimeMillis(), elapsedTime, message));
     }
 
-    public HistoricRequestEvent[] getTraces() {
-        HistoricRequestEvent[] emptyArray = new HistoricRequestEvent[0];
+    public HistoricRequestTracingEvent[] getTraces() {
+        HistoricRequestTracingEvent[] emptyArray = new HistoricRequestTracingEvent[0];
         if (historicStore != null) {
             return historicStore.toArray(emptyArray);
         }
         return emptyArray;
     }
 
-    public HistoricRequestEvent[] getTraces(Integer limit) {
-        HistoricRequestEvent[] result;
-        HistoricRequestEvent[] historicEvents = historicStore.toArray(new HistoricRequestEvent[historicStore.size()]);
+    public HistoricRequestTracingEvent[] getTraces(Integer limit) {
+        HistoricRequestTracingEvent[] result;
+        HistoricRequestTracingEvent[] historicEvents = historicStore.toArray(new HistoricRequestTracingEvent[historicStore.size()]);
         if (limit < historicEvents.length) {
-            result = new HistoricRequestEvent[limit];
+            result = new HistoricRequestTracingEvent[limit];
             System.arraycopy(historicEvents, 0, result, 0, limit);
         }
         else {
             result = historicEvents;
         }
         return result;
+    }
+
+    public NavigableSet<HistoricRequestTracingEvent> getHistoricStore() {
+        return historicStore;
     }
 }
