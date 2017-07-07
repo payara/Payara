@@ -39,6 +39,7 @@
  */
 package fish.payara.appserver.zendesk.admin;
 
+import com.google.common.base.Strings;
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.appserver.zendesk.ZendeskSupportService;
 import fish.payara.appserver.zendesk.config.ZendeskSupportConfiguration;
@@ -78,10 +79,13 @@ public class SetZendeskSupportConfigurationCommand implements AdminCommand {
     private Target targetUtil;
     
     @Inject
-    ZendeskSupportService zendeskSupport;
+    private ZendeskSupportService zendeskSupport;
     
-    @Param(name = "emailAddress", alias = "emailaddress")
+    @Param(name = "emailAddress", alias = "emailaddress", optional = true)
     private String emailAddress;
+    
+    @Param(name="enabled", optional = true)
+    private Boolean enabled;
     
     private final String target = "server-config";
     
@@ -98,7 +102,14 @@ public class SetZendeskSupportConfigurationCommand implements AdminCommand {
                 ConfigSupport.apply(new SingleConfigCode<ZendeskSupportConfiguration>(){
                     @Override
                     public Object run(ZendeskSupportConfiguration config) {
-                        config.setEmailAddress(emailAddress);
+                        
+                         if(enabled != null) {
+                            config.setEnabled(enabled);
+                        }
+                         if (!Strings.isNullOrEmpty(emailAddress)){
+                             config.setEmailAddress(emailAddress);
+                         }
+                        
                         return null;
                     }
                 }, zendeskSupportConfiguration);

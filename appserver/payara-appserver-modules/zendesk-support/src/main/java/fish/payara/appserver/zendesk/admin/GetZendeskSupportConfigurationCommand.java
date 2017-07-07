@@ -84,13 +84,14 @@ public class GetZendeskSupportConfigurationCommand implements AdminCommand {
         
         ActionReport actionReport = acc.getActionReport();
    
-        final String[] outputHeaders = {"Email Address"};
+        final String[] outputHeaders = {"Enabled" , "Email Address"};
         ColumnFormatter columnFormatter = new ColumnFormatter(outputHeaders);
-        Object[] outputValues = {zendeskSupportConfiguration.getEmailAddress()};
+        Object[] outputValues = {zendeskSupportConfiguration.getEnabled(),zendeskSupportConfiguration.getEmailAddress()};
         columnFormatter.addRow(outputValues);
         actionReport.appendMessage(columnFormatter.toString());
         
         Map<String, Object> extraPropsMap = new HashMap<>();
+        extraPropsMap.put("enabled", zendeskSupportConfiguration.getEnabled());
         extraPropsMap.put("emailAddress", zendeskSupportConfiguration.getEmailAddress());
         
         Properties extraProps = new Properties();

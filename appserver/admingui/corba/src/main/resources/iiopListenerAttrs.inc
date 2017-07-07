@@ -66,7 +66,7 @@
             <sun:checkbox id="Security" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['securityEnabled']}" selectedValue="true" />
         </sun:property>
         <sun:property id="LazyInitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_corba.iiopListener.lazyInitLabel}" helpText="$resource{i18n_corba.iiopListener.lazyInitHelp}" >
-            <sun:checkbox id="lazyInit" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['lazyInit']}" selectedValue="true" />
+            <sun:checkbox id="lazyInitEnabled" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['lazyInit']}" selectedValue="true" />
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>    

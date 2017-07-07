@@ -75,10 +75,11 @@ public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNot
     @Override
     public void bootstrap() {
         register(NotifierType.DATADOG, DatadogNotifier.class, DatadogNotifierConfiguration.class, this);
-
-        initializeExecutor();
         executionOptions = (DatadogNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        scheduleExecutor(new DatadogNotificationRunnable(queue, executionOptions));
+        if (executionOptions != null && executionOptions.isEnabled()) {
+            initializeExecutor();
+            scheduleExecutor(new DatadogNotificationRunnable(queue, executionOptions));
+        }
     }
 
 }
