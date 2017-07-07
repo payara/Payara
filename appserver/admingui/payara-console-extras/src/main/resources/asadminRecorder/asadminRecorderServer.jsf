@@ -93,10 +93,10 @@
     <sun:property id="filteredCommandsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.filteredCommands}"  helpText="$resource{i18nar.asadminRecorder.configuration.filteredCommandsHelp}">
         <sun:textField id="filteredCommands" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['filteredCommands']}" />
     </sun:property>
-    <sun:property id="prependOptions" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependCommands}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependOptionsHelp}">
+    <sun:property id="prependOptions" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependOptions}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependOptionsHelp}">
         <sun:checkbox id="prependOptions" selected="#{pageSession.prependOptionsSelected}" selectedValue="true" />
     </sun:property>
-    <sun:property id="prependedOptions" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependedCommands}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependedOptionsHelp}">
+    <sun:property id="prependedOptions" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependedOptions}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependedOptionsHelp}">
         <sun:textField id="prependedOptions" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['prependedOptions']}" />
     </sun:property>
 </sun:propertySheetSection>

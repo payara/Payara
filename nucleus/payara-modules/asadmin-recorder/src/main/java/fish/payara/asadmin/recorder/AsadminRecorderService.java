@@ -71,7 +71,7 @@ import org.jvnet.hk2.annotations.Service;
 public class AsadminRecorderService implements EventListener {
 
     private static final List<String> FILTERED_PARAMETERS = Arrays.asList("userpassword");
-    private static final List<String> PERMITTED_PREPENDED_OPTIONS_OPTIONS = Arrays.asList(
+    private static final List<String> PERMITTED_PREPENDED_OPTIONS = Arrays.asList(
             "H", "host", "p", "port", "U", "user", "W", "passwordfile", "t", "terse", "s", "secure", "e", "echo",
             "i", "interactive", "detach", "notify");
 
@@ -197,13 +197,13 @@ public class AsadminRecorderService implements EventListener {
     }
 
     private void setPrependedOptions() {
-        prependedOptionsString = asadminRecorderConfiguration.getFilteredCommands();
+        prependedOptionsString = asadminRecorderConfiguration.getPrependedOptions();
         prependedOptions = new ArrayList<>(Arrays.asList(prependedOptionsString.split(",")));
         for (String option : prependedOptions) {
             // As some options have parameters and single character options use one hyphen, check the size of the first 
             // option, ignorning any parameters present by splitting on " " or "=".
             String optionWithoutParameters = option.split("( |=)")[0];
-            if (PERMITTED_PREPENDED_OPTIONS_OPTIONS.contains(optionWithoutParameters)) {
+            if (PERMITTED_PREPENDED_OPTIONS.contains(optionWithoutParameters)) {
                 if (optionWithoutParameters.length() == 1) {
                     prependedOptions.set(prependedOptions.indexOf(option), "-" + option);
                 } else {
