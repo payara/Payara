@@ -81,7 +81,7 @@ var AddFileComponent = (function () {
             },
             {
                 title: this.translate.instant('Request Traces'),
-                url: 'configs/config/server-config/request-tracing-service-configuration/list-historic-requesttraces',
+                url: 'configs/config/server-config/request-tracing-service-configuration/list-historic-requesttraces.json',
                 group: 'reports',
                 uploaded: false,
                 type: 'traces'
@@ -139,21 +139,21 @@ var AddFileComponent = (function () {
                         _this.fileButtons.push({
                             title: _this.translate.instant('JVM Report') + ': ' + responseArray_1[prop],
                             url: 'servers/server/' + responseArray_1[prop] + '/generate-jvm-report.json?type=summary',
-                            group: 'server',
+                            group: 'DAS',
                             uploaded: false,
                             type: 'json'
                         });
                         _this.fileButtons.push({
                             title: _this.translate.instant('Thread Dump') + ': ' + responseArray_1[prop],
                             url: 'servers/server/' + responseArray_1[prop] + '/generate-jvm-report.json?type=thread',
-                            group: 'server',
+                            group: 'DAS',
                             uploaded: false,
                             type: 'json'
                         });
                         _this.fileButtons.push({
                             title: 'Log: ' + responseArray_1[prop],
                             url: 'logs_' + responseArray_1[prop] + '.zip?contentSourceId=LogFiles&target=' + responseArray_1[prop] + '&restUrl=' + window.location.protocol + '//' + window.location.hostname + ':' + window["globalPort"] + '/management/domain',
-                            group: 'server',
+                            group: 'DAS',
                             file: 'logs_' + responseArray_1[prop] + '.zip',
                             uploaded: false,
                             type: 'zip'
@@ -167,21 +167,21 @@ var AddFileComponent = (function () {
                                 _this.fileButtons.push({
                                     title: _this.translate.instant('JVM Report') + ': ' + responseArray_1[prop],
                                     url: 'servers/server/' + responseArray_1[prop] + '/generate-jvm-report.json?type=summary',
-                                    group: responseArray_1[prop],
+                                    group: 'Instance: ' + responseArray_1[prop],
                                     uploaded: false,
                                     type: 'json'
                                 });
                                 _this.fileButtons.push({
                                     title: _this.translate.instant('Thread Dump') + ': ' + responseArray_1[prop],
                                     url: 'servers/server/' + responseArray_1[prop] + '/generate-jvm-report.json?type=thread',
-                                    group: responseArray_1[prop],
+                                    group: 'Instance: ' + responseArray_1[prop],
                                     uploaded: false,
                                     type: 'json'
                                 });
                                 _this.fileButtons.push({
                                     title: 'Log: ' + responseArray_1[prop],
                                     url: 'Log: ' + responseArray_1[prop] + '.zip?contentSourceId=LogFiles&target=' + responseArray_1[prop] + '&restUrl=' + window.location.protocol + '//' + window.location.hostname + ':' + window["globalPort"] + '/management/domain',
-                                    group: responseArray_1[prop],
+                                    group: 'Instance: ' + responseArray_1[prop],
                                     file: 'Log: ' + responseArray_1[prop] + '.zip',
                                     uploaded: false,
                                     type: 'zip'
@@ -307,8 +307,9 @@ var AddFileComponent = (function () {
                         break;
                     case 'health':
                         this.getFile(fileButton.url, false, function (response) {
-                            if (response !== false && response.extraProperties !== undefined && response.extraProperties.historicmessages.length > 0) {
-                                _this.addFile(JSON.stringify(response.json().extraProperties.historicmessages), fileButton.title + '.json', 'application/octet-stream', function (response) {
+                            var healthData = JSON.parse(response["_body"]);
+                            if (healthData !== false && healthData.extraProperties !== undefined && healthData.extraProperties.historicmessages.length > 0) {
+                                _this.addFile(JSON.stringify(healthData.extraProperties.historicmessages), fileButton.title + '.json', 'application/octet-stream', function (response) {
                                     if (response) {
                                         _this.fileUploaded(response);
                                         fileButton.uploaded = true;
