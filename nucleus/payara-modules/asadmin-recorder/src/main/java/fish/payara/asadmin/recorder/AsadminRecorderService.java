@@ -197,7 +197,7 @@ public class AsadminRecorderService implements EventListener {
     }
 
     private void setPrependedOptions() {
-        filteredCommandsString = asadminRecorderConfiguration.getFilteredCommands();
+        prependedOptionsString = asadminRecorderConfiguration.getFilteredCommands();
         prependedOptions = new ArrayList<>(Arrays.asList(prependedOptionsString.split(",")));
         for (String option : prependedOptions) {
             // As some options have parameters and single character options use one hyphen, check the size of the first 
