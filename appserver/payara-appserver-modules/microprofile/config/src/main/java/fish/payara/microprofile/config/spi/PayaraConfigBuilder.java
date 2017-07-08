@@ -39,30 +39,12 @@
  */
 package fish.payara.microprofile.config.spi;
 
-import fish.payara.microprofile.config.source.ApplicationConfigSource;
-import fish.payara.microprofile.config.source.ClusterConfigSource;
-import fish.payara.microprofile.config.source.ConfigConfigSource;
-import fish.payara.microprofile.config.source.DomainConfigSource;
-import fish.payara.microprofile.config.source.EnvironmentConfigSource;
-import fish.payara.microprofile.config.source.ModuleConfigSource;
-import fish.payara.microprofile.config.source.PropertiesConfigSource;
-import fish.payara.microprofile.config.source.ServerConfigSource;
-import fish.payara.microprofile.config.source.SystemPropertyConfigSource;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import javax.inject.Inject;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  *

@@ -47,6 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Priority;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -136,6 +137,10 @@ public class PayaraConfig implements Config {
     @Override
     public Iterable<ConfigSource> getConfigSources() {
         return configSources;
+    }
+    
+    public Set<Type> getConverterTypes() {
+        return converters.keySet();
     }
     
     

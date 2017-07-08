@@ -65,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.eclipse.microprofile.config.Config;
@@ -122,10 +123,25 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     
     
     ApplicationInfo getAppInfo(ClassLoader loader) {
+        ApplicationInfo appInfo = null;
         // fast check against current app
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        String appName = currentInvocation.getAppName();
-        ApplicationInfo appInfo = appRegistry.get(appName);
+        if (currentInvocation == null) {
+            // OK we are not a normal request see if we can find the app name from the 
+            // app registry via the classloader
+            Set<String> allApplicationNames = appRegistry.getAllApplicationNames();
+            for (String allApplicationName : allApplicationNames) {
+                ApplicationInfo testInfo = appRegistry.get(allApplicationName);
+                if (testInfo.getAppClassLoader().equals(loader)) {
+                    appInfo = testInfo;
+                    return appInfo;
+                }
+            }
+        } else {           
+            String appName = currentInvocation.getAppName();
+            appInfo = appRegistry.get(appName);
+        }
+
         if (appInfo != null && appInfo.getAppClassLoader().equals(loader)) {
             return appInfo;
         }
@@ -191,9 +207,20 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     List<ConfigSource> getDefaultSources() {
         LinkedList<ConfigSource> sources = new LinkedList<>();
+        String appName = null;
+        String moduleName = null;
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        String appName = currentInvocation.getAppName();
-        String moduleName = currentInvocation.getModuleName();
+        if (currentInvocation == null) {
+            ApplicationInfo info = getAppInfo(Thread.currentThread().getContextClassLoader());
+            if (info != null) {
+                appName = info.getName();
+                moduleName = appName;
+            }
+        } else {
+            appName = currentInvocation.getAppName();
+            moduleName = currentInvocation.getModuleName();
+        }
+
         String serverName = context.getInstanceName();
         String configName = context.getConfigBean().getConfig().getName();
         sources.add(new DomainConfigSource());

@@ -39,34 +39,45 @@
  */
 package fish.payara.microprofile.config.cdi;
 
-import fish.payara.microprofile.config.spi.InjectedPayaraConfig;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.InjectionPoint;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
+import java.lang.annotation.Annotation;
+import java.util.Set;
+import javax.enterprise.inject.spi.BeanAttributes;
 
 /**
  *
- * @author Steve Millidge <Payara Services Limited>
+ * @author Steve Millidge (Payara Foundation)
  */
-@Dependent
-public class ConfigProducer {
+public abstract class TypesBeanAttributes<T> implements BeanAttributes<T> {
     
-    private InvocationManager im;
+    private final BeanAttributes<?> delegate;
     
-    @PostConstruct
-    public void postConstruct() {
-        im = Globals.getDefaultHabitat().getService(InvocationManager.class);
+    public TypesBeanAttributes(BeanAttributes<?> delegate) {
+        this.delegate = delegate;
     }
-    
-    @Produces
-    public Config getConfig() {
-        return new InjectedPayaraConfig(ConfigProvider.getConfig(),im.getCurrentInvocation().getAppName());
+
+    @Override
+    public Set<Annotation> getQualifiers() {
+        return delegate.getQualifiers();
+    }
+
+    @Override
+    public Class<? extends Annotation> getScope() {
+        return delegate.getScope();
+    }
+
+    @Override
+    public String getName() {
+        return delegate.getName();
+    }
+
+    @Override
+    public Set<Class<? extends Annotation>> getStereotypes() {
+        return delegate.getStereotypes();
+    }
+
+    @Override
+    public boolean isAlternative() {
+        return delegate.isAlternative();
     }
     
 }
