@@ -37,46 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.service;
+package fish.payara.microprofile.config.source;
 
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
+import java.util.Collections;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
- * @since 4.1.2.173
+ * A Configuration source that retrieved a String property from JNDI
+ * If the JNDI entry is not a String null is returned.
+ * 
  * @author Steve Millidge (Payara Foundation)
  */
-@Configured(name="microprofile-config")
-public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, ConfigExtension {
-    
-    @Attribute(defaultValue = "110", dataType = Integer.class)
-    Integer getDomainOrdinality();
-    public void setDomainOrdinality(Integer message);
+public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource {
 
-    @Attribute(defaultValue = "120", dataType = Integer.class)
-    Integer getConfigOrdinality();
-    public void setConfigOrdinality(Integer message);    
-    
-    @Attribute(defaultValue = "130", dataType = Integer.class)
-    Integer getServerOrdinality();
-    public void setServerOrdinality(Integer message);
+    @Override
+    public Map<String, String> getProperties() {
+        return Collections.EMPTY_MAP;
+    }
 
-    @Attribute(defaultValue = "140", dataType = Integer.class)
-    Integer getApplicationOrdinality();
-    public void setApplicationOrdinality(Integer message);    
+    @Override
+    public int getOrdinal() {
+        return configService.getConfig().getJNDIOrdinality();
+    }
 
-    @Attribute(defaultValue = "150", dataType = Integer.class)
-    Integer getModuleOrdinality();
-    public void setModuleOrdinality(Integer message);    
+    @Override
+    public String getValue(String propertyName) {
+        String result = null;
+        try {
+            InitialContext ctx = new InitialContext();
+            Object jndiObj = ctx.lookup(propertyName);
+            if (jndiObj.getClass().isAssignableFrom(String.class)) {
+                result = String.class.cast(jndiObj);
+            }
+        } catch (NamingException ex) {
+            // ignore who cares we don;t have the property but another source may
+        }
+        return result;
+    }
 
-    @Attribute(defaultValue = "160", dataType = Integer.class)
-    Integer getClusterOrdinality();
-    public void setClusterOrdinality(Integer message);    
-    
-    @Attribute(defaultValue = "115", dataType = Integer.class)
-    Integer getJNDIOrdinality();
-    public void setJNDIOrdinality(Integer message);   
-    
+    @Override
+    public String getName() {
+        return "JNDI";
+    }
+
 }

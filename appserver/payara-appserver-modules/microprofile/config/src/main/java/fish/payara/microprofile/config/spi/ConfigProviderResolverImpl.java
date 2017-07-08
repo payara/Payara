@@ -56,6 +56,7 @@ import fish.payara.microprofile.config.source.ClusterConfigSource;
 import fish.payara.microprofile.config.source.ConfigConfigSource;
 import fish.payara.microprofile.config.source.DomainConfigSource;
 import fish.payara.microprofile.config.source.EnvironmentConfigSource;
+import fish.payara.microprofile.config.source.JNDIConfigSource;
 import fish.payara.microprofile.config.source.ModuleConfigSource;
 import fish.payara.microprofile.config.source.PropertiesConfigSource;
 import fish.payara.microprofile.config.source.ServerConfigSource;
@@ -231,6 +232,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         sources.add(new ModuleConfigSource(appName, moduleName));
         sources.add(new EnvironmentConfigSource());
         sources.add(new SystemPropertyConfigSource());
+        sources.add(new JNDIConfigSource());
         for (Properties props : configService.getDeployedApplicationProperties(appName)) {
             sources.add(new PropertiesConfigSource(props, appName));
         }
