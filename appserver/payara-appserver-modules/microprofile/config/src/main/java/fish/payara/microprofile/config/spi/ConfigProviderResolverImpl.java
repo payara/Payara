@@ -43,6 +43,7 @@ import fish.payara.microprofile.config.converters.BooleanConverter;
 import fish.payara.microprofile.config.converters.DoubleConverter;
 import fish.payara.microprofile.config.converters.DurationConverter;
 import fish.payara.microprofile.config.converters.FloatConverter;
+import fish.payara.microprofile.config.converters.InetAddressConverter;
 import fish.payara.microprofile.config.converters.InstantConverter;
 import fish.payara.microprofile.config.converters.IntegerConverter;
 import fish.payara.microprofile.config.converters.LocalDateConverter;
@@ -51,6 +52,7 @@ import fish.payara.microprofile.config.converters.LocalTimeConverter;
 import fish.payara.microprofile.config.converters.LongConverter;
 import fish.payara.microprofile.config.converters.OffsetDateTimeConverter;
 import fish.payara.microprofile.config.converters.OffsetTimeConverter;
+import fish.payara.microprofile.config.converters.URLConverter;
 import fish.payara.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.microprofile.config.source.ClusterConfigSource;
 import fish.payara.microprofile.config.source.ConfigConfigSource;
@@ -291,6 +293,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.add(new OffsetDateTimeConverter());
         result.add(new OffsetTimeConverter());
         result.add(new InstantConverter());
+        result.add(new URLConverter());
+        result.add(new InetAddressConverter());
         return result;
         
     }
