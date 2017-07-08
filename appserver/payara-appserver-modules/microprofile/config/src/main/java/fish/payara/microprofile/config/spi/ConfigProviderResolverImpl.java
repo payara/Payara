@@ -174,6 +174,19 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     public ConfigBuilder getBuilder() {
         return new PayaraConfigBuilder(this);
     }
+    
+    Config getNamedConfig(String applicationName) {
+        Config result = null;
+        ApplicationInfo info = appRegistry.get(applicationName);
+        if (info != null) {
+            result = info.getTransientAppMetaData(METADATA_KEY, Config.class);
+            if (result == null) {
+                // rebuild it form scratch
+                result = getConfig(info);
+            }
+        }
+        return result;
+    }
 
     List<ConfigSource> getDefaultSources() {
         LinkedList<ConfigSource> sources = new LinkedList<>();
