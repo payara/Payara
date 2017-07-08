@@ -40,6 +40,10 @@
 package fish.payara.microprofile.config.cdi;
 
 import fish.payara.microprofile.config.spi.InjectedPayaraConfig;
+import fish.payara.microprofile.config.spi.PayaraConfig;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Optional;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
@@ -51,22 +55,55 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Class that provides a couple of basic producer methods used for injection of Config
+ * and the injection of Optional properties.
  * @author Steve Millidge <Payara Services Limited>
  */
 @Dependent
 public class ConfigProducer {
-    
+
     private InvocationManager im;
-    
+
     @PostConstruct
     public void postConstruct() {
         im = Globals.getDefaultHabitat().getService(InvocationManager.class);
     }
-    
+
+    /**
+     * Producer method for the application config
+     * @return The Config object registered for this application
+     */
     @Produces
     public Config getConfig() {
-        return new InjectedPayaraConfig(ConfigProvider.getConfig(),im.getCurrentInvocation().getAppName());
+        return new InjectedPayaraConfig(ConfigProvider.getConfig(), im.getCurrentInvocation().getAppName());
     }
-    
+
+    /**
+     * Produces an Optional for the property specified by the ConfigProperty
+     * and of the type specified
+     * @param <T>
+     * @param ip
+     * @return 
+     */
+    @Produces
+    @ConfigProperty
+    public <T> Optional<T> getOptionalProperty(InjectionPoint ip) {
+        
+        // gets the config property annotation
+        ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
+        PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
+        Optional result = Optional.empty();
+        
+        Type type = ip.getType();
+        if (type instanceof ParameterizedType) {
+            // it is an Optional
+            // get the class of the generic parameterized Optional
+            Class clazzValue = (Class) ((ParameterizedType) type).getActualTypeArguments()[0];
+            
+            // use the config to get a converted version of the property
+            Object value = config.getValue(property.name(), property.defaultValue(),clazzValue);
+            result = Optional.ofNullable(value);
+        }
+        return result;
+    }
 }

@@ -87,7 +87,18 @@ public class PayaraConfig implements Config {
             }
         }
         Collections.sort(configSources, new ConfigSourceComparator());
-    }   
+    }
+    
+    public <T> T getValue(String propertyName, String defaultValue, Class<T>  propertyType) {
+        String result = getValue(propertyName);
+        if (result == null) {
+            result = defaultValue;
+        }
+        if (result == null) {
+            throw new NoSuchElementException("Unable to find property with name " + propertyName);
+        }
+        return convertString(result, propertyType);
+    }
 
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
@@ -96,18 +107,7 @@ public class PayaraConfig implements Config {
         if (result == null) {
             throw new NoSuchElementException("Unable to find property with name " + propertyName);
         }
-        
-        if (String.class.equals(propertyType)) {
-            return (T) result;
-        }
-        
-        // find a converter
-        Converter<T> converter = converters.get(propertyType);
-        if (converter == null) {
-            throw new IllegalArgumentException("No converter for class " + propertyType);
-        }
-        
-        return converter.convert(result);
+        return convertString(result, propertyType);
     }
 
     @Override
@@ -167,6 +167,20 @@ public class PayaraConfig implements Config {
             result = annotation.value();
         }
         return result;
+    }
+    
+    private <T> T convertString(String value, Class<T>  propertyType) {
+        if (String.class.equals(propertyType)) {
+            return (T) value;
+        }
+        
+        // find a converter
+        Converter<T> converter = converters.get(propertyType);
+        if (converter == null) {
+            throw new IllegalArgumentException("No converter for class " + propertyType);
+        }
+        
+        return converter.convert(value);       
     }
     
 }

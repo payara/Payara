@@ -44,7 +44,11 @@ import java.util.Set;
 import javax.enterprise.inject.spi.BeanAttributes;
 
 /**
- *
+ * A simple Bean Attributes delegate that delegates to the passed in BeanAttributes
+ * Does not implement getTypes to allow overriding
+ * This class is used to create synthetic producer beans for each Converter registered
+ * with the Config
+ * 
  * @author Steve Millidge (Payara Foundation)
  */
 public abstract class TypesBeanAttributes<T> implements BeanAttributes<T> {

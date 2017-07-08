@@ -39,23 +39,35 @@
  */
 package fish.payara.microprofile.config.cdi;
 
+import fish.payara.microprofile.config.spi.PayaraConfig;
 import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
- *
+ * This class is used as the template for synthetic beans when creating a bean
+ * for each converter type registered in the Config
  * @author Steve Millidge (Payara Foundation)
  */
-public class ConfigValueProducer {
+public class ConfigPropertyProducer {
     
+    /**
+     * General producer method for injecting a property into a field annotated 
+     * with the @ConfigProperty annotation.
+     * Note this does not have @Produces annotation as a synthetic bean using this method
+     * is created in teh CDI Extension.
+     * @param ip
+     * @return 
+     */
     @ConfigProperty
     @Dependent
     public static final Object getGenericProperty(InjectionPoint ip) {
+        Object result = null;
         ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
-        Object result = ConfigProvider.getConfig().getValue(property.name(), (Class<?>) ip.getType());
+        PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
+        Class<?> type = (Class<?>) ip.getType();
+        result = config.getValue(property.name(), property.defaultValue(),type);
         return result;
     }
 
