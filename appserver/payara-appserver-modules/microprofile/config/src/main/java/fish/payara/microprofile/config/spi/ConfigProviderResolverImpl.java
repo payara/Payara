@@ -71,6 +71,7 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.eclipse.microprofile.config.spi.Converter;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -174,6 +175,20 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return new PayaraConfigBuilder(this);
     }
 
+    
+    Config getNamedConfig(String applicationName) {
+        Config result = null;
+        ApplicationInfo info = appRegistry.get(applicationName);
+        if (info != null) {
+            result = info.getTransientAppMetaData(METADATA_KEY, Config.class);
+            if (result == null) {
+                // rebuild it form scratch
+                result = getConfig(info);
+            }
+        }
+        return result;
+    }
+
     List<ConfigSource> getDefaultSources() {
         LinkedList<ConfigSource> sources = new LinkedList<>();
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
@@ -218,6 +233,15 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             serviceLoader = ServiceLoader.load(ConfigSource.class, appInfo.getAppClassLoader());
             for (ConfigSource configSource : serviceLoader) {
                 sources.add(configSource);
+            }
+            
+            //
+            ServiceLoader<ConfigSourceProvider> serviceProvideLoader = ServiceLoader.load(ConfigSourceProvider.class, appInfo.getAppClassLoader());
+            for (ConfigSourceProvider configSourceProvider : serviceProvideLoader) {
+                Iterable<ConfigSource> configSources = configSourceProvider.getConfigSources(appInfo.getAppClassLoader());
+                for (ConfigSource configSource : configSources) {
+                    sources.add(configSource);
+                }
             }
             appInfo.addTransientAppMetaData(CUSTOM_SOURCES_KEY, sources);
         }
