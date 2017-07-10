@@ -55,7 +55,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.Date;
+import java.util.*;
 
 /**
  * @author mertcaliskan
@@ -68,7 +68,7 @@ import java.util.Date;
 @I18n("requesttracing.configure")
 @RestEndpoints({
         @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
+                opType = RestEndpoint.OpType.GET,
                 path = "list-historic-requesttraces",
                 description = "List slowest request traces stored historically.")
 })
@@ -122,17 +122,26 @@ public class HistoricRequestTracingEventRetriever implements AdminCommand {
         if (first == null) {
             first = executionOptions.getHistoricalTraceStoreSize();
         }
-        HistoricRequestTracingEvent[] traces = eventStore.getTraces(first);
-
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        for (HistoricRequestTracingEvent historicRequestTracingEvent : traces) {
-            Object values[] = new Object[3];
-            values[0] = new Date(historicRequestTracingEvent.getOccurringTime());
-            values[1] = historicRequestTracingEvent.getElapsedTime();
-            values[2] = historicRequestTracingEvent.getMessage();
+        Properties extrasProps = new Properties();
+        List<Map<String, String>> historic = new ArrayList<>();
+
+        HistoricRequestTracingEvent[] traces = eventStore.getTraces(first);
+        for (HistoricRequestTracingEvent historicRequestEvent : traces) {
+            Map<String, String> messages = new LinkedHashMap<>();
+            Object values[] = new Object[2];
+            values[0] = historicRequestEvent.getElapsedTime();
+            values[1] = historicRequestEvent.getMessage();
+            messages.put("dateTime",values[0].toString());
+            messages.put("message", (String) values[1]);
+            historic.add(messages);
             columnFormatter.addRow(values);
         }
+
         actionReport.setMessage(columnFormatter.toString());
+        extrasProps.put("historicmessages", historic);
+        actionReport.setExtraProperties(extrasProps);
+
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }
