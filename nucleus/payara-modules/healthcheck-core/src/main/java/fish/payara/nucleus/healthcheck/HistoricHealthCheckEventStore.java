@@ -38,10 +38,10 @@
  */
 package fish.payara.nucleus.healthcheck;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.notification.domain.BoundedTreeSet;
+import fish.payara.nucleus.store.ClusteredStore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
@@ -67,23 +67,23 @@ public class HistoricHealthCheckEventStore {
     @Inject
     private ServerEnvironment serverEnv;
 
-    private NavigableSet<HistoricHealthCheckEvent> historicStore;
+    @Inject
+    ClusteredStore store;
+
+    private BoundedTreeSet<HistoricHealthCheckEvent> historicStore;
 
     void initialize(int storeSize) {
         historicStore = new BoundedTreeSet<>(storeSize);
 
         if (hzCore.isEnabled()) {
-            HazelcastInstance instance = hzCore.getInstance();
             String instanceName = serverEnv.getInstanceName();
-            IMap<String, NavigableSet<HistoricHealthCheckEvent>> map = instance.getMap(HISTORIC_HEALTHCHECK_EVENT_STORE);
-            if (map != null) {
-                NavigableSet<HistoricHealthCheckEvent> instanceHistoricStore = map.get(instanceName);
-                if (instanceHistoricStore == null) {
-                    map.put(instanceName, historicStore);
-                }
-                else {
-                    historicStore = instanceHistoricStore;
-                }
+            BoundedTreeSet<HistoricHealthCheckEvent> instanceHistoricStore = (BoundedTreeSet<HistoricHealthCheckEvent>) store.get(HISTORIC_HEALTHCHECK_EVENT_STORE, instanceName);
+
+            if (instanceHistoricStore == null) {
+                store.set(HISTORIC_HEALTHCHECK_EVENT_STORE, instanceName, historicStore);
+            }
+            else {
+                historicStore = instanceHistoricStore;
             }
         }
     }

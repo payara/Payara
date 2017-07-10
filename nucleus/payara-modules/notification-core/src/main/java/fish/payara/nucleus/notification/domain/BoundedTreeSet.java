@@ -38,12 +38,13 @@
  */
 package fish.payara.nucleus.notification.domain;
 
+import java.io.Serializable;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author mertcaliskan
  */
-public class BoundedTreeSet<N extends Comparable> extends ConcurrentSkipListSet<N> {
+public class BoundedTreeSet<N extends Comparable> extends ConcurrentSkipListSet<N> implements Serializable {
 
     private final int maxSize;
 

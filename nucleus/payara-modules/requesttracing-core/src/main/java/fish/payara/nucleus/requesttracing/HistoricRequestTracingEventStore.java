@@ -43,6 +43,7 @@ import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.notification.domain.BoundedTreeSet;
 import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
+import fish.payara.nucleus.store.ClusteredStore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
@@ -67,25 +68,23 @@ public class HistoricRequestTracingEventStore {
     @Inject
     private ServerEnvironment serverEnv;
 
-    private HazelcastInstance instance;
+    @Inject
+    ClusteredStore store;
 
-    private NavigableSet<HistoricRequestTracingEvent> historicStore;
+    private BoundedTreeSet<HistoricRequestTracingEvent> historicStore;
 
     void initialize(int storeSize) {
         historicStore = new BoundedTreeSet<>(storeSize);
 
         if (hzCore.isEnabled()) {
-            instance = hzCore.getInstance();
             String instanceName = serverEnv.getInstanceName();
-            IMap<String, NavigableSet<HistoricRequestTracingEvent>> map
-                    = instance.getMap(HISTORIC_REQUEST_EVENT_STORE);
-            if (map != null) {
-                NavigableSet<HistoricRequestTracingEvent> instanceHistoricStore = map.get(instanceName);
-                if (instanceHistoricStore == null) {
-                    map.put(instanceName, historicStore);
-                } else {
-                    historicStore = instanceHistoricStore;
-                }
+            BoundedTreeSet<HistoricRequestTracingEvent> instanceHistoricStore = (BoundedTreeSet<HistoricRequestTracingEvent>) store.get(HISTORIC_REQUEST_EVENT_STORE, instanceName);
+
+            if (instanceHistoricStore == null) {
+                store.set(HISTORIC_REQUEST_EVENT_STORE, instanceName, historicStore);
+            }
+            else {
+                historicStore = instanceHistoricStore;
             }
         }
     }
