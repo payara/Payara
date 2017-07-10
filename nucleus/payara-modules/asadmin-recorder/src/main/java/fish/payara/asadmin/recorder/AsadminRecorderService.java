@@ -109,7 +109,7 @@ public class AsadminRecorderService implements EventListener {
         String asadminCommand = commandName;
         String mandatoryOption = "";
         
-        if(Boolean.parseBoolean(asadminRecorderConfiguration.prependOptions())) {
+        if(Boolean.parseBoolean(asadminRecorderConfiguration.prependEnabled()) && prependedOptions != null) {
             for (String s : prependedOptions) {
                 asadminCommand += " " + s;
             }
@@ -154,7 +154,8 @@ public class AsadminRecorderService implements EventListener {
     public void recordAsadminCommand(String commandName, ParameterMap parameters) {
         String asadminCommand = "";
 
-        if (!prependedOptionsString.equals(asadminRecorderConfiguration.getPrependedOptions())) {
+        if (asadminRecorderConfiguration.getPrependedOptions() != null 
+                && !prependedOptionsString.equals(asadminRecorderConfiguration.getPrependedOptions())) {
             setPrependedOptions();
         }
 
@@ -198,16 +199,18 @@ public class AsadminRecorderService implements EventListener {
 
     private void setPrependedOptions() {
         prependedOptionsString = asadminRecorderConfiguration.getPrependedOptions();
-        prependedOptions = new ArrayList<>(Arrays.asList(prependedOptionsString.split(",")));
-        for (String option : prependedOptions) {
-            // As some options have parameters and single character options use one hyphen, check the size of the first 
-            // option, ignorning any parameters present by splitting on " " or "=".
-            String optionWithoutParameters = option.split("( |=)")[0];
-            if (PERMITTED_PREPENDED_OPTIONS.contains(optionWithoutParameters)) {
-                if (optionWithoutParameters.length() == 1) {
-                    prependedOptions.set(prependedOptions.indexOf(option), "-" + option);
-                } else {
-                    prependedOptions.set(prependedOptions.indexOf(option), "--" + option);
+        if (prependedOptionsString != null) {
+            prependedOptions = new ArrayList<>(Arrays.asList(prependedOptionsString.split(",")));
+            for (String option : prependedOptions) {
+                // As some options have parameters and single character options use one hyphen, check the size of the first 
+                // option, ignorning any parameters present by splitting on " " or "=".
+                String optionWithoutParameters = option.split("( |=)")[0];
+                if (PERMITTED_PREPENDED_OPTIONS.contains(optionWithoutParameters)) {
+                    if (optionWithoutParameters.length() == 1) {
+                        prependedOptions.set(prependedOptions.indexOf(option), "-" + option);
+                    } else {
+                        prependedOptions.set(prependedOptions.indexOf(option), "--" + option);
+                    }
                 }
             }
         }

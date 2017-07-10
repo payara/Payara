@@ -43,7 +43,7 @@
 
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","enabled"});
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","filterCommands"});
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled","prependOptions"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","prependEnabled"});
         
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
@@ -51,8 +51,8 @@
         if (#{pageSession.valueMap['filterCommands']}=true) {
         setPageSessionAttribute(key="filterCommandsSelected", value="true");
         } 
-        if (#{pageSession.prependCommands['prependOptions']}=true) {
-        setPageSessionAttribute(key="prependOptionsSelected", value="true");
+        if (#{pageSession.prependCommands['prependEnabled']}=true) {
+        setPageSessionAttribute(key="prependEnabledSelected", value="true");
         }
         />
 </event>
@@ -70,7 +70,7 @@
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="filterCommands" value="#{pageSession.filterCommandsSelected}");
-                    mapPut(map="#{pageSession.valueMap}" key="prependOptions" value="#{pageSession.prependOptionsSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="prependEnabled" value="#{pageSession.prependEnabledSelected}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-asadmin-recorder-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
 
@@ -93,8 +93,8 @@
     <sun:property id="filteredCommandsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.filteredCommands}"  helpText="$resource{i18nar.asadminRecorder.configuration.filteredCommandsHelp}">
         <sun:textField id="filteredCommands" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['filteredCommands']}" />
     </sun:property>
-    <sun:property id="prependOptions" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependOptions}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependOptionsHelp}">
-        <sun:checkbox id="prependOptions" selected="#{pageSession.prependOptionsSelected}" selectedValue="true" />
+    <sun:property id="prependEnabled" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependEnabled}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependEnabledHelp}">
+        <sun:checkbox id="prependEnabled" selected="#{pageSession.prependEnabledSelected}" selectedValue="true" />
     </sun:property>
     <sun:property id="prependedOptions" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nar.asadminRecorder.configuration.prependedOptions}"  helpText="$resource{i18nar.asadminRecorder.configuration.prependedOptionsHelp}">
         <sun:textField id="prependedOptions" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['prependedOptions']}" />

@@ -68,11 +68,11 @@ public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExt
     public String getFilteredCommands();
     public void setFilteredCommands(String filteredCommands);
     
-    @Attribute(defaultValue= "false", dataType = Boolean.class)
-    public String prependOptions();
-    public void setPrependOptions(Boolean prependOptions);
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    public String prependEnabled();
+    public void setPrependEnabled(Boolean prependEnabled);
     
-    @Attribute()
+    @Attribute(defaultValue = "")
     public String getPrependedOptions();
     public void setPrependedOptions(String prependedOptions);
 }

@@ -72,8 +72,8 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
     @Param(name = "filteredCommands", optional = true)
     private String filteredCommands;
     
-    @Param(name = "prependOptions", optional = true)
-    private Boolean prependOptions;
+    @Param(name = "prependEnabled", optional = true)
+    private Boolean prependEnabled;
     
     @Param(name = "prependedOptions", optional = true)
     private String prependedOptions;
@@ -107,8 +107,8 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
                         asadminRecorderConfigurationProxy.setFilteredCommands(filteredCommands);
                     }
                     
-                    if (prependOptions != null) {
-                        asadminRecorderConfigurationProxy.setPrependOptions(prependOptions);
+                    if (prependEnabled != null) {
+                        asadminRecorderConfigurationProxy.setPrependEnabled(prependEnabled);
                     }
                     
                     if (prependedOptions != null) {

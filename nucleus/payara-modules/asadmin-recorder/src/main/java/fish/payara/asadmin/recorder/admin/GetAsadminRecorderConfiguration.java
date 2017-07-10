@@ -63,7 +63,7 @@ public class GetAsadminRecorderConfiguration implements AdminCommand
     
     private final String target = "server";
     private final String[] headers = {"Enabled", "Filter Commands", "Output Location", "Filtered Commands", 
-        "Prepend Options", "Prepended Options"};
+        "Prepend Enabled", "Prepended Options"};
             
     @Override
     public void execute(AdminCommandContext context)
@@ -85,7 +85,7 @@ public class GetAsadminRecorderConfiguration implements AdminCommand
                 asadminRecorderConfiguration.filterCommands(), 
                 asadminRecorderConfiguration.getOutputLocation(),
                 asadminRecorderConfiguration.getFilteredCommands(),
-                asadminRecorderConfiguration.prependOptions(),
+                asadminRecorderConfiguration.prependEnabled(),
                 asadminRecorderConfiguration.getPrependedOptions()
         };
         
@@ -97,7 +97,7 @@ public class GetAsadminRecorderConfiguration implements AdminCommand
         map.put("filterCommands", values[1]);
         map.put("outputLocation", values[2]);
         map.put("filteredCommands", values[3]);
-        map.put("prependOptions", values[4]);
+        map.put("prependEnabled", values[4]);
         map.put("prependedOptions", values[5]);
         extraProps.put("getAsadminRecorderConfiguration",map);
         
