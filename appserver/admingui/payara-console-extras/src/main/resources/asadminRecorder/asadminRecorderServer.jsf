@@ -51,7 +51,7 @@
         if (#{pageSession.valueMap['filterCommands']}=true) {
         setPageSessionAttribute(key="filterCommandsSelected", value="true");
         } 
-        if (#{pageSession.prependCommands['prependEnabled']}=true) {
+        if (#{pageSession.valueMap['prependEnabled']}=true) {
         setPageSessionAttribute(key="prependEnabledSelected", value="true");
         }
         />
