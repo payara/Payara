@@ -40,10 +40,13 @@ package fish.payara.asadmin.recorder.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.asadmin.recorder.AsadminRecorderConfiguration;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -78,44 +81,46 @@ import org.jvnet.hk2.config.TransactionFailure;
             description = "Sets the configuration for the asadmin command recorder service")
 })
 public class SetAsadminRecorderConfiguration implements AdminCommand {
+
     @Inject
     AsadminRecorderConfiguration asadminRecorderConfiguration;
-    
+
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
-    
+
     @Param(name = "outputLocation", optional = true)
     private String outputLocation;
-    
+
     @Param(name = "filterCommands", optional = true)
     private Boolean filterCommands;
-    
+
     @Param(name = "filteredCommands", optional = true)
     private String filteredCommands;
-    
+
     @Param(name = "prependEnabled", optional = true)
     private Boolean prependEnabled;
-    
+
     @Param(name = "prependedOptions", optional = true)
     private String prependedOptions;
-    
+
     @Override
     public void execute(AdminCommandContext context) {
+        ActionReport actionReport = context.getActionReport();
         try {
             ConfigSupport.apply(new SingleConfigCode<AsadminRecorderConfiguration>() {
-                public Object run(AsadminRecorderConfiguration asadminRecorderConfigurationProxy) 
-                        throws PropertyVetoException, TransactionFailure {
-                    
+                @Override
+                public Object run(AsadminRecorderConfiguration asadminRecorderConfigurationProxy) throws PropertyVetoException {
+
                     if (enabled != null) {
                         asadminRecorderConfigurationProxy.setEnabled(enabled);
                     }
-                    
+
                     if (filterCommands != null) {
                         asadminRecorderConfigurationProxy.setFilterCommands(filterCommands);
                     }
-                        
+
                     if (outputLocation != null) {
-                        if (outputLocation.endsWith("/")||outputLocation.endsWith("\\")){
+                        if (outputLocation.endsWith("/") || outputLocation.endsWith("\\")) {
                             outputLocation += "asadmin-commands.txt";
                         }
                         if (!outputLocation.endsWith(".txt")) {
@@ -123,24 +128,39 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
                         }
                         asadminRecorderConfigurationProxy.setOutputLocation(outputLocation);
                     }
-                    
+
                     if (filteredCommands != null) {
                         asadminRecorderConfigurationProxy.setFilteredCommands(filteredCommands);
                     }
-                    
+
                     if (prependEnabled != null) {
                         asadminRecorderConfigurationProxy.setPrependEnabled(prependEnabled);
                     }
+
+                    String allowedPrependedOptionsRegex = "("
+                            + "(H[ =].*)|(host[ =].*)|(p[ =].*)|(port[ =].*)"
+                            + "|(U[ =].*)|(user[ =].*)|(W[ =].*)|(passwordfile[ =].*)"
+                            + "|(detach)|(notify)|(terse)|(t)|(echo)|(e)|(secure)|(s)|(interactive)|(i))";
                     
                     if (prependedOptions != null) {
-                        asadminRecorderConfigurationProxy.setPrependedOptions(prependedOptions);
+                        if (!prependedOptions.isEmpty()) {
+                            for (String prependedOption : prependedOptions.split(",")) {
+                                if (prependedOption.matches(allowedPrependedOptionsRegex)) {
+                                    asadminRecorderConfigurationProxy.setPrependedOptions(prependedOptions);
+                                } else {
+                                    throw new PropertyVetoException("Invalid prepended option \"" + prependedOption + "\"", new PropertyChangeEvent(asadminRecorderConfiguration, "prependedOptions", asadminRecorderConfiguration.getPrependedOptions(), prependedOption));
+                                }
+                            }
+                        } else {
+                            asadminRecorderConfigurationProxy.setPrependedOptions("");
+                        }
                     }
-                    
                     return null;
                 }
-            }, asadminRecorderConfiguration);          
+            }, asadminRecorderConfiguration);
         } catch (TransactionFailure ex) {
-            Logger.getLogger(SetAsadminRecorderConfiguration.class.getName()).log(Level.SEVERE, null, ex);
-        }   
+            actionReport.failure(Logger.getLogger(SetAsadminRecorderConfiguration.class.getName()),
+                    "Failed to update configuration due to: " + ex.getLocalizedMessage(), ex);
+        }
     }
 }
