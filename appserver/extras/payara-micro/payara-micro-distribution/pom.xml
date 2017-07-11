@@ -42,17 +42,17 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>fish.payara.extras.payara-micro</groupId>
-    <artifactId>payara-micro-parent</artifactId>
-    <version>4.1.2.173-SNAPSHOT</version>
-  </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.extras.payara-micro</groupId>
+        <artifactId>payara-micro-parent</artifactId>
+        <version>4.1.2.173-SNAPSHOT</version>
+    </parent>
   
-  <groupId>fish.payara.extras</groupId>
-  <artifactId>payara-micro</artifactId>
-  <name>Payara Micro Distribution</name>
-  <packaging>jar</packaging>
+    <groupId>fish.payara.extras</groupId>
+    <artifactId>payara-micro</artifactId>
+    <name>Payara Micro Distribution</name>
+    <packaging>jar</packaging>
 
     <distributionManagement>
         <snapshotRepository>
@@ -61,74 +61,74 @@
         </snapshotRepository>
     </distributionManagement>
 
-  <build>
-    <defaultGoal>install</defaultGoal>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>copy-dependencies</id>
-                    <goals>
-                        <goal>copy-dependencies</goal>
-                    </goals>
-                    <configuration>
-                        <outputDirectory>${project.build.directory}/packager_zips</outputDirectory>
-                        <overWriteReleases>false</overWriteReleases>
-                        <overWriteSnapshots>true</overWriteSnapshots>
-                        <excludeTransitive>true</excludeTransitive>
-                        <includeScope>compile</includeScope>
-                        <includeScope>runtime</includeScope>
-                    </configuration>
-               </execution>
-            </executions>
-        </plugin>
-        <plugin>
-            <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-            <artifactId>maven-antrun-extended-plugin</artifactId>
-            <executions>
-                <execution>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>run</goal>
-                    </goals>
-                    <configuration>
-                        <tasks>
-                            <ant dir="." antfile="build.xml" target="new.create">
-                                <property name="bundlename" value="fish.payara.micro" />
-                                <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
-                                <property name="install.dir.name" value="${install.dir.name}" />                            
-                            </ant>
-                        </tasks>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-        <plugin>
-            <artifactId>maven-jar-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>default-jar</id>
-                    <phase>never</phase>
-                    <configuration>
-                        <finalName>unwanted</finalName>
-                        <classifier>unwanted</classifier>
-                    </configuration>
-                </execution>
-            </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/packager_zips</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <includeScope>compile</includeScope>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                <artifactId>maven-antrun-extended-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <ant dir="." antfile="build.xml" target="new.create">
+                                    <property name="bundlename" value="fish.payara.micro" />
+                                    <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
+                                    <property name="install.dir.name" value="${install.dir.name}" />                            
+                                </ant>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>never</phase>
+                        <configuration>
+                            <finalName>unwanted</finalName>
+                            <classifier>unwanted</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
-      <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-hk2</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-	</dependency>
+        </dependency>
 
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -138,7 +138,7 @@
             <optional>true</optional>
         </dependency>
 
-	<!-- additional grizzly modules package which includes websockets -->
+        <!-- additional grizzly modules package which includes websockets -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-grizzly-full</artifactId>
@@ -302,7 +302,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-          <!-- healthcheck package -->
+        <!-- healthcheck package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>healthcheck</artifactId>
@@ -310,23 +310,23 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-          <!-- request tracing package -->
-          <dependency>
-              <groupId>org.glassfish.main.packager</groupId>
-              <artifactId>requesttracing</artifactId>
-              <version>${project.version}</version>
-              <type>zip</type>
-              <optional>true</optional>
-          </dependency>
-          <!-- notification package -->
-          <dependency>
-              <groupId>org.glassfish.main.packager</groupId>
-              <artifactId>notification</artifactId>
-              <version>${project.version}</version>
-              <type>zip</type>
-              <optional>true</optional>
-          </dependency>
-          <!-- phonehome package -->
+        <!-- request tracing package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>requesttracing</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <!-- notification package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <!-- phonehome package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>phonehome</artifactId>
@@ -334,15 +334,15 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-          <!-- payara api package -->
-          <dependency>
-              <groupId>org.glassfish.main.packager</groupId>
-              <artifactId>payara-api</artifactId>
-              <version>${project.version}</version>
-              <type>zip</type>
-              <optional>true</optional>
-          </dependency>
-          <!-- ha package -->
+        <!-- payara api package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <!-- ha package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-ha</artifactId>
@@ -350,7 +350,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-          <!-- payara rest endpoint package -->
+        <!-- payara rest endpoint package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>payara-rest-endpoints</artifactId>
@@ -427,7 +427,23 @@
             <version>${jackson.version}</version>
             <optional>true</optional>
         </dependency>
-      </dependencies>
+        <!-- Add Microprofile 1.1 apis -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>1.0-RC2</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.nucleus.microprofile.config</groupId>
+            <artifactId>microprofile-config-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.config</groupId>
+            <artifactId>microprofile-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->

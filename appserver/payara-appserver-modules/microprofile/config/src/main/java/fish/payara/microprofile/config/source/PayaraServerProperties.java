@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package fish.payara.microprofile.config.source;
 
 import java.util.Collections;
@@ -74,16 +75,22 @@ public class PayaraServerProperties extends PayaraConfigSource implements Config
         properties.put("payara.instance.admin.host", serverCtx.getConfigBean().getAdminHost());
 
         NetworkListener listener = serverCtx.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener-1");
+        if (listener == null) {
+            listener = serverCtx.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");
+        }
         if (listener != null) {
-            properties.put("payara.instance.http-listener-1.port", listener.getPort());
-            properties.put("payara.instance.http-listener-1.address", listener.getAddress());
-            properties.put("payara.instance.http-listener-1.enabled", listener.getEnabled());
+            properties.put("payara.instance.http.port", listener.getPort());
+            properties.put("payara.instance.http.address", listener.getAddress());
+            properties.put("payara.instance.http.enabled", listener.getEnabled());
         }
         listener = serverCtx.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener-2");
+        if (listener == null) {
+            listener = serverCtx.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");            
+        }
         if (listener != null) {
-            properties.put("payara.instance.http-listener-2.port", listener.getPort());
-            properties.put("payara.instance.http-listener-2.address", listener.getAddress());
-            properties.put("payara.instance.http-listener-2.enabled", listener.getEnabled());
+            properties.put("payara.instance.https.port", listener.getPort());
+            properties.put("payara.instance.https.address", listener.getAddress());
+            properties.put("payara.instance.https.enabled", listener.getEnabled());
         }
     }
 

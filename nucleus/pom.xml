@@ -113,6 +113,13 @@
             </snapshots>
         </repository>
         <repository>
+          <id>eclipse.microprofile</id>
+          <name>Eclipse MicroProfile Repository</name>
+          <url>https://repo.eclipse.org/content/groups/microprofile/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
            <id>payara-patched-externals</id>
 	   <name>Payara Patched Externals</name>
 	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
