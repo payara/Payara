@@ -39,9 +39,12 @@
  */
 package org.glassfish.weld.services;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.HashMap;
 import java.util.Map;
-import org.jboss.weld.config.ConfigurationKey;
+import static org.jboss.weld.config.ConfigurationKey.BEAN_IDENTIFIER_INDEX_OPTIMIZATION;
+import static org.jboss.weld.config.ConfigurationKey.PROBE_EVENT_MONITOR_EXCLUDE_TYPE;
+import static org.jboss.weld.config.ConfigurationKey.PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE;
+import static org.jboss.weld.config.ConfigurationKey.ROLLING_UPGRADES_ID_DELIMITER;
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
 
 /**
@@ -50,15 +53,25 @@ import org.jboss.weld.configuration.spi.ExternalConfiguration;
  * @author lprimak
  */
 public class ExternalConfigurationImpl implements ExternalConfiguration {
-    /**
-     * configuration properties constructor
-     *
-     * @param rollingUpgradesDelimiter
-     * @param beanIndexOptimization true/false
-     */
-    public ExternalConfigurationImpl(String rollingUpgradesDelimiter, boolean beanIndexOptimization) {
-        propsMap = ImmutableMap.<String, Object>of(ConfigurationKey.ROLLING_UPGRADES_ID_DELIMITER.get(), rollingUpgradesDelimiter,
-                                                   ConfigurationKey.BEAN_IDENTIFIER_INDEX_OPTIMIZATION.get(), beanIndexOptimization);
+
+    private final Map<String, Object> propsMap = new HashMap<>();
+
+    public void setRollingUpgradesDelimiter(String rollingUpgradesDelimiter) {
+        propsMap.put(ROLLING_UPGRADES_ID_DELIMITER.get(), rollingUpgradesDelimiter);
+    }
+
+    public void setBeanIndexOptimization(boolean beanIndexOptimization) {
+        propsMap.put(BEAN_IDENTIFIER_INDEX_OPTIMIZATION.get(), beanIndexOptimization);
+    }
+
+    public void setProbeInvocationMonitorExcludeType(String probeInvocationMonitorExcludeType) {
+        propsMap.put(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE.get(),
+                System.getProperty(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE.get(), probeInvocationMonitorExcludeType));
+    }
+
+    public void setProbeEventMonitorExcludeType(String probeEventMonitorExcludeType) {
+        propsMap.put(PROBE_EVENT_MONITOR_EXCLUDE_TYPE.get(), 
+                System.getProperty(PROBE_EVENT_MONITOR_EXCLUDE_TYPE.get(), probeEventMonitorExcludeType));
     }
 
     @Override
@@ -71,6 +84,4 @@ public class ExternalConfigurationImpl implements ExternalConfiguration {
         // intentionally left blank
     }
 
-
-    private final Map<String, Object> propsMap;
 }
