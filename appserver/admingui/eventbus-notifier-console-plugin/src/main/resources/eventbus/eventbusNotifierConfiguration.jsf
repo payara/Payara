@@ -107,11 +107,11 @@ holder.
                           helpText="$resource{i18nn.notification.configuration.notifier.dynamicHelp}">
                 <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
             </sun:property>
-            <sun:property id="topicNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                          label="$resource{i18nebn.notifier.eventbus.configuration.topicNameLabel}"  
+            <sun:property id="topicNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                          label="$resource{i18nebn.notifier.eventbus.configuration.topicNameLabel}"
                           helpText="$resource{i18nebn.notifier.eventbus.configuration.topicNameLabelHelpText}">
-                <sun:textField id="topicNameField" columns="$int{75}" maxLength="255" 
-                               text="#{pageSession.valueMap['topicName']}" styleClass="required"  
+                <sun:textField id="topicNameField" columns="$int{75}" maxLength="255"
+                               text="#{pageSession.valueMap['topicName']}" styleClass="required"
                                required="#{true}"/>
             </sun:property>
         </sun:propertySheetSection>

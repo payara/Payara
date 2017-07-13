@@ -84,12 +84,14 @@ public class GetSlackNotifierConfiguration extends BaseGetNotifierConfiguration<
     @Override
     protected Map<String, Object> getNotifierConfiguration(SlackNotifierConfiguration configuration) {
         Map<String, Object> map = new HashMap<>(4);
-        
-        map.put("enabled", configuration.getEnabled());
-        map.put("token1", configuration.getToken1());
-        map.put("token2", configuration.getToken2());
-        map.put("token3", configuration.getToken3());
-        
+
+        if (configuration != null) {
+            map.put("enabled", configuration.getEnabled());
+            map.put("token1", configuration.getToken1());
+            map.put("token2", configuration.getToken2());
+            map.put("token3", configuration.getToken3());
+        }
+
         return map;
     }
 }
