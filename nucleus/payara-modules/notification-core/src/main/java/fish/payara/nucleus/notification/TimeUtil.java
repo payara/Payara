@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,29 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.domain;
-
-import java.io.Serializable;
-import java.util.concurrent.ConcurrentSkipListSet;
+package fish.payara.nucleus.notification;
 
 /**
  * @author mertcaliskan
  */
-public class BoundedTreeSet<N extends Comparable> extends ConcurrentSkipListSet<N> implements Serializable {
+public class TimeUtil {
 
-    private final int maxSize;
+    public static final int CLEANUP_TASK_FIVE_MIN_PERIOD = 500;
 
-    public BoundedTreeSet(int maxSize) {
-        super();
-        this.maxSize = maxSize;
-    }
+    private static final int SECOND = 1;
+    private static final int MINUTE = 60 * SECOND;
+    private static final int HOUR = 60 * MINUTE;
+    private static final int DAY = 24 * HOUR;
 
-    public boolean add(N n) {
-        super.add(n);
+    public static long setStoreTimeLimit(String timeLimit) {
+        long value = 0;
+        if (timeLimit != null) {
+            try {
+                value = Integer.parseInt(timeLimit);
+            }
+            catch (NumberFormatException nfe) {
+                int i = 0;
+                while (i < timeLimit.length() &&
+                        Character.isDigit(timeLimit.charAt(i)))
+                    i++;
 
-        if(size() > maxSize) {
-            remove(last());
+                if (i > 0) {
+                    value = Integer.parseInt(timeLimit.substring(0, i));
+
+                    char multiplier = timeLimit.charAt(i);
+                    switch (multiplier) {
+                        case 's' : value *= SECOND;
+                            break;
+                        case 'm' : value *= MINUTE;
+                            break;
+                        case 'h' : value *= HOUR;
+                            break;
+                        case 'd' : value *= DAY;
+                            break;
+                        default  : break;
+                    }
+                }
+            }
         }
-        return true;
+        return value;
     }
 }

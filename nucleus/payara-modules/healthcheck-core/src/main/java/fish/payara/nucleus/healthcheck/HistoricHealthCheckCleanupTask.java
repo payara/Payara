@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,29 +36,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.domain;
+package fish.payara.nucleus.healthcheck;
 
-import java.io.Serializable;
-import java.util.concurrent.ConcurrentSkipListSet;
+import org.glassfish.internal.api.Globals;
+
+import java.util.Iterator;
+import java.util.NavigableSet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mertcaliskan
  */
-public class BoundedTreeSet<N extends Comparable> extends ConcurrentSkipListSet<N> implements Serializable {
+final class HistoricHealthCheckCleanupTask implements Runnable {
 
-    private final int maxSize;
+    private final long timeLimit;
 
-    public BoundedTreeSet(int maxSize) {
-        super();
-        this.maxSize = maxSize;
+    HistoricHealthCheckCleanupTask(long timeLimit) {
+        this.timeLimit = timeLimit;
     }
 
-    public boolean add(N n) {
-        super.add(n);
+    public void run() {
+        HistoricHealthCheckEventStore store = Globals.getDefaultHabitat().getService(HistoricHealthCheckEventStore.class);
+        NavigableSet<HistoricHealthCheckEvent> historicStore = store.getHistoricStore();
+        Iterator<HistoricHealthCheckEvent> iterator = historicStore.descendingIterator();
 
-        if(size() > maxSize) {
-            remove(last());
+        while(iterator.hasNext()) {
+            HistoricHealthCheckEvent event = iterator.next();
+            long upTimeInMillis = System.currentTimeMillis() - event.getOccurringTime();
+            if (TimeUnit.MILLISECONDS.toSeconds(upTimeInMillis) > timeLimit) {
+                historicStore.remove(event);
+            }
         }
-        return true;
     }
 }

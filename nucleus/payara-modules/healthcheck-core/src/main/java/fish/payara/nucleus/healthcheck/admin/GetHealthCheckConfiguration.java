@@ -39,6 +39,7 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
@@ -148,6 +149,11 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 mainActionReport.appendMessage("Historical Tracing Store Size: " 
                         + configuration.getHistoricalTraceStoreSize() + "\n");
             }
+
+            if (!Strings.isNullOrEmpty(configuration.getHistoricalTraceStoreTimeout())) {
+                mainActionReport.appendMessage("Health Check Historical Tracing Store Timeout in Seconds: "
+                        + configuration.getHistoricalTraceStoreTimeout() + "\n");
+            }
         }
 
         // Create the extraProps map for the general healthcheck configuration
@@ -157,7 +163,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         mainExtraPropsMap.put("enabled", configuration.getEnabled());
         mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
         mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
-        
+        mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
+
         mainExtraProps.put("healthcheckConfiguration", mainExtraPropsMap);
         mainActionReport.setExtraProperties(mainExtraProps);
 

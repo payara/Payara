@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,12 +38,11 @@
  */
 package fish.payara.nucleus.requesttracing.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.requesttracing.HistoricRequestEventStore;
+import fish.payara.nucleus.requesttracing.HistoricRequestTracingEventStore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-import fish.payara.nucleus.requesttracing.domain.HistoricRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -56,6 +55,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import java.util.Date;
 
 /**
  * @author mertcaliskan
@@ -72,9 +72,9 @@ import javax.inject.Inject;
                 path = "list-historic-requesttraces",
                 description = "List slowest request traces stored historically.")
 })
-public class HistoricRequestEventRetriever implements AdminCommand {
+public class HistoricRequestTracingEventRetriever implements AdminCommand {
 
-    private final String headers[] = {"Elapsed Time", "Traced Message"};
+    private static final String headers[] = {"Occurring Time", "Elapsed Time", "Traced Message"};
 
     @Inject
     protected Target targetUtil;
@@ -89,7 +89,7 @@ public class HistoricRequestEventRetriever implements AdminCommand {
     private RequestTracingService service;
 
     @Inject
-    private HistoricRequestEventStore eventStore;
+    private HistoricRequestTracingEventStore eventStore;
 
     @Inject
     ServerEnvironment server;
@@ -122,13 +122,14 @@ public class HistoricRequestEventRetriever implements AdminCommand {
         if (first == null) {
             first = executionOptions.getHistoricalTraceStoreSize();
         }
-        HistoricRequestEvent[] traces = eventStore.getTraces(first);
+        HistoricRequestTracingEvent[] traces = eventStore.getTraces(first);
 
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        for (HistoricRequestEvent historicRequestEvent : traces) {
-            Object values[] = new Object[2];
-            values[0] = historicRequestEvent.getElapsedTime();
-            values[1] = historicRequestEvent.getMessage();
+        for (HistoricRequestTracingEvent historicRequestTracingEvent : traces) {
+            Object values[] = new Object[3];
+            values[0] = new Date(historicRequestTracingEvent.getOccurringTime());
+            values[1] = historicRequestTracingEvent.getElapsedTime();
+            values[2] = historicRequestTracingEvent.getMessage();
             columnFormatter.addRow(values);
         }
         actionReport.setMessage(columnFormatter.toString());
