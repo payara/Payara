@@ -48,14 +48,13 @@ import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import java.util.Map;
 import java.util.logging.Level;
-import lombok.extern.java.Log;
+import java.util.logging.Logger;
 
 /**
  * Adds default login configuration to all Web Service EJB nodes
  *
  * @author lprimak
  */
-@Log
 public class DefaultWebServiceLoginConfigNode extends RuntimeDescriptorNode {
     @Override
     protected Map getDispatchTable() {
@@ -102,4 +101,5 @@ public class DefaultWebServiceLoginConfigNode extends RuntimeDescriptorNode {
 
     private String realm;
     private String authMethod;
+    private static final Logger log = Logger.getLogger(DefaultWebServiceLoginConfigNode.class.getName());
 }
