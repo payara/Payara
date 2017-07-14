@@ -748,7 +748,6 @@ var ListTicketsComponent = (function () {
         this.router = router;
         this.zendeskService = zendeskService;
         this.loginService = loginService;
-        this.supportType = 'basic';
     }
     /**
      * ngOnDestroy - OnDestroy method of the component
@@ -789,13 +788,13 @@ var ListTicketsComponent = (function () {
             var type = JSON.stringify(this.user.tags);
             if (type !== undefined) {
                 if (type.indexOf('professional') >= 0) {
-                    this.supportType = 'professional';
+                    this.loginService.connectionData.supportType = 'professional';
                 }
                 else if (type.indexOf('enterprise') >= 0) {
-                    this.supportType = 'enterprise';
+                    this.loginService.connectionData.supportType = 'enterprise';
                 }
                 else if (type.indexOf('developer') >= 0) {
-                    this.supportType = 'developer';
+                    this.loginService.connectionData.supportType = 'developer';
                 }
             }
             this.zendeskService.OAuthToken = this.user.token;
@@ -807,6 +806,7 @@ var ListTicketsComponent = (function () {
                     _this.zendeskService.genericFields = responseData;
                     var customFields = _this.zendeskService.genericFields.filter(function (field) { return field.title_in_portal === 'Status'; })[0];
                     _this.statusFields = customFields !== undefined ? customFields.system_field_options : [];
+                    _this.statusFields.push({ name: 'Closed', value: 'closed' });
                 }
             }, function (error) {
                 _this.translate.get('Error! Service Unavailable').subscribe(function (res) {
@@ -1939,6 +1939,7 @@ var AppComponent = (function () {
             zendeskUrl: this.environment.zendesk.baseUrl,
             shopURL: this.environment.payara.shopUrl,
             supportGuideURL: this.environment.supportGuides,
+            supportType: 'basic'
         };
         this.zendeskService.connectionData = {
             zendeskUrl: this.environment.zendesk.baseUrl,
@@ -2738,7 +2739,7 @@ exports = module.exports = __webpack_require__(15)();
 
 
 // module
-exports.push([module.i, ".addTicket {\n  margin-top: 0.75rem;\n  font-size: .95rem;\n  margin-right: 1.5rem;\n}\n\n.btn.btn-primary,\n.form-control{\n    font-size: 1.05rem;\n    height: auto;\n}\n.btn.btn-primary{\n  display: block;\n  padding: 8px 13px 7px;\n  text-align: center;\n  background-position: top right;\n  background-repeat: no-repeat;\n  border-color: #80929B;\n  background: #FCFFFF;\n  color:#000;\n}\n\n.btn.btn-primary.active{\n  background: #f89d1f;\n}\n\nspan.glyphicon.glyphicon-chevron-up,\nspan.glyphicon.glyphicon-chevron-down,\nspan.glyphicon.glyphicon-plus{\n  background-color: transparent;\n  margin-left: .15rem;\n}\n\nspan.glyphicon.glyphicon-plus::before{\n  margin-left: -.15rem;\n}\n\n\ntable.table-responsive.table-striped.table-sm.table-inverse.table-sortable{\n  margin-top: 5rem;\n}\n\n.selectable{\n    cursor: pointer;\n    text-align: left;\n    font-size: 1.15rem\n}\n\n.transparent{\n  background-color: transparent;\n}\n\n.alert-info{\n  background-color: #325764;\n  border-color: #325764;\n}\n\n.info{\n    color: #fff;\n    text-align: left;\n}\n\n.close{\n  opacity:1;\n}\n.closeMessage{\n  color: red;\n  font-size: x-large;\n}\n.panel.panel-default{\n  margin-top: 1rem;\n}\n", ""]);
+exports.push([module.i, ".addTicket {\n  margin-top: 0.75rem;\n  font-size: .95rem;\n  margin-right: 1.5rem;\n}\n\n.btn.btn-primary,\n.form-control{\n    font-size: 1.05rem;\n    height: auto;\n}\n.btn.btn-primary{\n  display: block;\n  padding: 8px 13px 7px;\n  text-align: center;\n  background-position: top right;\n  background-repeat: no-repeat;\n  border-color: #80929B;\n  background: #FCFFFF;\n  color:#000;\n}\n\n.btn.btn-primary.active{\n  background: #f89d1f;\n}\n\nspan.glyphicon.glyphicon-chevron-up,\nspan.glyphicon.glyphicon-chevron-down,\nspan.glyphicon.glyphicon-plus{\n  background-color: transparent;\n  margin-left: .15rem;\n}\n\nspan.glyphicon.glyphicon-plus::before{\n  margin-left: -.15rem;\n}\n\n\ntable.table-responsive.table-striped.table-sm.table-inverse.table-sortable{\n  margin-top: 5rem;\n}\n\n.selectable{\n    cursor: pointer;\n    text-align: left;\n    font-size: 1.15rem\n}\n\n.transparent{\n  background-color: transparent;\n}\n\n.alert-info{\n  background-color: #325764;\n  border-color: #325764;\n}\n\n.info{\n    color: #fff;\n    text-align: left;\n}\n\n.close{\n  opacity:1;\n}\n.closeMessage{\n  color: #f89d1f;\n  font-size: x-large;\n}\n.panel.panel-default{\n  margin-top: 1rem;\n}\n", ""]);
 
 // exports
 
@@ -3045,7 +3046,7 @@ webpackContext.id = 384;
 /***/ 408:
 /***/ (function(module, exports) {
 
-module.exports = "\n<div class=\"app_header\">\n  <h1 class=\"appTittle\">{{'Payara Support' | translate}}\n    <span *ngIf=\"loginService.initiating && loginService.user\"\n          class=\"username\">{{loginService.user.name}} [{{loginService.user.email}}]\n    </span>\n  </h1>\n  <div class=\"pull-right\">\n  <a class=\"btn btn-sm btn-default supportGuide\" target=\"_blank\" *ngIf=\"!isCurrentRoute('login')\"\n      href=\"{{loginService.connectionData.supportGuideURL}}{{supportType}}\"\n      placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download suppport guide PDF' | translate}}\">\n      {{'Support Guide' | translate}}\n  </a>\n  <button class=\"btn btn-sm btn-default logout\" *ngIf=\"!isCurrentRoute('login')\" (click)=\"logout()\"\n          placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Logout from Zendesk' | translate}}\">\n    {{'Logout' | translate}}\n    <span class=\"glyphicon glyphicon-off\" aria-hidden=\"true\">\n    </span>\n  </button>\n</div>\n</div>\n\n\n<router-outlet></router-outlet>\n"
+module.exports = "\n<div class=\"app_header\">\n  <h1 class=\"appTittle\">{{'Payara Support' | translate}}\n    <span *ngIf=\"loginService.initiating && loginService.user\"\n          class=\"username\">{{loginService.user.name}} [{{loginService.user.email}}]\n    </span>\n  </h1>\n  <div class=\"pull-right\">\n  <a class=\"btn btn-sm btn-default supportGuide\" target=\"_blank\" *ngIf=\"!isCurrentRoute('login')\"\n      href=\"{{loginService.connectionData.supportGuideURL}}{{loginService.connectionData.supportType}}\"\n      placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download suppport guide PDF' | translate}}\">\n      {{'Support Guide' | translate}}\n  </a>\n  <button class=\"btn btn-sm btn-default logout\" *ngIf=\"!isCurrentRoute('login')\" (click)=\"logout()\"\n          placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Logout from Zendesk' | translate}}\">\n    {{'Logout' | translate}}\n    <span class=\"glyphicon glyphicon-off\" aria-hidden=\"true\">\n    </span>\n  </button>\n</div>\n</div>\n\n\n<router-outlet></router-outlet>\n"
 
 /***/ }),
 
