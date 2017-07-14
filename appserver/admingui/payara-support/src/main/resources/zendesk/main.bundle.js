@@ -3263,7 +3263,7 @@ var environment = {
     },
     payara: {
         baseUrl: '/management/domain/',
-        shopUrl: 'http://www.payara.fish/support'
+        shopUrl: 'https://www.payara.fish/choose_support'
     },
     supportGuides: 'https://api.payara.fish/api/payaraCustomer/supportGuide/'
 };
