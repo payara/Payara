@@ -1,26 +1,27 @@
 webpackJsonp([1,5],{
 
-/***/ 105:
+/***/ 106:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__ = __webpack_require__(93);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__environments_environment__ = __webpack_require__(52);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_tinymce_tinymce__ = __webpack_require__(647);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_tinymce_tinymce___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_tinymce_tinymce__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_tinymce_themes_modern_theme__ = __webpack_require__(646);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_tinymce_themes_modern_theme___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_tinymce_themes_modern_theme__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_tinymce_plugins_paste_plugin__ = __webpack_require__(644);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_tinymce_plugins_paste_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_tinymce_plugins_paste_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_tinymce_plugins_searchreplace_plugin__ = __webpack_require__(645);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_tinymce_plugins_searchreplace_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_tinymce_plugins_searchreplace_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ngx_translate_core__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_jquery_dist_jquery__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_jquery_dist_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_jquery_dist_jquery__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__services_zendesk_service__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__services_payara_service__ = __webpack_require__(71);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Rx__ = __webpack_require__(96);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_Rx__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_tinymce_tinymce__ = __webpack_require__(671);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_tinymce_tinymce___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_tinymce_tinymce__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_tinymce_themes_modern_theme__ = __webpack_require__(670);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_tinymce_themes_modern_theme___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_tinymce_themes_modern_theme__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_tinymce_plugins_paste_plugin__ = __webpack_require__(668);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_tinymce_plugins_paste_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_tinymce_plugins_paste_plugin__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_tinymce_plugins_searchreplace_plugin__ = __webpack_require__(669);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_tinymce_plugins_searchreplace_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_tinymce_plugins_searchreplace_plugin__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__ngx_translate_core__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_jquery_dist_jquery__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_jquery_dist_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_jquery_dist_jquery__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__services_zendesk_service__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__services_payara_service__ = __webpack_require__(53);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AddFileComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -31,6 +32,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+
 
 
 
@@ -47,24 +49,27 @@ var AddFileComponent = (function () {
     /**
      * constructor - Constructor of the component
      */
-    function AddFileComponent(translate, zendeskService, payaraService) {
+    function AddFileComponent(translate, zendeskService, payaraService, datePipe) {
         this.translate = translate;
         this.zendeskService = zendeskService;
         this.payaraService = payaraService;
+        this.datePipe = datePipe;
         /**
          * Properties and objects of the component
          */
-        this.environment = __WEBPACK_IMPORTED_MODULE_2__environments_environment__["a" /* environment */];
-        this.tinymce = __WEBPACK_IMPORTED_MODULE_3_tinymce_tinymce___default.a;
+        this.environment = __WEBPACK_IMPORTED_MODULE_3__environments_environment__["a" /* environment */];
+        this.tinymce = __WEBPACK_IMPORTED_MODULE_4_tinymce_tinymce___default.a;
         this.groups = [];
         this.staticFileButtons = [
+            /*
             {
-                title: this.translate.instant('Monitoring Data'),
-                url: 'get-monitoring-configuration.json',
-                group: 'general',
-                uploaded: false,
-                type: 'json'
+              title:this.translate.instant('Monitoring Data'),
+              url:'get-monitoring-configuration.json',
+              group:'general',
+              uploaded:false,
+              type:'json'
             },
+            */
             {
                 title: this.translate.instant('Domain Log'),
                 url: 'view-log',
@@ -107,7 +112,7 @@ var AddFileComponent = (function () {
      * ngOnDestroy - OnDestroy method of the component
      */
     AddFileComponent.prototype.ngOnDestroy = function () {
-        __WEBPACK_IMPORTED_MODULE_8_jquery_dist_jquery__('span.ng-tooltip').hide();
+        __WEBPACK_IMPORTED_MODULE_9_jquery_dist_jquery__('span.ng-tooltip').hide();
         if (this.sub)
             this.sub.unsubscribe();
     };
@@ -213,7 +218,7 @@ var AddFileComponent = (function () {
         var _this = this;
         this.translate.get(message).subscribe(function (res) {
             _this.errorMessage = res;
-            var timer = __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__["Observable"].timer(1000, 50);
+            var timer = __WEBPACK_IMPORTED_MODULE_2_rxjs_Rx__["Observable"].timer(1000, 50);
             _this.sub = timer.subscribe(function (t) {
                 _this.errorMessage = "";
                 _this.sub.unsubscribe();
@@ -236,7 +241,7 @@ var AddFileComponent = (function () {
         this.translate.get('File added successfully!').subscribe(function (res) {
             _this.successMessage = res;
         });
-        var timer = __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__["Observable"].timer(1000, 50);
+        var timer = __WEBPACK_IMPORTED_MODULE_2_rxjs_Rx__["Observable"].timer(1000, 50);
         this.sub = timer.subscribe(function (t) {
             _this.successMessage = "";
             _this.sub.unsubscribe();
@@ -284,7 +289,7 @@ var AddFileComponent = (function () {
                     case 'traces':
                         this.payaraService.postFile(fileButton.url).then(function (responseData) {
                             if (responseData !== false && responseData.message !== "" && responseData.exit_code !== 'FAIULRE' && responseData.message.indexOf('is not enabled') < 0) {
-                                _this.addFile(responseData.message, fileButton.title + '.json', 'application/octet-stream', function (response) {
+                                _this.addFile(responseData.message, fileButton.title + '.txt', 'application/octet-stream', function (response) {
                                     if (response) {
                                         _this.fileUploaded(response);
                                         fileButton.uploaded = true;
@@ -309,7 +314,7 @@ var AddFileComponent = (function () {
                         this.getFile(fileButton.url, false, function (response) {
                             var healthData = JSON.parse(response["_body"]);
                             if (healthData !== false && healthData.extraProperties !== undefined && healthData.extraProperties.historicmessages.length > 0) {
-                                _this.addFile(JSON.stringify(healthData.extraProperties.historicmessages), fileButton.title + '.json', 'application/octet-stream', function (response) {
+                                _this.addFile(JSON.stringify(healthData.extraProperties.historicmessages), fileButton.title + '.txt', 'application/octet-stream', function (response) {
                                     if (response) {
                                         _this.fileUploaded(response);
                                         fileButton.uploaded = true;
@@ -330,7 +335,7 @@ var AddFileComponent = (function () {
                     case 'json':
                         this.getFile(fileButton.url, false, function (response) {
                             if (response !== false && response.json().message !== undefined && response.json().message !== "") {
-                                _this.addFile(response.json().message, fileButton.title + '.json', 'application/octet-stream', function (response) {
+                                _this.addFile(response.json().message, fileButton.title + '.txt', 'application/octet-stream', function (response) {
                                     if (response) {
                                         _this.fileUploaded(response);
                                         fileButton.uploaded = true;
@@ -398,8 +403,9 @@ var AddFileComponent = (function () {
     */
     AddFileComponent.prototype.addFile = function (content, name, type, back) {
         var _this = this;
+        var fileDate = this.datePipe.transform(new Date(), 'yyyy-MM-ddTHH:mm:ss');
         if (!(content instanceof String)) {
-            this.zendeskService.addNewFile(content, name, type)
+            this.zendeskService.addNewFile(content, fileDate + '_' + name, type)
                 .then(function (responseData) {
                 if (responseData !== undefined && responseData !== null) {
                     back(JSON.parse(responseData).upload);
@@ -564,10 +570,15 @@ var AddFileComponent = (function () {
             this.showErrorMessage('Error! File not exist or size bigger than 20 MB');
         }
     };
+    /**
+    * removeFile - Method to remove a file to attach
+    *
+    * @param {any}   file File object with the file to remove
+    */
     AddFileComponent.prototype.removeFile = function (file) {
         this.otherfiles = this.otherfiles.filter(function (data) { return data.name !== file.name; });
         this.removed.emit(file.name);
-        __WEBPACK_IMPORTED_MODULE_8_jquery_dist_jquery__('span.ng-tooltip').hide();
+        __WEBPACK_IMPORTED_MODULE_9_jquery_dist_jquery__('span.ng-tooltip').hide();
     };
     return AddFileComponent;
 }());
@@ -586,29 +597,29 @@ __decorate([
 AddFileComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-add-file',
-        template: __webpack_require__(383),
-        styles: [__webpack_require__(362)],
+        template: __webpack_require__(409),
+        styles: [__webpack_require__(373)],
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_7__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_7__ngx_translate_core__["c" /* TranslateService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_9__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_9__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_10__services_payara_service__["a" /* PayaraService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_10__services_payara_service__["a" /* PayaraService */]) === "function" && _c || Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_8__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_8__ngx_translate_core__["c" /* TranslateService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_10__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_10__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_11__services_payara_service__["a" /* PayaraService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_11__services_payara_service__["a" /* PayaraService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1__angular_common__["DatePipe"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_common__["DatePipe"]) === "function" && _d || Object])
 ], AddFileComponent);
 
-var _a, _b, _c;
+var _a, _b, _c, _d;
 //# sourceMappingURL=add-file.component.js.map
 
 /***/ }),
 
-/***/ 106:
+/***/ 107:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_common__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_common__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_switchMap__ = __webpack_require__(243);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_switchMap__ = __webpack_require__(248);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_switchMap___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_switchMap__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ticket_data_ticket_data_component__ = __webpack_require__(110);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ticket_data_ticket_data_component__ = __webpack_require__(111);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__services_zendesk_service__ = __webpack_require__(24);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DetailedTicketComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -682,8 +693,8 @@ __decorate([
 DetailedTicketComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-detailed-ticket',
-        template: __webpack_require__(385),
-        styles: [__webpack_require__(364)]
+        template: __webpack_require__(411),
+        styles: [__webpack_require__(375)]
     }),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["ActivatedRoute"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["ActivatedRoute"]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_6__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_2__angular_common__["DatePipe"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_common__["DatePipe"]) === "function" && _d || Object])
 ], DetailedTicketComponent);
@@ -693,17 +704,17 @@ var _a, _b, _c, _d;
 
 /***/ }),
 
-/***/ 107:
+/***/ 108:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__services_zendesk_service__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__services_login_service__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__services_login_service__ = __webpack_require__(32);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ListTicketsComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -815,6 +826,7 @@ var ListTicketsComponent = (function () {
      * @param {Ticket[]}  responseData Array of tickets fromthe API
      */
     ListTicketsComponent.prototype.callbackTickets = function (responseData) {
+        var _this = this;
         if (responseData !== undefined && responseData !== null) {
             responseData.sort(function (a, b) {
                 if (a['id'] < b['id'])
@@ -830,6 +842,18 @@ var ListTicketsComponent = (function () {
                 this.zendeskService.ticketsUser = this.tickets;
             }
             else {
+                this.tickets.forEach(function (ticket) {
+                    _this.zendeskService.getUserIdentity('' + ticket.requester_id)
+                        .then(function (responseData) {
+                        if (responseData !== undefined && responseData !== null) {
+                            ticket.submitter_name = responseData.name;
+                        }
+                    }, function (error) {
+                        _this.translate.get('Error! Service Unavailable').subscribe(function (res) {
+                            _this.errorMessage = res;
+                        });
+                    });
+                });
                 this.zendeskService.ticketsOrganization = this.tickets;
             }
         }
@@ -980,8 +1004,8 @@ var ListTicketsComponent = (function () {
 ListTicketsComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-list-tickets',
-        template: __webpack_require__(386),
-        styles: [__webpack_require__(365)]
+        template: __webpack_require__(412),
+        styles: [__webpack_require__(376)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__["c" /* TranslateService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["ActivatedRoute"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["ActivatedRoute"]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__services_login_service__["a" /* LoginService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__services_login_service__["a" /* LoginService */]) === "function" && _e || Object])
 ], ListTicketsComponent);
@@ -991,21 +1015,21 @@ var _a, _b, _c, _d, _e;
 
 /***/ }),
 
-/***/ 108:
+/***/ 109:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_jquery_dist_jquery__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_crypto_js_crypto_js__ = __webpack_require__(126);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_crypto_js_crypto_js__ = __webpack_require__(129);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_crypto_js_crypto_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_crypto_js_crypto_js__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__services_zendesk_service__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__services_login_service__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__services_payara_service__ = __webpack_require__(71);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__classes_user__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__services_login_service__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__services_payara_service__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__classes_user__ = __webpack_require__(73);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LoginComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1161,8 +1185,8 @@ var LoginComponent = (function () {
 LoginComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-login',
-        template: __webpack_require__(387),
-        styles: [__webpack_require__(366)]
+        template: __webpack_require__(413),
+        styles: [__webpack_require__(377)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__["c" /* TranslateService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["ActivatedRoute"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["ActivatedRoute"]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_5__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_6__services_login_service__["a" /* LoginService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__services_login_service__["a" /* LoginService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_7__services_payara_service__["a" /* PayaraService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_7__services_payara_service__["a" /* PayaraService */]) === "function" && _f || Object])
 ], LoginComponent);
@@ -1172,23 +1196,24 @@ var _a, _b, _c, _d, _e, _f;
 
 /***/ }),
 
-/***/ 109:
+/***/ 110:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_common__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_forms__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_common__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_forms__ = __webpack_require__(52);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ngx_translate_core__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_jquery_dist_jquery__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_jquery_dist_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_jquery_dist_jquery__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_Rx__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_Rx__ = __webpack_require__(96);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_Rx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__services_login_service__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__classes_ticket__ = __webpack_require__(69);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__classes_user__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__services_payara_service__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__services_login_service__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__classes_ticket__ = __webpack_require__(72);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__classes_user__ = __webpack_require__(73);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return NewTicketComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1217,26 +1242,28 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var NewTicketComponent = (function () {
     /**
      * constructor - Constructor of the component
      */
-    function NewTicketComponent(translate, fb, router, zendeskService, loginService, datePipe) {
+    function NewTicketComponent(translate, fb, router, zendeskService, payaraService, loginService, datePipe) {
         this.translate = translate;
         this.fb = fb;
         this.router = router;
         this.zendeskService = zendeskService;
+        this.payaraService = payaraService;
         this.loginService = loginService;
         this.datePipe = datePipe;
-        this.user = new __WEBPACK_IMPORTED_MODULE_10__classes_user__["a" /* User */]();
-        this.newTicket = new __WEBPACK_IMPORTED_MODULE_9__classes_ticket__["a" /* Ticket */]();
+        this.user = new __WEBPACK_IMPORTED_MODULE_11__classes_user__["a" /* User */]();
+        this.newTicket = new __WEBPACK_IMPORTED_MODULE_10__classes_ticket__["a" /* Ticket */]();
+        this.payaraVersion = "";
     }
     /**
      * ngOnInit - OnInit method of the component
      */
     NewTicketComponent.prototype.ngOnInit = function () {
         var _this = this;
-        this.initTicket();
         this.user = this.loginService.user;
         this.genericFields = this.zendeskService.genericFields;
         this.genericFields.forEach(function (field) {
@@ -1253,7 +1280,17 @@ var NewTicketComponent = (function () {
                 });
             });
         });
-        this.newAttachments = [];
+        this.payaraService.getPayaraVersion()
+            .then(function (responseData) {
+            if (responseData !== undefined && responseData !== null) {
+                _this.payaraVersion = responseData;
+            }
+            _this.initTicket();
+        }, function (error) {
+            _this.translate.get('Error! Service Unavailable').subscribe(function (res) {
+                _this.errorMessage = res;
+            });
+        });
     };
     /**
      * ngOnDestroy - OnDestroy method of the component
@@ -1262,7 +1299,6 @@ var NewTicketComponent = (function () {
         __WEBPACK_IMPORTED_MODULE_5_jquery_dist_jquery__('span.ng-tooltip').hide();
         this.initTicket();
         this.errorMessage = "";
-        this.newAttachments = [];
         if (this.sub)
             this.sub.unsubscribe();
     };
@@ -1270,13 +1306,14 @@ var NewTicketComponent = (function () {
      * initTicket - Method to initiate the new ticket data
      */
     NewTicketComponent.prototype.initTicket = function () {
+        this.newAttachments = [];
         this.ticketForm = this.fb.group({
             subject: ['', [__WEBPACK_IMPORTED_MODULE_3__angular_forms__["Validators"].required]],
             description: ['', [__WEBPACK_IMPORTED_MODULE_3__angular_forms__["Validators"].required]],
             type: ['problem', [__WEBPACK_IMPORTED_MODULE_3__angular_forms__["Validators"].required]],
             environment: ['prod', [__WEBPACK_IMPORTED_MODULE_3__angular_forms__["Validators"].required]],
             priority: ['normal', [__WEBPACK_IMPORTED_MODULE_3__angular_forms__["Validators"].required]],
-            version: ['', [__WEBPACK_IMPORTED_MODULE_3__angular_forms__["Validators"].required]]
+            version: [this.payaraVersion, [__WEBPACK_IMPORTED_MODULE_3__angular_forms__["Validators"].required]]
         });
     };
     /**
@@ -1322,6 +1359,13 @@ var NewTicketComponent = (function () {
                 ticketData.comment.attachments.push(this.newAttachments[0].attachment);
             }
             ticketData.comment.created_at = this.datePipe.transform(new Date(), 'yyyy-MM-ddTHH:mm:ss');
+            ticketData.custom_fields = [];
+            if (ticketData.environment) {
+                ticketData.custom_fields.push({ id: this.genericFields[4].id, value: ticketData.environment });
+            }
+            if (ticketData.version) {
+                ticketData.custom_fields.push({ id: this.genericFields[15].id, value: ticketData.version });
+            }
             this.zendeskService.createNewTicket(ticketData)
                 .then(function (responseData) {
                 if (responseData !== undefined && responseData !== null) {
@@ -1356,18 +1400,18 @@ var NewTicketComponent = (function () {
 NewTicketComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-new-ticket',
-        template: __webpack_require__(388),
-        styles: [__webpack_require__(367)]
+        template: __webpack_require__(414),
+        styles: [__webpack_require__(378)]
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__ngx_translate_core__["c" /* TranslateService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__angular_forms__["FormBuilder"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_forms__["FormBuilder"]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_8__services_login_service__["a" /* LoginService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_8__services_login_service__["a" /* LoginService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_2__angular_common__["DatePipe"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_common__["DatePipe"]) === "function" && _f || Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__ngx_translate_core__["c" /* TranslateService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__angular_forms__["FormBuilder"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_forms__["FormBuilder"]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_8__services_payara_service__["a" /* PayaraService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_8__services_payara_service__["a" /* PayaraService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_9__services_login_service__["a" /* LoginService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_9__services_login_service__["a" /* LoginService */]) === "function" && _f || Object, typeof (_g = typeof __WEBPACK_IMPORTED_MODULE_2__angular_common__["DatePipe"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_common__["DatePipe"]) === "function" && _g || Object])
 ], NewTicketComponent);
 
-var _a, _b, _c, _d, _e, _f;
+var _a, _b, _c, _d, _e, _f, _g;
 //# sourceMappingURL=new-ticket.component.js.map
 
 /***/ }),
 
-/***/ 110:
+/***/ 111:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1376,8 +1420,8 @@ var _a, _b, _c, _d, _e, _f;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_jquery_dist_jquery__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_jquery_dist_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_jquery_dist_jquery__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__services_zendesk_service__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__services_login_service__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__classes_ticket__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__services_login_service__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__classes_ticket__ = __webpack_require__(72);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return TicketDataComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1514,8 +1558,8 @@ __decorate([
 TicketDataComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-ticket-data',
-        template: __webpack_require__(389),
-        styles: [__webpack_require__(368)]
+        template: __webpack_require__(415),
+        styles: [__webpack_require__(379)]
     }),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__ngx_translate_core__["c" /* TranslateService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4__services_login_service__["a" /* LoginService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_login_service__["a" /* LoginService */]) === "function" && _d || Object])
 ], TicketDataComponent);
@@ -1525,13 +1569,13 @@ var _a, _b, _c, _d;
 
 /***/ }),
 
-/***/ 111:
+/***/ 112:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_login_service__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_login_service__ = __webpack_require__(32);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AuthGuard; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1597,10 +1641,10 @@ var _a, _b;
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(51);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_jquery__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_jquery__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_operator_toPromise__ = __webpack_require__(60);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_operator_toPromise__ = __webpack_require__(63);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_add_operator_toPromise__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ZendeskService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -1793,7 +1837,7 @@ var _a;
 
 /***/ }),
 
-/***/ 280:
+/***/ 285:
 /***/ (function(module, exports) {
 
 function webpackEmptyContext(req) {
@@ -1802,20 +1846,20 @@ function webpackEmptyContext(req) {
 webpackEmptyContext.keys = function() { return []; };
 webpackEmptyContext.resolve = webpackEmptyContext;
 module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 280;
+webpackEmptyContext.id = 285;
 
 
 /***/ }),
 
-/***/ 281:
+/***/ 286:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(295);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(301);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__environments_environment__ = __webpack_require__(52);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_app_module__ = __webpack_require__(299);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__environments_environment__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_app_module__ = __webpack_require__(305);
 
 
 
@@ -1828,22 +1872,22 @@ __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dyna
 
 /***/ }),
 
-/***/ 298:
+/***/ 304:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_moment__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__(52);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__(54);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ngx_translate_core__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_crypto_js_crypto_js__ = __webpack_require__(126);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_crypto_js_crypto_js__ = __webpack_require__(129);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_crypto_js_crypto_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_crypto_js_crypto_js__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__services_login_service__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__services_login_service__ = __webpack_require__(32);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__services_payara_service__ = __webpack_require__(71);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__classes_user__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__services_payara_service__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__classes_user__ = __webpack_require__(73);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1935,7 +1979,7 @@ var AppComponent = (function () {
                                 _this.loginService.user = _this.user;
                                 localStorage.setItem('currentUser', JSON.stringify(_this.user));
                                 _this.zendeskService.OAuthToken = _this.loginService.connectionData.OauthToken;
-                                localStorage.setItem('showMessage', null);
+                                localStorage.setItem('showMessage', JSON.stringify(false));
                                 _this.router.navigate(['/list']);
                             }
                             else {
@@ -1989,8 +2033,8 @@ var AppComponent = (function () {
 AppComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-root',
-        template: __webpack_require__(382),
-        styles: [__webpack_require__(361)],
+        template: __webpack_require__(408),
+        styles: [__webpack_require__(372)],
         providers: [__WEBPACK_IMPORTED_MODULE_6__services_login_service__["a" /* LoginService */], __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__["a" /* ZendeskService */], __WEBPACK_IMPORTED_MODULE_8__services_payara_service__["a" /* PayaraService */]]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__ngx_translate_core__["c" /* TranslateService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["Router"]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["ActivatedRoute"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["ActivatedRoute"]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_7__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_6__services_login_service__["a" /* LoginService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__services_login_service__["a" /* LoginService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_8__services_payara_service__["a" /* PayaraService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_8__services_payara_service__["a" /* PayaraService */]) === "function" && _f || Object])
@@ -2001,38 +2045,39 @@ var _a, _b, _c, _d, _e, _f;
 
 /***/ }),
 
-/***/ 299:
+/***/ 305:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__(50);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__(51);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_common__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__(52);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_router__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_common__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ngx_translate_core__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ngx_translate_http_loader__ = __webpack_require__(304);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_ngx_modal__ = __webpack_require__(374);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ngx_translate_http_loader__ = __webpack_require__(310);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_ngx_modal__ = __webpack_require__(386);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_ngx_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_ngx_modal__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_ng2_tooltip_directive_components__ = __webpack_require__(373);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_ng2_tooltip_directive_components__ = __webpack_require__(385);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_ng2_tooltip_directive_components___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_ng2_tooltip_directive_components__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_jw_bootstrap_switch_ng2__ = __webpack_require__(371);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_jw_bootstrap_switch_ng2__ = __webpack_require__(382);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_jw_bootstrap_switch_ng2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_jw_bootstrap_switch_ng2__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__angular_platform_browser_animations__ = __webpack_require__(296);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__environments_environment__ = __webpack_require__(52);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__app_component__ = __webpack_require__(298);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__app_routing__ = __webpack_require__(300);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__components_login_login_component__ = __webpack_require__(108);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__components_list_tickets_list_tickets_component__ = __webpack_require__(107);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__components_new_ticket_new_ticket_component__ = __webpack_require__(109);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__components_detailed_ticket_detailed_ticket_component__ = __webpack_require__(106);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__components_add_file_add_file_component__ = __webpack_require__(105);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__components_ticket_data_ticket_data_component__ = __webpack_require__(110);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__components_comment_data_comment_data_component__ = __webpack_require__(302);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__services_login_service__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__guards_auth_guard__ = __webpack_require__(111);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__pipes_day_time_pipe__ = __webpack_require__(303);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__angular_platform_browser_animations__ = __webpack_require__(302);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_angular2_markdown__ = __webpack_require__(312);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__environments_environment__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__app_component__ = __webpack_require__(304);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__app_routing__ = __webpack_require__(306);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__components_login_login_component__ = __webpack_require__(109);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__components_list_tickets_list_tickets_component__ = __webpack_require__(108);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__components_new_ticket_new_ticket_component__ = __webpack_require__(110);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__components_detailed_ticket_detailed_ticket_component__ = __webpack_require__(107);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__components_add_file_add_file_component__ = __webpack_require__(106);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__components_ticket_data_ticket_data_component__ = __webpack_require__(111);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__components_comment_data_comment_data_component__ = __webpack_require__(308);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__services_login_service__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__guards_auth_guard__ = __webpack_require__(112);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__pipes_day_time_pipe__ = __webpack_require__(309);
 /* unused harmony export createTranslateLoader */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
 /**
@@ -2051,6 +2096,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 /**
  * Generic imports
  */
+
 
 
 
@@ -2085,7 +2131,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 function createTranslateLoader(http) {
     return new __WEBPACK_IMPORTED_MODULE_7__ngx_translate_http_loader__["a" /* TranslateHttpLoader */](http, './assets/i18n/', '.json');
 }
-if (__WEBPACK_IMPORTED_MODULE_12__environments_environment__["a" /* environment */].production) {
+if (__WEBPACK_IMPORTED_MODULE_13__environments_environment__["a" /* environment */].production) {
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["enableProdMode"])();
 }
 var AppModule = (function () {
@@ -2096,15 +2142,15 @@ var AppModule = (function () {
 AppModule = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["NgModule"])({
         declarations: [
-            __WEBPACK_IMPORTED_MODULE_13__app_component__["a" /* AppComponent */],
-            __WEBPACK_IMPORTED_MODULE_15__components_login_login_component__["a" /* LoginComponent */],
-            __WEBPACK_IMPORTED_MODULE_16__components_list_tickets_list_tickets_component__["a" /* ListTicketsComponent */],
-            __WEBPACK_IMPORTED_MODULE_17__components_new_ticket_new_ticket_component__["a" /* NewTicketComponent */],
-            __WEBPACK_IMPORTED_MODULE_18__components_detailed_ticket_detailed_ticket_component__["a" /* DetailedTicketComponent */],
-            __WEBPACK_IMPORTED_MODULE_19__components_add_file_add_file_component__["a" /* AddFileComponent */],
-            __WEBPACK_IMPORTED_MODULE_20__components_ticket_data_ticket_data_component__["a" /* TicketDataComponent */],
-            __WEBPACK_IMPORTED_MODULE_21__components_comment_data_comment_data_component__["a" /* CommentDataComponent */],
-            __WEBPACK_IMPORTED_MODULE_24__pipes_day_time_pipe__["a" /* DayTimePipe */],
+            __WEBPACK_IMPORTED_MODULE_14__app_component__["a" /* AppComponent */],
+            __WEBPACK_IMPORTED_MODULE_16__components_login_login_component__["a" /* LoginComponent */],
+            __WEBPACK_IMPORTED_MODULE_17__components_list_tickets_list_tickets_component__["a" /* ListTicketsComponent */],
+            __WEBPACK_IMPORTED_MODULE_18__components_new_ticket_new_ticket_component__["a" /* NewTicketComponent */],
+            __WEBPACK_IMPORTED_MODULE_19__components_detailed_ticket_detailed_ticket_component__["a" /* DetailedTicketComponent */],
+            __WEBPACK_IMPORTED_MODULE_20__components_add_file_add_file_component__["a" /* AddFileComponent */],
+            __WEBPACK_IMPORTED_MODULE_21__components_ticket_data_ticket_data_component__["a" /* TicketDataComponent */],
+            __WEBPACK_IMPORTED_MODULE_22__components_comment_data_comment_data_component__["a" /* CommentDataComponent */],
+            __WEBPACK_IMPORTED_MODULE_25__pipes_day_time_pipe__["a" /* DayTimePipe */],
             __WEBPACK_IMPORTED_MODULE_9_ng2_tooltip_directive_components__["TooltipDirective"]
         ],
         schemas: [__WEBPACK_IMPORTED_MODULE_1__angular_core__["CUSTOM_ELEMENTS_SCHEMA"]],
@@ -2116,7 +2162,8 @@ AppModule = __decorate([
             __WEBPACK_IMPORTED_MODULE_2__angular_forms__["ReactiveFormsModule"],
             __WEBPACK_IMPORTED_MODULE_3__angular_http__["a" /* HttpModule */],
             __WEBPACK_IMPORTED_MODULE_8_ngx_modal__["ModalModule"],
-            __WEBPACK_IMPORTED_MODULE_14__app_routing__["a" /* routing */],
+            __WEBPACK_IMPORTED_MODULE_15__app_routing__["a" /* routing */],
+            __WEBPACK_IMPORTED_MODULE_12_angular2_markdown__["a" /* MarkdownModule */].forRoot(),
             __WEBPACK_IMPORTED_MODULE_6__ngx_translate_core__["a" /* TranslateModule */].forRoot({
                 loader: {
                     provide: __WEBPACK_IMPORTED_MODULE_6__ngx_translate_core__["b" /* TranslateLoader */],
@@ -2127,16 +2174,16 @@ AppModule = __decorate([
         ],
         exports: [
             __WEBPACK_IMPORTED_MODULE_4__angular_router__["RouterModule"],
-            __WEBPACK_IMPORTED_MODULE_24__pipes_day_time_pipe__["a" /* DayTimePipe */],
+            __WEBPACK_IMPORTED_MODULE_25__pipes_day_time_pipe__["a" /* DayTimePipe */],
             __WEBPACK_IMPORTED_MODULE_6__ngx_translate_core__["a" /* TranslateModule */]
         ],
         providers: [
             __WEBPACK_IMPORTED_MODULE_5__angular_common__["DatePipe"],
-            __WEBPACK_IMPORTED_MODULE_24__pipes_day_time_pipe__["a" /* DayTimePipe */],
-            __WEBPACK_IMPORTED_MODULE_23__guards_auth_guard__["a" /* AuthGuard */],
-            __WEBPACK_IMPORTED_MODULE_22__services_login_service__["a" /* LoginService */]
+            __WEBPACK_IMPORTED_MODULE_25__pipes_day_time_pipe__["a" /* DayTimePipe */],
+            __WEBPACK_IMPORTED_MODULE_24__guards_auth_guard__["a" /* AuthGuard */],
+            __WEBPACK_IMPORTED_MODULE_23__services_login_service__["a" /* LoginService */]
         ],
-        bootstrap: [__WEBPACK_IMPORTED_MODULE_13__app_component__["a" /* AppComponent */]]
+        bootstrap: [__WEBPACK_IMPORTED_MODULE_14__app_component__["a" /* AppComponent */]]
     })
 ], AppModule);
 
@@ -2144,16 +2191,16 @@ AppModule = __decorate([
 
 /***/ }),
 
-/***/ 300:
+/***/ 306:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_login_login_component__ = __webpack_require__(108);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_list_tickets_list_tickets_component__ = __webpack_require__(107);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_new_ticket_new_ticket_component__ = __webpack_require__(109);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_detailed_ticket_detailed_ticket_component__ = __webpack_require__(106);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__guards_auth_guard__ = __webpack_require__(111);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_router__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_login_login_component__ = __webpack_require__(109);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_list_tickets_list_tickets_component__ = __webpack_require__(108);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_new_ticket_new_ticket_component__ = __webpack_require__(110);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_detailed_ticket_detailed_ticket_component__ = __webpack_require__(107);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__guards_auth_guard__ = __webpack_require__(112);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return routing; });
 /**
  *
@@ -2182,7 +2229,7 @@ var routing = __WEBPACK_IMPORTED_MODULE_0__angular_router__["RouterModule"].forR
 
 /***/ }),
 
-/***/ 301:
+/***/ 307:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2197,21 +2244,21 @@ var Comment = (function () {
 
 /***/ }),
 
-/***/ 302:
+/***/ 308:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__ = __webpack_require__(96);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_jquery_dist_jquery__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_jquery_dist_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_jquery_dist_jquery__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__services_zendesk_service__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__add_file_add_file_component__ = __webpack_require__(105);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__classes_ticket__ = __webpack_require__(69);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__classes_comment__ = __webpack_require__(301);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__add_file_add_file_component__ = __webpack_require__(106);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__classes_ticket__ = __webpack_require__(72);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__classes_comment__ = __webpack_require__(307);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CommentDataComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2284,6 +2331,18 @@ var CommentDataComponent = (function () {
                         return 0;
                 });
                 _this.comments = responseData;
+                _this.comments.forEach(function (comment) {
+                    _this.zendeskService.getUserIdentity('' + comment.author_id)
+                        .then(function (responseData) {
+                        if (responseData !== undefined && responseData !== null) {
+                            comment.author_name = responseData.name;
+                        }
+                    }, function (error) {
+                        _this.translate.get('Error! Service Unavailable').subscribe(function (res) {
+                            _this.errorMessage = res;
+                        });
+                    });
+                });
             }
         }, function (error) {
             _this.translate.get('Error! Service Unavailable').subscribe(function (res) {
@@ -2306,26 +2365,27 @@ var CommentDataComponent = (function () {
      * @param {string}  removedAttachment String with name of the file to remove
      */
     CommentDataComponent.prototype.onRemovedAttachment = function (removedAttachment) {
-        var _this = this;
         if (this.newAttachments.length > 0) {
             this.newAttachments = this.newAttachments.filter(function (data) { return data.attachment.file_name.indexOf(removedAttachment) === -1; });
         }
-        if (this.newCommentText) {
-            var comments = this.newCommentText.split(' -------------- ')[0];
-            var addedFiles = this.newCommentText.split(' -------------- ')[1].split('\n');
-            this.newCommentText = comments.trim();
-            if (addedFiles.length > 2) {
-                this.newCommentText += '\n -------------- \n';
-                addedFiles.forEach(function (line) {
-                    if ('*' + line + '*' !== '**' && line.indexOf(removedAttachment) === -1) {
-                        _this.newCommentText += line + '\n';
-                    }
-                });
-            }
-            if (this.newCommentText.indexOf('- ' + this.fileText + ':') === -1) {
-                this.newCommentText = comments;
-            }
+        /*
+        if(this.newCommentText){
+          let comments = this.newCommentText.split(' -------------- ')[0];
+          let addedFiles = this.newCommentText.split(' -------------- ')[1].split('\n');
+          this.newCommentText = comments.trim();
+          if(addedFiles.length > 2){
+            this.newCommentText += '\n -------------- \n';
+            addedFiles.forEach((line) => {
+              if('*'+line+'*'!=='**' && line.indexOf(removedAttachment) === -1){
+                this.newCommentText += line+'\n';
+              }
+            });
+          }
+          if(this.newCommentText.indexOf('- '+this.fileText+':') === -1){
+            this.newCommentText = comments;
+          }
         }
+        */
     };
     /**
      * onSavedAttachment - Method to add new files to a files array
@@ -2335,26 +2395,27 @@ var CommentDataComponent = (function () {
     CommentDataComponent.prototype.onSavedAttachment = function (newAttachment) {
         if (newAttachment.attachment !== null) {
             this.newAttachments.push(newAttachment);
-            if (this.newAttachments.length === 1) {
-                this.newCommentText = this.newCommentText !== undefined ? this.newCommentText : "";
-                if ('*' + this.newCommentText + '*' !== '**') {
-                    this.newCommentText = this.newCommentText.trim();
-                }
-                this.newCommentText += '\n -------------- \n';
+            /*
+            if(this.newAttachments.length === 1){
+              this.newCommentText = this.newCommentText!==undefined?this.newCommentText:"";
+              if('*'+this.newCommentText+'*'!=='**'){
+                this.newCommentText = this.newCommentText.trim()
+              }
+              this.newCommentText += '\n -------------- \n';
+            } else if(this.newAttachments.length > 1){
+              let comments = this.newCommentText.split(' -------------- ')[0].trim();
+              let files = this.newCommentText.split(' -------------- ')[1];
+              this.newCommentText = comments;
+              this.newCommentText += '\n -------------- ';
+              this.newCommentText += files;
             }
-            else if (this.newAttachments.length > 1) {
-                var comments = this.newCommentText.split(' -------------- ')[0].trim();
-                var files = this.newCommentText.split(' -------------- ')[1];
-                this.newCommentText = comments;
-                this.newCommentText += '\n -------------- ';
-                this.newCommentText += files;
-            }
-            this.newCommentText += '- ' + this.fileText + ': ' + newAttachment['attachment'].file_name + ' added!\n';
+            this.newCommentText += '- '+this.fileText+': ' + newAttachment['attachment'].file_name + ' added!\n';
+            */
         }
         else {
             this.addFilecomponent.cleanFiles();
             this.newAttachments = [];
-            this.newCommentText = this.newCommentText.split(' -------------- ')[0].trim();
+            //this.newCommentText = this.newCommentText.split(' -------------- ')[0].trim();
         }
     };
     /**
@@ -2365,6 +2426,7 @@ var CommentDataComponent = (function () {
         if (this.newCommentText !== undefined && this.newCommentText !== null && this.newCommentText !== '') {
             var newComment_1 = new __WEBPACK_IMPORTED_MODULE_8__classes_comment__["a" /* Comment */]();
             newComment_1.body = this.newCommentText;
+            newComment_1.created_at = this.datePipe.transform(new Date(), 'yyyy-MM-ddTHH:mm:ss');
             if (this.newAttachments !== undefined && this.newAttachments.length > 0) {
                 newComment_1.uploads = [];
                 newComment_1.attachments = [];
@@ -2373,7 +2435,6 @@ var CommentDataComponent = (function () {
                     newComment_1.attachments.push(file.attachment);
                 });
             }
-            newComment_1.created_at = this.datePipe.transform(new Date(), 'yyyy-MM-ddTHH:mm:ss');
             this.comments.push(newComment_1);
             this.comments.sort(function (a, b) {
                 if (a['created_at'] > b['created_at'])
@@ -2424,8 +2485,8 @@ __decorate([
 CommentDataComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-comment-data',
-        template: __webpack_require__(384),
-        styles: [__webpack_require__(363)]
+        template: __webpack_require__(410),
+        styles: [__webpack_require__(374)]
     }),
     __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__ngx_translate_core__["c" /* TranslateService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_5__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_1__angular_common__["DatePipe"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_common__["DatePipe"]) === "function" && _e || Object])
 ], CommentDataComponent);
@@ -2435,7 +2496,7 @@ var _a, _b, _c, _d, _e;
 
 /***/ }),
 
-/***/ 303:
+/***/ 309:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2473,7 +2534,7 @@ var DayTimePipe = (function () {
             else {
                 var oneWeekAgo = __WEBPACK_IMPORTED_MODULE_1_moment__(new Date()).subtract(1, 'week');
                 if (d.isBefore(oneWeekAgo)) {
-                    std = d.format('D MMMM');
+                    std = d.format('D MMMM HH:mm');
                 }
                 else {
                     var oneDayAgo = __WEBPACK_IMPORTED_MODULE_1_moment__(new Date()).subtract(1, 'day');
@@ -2487,13 +2548,15 @@ var DayTimePipe = (function () {
                                 std = d.format('HH:mm');
                             }
                             else {
-                                var minuteAgo = __WEBPACK_IMPORTED_MODULE_1_moment__(new Date()).subtract(1, 'minute');
+                                std = d.format('HH:mm:ss');
+                                /*
+                                let minuteAgo = moment(new Date()).subtract(1,'minute');
                                 if (d.isBefore(minuteAgo)) {
                                     std = d.format('HH:mm:ss');
-                                }
-                                else {
+                                }else{
                                     std = 'just now';
                                 }
+                                */
                             }
                         }
                     }
@@ -2514,13 +2577,13 @@ DayTimePipe = __decorate([
 
 /***/ }),
 
-/***/ 31:
+/***/ 32:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(51);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__ = __webpack_require__(60);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__ = __webpack_require__(63);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LoginService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2595,7 +2658,7 @@ var _a;
 
 /***/ }),
 
-/***/ 361:
+/***/ 372:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(15)();
@@ -2603,7 +2666,7 @@ exports = module.exports = __webpack_require__(15)();
 
 
 // module
-exports.push([module.i, ".logout {\n  margin-top: -3.75rem;\n}\n\n.app_header{\n  padding-bottom: 1.5rem;\n}\n\n.appTittle {\n  margin-left: 1.8rem;\n  font-weight: bold;\n  color: #0a303d;\n  text-align: left;\n}\n\n.username{\n  font-size: small;\n  font-style: oblique;\n}\n\nbutton.btn.btn-default{\n  background: #18353d;\n  color: #FFF;\n  vertical-align: middle;\n  padding: 7px 15px 7px 15px;\n  border-radius: 3px;\n  font-size: 1.0em;\n  border-top-color:#83858C;\n\tborder-right-color:#62656B;\n\tborder-bottom-color:#44464C;\n\tborder-left-color:#62656B;\n}\nbutton.btn.btn-default:hover{\n  background:#f89d1f;\n\tborder-top-color:#6D8197;\n\tborder-right-color:#475D75;\n\tborder-bottom-color:#273E5A;\n\tborder-left-color:#475D75;\n}\n", ""]);
+exports.push([module.i, ".logout {\n  margin-top: -3.75rem;\n}\n\n.app_header{\n  padding-bottom: 1.5rem;\n}\n\n.appTittle {\n  margin-left: 1.8rem;\n  font-weight: bold;\n  color: #0a303d;\n  text-align: left;\n}\n\n.username{\n  font-size: small;\n  font-style: oblique;\n  display: block;\n}\n\nbutton.btn.btn-default{\n  background: #18353d;\n  color: #FFF;\n  vertical-align: middle;\n  padding: 7px 15px 7px 15px;\n  border-radius: 3px;\n  font-size: 1.0em;\n  border-top-color:#83858C;\n\tborder-right-color:#62656B;\n\tborder-bottom-color:#44464C;\n\tborder-left-color:#62656B;\n}\nbutton.btn.btn-default:hover{\n  background:#f89d1f;\n\tborder-top-color:#6D8197;\n\tborder-right-color:#475D75;\n\tborder-bottom-color:#273E5A;\n\tborder-left-color:#475D75;\n}\n\n.supportGuide{\n  vertical-align: middle;\n  padding: 7px 15px 7px 15px;\n  border-radius: 3px;\n  font-size: 1.0em;\n  margin-top: -3.75rem;\n  text-decoration:none;\n  background: #E2E7EA;\n  color: #333333;\n}\n.supportGuide:hover{\n  text-decoration:none;\n  background: #4581B3;\n  color: #fff;\n}\n", ""]);
 
 // exports
 
@@ -2613,7 +2676,7 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ 362:
+/***/ 373:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(15)();
@@ -2631,7 +2694,7 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ 363:
+/***/ 374:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(15)();
@@ -2639,7 +2702,7 @@ exports = module.exports = __webpack_require__(15)();
 
 
 // module
-exports.push([module.i, ".new_comment{\n  resize: none;\n  outline: none;\n  width: 100%;\n  padding: 10px;\n  height: 100%;\n  border-radius: 5px;\n  background-color: #ffffff;\n  margin-bottom: .5rem;\n  height: 9rem;\n}\n\n.comment_box{\n  background-color: #cfcfcf;\n  margin-bottom: .25rem;\n  padding: .25rem;\n  text-align: left;\n}\n\npre code {\n    padding: 0;\n    font-size: 1.25rem;\n    margin-left: -1.5rem;\n}\n\n.attached-file {\n  color: #f0981b;\n  background-color: #325764;\n  padding: .5rem;\n  border-radius: .25rem;\n  margin: .25rem;\n}\n.attached-file span{\n  color: #ffffff;\n  background-color: #325764;\n  font-style: oblique;\n  font-size: small;\n  font-family: Arial, Helvetica, sans-serif;\n}\n", ""]);
+exports.push([module.i, ".new_comment{\n  resize: none;\n  outline: none;\n  width: 100%;\n  padding: 10px;\n  height: 100%;\n  border-radius: 5px;\n  background-color: #ffffff;\n  margin-bottom: .5rem;\n  height: 9rem;\n}\n\n.comment_box{\n  border: .15rem solid #cfcfcf;\n  box-shadow: 0.5rem 0.5rem #cfcfcf;\n  margin-bottom: 1rem;\n  padding: .25rem;\n  text-align: left;\n}\n\npre code {\n    padding: 0;\n    font-size: 1.25rem;\n    margin-left: -1.5rem;\n}\n\n.attached-file {\n  color: #f0981b;\n  background-color: #325764;\n  padding: .5rem;\n  border-radius: .25rem;\n  margin: .25rem;\n}\n.attached-file span{\n  color: #ffffff;\n  background-color: #325764;\n  font-style: oblique;\n  font-size: small;\n  font-family: Arial, Helvetica, sans-serif;\n}\n.authorName{\n  white-space: nowrap;\n}\n", ""]);
 
 // exports
 
@@ -2649,7 +2712,7 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ 364:
+/***/ 375:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(15)();
@@ -2667,7 +2730,7 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ 365:
+/***/ 376:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(15)();
@@ -2675,7 +2738,7 @@ exports = module.exports = __webpack_require__(15)();
 
 
 // module
-exports.push([module.i, ".addTicket {\n  margin-top: -.5rem;\n  font-size: .95rem;\n}\n\n.btn.btn-primary,\n.form-control{\n    font-size: 1.05rem;\n    height: auto;\n}\n.btn.btn-primary{\n  display: block;\n  padding: 8px 13px 7px;\n  text-align: center;\n  background-position: top right;\n  background-repeat: no-repeat;\n  border-color: #80929B;\n  background: #FCFFFF;\n  color:#000;\n}\n\n.btn.btn-primary.active{\n  background: #f89d1f;\n}\n\nspan.glyphicon.glyphicon-chevron-up,\nspan.glyphicon.glyphicon-chevron-down,\nspan.glyphicon.glyphicon-plus{\n  background-color: transparent;\n  margin-left: .15rem;\n}\n\nspan.glyphicon.glyphicon-plus::before{\n  margin-left: -.15rem;\n}\n\n\ntable.table-responsive.table-striped.table-sm.table-inverse.table-sortable{\n  margin-top: 5rem;\n}\n\n.selectable{\n    cursor: pointer;\n    text-align: left;\n    font-size: 1.15rem\n}\n\n.transparent{\n  background-color: transparent;\n}\n\n.alert-info{\n  background-color: #325764;\n  border-color: #325764;\n}\n\n.info{\n    color: #fff;\n    text-align: left;\n}\n\n.close{\n  opacity:1;\n}\n.closeMessage{\n  color: red;\n  font-size: x-large;\n}\n\n.supportGuide{\n  text-decoration:none;\n  background: #E2E7EA;\n  color: #333333;\n}\n.supportGuide:hover{\n  text-decoration:none;\n  background: #4581B3;\n  color: #fff;\n}\n", ""]);
+exports.push([module.i, ".addTicket {\n  margin-top: 0.75rem;\n  font-size: .95rem;\n  margin-right: 1.5rem;\n}\n\n.btn.btn-primary,\n.form-control{\n    font-size: 1.05rem;\n    height: auto;\n}\n.btn.btn-primary{\n  display: block;\n  padding: 8px 13px 7px;\n  text-align: center;\n  background-position: top right;\n  background-repeat: no-repeat;\n  border-color: #80929B;\n  background: #FCFFFF;\n  color:#000;\n}\n\n.btn.btn-primary.active{\n  background: #f89d1f;\n}\n\nspan.glyphicon.glyphicon-chevron-up,\nspan.glyphicon.glyphicon-chevron-down,\nspan.glyphicon.glyphicon-plus{\n  background-color: transparent;\n  margin-left: .15rem;\n}\n\nspan.glyphicon.glyphicon-plus::before{\n  margin-left: -.15rem;\n}\n\n\ntable.table-responsive.table-striped.table-sm.table-inverse.table-sortable{\n  margin-top: 5rem;\n}\n\n.selectable{\n    cursor: pointer;\n    text-align: left;\n    font-size: 1.15rem\n}\n\n.transparent{\n  background-color: transparent;\n}\n\n.alert-info{\n  background-color: #325764;\n  border-color: #325764;\n}\n\n.info{\n    color: #fff;\n    text-align: left;\n}\n\n.close{\n  opacity:1;\n}\n.closeMessage{\n  color: red;\n  font-size: x-large;\n}\n.panel.panel-default{\n  margin-top: 1rem;\n}\n", ""]);
 
 // exports
 
@@ -2685,7 +2748,7 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ 366:
+/***/ 377:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(15)();
@@ -2703,7 +2766,7 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ 367:
+/***/ 378:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(15)();
@@ -2721,7 +2784,7 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ 368:
+/***/ 379:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(15)();
@@ -2729,7 +2792,7 @@ exports = module.exports = __webpack_require__(15)();
 
 
 // module
-exports.push([module.i, "@media (min-width: 768px){\n  .detailContent {\n    border-left: thin solid #f0981b;\n    margin-left:1.5rem;\n    margin-top:1rem;\n  }\n}\n@media (max-width: 767px){\n  .detailContent {\n    border-left:none;\n  }\n}\n\n.detailData{\n  margin:.5rem;\n  padding: .25rem;\n  letter-spacing: 0.1rem;\n  display:flow-root;\n  text-align: left;\n}\n\n.detailData .titleDetailData{\n   float:left;\n}\n\n.detailData .contentDetailData{\n   float:right;\n   display:-webkit-box;\n   display:-ms-flexbox;\n   display:flex;\n}\n\n.titleData{\n  margin-top:.25rem;\n}\n\n.fileList{\n  margin:.5rem;\n  padding: .25rem;\n  letter-spacing: .05rem;\n  display:block;\n  text-align: left;\n}\n\n.attached-file-list {\n  color:#f0981b;\n  background-color: #325764;\n  padding: .5rem;\n  border-radius: .25rem;\n  margin: .25rem;\n  margin-left: .25rem;\n\n}\n.attached-file-list span{\n  color: #ffffff;\n  background-color: #325764;\n  font-style: oblique;\n  font-size: small;\n  font-family: Arial, Helvetica, sans-serif;\n}\n", ""]);
+exports.push([module.i, "@media (min-width: 768px){\n  .detailContent {\n    border-left: thin solid #f0981b;\n    margin-left:1.5rem;\n    margin-top:1rem;\n  }\n}\n@media (max-width: 767px){\n  .detailContent {\n    border-left:none;\n  }\n}\n\n.detailData{\n  margin:.5rem;\n  padding: .25rem;\n  letter-spacing: 0.1rem;\n  text-align: left;\n}\n\n.detailData .titleDetailData{\n   float:left;\n}\n\n.detailData .contentDetailData{\n   float:right;\n   display:-webkit-box;\n   display:-ms-flexbox;\n   display:flex;\n}\n\n.titleData{\n  margin-top:.25rem;\n}\n\n.fileList{\n  margin:.5rem;\n  padding: .25rem;\n  letter-spacing: .05rem;\n  display:block;\n  text-align: left;\n}\n\n.attached-file-list {\n  color:#f0981b;\n  background-color: #325764;\n  padding: .5rem;\n  border-radius: .25rem;\n  margin: .25rem;\n  margin-left: .25rem;\n\n}\n.attached-file-list span{\n  color: #ffffff;\n  background-color: #325764;\n  font-style: oblique;\n  font-size: small;\n  font-family: Arial, Helvetica, sans-serif;\n}\n.attached-list{\n  float:right;\n}\n", ""]);
 
 // exports
 
@@ -2739,226 +2802,226 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ 372:
+/***/ 384:
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./af": 128,
-	"./af.js": 128,
-	"./ar": 134,
-	"./ar-dz": 129,
-	"./ar-dz.js": 129,
-	"./ar-ly": 130,
-	"./ar-ly.js": 130,
-	"./ar-ma": 131,
-	"./ar-ma.js": 131,
-	"./ar-sa": 132,
-	"./ar-sa.js": 132,
-	"./ar-tn": 133,
-	"./ar-tn.js": 133,
-	"./ar.js": 134,
-	"./az": 135,
-	"./az.js": 135,
-	"./be": 136,
-	"./be.js": 136,
-	"./bg": 137,
-	"./bg.js": 137,
-	"./bn": 138,
-	"./bn.js": 138,
-	"./bo": 139,
-	"./bo.js": 139,
-	"./br": 140,
-	"./br.js": 140,
-	"./bs": 141,
-	"./bs.js": 141,
-	"./ca": 142,
-	"./ca.js": 142,
-	"./cs": 143,
-	"./cs.js": 143,
-	"./cv": 144,
-	"./cv.js": 144,
-	"./cy": 145,
-	"./cy.js": 145,
-	"./da": 146,
-	"./da.js": 146,
-	"./de": 148,
-	"./de-at": 147,
-	"./de-at.js": 147,
-	"./de.js": 148,
-	"./dv": 149,
-	"./dv.js": 149,
-	"./el": 150,
-	"./el.js": 150,
-	"./en-au": 151,
-	"./en-au.js": 151,
-	"./en-ca": 152,
-	"./en-ca.js": 152,
-	"./en-gb": 153,
-	"./en-gb.js": 153,
-	"./en-ie": 154,
-	"./en-ie.js": 154,
-	"./en-nz": 155,
-	"./en-nz.js": 155,
-	"./eo": 156,
-	"./eo.js": 156,
-	"./es": 158,
-	"./es-do": 157,
-	"./es-do.js": 157,
-	"./es.js": 158,
-	"./et": 159,
-	"./et.js": 159,
-	"./eu": 160,
-	"./eu.js": 160,
-	"./fa": 161,
-	"./fa.js": 161,
-	"./fi": 162,
-	"./fi.js": 162,
-	"./fo": 163,
-	"./fo.js": 163,
-	"./fr": 166,
-	"./fr-ca": 164,
-	"./fr-ca.js": 164,
-	"./fr-ch": 165,
-	"./fr-ch.js": 165,
-	"./fr.js": 166,
-	"./fy": 167,
-	"./fy.js": 167,
-	"./gd": 168,
-	"./gd.js": 168,
-	"./gl": 169,
-	"./gl.js": 169,
-	"./he": 170,
-	"./he.js": 170,
-	"./hi": 171,
-	"./hi.js": 171,
-	"./hr": 172,
-	"./hr.js": 172,
-	"./hu": 173,
-	"./hu.js": 173,
-	"./hy-am": 174,
-	"./hy-am.js": 174,
-	"./id": 175,
-	"./id.js": 175,
-	"./is": 176,
-	"./is.js": 176,
-	"./it": 177,
-	"./it.js": 177,
-	"./ja": 178,
-	"./ja.js": 178,
-	"./jv": 179,
-	"./jv.js": 179,
-	"./ka": 180,
-	"./ka.js": 180,
-	"./kk": 181,
-	"./kk.js": 181,
-	"./km": 182,
-	"./km.js": 182,
-	"./ko": 183,
-	"./ko.js": 183,
-	"./ky": 184,
-	"./ky.js": 184,
-	"./lb": 185,
-	"./lb.js": 185,
-	"./lo": 186,
-	"./lo.js": 186,
-	"./lt": 187,
-	"./lt.js": 187,
-	"./lv": 188,
-	"./lv.js": 188,
-	"./me": 189,
-	"./me.js": 189,
-	"./mi": 190,
-	"./mi.js": 190,
-	"./mk": 191,
-	"./mk.js": 191,
-	"./ml": 192,
-	"./ml.js": 192,
-	"./mr": 193,
-	"./mr.js": 193,
-	"./ms": 195,
-	"./ms-my": 194,
-	"./ms-my.js": 194,
-	"./ms.js": 195,
-	"./my": 196,
-	"./my.js": 196,
-	"./nb": 197,
-	"./nb.js": 197,
-	"./ne": 198,
-	"./ne.js": 198,
-	"./nl": 200,
-	"./nl-be": 199,
-	"./nl-be.js": 199,
-	"./nl.js": 200,
-	"./nn": 201,
-	"./nn.js": 201,
-	"./pa-in": 202,
-	"./pa-in.js": 202,
-	"./pl": 203,
-	"./pl.js": 203,
-	"./pt": 205,
-	"./pt-br": 204,
-	"./pt-br.js": 204,
-	"./pt.js": 205,
-	"./ro": 206,
-	"./ro.js": 206,
-	"./ru": 207,
-	"./ru.js": 207,
-	"./se": 208,
-	"./se.js": 208,
-	"./si": 209,
-	"./si.js": 209,
-	"./sk": 210,
-	"./sk.js": 210,
-	"./sl": 211,
-	"./sl.js": 211,
-	"./sq": 212,
-	"./sq.js": 212,
-	"./sr": 214,
-	"./sr-cyrl": 213,
-	"./sr-cyrl.js": 213,
-	"./sr.js": 214,
-	"./ss": 215,
-	"./ss.js": 215,
-	"./sv": 216,
-	"./sv.js": 216,
-	"./sw": 217,
-	"./sw.js": 217,
-	"./ta": 218,
-	"./ta.js": 218,
-	"./te": 219,
-	"./te.js": 219,
-	"./tet": 220,
-	"./tet.js": 220,
-	"./th": 221,
-	"./th.js": 221,
-	"./tl-ph": 222,
-	"./tl-ph.js": 222,
-	"./tlh": 223,
-	"./tlh.js": 223,
-	"./tr": 224,
-	"./tr.js": 224,
-	"./tzl": 225,
-	"./tzl.js": 225,
-	"./tzm": 227,
-	"./tzm-latn": 226,
-	"./tzm-latn.js": 226,
-	"./tzm.js": 227,
-	"./uk": 228,
-	"./uk.js": 228,
-	"./uz": 229,
-	"./uz.js": 229,
-	"./vi": 230,
-	"./vi.js": 230,
-	"./x-pseudo": 231,
-	"./x-pseudo.js": 231,
-	"./yo": 232,
-	"./yo.js": 232,
-	"./zh-cn": 233,
-	"./zh-cn.js": 233,
-	"./zh-hk": 234,
-	"./zh-hk.js": 234,
-	"./zh-tw": 235,
-	"./zh-tw.js": 235
+	"./af": 131,
+	"./af.js": 131,
+	"./ar": 137,
+	"./ar-dz": 132,
+	"./ar-dz.js": 132,
+	"./ar-ly": 133,
+	"./ar-ly.js": 133,
+	"./ar-ma": 134,
+	"./ar-ma.js": 134,
+	"./ar-sa": 135,
+	"./ar-sa.js": 135,
+	"./ar-tn": 136,
+	"./ar-tn.js": 136,
+	"./ar.js": 137,
+	"./az": 138,
+	"./az.js": 138,
+	"./be": 139,
+	"./be.js": 139,
+	"./bg": 140,
+	"./bg.js": 140,
+	"./bn": 141,
+	"./bn.js": 141,
+	"./bo": 142,
+	"./bo.js": 142,
+	"./br": 143,
+	"./br.js": 143,
+	"./bs": 144,
+	"./bs.js": 144,
+	"./ca": 145,
+	"./ca.js": 145,
+	"./cs": 146,
+	"./cs.js": 146,
+	"./cv": 147,
+	"./cv.js": 147,
+	"./cy": 148,
+	"./cy.js": 148,
+	"./da": 149,
+	"./da.js": 149,
+	"./de": 151,
+	"./de-at": 150,
+	"./de-at.js": 150,
+	"./de.js": 151,
+	"./dv": 152,
+	"./dv.js": 152,
+	"./el": 153,
+	"./el.js": 153,
+	"./en-au": 154,
+	"./en-au.js": 154,
+	"./en-ca": 155,
+	"./en-ca.js": 155,
+	"./en-gb": 156,
+	"./en-gb.js": 156,
+	"./en-ie": 157,
+	"./en-ie.js": 157,
+	"./en-nz": 158,
+	"./en-nz.js": 158,
+	"./eo": 159,
+	"./eo.js": 159,
+	"./es": 161,
+	"./es-do": 160,
+	"./es-do.js": 160,
+	"./es.js": 161,
+	"./et": 162,
+	"./et.js": 162,
+	"./eu": 163,
+	"./eu.js": 163,
+	"./fa": 164,
+	"./fa.js": 164,
+	"./fi": 165,
+	"./fi.js": 165,
+	"./fo": 166,
+	"./fo.js": 166,
+	"./fr": 169,
+	"./fr-ca": 167,
+	"./fr-ca.js": 167,
+	"./fr-ch": 168,
+	"./fr-ch.js": 168,
+	"./fr.js": 169,
+	"./fy": 170,
+	"./fy.js": 170,
+	"./gd": 171,
+	"./gd.js": 171,
+	"./gl": 172,
+	"./gl.js": 172,
+	"./he": 173,
+	"./he.js": 173,
+	"./hi": 174,
+	"./hi.js": 174,
+	"./hr": 175,
+	"./hr.js": 175,
+	"./hu": 176,
+	"./hu.js": 176,
+	"./hy-am": 177,
+	"./hy-am.js": 177,
+	"./id": 178,
+	"./id.js": 178,
+	"./is": 179,
+	"./is.js": 179,
+	"./it": 180,
+	"./it.js": 180,
+	"./ja": 181,
+	"./ja.js": 181,
+	"./jv": 182,
+	"./jv.js": 182,
+	"./ka": 183,
+	"./ka.js": 183,
+	"./kk": 184,
+	"./kk.js": 184,
+	"./km": 185,
+	"./km.js": 185,
+	"./ko": 186,
+	"./ko.js": 186,
+	"./ky": 187,
+	"./ky.js": 187,
+	"./lb": 188,
+	"./lb.js": 188,
+	"./lo": 189,
+	"./lo.js": 189,
+	"./lt": 190,
+	"./lt.js": 190,
+	"./lv": 191,
+	"./lv.js": 191,
+	"./me": 192,
+	"./me.js": 192,
+	"./mi": 193,
+	"./mi.js": 193,
+	"./mk": 194,
+	"./mk.js": 194,
+	"./ml": 195,
+	"./ml.js": 195,
+	"./mr": 196,
+	"./mr.js": 196,
+	"./ms": 198,
+	"./ms-my": 197,
+	"./ms-my.js": 197,
+	"./ms.js": 198,
+	"./my": 199,
+	"./my.js": 199,
+	"./nb": 200,
+	"./nb.js": 200,
+	"./ne": 201,
+	"./ne.js": 201,
+	"./nl": 203,
+	"./nl-be": 202,
+	"./nl-be.js": 202,
+	"./nl.js": 203,
+	"./nn": 204,
+	"./nn.js": 204,
+	"./pa-in": 205,
+	"./pa-in.js": 205,
+	"./pl": 206,
+	"./pl.js": 206,
+	"./pt": 208,
+	"./pt-br": 207,
+	"./pt-br.js": 207,
+	"./pt.js": 208,
+	"./ro": 209,
+	"./ro.js": 209,
+	"./ru": 210,
+	"./ru.js": 210,
+	"./se": 211,
+	"./se.js": 211,
+	"./si": 212,
+	"./si.js": 212,
+	"./sk": 213,
+	"./sk.js": 213,
+	"./sl": 214,
+	"./sl.js": 214,
+	"./sq": 215,
+	"./sq.js": 215,
+	"./sr": 217,
+	"./sr-cyrl": 216,
+	"./sr-cyrl.js": 216,
+	"./sr.js": 217,
+	"./ss": 218,
+	"./ss.js": 218,
+	"./sv": 219,
+	"./sv.js": 219,
+	"./sw": 220,
+	"./sw.js": 220,
+	"./ta": 221,
+	"./ta.js": 221,
+	"./te": 222,
+	"./te.js": 222,
+	"./tet": 223,
+	"./tet.js": 223,
+	"./th": 224,
+	"./th.js": 224,
+	"./tl-ph": 225,
+	"./tl-ph.js": 225,
+	"./tlh": 226,
+	"./tlh.js": 226,
+	"./tr": 227,
+	"./tr.js": 227,
+	"./tzl": 228,
+	"./tzl.js": 228,
+	"./tzm": 230,
+	"./tzm-latn": 229,
+	"./tzm-latn.js": 229,
+	"./tzm.js": 230,
+	"./uk": 231,
+	"./uk.js": 231,
+	"./uz": 232,
+	"./uz.js": 232,
+	"./vi": 233,
+	"./vi.js": 233,
+	"./x-pseudo": 234,
+	"./x-pseudo.js": 234,
+	"./yo": 235,
+	"./yo.js": 235,
+	"./zh-cn": 236,
+	"./zh-cn.js": 236,
+	"./zh-hk": 237,
+	"./zh-hk.js": 237,
+	"./zh-tw": 238,
+	"./zh-tw.js": 238
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -2974,140 +3037,74 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 372;
+webpackContext.id = 384;
 
 
 /***/ }),
 
-/***/ 382:
+/***/ 408:
 /***/ (function(module, exports) {
 
-module.exports = "\n<div class=\"app_header\">\n  <h1 class=\"appTittle\">{{'Payara Support' | translate}}\n    <span *ngIf=\"loginService.initiating && loginService.user\"\n          class=\"username\"> : {{loginService.user.name}} [{{loginService.user.email}}]\n    </span>\n  </h1>\n  <button class=\"btn btn-default pull-right logout\" *ngIf=\"!isCurrentRoute('login')\" (click)=\"logout()\"\n          placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Logout from Zendesk' | translate}}\">\n    {{'Logout' | translate}}\n    <span class=\"glyphicon glyphicon-off\" aria-hidden=\"true\">\n    </span>\n  </button>\n</div>\n\n\n<router-outlet></router-outlet>\n"
+module.exports = "\n<div class=\"app_header\">\n  <h1 class=\"appTittle\">{{'Payara Support' | translate}}\n    <span *ngIf=\"loginService.initiating && loginService.user\"\n          class=\"username\">{{loginService.user.name}} [{{loginService.user.email}}]\n    </span>\n  </h1>\n  <div class=\"pull-right\">\n  <a class=\"btn btn-sm btn-default supportGuide\" target=\"_blank\" *ngIf=\"!isCurrentRoute('login')\"\n      href=\"{{loginService.connectionData.supportGuideURL}}{{supportType}}\"\n      placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download suppport guide PDF' | translate}}\">\n      {{'Support Guide' | translate}}\n  </a>\n  <button class=\"btn btn-sm btn-default logout\" *ngIf=\"!isCurrentRoute('login')\" (click)=\"logout()\"\n          placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Logout from Zendesk' | translate}}\">\n    {{'Logout' | translate}}\n    <span class=\"glyphicon glyphicon-off\" aria-hidden=\"true\">\n    </span>\n  </button>\n</div>\n</div>\n\n\n<router-outlet></router-outlet>\n"
 
 /***/ }),
 
-/***/ 383:
+/***/ 409:
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"panel panel-default\">\n  <div class=\"panel-heading\">\n    <h4>{{title | translate}}</h4>\n  </div>\n  <div class=\"panel-body\">\n    <div class=\"row\">\n      <div class=\"col-xs-6 group-border\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">Domain.xml</h5>\n        </div>\n        <div class=\"col-xs-12\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Edit or deattach' | translate}} Domain.xml\">\n            <bSwitch\n                      [switch-label-text]=\"'Domain.xml'\"\n                      [(ngModel)]=\"xmlLoaded\"\n                      [switch-handle-width]=\"80\"\n                      [switch-label-width]=\"100\"\n                      [switch-animate]=\"true\"\n                      [switch-inverse]=\"true\"\n                      [switch-off-text]=\"'NO'\"\n                      [switch-on-text]=\"xmlLoading\"\n                      [switch-on-color]=\"xmlColor\"\n                      [switch-off-color]=\"'default'\"\n                      [switch-size]=\"'small'\"\n                      (onChangeState)=\"showEditor()\">\n              </bSwitch>\n          </div>\n          <div class=\"col-xs-12\">\n            <hr class=\"groupSeparation\">\n          </div>\n      </div>\n\n      <div class=\"col-xs-12 domain-block group-border\" [ngClass]=\"{\n                                              'objectVisible': isVisibleEditor,\n                                              'objectNoVisible': !isVisibleEditor\n                                            }\">\n        <div class=\"panel panel-default\">\n          <div class=\"panel-heading\">\n            <h5>{{'Edit' | translate}} Domain.xml</h5>\n          </div>\n          <div class=\"panel-body\">\n            <div class=\"row\"\n                placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Remove or change sensitive data from' | translate}} Domain.xml\">\n              <textarea id=\"{{elementId}}\"></textarea>\n            </div>\n          </div>\n          <div class=\"panel-footer\">\n            <div class=\"row\">\n              <div class=\"col-xs-8\">\n                <div *ngIf=\"loadingMessageXml\" class=\"progress\">\n                  <div class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width: 100%\">\n                    <span class=\"sr-only\">{{loadingMessageXml | translate}}</span>\n                  </div>\n                </div>\n              </div>\n              <div class=\"col-xs-4\">\n                <button class=\"btn btn-default pull-right\" (click)=\"saveXml()\"\n                        placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach to request' | translate}} Domain.xml\">{{'Save' | translate}}</button>\n                <button class=\"btn btn-primary pull-right\" (click)=\"discardXml()\"\n                        placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Discard changes on' | translate}} Domain.xml\">{{'Discard' | translate}}</button>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n      <div class=\"col-xs-6 group-border\" *ngFor=\"let group of groups\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">{{group}}</h5>\n        </div>\n        <div class=\"col-xs-12\" *ngIf=\"filter(fileButtons,group).length === 0\">\n          <div class=\"alert alert-info instance-offline\" role=\"alert0\">\n            {{'Instance offline' | translate}}\n          </div>\n        </div>\n        <div class=\"col-xs-12\" *ngFor=\"let fileButton of filter(fileButtons,group)\"\n             placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach or deattach to request' | translate}} {{fileButton.title}}\">\n          <bSwitch\n                    [switch-label-text]=\"fileButton.title\"\n                    [(ngModel)]=\"fileButton.uploaded\"\n                    [switch-handle-width]=\"40\"\n                    [switch-label-width]=\"140\"\n                    [switch-animate]=\"true\"\n                    [switch-inverse]=\"true\"\n                    [switch-off-text]=\"'NO'\"\n                    [switch-on-text]=\"'OK'\"\n                    [switch-on-color]=\"'success'\"\n                    [switch-off-color]=\"'default'\"\n                    [switch-size]=\"'small'\"\n                    (onChangeState)=\"searchFile(fileButton)\">\n            </bSwitch>\n      </div>\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n      </div>\n    </div>\n    <div class=\"col-xs-12\">\n      <hr class=\"groupSeparation\">\n    </div>\n    <div class=\"col-xs-6 group-border\">\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n        <h5 class=\"groupTitle\">{{'File Upload' | translate}}</h5>\n      </div>\n      <div class=\"col-xs-12\">\n          <label class=\"btn btn-sm btn-file add-file-server-button\"\n                 placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach to request' | translate}} {{'a file selected from local file system' | translate}}\">\n              <span class=\"glyphicon glyphicon-paperclip\" aria-hidden=\"true\"></span>\n              {{'Browse' | translate}}\n              <input type=\"file\" class=\"hidden\" (change)=\"otherFile($event)\">\n          </label>\n      </div>\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n      </div>\n    </div>\n      <div class=\"col-xs-6 group-border\" *ngIf=\"otherfiles.length > 0\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">{{'Files to be added' | translate}}</h5>\n        </div>\n        <div class=\"col-xs-12\" *ngFor=\"let file of otherfiles\">\n          <label class=\"btn btn-sm btn-file attached-file\" (click)=\"removeFile(file)\"\n                 placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Remove file to upload' | translate}}\">\n              <span class=\"glyphicon glyphicon-trash\"  aria-hidden=\"true\">\n                  <span>{{file.name}}</span>\n              </span>\n          </label>\n        </div>\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n        </div>\n      </div>\n    </div>\n    <div class=\"row\">\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n        <div *ngIf=\"loadingMessage\" class=\"progress\">\n          <div class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width: 100%\">\n            <span class=\"sr-only\">{{loadingMessage | translate}}</span>\n          </div>\n        </div>\n        <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n          {{errorMessage}}\n        </div>\n        <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n          {{successMessage}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
-/***/ 384:
+/***/ 410:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"row\">\n  <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n    {{errorMessage}}\n  </div>\n  <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n    {{successMessage}}\n  </div>\n</div>\n\n<div class=\"newCommentContainer\" *ngIf=\"ticket.status!=='closed' && ticket.status!=='solved'\">\n  <div class=\"row\">\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <textarea class=\"new_comment\" [(ngModel)]=\"newCommentText\" (keyup)=\"keyUpEvent($event)\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Insert comment text' | translate}}\"></textarea>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <button class=\"btn btn-sm btn-default btn-block\" type=\"submit\" (click)=\"saveComment()\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Send comment with attachements' | translate}}\">\n        {{'Submit' | translate}}\n        <span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\">\n        </span>\n      </button>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <app-add-file class=\"addFile\"\n                    (saved)=\"onSavedAttachment($event)\"\n                    (removed)=\"onRemovedAttachment($event)\"\n                    [title]=\"'Attach files to new comment of the request'\">\n      </app-add-file>\n    </div>\n  </div>\n</div>\n\n<div class=\"commentContainer\" *ngFor=\"let comment of comments\">\n  <div class=\"row\">\n    <div class=\"col-sm-9\">\n      <pre class=\"comment_box\">\n        <code>{{comment.body}}</code>\n      </pre>\n    </div>\n    <div class=\"col-sm-3\">\n      <p placement=\"bottom\" delay=\"1500\" tooltip=\"{{comment.created_at}}\">{{comment.created_at | dayTime}}</p>\n    </div>\n  </div>\n  <div class=\"row\" *ngIf=\"comment.attachments !== undefined && comment.attachments.length>0\">\n    <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-2\" *ngFor=\"let file of comment.attachments\">\n      <a href=\"{{file.content_url}}\">\n        <span class=\"\tglyphicon glyphicon-download-alt attached-file\" aria-hidden=\"true\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download file' | translate}} {{file.file_name}}\">\n          <span>{{file.file_name}}</span>\n        </span>\n      </a>\n    </div>\n  </div>\n  <hr>\n</div>\n"
+module.exports = "<div class=\"row\">\n  <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n    {{errorMessage}}\n  </div>\n  <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n    {{successMessage}}\n  </div>\n</div>\n\n<div class=\"newCommentContainer\" *ngIf=\"ticket.status!=='closed' && ticket.status!=='solved'\">\n  <div class=\"row\">\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <textarea class=\"new_comment\" [(ngModel)]=\"newCommentText\" (keyup)=\"keyUpEvent($event)\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Insert comment text' | translate}}\"></textarea>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <button class=\"btn btn-sm btn-default btn-block\" type=\"submit\" (click)=\"saveComment()\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Send comment with attachements' | translate}}\">\n        {{'Submit' | translate}}\n        <span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\">\n        </span>\n      </button>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <app-add-file class=\"addFile\"\n                    (saved)=\"onSavedAttachment($event)\"\n                    (removed)=\"onRemovedAttachment($event)\"\n                    [title]=\"'Attach files to new comment of the request'\">\n      </app-add-file>\n    </div>\n  </div>\n</div>\n\n<div class=\"commentContainer\" *ngFor=\"let comment of comments\">\n  <div class=\"row\">\n    <div class=\"col-sm-9\">\n      <pre class=\"comment_box\">\n        <markdown>{{comment.body}}</markdown>\n      </pre>\n    </div>\n    <div class=\"col-sm-3\">\n      <p class=\"authorName\">{{comment.author_name}}</p>\n      <p placement=\"bottom\" delay=\"1500\" tooltip=\"{{comment.created_at}}\">{{comment.created_at | dayTime}}</p>\n    </div>\n  </div>\n  <div class=\"row\" *ngIf=\"comment.attachments !== undefined && comment.attachments.length>0\">\n    <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-2\" *ngFor=\"let file of comment.attachments\">\n      <a href=\"{{file.content_url}}\">\n        <span class=\"\tglyphicon glyphicon-download-alt attached-file\" aria-hidden=\"true\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download file' | translate}} {{file.file_name}}\">\n          <span>{{file.file_name}}</span>\n        </span>\n      </a>\n    </div>\n  </div>\n  <hr>\n</div>\n"
 
 /***/ }),
 
-/***/ 385:
+/***/ 411:
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"panel panel-default\" *ngIf=\"ticket\">\n  <div class=\"panel-heading\">\n    <h3>\n      {{'Request' | translate}} #{{ticket.id}} <strong>{{ticket.subject}}</strong>\n      <button class=\"btn btn-sm pull-right returnBack\" routerLink=\"/list\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Return to requests list' | translate}}\">\n        <span class=\"glyphicon glyphicon-chevron-left\" aria-hidden=\"true\">\n        </span>\n        {{'Back' | translate}}\n      </button>\n    </h3>\n  </div>\n  <div class=\"panel-body\">\n    <div class=\"row\">\n      <div class=\"col-sm-7\">\n        <app-comment-data [(ticket)]=\"ticket\" (saved)=\"onSavedComment(ticket,$event)\"></app-comment-data>\n      </div>\n      <div class=\"col-sm-5\">\n        <app-ticket-data [(ticket)]=\"ticket\"></app-ticket-data>\n      </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
-/***/ 386:
+/***/ 412:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"panel panel-default\" *ngIf=\"tickets\">\n  <div class=\"panel-heading\">\n    <div class=\"alert alert-info alert-dismissible\" role=\"alert\" *ngIf=\"showMessage\">\n      <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\" (click)=\"hideMessage()\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Close this advice' | translate}}\">\n        <span aria-hidden=\"true\" class=\"transparent closeMessage\">&times;</span>\n      </button>\n      <p class=\"transparent info\">{{'Welcome to Zendesk support for Payara Server' | translate}}!</p>\n      <br/>\n      <p class=\"transparent info\">{{'usefulInfo' | translate}}</p>\n      <br/>\n      <a class=\"btn btn-sm btn-default btn-block supportGuide\" target=\"_blank\"\n          href=\"{{loginService.connectionData.supportGuideURL}}{{supportType}}\"\n          placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download suppport guide PDF' | translate}}\">\n          {{'Support Guide' | translate}}\n      </a>\n    </div>\n    <h3>\n      {{'My requests' | translate}}\n      <button class=\"btn btn-sm pull-right addTicket\" routerLink=\"/new\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Create New Request' | translate}}\">\n        {{'New Request' | translate}}\n        <span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\">\n        </span>\n      </button>\n    </h3>\n  </div>\n  <div class=\"panel-body\">\n      <div class=\"col-sm-6\">\n        <input type=\"text\" class=\"form-control\" [(ngModel)]=\"query\" (keyup)=\"filter()\" placeholder=\"{{'Filter' | translate}}\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Type to filter the tickets below' | translate}}\" />\n      </div>\n      <div class=\"col-sm-4\">\n        <div class=\"btn-group pull-right\" data-toggle=\"buttons\">\n          <label class=\"btn btn-primary\" [ngClass]=\"{active: userBool}\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Select to filter tickets from user' | translate}}\">\n            <input type=\"radio\" autocomplete=\"off\" (click)=\"updateTickets(true)\"/>{{'User' | translate}}\n          </label>\n          <label class=\"btn btn-primary\" [ngClass]=\"{active: !userBool}\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Select to filter tickets from organization' | translate}}\">\n            <input type=\"radio\" autocomplete=\"off\" (click)=\"updateTickets(false)\"/>{{'Organization' | translate}}\n          </label>\n        </div>\n      </div>\n      <div class=\"col-sm-2 pull-right\">\n       <select class=\"form-control\" id=\"statusFilter\" [(ngModel)]=\"statusFilter\" (change)=\"filterStatus()\"  placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Select to filter tickets by status' | translate}}\">\n         <option value=\"any\">{{'Any' | translate}}</option>\n         <option *ngFor=\"let statusOption of statusFields\" value=\"{{statusOption.value}}\">{{statusOption.name | translate}}</option>\n       </select>\n     </div>\n    <table class=\"table table-responsive table-striped table-sm table-inverse table-sortable\">\n      <thead>\n        <tr>\n          <th (click)=\"changeSorting('id')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by Id number' | translate}}\">Id\n            <span *ngIf=\"sort.column === 'id' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'id' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th (click)=\"changeSorting('subject')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by request subject' | translate}}\">{{'Subject' | translate}}\n            <span *ngIf=\"sort.column === 'subject' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'subject' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th (click)=\"changeSorting('created_at')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by creation date' | translate}}\">{{'Created' | translate}}\n            <span *ngIf=\"sort.column === 'created_at' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'created_at' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th (click)=\"changeSorting('updated_at')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by last modification date' | translate}}\">{{'Last activity' | translate}}\n            <span *ngIf=\"sort.column === 'updated_at' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'updated_at' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th (click)=\"changeSorting('status')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by request status' | translate}}\">{{'Status' | translate}}\n            <span *ngIf=\"sort.column === 'status' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'status' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr *ngFor=\"let ticket of tickets\" (click)=\"ticketClicked(ticket)\" class=\"selectable\"\n            placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Go to request details...' | translate}}\">\n          <th scope=\"row\">{{ticket.id}}</th>\n          <td>{{ticket.subject}}</td>\n          <td>{{ticket.created_at | dayTime}}</td>\n          <td>{{ticket.updated_at | dayTime}}</td>\n          <td style=\"text-align: center;\">\n              <span\n              [ngClass]=\"{\n                              'ticketOpen': ticket.status==='open',\n                              'ticketNew': ticket.status==='new',\n                              'ticketClosed': ticket.status==='closed',\n                              'ticketSolved': ticket.status==='solved',\n                              'ticketPending': ticket.status==='pending',\n                              'ticketHold': ticket.status==='hold'}\"\n              class=\"glyphicon glyphicon-flag\" aria-hidden=\"true\">\n                <span>{{ticket.status | translate}}</span>\n              </span>\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n</div>\n\n<div *ngIf=\"!tickets && errorMessage\" class=\"alert alert-danger\" role=\"alert\">{{errorMessage}}</div>\n"
+module.exports = "<div class=\"panel panel-default\" *ngIf=\"tickets\">\n  <div class=\"panel-heading\">\n    <div class=\"alert alert-info alert-dismissible\" role=\"alert\" *ngIf=\"showMessage\">\n      <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\" (click)=\"hideMessage()\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Close this advice' | translate}}\">\n        <span aria-hidden=\"true\" class=\"transparent closeMessage\">&times;</span>\n      </button>\n      <p class=\"transparent info\">{{'Welcome to Zendesk support for Payara Server' | translate}}!</p>\n      <br/>\n      <p class=\"transparent info\">{{'usefulInfo' | translate}}</p>\n      <br/>\n    </div>\n    <h3>\n      {{'My requests' | translate}}\n      <button class=\"btn btn-sm pull-right addTicket\" routerLink=\"/new\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Create New Request' | translate}}\">\n        {{'New Request' | translate}}\n        <span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\">\n        </span>\n      </button>\n    </h3>\n  </div>\n  <div class=\"panel-body\">\n      <div class=\"col-sm-6\">\n        <input type=\"text\" class=\"form-control\" [(ngModel)]=\"query\" (keyup)=\"filter()\" placeholder=\"{{'Filter' | translate}}\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Type to filter the tickets below' | translate}}\" />\n      </div>\n      <div class=\"col-sm-4\">\n        <div class=\"btn-group pull-right\" data-toggle=\"buttons\">\n          <label class=\"btn btn-primary\" [ngClass]=\"{active: userBool}\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Select to filter tickets from user' | translate}}\">\n            <input type=\"radio\" autocomplete=\"off\" (click)=\"updateTickets(true)\"/>{{'User' | translate}}\n          </label>\n          <label class=\"btn btn-primary\" [ngClass]=\"{active: !userBool}\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Select to filter tickets from organization' | translate}}\">\n            <input type=\"radio\" autocomplete=\"off\" (click)=\"updateTickets(false)\"/>{{'Organization' | translate}}\n          </label>\n        </div>\n      </div>\n      <div class=\"col-sm-2 pull-right\">\n       <select class=\"form-control\" id=\"statusFilter\" [(ngModel)]=\"statusFilter\" (change)=\"filterStatus()\"  placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Select to filter tickets by status' | translate}}\">\n         <option value=\"any\">{{'Any' | translate}}</option>\n         <option *ngFor=\"let statusOption of statusFields\" value=\"{{statusOption.value}}\">{{statusOption.name | translate}}</option>\n       </select>\n     </div>\n    <table class=\"table table-responsive table-striped table-sm table-inverse table-sortable\">\n      <thead>\n        <tr>\n          <th (click)=\"changeSorting('id')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by Id number' | translate}}\">Id\n            <span *ngIf=\"sort.column === 'id' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'id' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th (click)=\"changeSorting('subject')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by request subject' | translate}}\">{{'Subject' | translate}}\n            <span *ngIf=\"sort.column === 'subject' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'subject' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th *ngIf=\"!userBool\" (click)=\"changeSorting('submitter_name')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by request user' | translate}}\">{{'Request user' | translate}}\n            <span *ngIf=\"sort.column === 'submitter_name' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'submitter_name' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th (click)=\"changeSorting('created_at')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by creation date' | translate}}\">{{'Created' | translate}}\n            <span *ngIf=\"sort.column === 'created_at' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'created_at' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th (click)=\"changeSorting('updated_at')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by last modification date' | translate}}\">{{'Last activity' | translate}}\n            <span *ngIf=\"sort.column === 'updated_at' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'updated_at' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n          <th (click)=\"changeSorting('status')\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Sort by request status' | translate}}\">{{'Status' | translate}}\n            <span *ngIf=\"sort.column === 'status' && !sort.descending\" class=\"glyphicon glyphicon-chevron-up\" aria-hidden=\"true\"></span>\n            <span *ngIf=\"sort.column === 'status' && sort.descending\" class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span>\n          </th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr *ngFor=\"let ticket of tickets\" (click)=\"ticketClicked(ticket)\" class=\"selectable\"\n            placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Go to request details...' | translate}}\">\n          <th scope=\"row\">{{ticket.id}}</th>\n          <td>{{ticket.subject}}</td>\n          <td *ngIf=\"!userBool\">{{ticket.submitter_name}}</td>\n          <td>{{ticket.created_at | dayTime}}</td>\n          <td>{{ticket.updated_at | dayTime}}</td>\n          <td style=\"text-align: center;\">\n              <span\n              [ngClass]=\"{\n                              'ticketOpen': ticket.status==='open',\n                              'ticketNew': ticket.status==='new',\n                              'ticketClosed': ticket.status==='closed',\n                              'ticketSolved': ticket.status==='solved',\n                              'ticketPending': ticket.status==='pending',\n                              'ticketHold': ticket.status==='hold'}\"\n              class=\"glyphicon glyphicon-flag\" aria-hidden=\"true\">\n                <span>{{ticket.status | translate}}</span>\n              </span>\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n</div>\n\n<div *ngIf=\"!tickets && errorMessage\" class=\"alert alert-danger\" role=\"alert\">{{errorMessage}}</div>\n"
 
 /***/ }),
 
-/***/ 387:
+/***/ 413:
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"panel panel-default\" *ngIf=\"!loginService.initiating\">\n  <div class=\"panel-heading\">\n    <div class=\"alert alert-info\" role=\"alert\">\n      <h3 class=\"transparent form-signin-heading\">{{'Please sign in' | translate}}</h3>\n      <br/>\n      <p class=\"transparent info\">{{'Insert Zendesk`s email and password to get OauthToken to communicate' | translate}}</p>\n      <br/>\n      <p class=\"transparent info\">{{'loginInfo' | translate}}</p>\n    </div>\n  </div>\n  <div class=\"panel-body\">\n    <div class=\"row\">\n      <form class=\"form-signin\" id=\"login\">\n        <label for=\"inputEmail\" class=\"sr-only\">{{'Email address' | translate}}</label>\n        <input type=\"email\" id=\"inputEmail\" class=\"form-control\"\n                placeholder=\"{{'Email address' | translate}}\" required autofocus\n                [(ngModel)]=\"user.email\" name=\"email\" (keypress)=\"cleanError($event)\"\n                 placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Insert email address to login into Zendesk' | translate}}\">\n       <label for=\"inputPassword\" class=\"sr-only\">{{'Password' | translate}}</label>\n       <input type=\"password\" id=\"inputPassword\" class=\"form-control\"\n               placeholder=\"{{'Password' | translate}}\" required autofocus\n               [(ngModel)]=\"user.password\" name=\"password\" (keypress)=\"cleanError($event)\"\n                placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Insert password to login into Zendesk, it not will be stored' | translate}}\">\n        <button class=\"btn btn-sm btn-primary btn-block\" type=\"submit\" [disabled]=\"!user.email && !user.password\" (click)=\"loginToZendesk(user)\"\n                placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Login to Zendesk' | translate}}\">\n                {{'Sign in' | translate}}\n        </button>\n      </form>\n    </div>\n    <div class=\"row\">\n      <div *ngIf=\"errorMessage\" class=\"alert alert-danger\" role=\"alert\">{{errorMessage}}</div>\n    </div>\n  </div>\n</div>\n\n<button class=\"btn btn-sm btn-default pull-right\" (click)=\"shopSupport()\"\n        placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Go to hire support!' | translate}}\">\n  {{'Unsupported? Hire support now!' | translate}}\n  <span class=\"glyphicon glyphicon-shopping-cart\" aria-hidden=\"true\">\n  </span>\n</button>\n"
 
 /***/ }),
 
-/***/ 388:
+/***/ 414:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"panel panel-default\">\n  <div class=\"panel-heading\">\n    <h3>\n      {{'Submit a request' | translate}}\n      <button class=\"btn btn-sm pull-right discardChanges\" (click)=\"discardChanges()\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Discard Request Data' | translate}}\">\n        {{'Discard' | translate}}\n        <span class=\"glyphicon glyphicon-remove-circle\" aria-hidden=\"true\">\n        </span>\n      </button>\n      <button class=\"btn btn-sm pull-right discardChanges\" type=\"submit\"\n              [disabled]=\"!ticketForm.valid\" (click)=\"checkData(ticketForm)\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Submit Request Data' | translate}}\">\n        {{'Submit' | translate}}\n        <span class=\"glyphicon glyphicon-ok-circle\" aria-hidden=\"true\">\n        </span>\n      </button>\n    </h3>\n  </div>\n  <div class=\"panel-body\">\n    <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n      {{errorMessage}}\n    </div>\n    <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n      {{successMessage}}\n    </div>\n    <form class=\"form-ticket form-vertical\" [formGroup]=\"ticketForm\">\n      <div class=\"form-group row\">\n        <label class=\"col-md-2 control-label\"></label>\n        <div class=\"col-md-5\">\n        <small *ngIf=\"!ticketForm.controls.subject.valid &&\n                      (ticketForm.controls.subject.dirty ||\n                      ticketForm.controls.subject.touched)\"\n                     class=\"badge text-warning\">\n          {{genericFields[0].title_in_portal | translate}} {{'is required' | translate}}\n        </small>\n      </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[0]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[0].title_in_portal | translate}}</label>\n         <div class=\"col-md-5\">\n           <input class=\"form-control\" id=\"subject\" formControlName=\"subject\" required type=\"text\"\n                  placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request subject' | translate}}\"/>\n         </div>\n      </div>\n      <div class=\"form-group\" *ngIf=\"genericFields[3]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[3].title_in_portal | translate}}</label>\n         <div class=\"col-md-3\">\n           <select class=\"form-control\" id=\"type\" formControlName=\"type\"\n                   placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request type' | translate}}\">\n             <option *ngFor=\"let typeOption of genericFields[3].system_field_options\" value=\"{{typeOption.value}}\">{{typeOption.name | translate}}</option>\n           </select>\n        </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[1]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[1].title_in_portal | translate}}</label>\n         <div class=\"col-md-5\">\n           <textarea class=\"form-control\" rows=\"5\" id=\"description\" formControlName=\"description\"\n                     placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request description, the more specific, the easier it will be to help you' | translate}}\"></textarea>\n           <small *ngIf=\"!ticketForm.controls.description.valid &&\n                         (ticketForm.controls.description.dirty ||\n                         ticketForm.controls.description.touched)\"\n                        class=\"badge text-warning\">\n             {{genericFields[0].title_in_portal | translate}} {{'is required' | translate}}\n           </small>\n         </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[4]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[4].title_in_portal | translate}}</label>\n         <div class=\"col-md-3\">\n           <select class=\"form-control\" id=\"environment\" formControlName=\"environment\" required\n                   placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request environment where issue appears' | translate}}\">\n              <option *ngFor=\"let environmentOption of genericFields[4].custom_field_options\" value=\"{{environmentOption.value}}\">{{environmentOption.name | translate}}</option>\n           </select>\n        </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[5]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[5].title_in_portal | translate}}</label>\n         <div class=\"col-md-3\">\n           <select class=\"form-control\" id=\"priority\" formControlName=\"priority\" required\n               placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request priority' | translate}}\">\n              <option *ngFor=\"let priorityOption of genericFields[5].system_field_options\" value=\"{{priorityOption.value}}\">{{priorityOption.name | translate}}</option>\n           </select>\n        </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[15]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[15].title_in_portal | translate}}</label>\n         <div class=\"col-md-3\">\n           <input class=\"form-control\" id=\"version\" formControlName=\"version\" required type=\"text\"\n                  placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request version of Payara' | translate}}\"/>\n           <small *ngIf=\"!ticketForm.controls.version.valid &&\n                         (ticketForm.controls.version.dirty ||\n                         ticketForm.controls.version.touched)\"\n                        class=\"badge text-warning\">\n             {{genericFields[15].title_in_portal | translate}} {{'is required' | translate}}\n           </small>\n         </div>\n      </div>\n\n      <div class=\"form-group\">\n         <div [ngClass]=\"{\n                         'col-xs-8': newAttachments.length > 0,\n                         'col-xs-12': newAttachments.length === 0\n                       }\">\n           <app-add-file (saved)=\"onSavedAttachment($event)\"\n                         (removed)=\"onRemovedAttachment($event)\"\n                         [title]=\"'Attach files to new request'\">\n            </app-add-file>\n         </div>\n         <div class=\"col-xs-4\" *ngIf=\"newAttachments.length > 0\">\n           <strong>{{'Files list' | translate}}</strong>\n           &nbsp;\n           <div *ngFor=\"let file of newAttachments\">\n             <a href=\"{{file.attachment.content_url}}\">\n               <span class=\"glyphicon glyphicon-download-alt attached-file-list\" aria-hidden=\"true\">\n                 <span>{{file.attachment.file_name}}</span>\n               </span>\n             </a>\n           </div>\n         </div>\n      </div>\n    </form>\n  </div>\n</div>\n"
+module.exports = "<div class=\"panel panel-default\" *ngIf=\"ticketForm\">\n  <div class=\"panel-heading\">\n    <h3>\n      {{'Submit a request' | translate}}\n      <button class=\"btn btn-sm pull-right discardChanges\" (click)=\"discardChanges()\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Discard Request Data' | translate}}\">\n        {{'Discard' | translate}}\n        <span class=\"glyphicon glyphicon-remove-circle\" aria-hidden=\"true\">\n        </span>\n      </button>\n      <button class=\"btn btn-sm pull-right discardChanges\" type=\"submit\"\n              [disabled]=\"!ticketForm.valid\" (click)=\"checkData(ticketForm)\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Submit Request Data' | translate}}\">\n        {{'Submit' | translate}}\n        <span class=\"glyphicon glyphicon-ok-circle\" aria-hidden=\"true\">\n        </span>\n      </button>\n    </h3>\n  </div>\n  <div class=\"panel-body\">\n    <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n      {{errorMessage}}\n    </div>\n    <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n      {{successMessage}}\n    </div>\n    <form class=\"form-ticket form-vertical\" [formGroup]=\"ticketForm\">\n      <div class=\"form-group row\">\n        <label class=\"col-md-2 control-label\"></label>\n        <div class=\"col-md-5\">\n        <small *ngIf=\"!ticketForm.controls.subject.valid &&\n                      (ticketForm.controls.subject.dirty ||\n                      ticketForm.controls.subject.touched)\"\n                     class=\"badge text-warning\">\n          {{genericFields[0].title_in_portal | translate}} {{'is required' | translate}}\n        </small>\n      </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[0]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[0].title_in_portal | translate}}</label>\n         <div class=\"col-md-5\">\n           <input class=\"form-control\" id=\"subject\" formControlName=\"subject\" required type=\"text\"\n                  placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request subject' | translate}}\"/>\n         </div>\n      </div>\n      <div class=\"form-group\" *ngIf=\"genericFields[3]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[3].title_in_portal | translate}}</label>\n         <div class=\"col-md-3\">\n           <select class=\"form-control\" id=\"type\" formControlName=\"type\"\n                   placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request type' | translate}}\">\n             <option *ngFor=\"let typeOption of genericFields[3].system_field_options\" value=\"{{typeOption.value}}\">{{typeOption.name | translate}}</option>\n           </select>\n        </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[1]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[1].title_in_portal | translate}}</label>\n         <div class=\"col-md-5\">\n           <textarea class=\"form-control\" rows=\"5\" id=\"description\" formControlName=\"description\"\n                     placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request description, the more specific, the easier it will be to help you' | translate}}\"></textarea>\n           <small *ngIf=\"!ticketForm.controls.description.valid &&\n                         (ticketForm.controls.description.dirty ||\n                         ticketForm.controls.description.touched)\"\n                        class=\"badge text-warning\">\n             {{genericFields[0].title_in_portal | translate}} {{'is required' | translate}}\n           </small>\n         </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[4]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[4].title_in_portal | translate}}</label>\n         <div class=\"col-md-3\">\n           <select class=\"form-control\" id=\"environment\" formControlName=\"environment\" required\n                   placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request environment where issue appears' | translate}}\">\n              <option *ngFor=\"let environmentOption of genericFields[4].custom_field_options\" value=\"{{environmentOption.value}}\">{{environmentOption.name | translate}}</option>\n           </select>\n        </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[5]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[5].title_in_portal | translate}}</label>\n         <div class=\"col-md-3\">\n           <select class=\"form-control\" id=\"priority\" formControlName=\"priority\" required\n               placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request priority' | translate}}\">\n              <option *ngFor=\"let priorityOption of genericFields[5].system_field_options\" value=\"{{priorityOption.value}}\">{{priorityOption.name | translate}}</option>\n           </select>\n        </div>\n      </div>\n      <div class=\"form-group required\" *ngIf=\"genericFields[15]\">\n         <label class=\"col-md-2 control-label\">{{genericFields[15].title_in_portal | translate}}</label>\n         <div class=\"col-md-3\">\n           <input class=\"form-control\" id=\"version\" formControlName=\"version\" required type=\"text\"\n                  placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Request version of Payara' | translate}}\"/>\n           <small *ngIf=\"!ticketForm.controls.version.valid &&\n                         (ticketForm.controls.version.dirty ||\n                         ticketForm.controls.version.touched)\"\n                        class=\"badge text-warning\">\n             {{genericFields[15].title_in_portal | translate}} {{'is required' | translate}}\n           </small>\n         </div>\n      </div>\n\n      <div class=\"form-group\">\n         <div [ngClass]=\"{\n                         'col-xs-8': newAttachments.length > 0,\n                         'col-xs-12': newAttachments.length === 0\n                       }\">\n           <app-add-file (saved)=\"onSavedAttachment($event)\"\n                         (removed)=\"onRemovedAttachment($event)\"\n                         [title]=\"'Attach files to new request'\">\n            </app-add-file>\n         </div>\n         <div class=\"col-xs-4\" *ngIf=\"newAttachments.length > 0\">\n           <strong>{{'Files list' | translate}}</strong>\n           &nbsp;\n           <div *ngFor=\"let file of newAttachments\">\n             <a href=\"{{file.attachment.content_url}}\">\n               <span class=\"glyphicon glyphicon-download-alt attached-file-list\" aria-hidden=\"true\">\n                 <span>{{file.attachment.file_name}}</span>\n               </span>\n             </a>\n           </div>\n         </div>\n      </div>\n    </form>\n  </div>\n</div>\n"
 
 /***/ }),
 
-/***/ 389:
+/***/ 415:
 /***/ (function(module, exports) {
 
-module.exports = "  <div class=\"col-md-11 detailContent\">\n    <h5>\n      <strong>{{ticket.submitter_name}}</strong> {{'submitted this request' | translate}}\n    </h5>\n    <hr>\n    <p class=\"detailData\">\n      <span class=\"titleDetailData\">\n        <strong>{{'Status' | translate}}</strong>\n      </span>\n      <span class=\"contentDetailData\">\n        <span [ngClass]=\"{\n                        'ticketOpen': ticket.status==='open',\n                        'ticketNew': ticket.status==='new',\n                        'ticketClosed': ticket.status==='closed',\n                        'ticketSolved': ticket.status==='solved',\n                        'ticketPending': ticket.status==='pending',\n                        'ticketHold': ticket.status==='hold'}\"\n        class=\"glyphicon glyphicon-flag\" aria-hidden=\"true\">\n          <span>{{ticket.status | translate}}</span>\n        </span>\n      </span>\n    </p>\n    <p class=\"detailData\">\n      <span class=\"titleDetailData\">\n        <strong>{{'Type' | translate}}</strong>\n      </span>\n      <span class=\"contentDetailData\">\n        {{ticket.type | translate}}\n      </span>\n    </p>\n    <p class=\"detailData\">\n      <span class=\"titleDetailData\">\n        <strong>{{'Priority' | translate}}</strong>\n      </span>\n      <span class=\"contentDetailData\">\n        {{ticket.priority | translate}}\n      </span>\n    </p>\n    <div *ngFor=\"let field of ticket.custom_fields\">\n      <div class=\"detailData\">\n        <span class=\"titleDetailData\">\n          <strong>{{field.title_in_portal | translate}}</strong>\n        </span>\n        <span class=\"contentDetailData\">\n          <p>{{getValue(field) | translate}}</p>\n        </span>\n      </div>\n    </div>\n    <div class=\"fileList\">\n      <strong>{{'Files list' | translate}}</strong>\n      &nbsp;\n      <div *ngFor=\"let file of files\">\n        <a href=\"{{file.content_url}}\">\n          <span class=\"\tglyphicon glyphicon-download-alt attached-file-list\" aria-hidden=\"true\"\n                placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download file' | translate}} {{file.file_name}}\">\n            <span>{{file.file_name}}</span>\n          </span>\n        </a>\n      </div>\n    </div>\n  </div>\n"
+module.exports = "  <div class=\"col-md-11 detailContent\">\n    <h5>\n      <strong>{{ticket.submitter_name}}</strong> {{'submitted this request' | translate}}\n    </h5>\n    <hr>\n    <p class=\"detailData\">\n      <span class=\"titleDetailData\">\n        <strong>{{'Status' | translate}}</strong>\n      </span>\n      <span class=\"contentDetailData\">\n        <span [ngClass]=\"{\n                        'ticketOpen': ticket.status==='open',\n                        'ticketNew': ticket.status==='new',\n                        'ticketClosed': ticket.status==='closed',\n                        'ticketSolved': ticket.status==='solved',\n                        'ticketPending': ticket.status==='pending',\n                        'ticketHold': ticket.status==='hold'}\"\n        class=\"glyphicon glyphicon-flag\" aria-hidden=\"true\">\n          <span>{{ticket.status | translate}}</span>\n        </span>\n      </span>\n    </p>\n    <br/>\n    <p class=\"detailData\">\n      <span class=\"titleDetailData\">\n        <strong>{{'Type' | translate}}</strong>\n      </span>\n      <span class=\"contentDetailData\">\n        {{ticket.type | translate | uppercase}}\n      </span>\n    </p>\n    <br/>\n    <p class=\"detailData\">\n      <span class=\"titleDetailData\">\n        <strong>{{'Priority' | translate}}</strong>\n      </span>\n      <span class=\"contentDetailData\">\n        {{ticket.priority | translate | uppercase}}\n      </span>\n    </p>\n    <br/>\n    <div *ngFor=\"let field of ticket.custom_fields\">\n      <div class=\"detailData\" *ngIf=\"field.title_in_portal!=='Defect ID'\">\n        <span class=\"titleDetailData\">\n          <strong>{{field.title_in_portal | translate}}</strong>\n        </span>\n        <span class=\"contentDetailData\">\n          <p>{{getValue(field) | translate}}</p>\n        </span>\n        <br/>\n      </div>\n    </div>\n    <div class=\"fileList\">\n      <strong>{{'Files list' | translate}}</strong>\n      <br/>\n      <div *ngFor=\"let file of files\" class=\"attached-list\">\n        <a href=\"{{file.content_url}}\">\n          <span class=\"\tglyphicon glyphicon-download-alt attached-file-list\" aria-hidden=\"true\"\n                placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download file' | translate}} {{file.file_name}}\">\n            <span>{{file.file_name}}</span>\n          </span>\n        </a>\n      </div>\n      <br/>\n    </div>\n  </div>\n"
 
 /***/ }),
 
-/***/ 52:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return environment; });
-var environment = {
-    production: true,
-    zendesk: {
-        baseUrl: 'https://api.payara.fish/api/zendesk/',
-        filesUrl: 'https://payara.zendesk.com/api/v2/'
-    },
-    payara: {
-        baseUrl: '/management/domain/',
-        shopUrl: 'http://www.payara.fish/support'
-    },
-    supportGuides: 'https://api.payara.fish/api/payaraCustomer/supportGuide/'
-};
-//# sourceMappingURL=environment.js.map
-
-/***/ }),
-
-/***/ 653:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(281);
-
-
-/***/ }),
-
-/***/ 69:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Ticket; });
-var Ticket = (function () {
-    function Ticket() {
-    }
-    return Ticket;
-}());
-
-//# sourceMappingURL=ticket.js.map
-
-/***/ }),
-
-/***/ 70:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return User; });
-/**
- *
- * Class to define the fields of a user
- * Author : Daniel Contreras Aladro
- * Date : 2017-02-21
- *
- */
-var User = (function () {
-    function User() {
-    }
-    return User;
-}());
-
-//# sourceMappingURL=user.js.map
-
-/***/ }),
-
-/***/ 71:
+/***/ 53:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(51);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__ = __webpack_require__(60);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__ = __webpack_require__(63);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return PayaraService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -3229,6 +3226,18 @@ var PayaraService = (function () {
             .toPromise()
             .then(function (response) { return response.json().extraProperties.instanceList[0].status; });
     };
+    /**
+     * getPayaraVersion - Method to call to the API to get Payara server version
+     *
+     * @return {Promise<string>} Returns the response promise
+     */
+    PayaraService.prototype.getPayaraVersion = function () {
+        this.headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["c" /* Headers */]();
+        this.headers.append('Content-Type', 'application/json');
+        return this.http.get(this.connectionData.payaraURL + 'version.json', this.headers)
+            .toPromise()
+            .then(function (response) { return response.json().extraProperties.version; });
+    };
     return PayaraService;
 }());
 PayaraService = __decorate([
@@ -3239,7 +3248,73 @@ PayaraService = __decorate([
 var _a;
 //# sourceMappingURL=payara.service.js.map
 
+/***/ }),
+
+/***/ 54:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return environment; });
+var environment = {
+    production: true,
+    zendesk: {
+        baseUrl: 'https://api.payara.fish/api/zendesk/',
+        filesUrl: 'https://payara.zendesk.com/api/v2/'
+    },
+    payara: {
+        baseUrl: '/management/domain/',
+        shopUrl: 'http://www.payara.fish/support'
+    },
+    supportGuides: 'https://api.payara.fish/api/payaraCustomer/supportGuide/'
+};
+//# sourceMappingURL=environment.js.map
+
+/***/ }),
+
+/***/ 677:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(286);
+
+
+/***/ }),
+
+/***/ 72:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Ticket; });
+var Ticket = (function () {
+    function Ticket() {
+    }
+    return Ticket;
+}());
+
+//# sourceMappingURL=ticket.js.map
+
+/***/ }),
+
+/***/ 73:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return User; });
+/**
+ *
+ * Class to define the fields of a user
+ * Author : Daniel Contreras Aladro
+ * Date : 2017-02-21
+ *
+ */
+var User = (function () {
+    function User() {
+    }
+    return User;
+}());
+
+//# sourceMappingURL=user.js.map
+
 /***/ })
 
-},[653]);
+},[677]);
 //# sourceMappingURL=main.bundle.js.map
