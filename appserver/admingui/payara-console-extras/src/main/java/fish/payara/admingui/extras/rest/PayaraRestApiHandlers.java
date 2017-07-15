@@ -422,7 +422,7 @@ public class PayaraRestApiHandlers
     public static void getHistoricHealthcheckMessages(HandlerContext handlerCtx){
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
         String endpoint;
-        
+
         // Check for trailing slashes
         endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-healthchecks" : parentEndpoint 
                 + "/" + "list-historic-healthchecks";
@@ -444,7 +444,38 @@ public class PayaraRestApiHandlers
         }
         handlerCtx.setOutputValue("result", messages);
     }
-    
+
+    @Handler(id = "py.getHistoricRequestTracingMessages",
+            input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
+            output = @HandlerOutput(name = "result", type = java.util.List.class))
+    public static void getHistoricRequestTracingMessages(HandlerContext handlerCtx){
+
+        String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
+        String endpoint;
+
+        // Check for trailing slashes
+        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-requesttraces" : parentEndpoint
+                + "/" + "list-historic-requesttraces";
+
+        Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, false);
+        Map data = (Map) responseMap.get("data");
+
+        // Extract the information from the Map and place it in a List for representation in the dataTable
+        List<Map> messages = new ArrayList<>();
+        if (data != null) {
+            Map extraProperties = (Map) data.get("extraProperties");
+            if (extraProperties != null) {
+                messages = (List<Map>) extraProperties.get("historicmessages");
+                if (messages != null)
+                if (messages == null) {
+                    // Re-initialise to empty if members is not found
+                    messages = new ArrayList<>();
+                }
+            }
+        }
+        handlerCtx.setOutputValue("result", messages);
+    }
+
     /**
      * Gets the context roots of all deployed applications on the domain.
      * This is outputted as List<Map<String, String>> for usage within the Virtual-Servers page.
