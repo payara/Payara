@@ -47,13 +47,6 @@
         setSessionAttribute(key="domainTabs" value="asadminRecorderConfig");
         gf.redirect(page="#{request.contextPath}/payaraExtras/asadminRecorder/asadminRecorderServer.jsf?target=server&tabSetName=domainTabs");
     />
-
-    <sun:tab id="asadminRecorderConfig" immediate="$boolean{true}" text="$resource{i18nar.asadminRecorder.configuration}" toolTip="$resource{i18nar.asadminRecorder.configurationTip}" >
-        <!command
-            setSessionAttribute(key="domainTabs" value="asadminRecorderConfig");
-            gf.redirect(page="#{request.contextPath}/payaraExtras/asadminRecorder/asadminRecorderServer.jsf?target=server&tabSetName=domainTabs");
-        />
-    </sun:tab>
 </sun:tab>
     
 
