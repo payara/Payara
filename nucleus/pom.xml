@@ -168,14 +168,14 @@
         <servlet-api.version>3.1.0</servlet-api.version>
         <grizzly.version>2.3.31</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
-        <hk2.version>2.5.0-b36</hk2.version>
-        <hk2.plugin.version>2.5.0-b36</hk2.plugin.version>
+        <hk2.version>2.5.0-b42</hk2.version>
+        <hk2.plugin.version>2.5.0-b42</hk2.plugin.version>
         <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
         <javax.validation.version>1.1.0.Final</javax.validation.version>
         <classmate.version>1.3.3</classmate.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
-        <!-- PAYARA-625 -->
-        <javassist.version>3.20.0-GA</javassist.version>
+        <!-- PAYARA-625 / PAYARA-1860 -->
+        <javassist.version>3.22.0-CR2</javassist.version>
         <javax.el.version>3.0.1-b03</javax.el.version>
         <javax.el-api.version>3.0.1-b03</javax.el-api.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
