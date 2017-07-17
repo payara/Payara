@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.util;
 
@@ -55,8 +55,16 @@ import java.util.logging.Level;
  */
 public class FrequentSQLTraceCache extends SQLTraceCache {
 
-    public FrequentSQLTraceCache(String poolName, int maxSize, long timeToKeepQueries) {
-        super(poolName, maxSize, timeToKeepQueries);
+    //Maximum size of the cache.
+    protected int maxStoredEntries = 10000;
+    
+    public FrequentSQLTraceCache(String poolName, int numToReport, long timeToKeepQueries) {
+        super(poolName, numToReport, timeToKeepQueries);
+    }
+    
+    public FrequentSQLTraceCache(String poolName, int numToReport, long timeToKeepQueries, int maxStoredEntries) {
+        super(poolName, numToReport, timeToKeepQueries);
+        this.maxStoredEntries = maxStoredEntries;
     }
 
     /**

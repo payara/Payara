@@ -111,6 +111,7 @@ public class DataSourceSpec implements java.io.Serializable {
     public static final int MODULENAME = 47;
     public static final int SLOWSQLLOGTHRESHOLD = 48;
     public static final int LOGJDBCCALLS = 49;
+    public static final int MAXCACHESIZE = 50;
 
     private static final long serialVersionUID = 1L;
 

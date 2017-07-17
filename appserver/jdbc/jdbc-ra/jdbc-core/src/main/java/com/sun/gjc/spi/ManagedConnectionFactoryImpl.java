@@ -125,6 +125,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *
      * @return Generic JDBC Connector implementation of <code>javax.sql.DataSource</code>
      */
+    @Override
     public Object createConnectionFactory() {
         logFine("In createConnectionFactory()");
         return jdbcObjectsFactory.getDataSourceInstance(this, null);
@@ -137,6 +138,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      * @param cxManager <code>ConnectionManager</code> passed by the application server
      * @return Generic JDBC Connector implementation of <code>javax.sql.DataSource</code>
      */
+    @Override
     public Object createConnectionFactory(javax.resource.spi.ConnectionManager cxManager) {
         logFine("In createConnectionFactory(javax.resource.spi.ConnectionManager cxManager)");
 
@@ -166,6 +168,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      * @throws ResourceException if there is an error in allocating the
      *                           physical connection
      */
+    @Override
     public abstract javax.resource.spi.ManagedConnection createManagedConnection
             (javax.security.auth.Subject subject, ConnectionRequestInfo cxRequestInfo) throws ResourceException;
 
@@ -178,6 +181,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *         <code>ManagedConnectionFactoryImpl</code> objects are the same
      *         false	otherwise
      */
+    @Override
     public abstract boolean equals(Object other);
 
     /**
@@ -186,6 +190,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      * @return <code>PrintWriter</code> associated with this <code>ManagedConnectionFactoryImpl</code> instance
      * @see <code>setLogWriter</code>
      */
+    @Override
     public java.io.PrintWriter getLogWriter() {
         return logWriter;
     }
@@ -196,6 +201,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      * @return <code>ResourceAdapterImpl</code> associated with this <code>ManagedConnectionFactoryImpl</code> instance
      * @see <code>setResourceAdapter</code>
      */
+    @Override
     public javax.resource.spi.ResourceAdapter getResourceAdapter() {
         logFine("In getResourceAdapter");
         return ra;
@@ -206,6 +212,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *
      * @return hash code for this <code>ManagedConnectionFactoryImpl</code>
      */
+    @Override
     public int hashCode() {
         logFine("In hashCode");
         return spec.hashCode();
@@ -226,6 +233,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *                           parameter or the <code>Set</code> of <code>ManagedConnection</code>
      *                           objects passed by the application server
      */
+    @Override
     public javax.resource.spi.ManagedConnection matchManagedConnections(
             java.util.Set connectionSet, javax.security.auth.Subject subject, ConnectionRequestInfo cxRequestInfo)
             throws ResourceException {
@@ -267,6 +275,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      * @return a set of invalid <code>ManagedConnection</code> objects.
      * @throws ResourceException generic exception.
      */
+    @Override
     public Set getInvalidConnections(Set connectionSet) throws ResourceException {
         Iterator iter = connectionSet.iterator();
         Set<ManagedConnectionImpl> invalidConnections = new HashSet<ManagedConnectionImpl>();
@@ -589,8 +598,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                         }
                     }
                     Class intf[] = listenerClass.getInterfaces();
-                    for (int i = 0; i < intf.length; i++) {
-                        Class interfaceName = intf[i];
+                    for (Class interfaceName : intf) {
                         if (interfaceName.getName().equals("org.glassfish.api.jdbc.SQLTraceListener")) {
 
                             try {
@@ -604,15 +612,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                                         listener = (SQLTraceListener) constructor.newInstance(initargs);
                                     }
                                 }
-                            } catch (InstantiationException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (IllegalAccessException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (IllegalArgumentException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (InvocationTargetException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (SecurityException ex) {
+                            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException ex) {
                                 _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
                             }
                             sqlTraceDelegator.registerSQLTraceListener(listener);
@@ -695,6 +695,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      * @param out <code>PrintWriter</code> passed by the application server
      * @see <code>getLogWriter</code>
      */
+    @Override
     public void setLogWriter(java.io.PrintWriter out) {
         logWriter = out;
     }
@@ -706,6 +707,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *           <code>ManagedConnectionFactoryImpl</code> instance
      * @see <code>getResourceAdapter</code>
      */
+    @Override
     public void setResourceAdapter(javax.resource.spi.ResourceAdapter ra) {
         this.ra = ra;
     }
@@ -1115,6 +1117,14 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             }
         }
     }
+    
+    public String getMaxCacheSize(){
+        return spec.getDetail(DataSourceSpec.MAXCACHESIZE);
+    }
+    
+    public void setMaxCacheSize(String maxCacheSize){
+        spec.setDetail(DataSourceSpec.MAXCACHESIZE, maxCacheSize);
+    }
 
     public String getNumberOfTopQueriesToReport() {
         return spec.getDetail(DataSourceSpec.NUMBEROFTOPQUERIESTOREPORT);
@@ -1445,6 +1455,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         //Default values used in case sql tracing is OFF
         int sqlTraceCacheSize = 0;
         long timeToKeepQueries = 0;
+        int maxCacheSize = 0;
         if(sqlTraceListeners != null && !sqlTraceListeners.equals("null")) {
             if(getNumberOfTopQueriesToReport() != null && !getNumberOfTopQueriesToReport().equals("null")) {
                 //Some value is set for this property
@@ -1463,6 +1474,12 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                 //task will keep running till mcf is destroyed even if
                 //monitoring is turned OFF.
             }
+            if (getMaxCacheSize() != null && !getMaxCacheSize().equals("null")){
+                maxCacheSize = Integer.parseInt(getMaxCacheSize());
+            } else {
+                //Default to 10000 entries
+                maxCacheSize = 10000;
+            }
         }
         if(_logger.isLoggable(Level.FINEST)) {
             _logger.finest("MCF Created");
@@ -1471,7 +1488,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                 (sqlTraceListeners != null && !sqlTraceListeners.equals("null")) ||
                 statementLeakTimeout > 0) {
             jdbcStatsProvider = new JdbcStatsProvider(getPoolName(), getApplicationName(), getModuleName(),
-                    sqlTraceCacheSize, timeToKeepQueries);
+                    sqlTraceCacheSize, timeToKeepQueries, maxCacheSize);
             //get the poolname and use it to initialize the stats provider n register
             StatsProviderManager.register(
                     "jdbc-connection-pool",

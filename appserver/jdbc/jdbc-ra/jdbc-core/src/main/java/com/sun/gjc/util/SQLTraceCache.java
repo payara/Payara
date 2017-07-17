@@ -59,7 +59,6 @@ import java.util.logging.Logger;
 public abstract class SQLTraceCache {
 
     //Maximum size of the cache.
-    protected int maxStoredEntries = 1000;
     protected int numTopQueriesToReport = 10;
     protected long timeToKeepQueries = 60000;
     protected final String poolName;
