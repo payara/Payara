@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,12 +38,13 @@
  */
 package fish.payara.nucleus.notification.domain;
 
-import java.util.TreeSet;
+import java.io.Serializable;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author mertcaliskan
  */
-public class BoundedTreeSet<N extends Comparable> extends TreeSet<N> {
+public class BoundedTreeSet<N extends Comparable> extends ConcurrentSkipListSet<N> implements Serializable {
 
     private final int maxSize;
 

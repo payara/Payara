@@ -160,7 +160,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
         if (jerseyApplicationMap.isEmpty()) {
             report.setMessage("Component " + componentName + " could not be found");
             if (componentName == null) {
-                report.setMessage("Application " + appName + " has no deployed Jersey applications");
+                report.setMessage("Application " + appName + " has no deployed JAX-RS applications");
             }
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
@@ -264,8 +264,10 @@ public class ListRestEndpointsCommand implements AdminCommand {
             EngineRef engineRef = moduleInfo.getEngineRefForContainer(WebContainer.class);
             if (engineRef != null) {
                 WebApplication webApplication = (WebApplication) engineRef.getApplicationContainer();
-                for (WebModule module : webApplication.getWebModules()) {
-                    webModules.add(module);
+                if (webApplication != null) {
+                    for (WebModule module : webApplication.getWebModules()) {
+                        webModules.add(module);
+                    }
                 }
             }
         }
@@ -320,7 +322,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
         List<Class<?>> classes = new ArrayList<>();
 
         for (Class jerseyClass : jerseyApplication.getConfiguration().getApplication().getClasses()) {
-            if(!jerseyClass.getPackage().getName().contains("org.glassfish.jersey.server.wadl")) {
+            if(jerseyClass.getPackage() == null || !jerseyClass.getPackage().getName().contains("org.glassfish.jersey.server.wadl")) {
                 classes.add(jerseyClass);
             }
         }

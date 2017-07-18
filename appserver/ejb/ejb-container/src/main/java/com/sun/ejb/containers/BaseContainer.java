@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016,2017] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import com.sun.ejb.*;
@@ -101,6 +101,9 @@ import javax.naming.StringRefAddr;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.transaction.*;
+
+import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
+
 import java.io.Serializable;
 import java.lang.reflect.*;
 import java.rmi.AccessException;
@@ -121,9 +124,8 @@ import javax.enterprise.inject.Vetoed;
  *
  */
 
-public abstract class BaseContainer
-    implements Container, EjbContainerFacade, JavaEEContainer
-{
+public abstract class BaseContainer implements Container, EjbContainerFacade, JavaEEContainer {
+   
     public enum ContainerType {
         STATELESS, STATEFUL, SINGLETON, MESSAGE_DRIVEN, ENTITY, READ_ONLY
     };
@@ -2760,38 +2762,30 @@ public abstract class BaseContainer
     /**
      * 
      */
-    protected final int getTxAttr(Method method, String methodIntf) 
-        throws EJBException 
-    {
+    protected final int getTxAttr(Method method, String methodIntf) throws EJBException {
 
-        InvocationInfo invInfo = 
-            methodIntf.equals(MethodDescriptor.EJB_WEB_SERVICE) ?
-            (InvocationInfo) webServiceInvocationInfoMap.get(method) :
-            (InvocationInfo) invocationInfoMap.get(method);
+        InvocationInfo invInfo = methodIntf.equals(EJB_WEB_SERVICE) ? 
+                (InvocationInfo) webServiceInvocationInfoMap.get(method)
+                : (InvocationInfo) invocationInfoMap.get(method);
 
-        if( invInfo != null ) {
+        if (invInfo != null) {
             return invInfo.txAttr;
         } else {
-            throw new EJBException("Transaction Attribute not found for method"
-                                   + method);
+            throw new EJBException("Transaction Attribute not found for method" + method);
         }
     }
     
     // Get the transaction attribute for a method.
     // Note: this method object is of the remote/EJBHome interface
-    // class, not the EJB class.  (except for MDB's message listener
+    // class, not the EJB class. (except for MDB's message listener
     // callback method or TimedObject ejbTimeout method)
-    protected final int getTxAttr(EjbInvocation inv)
-        throws EJBException
-    {
-        if ( inv.transactionAttribute != TX_NOT_INITIALIZED ) {
+    protected final int getTxAttr(EjbInvocation inv) throws EJBException {
+        if (inv.transactionAttribute != TX_NOT_INITIALIZED) {
             return inv.transactionAttribute;
         }
 
-        int txAttr = getTxAttr(inv.method, inv.getMethodInterface());
-        inv.transactionAttribute = txAttr;
+        inv.transactionAttribute = getTxAttr(inv.method, inv.getMethodInterface());
         return inv.transactionAttribute;
-
     }
     
     

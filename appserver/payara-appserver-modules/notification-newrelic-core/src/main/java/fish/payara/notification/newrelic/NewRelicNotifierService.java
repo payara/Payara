@@ -76,13 +76,11 @@ public class NewRelicNotifierService extends QueueBasedNotifierService<NewRelicN
     public void bootstrap() {
         register(NotifierType.NEWRELIC, NewRelicNotifier.class, NewRelicNotifierConfiguration.class, this);
 
-        initializeExecutor();
         executionOptions = (NewRelicNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        scheduleExecutor(new NewRelicNotificationRunnable(queue, executionOptions));
+        if (executionOptions != null && executionOptions.isEnabled()) {
+            initializeExecutor();
+            scheduleExecutor(new NewRelicNotificationRunnable(queue, executionOptions));
+        }
     }
-
-    @Override
-    public void shutdown() {
-        super.reset();
-    }
+    
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import java.net.URI;
@@ -339,6 +339,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
      */
     @Override
     public void execute(AdminCommandContext context) {
+        long timeTakenToDeploy = 0;
         try {
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
             Collection<Interceptor> interceptors = habitat.getAllServices(Interceptor.class);
@@ -506,6 +507,10 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     downloadableArtifacts.record(appProps);
                     generatedArtifacts.record(appProps);
 
+                    // Set the application deploy time
+                    timeTakenToDeploy = timing.elapsed();
+                    deploymentContext.getTransientAppMetaData("application", Application.class).setDeploymentTime(Long.toString(timeTakenToDeploy));
+                    
                     // register application information in domain.xml
                     deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
                     if (tracing != null) {
@@ -563,7 +568,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         "deploy.done",
                         "Deployment of {0} done is {1} ms",
                         name,
-                        timing.elapsed()));
+                        timeTakenToDeploy));
             } else if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
                 String errorMessage = report.getMessage();
                 Throwable cause = report.getFailureCause();

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://www.jboss.org/arquillian-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+  <!--
+     <engine>
+        <deploymentExportPath>target/test-archives</deploymentExportPath>
+     </engine>
+   -->
+  <group qualifier="Grid">
+    <container qualifier="glassfish" default="true">
+      <configuration>
+        <!-- All property has its default or can be omited  -->
+        <property name="adminHttps">false</property>
+        <property name="adminHost">localhost</property>
+        <property name="adminPort">4848</property>
+        <property name="serverHttps">false</property>
+        <property name="adminUser">admin</property>
+        <property name="adminPassword">yourPassword</property>
+        <property name="target">server</property>
+      </configuration>
+    </container>
+  </group>
+
+</arquillian>

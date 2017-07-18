@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.deployer;
@@ -49,6 +51,7 @@ import com.sun.enterprise.repository.ResourceProperty;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.resources.api.*;
+import org.glassfish.resources.javamail.beans.MailBean;
 import org.glassfish.resources.javamail.config.MailResource;
 import org.glassfish.resources.javamail.naming.MailNamingObjectFactory;
 import org.glassfish.resources.naming.SerializableObjectRefAddr;
@@ -68,6 +71,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * Handles mail resource events in the server instance.
@@ -143,9 +147,9 @@ public class MailResourceDeployer extends GlobalResourceDeployer
         // Converts the config data to j2ee resource ;
         // retieves the resource installer ; installs the resource ;
         // and adds it to a collection in the installer
-        org.glassfish.resources.api.JavaEEResource j2eeRes = toMailJavaEEResource(mailResource, resourceInfo);
+        org.glassfish.resources.api.JavaEEResource j2eeRes = toMailBean(mailResource, resourceInfo);
         //ResourceInstaller installer = runtime.getResourceInstaller();
-        installMailResource((org.glassfish.resources.javamail.beans.MailResource) j2eeRes, resourceInfo);
+        installMailResource((MailBean) j2eeRes, resourceInfo);
     }
 
     /**
@@ -236,7 +240,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      *
      * @param mailResource mail resource
      */
-    public void installMailResource(org.glassfish.resources.javamail.beans.MailResource mailResource, ResourceInfo resourceInfo) {
+    public void installMailResource(MailBean mailResource, ResourceInfo resourceInfo) {
 
         try {
 
@@ -264,11 +268,11 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * @param mailResourceConfig mail-resource config bean
      * @return a new instance of j2ee mail resource
      */
-    public static org.glassfish.resources.api.JavaEEResource toMailJavaEEResource(
+    public static MailBean toMailBean(
             MailResource mailResourceConfig, ResourceInfo resourceInfo) {
 
-        org.glassfish.resources.javamail.beans.MailResource mailResource =
-                new org.glassfish.resources.javamail.beans.MailResource(resourceInfo);
+        MailBean mailResource =
+                new MailBean(resourceInfo);
 
         //jr.setDescription(rbean.getDescription()); // FIXME: getting error
         mailResource.setEnabled(Boolean.valueOf(mailResourceConfig.getEnabled()));
@@ -276,9 +280,11 @@ public class MailResourceDeployer extends GlobalResourceDeployer
         mailResource.setStoreProtocolClass(mailResourceConfig.getStoreProtocolClass());
         mailResource.setTransportProtocol(mailResourceConfig.getTransportProtocol());
         mailResource.setTransportProtocolClass(mailResourceConfig.getTransportProtocolClass());
-        mailResource.setMailHost(mailResourceConfig.getHost());
-        mailResource.setUsername(mailResourceConfig.getUser());
-        mailResource.setMailFrom(mailResourceConfig.getFrom());
+        mailResource.setMailHost((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getHost()));
+        mailResource.setUsername((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getUser()));
+        mailResource.setPassword((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getPassword()));
+        mailResource.setAuth(Boolean.valueOf(mailResourceConfig.getAuth()));
+        mailResource.setMailFrom((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getFrom()));
         mailResource.setDebug(Boolean.valueOf(mailResourceConfig.getDebug()));
 
         // sets the properties

@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 
 <!--
@@ -65,7 +65,7 @@ System unique object id. Automatically generated and updated at deployment/redep
 This is the root element describing all the runtime of an ejb-jar in the application.
 -->
 <!ELEMENT enterprise-beans (name?, unique-id?, ejb*, pm-descriptors?, cmp-resource?,
-	message-destination*, webservice-description*, property*)>
+	message-destination*, webservice-description*, property*, webservice-default-login-config?)>
 
 <!--
 This is the element describing runtime bindings for a single ejb.
@@ -1194,3 +1194,9 @@ Syntax for supplying properties as name value pairs
                    value CDATA  #REQUIRED>
 
 <!ELEMENT description (#PCDATA)>
+
+<!--
+Optional Default authentication configuration for an EJB web service endpoint.
+The individual bean's configuration takes precedence, but this is the default
+-->
+<!ELEMENT webservice-default-login-config ( auth-method, realm? )>

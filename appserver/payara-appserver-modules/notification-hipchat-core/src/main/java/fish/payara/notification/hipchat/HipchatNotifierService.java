@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,14 +75,12 @@ public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNot
     @Override
     public void bootstrap() {
         register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
-
-        initializeExecutor();
         executionOptions = (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        scheduleExecutor(new HipchatNotificationRunnable(queue, executionOptions));
+        if (executionOptions != null && executionOptions.isEnabled()){
+            initializeExecutor();
+            scheduleExecutor(new HipchatNotificationRunnable(queue, executionOptions));
+        }
+        
     }
 
-    @Override
-    public void shutdown() {
-        super.reset();
-    }
 }

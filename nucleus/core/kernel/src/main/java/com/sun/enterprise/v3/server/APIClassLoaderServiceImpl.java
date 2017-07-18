@@ -114,10 +114,12 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
 
     private static final Enumeration<URL> EMPTY_URLS = new Enumeration<URL>() {
 
+        @Override
         public boolean hasMoreElements() {
             return false;
         }
 
+        @Override
         public URL nextElement() {
             throw new NoSuchElementException();
         }
@@ -125,6 +127,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
     final static Logger logger = KernelLoggerInfo.getLogger();
     private Module APIModule;
 
+    @Override
     public void postConstruct() {
         try {
             createAPIClassLoader();
@@ -163,6 +166,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
         
         if (System.getSecurityManager() != null) {
             return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                @Override
                 public ClassLoader run() {
                     return ClassLoader.getSystemClassLoader().getParent();
                 }
@@ -203,19 +207,24 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
 
             // add a listener to manage blacklist in APIClassLoader
             mr.register(new ModuleLifecycleListener() {
+                @Override
                 public void moduleInstalled(Module module) {
                     clearBlackList();
                 }
 
+                @Override
                 public void moduleResolved(Module module) {
                 }
 
+                @Override
                 public void moduleStarted(Module module) {
                 }
 
+                @Override
                 public void moduleStopped(Module module) {
                 }
 
+                @Override
                 public void moduleUpdated(Module module) {
                     clearBlackList();
                 }

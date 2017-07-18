@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -207,6 +207,7 @@ public class TransactionalInterceptorBase implements Serializable {
                 (ctx.getMethod().getAnnotation(PreDestroy.class) != null);
     }
 
+    @SuppressWarnings("unchecked")
     public Object proceed(InvocationContext ctx) throws Exception {
         javax.transaction.Transactional transactionalAnnotation =
                 ctx.getMethod().getAnnotation(javax.transaction.Transactional.class);
@@ -298,6 +299,7 @@ public class TransactionalInterceptorBase implements Serializable {
      * @param exception actual exception thrown for comparison
      * @return exception in the array that is closest/lowest in hierarchy to the exception or null if non exists
      */
+    @SuppressWarnings("unchecked")
     private Class getClassInArrayClosestToClassOrNull(Class[] exceptionArray, Class exception) {
         if(exceptionArray==null || exception == null) return null;
         Class closestMatch = null;

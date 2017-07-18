@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.versioning;
 
@@ -697,6 +698,14 @@ public class VersioningUtilsTest {
         public void setDeploymentOrder(String value) throws PropertyVetoException{
             throw new UnsupportedOperationException("Not supported yet.");
         }
+ 
+        public String getDeploymentTime() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setDeploymentTime(String value) throws PropertyVetoException{
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
         @Override
         public List<Module> getModule() {
@@ -766,6 +775,26 @@ public class VersioningUtilsTest {
 
         @Override
         public List<Property> getProperty() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

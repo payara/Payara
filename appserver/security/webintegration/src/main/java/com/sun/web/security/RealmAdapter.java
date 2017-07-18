@@ -37,29 +37,60 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.web.security;
 
-import com.sun.enterprise.security.ee.SecurityUtil;
-import com.sun.enterprise.security.jmac.config.HttpServletHelper;
-import com.sun.enterprise.security.web.integration.WebPrincipal;
-import com.sun.enterprise.security.web.integration.WebSecurityManager;
-import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
-import org.glassfish.security.common.NonceInfo;
-import com.sun.enterprise.security.CNonceCacheFactory;
-import org.glassfish.security.common.CNonceCache;
-import com.sun.enterprise.security.auth.digest.impl.HttpAlgorithmParameterImpl;
+import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
+import static com.sun.enterprise.security.jmac.config.HttpServletConstants.AUTH_TYPE;
+import static com.sun.enterprise.security.jmac.config.HttpServletConstants.IS_MANDATORY;
+import static com.sun.enterprise.security.jmac.config.HttpServletConstants.REGISTER_SESSION;
+import static com.sun.enterprise.security.jmac.config.HttpServletConstants.REGISTER_WITH_AUTHENTICATOR;
+import static java.lang.Boolean.TRUE;
+import static java.net.URLEncoder.encode;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+import static javax.security.auth.message.AuthStatus.SUCCESS;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+import static org.apache.catalina.ContainerEvent.AFTER_AUTHENTICATION;
+import static org.apache.catalina.ContainerEvent.BEFORE_AUTHENTICATION;
+import static org.apache.catalina.Globals.WRAPPED_REQUEST;
+import static org.apache.catalina.Globals.WRAPPED_RESPONSE;
+import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
+
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+/*V3:Comment
+import com.sun.enterprise.webservice.monitoring.WebServiceEngineImpl;
+import com.sun.enterprise.webservice.monitoring.AuthenticationListener;
+ */
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.security.cert.X509Certificate;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.security.auth.Subject;
@@ -68,7 +99,9 @@ import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.config.ServerAuthConfig;
 import javax.security.auth.message.config.ServerAuthContext;
+import javax.security.jacc.PolicyContext;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -77,6 +110,7 @@ import com.ibm.security.x509.X500Name;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
+import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.HttpRequest;
@@ -84,13 +118,22 @@ import org.apache.catalina.HttpResponse;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.authenticator.AuthenticatorBase;
+import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.realm.Constants;
 import org.apache.catalina.realm.RealmBase;
-
 import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.security.common.CNonceCache;
+import org.glassfish.security.common.NonceInfo;
+import org.jvnet.hk2.annotations.Service;
+
 //import com.sun.enterprise.Switch;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
@@ -99,44 +142,30 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 //import org.glassfish.deployment.common.SecurityRoleMapper;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.AppCNonceCacheMap;
+import com.sun.enterprise.security.CNonceCacheFactory;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
-import com.sun.enterprise.security.auth.login.LoginContextDriver;
-import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
-import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.security.jmac.config.HttpServletConstants;
-
-/*V3:Comment
-import com.sun.enterprise.webservice.monitoring.WebServiceEngineImpl;
-import com.sun.enterprise.webservice.monitoring.AuthenticationListener;
- */
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
-import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 import com.sun.enterprise.security.auth.digest.api.Key;
-import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
 import com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator;
+import com.sun.enterprise.security.auth.digest.impl.HttpAlgorithmParameterImpl;
 import com.sun.enterprise.security.auth.digest.impl.NestedDigestAlgoParamImpl;
 import com.sun.enterprise.security.auth.login.DigestCredentials;
+import com.sun.enterprise.security.auth.login.LoginContextDriver;
+import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
+import com.sun.enterprise.security.ee.SecurityUtil;
+import com.sun.enterprise.security.integration.RealmInitializer;
+import com.sun.enterprise.security.jmac.config.HttpServletConstants;
+import com.sun.enterprise.security.jmac.config.HttpServletHelper;
+import com.sun.enterprise.security.web.integration.WebPrincipal;
+import com.sun.enterprise.security.web.integration.WebSecurityManager;
+import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
 import com.sun.enterprise.util.net.NetUtils;
+import com.sun.logging.LogDomains;
+
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
-
-import javax.inject.Inject;
-import javax.security.jacc.PolicyContext;
-import javax.servlet.ServletContext;
-import org.apache.catalina.ContainerEvent;
-import org.apache.catalina.connector.RequestFacade;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.PostConstruct;
 
 /**
  * This is the realm adapter used to authenticate users and authorize
@@ -150,7 +179,6 @@ import org.glassfish.hk2.api.PostConstruct;
 @PerLookup
 public class RealmAdapter extends RealmBase implements RealmInitializer, PostConstruct {
 
-    //private static final String UNCONSTRAINED = "unconstrained";
     private static final Logger _logger = LogDomains.getLogger(RealmAdapter.class, LogDomains.WEB_LOGGER);
     private static final ResourceBundle rb = _logger.getResourceBundle();
     public static final String SECURITY_CONTEXT = "SecurityContext";
@@ -162,68 +190,54 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     // name of system property that can be used to define 
     // corresponding default provider for system apps.
-    private static final String SYSTEM_HTTPSERVLET_SECURITY_PROVIDER =
-            "system_httpservlet_security_provider";
+    private static final String SYSTEM_HTTPSERVLET_SECURITY_PROVIDER = "system_httpservlet_security_provider";
 
-    //private String realm = "default";
-    //private SecurityRoleMapper mapper = null;
-    private WebBundleDescriptor webDesc = null;
+    private WebBundleDescriptor webDesc;
 
     // BEGIN IASRI 4747594
-    private HashMap<String,String> runAsPrincipals = null;
+    private HashMap<String,String> runAsPrincipals;
     // END IASRI 4747594
+    
     // required for realm-per-app login
-    private String _realmName = null;
+    private String _realmName;
+    
     /**
      * Descriptive information about this Realm implementation.
      */
     protected static final String name = "J2EE-RI-RealmAdapter";
+    
     /**
      * The context Id value needed by the jacc architecture.
      */
-    private String CONTEXT_ID = null;
+    private String CONTEXT_ID;
     private Container virtualServer;
 
     /**
      * A <code>WebSecurityManager</code> object associated with a CONTEXT_ID
      */
-    protected volatile WebSecurityManager webSecurityManager = null;
-    /**
-     * The factory used for creating <code>WebSecurityManager</code> object.
-     */
-    @Inject
-    protected WebSecurityManagerFactory webSecurityManagerFactory;
-    
-    @Inject
-    RequestTracingService requestTracing;
+    protected volatile WebSecurityManager webSecurityManager;
             
-    protected boolean isCurrentURIincluded = false;
-    //private ArrayList roles = null;
+    protected boolean isCurrentURIincluded;
+    
     /* the following fields are used to implement a bypass of
      * FBL related targets
      */
     protected final ReadWriteLock rwLock = new ReentrantReadWriteLock();
-    private boolean contextEvaluated = false;
-    private String loginPage = null;
-    private String errorPage = null;
-    private final static SecurityConstraint[] emptyConstraints =
-            new SecurityConstraint[]{};
+    private boolean contextEvaluated;
+    private String loginPage;
+    private String errorPage;
+    private final static SecurityConstraint[] emptyConstraints = new SecurityConstraint[]{};
+    
     /**
      * the default provider id for system apps if one has been established.
      * the default provider for system apps is established by defining
      * a system property.
      */
-    private static String defaultSystemProviderID =
-            getDefaultSystemProviderID();
-    //private String appID;
+    private static String defaultSystemProviderID = getDefaultSystemProviderID();
+    
     private String moduleID;
     private boolean isSystemApp;
-    //private String jmacProviderRegisID = null;
-    private HttpServletHelper helper = null;
-    //PERF Fix.
-    //there maybe a race condition but since its a boolean it does not matter.
-    //as all threads would evaluate the same result.
-    private Boolean secExtEnabled = null;
+    private HttpServletHelper helper;
 
     @Inject
     private ServerContext serverContext;
@@ -235,8 +249,17 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     private Provider<CNonceCacheFactory> cNonceCacheFactoryProvider;
 
     @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Named(DEFAULT_INSTANCE_NAME)
     private NetworkConfig networkConfig;
+    
+    /**
+     * The factory used for creating <code>WebSecurityManager</code> object.
+     */
+    @Inject
+    protected WebSecurityManagerFactory webSecurityManagerFactory;
+    
+    @Inject
+    RequestTracingService requestTracing;
 
 
     private CNonceCacheFactory cNonceCacheFactory;
@@ -251,20 +274,20 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * value or no reentrancy), or 1 (current thread is reentrant). When a
      * thread exits the implies method, byte[0] is always reset to 0.
      */
-    private static ThreadLocal reentrancyStatus;
+    private static ThreadLocal<byte[]> reentrancyStatus;
 
     static {
-        reentrancyStatus = new ThreadLocal() {
+        reentrancyStatus = new ThreadLocal<byte[]>() {
 
             @Override
-            protected synchronized Object initialValue() {
+            protected synchronized byte[] initialValue() {
                 return new byte[]{0};
             }
         };
     }
     
     public RealmAdapter() {
-        //used during Injection in WebContainer (glue code)
+        // used during Injection in WebContainer (glue code)
     }
 
     /**
@@ -294,9 +317,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     @Override
     public void setVirtualServer(Object container) {
         this.virtualServer = (Container)container;
-        //this was causing classloading failure.
-        //TODO:reexamine after TP2
-        //this.helper = getConfigHelper();
     }
 
     public WebBundleDescriptor getWebDescriptor() {
@@ -1005,10 +1025,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * processing should continue, or <code>false</code> if we have created
      * a response already
      */
-    public boolean hasUserDataPermission(HttpRequest request,
-                HttpResponse response, SecurityConstraint[] constraints)
-            throws IOException {
-        return hasUserDataPermission(request,response,constraints,null,null);
+    public boolean hasUserDataPermission(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints) throws IOException {
+        return hasUserDataPermission(request, response, constraints, null, null);
     }
 
     /**
@@ -1043,12 +1061,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                     hrequest.getContextPath()));
         }
 
-        if (_logger.isLoggable(Level.FINE)) {
+        if (_logger.isLoggable(FINE)) {
             _logger.fine("[Web-Security][ hasUserDataPermission ] Principal: " + hrequest.getUserPrincipal() + " ContextPath: " + hrequest.getContextPath());
         }
 
         if (request.getRequest().isSecure()) {
-            if (_logger.isLoggable(Level.FINE)) {
+            if (_logger.isLoggable(FINE)) {
                 _logger.fine("[Web-Security] request.getRequest().isSecure(): " + request.getRequest().isSecure());
             }
             return true;
@@ -1061,14 +1079,14 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
         int isGranted = 0;
         try {
-	    isGranted = secMgr.hasUserDataPermission(hrequest,uri,method);
+            isGranted = secMgr.hasUserDataPermission(hrequest,uri,method);
         } catch (IllegalArgumentException e) {
-            //end the request after getting IllegalArgumentException while checking
-            //user data permission
+            // End the request after getting IllegalArgumentException while checking user data permission
             String msgWithId = rb.getString("realmAdapter.badRequestWithId");
-            _logger.log(Level.WARNING, msgWithId, e);
+            _logger.log(WARNING, msgWithId, e);
             String msg = rb.getString("realmAdapter.badRequest");
-            ((HttpServletResponse) response.getResponse()).sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
+            ((HttpServletResponse) response.getResponse()).sendError(SC_BAD_REQUEST, msg);
+            
             return false;
         }
 
@@ -1081,15 +1099,14 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         // -1 - if the current transport is not granted, but a redirection can occur
         //      so the grand will succeed.
         if (isGranted == -1) {
-            if (_logger.isLoggable(Level.FINE)) {
+            if (_logger.isLoggable(FINE)) {
                 _logger.fine("[Web-Security] redirecting using SSL");
             }
             return redirect(request, response);
         }
 
         if (isGranted == 0) {
-            ((HttpServletResponse) response.getResponse()).sendError(HttpServletResponse.SC_FORBIDDEN,
-                    rb.getString("realmBase.forbidden"));
+            ((HttpServletResponse) response.getResponse()).sendError(SC_FORBIDDEN, rb.getString("realmBase.forbidden"));
             return false;
         }
 
@@ -1111,7 +1128,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 hostPort = hostVal.split(":");
             }
         }
-        if(hostPort == null) {
+        
+        if (hostPort == null) {
             throw new ProtocolException(rb.getString("missing_http_header.host"));
         }
 
@@ -1201,24 +1219,19 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     private boolean redirect(HttpRequest request, HttpResponse response) throws IOException {
         // Initialize variables we need to determine the appropriate action
-        HttpServletRequest hrequest =
-                (HttpServletRequest) request.getRequest();
-        HttpServletResponse hresponse =
-                (HttpServletResponse) response.getResponse();
-        
+        HttpServletRequest hrequest = (HttpServletRequest) request.getRequest();
+        HttpServletResponse hresponse = (HttpServletResponse) response.getResponse();
         
         int redirectPort = request.getConnector().getRedirectPort();
 
-
         // Is redirecting disabled?
         if (redirectPort <= 0) {
-            if (_logger.isLoggable(Level.INFO)) {
+            if (_logger.isLoggable(INFO)) {
                 _logger.fine("[Web-Security]  SSL redirect is disabled");
             }
 
-            hresponse.sendError(HttpServletResponse.SC_FORBIDDEN, 
-                    URLEncoder.encode(hrequest.getRequestURI(), "UTF-8"));
-            return (false);
+            hresponse.sendError(SC_FORBIDDEN, encode(hrequest.getRequestURI(), "UTF-8"));
+            return false;
         }
 
         String protocol = "https";
@@ -1242,11 +1255,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         try {
             url = new URL(protocol, serverHost, redirectPort, file.toString());
             hresponse.sendRedirect(url.toString());
-            return (false);
+            return false;
         } catch (MalformedURLException e) {
-            hresponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    URLEncoder.encode(hrequest.getRequestURI(), "UTF-8"));
-            return (false);
+            hresponse.sendError(SC_INTERNAL_SERVER_ERROR, encode(hrequest.getRequestURI(), "UTF-8"));
+            return false;
         }
     }
 
@@ -1264,16 +1276,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             return "";
         }
     }
-
-//    Function not required anymore.
-//    private String getExtension(String uri) {
-//        int index=uri.lastIndexOf(".");
-//        if(index >= 0) {
-//            return uri.substring(index);
-//        } else {
-//            return "";
-//        }
-//    }
 
     /**
      * Return a short name for this Realm Adapter implementation.
@@ -1293,7 +1295,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     public void setRealmName(String realmName) {
-    // do nothing since this is done when initializing the Realm.
+        // do nothing since this is done when initializing the Realm.
     }
 
     //START SJSAS 6232464 6202703
@@ -1305,19 +1307,17 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      *
      * otherwise return an empty array of SecurityConstraint.
      */
-    public SecurityConstraint[] findSecurityConstraints(HttpRequest request,
-            Context context) {
-       if (this.helper == null) {
+    public SecurityConstraint[] findSecurityConstraints(HttpRequest request, Context context) {
+        if (helper == null) {
             initConfigHelper(context.getServletContext());
         }
         WebSecurityManager secMgr = getWebSecurityManager(false);
 
-        if (secMgr != null && secMgr.hasNoConstrainedResources() &&
- 	    !isSecurityExtensionEnabled(context.getServletContext())) {
+        if (secMgr != null && secMgr.hasNoConstrainedResources() && !isSecurityExtensionEnabled(context.getServletContext())) {
             return null;
         }
-        SecurityConstraint[] constraints = RealmAdapter.emptyConstraints;
-        return constraints;
+        
+        return emptyConstraints;
     }
 
     //START SJSAS 6232464 6202703
@@ -1329,20 +1329,17 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      *
      * otherwise return an empty array of SecurityConstraint.
      */
-    public SecurityConstraint[] findSecurityConstraints(String requestPathMB,
-            String httpMethod, Context context) {
+    public SecurityConstraint[] findSecurityConstraints(String requestPathMB, String httpMethod, Context context) {
         if (this.helper == null) {
             initConfigHelper(context.getServletContext());
         }
         WebSecurityManager secMgr = getWebSecurityManager(false);
 
-        if (secMgr != null && secMgr.hasNoConstrainedResources() &&
- 	    !isSecurityExtensionEnabled(context.getServletContext())) {
+        if (secMgr != null && secMgr.hasNoConstrainedResources() && !isSecurityExtensionEnabled(context.getServletContext())) {
             return null;
         }
 
-        SecurityConstraint[] constraints = RealmAdapter.emptyConstraints;
-        return constraints;
+        return emptyConstraints;
     }
 
     //END SJSAS 6232464 6202703
@@ -1381,13 +1378,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             if (helper != null && helper.getServerAuthConfig() != null) {
                 return Realm.AUTHENTICATE_NEEDED;
             }
-            isGranted = invokeWebSecurityManager(
-                    request, response, constraints);
+            isGranted = invokeWebSecurityManager(request, response, constraints);
         } catch (IOException iex) {
             throw iex;
         } catch (Throwable ex) {
-            _logger.log(Level.SEVERE, "web_server.excep_authenticate_realmadapter", ex);
-            ((HttpServletResponse) response.getResponse()).sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            _logger.log(SEVERE, "web_server.excep_authenticate_realmadapter", ex);
+            ((HttpServletResponse) response.getResponse()).sendError(SC_SERVICE_UNAVAILABLE);
             response.setDetailMessage(rb.getString("realmBase.forbidden"));
             return Realm.AUTHENTICATED_NOT_AUTHORIZED;
         }
@@ -1395,32 +1391,14 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         if (isGranted) {
             // HashMap sharedState;
             boolean delegateSessionMgmt = false;
-            //XXX Keep it for reference
-            /*
-            if (this.sAC != null) {
-            sharedState = new HashMap();
-            try {
-            delegateSessionMgmt = this.sAC.managesSessions(sharedState);
-            } catch (AuthException ae) {
-            delegateSessionMgmt = false;
-            }
-            }
-            if (delegateSessionMgmt) {      
-            if (validate(request, response, null, null)) {
-            disableProxyCaching(request, response, disableProxyCaching,
-            securePagesWithPragma);
-            }
-            } else if( ((HttpServletRequest) request).getUserPrincipal() != null) {
-             */
+        
             if (((HttpServletRequest) request).getUserPrincipal() != null) {
-                disableProxyCaching(request, response, disableProxyCaching,
-                        securePagesWithPragma);
+                disableProxyCaching(request, response, disableProxyCaching, securePagesWithPragma);
                 if (ssoEnabled) {
-                    HttpServletRequest hreq =
-                            (HttpServletRequest) request.getRequest();
+                    HttpServletRequest hreq = (HttpServletRequest) request.getRequest();
                     WebSecurityManager webSecMgr = getWebSecurityManager(true);
                     if (!webSecMgr.permitAll(hreq)) {
-                        //create a session for protected sso association
+                        // create a session for protected sso association
                         hreq.getSession(true);
                     }
                 }
@@ -1451,12 +1429,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * @exception IOException if an input/output error occurs
      */
     @Override
-    public boolean invokeAuthenticateDelegate(HttpRequest request,
-            HttpResponse response,
-            Context context,
-            Authenticator authenticator,
-            boolean calledFromAuthenticate)
-            throws IOException {
+    public boolean invokeAuthenticateDelegate(HttpRequest request, HttpResponse response, Context context, Authenticator authenticator,
+            boolean calledFromAuthenticate) throws IOException {
 
         boolean result = false;
         LoginConfig config = context.getLoginConfig();
@@ -1470,29 +1444,34 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         }
         
         if (serverAuthConfig != null) {
-            //JSR 196 is enabled for this application
+            // JSR 196 is enabled for this application
+            
             Principal wrapped = null;
             try {
-                context.fireContainerEvent(ContainerEvent.BEFORE_AUTHENTICATION, null);
-                // get the WebPrincipal principal and add to the security context principals
-                RequestFacade rf = (RequestFacade)request.getRequest();
-                if (rf != null) {
-                    wrapped = rf.getPrincipal();
+                context.fireContainerEvent(BEFORE_AUTHENTICATION, null);
+                
+                // Get the WebPrincipal principal and add to the security context principals
+                RequestFacade requestFacade = (RequestFacade)request.getRequest();
+                if (requestFacade != null) {
+                    wrapped = requestFacade.getPrincipal();
                     if (wrapped != null) {
                         SecurityContext.getCurrent().setAdditionalPrincipal(wrapped);
                     }
                 }
+                
                 if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
                     RequestEvent re = new RequestEvent("BEFORE JASPIC AUTH");
                     re.addProperty("AppContext", serverAuthConfig.getAppContext());
                     re.addProperty("Context", context.getPath());
                     requestTracing.traceRequestEvent(re);
                 }
+                
                 result = validate(request, response, config, authenticator, calledFromAuthenticate);
+                
                 if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
                     RequestEvent re = new RequestEvent("AFTER JASPIC AUTH");
                     re.addProperty("AuthResult", Boolean.toString(result));
-                    Principal p = rf.getPrincipal();
+                    Principal p = requestFacade.getPrincipal();
                     String pName = "null";
                     if (p != null) {
                         pName = p.getName();
@@ -1502,13 +1481,13 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 }
             } finally {
                 SecurityContext.getCurrent().setAdditionalPrincipal(null);
-                context.fireContainerEvent(ContainerEvent.AFTER_AUTHENTICATION, null);
+                context.fireContainerEvent(AFTER_AUTHENTICATION, null);
             }
         } else {
-            //jsr196 is not enabled.  Use the current authenticator.
-            result = ((AuthenticatorBase) authenticator).authenticate(
-                    request, response, config);
+            // JSR 196 is not enabled.  Use the current authenticator.
+            result = ((AuthenticatorBase) authenticator).authenticate(request, response, config);
         }
+        
         return result;
     }
 
@@ -1615,140 +1594,148 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         return servletContext.getVirtualServerName() + " " + servletContext.getContextPath();
     }
 
-    private boolean validate(HttpRequest request,
-            HttpResponse response,
-            LoginConfig config,
-            Authenticator authenticator,
-            boolean calledFromAuthenticate)
-            throws IOException {
+    @SuppressWarnings("unchecked")
+    private boolean validate(HttpRequest request, HttpResponse response, LoginConfig config, Authenticator authenticator, boolean calledFromAuthenticate) throws IOException {
 
-        HttpServletRequest req = (HttpServletRequest) request.getRequest();
-        HttpServletResponse res = (HttpServletResponse) response.getResponse();
+        HttpServletRequest servletRequest = (HttpServletRequest) request.getRequest();
+        HttpServletResponse servletResponse = (HttpServletResponse) response.getResponse();
 
         Subject subject = new Subject();
 
-        MessageInfo messageInfo = new HttpMessageInfo(req, res);
+        MessageInfo messageInfo = new HttpMessageInfo(servletRequest, servletResponse);
 
-        boolean rvalue = false;
+        boolean isValidateSuccess = false;
         boolean isMandatory = true;
         try {
-            WebSecurityManager webSecMgr = getWebSecurityManager(true);
-            isMandatory = !webSecMgr.permitAll(req);
-            //Issue  - 9578 - produce user challenge if call originates from HttpRequest.authenticate
+            isMandatory = !getWebSecurityManager(true).permitAll(servletRequest);
+            
+            // Issue - 9578 - produce user challenge if call originates from HttpServletRequest.authenticate
             if (isMandatory || calledFromAuthenticate) {
-                messageInfo.getMap().put(HttpServletConstants.IS_MANDATORY,
-                        Boolean.TRUE.toString());
+                setMandatory(messageInfo);
             }
-            ServerAuthContext sAC =
-                    helper.getServerAuthContext(messageInfo,
-                    null); // null serviceSubject
-            if (sAC != null) {
-                AuthStatus authStatus =
-                        sAC.validateRequest(messageInfo, subject,
-                        null); // null serviceSubject
-                rvalue = AuthStatus.SUCCESS.equals(authStatus);
+            
+            ServerAuthContext authContext = helper.getServerAuthContext(messageInfo, null); // null serviceSubject
+            if (authContext != null) {
+                
+                // Call the JASPIC ServerAuthContext which should eventually call the ServerAuthModule (SAM)
+                
+                // Notice a null is passed in as the service subject
+                // Additionally notice we only care about SUCCESS being returned or not and ignore
+                // all other JASPIC AuthStatus values.
+                
+                isValidateSuccess = SUCCESS.equals(authContext.validateRequest(messageInfo, subject, null));
 
-                if (rvalue) { // cache it only if validateRequest = true
-                    messageInfo.getMap().put(SERVER_AUTH_CONTEXT, sAC);
-                    req.setAttribute(MESSAGE_INFO, messageInfo);
+                if (isValidateSuccess) { // store it only if validateRequest = true
+                    storeInRequest(servletRequest, messageInfo, authContext);
                 }
             } else {
                 throw new AuthException("null ServerAuthContext");
             }
         } catch (AuthException ae) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,
-                        "JMAC: http msg authentication fail", ae);
-            }
-            res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            _logger.log(FINE, "JMAC: http msg authentication fail", ae);
+            servletResponse.setStatus(SC_INTERNAL_SERVER_ERROR);
         } catch (RuntimeException e) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,
-                        "JMAC: Exception during validateRequest", e);
-            }
-            res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            _logger.log(FINE, "JMAC: Exception during validateRequest", e);
+            servletResponse.sendError(SC_INTERNAL_SERVER_ERROR);
         }
-        if (rvalue) {
+        
+        if (isValidateSuccess) {
             Set<Principal> principalSet = subject.getPrincipals();
-            // must be at least one new principal to establish 
-            // non-default security context
-            if (principalSet != null && !principalSet.isEmpty() &&
-                !principalSetContainsOnlyAnonymousPrincipal(principalSet)) {
+            
+            // Must be at least one new principal to establish non-default security context
+            if (hasNewPrincipal(principalSet)) {
 
-                SecurityContext ctx = new SecurityContext(subject);
-                //XXX assuming no null principal here
-                Principal p = ctx.getCallerPrincipal();
-                WebPrincipal wp = new WebPrincipal(p, ctx);
+                SecurityContext securityContext = new SecurityContext(subject);
+                
+                // Assuming no null principal here
+                Principal callerPrincipal = securityContext.getCallerPrincipal();
+                WebPrincipal webPrincipal = new WebPrincipal(callerPrincipal, securityContext);
+                
+                // TODO: check Java SE SecurityManager access
+                SecurityContext.setCurrent(securityContext);
+                
                 try {
-                    //XXX Keep it for reference
-                    /*
-                    if (this.sAC.managesSessions(sharedState)) {
-                    // registration (via proxy) does not occur
-                    // if context manages sessions
-                    // record authentication information in the request
-                    request.setAuthType(PROXY_AUTH_TYPE);
-                    request.setUserPrincipal(wp);
-                    } else {
-                    AuthenticatorProxy proxy = 
-                    new AuthenticatorProxy(authenticator,wp);
-                    proxy.authenticate(request,response,config);
-                    }
-                     */
-                    String authType = (String) messageInfo.getMap().get(
-                            HttpServletConstants.AUTH_TYPE);
+                    String authType =  getAuthType(messageInfo);
                     
-                    if (authType == null && config != null &&
-                            config.getAuthMethod() != null) {
+                    if (authType == null && config != null && config.getAuthMethod() != null) {
                         authType = config.getAuthMethod();
                     }
 
-                    if (shouldRegister(messageInfo.getMap())) {
-                        AuthenticatorProxy proxy = new AuthenticatorProxy(authenticator, wp, authType);
+                    if (shouldRegister(messageInfo)) {
+                        AuthenticatorProxy proxy = new AuthenticatorProxy(authenticator, webPrincipal, authType);
                         proxy.authenticate(request, response, config);
                     } else {
-                        request.setAuthType((authType == null) ? PROXY_AUTH_TYPE : authType);
-                        request.setUserPrincipal(wp);
+                        request.setAuthType(authType == null ? PROXY_AUTH_TYPE : authType);
+                        request.setUserPrincipal(webPrincipal);
                     }
                 } catch (LifecycleException le) {
-                    _logger.log(Level.SEVERE, "[Web-Security] unable to register session", le);
-
+                    _logger.log(SEVERE, "[Web-Security] unable to register session", le);
                 }
             } else {
-                //GLASSFISH-20930.Set null for the case when SAM does not
-                //indicate that it needs the session
-                if (((HttpServletRequest) messageInfo.getRequestMessage()).getUserPrincipal() != null) {
+                // GLASSFISH-20930. Set null for the case when SAM does not indicate that it needs the session
+                if (hasRequestPrincipal(messageInfo)) {
                     request.setUserPrincipal(null);
                     request.setAuthType(null);
                 }
 
+                // If authentication is mandatory, we must have a non-anonymous principal
                 if (isMandatory) {
-                    rvalue = false;
+                    isValidateSuccess = false;
                 }
             }
-            if (rvalue) {
+            
+            if (isValidateSuccess) {
+                
+                // Check if the SAM instructed us to wrap the request and response
+                
                 HttpServletRequest newRequest = (HttpServletRequest) messageInfo.getRequestMessage();
-                if (newRequest != req) {
-                    request.setNote(Globals.WRAPPED_REQUEST,
-                            new HttpRequestWrapper(request, newRequest));
+                if (newRequest != servletRequest) {
+                    request.setNote(WRAPPED_REQUEST, new HttpRequestWrapper(request, newRequest));
                 }
 
                 HttpServletResponse newResponse = (HttpServletResponse) messageInfo.getResponseMessage();
-                if (newResponse != res) {
-                    request.setNote(Globals.WRAPPED_RESPONSE,
-                            new HttpResponseWrapper(response, newResponse));
+                if (newResponse != servletResponse) {
+                    request.setNote(WRAPPED_RESPONSE, new HttpResponseWrapper(response, newResponse));
                 }
             }
 
         }
-        return rvalue;
+        
+        return isValidateSuccess;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void storeInRequest( HttpServletRequest servletRequest, MessageInfo messageInfo, ServerAuthContext authContext) {
+        messageInfo.getMap().put(SERVER_AUTH_CONTEXT, authContext);
+        servletRequest.setAttribute(MESSAGE_INFO, messageInfo);
+    }
+    
+    private boolean hasRequestPrincipal(MessageInfo messageInfo) {
+        return ((HttpServletRequest) messageInfo.getRequestMessage()).getUserPrincipal() != null;
+    }
+    
+    private boolean hasNewPrincipal(Set<Principal> principalSet) {
+        return principalSet != null && !principalSet.isEmpty() && !principalSetContainsOnlyAnonymousPrincipal(principalSet);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void setMandatory(MessageInfo messageInfo) {
+        messageInfo.getMap().put(IS_MANDATORY, TRUE.toString());
+    }
+    
+    private String getAuthType(MessageInfo messageInfo) {
+        return (String) messageInfo.getMap().get(AUTH_TYPE);
     }
 
-    private boolean shouldRegister(Map map) {
+    private boolean shouldRegister(MessageInfo messageInfo) {
+        
+        @SuppressWarnings("rawtypes")
+        Map map = messageInfo.getMap();
+        
         /*
          * Detect both the proprietary property and the standard one.
          */
-        return map.containsKey(HttpServletConstants.REGISTER_WITH_AUTHENTICATOR)
-                || mapEntryToBoolean(HttpServletConstants.REGISTER_SESSION, map);
+        return map.containsKey(REGISTER_WITH_AUTHENTICATOR) || mapEntryToBoolean(REGISTER_SESSION, map);
     }
     
     private boolean mapEntryToBoolean(final String propName, final Map map) {
