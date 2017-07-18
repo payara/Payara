@@ -612,7 +612,15 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                                         listener = (SQLTraceListener) constructor.newInstance(initargs);
                                     }
                                 }
-                            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException ex) {
+                            } catch (InstantiationException ex) {
+                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                            } catch (IllegalAccessException ex) {
+                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                            } catch (IllegalArgumentException ex) {
+                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                            } catch (InvocationTargetException ex) {
+                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                            } catch (SecurityException ex) {
                                 _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
                             }
                             sqlTraceDelegator.registerSQLTraceListener(listener);
@@ -1559,9 +1567,11 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         }
     }
 
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
     }
 
+    @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         ra = com.sun.gjc.spi.ResourceAdapterImpl.getInstance();
     }
