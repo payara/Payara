@@ -56,13 +56,13 @@ import java.util.logging.Level;
 public class FrequentSQLTraceCache extends SQLTraceCache {
 
     //Maximum size of the cache.
-    protected int maxStoredEntries = 10000;
+    protected long maxStoredEntries = 10000;
     
     public FrequentSQLTraceCache(String poolName, int numToReport, long timeToKeepQueries) {
         super(poolName, numToReport, timeToKeepQueries);
     }
     
-    public FrequentSQLTraceCache(String poolName, int numToReport, long timeToKeepQueries, int maxStoredEntries) {
+    public FrequentSQLTraceCache(String poolName, int numToReport, long timeToKeepQueries, long maxStoredEntries) {
         super(poolName, numToReport, timeToKeepQueries);
         this.maxStoredEntries = maxStoredEntries;
     }
@@ -85,7 +85,7 @@ public class FrequentSQLTraceCache extends SQLTraceCache {
                 trace.setNumExecutions(trace.getNumExecutions() + 1);
                 trace.setLastUsageTime(System.currentTimeMillis());
             } else {
-                if (cache.size() <= maxStoredEntries){
+                if (cache.size() < maxStoredEntries){
                     cache.put(cacheObj.getQueryName(), cacheObj);
                 } else {
                     _logger.log(Level.WARNING, "Frequent SQL Trace Cache full, {0} not stored", cacheObj.getQueryName());
