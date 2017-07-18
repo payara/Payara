@@ -40,21 +40,28 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-embedded-all</artifactId>
-    <version>4.1.1.171-SNAPSHOT</version>
     <name>Embedded Payara All-In-One</name>
 
     <packaging>jar</packaging>
+    
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
   <build>
     <defaultGoal>install</defaultGoal>
@@ -341,6 +348,14 @@
            <type>zip</type>
            <optional>true</optional>
        </dependency>
+
+       <dependency>
+           <groupId>fish.payara.packager</groupId>
+           <artifactId>payara-api-package</artifactId>
+           <version>${project.version}</version>
+           <type>zip</type>
+           <optional>true</optional>
+       </dependency>
     </dependencies>
 
     <profiles>
@@ -367,6 +382,30 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>DeploySnapshot</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>DeploySnapshot</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

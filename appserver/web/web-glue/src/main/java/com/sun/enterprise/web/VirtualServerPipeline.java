@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ package com.sun.enterprise.web;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.core.StandardPipeline;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -59,6 +58,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.grizzly.http.util.CharChunk;
+import org.glassfish.web.LogFacade;
 
 /**
  * Pipeline associated with a virtual server.
@@ -69,24 +69,9 @@ import org.glassfish.grizzly.http.util.CharChunk;
  */
 public class VirtualServerPipeline extends StandardPipeline {
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Virtual server {0} has been turned off",
-            level = "FINE")
-    public static final String VS_VALVE_OFF = "AS-WEB-GLUE-00168";
-
-    @LogMessageInfo(
-            message = "Virtual server {0} has been disabled",
-            level = "FINE")
-    public static final String VS_VALVE_DISABLED = "AS-WEB-GLUE-00169";
-
-    @LogMessageInfo(
-            message = "Invalid redirect URL [{0}]: Impossible to URL encode",
-            level = "WARNING")
-    public static final String INVALID_REDIRECTION_LOCATION = "AS-WEB-GLUE-00170";
 
     private VirtualServer vs;
 
@@ -121,7 +106,7 @@ public class VirtualServerPipeline extends StandardPipeline {
             throws IOException, ServletException {
 
         if (isOff) {
-            String msg = rb.getString(VS_VALVE_OFF);
+            String msg = rb.getString(LogFacade.VS_VALVE_OFF);
             msg = MessageFormat.format(msg, new Object[] { vs.getName() });
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, msg);
@@ -130,7 +115,7 @@ public class VirtualServerPipeline extends StandardPipeline {
                                             HttpServletResponse.SC_NOT_FOUND,
                                             msg);
         } else if (isDisabled) {
-            String msg = rb.getString(VS_VALVE_DISABLED);
+            String msg = rb.getString(LogFacade.VS_VALVE_DISABLED);
             msg = MessageFormat.format(msg, new Object[] { vs.getName() });
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, msg);
@@ -309,12 +294,12 @@ public class VirtualServerPipeline extends StandardPipeline {
                 } catch (MalformedURLException mue) {
                     if (redirectMatch.validURI) {
                         logger.log(Level.WARNING,
-                            INVALID_REDIRECTION_LOCATION,
+                            LogFacade.INVALID_REDIRECTION_LOCATION,
                             location);
                     } else {
                         if (logger.isLoggable(Level.FINE)) {
                             logger.log(Level.FINE,
-                                INVALID_REDIRECTION_LOCATION,
+                                LogFacade.INVALID_REDIRECTION_LOCATION,
                                 location);
                         }
                     }

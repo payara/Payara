@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.gjc.spi;
 
 import com.sun.appserv.connectors.internal.spi.MCFLifecycleListener;
@@ -71,6 +72,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -672,7 +674,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         String cacheSize = getStatementCacheSize();
         if(cacheSize != null){
             try{
-                statementCacheSize = Integer.valueOf(cacheSize);
+                statementCacheSize = Integer.parseInt(cacheSize);
                 //TODO-SC FINE log-level with Pool Name (if possible)
                 if(_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, "StatementCaching Size : " + statementCacheSize);
@@ -1180,7 +1182,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             if (sqlTraceDelegator == null) {
                 sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
             }
-            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((long) (threshold*1000)));
+            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((long)(threshold * 1000), TimeUnit.MILLISECONDS));
         }
     }
     
@@ -1475,13 +1477,23 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                     "jdbc-connection-pool",
                     PluginPoint.SERVER,
                     poolMonitoringSubTreeRoot, jdbcStatsProvider);
-            if(jdbcStatsProvider.getSqlTraceCache() != null) {
+            if(jdbcStatsProvider.getFreqSqlTraceCache() != null) {
                 if(_logger.isLoggable(Level.FINEST)) {
-                    _logger.finest("Scheduling timer task for sql trace caching");
+                    _logger.finest("Scheduling timer task for frequent sql trace caching");
                 }
                 Timer timer = ((com.sun.gjc.spi.ResourceAdapterImpl) ra).getTimer();
-                jdbcStatsProvider.getSqlTraceCache().scheduleTimerTask(timer);
+                jdbcStatsProvider.getFreqSqlTraceCache().scheduleTimerTask(timer);
             }
+            
+            if (jdbcStatsProvider.getSlowSqlTraceCache() != null) {
+                if (_logger.isLoggable(Level.FINEST)) {
+                    _logger.finest("Scheduling timer task for slow sql trace caching");
+                }
+                
+                Timer timer = ((com.sun.gjc.spi.ResourceAdapterImpl) ra).getTimer();
+                jdbcStatsProvider.getSlowSqlTraceCache().scheduleTimerTask(timer);
+            }
+            
             if(_logger.isLoggable(Level.FINEST)) {
                 _logger.finest("Registered JDBCRA Stats Provider");
             }
@@ -1494,12 +1506,20 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             _logger.finest("MCF Destroyed");
         }
         if(jdbcStatsProvider != null) {
-            if(jdbcStatsProvider.getSqlTraceCache() != null) {
+            if(jdbcStatsProvider.getFreqSqlTraceCache() != null) {
                 if(_logger.isLoggable(Level.FINEST)) {
-                    _logger.finest("Canceling timer task for sql trace caching");
+                    _logger.finest("Canceling timer task for frequent sql trace caching");
                 }
-                jdbcStatsProvider.getSqlTraceCache().cancelTimerTask();
+                jdbcStatsProvider.getFreqSqlTraceCache().cancelTimerTask();
             }
+            
+            if(jdbcStatsProvider.getSlowSqlTraceCache() != null) {
+                if(_logger.isLoggable(Level.FINEST)) {
+                    _logger.finest("Canceling timer task for slow sql trace caching");
+                }
+                jdbcStatsProvider.getSlowSqlTraceCache().cancelTimerTask();
+            }
+            
             StatsProviderManager.unregister(jdbcStatsProvider);
             jdbcStatsProvider = null;
             if(_logger.isLoggable(Level.FINEST)) {
@@ -1512,7 +1532,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         String stmtLeakTimeout = getStatementLeakTimeoutInSeconds();
         String stmtLeakReclaim = getStatementLeakReclaim();
         if (stmtLeakTimeout != null) {
-            statementLeakTimeout = Integer.valueOf(stmtLeakTimeout) * 1000L;
+            statementLeakTimeout = Integer.parseInt(stmtLeakTimeout) * 1000L;
             statementLeakReclaim = Boolean.valueOf(stmtLeakReclaim);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "StatementLeakTimeout in seconds: "

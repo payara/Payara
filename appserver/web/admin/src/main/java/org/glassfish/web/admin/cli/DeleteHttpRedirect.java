@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,9 +55,9 @@ import org.glassfish.api.Param;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -92,7 +92,7 @@ import org.glassfish.api.admin.*;
 })
 public class DeleteHttpRedirect implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name = "protocolname", primary = true)
     String protocolName;
@@ -131,7 +131,7 @@ public class DeleteHttpRedirect implements AdminCommand {
                 }
             }
             if (protocolToBeRemoved == null) {
-                report.setMessage(MessageFormat.format(rb.getString(DeleteHttp.DELETE_HTTP_NOTEXISTS), protocolName));
+                report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_HTTP_NOTEXISTS), protocolName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -143,7 +143,7 @@ public class DeleteHttpRedirect implements AdminCommand {
                 if (protocolToBeRemoved.getName().equals(nwlsnr.getProtocol())) {
                     report.setMessage(
                             MessageFormat.format(
-                                    rb.getString(DeleteProtocol.DELETE_PROTOCOL_BEING_USED),
+                                    rb.getString(LogFacade.DELETE_PROTOCOL_BEING_USED),
                                     protocolName, nwlsnr.getName()));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
@@ -158,7 +158,7 @@ public class DeleteHttpRedirect implements AdminCommand {
 
         } catch (TransactionFailure e) {
             report.setMessage(
-                    MessageFormat.format(rb.getString(DeleteHttp.DELETE_HTTP_FAIL), protocolName) +
+                    MessageFormat.format(rb.getString(LogFacade.DELETE_HTTP_FAIL), protocolName) +
                     e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);

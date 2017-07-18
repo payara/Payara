@@ -40,7 +40,8 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] Payara Foundation -->
+<!--"Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]" -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -52,57 +53,30 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>4.1.1.171-SNAPSHOT</version>
+    <version>4.1.2.173-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</developerConnection>
-        <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</url>
-      <tag>payara-server-4.1.1.171-SNAPSHOT</tag>
-  </scm>
+        <connection>scm:git:git@github.com:payara/payara.git</connection>
+        <url>scm:git:git@github.com:payara/payara.git</url>
+        <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
+        <tag>payara-server-4.1.2.173-SNAPSHOT</tag>
+    </scm>
 
     <issueManagement>
-        <system>IssueTracker</system>
-        <url>http://java.net/jira/browse/GLASSFISH</url>
+        <system>Github</system>
+        <url>https://github.com/payara/Payara/issues</url>
     </issueManagement>
     
     <licenses>
       <license>
         <name>CDDL + GPLv2 with classpath exception</name>
-        <url>http://glassfish.java.net/nonav/public/CDDL+GPL.html</url>
+        <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
         <distribution>repo</distribution>
         <comments>A business-friendly OSS license</comments>
       </license>
-    </licenses>    
-
-    <mailingLists>
-        <mailingList>
-            <name>dev</name>
-            <subscribe>http://java.net/projects/glassfish/lists</subscribe>
-            <post>dev@glassfish.java.net</post>
-            <archive>http://java.net/projects/glassfish/lists/dev/archive</archive>
-        </mailingList>
-        <mailingList>
-            <name>users</name>
-            <subscribe>http://java.net/projects/glassfish/lists</subscribe>
-            <post>users@glassfish.java.net</post>
-            <archive>http://java.net/projects/glassfish/lists/users/archive</archive>
-        </mailingList>
-        <mailingList>
-            <name>issues</name>
-            <subscribe>http://java.net/projects/glassfish/lists</subscribe>
-            <post>issues@glassfish.java.net</post>
-            <archive>http://java.net/projects/glassfish/lists/issues/archive</archive>
-        </mailingList>
-        <mailingList>
-            <name>commits</name>
-            <subscribe>http://java.net/projects/glassfish/lists</subscribe>
-            <post>commits@glassfish.java.net</post>
-            <archive>http://java.net/projects/glassfish/lists/commits/archive</archive>
-        </mailingList>
-    </mailingLists>
+    </licenses>
 
     <repositories>
         <repository>
@@ -188,25 +162,29 @@
         <findbugs.version>2.5.2</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
 
-        <glassfish-corba.version>4.0.1-p3</glassfish-corba.version>
+        <glassfish-corba.version>4.0.1.payara-p7</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <servlet-api.version>3.1.0</servlet-api.version>
-        <grizzly.version>2.3.27</grizzly.version>
+        <grizzly.version>2.3.31</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
-        <hk2.version>2.4.0</hk2.version>
-        <hk2.plugin.version>2.4.0</hk2.plugin.version>
-        <!-- PAYARA-625 -->
-        <javassist.version>3.20.0-GA</javassist.version>
+        <hk2.version>2.5.0-b42</hk2.version>
+        <hk2.plugin.version>2.5.0-b42</hk2.plugin.version>
+        <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
+        <javax.validation.version>1.1.0.Final</javax.validation.version>
+        <classmate.version>1.3.3</classmate.version>
+        <jboss.logging.version>3.3.0.Final</jboss.logging.version>
+        <!-- PAYARA-625 / PAYARA-1860 -->
+        <javassist.version>3.22.0-CR2</javassist.version>
         <javax.el.version>3.0.1-b03</javax.el.version>
         <javax.el-api.version>3.0.1-b03</javax.el-api.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <pfl.version>4.0.0-b004</pfl.version>
         <gmbal.version>4.0.0-b001</gmbal.version>
         <woodstox.version>4.1.2</woodstox.version>
-        <antlr.version>2.7.6</antlr.version>
-        <jersey.version>2.22.2</jersey.version>
-        <jackson.version>2.8.5</jackson.version>
+        <antlr.version>2.7.7</antlr.version>
+        <jersey.version>2.25.1</jersey.version>
+        <jackson.version>2.8.8</jackson.version>
         <jettison.version>1.3.8</jettison.version>
         <jax-rs-api.spec.version>2.0</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.0.1</jax-rs-api.impl.version>
@@ -220,13 +198,13 @@
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>5.0.3</asm.version>
         <shoal.version>1.7.0-M1</shoal.version>
-        <ha-api.version>3.1.8</ha-api.version>
+        <ha-api.version>3.1.9</ha-api.version>
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.7</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
-        <hazelcast.version>3.7.4</hazelcast.version>
+        <hazelcast.version>3.8</hazelcast.version>
         <mail.version>1.5.6</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <smack.version>4.1.9</smack.version>
@@ -234,12 +212,13 @@
         <xpp3.version>1.1.4c_7</xpp3.version>
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
-
+        <lombok.version>1.16.14</lombok.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <javadoc.skip>false</javadoc.skip>
-        <deploy.skip>false</deploy.skip>
+        <javadoc.version>2.10.3</javadoc.version>
+        <deploy.skip>true</deploy.skip>
     </properties>
 
     <modules>
@@ -336,7 +315,10 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9.1</version>
+                    <version>${javadoc.version}</version>
+                    <configuration>
+                        <additionalparam>${javadoc.options}</additionalparam>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -1088,11 +1070,6 @@
                 <version>2.14.2</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.8</version>
-            </dependency>
-            <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>
                 <artifactId>hawtjni-runtime</artifactId>
                 <version>1.13</version>
@@ -1243,6 +1220,15 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>doclint-java8-disable</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <javadoc.options>-Xdoclint:none</javadoc.options>
+            </properties>
         </profile>
     </profiles>
 

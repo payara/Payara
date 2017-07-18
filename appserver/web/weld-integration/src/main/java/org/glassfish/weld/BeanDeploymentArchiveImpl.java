@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -476,10 +476,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                                                CDILoggerInfo.WEB_INF_LIB_CONSIDERING_BEAN_ARCHIVE,
                                                new Object[]{entry});
                                 }
-
-                                if (!bdMode.equals(BeanDiscoveryMode.ANNOTATED) || isImplicitBeanArchive(context, weblibJarArchive)) {
-                                    weblibJarsThatAreBeanArchives.add(weblibJarArchive);
-                                }
+                                weblibJarsThatAreBeanArchives.add(weblibJarArchive);
                             }
                         } else {
                             // Check for classes annotated with qualified annotations
@@ -511,7 +508,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                             new BeanDeploymentArchiveImpl(libJarArchive,
                                                           ejbs,
                                                           context,
-                                                          friendlyId + SEPARATOR_CHAR + WEB_INF_LIB + SEPARATOR_CHAR + libJarArchive.getName() /* Use war-name.war/WEB-INF/lib/jarName as BDA Id*/);
+                                                          makeBdaId(friendlyId, bdaType, libJarArchive.getName()));
                         this.beanDeploymentArchives.add(wlbda); //add to list of BDAs for this WAR
                         webLibBDAs.add(wlbda);
                     }
@@ -754,7 +751,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return cdiAnnotatedClassNames.contains(className);
     }
 
-
+    @SuppressWarnings("unchecked")
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         WeldBootstrap wb = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP,
                                                            WeldBootstrap.class);
@@ -810,5 +807,43 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public void setDeploymentComplete(boolean deploymentComplete) {
         this.deploymentComplete = deploymentComplete;
+    }
+
+    private static String makeBdaId(String friendlyId, BDAType bdaType, String jarArchiveName) {
+        // Use war-name.war/WEB-INF/lib/jarName as BDA Id
+        StringBuilder sb = new StringBuilder();
+        int delimiterIndex = friendlyId.lastIndexOf(":");
+        if(delimiterIndex == -1) {
+            sb.append(friendlyId);
+        }
+        else {
+            sb.append(friendlyId.substring(0, delimiterIndex));
+            if(bdaType != BDAType.UNKNOWN) {
+                sb.append(".").append(bdaType.name().toLowerCase());
+            }
+        }
+        sb.append(SEPARATOR_CHAR);
+        sb.append(WEB_INF_LIB).append(SEPARATOR_CHAR);
+        sb.append(stripMavenVersion(jarArchiveName));
+        return sb.toString();
+    }
+
+    static String stripApplicationVersion(String appName) {
+        int idx = appName.lastIndexOf(':');
+        if (idx < 0) {
+            return appName;
+        }
+        return appName.substring(0, idx);
+    }
+
+    static String stripMavenVersion(String name) {
+        int suffixIdx = name.lastIndexOf('-');
+        if(suffixIdx > 0) {
+            String versionStr = name.substring(suffixIdx + 1, name.length());
+            if(versionStr.matches("^[0-9]+\\..*")) {
+                name = name.substring(0, suffixIdx);
+            }
+        }
+        return name;
     }
 }

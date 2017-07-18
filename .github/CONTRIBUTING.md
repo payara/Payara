@@ -8,7 +8,7 @@ Payara is an open source project, with the code owned by Payara Foundation a Uni
 As we must also comply with the upstream Oracle Common Development and Distribution license the following line should be added to any changed file:
 
 ```
-Portions Copyright [2016] Payara Foundation
+Portions Copyright [2017] Payara Foundation
 ```
 
 ## Getting Payara

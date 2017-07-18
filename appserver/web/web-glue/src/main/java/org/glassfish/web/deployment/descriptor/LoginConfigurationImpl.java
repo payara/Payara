@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@ package org.glassfish.web.deployment.descriptor;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -59,18 +59,7 @@ import java.util.logging.Logger;
 
 public class LoginConfigurationImpl extends Descriptor implements LoginConfiguration {
 
-    static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "An authentication method was not defined in the web.xml descriptor. " +
-                    "Using default BASIC for login configuration.",
-            level = "WARNING")
-    public static final String AUTH_METHOD_NOT_FOUND = "AS-WEB-GLUE-00277";
-
-    @LogMessageInfo(
-            message = "[{0}] is not a valid authentication method",
-            level = "WARNING")
-    public static final String EXCEPTION_AUTH_METHOD = "AS-WEB-GLUE-00278";
+    static final Logger _logger = LogFacade.getLogger();
 
     /** teh client authenticates using http basic authentication. */
     public static final String AUTHENTICATION_METHOD_BASIC = LoginConfiguration.BASIC_AUTHENTICATION;
@@ -92,7 +81,7 @@ public class LoginConfigurationImpl extends Descriptor implements LoginConfigura
     public String getAuthenticationMethod() {
 	if (this.authenticationMethod == null) {
             //START OF IASRI 4660482 - warning log if authentication method isn't defined in descriptor
-            _logger.log(Level.WARNING, AUTH_METHOD_NOT_FOUND);
+            _logger.log(Level.WARNING, LogFacade.AUTH_METHOD_NOT_FOUND);
             //END OF IASRI 4660482 
 	    this.authenticationMethod = AUTHENTICATION_METHOD_BASIC;
 	}
@@ -111,7 +100,7 @@ public class LoginConfigurationImpl extends Descriptor implements LoginConfigura
 
             throw new IllegalArgumentException(
                     MessageFormat.format(
-                            _logger.getResourceBundle().getString(EXCEPTION_AUTH_METHOD),
+                            _logger.getResourceBundle().getString(LogFacade.EXCEPTION_AUTH_METHOD),
                             authenticationMethod));
 		
 	    }

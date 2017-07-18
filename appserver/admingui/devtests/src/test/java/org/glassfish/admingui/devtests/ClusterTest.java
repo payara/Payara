@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -423,7 +423,7 @@ public class ClusterTest extends BaseSeleniumTestClass {
             waitForButtonDisabled(ID_CLUSTERS_TABLE_STOP_BUTTON);
         }
 
-        deleteAllTableRows(ID_CLUSTERS_TABLE);
+        deleteAllTableRows(ID_CLUSTERS_TABLE, 0);
         // Delete all clusters
         // FIXME: We're iterating through these one at a time, because we are occasionally getting a
         // "false" failure, where a cluster was deleted, but the server was unable to delete

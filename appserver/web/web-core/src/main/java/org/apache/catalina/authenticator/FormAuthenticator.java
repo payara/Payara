@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ package org.apache.catalina.authenticator;
 
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.deploy.LoginConfig;
@@ -78,7 +79,6 @@ import java.util.logging.Level;
 import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * An <b>Authenticator</b> and <b>Valve</b> implementation of FORM BASED
@@ -92,12 +92,6 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 public class FormAuthenticator
     extends AuthenticatorBase {
 
-
-    @LogMessageInfo(
-            message = "Unexpected error forwarding or redirecting to login page",
-            level = "WARNING"
-    )
-    public static final String UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE = "AS-WEB-CORE-00004";
 
 
     // -------------------------------------------------- Instance Variables
@@ -517,7 +511,7 @@ public class FormAuthenticator
             //NOTE: is finishResponse necessary or is it unnecessary after forward
             response.finishResponse();
         } catch (Throwable t) {
-            log.log(Level.WARNING, UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE,
+            log.log(Level.WARNING, LogFacade.UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE,
                     t);
         }
     }
@@ -558,7 +552,7 @@ public class FormAuthenticator
             RequestDispatcher disp = sc.getRequestDispatcher(errorPage);
             disp.forward(request.getRequest(), response.getResponse());
         } catch (Throwable t) {
-            log.log(Level.WARNING, UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE,
+            log.log(Level.WARNING, LogFacade.UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE,
                     t);
         }
     }

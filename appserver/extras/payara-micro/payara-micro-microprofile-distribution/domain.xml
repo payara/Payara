@@ -67,7 +67,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
                 <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%" rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" ></access-log>
                 <virtual-server id="server" access-logging-enabled="false" access-log="" network-listeners="http-listener, https-listener"></virtual-server>
             </http-service>   
-            <admin-service system-jmx-connector-name="system">
+            <admin-service system-jmx-connector-name="system" type="das-and-server">
                 <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system" enabled="false"></jmx-connector>
                 <das-config></das-config>
             </admin-service>     
@@ -96,6 +96,15 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             </transaction-service>
             <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" generate-names="true"></hazelcast-runtime-configuration>
             <phone-home-runtime-configuration></phone-home-runtime-configuration>
+            <health-check-service-configuration enabled="false">
+                <log-notifier enabled="true"/>
+                <eventbus-notifier enabled="false"/>
+                <cpu-usage-checker unit="MINUTES" name="CPU" time="1" enabled="true" />
+                <machine-memory-usage-checker unit="MINUTES" name="MMEM" time="3" enabled="true" />
+                <heap-memory-usage-checker unit="MINUTES" name="HEAP" time="3" enabled="true" />
+                <hogging-threads-checker unit="MINUTES" name="HT" time="5" enabled="true" />
+                <garbage-collector-checker unit="MINUTES" name="GC" time="5" enabled="true" />
+            </health-check-service-configuration>
             <request-tracing-service-configuration>
                 <log-notifier enabled="true"></log-notifier>
             </request-tracing-service-configuration>

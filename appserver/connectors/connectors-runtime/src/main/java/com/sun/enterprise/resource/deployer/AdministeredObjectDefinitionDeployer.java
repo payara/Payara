@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource.deployer;
 
@@ -65,6 +66,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * @author Dapeng Hu
@@ -220,7 +222,7 @@ public class AdministeredObjectDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getValue() {
-            return value;
+            return (String) TranslatedConfigView.getTranslatedValue(value);
         }
 
         public void setValue(String value) throws PropertyVetoException {
@@ -334,6 +336,26 @@ public class AdministeredObjectDefinitionDeployer implements ResourceDeployer {
             }
 
             return administeredObjectProperties;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            throw new UnsupportedOperationException();
         }
 
         public Property getProperty(String name) {

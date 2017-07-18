@@ -58,7 +58,7 @@ import org.jvnet.hk2.config.types.Property;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+            opType = RestEndpoint.OpType.POST,
             path = "set-monitoring-configuration",
             description = "Sets the Monitoring Service Configuration to that specified")
 })
@@ -73,7 +73,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Inject
     MonitoringService monitoringService;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
     @Param(name = "amx", optional = true)

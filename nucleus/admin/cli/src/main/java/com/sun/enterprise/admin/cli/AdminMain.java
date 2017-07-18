@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -211,10 +211,15 @@ public class AdminMain {
 
     protected int doMain(String[] args) {
         int minor = JDK.getMinor();
-
-        if (minor < 6) {
-            System.err.println(strings.get("OldJdk", "" + minor));
-            return ERROR;
+        int major = JDK.getMajor();
+        //In case of JDK1 to JDK8 the major version would be 1 always.Starting from
+        //JDK9 the major verion would be the real major version e.g in case
+        // of JDK9 major version is 9.So in that case checking the major version only.
+        if (major<9) {
+            if (minor < 6) {
+                System.err.println(strings.get( "OldJdk", "" + minor));
+                return ERROR;
+            }
         }
 
         boolean trace = env.trace();

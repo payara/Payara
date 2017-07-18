@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 /*
  * InstanceResolverImpl.java
@@ -66,8 +67,8 @@ import javax.xml.ws.WebServiceException;
 public final class InstanceResolverImpl<T> extends InstanceResolver<T> {
    
     //delegate to this InstanceResolver
-    private  InstanceResolver<T> resolver;
-    private  T instance;
+    private volatile InstanceResolver<T> resolver;
+    private T instance;
     private final Class<T> classtobeResolved;
 
     private WSWebServiceContext wsc;
@@ -83,17 +84,32 @@ public final class InstanceResolverImpl<T> extends InstanceResolver<T> {
     public @NotNull T resolve(Packet request) {
         //See iss 9721
         //Injection and instantiation is now done lazily
-        if (resolver == null) {
-            try {
-                //Bug18998101. inject() call below also calls @PostConstruct method.
-                instance = injManager.createManagedObject(classtobeResolved, false);
-            } catch (InjectionException e) {
-                throw new WebServiceException(e);
+        return getResolver().resolve(request);
+    }
+
+    private InstanceResolver<T> getResolver() {
+        // proper double check to ensure single initialization
+        InstanceResolver<T> res = resolver;
+        if (res == null) {
+            synchronized(this) {
+                res = resolver;
+                if (res == null) {
+                    resolver = res = initResolver();
+                }            
             }
-            resolver = InstanceResolver.createSingleton(instance);
-            getResourceInjector(endpoint).inject(wsc, instance);
         }
-        return resolver.resolve(request);
+        return res;
+    }
+
+    private InstanceResolver<T> initResolver() {
+         try {
+            //Bug18998101. inject() call below also calls @PostConstruct method.
+            instance = injManager.createManagedObject(classtobeResolved, false);
+        } catch (InjectionException e) {
+            throw new WebServiceException(e);
+        }
+        getResourceInjector(endpoint).inject(wsc, instance);
+        return InstanceResolver.createSingleton(instance);
     }
 
     @Override

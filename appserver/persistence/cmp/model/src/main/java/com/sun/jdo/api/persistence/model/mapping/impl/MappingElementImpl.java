@@ -46,14 +46,14 @@
 
 package com.sun.jdo.api.persistence.model.mapping.impl;
 
-import java.beans.*;
-import java.util.ResourceBundle;
-import java.text.Collator;
-
 import com.sun.jdo.api.persistence.model.ModelException;
 import com.sun.jdo.api.persistence.model.ModelVetoException;
 import com.sun.jdo.api.persistence.model.mapping.MappingElement;
 import org.glassfish.persistence.common.I18NHelper;
+
+import java.beans.*;
+import java.text.Collator;
+import java.util.ResourceBundle;
 
 /** 
  *
@@ -159,15 +159,10 @@ public abstract class MappingElementImpl implements MappingElement
 	public synchronized void addPropertyChangeListener 
 		(PropertyChangeListener l)
 	{
+		// new test under synchronized block
 		if (_support == null)
-		{
-			synchronized(this)
-			{
-				// new test under synchronized block
-				if (_support == null)
-					_support = new PropertyChangeSupport(this);
-			}
-		}
+			_support = new PropertyChangeSupport(this);
+
 
 		_support.addPropertyChangeListener(l);
 	}

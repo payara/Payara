@@ -98,7 +98,7 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
         register(NotifierType.SNMP, SnmpNotifier.class, SnmpNotifierConfiguration.class, this);
         execOptions = (SnmpNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-        if (execOptions != null) {
+        if (execOptions != null && execOptions.isEnabled()) {
             try {
                 TransportMapping transport = new DefaultUdpTransportMapping();
                 snmp = new Snmp(transport);
@@ -123,7 +123,7 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
 
     @Override
     public void shutdown() {
-        super.reset();
+        super.shutdown();
         if (snmp != null) {
             try {
                 snmp.close();

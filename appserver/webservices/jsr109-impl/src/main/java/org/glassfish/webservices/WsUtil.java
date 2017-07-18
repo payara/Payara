@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1441,7 +1441,7 @@ public class WsUtil {
         int length = 0;
 
         if ((contentLength != null) && (contentLength.length > 0)) {
-            length = new Integer(contentLength[0]).intValue();
+            length = Integer.parseInt(contentLength[0]);
         }
 
         return length;

@@ -53,10 +53,10 @@ class PortValidator extends Validator {
         try {
             httpPort = Integer.parseInt(optionValue);
             if (httpPort < 1 || httpPort > 65535) {
-                throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("notValidPort"),optionValue));
+                throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("notValidPort"),optionValue));
             }
         } catch (NumberFormatException nfe) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("notValidPort"),optionValue));
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("notValidPort"),optionValue));
         }
         return true;
     }

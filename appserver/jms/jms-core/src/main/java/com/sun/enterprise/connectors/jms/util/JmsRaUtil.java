@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.connectors.jms.JMSLoggerInfo;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.connectors.jms.inflow.MdbContainerProps;
 import com.sun.enterprise.connectors.jms.system.MQAddressList;
@@ -108,8 +109,7 @@ public class JmsRaUtil {
     JmsService js = null;
     MQAddressList list = null;
 
-    private static final Logger _mdblogger = LogDomains.getLogger(JmsRaUtil.class, LogDomains.MDB_LOGGER);
-    private static final Logger _rarlogger = LogDomains.getLogger(JmsRaUtil.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = JMSLoggerInfo.getLogger();
 
     public JmsRaUtil() throws ConnectorRuntimeException {
         this(null);
@@ -176,28 +176,28 @@ public class JmsRaUtil {
         }
         return null;
     }
-     private static boolean enableClustering() {
-     try {
-        /* This flag disables the auto clustering functionality
-           * No uMQ clusters will  be created with AS cluster if
-           * this flag is set to false. Default is true.
-           */
-        String enablecluster = System.getProperty(ENABLE_AUTO_CLUSTERING);
-        _rarlogger.log(Level.FINE,"Sun MQ Auto cluster system property" + enablecluster);
-                  if ((enablecluster != null) &&
-            (enablecluster.trim().equals("false"))){
-        _rarlogger.log(Level.FINE,"Disabling Sun MQ Auto Clustering");
-                    return false;
-              }
-     }catch (Exception e) {
-        ;
-     }
-    _rarlogger.log(Level.FINE,"Enabling Sun MQ Auto Clustering");
-    return true;
-      }
+    
+    private static boolean enableClustering() {
+        try {
+            /* This flag disables the auto clustering functionality
+               * No uMQ clusters will  be created with AS cluster if
+               * this flag is set to false. Default is true.
+               */
+            String enablecluster = System.getProperty(ENABLE_AUTO_CLUSTERING);
+            _logger.log(Level.FINE, "Sun MQ Auto cluster system property " + enablecluster);
+            if ((enablecluster != null) && (enablecluster.trim().equals("false"))){
+                _logger.log(Level.FINE, "Disabling Sun MQ Auto Clustering");
+                return false;
+            }
+        } catch (Exception e) {
+            ;
+        }
+        _logger.log(Level.FINE, "Enabling Sun MQ Auto Clustering");
+        return true;
+    }
 
     public String getJMSServiceType(){
-     return this.js.getType();
+        return this.js.getType();
     }
 
     public MQAddressList getUrlList() {
@@ -232,10 +232,9 @@ public class JmsRaUtil {
 
         }
         catch (Exception e) {
-            _mdblogger.log(Level.WARNING, "containers.mdb.config_exception",
-                        new Object[]{e.getMessage()});
-            if (_mdblogger.isLoggable(Level.FINE)) {
-                _mdblogger.log(Level.FINE, e.getClass().getName(), e);
+            _logger.log(Level.WARNING, JMSLoggerInfo.MDB_CONFIG_EXCEPTION, new Object[]{e.getMessage()});
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, e.getClass().getName(), e);
             }
         }
 
@@ -259,9 +258,8 @@ public class JmsRaUtil {
                                 reconnectDelayInSeconds =
                                     Integer.parseInt(p.getValue());
                             } catch (Exception e) {
-                                _mdblogger.log(Level.WARNING,
-                                    "containers.mdb.config_exception",
-                                    new Object[]{e.getMessage()});
+                                _logger.log(Level.WARNING, JMSLoggerInfo.MDB_CONFIG_EXCEPTION, 
+                                        new Object[]{e.getMessage()});
                             }
                         }
                         else if (name.equals(propName_reconnect_max_retries)) {
@@ -269,9 +267,8 @@ public class JmsRaUtil {
                                 reconnectMaxRetries =
                                     Integer.parseInt(p.getValue());
                             } catch (Exception e) {
-                                _mdblogger.log(Level.WARNING,
-                                    "containers.mdb.config_exception",
-                                    new Object[]{e.getMessage()});
+                                _logger.log(Level.WARNING, JMSLoggerInfo.MDB_CONFIG_EXCEPTION, 
+                                        new Object[]{e.getMessage()});
                             }
                         }
                         else if (name.equals
@@ -280,17 +277,15 @@ public class JmsRaUtil {
                                 cmtMaxRuntimeExceptions =
                                     Integer.parseInt(p.getValue());
                             } catch (Exception e) {
-                                _mdblogger.log(Level.WARNING,
-                                    "containers.mdb.config_exception",
+                                _logger.log(Level.WARNING, JMSLoggerInfo.MDB_CONFIG_EXCEPTION,
                                     new Object[]{e.getMessage()});
                             }
                         }
                     } catch (Exception e) {
-                        _mdblogger.log(Level.WARNING,
-                                    "containers.mdb.config_exception",
-                                    new Object[]{e.getMessage()});
-                        if (_mdblogger.isLoggable(Level.FINE)) {
-                            _mdblogger.log(Level.FINE, e.getClass().getName(), e);
+                        _logger.log(Level.WARNING, JMSLoggerInfo.MDB_CONFIG_EXCEPTION, 
+                                new Object[]{e.getMessage()});
+                        if (_logger.isLoggable(Level.FINE)) {
+                            _logger.log(Level.FINE, e.getClass().getName(), e);
                         }
                     }
                 }
@@ -302,8 +297,8 @@ public class JmsRaUtil {
         if (reconnectMaxRetries < 0) {
             reconnectMaxRetries = DEFAULT_RECONNECT_RETRIES;
         }
-        if (_mdblogger.isLoggable(Level.FINE)) {
-            _mdblogger.log(Level.FINE,
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE,
                 propName_reconnect_delay_in_seconds+"="+
                 reconnectDelayInSeconds +", "+
                 propName_reconnect_max_retries+ "="+reconnectMaxRetries + ", "+
@@ -351,9 +346,9 @@ public class JmsRaUtil {
 
         try {
            installedMqVersion = getInstalledMqVersion();
-           _rarlogger.log(Level.FINE,"installedMQVersion :: " + installedMqVersion);
+           _logger.log(Level.FINE,"installedMQVersion :: " + installedMqVersion);
            deployedMqVersion =  getDeployedMqVersion();
-           _rarlogger.log(Level.FINE,"deployedMQVersion :: " + deployedMqVersion);
+           _logger.log(Level.FINE,"deployedMQVersion :: " + deployedMqVersion);
         }catch (Exception e) {
         return;
         }
@@ -367,14 +362,15 @@ public class JmsRaUtil {
         // explode the MQ resource adapter.
         if (!installedMqVersion.equals(deployedMqVersion)) {
            try {
-               _rarlogger.log(Level.INFO, "jmsra.upgrade_started" );
+               _logger.log(Level.INFO, JMSLoggerInfo.JMSRA_UPGRADE_STARTED);
            ZipFile rarFile = new ZipFile(System.getProperty
                                  (SystemPropertyConstants.IMQ_LIB_PROPERTY) +
                                  File.separator + MQ_RAR, deployed_dir);
                rarFile.explode();
-               _rarlogger.log(Level.INFO, "jmsra.upgrade_completed");
+               _logger.log(Level.INFO, JMSLoggerInfo.JMSRA_UPGRADE_COMPLETED);
        } catch(ZipFileException ze) {
-               _rarlogger.log(Level.SEVERE,"jmsra.upgrade_failed",ze.getMessage());
+               _logger.log(Level.SEVERE, JMSLoggerInfo.JMSRA_UPGRADE_FAILED, 
+                       new Object[]{ze.getMessage()});
            }
         }
 
@@ -386,7 +382,7 @@ public class JmsRaUtil {
        String installed_dir =
            System.getProperty(SystemPropertyConstants.IMQ_LIB_PROPERTY);
        String jarFile = installed_dir + File.separator + MQ_RAR;
-       _rarlogger.log(Level.FINE,"Installed MQ JAR " + jarFile);
+       _logger.log(Level.FINE,"Installed MQ JAR " + jarFile);
     JarFile jFile = null;
        try {
        if ((new File(jarFile)).exists()) {
@@ -406,8 +402,8 @@ public class JmsRaUtil {
            ver = mf.getMainAttributes().getValue(MANIFEST_TAG);
            return ver;
        } catch (Exception e) {
-           _rarlogger.log(Level.WARNING, "jmsra.upgrade_check_failed",
-                       e.getMessage() + ":" + jarFile );
+           _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_UPGRADE_CHECK_FAILED, 
+                   new Object[]{e.getMessage() + ":" + jarFile});
            throw e;
        } finally {
            if (jFile != null) {
@@ -424,14 +420,14 @@ public class JmsRaUtil {
            + File.separator + SYSTEM_APP_DIR;
        String manifestFile = deployed_dir + File.separator +
                              MQ_RAR_MANIFEST;
-       _rarlogger.log(Level.FINE,"Deployed MQ version Manifest file" + manifestFile);
+       _logger.log(Level.FINE,"Deployed MQ version Manifest file" + manifestFile);
        try {
            Manifest mf = new Manifest(new FileInputStream(manifestFile));
            ver = mf.getMainAttributes().getValue(MANIFEST_TAG);
            return ver;
        } catch (Exception e) {
-           _rarlogger.log(Level.WARNING, "jmsra.upgrade_check_failed",
-                       e.getMessage() + ":" + manifestFile );
+           _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_UPGRADE_CHECK_FAILED, 
+                   new Object[]{e.getMessage() + ":" + manifestFile});
            throw e;
        }
    }

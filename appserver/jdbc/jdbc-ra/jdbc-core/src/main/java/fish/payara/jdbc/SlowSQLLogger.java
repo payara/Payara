@@ -41,6 +41,7 @@ package fish.payara.jdbc;
 
 import com.sun.gjc.util.SQLTraceLogger;
 import com.sun.logging.LogDomains;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.jdbc.SQLTraceListener;
@@ -54,14 +55,15 @@ public class SlowSQLLogger implements SQLTraceListener {
     
     private static final Logger logger = LogDomains.getLogger(SQLTraceLogger.class, LogDomains.SQL_TRACE_LOGGER);
     private static ThreadLocal<SQLQuery> currentQuery = new ThreadLocal<>();
-    private long threshold = 10000; // 10 second default threshold
-    
-    public SlowSQLLogger(long threshold) {
-       this.threshold = threshold; 
+    private static final long DEFAULT_THERSHOLD = 10000; // 10 second default threshold
+    private long threshold;
+
+    public SlowSQLLogger(long threshold, TimeUnit unit) {
+        this.threshold = unit.toMillis(threshold);
     }
-    
+
     public SlowSQLLogger() {
-        
+        this.threshold = DEFAULT_THERSHOLD;
     }
 
     public long getThreshold() {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.config;
 
@@ -54,6 +55,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.quality.ToDo;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import org.glassfish.api.admin.config.PropertyDesc;
@@ -242,6 +244,42 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      *              {@link String }
      */
     void setPoolIdleTimeoutInSeconds(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the maxWaitTimeInMillis property.
+     *
+     * @return possible object is
+     *         {@link Integer }
+     */
+    @Attribute(defaultValue="6000", dataType = Integer.class)
+    @Min(value=0)    
+    @Max(value=30000)
+    Integer getMaxWaitTimeInMillis();
+
+    /**
+     * Sets the value of the maxWaitTimeInMillis property.
+     *
+     * @param value allowed object is
+     *              {@link Integer }
+     */
+    void setMaxWaitTimeInMillis(Integer value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the limitInstancesEnabled property.
+     *
+     * @return possible object is
+     *         {@link Boolean }
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    Boolean getLimitInstancesEnabled();
+
+    /**
+     * Sets the value of the limitInstancesEnabled property.
+     *
+     * @param value allowed object is
+     *              {@link Boolean }
+     */
+    void setLimitInstancesEnabled(Boolean value) throws PropertyVetoException;
 
     /**
      * Gets the value of the cacheIdleTimeoutInSeconds property.

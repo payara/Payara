@@ -124,6 +124,11 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
         return null;
     }
 
+    /**
+     * Unregisters a service and cleans up any information stored in it
+     * This function does NOT restart the service.
+     * @param service 
+     */
     protected void reset(BaseNotifierService service) {
         eventBus.unregister(service);
     }

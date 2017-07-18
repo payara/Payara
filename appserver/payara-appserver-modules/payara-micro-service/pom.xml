@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-service</artifactId>
@@ -94,6 +94,18 @@
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-api</artifactId>
+            <version>${weld-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

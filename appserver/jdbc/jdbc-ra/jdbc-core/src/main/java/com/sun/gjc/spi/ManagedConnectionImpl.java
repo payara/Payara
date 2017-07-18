@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,12 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
 
 package com.sun.gjc.spi;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
 import com.sun.appserv.connectors.internal.spi.BadConnectionEventListener;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.ResourcePool;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.spi.base.*;
@@ -52,7 +56,10 @@ import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.StatementLeakDetector;
 import com.sun.logging.LogDomains;
 import fish.payara.jdbc.RequestTracingListener;
+import fish.payara.jdbc.SlowSQLLogger;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.resource.NotSupportedException;
@@ -72,6 +79,7 @@ import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.internal.api.Globals;
@@ -94,6 +102,8 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     protected boolean isUsable = true;
     protected boolean initSqlExecuted = false;
     protected int connectionCount = 0;
+
+    public static final String IS_SLOW_SQL_LOGGING_DISABLED = "-1";
 
     protected int connectionType = ISNOTAPOOLEDCONNECTION;
     protected PooledConnection pc = null;
@@ -149,6 +159,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     private DatabaseMetaData cachedDatabaseMetaData = null;
     private Boolean isClientInfoSupported = null;
     
+    private JdbcConnectionPool connectionPool;
     private RequestTracingService requestTracing;
     
     /**
@@ -209,8 +220,12 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         tuneStatementCaching(poolInfo, statementCacheSize, statementCacheType);
         tuneStatementLeakTracing(poolInfo, statementLeakTimeout, statementLeakReclaim);
         
+        connectionPool = getJdbcConnectionPool(mcf);
         try {
-            requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+            RunLevelController runLevelController = Globals.getDefaultHabitat().getService(RunLevelController.class);
+            if (runLevelController != null && runLevelController.getCurrentRunLevel() == StartupRunLevel.VAL) {
+                requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+            }
         } catch (NullPointerException ex) {
             _logger.log(Level.INFO, "Error retrieving Request Tracing service "
                     + "during initialisation of ManagedConnectionImpl - NullPointerException");
@@ -470,7 +485,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
 
         String statementTimeoutString = spiMCF.getStatementTimeout();
         if (statementTimeoutString != null) {
-            int timeoutValue = Integer.valueOf(statementTimeoutString);
+            int timeoutValue = Integer.parseInt(statementTimeoutString);
             if (timeoutValue >= 0) {
                 statementTimeout = timeoutValue;
             }
@@ -483,42 +498,47 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
          * recreate the connection pool to accommodate dynamic request tracing
          * enabling/disabling.
          */
+        
         if (sqlTraceDelegator == null) {
-            if (requestTracing != null && 
-                    requestTracing.isRequestTracingEnabled()) {
-                sqlTraceDelegator = new SQLTraceDelegator(spiMCF.getPoolName(), 
+            if ((requestTracing != null && requestTracing.isRequestTracingEnabled())
+                    || (connectionPool != null && isSlowQueryLoggingEnabled())) {
+                sqlTraceDelegator = new SQLTraceDelegator(spiMCF.getPoolName(),
                         spiMCF.getApplicationName(), spiMCF.getModuleName());
+            }
+        }
+
+        if (sqlTraceDelegator != null) {
+            if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
                 // This method will only register a request tracing listener 
                 // if one doesn't already exist
-                sqlTraceDelegator.registerSQLTraceListener(
-                        new RequestTracingListener());
-            }
-        } else {
-            if (requestTracing != null && 
-                    requestTracing.isRequestTracingEnabled()) {
-                sqlTraceDelegator.registerSQLTraceListener(
-                        new RequestTracingListener());
-            } else { 
-                /** 
+                sqlTraceDelegator.registerSQLTraceListener(new RequestTracingListener());
+            } else {
+                /**
                  * If request tracing is not enabled, but there is a SQL trace
-                 * delegator, deregister the request tracing listener if one is 
+                 * delegator, deregister the request tracing listener if one is
                  * registered.
                  */
-                sqlTraceDelegator.deregisterSQLTraceListener(
-                        RequestTracingListener.class);
-                
-                /**
-                 * If there are no longer any listeners registered, set the 
-                 * delegator to null to prevent 
-                 * JdbcObjectsFactory().getConnection(...) from using a profiled
-                 * wrapper unnecessarily.
-                 */ 
-                if (!sqlTraceDelegator.listenersRegistered()) {
-                    sqlTraceDelegator = null;
+                sqlTraceDelegator.deregisterSQLTraceListener(RequestTracingListener.class);
+            }
+
+            sqlTraceDelegator.deregisterSQLTraceListener(SlowSQLLogger.class);
+            if (connectionPool != null && isSlowQueryLoggingEnabled()) {
+                double threshold = Double.valueOf(connectionPool.getSlowQueryThresholdInSeconds());
+                if (threshold > 0) {
+                    sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((int)(threshold * 1000), TimeUnit.MILLISECONDS));
                 }
-            }              
+            }
+            /**
+             * If there are no longer any listeners registered, set the
+             * delegator to null to prevent
+             * JdbcObjectsFactory().getConnection(...) from using a profiled
+             * wrapper unnecessarily.
+             */
+            if (!sqlTraceDelegator.listenersRegistered()) {
+                sqlTraceDelegator = null;
+            }
         }
-        
+
         myLogicalConnection = spiMCF.getJdbcObjectsFactory().getConnection(
                 actualConnection, this, cxReqInfo, spiMCF.isStatementWrappingEnabled(),
                 sqlTraceDelegator);
@@ -1320,4 +1340,20 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         //TODO isValid check for preparedStatement?
         statementCache.purge(preparedStatement);
     }
+
+    private JdbcConnectionPool getJdbcConnectionPool(javax.resource.spi.ManagedConnectionFactory mcf) {
+        JdbcConnectionPool jdbcConnectionPool = null;
+        ManagedConnectionFactoryImpl spiMCF = (ManagedConnectionFactoryImpl) mcf;
+        Resources resources = Globals.getDefaultHabitat().getService(Domain.class).getResources();
+        ResourcePool pool = (ResourcePool) ConnectorsUtil.getResourceByName(resources, ResourcePool.class, spiMCF.getPoolName());
+        if (pool instanceof JdbcConnectionPool) {
+            jdbcConnectionPool = (JdbcConnectionPool) pool;
+        }
+        return jdbcConnectionPool;
+    }
+
+    private boolean isSlowQueryLoggingEnabled() {
+        return !IS_SLOW_SQL_LOGGING_DISABLED.equals(connectionPool.getSlowQueryThresholdInSeconds());
+    }
+    
 }

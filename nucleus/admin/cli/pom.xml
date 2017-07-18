@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -46,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>4.1.1.171-SNAPSHOT</version>
+        <version>4.1.2.173-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>admin-cli</artifactId>
@@ -147,29 +148,6 @@
                            </configuration>
                       </execution>
                    </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <reportPlugins>
-                        <plugin>
-                            <artifactId>maven-javadoc-plugin</artifactId>
-                            <configuration>
-                                <aggregate>true</aggregate>
-                                <minmemory>128m</minmemory>
-                                <maxmemory>512m</maxmemory>
-                                <source>1.5</source>
-                                <verbose>false</verbose>
-                                <linksource>true</linksource>
-                                <links>
-                                    <link>http://java.sun.com/javase/6/docs/api/</link>
-                                </links>
-                                <show>private</show>
-                            </configuration>
-                        </plugin>                        
-                    </reportPlugins>
-                </configuration>
             </plugin>
         </plugins>
     </build>

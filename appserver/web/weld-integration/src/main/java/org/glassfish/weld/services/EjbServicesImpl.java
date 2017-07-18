@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.weld.services;
 
 import java.lang.reflect.Method;
@@ -245,6 +246,7 @@ public class EjbServicesImpl implements EjbServices {
     //
     // So look at a method on a class.  If the method is overridden (not if it over rides) then we skip it
     // because it will have already been processed to see if it should be intercepted.
+    @SuppressWarnings("unchecked")
     private boolean methodOverridden(Class beanClass, Method methodOfCurrentClass) {
         String methodName = methodOfCurrentClass.getName();
         Class[] methodParams = methodOfCurrentClass.getParameterTypes();

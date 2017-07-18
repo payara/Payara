@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -113,10 +114,12 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
 
     private static final Enumeration<URL> EMPTY_URLS = new Enumeration<URL>() {
 
+        @Override
         public boolean hasMoreElements() {
             return false;
         }
 
+        @Override
         public URL nextElement() {
             throw new NoSuchElementException();
         }
@@ -124,6 +127,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
     final static Logger logger = KernelLoggerInfo.getLogger();
     private Module APIModule;
 
+    @Override
     public void postConstruct() {
         try {
             createAPIClassLoader();
@@ -162,6 +166,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
         
         if (System.getSecurityManager() != null) {
             return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                @Override
                 public ClassLoader run() {
                     return ClassLoader.getSystemClassLoader().getParent();
                 }
@@ -202,19 +207,24 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
 
             // add a listener to manage blacklist in APIClassLoader
             mr.register(new ModuleLifecycleListener() {
+                @Override
                 public void moduleInstalled(Module module) {
                     clearBlackList();
                 }
 
+                @Override
                 public void moduleResolved(Module module) {
                 }
 
+                @Override
                 public void moduleStarted(Module module) {
                 }
 
+                @Override
                 public void moduleStopped(Module module) {
                 }
 
+                @Override
                 public void moduleUpdated(Module module) {
                     clearBlackList();
                 }
@@ -246,7 +256,16 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                         Module m = mr.getProvidingModule(name);
                         if (m != null) {
                             if(select(m)) {
-                                return m.getClassLoader().loadClass(name); // abort search if we fail to load.
+                                try {
+                                    return m.getClassLoader().loadClass(name); // abort search if we fail to load.
+                                }
+                                catch(ClassNotFoundException e) {
+                                    Throwable thr = e.getException();
+                                    if(thr != null) {
+                                        logger.log(Level.WARNING, "APIClassLoader.loadClass() caused exception", thr);
+                                    }
+                                    throw e;
+                                }
                             } else {
                                 logger.logp(Level.FINE, "APIClassLoaderServiceImpl$APIClassLoader", "loadClass",
                                         "Skipping loading {0} from module {1} as this module is not yet resolved.",

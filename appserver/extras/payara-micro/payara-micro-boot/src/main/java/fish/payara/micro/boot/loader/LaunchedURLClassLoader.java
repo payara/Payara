@@ -12,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package fish.payara.micro.boot.loader;
@@ -35,7 +37,7 @@ import fish.payara.micro.boot.loader.jar.JarFile;
  * @author Dave Syer
  * @author Andy Wilkinson
  */
-public class LaunchedURLClassLoader extends URLClassLoader {
+public class LaunchedURLClassLoader extends OpenURLClassLoader {
 
 	/**
 	 * Create a new {@link LaunchedURLClassLoader} instance.
@@ -179,5 +181,5 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 			((JarFile) jarFile).clearCache();
 		}
 	}
-
+        
 }

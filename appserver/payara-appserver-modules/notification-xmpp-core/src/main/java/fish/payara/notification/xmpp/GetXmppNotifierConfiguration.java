@@ -68,7 +68,7 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
 
     @Override
     protected String listConfiguration(XmppNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Host", "Port", "Service Name", "Username", "Password", "Security Disabled", "Room Name"};
+        String headers[] = {"Enabled", "Host", "Port", "Service Name", "Username", "Password", "Security Disabled", "Room ID"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         Object values[] = new Object[8];
 
@@ -79,7 +79,7 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
         values[4] = configuration.getUsername();
         values[5] = configuration.getPassword();
         values[6] = configuration.getSecurityDisabled();
-        values[7] = configuration.getRoomName();
+        values[7] = configuration.getRoomId();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -96,7 +96,7 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
         map.put("username", configuration.getUsername());
         map.put("password", configuration.getPassword());
         map.put("securityDisabled", configuration.getSecurityDisabled());
-        map.put("roomName", configuration.getRoomName());
+        map.put("roomId", configuration.getRoomId());
         
         return map;
     }

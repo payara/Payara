@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.naming.impl;
 
@@ -181,6 +182,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
                 if(namingClusterInfo == null) {
                     namingClusterInfo = services.getService(NamingClusterInfo.class);
+                    namingClusterInfo.setClusterInstanceInfo(myEnv, defaultHost, defaultPort, false);
                 }
 
                 List<String> rrList = namingClusterInfo.getNextRotation();

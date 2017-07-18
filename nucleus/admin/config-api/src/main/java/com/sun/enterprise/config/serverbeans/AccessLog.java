@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -210,5 +210,20 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      * @param tf true/false
      */
     void setLogToConsoleEnabled(boolean tf);
+    
+    /*
+     * Conditional logging filter
+     *
+     * @return the condition filter for the log
+     */
+    @Attribute
+    String getCondition();
+    /*
+     * Condition logging filter
+     *
+     * @param condition the condition filter for the log 
+    */
+    void setCondition(String condition);
+
 }
 

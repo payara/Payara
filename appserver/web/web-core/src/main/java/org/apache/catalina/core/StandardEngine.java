@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,6 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.*;
 import org.apache.catalina.realm.JAASRealm;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -78,24 +77,6 @@ import java.util.logging.Level;
 public class StandardEngine
     extends ContainerBase
     implements Engine {
-
-    @LogMessageInfo(
-        message = "Child of an Engine must be a Host",
-        level = "WARNING"
-    )
-    public static final String CHILD_OF_ENGINE_MUST_BE_HOST_EXCEPTION = "AS-WEB-CORE-00194";
-
-    @LogMessageInfo(
-        message = "Engine cannot have a parent Container",
-        level = "WARNING"
-    )
-    public static final String CANNOT_HAVE_PARENT_CONTAINER_EXCEPTION = "AS-WEB-CORE-00195";
-
-    @LogMessageInfo(
-        message = "Error registering",
-        level = "WARNING"
-    )
-    public static final String ERROR_REGISTERING_EXCEPTION = "AS-WEB-CORE-00196";
 
 
 
@@ -282,7 +263,7 @@ public class StandardEngine
     public void addChild(Container child) {
 
         if (!(child instanceof Host))
-            throw new IllegalArgumentException(rb.getString(CHILD_OF_ENGINE_MUST_BE_HOST_EXCEPTION));
+            throw new IllegalArgumentException(rb.getString(LogFacade.CHILD_OF_ENGINE_MUST_BE_HOST_EXCEPTION));
         super.addChild(child);
 
     }
@@ -308,7 +289,7 @@ public class StandardEngine
     public void setParent(Container container) {
 
         throw new IllegalArgumentException
-                (rb.getString(CANNOT_HAVE_PARENT_CONTAINER_EXCEPTION));
+                (rb.getString(LogFacade.CANNOT_HAVE_PARENT_CONTAINER_EXCEPTION));
 
     }
 
@@ -335,7 +316,7 @@ public class StandardEngine
                 oname=new ObjectName(domain + ":type=Engine");
                 controller=oname;
             } catch (Throwable t) {
-                log.log(Level.INFO, ERROR_REGISTERING_EXCEPTION, t);
+                log.log(Level.INFO, LogFacade.ERROR_REGISTERING_EXCEPTION, t);
             }
         }
         

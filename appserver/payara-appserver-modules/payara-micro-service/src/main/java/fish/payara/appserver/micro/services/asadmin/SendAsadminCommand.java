@@ -17,8 +17,9 @@
 package fish.payara.appserver.micro.services.asadmin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import fish.payara.appserver.micro.services.PayaraInstance;
+import fish.payara.appserver.micro.services.PayaraInstanceImpl;
 import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
+import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +68,7 @@ import org.jvnet.hk2.annotations.Service;
 public class SendAsadminCommand implements AdminCommand
 {
     @Inject
-    private PayaraInstance payaraMicro;
+    private PayaraInstanceImpl payaraMicro;
     
     @Param(name = "targets", optional = true)
     private String targets;
@@ -114,7 +115,7 @@ public class SendAsadminCommand implements AdminCommand
             }
             
             // Run the asadmin command against the targets (or all instances if no targets given)          
-            Map<String, Future<ClusterCommandResultImpl>> results = payaraMicro.executeClusteredASAdmin(
+            Map<String, Future<ClusterCommandResult>> results = payaraMicro.executeClusteredASAdmin(
                     targetInstanceDescriptors.keySet(), command, parameters);
             
             // Check the command results for any failures
@@ -123,10 +124,10 @@ public class SendAsadminCommand implements AdminCommand
                 List<String> warningMessages = new ArrayList<>();
                 List<String> failureMessages = new ArrayList<>();
                 
-                for (Map.Entry<String, Future<ClusterCommandResultImpl>> result : results.entrySet()) {
+                for (Map.Entry<String, Future<ClusterCommandResult>> result : results.entrySet()) {
                     try
                     {
-                        ClusterCommandResultImpl commandResult = result.getValue().get();
+                        ClusterCommandResult commandResult = result.getValue().get();
                         switch (commandResult.getExitStatus())
                         {
                             case SUCCESS:
@@ -269,7 +270,7 @@ public class SendAsadminCommand implements AdminCommand
      * @param commandResult input
      * @return readable error message from command result
      */
-    private String processException(ClusterCommandResultImpl commandResult) {
+    private String processException(ClusterCommandResult commandResult) {
         String msg = commandResult.getOutput();
         String[] msgs = msg.split(commandResult.getExitStatus().name());
         return msgs.length > 1? msgs[1] : commandResult.getFailureCause().getMessage();

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -59,6 +59,7 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
+import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
 
 /**
  * This is the main Launcher class designed for external and internal usage.
@@ -88,8 +89,9 @@ public abstract class GFLauncher {
     public final void launch() throws GFLauncherException {
         try {
             startTime = System.currentTimeMillis();
-            if (!setupCalledByClients)
+            if (!setupCalledByClients) {
                 setup();
+            }
             internalLaunch();
         }
         catch (GFLauncherException gfe) {
@@ -315,7 +317,7 @@ public abstract class GFLauncher {
     public final boolean needsManualUpgrade() {
         return needsManualUpgrade;
     }
-
+    
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     //////     ALL private and package-private below   ////////////////////////
@@ -465,7 +467,7 @@ public abstract class GFLauncher {
             // See GLASSFISH-21113
             // remove bsexec as from 10.10.3 bsexec requires sudo
 	    cmds.add("nohup");
-            cmds.addAll(getCommandLine());
+            cmds.addAll(getCommandLine());            
         }
         else {
             cmds = getCommandLine();
@@ -825,6 +827,21 @@ public abstract class GFLauncher {
         if (info.isDropInterruptedCommands()) {
             jvmOptions.sysProps.put(SystemPropertyConstants.DROP_INTERRUPTED_COMMANDS, Boolean.TRUE.toString());
         }
+        
+        // PAYARA-1681 - Add default Payara JVM options if an override isn't in place
+        addDefaultJvmOptions();
+    }
+    
+    private void addDefaultJvmOptions() {
+        if (!jvmOptions.getCombinedMap().containsKey(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY)) {
+            jvmOptions.sysProps.put(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY, 
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
+            
+            // Log that we've made the change
+            GFLauncherLogger.fine(GFLauncherLogger.DEFAULT_JVM_OPTION, 
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY,
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
+        }
     }
 
     private void setupUpgradeSecurity() throws GFLauncherException {
@@ -1050,7 +1067,7 @@ public abstract class GFLauncher {
     private boolean needsManualUpgrade = false;
     private int debugPort = -1;
     private boolean debugSuspend = false;
-
+    
     ///////////////////////////////////////////////////////////////////////////
     private static class ProcessWhacker implements Runnable {
         ProcessWhacker(Process p, String msg) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -115,7 +115,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     ServerContext serverContext;
 
     @Inject
-    ServerEnvironmentImpl env;
+    protected ServerEnvironmentImpl env;
 
     @Inject @Optional
     Agent agent;
@@ -127,9 +127,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     // written out to the stream
     private MeteredStream meter;
 
-    private static final String LOGS_DIR = "logs";
+    protected static final String LOGS_DIR = "logs";
     private static final String LOG_FILE_NAME = "server.log";
-    
+
     private static final String GZIP_EXTENSION = ".gz";
 
     private String absoluteServerLogName = null;
@@ -195,13 +195,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         LogManager manager = LogManager.getLogManager();
         String cname = getClass().getName();
 
-        logFileProperty = manager.getProperty(cname + ".file");
-        if(logFileProperty==null || logFileProperty.trim().equals("")) {
-            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator +
-                    LOG_FILE_NAME;
-        }
-
-        String filename = TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
+        String filename = evaluateFileName();
 
         File serverLog = new File(filename);
         absoluteServerLogName = filename;
@@ -462,6 +456,19 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         lr.setThreadID((int) Thread.currentThread().getId());
         lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         EarlyLogHandler.earlyMessages.add(lr);
+    }
+
+    protected String evaluateFileName() {
+        String cname = getClass().getName();
+        LogManager manager = LogManager.getLogManager();
+
+        logFileProperty = manager.getProperty(cname + ".file");
+        if(logFileProperty==null || logFileProperty.trim().equals("")) {
+            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator +
+                    LOG_FILE_NAME;
+        }
+
+        return TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
     }
 
     Formatter findFormatterService(String formatterName) {

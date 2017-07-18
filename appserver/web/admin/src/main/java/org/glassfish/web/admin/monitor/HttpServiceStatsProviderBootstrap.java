@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,9 +53,7 @@ import com.sun.enterprise.config.serverbeans.VirtualServer;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -63,7 +61,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigurationException;
-
 
 /**
  *
@@ -76,29 +73,9 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
-    @LogMessagesResourceBundle
-    private static final String SHARED_LOGMESSAGE_RESOURCE =
-            "org.glassfish.web.admin.monitor.LogMessages";
+    private static final Logger logger = LogFacade.getLogger();
 
-    @LoggerInfo(subsystem="WEB", description="WEB Admin Logger", publish=true)
-    private static final String WEB_ADMIN_LOGGER = "javax.enterprise.web.admin";
-
-    public static final Logger logger =
-            Logger.getLogger(WEB_ADMIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
-
-    public static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Unable to register StatsProvider {0} with Monitoring Infrastructure. No monitoring data will be collected for {1} and {2}",
-            level = "SEVERE",
-            cause = "Current server config is null",
-            action = "Verify if the server instance is started correctly")
-    public static final String UNABLE_TO_REGISTER_STATS_PROVIDERS = "AS-WEB-ADMIN-00001";
-
-    @LogMessageInfo(
-            message = "Current server config is null",
-            level = "INFO")
-    public static final String NULL_CONFIG = "AS-WEB-ADMIN-00002";
+    private static final ResourceBundle rb = logger.getResourceBundle();
 
     public void postConstruct() {
 
@@ -106,8 +83,8 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
             Object[] params = {VirtualServerInfoStatsProvider.class.getName(),
                     HttpServiceStatsProvider.class.getName(),
                     "http service", "virtual server"};
-            logger.log(Level.SEVERE, UNABLE_TO_REGISTER_STATS_PROVIDERS, params);
-            throw new ConfigurationException(rb.getString(NULL_CONFIG));
+            logger.log(Level.SEVERE, LogFacade.UNABLE_TO_REGISTER_STATS_PROVIDERS, params);
+            throw new ConfigurationException(rb.getString(LogFacade.NULL_CONFIG));
         }
 
         HttpService httpService = config.getHttpService();

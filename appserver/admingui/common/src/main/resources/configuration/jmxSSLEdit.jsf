@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] Payara Foundation and/or affiliates
 -->
 
 <!-- jmxSSLEdit.jsf -->
@@ -57,10 +58,11 @@
         setPageSessionAttribute(key="childType" value="ssl")
         setPageSessionAttribute(key="showCancelButton" value="#{false}")
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service/jmx-connector/system");
-        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+        setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service/jmx-connector/system/ssl");
         setPageSessionAttribute(key="createSslUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service/jmx-connector/system/create-ssl");
         createMap(result="#{pageSession.createMap}");
         mapPut(map="#{pageSession.createMap}" key="target" value="#{pageSession.configName}");
+        mapPut(map="#{pageSession.createMap}" key="type" value="jmx-connector");
         setPageSessionAttribute(key="rest-api" value="true");
 #include "/common/shared/sslPrepare.inc"
       />

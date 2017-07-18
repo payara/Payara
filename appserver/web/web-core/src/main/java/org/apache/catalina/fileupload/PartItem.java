@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,9 +60,8 @@
 package org.apache.catalina.fileupload;
 
 import org.apache.catalina.Globals;
-import org.apache.catalina.core.StandardServer;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.util.RequestUtil;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.http.Part;
 import java.io.*;
@@ -98,14 +97,8 @@ class PartItem
      */
     private static final long serialVersionUID = 2237570099615271025L;
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "file data is empty.",
-            level = "INFO"
-    )
-    public static final String FILE_DATA_IS_EMPTY_INFO = "AS-WEB-CORE-00285";
 
     // ----------------------------------------------------------- Data members
 
@@ -358,7 +351,7 @@ class PartItem
             fis = new FileInputStream(dfos.getFile());
             if (fis.read(fileData) != (int)getSize())
                 if (log.isLoggable(Level.INFO))
-                    log.log(Level.INFO, FILE_DATA_IS_EMPTY_INFO);
+                    log.log(Level.INFO, LogFacade.FILE_DATA_IS_EMPTY_INFO);
         } catch (IOException e) {
             fileData = null;
         } finally {

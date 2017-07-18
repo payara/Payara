@@ -37,10 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb;
 
-import java.lang.annotation.Annotation;
+import static com.sun.appserv.connectors.internal.api.ConnectorConstants.CONNECTOR_MESSAGE_BEAN_CLIENT_FACTORY;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.POOLED;
+import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType.POST_CONSTRUCT;
+import static com.sun.enterprise.util.Utility.setContextClassLoader;
+import static com.sun.logging.LogDomains.MDB_LOGGER;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+import static javax.transaction.xa.XAResource.TMSUCCESS;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -55,11 +64,7 @@ import javax.ejb.MessageDrivenBean;
 import javax.ejb.RemoveException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.transaction.Status;
-import javax.transaction.xa.XAResource;
 
-import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
@@ -69,30 +74,32 @@ import org.glassfish.ejb.api.ResourcesExceededException;
 import org.glassfish.ejb.config.MdbContainer;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
+import org.glassfish.ejb.mdb.monitoring.stats.MessageDrivenBeanStatsProvider;
 import org.glassfish.ejb.spi.MessageBeanClient;
 import org.glassfish.ejb.spi.MessageBeanClientFactory;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ResourceHandle;
 import com.sun.appserv.connectors.internal.api.TransactedPoolManager;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.BaseContainer;
-import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.EJBContextImpl.BeanState;
 import com.sun.ejb.containers.EJBLocalRemoteObject;
 import com.sun.ejb.containers.EJBObjectImpl;
 import com.sun.ejb.containers.EJBTimerService;
+import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.RuntimeTimerState;
 import com.sun.ejb.containers.util.pool.AbstractPool;
 import com.sun.ejb.containers.util.pool.NonBlockingPool;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
-import org.glassfish.ejb.mdb.monitoring.stats.MessageDrivenBeanStatsProvider;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
@@ -116,43 +123,35 @@ import com.sun.logging.LogDomains;
  * 
  * @author Kenneth Saks
  */
-public final class MessageBeanContainer extends BaseContainer implements
-        MessageBeanProtocolManager { //, MessageDrivenBeanStatsProvider {
-    private static final Logger _logger = LogDomains.getLogger(
-            MessageBeanContainer.class, LogDomains.MDB_LOGGER);
+public final class MessageBeanContainer extends BaseContainer implements MessageBeanProtocolManager {
+    
+    private static final Logger _logger = LogDomains.getLogger(MessageBeanContainer.class, MDB_LOGGER);
 
-    private String appEJBName_;
+    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MessageBeanContainer.class);
 
-    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(
-            MessageBeanContainer.class);
-
-    // Message-bean instance states
-    private static final int POOLED = 1, INVOKING = 2, DESTROYED = 3;
-
-    private MessageBeanClient messageBeanClient_ = null;
-
-    private AbstractPool messageBeanPool_ = null;
-
-    private BeanPoolDescriptor beanPoolDesc_ = null;
-    private int maxMessageBeanListeners_;
-    private int numMessageBeanListeners_;
-    private Class messageBeanInterface_;
-    private Class messageBeanSubClass_;
-
-    // Property used to bootstrap message bean client factory for inbound
-    // message delivery.
+    // Property used to bootstrap message bean client factory for inbound message delivery.
     private static final String MESSAGE_BEAN_CLIENT_FACTORY_PROP = "com.sun.enterprise.MessageBeanClientFactory";
 
-    private static final String DEFAULT_MESSAGE_BEAN_CLIENT_FACTORY =
-            ConnectorConstants.CONNECTOR_MESSAGE_BEAN_CLIENT_FACTORY;
+    private static final String DEFAULT_MESSAGE_BEAN_CLIENT_FACTORY = CONNECTOR_MESSAGE_BEAN_CLIENT_FACTORY;
 
     private static final int DEFAULT_RESIZE_QUANTITY = 8;
     private static final int DEFAULT_STEADY_SIZE = 0;
     private static final int DEFAULT_MAX_POOL_SIZE = 32;
     private static final int DEFAULT_IDLE_TIMEOUT = 600;
         
-        //issue 4629. 0 means a bean can remain idle indefinitely. 
+    // issue 4629. 0 means a bean can remain idle indefinitely. 
     private static final int MIN_IDLE_TIMEOUT = 0;
+    
+    private String appEJBName_;
+    private MessageBeanClient messageBeanClient_;
+
+    private AbstractPool messageBeanPool_;
+
+    private BeanPoolDescriptor beanPoolDesc_;
+    private int maxMessageBeanListeners_;
+    private int numMessageBeanListeners_;
+    private Class<?> messageBeanInterface_;
+    private Class<?> messageBeanSubClass_;
 
         // TODO : remove
     private int statMessageCount = 0;
@@ -160,21 +159,12 @@ public final class MessageBeanContainer extends BaseContainer implements
     private TransactedPoolManager poolMgr;
     private final Class<?> messageListenerType_;
 
-    MessageBeanContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
-            throws Exception {
+    MessageBeanContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm) throws Exception {
         super(ContainerType.MESSAGE_DRIVEN, desc, loader, sm);
-
-        // Instantiate the ORB and Remote naming manager
-        // to allow client lookups of JMS queues/topics/connectionfactories
-        // TODO - implement the sniffer for DAS/cluster instance - listening on the naming port that will
-        // instantiate the orb/remote naming service on demand upon initial access.
-        // Once that's available, this call can be removed.
-        initializeProtocolManager();
 
         isMessageDriven = true;
 
-        appEJBName_ = desc.getApplication().getRegistrationName() + ":"
-                + desc.getName();
+        appEJBName_ = desc.getApplication().getRegistrationName() + ":" + desc.getName();
 
         EjbMessageBeanDescriptor msgBeanDesc = (EjbMessageBeanDescriptor) desc;
 
@@ -185,8 +175,8 @@ public final class MessageBeanContainer extends BaseContainer implements
             messageListenerType_ = loader.loadClass(msgBeanDesc.getMessageListenerType());
 
             Class<?> messageListenerType_1 = messageListenerType_;
-            if (isModernMessageListener(messageListenerType_1)) {
-                // Generate interface and subclass for EJB 3.2 No-interface MDB VIew
+            if (isNoMethodsListenerInterface(messageListenerType_1)) {
+                // Generate interface and subclass for EJB 3.2 5.4.3 - Message-Driven Bean with No-Methods Listener Interface
                 MessageBeanInterfaceGenerator generator = new MessageBeanInterfaceGenerator(loader);
                 messageBeanInterface_ = generator.generateMessageBeanInterface(beanClass);
                 messageBeanSubClass_ = generator.generateMessageBeanSubClass(beanClass, messageBeanInterface_);
@@ -197,16 +187,15 @@ public final class MessageBeanContainer extends BaseContainer implements
             // MessageListener interface, NOT the bean class itself. This
             // is because the message bean container clients do not have
             // access to the message bean class.
-            Method[] msgListenerMethods = msgBeanDesc
-                    .getMessageListenerInterfaceMethods(loader);
+            Method[] msgListenerMethods = msgBeanDesc.getMessageListenerInterfaceMethods(loader);
 
             for (int i = 0; i < msgListenerMethods.length; i++) {
                 Method next = msgListenerMethods[i];
                 addInvocationInfo(next, MethodDescriptor.EJB_BEAN, null);
             }
-            
+
             poolMgr = ejbContainerUtilImpl.getServices().getService(TransactedPoolManager.class);
-            
+
             // NOTE : No need to register tx attribute for ejbTimeout. It's
             // done in BaseContainer intialization.
             // Message-driven beans can be timed objects.
@@ -219,17 +208,13 @@ public final class MessageBeanContainer extends BaseContainer implements
             // implementation is ready.
             String factoryClassName = System.getProperty(MESSAGE_BEAN_CLIENT_FACTORY_PROP);
             MessageBeanClientFactory clientFactory = null;
-            if(factoryClassName != null){
+            if (factoryClassName != null) {
                 Class clientFactoryClass = loader.loadClass(factoryClassName);
-                clientFactory = (MessageBeanClientFactory) clientFactoryClass
-                        .newInstance();
+                clientFactory = (MessageBeanClientFactory) clientFactoryClass.newInstance();
             } else {
-                clientFactory = ejbContainerUtilImpl.getServices().getService(
-                        MessageBeanClientFactory.class, DEFAULT_MESSAGE_BEAN_CLIENT_FACTORY );
+                clientFactory = ejbContainerUtilImpl.getServices().getService(MessageBeanClientFactory.class, DEFAULT_MESSAGE_BEAN_CLIENT_FACTORY);
             }
-            _logger.log(Level.FINE, "Using " + clientFactory.getClass().getName()
-                    + " for message bean client factory in " + appEJBName_);
-
+            _logger.log(Level.FINE, "Using " + clientFactory.getClass().getName() + " for message bean client factory in " + appEJBName_);
 
             // Create message bean pool before calling setup on
             // Message-bean client, since pool properties can be retrieved
@@ -243,8 +228,7 @@ public final class MessageBeanContainer extends BaseContainer implements
             maxMessageBeanListeners_ = beanPoolDesc_.getMaxPoolSize();
             numMessageBeanListeners_ = 0;
 
-            messageBeanClient_ = clientFactory
-                    .createMessageBeanClient(msgBeanDesc);
+            messageBeanClient_ = clientFactory.createMessageBeanClient(msgBeanDesc);
 
             componentInvocation = createComponentInvocation();
             componentInvocation.container = this;
@@ -260,13 +244,11 @@ public final class MessageBeanContainer extends BaseContainer implements
                 messageBeanClient_.close();
             }
 
-            _logger.log(Level.SEVERE,
-                    "containers.mdb.create_container_exception", new Object[] {
-                            desc.getName(), ex.toString() });
+            _logger.log(Level.SEVERE, "containers.mdb.create_container_exception", new Object[] { desc.getName(), ex.toString() });
             _logger.log(Level.SEVERE, ex.getClass().getName(), ex);
             throw ex;
         } finally {
-            if(componentInvocation != null) {
+            if (componentInvocation != null) {
                 invocationManager.postInvoke(componentInvocation);
             }
         }
@@ -731,7 +713,7 @@ public final class MessageBeanContainer extends BaseContainer implements
      */
     public Object createMessageBeanProxy(InvocationHandler handler) throws Exception {
 
-        if (isModernMessageListener(messageListenerType_)) {
+        if (isNoMethodsListenerInterface(messageListenerType_)) {
             // EJB 3.2 No-interface MDB View
 
             Proxy proxy = (Proxy) Proxy.newProxyInstance(loader, new Class[]{messageBeanInterface_}, handler);
@@ -747,7 +729,7 @@ public final class MessageBeanContainer extends BaseContainer implements
     }
 
     /**
-     * Detects if the message-listener type indicates an EJB 3.2 MDB No-Interface View
+     * Detects if the message-listener type indicates an EJB 3.2 MDB No-Methods Listener Interface
      *
      * In the future this method could potentially just return:
      *
@@ -758,7 +740,7 @@ public final class MessageBeanContainer extends BaseContainer implements
      * @param messageListenerType
      * @return true of the specified interface has no methods
      */
-    private static boolean isModernMessageListener(Class<?> messageListenerType) {
+    private static boolean isNoMethodsListenerInterface(Class<?> messageListenerType) {
         // DMB: In the future, this can just return 'Annotation.class.isAssignableFrom(messageListenerType)'
 
         return messageListenerType.getMethods().length == 0;
@@ -766,37 +748,31 @@ public final class MessageBeanContainer extends BaseContainer implements
 
     @Override
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
-    return new MessageBeanContextImpl(instance, this);
+        return new MessageBeanContextImpl(instance, this);
     }
 
     /**
      * Instantiate and initialize a message-driven bean instance.
      */
-    private MessageBeanContextImpl createMessageDrivenEJB()
-            throws CreateException {
+    private MessageBeanContextImpl createMessageDrivenEJB() throws CreateException {
 
-        EjbInvocation inv = null;
+        EjbInvocation ejbInvocation = null;
         MessageBeanContextImpl context = null;
         ClassLoader originalClassLoader = null;
-        boolean methodCalled = false;
-        boolean methodCallFailed = false;
 
         try {
             // Set application class loader before invoking instance.
-            originalClassLoader = Utility
-                    .setContextClassLoader(getClassLoader());
+            originalClassLoader = setContextClassLoader(getClassLoader());
 
-            context = (MessageBeanContextImpl)
-                createEjbInstanceAndContext();
+            context = (MessageBeanContextImpl) createEjbInstanceAndContext();
 
             Object ejb = context.getEJB();
-            
 
             // java:comp/env lookups are allowed from here on...
-            inv = createEjbInvocation(ejb, context);
+            ejbInvocation = createEjbInvocation(ejb, context);
 
-            inv.isMessageDriven = true;
-            invocationManager.preInvoke(inv);
+            ejbInvocation.isMessageDriven = true;
+            invocationManager.preInvoke(ejbInvocation);
 
             if (ejb instanceof MessageDrivenBean) {
                 // setMessageDrivenContext will be called without a Tx
@@ -804,50 +780,45 @@ public final class MessageBeanContainer extends BaseContainer implements
                 ((MessageDrivenBean) ejb).setMessageDrivenContext(context);
             }
 
-            // Perform injection right after where setMessageDrivenContext
-            // would be called. This is important since injection methods
-            // have the same "operations allowed" permissions as
-            // setMessageDrivenContext.
+            // Perform injection right after where setMessageDrivenContext would be called. This is important since 
+            // injection methods have the same "operations allowed" permissions as setMessageDrivenContext.
             injectEjbInstance(context);
             
 
-            // Set flag in context so UserTransaction can
-            // be used from ejbCreate. Didn't want to add
-            // a new state to lifecycle since that would
-            // require either changing lots of code in
-            // EJBContextImpl or re-implementing all the
-            // context methods within MessageBeanContextImpl.
+            // Set flag in context so UserTransaction can be used from ejbCreate. Didn't want to add
+            // a new state to lifecycle since that would require either changing lots of code in
+            // EJBContextImpl or re-implementing all the context methods within MessageBeanContextImpl.
             context.setContextCalled();
 
             // Call ejbCreate OR @PostConstruct on the bean.
-            intercept(CallbackType.POST_CONSTRUCT, context);
+            intercept(POST_CONSTRUCT, context);
 
             ejbProbeNotifier.ejbBeanCreatedEvent(getContainerId(),
                                 containerInfo.appName, containerInfo.modName,
                                 containerInfo.ejbName);
 
-            // Set the state to POOLED after ejbCreate so that
-            // EJBContext methods not allowed will throw exceptions
-            context.setState(BeanState.POOLED);
+            // Set the state to POOLED after ejbCreate so that EJBContext methods not allowed will throw exceptions
+            context.setState(POOLED);
+            
         } catch (Throwable t) {
-            _logger.log(Level.SEVERE, "containers.mdb.ejb_creation_exception",
-                    new Object[] { appEJBName_, t.toString() });
+            _logger.log(SEVERE, "containers.mdb.ejb_creation_exception", new Object[] { appEJBName_, t.toString() });
+            
             if (t instanceof InvocationTargetException) {
                 _logger.log(Level.SEVERE, t.getClass().getName(), t.getCause());
             }
-            _logger.log(Level.SEVERE, t.getClass().getName(), t);
+            
+            _logger.log(SEVERE, t.getClass().getName(), t);
 
-            CreateException ce = new CreateException(
-                    "Could not create Message-Driven EJB");
+            CreateException ce = new CreateException("Could not create Message-Driven EJB");
             ce.initCause(t);
             throw ce;
 
         } finally {
             if (originalClassLoader != null) {
-                Utility.setContextClassLoader(originalClassLoader);
+                setContextClassLoader(originalClassLoader);
             }
-            if (inv != null) {
-                invocationManager.postInvoke(inv);
+            if (ejbInvocation != null) {
+                invocationManager.postInvoke(ejbInvocation);
             }
         }
 
@@ -858,8 +829,7 @@ public final class MessageBeanContainer extends BaseContainer implements
      * Make the work performed by a message-bean instance's associated XA
      * resource part of any global transaction
      */
-    private void registerMessageBeanResource(ResourceHandle resourceHandle)
-            throws Exception {
+    private void registerMessageBeanResource(ResourceHandle resourceHandle) throws Exception {
         if (resourceHandle != null) {
             poolMgr.registerResource(resourceHandle);
         }
@@ -870,7 +840,7 @@ public final class MessageBeanContainer extends BaseContainer implements
         // resource handle may be null if preInvokeTx error caused
         // ResourceAllocator.destroyResource()
         if (resourceHandle != null) {
-            poolMgr.unregisterResource(resourceHandle, XAResource.TMSUCCESS);
+            poolMgr.unregisterResource(resourceHandle, TMSUCCESS);
         }
     }
 
@@ -913,7 +883,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 
         } catch (Exception e) {
 
-            _logger.log(Level.FINE, e.getClass().getName(), e);
+            _logger.log(FINE, e.getClass().getName(), e);
 
             throw new RuntimeException("MessageBeanContainer.start failure for app " +
                 appEJBName_, e);
@@ -937,17 +907,17 @@ public final class MessageBeanContainer extends BaseContainer implements
     private void cleanupResources() {
         ComponentInvocation componentInvocation = createComponentInvocation();
 
-        ASyncClientShutdownTask task = new ASyncClientShutdownTask(appEJBName_,
-                messageBeanClient_, loader, messageBeanPool_, componentInvocation);
+        ASyncClientShutdownTask task = new ASyncClientShutdownTask(appEJBName_, messageBeanClient_, loader, messageBeanPool_, componentInvocation);
+        
         long timeout = 0;
-        try { 
-                    ConnectorRuntime cr = ejbContainerUtilImpl.getServices()
-                            .getService(ConnectorRuntime.class);
-                    timeout = cr.getShutdownTimeout();
-                } catch (Throwable th) { 
-                    _logger.log(Level.WARNING, "[MDBContainer] Got exception while trying " +
-                     " to get shutdown timeout", th); 
-                }
+        try {
+            timeout = ejbContainerUtilImpl.getServices()
+                                          .getService(ConnectorRuntime.class)
+                                          .getShutdownTimeout();
+        } catch (Throwable th) {
+            _logger.log(Level.WARNING, "[MDBContainer] Got exception while trying " + " to get shutdown timeout", th);
+        }
+        
         try {
             boolean addedAsyncTask = false;
             if (timeout > 0) {
@@ -960,13 +930,10 @@ public final class MessageBeanContainer extends BaseContainer implements
                     // we will have to do the cleanup in the current thread
                     // itself.
                     addedAsyncTask = false;
-                    _logger
-                            .log(
-                                    Level.WARNING,
-                                    "[MDBContainer] Got exception while trying "
-                                            + "to add task to ContainerWorkPool. Will execute "
-                                            + "cleanupResources on current thread",
-                                    th);
+                    _logger.log(WARNING, 
+                        "[MDBContainer] Got exception while trying " + 
+                        "to add task to ContainerWorkPool. Will execute " + 
+                        "cleanupResources on current thread", th);
                 }
             }
 

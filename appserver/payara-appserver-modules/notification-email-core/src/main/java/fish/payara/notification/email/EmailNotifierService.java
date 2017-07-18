@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -86,7 +86,7 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
         register(NotifierType.EMAIL, EmailNotifier.class, EmailNotifierConfiguration.class, this);
 
         executionOptions = (EmailNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        if(executionOptions != null) {
+        if(executionOptions != null && executionOptions.isEnabled()) {
             initializeExecutor();
 
             try {
@@ -101,8 +101,4 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
         }
     }
 
-    @Override
-    public void shutdown() {
-        super.reset();
-    }
 }

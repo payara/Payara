@@ -60,7 +60,6 @@ package org.apache.catalina.valves;
 
 import org.apache.catalina.*;
 import org.apache.catalina.core.ContainerBase;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.LifecycleSupport;
 import org.glassfish.web.valve.GlassFishValve;
 
@@ -91,7 +90,7 @@ public abstract class ValveBase
 // START CR 6411114
     implements Contained, Lifecycle, Valve, GlassFishValve {
 // END CR 6411114
-    protected static final Logger log = StandardServer.log;
+    protected static final Logger log = LogFacade.getLogger();
     protected static final ResourceBundle rb = log.getResourceBundle();
 
     //------------------------------------------------------ Instance Variables

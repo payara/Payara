@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
@@ -60,7 +60,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;
@@ -94,12 +94,7 @@ import java.util.logging.Logger;
 @ArchivistFor(WarType.ARCHIVE_TYPE)
 public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Error in parsing default-web.xml",
-            level = "WARNING")
-    private static final String ERROR_PARSING = "AS-WEB-GLUE-00276";
+    private static final Logger logger = LogFacade.getLogger();
 
 
     private static final String DEFAULT_WEB_XML = "default-web.xml";
@@ -222,7 +217,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                 defaultWebBundleDesc.addWebBundleDescriptor(wddf.read(fis));
             }
         } catch (Exception e) {
-            logger.log(Level.WARNING, ERROR_PARSING);
+            logger.log(Level.WARNING, LogFacade.ERROR_PARSING);
         } finally {
             try {
                 if (fis != null) {
@@ -348,23 +343,18 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
             }
         }
 
-        WebFragmentDescriptor mergedWebFragment = null;
+        WebFragmentDescriptor mergedWebFragment = new WebFragmentDescriptor();
+        mergedWebFragment.setExists(false);
         for (WebFragmentDescriptor wf : wfList) {
-            if (mergedWebFragment == null) {
-                mergedWebFragment = wf;
-            } else {
-                if(wf.isExists() && wf.isDistributable() == null) {
-                    wf.setDistributable(false);
-                }
-                mergedWebFragment.addWebBundleDescriptor(wf);
+            // we have the first fragment that's contains the web-fragment.xml file
+            if(!mergedWebFragment.isExists() && wf.isExists()) {
+                mergedWebFragment.setExists(true);
+                mergedWebFragment.setDistributable(wf.isDistributable());
             }
+            mergedWebFragment.addWebBundleDescriptor(wf);
         }
 
-        if (mergedWebFragment != null) {
-            mergedWebFragment.setExists(true);
-            if(descriptor.isDistributable() == null) {
-                descriptor.setDistributable(false);
-            }
+        if (!wfList.isEmpty()) {
             descriptor.addWebBundleDescriptor(mergedWebFragment);
 
             // if there any mapping stubs left, there is something invalid referenced from web.xml

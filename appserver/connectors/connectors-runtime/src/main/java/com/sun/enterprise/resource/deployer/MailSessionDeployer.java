@@ -36,7 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource.deployer;
 
@@ -66,12 +69,10 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * Handle deployment of resources defined by @MailSessionDefinition
@@ -363,7 +364,7 @@ public class MailSessionDeployer implements ResourceDeployer {
         }
 
         public String getValue() {
-            return value;
+            return (String) TranslatedConfigView.getTranslatedValue(value);
         }
 
         public void setValue(String value) throws PropertyVetoException {
@@ -441,7 +442,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getHost() {
-            return desc.getHost();
+            return (String) TranslatedConfigView.getTranslatedValue(desc.getHost());
         }
 
         @Override
@@ -451,7 +452,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getUser() {
-            return desc.getUser();
+            return (String) TranslatedConfigView.getTranslatedValue(desc.getUser());
         }
 
         @Override
@@ -460,8 +461,30 @@ public class MailSessionDeployer implements ResourceDeployer {
         }
 
         @Override
+        public String getPassword(){
+            return (String) TranslatedConfigView.getTranslatedValue(desc.getPassword());
+        }
+        
+        @Override
+        public void setPassword(String value){
+            //do nothing
+        }
+        
+        @Override
+        public String getAuth(){
+            return desc.getAuth();
+        }
+        
+        @Override
+        public void setAuth(String value) throws PropertyVetoException {
+            //do nothing
+        }
+        
+
+        
+        @Override
         public String getFrom() {
-            return desc.getFrom();
+            return (String) TranslatedConfigView.getTranslatedValue(desc.getFrom());
         }
 
         @Override
@@ -516,6 +539,26 @@ public class MailSessionDeployer implements ResourceDeployer {
             for (String key : desc.getProperties().stringPropertyNames())
                 props.add(new MailSessionProperty(key, desc.getProperty(key)));
             return props;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            throw new UnsupportedOperationException();
         }
 
         @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,6 @@
 
 package org.glassfish.web.admin.monitor.statistics;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -52,6 +50,7 @@ import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.admin.monitor.cli.MonitorContract;
 import org.glassfish.flashlight.datatree.TreeNode;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
+import org.glassfish.web.admin.LogFacade;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -72,14 +71,9 @@ public class HTTPListenerStatsImpl implements MonitorContract {
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
 
-    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Monitoring Registry does not exist. Possible causes are 1) Monitoring is not turned on or at a lower level 2) The corresponding container (web, ejb, etc.) is not loaded yet",
-            level = "INFO")
-    protected static final String MRDR_NULL = "AS-WEB-ADMIN-00046";
 
     private final static String name = "httplistener";
     private final static String displayFormat = "%1$-4s %2$-4s %3$-6.2f %4$-4s";
@@ -96,14 +90,14 @@ public class HTTPListenerStatsImpl implements MonitorContract {
 
         if (mrdr == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(rb.getString(MRDR_NULL));
+            report.setMessage(rb.getString(LogFacade.MRDR_NULL));
             return report;
         }
 
         TreeNode serverNode = mrdr.get("server");
         if (serverNode == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(rb.getString(MRDR_NULL));
+            report.setMessage(rb.getString(LogFacade.MRDR_NULL));
             return report;
         }
 

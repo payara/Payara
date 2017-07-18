@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,9 +58,8 @@
 
 package org.apache.catalina.startup;
 
-import org.apache.catalina.core.StandardServer;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.security.SecurityClassLoad;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -104,15 +103,7 @@ public final class Bootstrap {
     private static Bootstrap daemon = null;
      */
 
-    private static final Logger log = StandardServer.log;
-
-    @LogMessageInfo(
-            message = "Class loader creation threw exception",
-            level = "SEVERE",
-            cause = "Could not create class loader",
-            action = "Verify the availability of current repository "
-    )
-    public static final String CLASS_LOADER_CREATION_EXCEPTION = "AS-WEB-CORE-00398";
+    private static final Logger log = LogFacade.getLogger();
 
     // ----------------------------------------------------------- Variables
 
@@ -148,7 +139,7 @@ public final class Bootstrap {
             catalinaLoader = createClassLoader("server", commonLoader);
             sharedLoader = createClassLoader("shared", commonLoader);
         } catch (Throwable t) {
-            log.log(Level.SEVERE, CLASS_LOADER_CREATION_EXCEPTION, t);
+            log.log(Level.SEVERE, LogFacade.CLASS_LOADER_CREATION_EXCEPTION, t);
             System.exit(1);
         }
     }

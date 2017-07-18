@@ -75,26 +75,26 @@ public class FileSystemItemValidator extends Validator {
             // given file must exist
             if (!file.exists()) {
                 // and it does not exist
-                throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString((filesAllowed ? "fileDoesNotExist" : "directoryDoesNotExist")), optionValue));
+                throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString((filesAllowed ? "fileDoesNotExist" : "directoryDoesNotExist")), optionValue));
             } else {
                 // given file exists
                 if (file.isDirectory() && !directoryAllowed) {
                     // but is a directory and it's not allowed
-                    throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("fileIsDirectory"), optionValue));
+                    throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileIsDirectory"), optionValue));
                 }
                 if (!file.isDirectory() && !filesAllowed) {
                     // but is a file and it's not allowed
-                    throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString("directoryDoesNotExist"), optionValue));
+                    throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("directoryDoesNotExist"), optionValue));
                 }
             }
         }
 
         if (readable && !file.canRead()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString((filesAllowed ? "fileNotReadable" : "directoryNotReadable")), optionValue));
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString((filesAllowed ? "fileNotReadable" : "directoryNotReadable")), optionValue));
         }
 
         if (writable && !file.canWrite()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.bundle.getString((filesAllowed ? "fileNotWritable" : "directoryNotWritable")), optionValue));
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString((filesAllowed ? "fileNotWritable" : "directoryNotWritable")), optionValue));
         }
         return true;
     }

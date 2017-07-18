@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,11 +61,10 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -103,18 +102,8 @@ public class DeleteProtocolFilter implements AdminCommand {
     ServiceLocator services;
     private ActionReport report;
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
-    @LogMessageInfo(
-            message = "{0} delete failed: {1}.",
-            level = "INFO")
-    protected static final String DELETE_FAIL = "AS-WEB-ADMIN-00038";
-
-
-    @LogMessageInfo(
-            message = "No {0} element found with the name {1}.",
-            level = "INFO")
-    protected static final String NOT_FOUND = "AS-WEB-ADMIN-00039";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -127,7 +116,7 @@ public class DeleteProtocolFilter implements AdminCommand {
         try {
             final Protocols protocols = config.getNetworkConfig().getProtocols();
             final Protocol protocol = protocols.findProtocol(protocolName);
-            validate(protocol, CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, protocolName);
+            validate(protocol, LogFacade.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, protocolName);
             ProtocolChainInstanceHandler handler = getHandler(protocol);
             ProtocolChain chain = getChain(handler);
             ConfigSupport.apply(new SingleConfigCode<ProtocolChain>() {
@@ -155,7 +144,7 @@ public class DeleteProtocolFilter implements AdminCommand {
         } catch (Exception e) {
             e.printStackTrace();
             report.setMessage(
-                    MessageFormat.format(rb.getString(DELETE_FAIL),
+                    MessageFormat.format(rb.getString(LogFacade.DELETE_FAIL),
                             name,
                             e.getMessage() == null ? "No reason given" : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -169,7 +158,7 @@ public class DeleteProtocolFilter implements AdminCommand {
         ProtocolChain chain = handler.getProtocolChain();
         if ((chain == null) && (report != null)) {
             report.setMessage(
-                    MessageFormat.format(rb.getString(NOT_FOUND),
+                    MessageFormat.format(rb.getString(LogFacade.NOT_FOUND),
                             "protocol-chain",
                             handler.getParent(Protocol.class).getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -194,7 +183,7 @@ public class DeleteProtocolFilter implements AdminCommand {
         ProtocolChainInstanceHandler handler = protocol.getProtocolChainInstanceHandler();
         if ((handler == null) && (report != null)) {
             report.setMessage(
-                    MessageFormat.format(rb.getString(NOT_FOUND),
+                    MessageFormat.format(rb.getString(LogFacade.NOT_FOUND),
                             "protocol-chain-instance-handler",
                             protocol.getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@ import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.glassfish.embeddable.web.Context;
 import org.glassfish.embeddable.web.config.SecurityConfig;
+import org.glassfish.web.LogFacade;
 
 /**
  * Facade object which masks the internal <code>Context</code>
@@ -535,7 +536,7 @@ public class ContextFacade extends WebModule {
                     !HttpSessionListener.class.isAssignableFrom(clazz) &&
                     !HttpSessionAttributeListener.class.isAssignableFrom(clazz) &&
                     !HttpSessionIdListener.class.isAssignableFrom(clazz)) {
-                String msg = rb.getString(INVALID_LISTENER_TYPE);
+                String msg = rb.getString(LogFacade.INVALID_LISTENER_TYPE);
                 msg = MessageFormat.format(msg, clazz.getName());
                 throw new IllegalArgumentException(msg);
             }

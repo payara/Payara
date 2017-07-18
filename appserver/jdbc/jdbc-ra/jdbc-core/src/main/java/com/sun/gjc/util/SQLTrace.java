@@ -38,7 +38,11 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.gjc.util;
+
+import java.util.Comparator;
 
 /**
  * Store the sql queries executed by applications along with the number of
@@ -47,7 +51,7 @@ package com.sun.gjc.util;
  * 
  * @author Shalini M
  */
-public class SQLTrace implements Comparable {
+public class SQLTrace {
 
     private String queryName;
     private int numExecutions;
@@ -112,70 +116,38 @@ public class SQLTrace implements Comparable {
     public void setLastUsageTime(long lastUsageTime) {
         this.lastUsageTime = lastUsageTime;
     }
-
-    /**
-     * Check for equality of the SQLTrace with the object passed by
-     * comparing the queryName stored.
-     *
-     * @param obj against which the equality is to be checked.
-     * @return true or false
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if(!(obj instanceof SQLTrace)) {
-            return false;
-        }
-        final SQLTrace other = (SQLTrace) obj;
-        if ((this.queryName == null) || (other.queryName == null) ||
-                !this.queryName.equals(other.queryName)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Generate hash code for this obejct using all the fields.
-     * @return
-     */
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + (this.queryName != null ? this.queryName.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        if (!(o instanceof SQLTrace)) {
-            throw new ClassCastException("SqlTraceCache object is expected");
-        }
-        int number = ((SQLTrace) o).numExecutions;
-        long t = ((SQLTrace) o).getLastUsageTime();
-
-        int compare = 0;
-        if (number == this.numExecutions) {
-            compare = 0;
-        } else if (number < this.numExecutions) {
-            compare = -1;
-        } else {
-            compare = 1;
-        }
-        if (compare == 0) {
-            //same number of executions. Hence compare based on time.
-            long timeCompare = this.getLastUsageTime() - t;
-            if(timeCompare == 0) {
-                compare = 0;
-            } else if(timeCompare < 0) {
-                //compare = -1;
+    
+    // Comparator that orders based upon the number of executions and the last usage time.
+    public static Comparator<SQLTrace> SQLTraceFrequencyComparator = new Comparator<SQLTrace>() {
+        
+        @Override
+        public int compare(SQLTrace sqlTrace1, SQLTrace sqlTrace2) {
+            final int sqlTrace1Frequency = sqlTrace1.getNumExecutions();
+            final int sqlTrace2Frequency = sqlTrace2.getNumExecutions();
+            
+            // Initialise the comparison variable to be equal
+            int compare = 0;
+            
+            // Compare the number of executions
+            if (sqlTrace1Frequency < sqlTrace2Frequency) {
                 compare = 1;
-            } else {
-                //compare = 1;
+            } else if (sqlTrace1Frequency > sqlTrace2Frequency) {
                 compare = -1;
             }
+            
+            // If the number of executions are the same, compare the last usage time
+            if (compare == 0) {
+                final long sqlTrace1LastUsageTime = sqlTrace1.getLastUsageTime();
+                final long sqlTrace2LastUsageTime = sqlTrace2.getLastUsageTime();
+                
+                if (sqlTrace1LastUsageTime < sqlTrace2LastUsageTime) {
+                    compare = 1;
+                } else if (sqlTrace1LastUsageTime > sqlTrace2LastUsageTime) {
+                    compare = -1;
+                }
+            }
+            
+            return compare;
         }
-        return compare;
-    }
+    };
 }

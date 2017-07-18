@@ -473,15 +473,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         // if archive is a composite, or has version numbers per maven conventions, strip it out
         boolean isSubArchive = archive.getParentArchive() != null;
         String archiveName = !isSubArchive? appInfo.getName() : archive.getName();
-        int suffixIdx = archiveName.lastIndexOf('-');
-        if(isSubArchive && suffixIdx > 0) {
-            String versionStr = archiveName.substring(suffixIdx + 1, archiveName.length());
-            if(versionStr.matches("^[0-9]+\\..*")) {
-                archiveName = archiveName.substring(0, suffixIdx);
-            }
+        if(isSubArchive) {
+            archiveName = BeanDeploymentArchiveImpl.stripMavenVersion(archiveName);
         }
         if(!context.getArchiveHandler().getArchiveType().isEmpty()) {
-            archiveName = String.format("%s.%s", archiveName, context.getArchiveHandler().getArchiveType());
+            archiveName = String.format("%s.%s", BeanDeploymentArchiveImpl.stripApplicationVersion(archiveName), context.getArchiveHandler().getArchiveType());
         }
         
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
@@ -562,6 +558,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
                     InjectionManager injectionMgr = services.getService(InjectionManager.class);
                     InjectionServices injectionServices = new InjectionServicesImpl(injectionMgr, bundle, deploymentImpl);
+                    // Add service
+                    deploymentImpl.getServices().add(InjectionServices.class, injectionServices);
 
                     if (logger.isLoggable(Level.FINE)) {
                         logger.log(Level.FINE,
@@ -646,5 +644,4 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         InjectionServices injectionServices = new NonModuleInjectionServices(injectionMgr);
         bda.getServices().add(InjectionServices.class, injectionServices);
     }
-
 }

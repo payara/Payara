@@ -104,7 +104,11 @@ public class SimpleBVServletTestNG {
             int i;
             Boolean regexesFound[] = new Boolean[len];
 
+            StringBuilder rspContent = new StringBuilder();
             while ((line = input.readLine()) != null) {
+                rspContent.append(line);
+                rspContent.append("\n ");
+
                 // for each line in the input, loop through each of the 
                 // elements of regexesToFind.  At least one must match.
                 boolean found = false;
@@ -123,10 +127,11 @@ public class SimpleBVServletTestNG {
                     foundMissingRegexMatch = true;
                     errorMessage = "Unable to find match for regex " + 
                             regexesToFind[i] + " in output from request to " + testurl;
+                    System.out.println("Response content: ");
+                    System.out.println(rspContent.toString());
                     break;
                 }
             }
-            
             Assert.assertTrue(!foundMissingRegexMatch, errorMessage);
 
         } catch (Exception e) {

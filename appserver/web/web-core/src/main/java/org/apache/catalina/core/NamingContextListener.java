@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,9 +60,9 @@ package org.apache.catalina.core;
 
 
 import org.apache.catalina.*;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.deploy.*;
 import org.apache.naming.*;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
@@ -87,38 +87,8 @@ import java.util.logging.Logger;
 public class NamingContextListener
     implements LifecycleListener, ContainerListener, PropertyChangeListener {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "Creation of the naming context failed: {0}",
-        level = "WARNING"
-    )
-    public static final String CREATION_NAMING_CONTEXT_FAILED = "AS-WEB-CORE-00120";
-
-    @LogMessageInfo(
-        message = "Failed to bind object: {0}",
-        level = "WARNING"
-    )
-    public static final String BIND_OBJECT_FAILED = "AS-WEB-CORE-00121";
-
-    @LogMessageInfo(
-        message = "Environment entry {0} has an invalid type",
-        level = "WARNING"
-    )
-    public static final String ENV_ENTRY_INVALID_TYPE = "AS-WEB-CORE-00122";
-
-    @LogMessageInfo(
-        message = "Environment entry {0} has an invalid value",
-        level = "WARNING"
-    )
-    public static final String ENV_ENTRY_INVALID_VALUE = "AS-WEB-CORE-00123";
-
-    @LogMessageInfo(
-        message = "Failed to unbind object: {0}",
-        level = "WARNING"
-    )
-    public static final String UNBIND_OBJECT_FAILED = "AS-WEB-CORE-00124";
 
 
 
@@ -286,7 +256,7 @@ public class NamingContextListener
             try {
                 createNamingContext();
             } catch (NamingException e) {
-                String msg = MessageFormat.format(rb.getString(CREATION_NAMING_CONTEXT_FAILED), e);
+                String msg = MessageFormat.format(rb.getString(LogFacade.CREATION_NAMING_CONTEXT_FAILED), e);
                 log(msg);
             }
 			
@@ -301,7 +271,7 @@ public class NamingContextListener
                         (container, container, 
                          ((Container) container).getLoader().getClassLoader());
                 } catch (NamingException e) {
-                    String msg = MessageFormat.format(rb.getString(BIND_OBJECT_FAILED), e);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
                     log(msg);
                 }
             }
@@ -314,7 +284,7 @@ public class NamingContextListener
                         (container, container, 
                          this.getClass().getClassLoader());
                 } catch (NamingException e) {
-                    String msg = MessageFormat.format(rb.getString(BIND_OBJECT_FAILED), e);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
                     log(msg);
                 }
                 if (container instanceof StandardServer) {
@@ -745,7 +715,7 @@ public class NamingContextListener
                 addAdditionalParameters
                     (namingResources, ref, "UserTransaction");
             } catch (NamingException e) {
-                String msg = MessageFormat.format(rb.getString(BIND_OBJECT_FAILED), e);
+                String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
                 log(msg);
             }
         }
@@ -756,7 +726,7 @@ public class NamingContextListener
                 compCtx.bind("Resources", 
                              ((Container) container).getResources());
             } catch (NamingException e) {
-                String msg = MessageFormat.format(rb.getString(BIND_OBJECT_FAILED), e);
+                String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
                 log(msg);
             }
         }
@@ -778,7 +748,7 @@ public class NamingContextListener
             createSubcontexts(envCtx, ejb.getName());
             envCtx.bind(ejb.getName(), ref);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(BIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -846,14 +816,14 @@ public class NamingContextListener
                     }
                 }
             } else {
-                String msg = MessageFormat.format(rb.getString(ENV_ENTRY_INVALID_TYPE), env.getName());
+                String msg = MessageFormat.format(rb.getString(LogFacade.ENV_ENTRY_INVALID_TYPE), env.getName());
                 log(msg);
             }
         } catch (NumberFormatException e) {
-            String msg = MessageFormat.format(rb.getString(ENV_ENTRY_INVALID_VALUE), env.getName());
+            String msg = MessageFormat.format(rb.getString(LogFacade.ENV_ENTRY_INVALID_VALUE), env.getName());
             log(msg);
         } catch (IllegalArgumentException e) {
-            String msg = MessageFormat.format(rb.getString(ENV_ENTRY_INVALID_VALUE), env.getName());
+            String msg = MessageFormat.format(rb.getString(LogFacade.ENV_ENTRY_INVALID_VALUE), env.getName());
             log(msg);
         }
 
@@ -865,7 +835,7 @@ public class NamingContextListener
                 createSubcontexts(envCtx, env.getName());
                 envCtx.bind(env.getName(), value);
             } catch (NamingException e) {
-                String msg = MessageFormat.format(rb.getString(ENV_ENTRY_INVALID_VALUE), env.getName());
+                String msg = MessageFormat.format(rb.getString(LogFacade.ENV_ENTRY_INVALID_VALUE), env.getName());
                 log(msg);
             }
         }
@@ -903,7 +873,7 @@ public class NamingContextListener
             createSubcontexts(envCtx, resource.getName());
             envCtx.bind(resource.getName(), ref);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(BIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -925,7 +895,7 @@ public class NamingContextListener
             createSubcontexts(envCtx, name);
             envCtx.bind(name, ref);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(BIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -949,7 +919,7 @@ public class NamingContextListener
             createSubcontexts(envCtx, resourceLink.getName());
             envCtx.bind(resourceLink.getName(), ref);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(BIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -964,7 +934,7 @@ public class NamingContextListener
         try {
             envCtx.unbind(name);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(UNBIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -979,7 +949,7 @@ public class NamingContextListener
         try {
             envCtx.unbind(name);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(UNBIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -994,7 +964,7 @@ public class NamingContextListener
         try {
             envCtx.unbind(name);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(UNBIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -1009,7 +979,7 @@ public class NamingContextListener
         try {
             envCtx.unbind(name);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(UNBIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -1024,7 +994,7 @@ public class NamingContextListener
         try {
             envCtx.unbind(name);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(UNBIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 
@@ -1039,7 +1009,7 @@ public class NamingContextListener
         try {
             envCtx.unbind(name);
         } catch (NamingException e) {
-            String msg = MessageFormat.format(rb.getString(UNBIND_OBJECT_FAILED), e);
+            String msg = MessageFormat.format(rb.getString(LogFacade.BIND_OBJECT_FAILED), e);
             log(msg);
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,7 +76,8 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
     public final static String SCHEMA_ID_24 = "web-app_2_4.xsd";
     public final static String SCHEMA_ID_25 = "web-app_2_5.xsd";
     public final static String SCHEMA_ID_30 = "web-app_3_0.xsd";
-    public final static String SCHEMA_ID = "web-app_3_1.xsd";
+    public final static String SCHEMA_ID_31 = "web-app_3_1.xsd";
+    public final static String SCHEMA_ID = "web-app_4_0.xsd";
     private final static List<String> systemIDs = initSystemIDs();
 
 
@@ -86,6 +87,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         systemIDs.add(SCHEMA_ID_24);
         systemIDs.add(SCHEMA_ID_25);
         systemIDs.add(SCHEMA_ID_30);
+        systemIDs.add(SCHEMA_ID_31);
         return Collections.unmodifiableList(systemIDs);
     }
     
@@ -144,6 +146,9 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         if (TagNames.MODULE_NAME.equals(element.getQName())) {
             WebBundleDescriptor bundleDesc = getDescriptor();
             bundleDesc.getModuleDescriptor().setModuleName(value);
+        } else if (WebTagNames.DEFAULT_CONTEXT_PATH.equals(element.getQName())) {
+            WebBundleDescriptor bundleDesc = getDescriptor();
+            bundleDesc.setContextRoot(value);
         } else {
             super.setElementValue(element, value);
         }

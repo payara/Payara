@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
+
 
 /** ConstraintField class represents a single Field and constraints on its 
  *  values; Field name and its scope are inherited from the Field class. 
@@ -58,27 +59,7 @@ public class ConstraintField extends Field {
         "session.id"
     };
 
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "The constraint field {0} is not found in the scope {1}; returning cache-on-match-failure: {2}",
-            level = "FINE")
-    private static final String CONSTRAINT_FIELD_NOT_FOUND = "AS-WEB-GLUE-00012";
-
-    @LogMessageInfo(
-            message = "The constraint field {0} value = {1} is found in scope {2}; returning cache-on-match: {3}",
-            level = "FINE")
-    private static final String CONSTRAINT_FIELD_FOUND = "AS-WEB-GLUE-00013";
-
-    @LogMessageInfo(
-            message = "The constraint field {0} value = {1} is found in scope {2}; and matches with a value {3}; returning cache-on-match: {4}",
-            level = "FINE")
-    private static final String CONSTRAINT_FIELD_MATCH = "AS-WEB-GLUE-00014";
-
-    @LogMessageInfo(
-            message = "The constraint field {0} value = {1} is found in scope {2}; but didn't match any of the value constraints; returning cache-on-match-failure = {3}",
-            level = "FINE")
-    private static final String CONSTRAINT_FIELD_NOT_MATCH = "AS-WEB-GLUE-00015";
+    private static final Logger _logger = LogFacade.getLogger();
 
     // whether to cache if there was a match
     boolean cacheOnMatch = true;
@@ -168,14 +149,14 @@ public class ConstraintField extends Field {
         if (value == null) {
             // the field is not present in the request
             if (isFine) {
-                _logger.log(Level.FINE, CONSTRAINT_FIELD_NOT_FOUND,
+                _logger.log(Level.FINE, LogFacade.CONSTRAINT_FIELD_NOT_FOUND,
                         new Object[] {name, SCOPE_NAMES[scope], cacheOnMatchFailure});
             }
             return cacheOnMatchFailure;
         } else if (constraints.length == 0) {
             // the field is present but has no value constraints
             if (isFine) {
-                _logger.log(Level.FINE, CONSTRAINT_FIELD_FOUND,
+                _logger.log(Level.FINE, LogFacade.CONSTRAINT_FIELD_FOUND,
                         new Object[] {name, value.toString(), SCOPE_NAMES[scope], cacheOnMatch});
             }
             return cacheOnMatch;
@@ -188,7 +169,7 @@ public class ConstraintField extends Field {
             // one of the values matched
             if (c.matches(value)) {
                 if (isFine) {
-                    _logger.log(Level.FINE, CONSTRAINT_FIELD_MATCH,
+                    _logger.log(Level.FINE, LogFacade.CONSTRAINT_FIELD_MATCH,
                             new Object[] {name, value.toString(), SCOPE_NAMES[scope], cacheOnMatch});
                 }
                 return cacheOnMatch;
@@ -197,7 +178,7 @@ public class ConstraintField extends Field {
 
         // none of the values matched; should we cache?
         if (isFine) {
-            _logger.log(Level.FINE, CONSTRAINT_FIELD_NOT_MATCH,
+            _logger.log(Level.FINE, LogFacade.CONSTRAINT_FIELD_NOT_MATCH,
                     new Object[] {name, value.toString(), SCOPE_NAMES[scope], cacheOnMatchFailure});
         }
         return cacheOnMatchFailure;

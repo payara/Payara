@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 import javax.servlet.http.Cookie;
 import java.io.BufferedReader;
@@ -70,19 +70,9 @@ import java.util.logging.Logger;
  */
 public class PwcCoyoteRequest extends Request {
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Unable to set request encoding [{0}] determined from sun-web.xml deployment descriptor of web application [{1}]",
-            level = "WARNING")
-    public static final String UNABLE_TO_SET_ENCODING = "AS-WEB-GLUE-00112";
-
-    @LogMessageInfo(
-            message = "POST data too large",
-            level = "WARNING")
-    public static final String POST_TOO_LARGE = "AS-WEB-GLUE-00113";
 
     // Have we already determined request encoding from sun-web.xml?
     private boolean sunWebXmlChecked = false;
@@ -210,7 +200,7 @@ public class PwcCoyoteRequest extends Request {
             try {
                 setCharacterEncoding(encoding);
             } catch (UnsupportedEncodingException uee) {
-                String msg = MessageFormat.format(rb.getString(UNABLE_TO_SET_ENCODING) , encoding, wm.getID());
+                String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_TO_SET_ENCODING) , encoding, wm.getID());
                 logger.log(Level.WARNING, msg, uee);
             }
         }
@@ -277,7 +267,7 @@ public class PwcCoyoteRequest extends Request {
         }
         int maxPostSize = ((Connector) connector).getMaxPostSize();
         if ((maxPostSize > 0) && (len > maxPostSize)) {
-            throw new IllegalStateException(rb.getString(POST_TOO_LARGE));
+            throw new IllegalStateException(rb.getString(LogFacade.POST_TOO_LARGE));
         }
 
         String encoding = null;

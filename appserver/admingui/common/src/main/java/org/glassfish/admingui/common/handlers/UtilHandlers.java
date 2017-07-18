@@ -1116,6 +1116,7 @@ public class UtilHandlers {
                 case '\\':
                 case '\'':
                 case '"':
+                case '=':
                     builder.append("\\");
                     builder.append(ch);
                     break;

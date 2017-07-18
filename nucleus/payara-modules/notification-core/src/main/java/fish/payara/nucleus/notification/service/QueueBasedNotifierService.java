@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,12 +85,27 @@ public abstract class QueueBasedNotifierService<E extends NotificationEvent,
                 TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Unregisters the service and cleans up any information stored in it
+     * This function does NOT restart the service.
+     */
     protected void reset() {
         super.reset(this);
         queue.resetQueue();
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
         }
-        initializeExecutor();
+        //initializeExecutor();
+    }
+    
+    /**
+     * Shuts down the service
+     */
+    @Override
+    public void shutdown(){
+        if (executor != null){
+            executor.shutdown();
+        }
+        reset();
     }
 }

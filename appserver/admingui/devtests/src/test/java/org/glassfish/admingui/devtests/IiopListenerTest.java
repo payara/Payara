@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -81,7 +81,7 @@ public class IiopListenerTest extends BaseSeleniumTestClass {
         // access the SSL Page
         clickAndWait("propertyForm:iiopTab:sslEdit", TRIGGER_EDIT_IIOP_SSL);
         setFieldValue("propertyForm:propertySheet:propertySheetSection:CertNicknameProp:CertNickname", certName);
-        clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_NEW_VALUES_SAVED);
+        clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
         assertEquals(certName, getFieldValue("propertyForm:propertySheet:propertySheetSection:CertNicknameProp:CertNickname"));
 
         clickAndWait("propertyForm:propertyContentPage:topButtons:cancelButton", TRIGGER_IIOP_LISTENERS);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,6 @@ package org.apache.catalina.startup;
 
 
 import org.apache.catalina.core.*;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.apache.catalina.*;
 import org.apache.catalina.loader.WebappLoader;
@@ -140,74 +139,9 @@ import java.util.logging.Logger;
 
 public class Embedded  extends StandardService {
 
-    protected static final Logger log = StandardServer.log;
+    protected static final Logger log = LogFacade.getLogger();
     protected static final ResourceBundle rb = log.getResourceBundle();
 
-    @LogMessageInfo(
-            message = "No engines have been defined yet",
-            level = "WARNING"
-    )
-    public static final String NO_ENGINES_DEFINED = "AS-WEB-CORE-00431";
-
-    @LogMessageInfo(
-            message = "Engine.start exception",
-            level = "SEVERE",
-            cause = "Could not prepare for the beginning of active use of " +
-                    "the public methods of this component.",
-            action = "Verify if start() be called before any of the public " +
-                     "methods of this component are utilized"
-    )
-    public static final String ENGINE_START_EXCEPTION = "AS-WEB-CORE-00432";
-
-    @LogMessageInfo(
-            message = "Couldn't load SSL server socket factory.",
-            level = "SEVERE",
-            cause = "Could not instantiate ServerSocketFactory",
-            action = "Verify access permission to this class"
-    )
-    public static final String COULD_NOT_LOAD_SSL_SERVER_SOCKET_FACTORY_EXCEPTION = "AS-WEB-CORE-00433";
-
-    @LogMessageInfo(
-            message = "Couldn't create connector.",
-            level = "SEVERE",
-            cause = "Could not instantiate connector",
-            action = "Verify access permission to this class"
-    )
-    public static final String COULD_NOT_CREATE_CONNECTOR_EXCEPTION = "AS-WEB-CORE-00434";
-
-    @LogMessageInfo(
-            message = "Connector.stop",
-            level = "SEVERE",
-            cause = "Could not remove the specified Connector from the set associated from this Service",
-            action = "Verify if connector has already been stopped or removed"
-    )
-    public static final String CONNECTOR_STOP_EXCEPTION = "AS-WEB-CORE-00435";
-
-    @LogMessageInfo(
-            message = "Engine.stop exception",
-            level = "SEVERE",
-            cause = "Could not terminate the active use of the public methods of this component",
-            action = "Verify if stop() is the last one called on a given instance of this component"
-    )
-    public static final String  ENGINE_STOP_EXCEPTION = "AS-WEB-CORE-00436";
-
-    @LogMessageInfo(
-            message = "Specified Authenticator is not a Valve",
-            level = "WARNING"
-    )
-    public static final String AUTH_IS_NOT_VALVE_EXCEPTION = "AS-WEB-CORE-00437";
-
-    @LogMessageInfo(
-            message = "Embedded service has already been started",
-            level = "WARNING"
-    )
-    public static final String SERVICE_BEEN_STARTED_EXCEPTION = "AS-WEB-CORE-00438";
-
-    @LogMessageInfo(
-            message = "Embedded service has not yet been started",
-            level = "WARNING"
-    )
-    public static final String SERVICE_NOT_BEEN_STARTED_EXCEPTION = "AS-WEB-CORE-00439";
     // ----------------------------------------------------------- Constructors
 
 
@@ -451,7 +385,7 @@ public class Embedded  extends StandardService {
         // Make sure we have a Container to send requests to
         if (engines.length < 1)
             throw new IllegalStateException
-                (rb.getString(NO_ENGINES_DEFINED));
+                (rb.getString(LogFacade.NO_ENGINES_DEFINED));
 
         /*
          * Add the connector. This will set the connector's container to the
@@ -483,7 +417,7 @@ public class Embedded  extends StandardService {
             try {
                 ((Lifecycle) engine).start();
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, ENGINE_START_EXCEPTION, e);
+                log.log(Level.SEVERE, LogFacade.ENGINE_START_EXCEPTION, e);
             }
         }
 
@@ -580,12 +514,12 @@ public class Embedded  extends StandardService {
                         serverSocketFactoryClass.newInstance();
                     connector.setFactory(factory);
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, COULD_NOT_LOAD_SSL_SERVER_SOCKET_FACTORY_EXCEPTION);
+                    log.log(Level.SEVERE, LogFacade.COULD_NOT_LOAD_SSL_SERVER_SOCKET_FACTORY_EXCEPTION);
                 }
             }
 
         } catch (Exception e) {
-            log.log(Level.SEVERE, COULD_NOT_CREATE_CONNECTOR_EXCEPTION);
+            log.log(Level.SEVERE, LogFacade.COULD_NOT_CREATE_CONNECTOR_EXCEPTION);
         }
 
         return (connector);
@@ -815,7 +749,7 @@ public class Embedded  extends StandardService {
             try{
                 removeConnector(connectors[n]);
             } catch (Exception ex){
-                log.log(Level.SEVERE, CONNECTOR_STOP_EXCEPTION, ex);
+                log.log(Level.SEVERE, LogFacade.CONNECTOR_STOP_EXCEPTION, ex);
             }
             // END SJSAS 6231069
         }
@@ -827,7 +761,7 @@ public class Embedded  extends StandardService {
             try {
                 ((Lifecycle) engine).stop();
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, ENGINE_STOP_EXCEPTION, e);
+                log.log(Level.SEVERE,LogFacade. ENGINE_STOP_EXCEPTION, e);
             }
         }
 
@@ -902,7 +836,7 @@ public class Embedded  extends StandardService {
     public synchronized void addAuthenticator(Authenticator authenticator,
                                  String loginMethod) {
         if ((authenticator != null) && !(authenticator instanceof GlassFishValve)) {
-            throw new IllegalArgumentException(rb.getString(AUTH_IS_NOT_VALVE_EXCEPTION));
+            throw new IllegalArgumentException(rb.getString(LogFacade.AUTH_IS_NOT_VALVE_EXCEPTION));
         }
         if (authenticators == null) {
             authenticators = new HashMap<String, Authenticator>();
@@ -977,7 +911,7 @@ public class Embedded  extends StandardService {
         // Validate and update our current component state
         if (started)
             throw new LifecycleException
-                (rb.getString(SERVICE_BEEN_STARTED_EXCEPTION));
+                (rb.getString(LogFacade.SERVICE_BEEN_STARTED_EXCEPTION));
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
         initialized = true;
@@ -1014,7 +948,7 @@ public class Embedded  extends StandardService {
         // Validate and update our current component state
         if (!started)
             throw new LifecycleException
-                (rb.getString(SERVICE_NOT_BEEN_STARTED_EXCEPTION));
+                (rb.getString(LogFacade.SERVICE_NOT_BEEN_STARTED_EXCEPTION));
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 

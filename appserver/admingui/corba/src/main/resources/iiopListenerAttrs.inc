@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- iiopListener.inc  -->
@@ -45,7 +46,7 @@
 <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
     <!-- General Settings section -->
-    <sun:propertySheetSection id="generalSettingsSetion">
+    <sun:propertySheetSection id="generalSettingsSection">
         <sun:property id="IiopNameProp"  rendered="#{pageSession.edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Name}" >
             <sun:staticText id="IiopName" text="#{pageSession.valueMap['id']}" />
         </sun:property>
@@ -59,11 +60,13 @@
             <sun:textField id="ListenerPort" styleClass="required port" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.iiopListener.listPort']}" text="#{pageSession.valueMap['port']}" required="#{true}" />
         </sun:property>
         <sun:property id="ListenerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_corba.iiopListener.listenerLabel}" helpText="$resource{i18n_corba.iiopListener.listenerHelp}" >
-            <sun:checkbox label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['enabled']}" selectedValue="true" />
+            <sun:checkbox id="listenerEnabled" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['enabled']}" selectedValue="true" />
         </sun:property>
         <sun:property id="SecurityProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_corba.iiopListener.securityEnable}" >
             <sun:checkbox id="Security" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['securityEnabled']}" selectedValue="true" />
         </sun:property>
+        <sun:property id="LazyInitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_corba.iiopListener.lazyInitLabel}" helpText="$resource{i18n_corba.iiopListener.lazyInitHelp}" >
+            <sun:checkbox id="lazyInitEnabled" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['lazyInit']}" selectedValue="true" />
+        </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>    
-

@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.admin.cli;
@@ -74,6 +76,8 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
 
     private String mailHost = null;
     private String mailUser = null;
+    private String mailPassword = null;
+    private String auth = null;
     private String fromAddress = null;
     private String jndiName = null;
     private String storeProtocol = null;
@@ -175,6 +179,8 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
         newResource.setJndiName(jndiName);
         newResource.setFrom(fromAddress);
         newResource.setUser(mailUser);
+        newResource.setPassword(mailPassword);
+        newResource.setAuth(auth);
         newResource.setHost(mailHost);
         newResource.setEnabled(enabled);
         newResource.setStoreProtocol(storeProtocol);
@@ -201,6 +207,8 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
         jndiName = (String) attributes.get(JNDI_NAME);
         mailHost = (String) attributes.get(MAIL_HOST);
         mailUser = (String) attributes.get(MAIL_USER);
+        mailPassword = (String) attributes.get(MAIL_PASSWORD);
+        auth = (String) attributes.get(MAIL_AUTH);
         fromAddress = (String) attributes.get(MAIL_FROM_ADDRESS);
         storeProtocol = (String) attributes.get(MAIL_STORE_PROTO);
         storeProtocolClass = (String) attributes.get(MAIL_STORE_PROTO_CLASS);

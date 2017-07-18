@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,7 +108,7 @@ public class CommandThreadPool implements PostConstruct {
                     for (NetworkListener ls : lss) {
                         if (ServerTags.ADMIN_LISTENER_ID.equals(ls.getName())) {
                             if(ls.findThreadPool() != null) {
-                                poolSize = Integer.valueOf(ls.findThreadPool().getMaxThreadPoolSize());
+                                poolSize = Integer.parseInt(ls.findThreadPool().getMaxThreadPoolSize());
                             }
                         }
                     }

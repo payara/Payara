@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,10 +59,10 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -88,7 +88,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class DeleteProtocolFinder implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name = "name", primary = true)
     String name;
@@ -115,7 +115,7 @@ public class DeleteProtocolFinder implements AdminCommand {
         try {
             final Protocols protocols = config.getNetworkConfig().getProtocols();
             final Protocol protocol = protocols.findProtocol(protocolName);
-            validate(protocol, CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, protocolName);
+            validate(protocol, LogFacade.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, protocolName);
             PortUnification pu = getPortUnification(protocol);
             ConfigSupport.apply(new ConfigCode() {
                 @Override
@@ -149,7 +149,7 @@ public class DeleteProtocolFinder implements AdminCommand {
             e.printStackTrace();
             report.setMessage(
                     MessageFormat.format(
-                            rb.getString(DeleteProtocolFilter.DELETE_FAIL),
+                            rb.getString(LogFacade.DELETE_FAIL),
                             name,
                             e.getMessage() == null ? "No reason given" : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -164,7 +164,7 @@ public class DeleteProtocolFinder implements AdminCommand {
         if ((pu == null) && (report != null)) {
             report.setMessage(
                     MessageFormat.format(
-                            rb.getString(DeleteProtocolFilter.NOT_FOUND),
+                            rb.getString(LogFacade.NOT_FOUND),
                             "port-unification",
                             protocol.getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

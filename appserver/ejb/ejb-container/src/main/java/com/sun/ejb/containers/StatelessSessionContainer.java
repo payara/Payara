@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -772,14 +772,17 @@ public class StatelessSessionContainer
 
     private static class PoolProperties {
         int maxPoolSize;
-        int maxWaitTimeInMillis = Integer.getInteger(String.format("fish.payara.ejb-container.%s", RuntimeTagNames.MAX_WAIT_TIME_IN_MILLIS),
-                                                     DescriptorConstants.MAX_WAIT_TIME_DEFAULT);
+        int maxWaitTimeInMillis;
         int poolIdleTimeoutInSeconds;
         int poolResizeQuantity;
         int steadyPoolSize;
 
         public PoolProperties(EjbContainer ejbContainer, BeanPoolDescriptor beanPoolDes) {
 
+            maxWaitTimeInMillis = ejbContainer.getMaxWaitTimeInMillis();
+            if(!ejbContainer.getLimitInstancesEnabled()) {
+                maxWaitTimeInMillis = -1;
+            }
             maxPoolSize = Integer.parseInt(ejbContainer.getMaxPoolSize());
             poolIdleTimeoutInSeconds = Integer.parseInt(
                 ejbContainer.getPoolIdleTimeoutInSeconds());
