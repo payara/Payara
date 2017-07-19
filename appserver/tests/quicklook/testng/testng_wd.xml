@@ -43,10 +43,10 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
  
 <suite name="QuickLookTests" verbose="2" >
-  <parameter name="admin.url" value="http://localhost:5048/__asadmin"/>
+  <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
   <parameter name="admin.user" value="admin"/>
   <parameter name="admin.password" value=""/>
-  <parameter name="admin.console.url" value="http://localhost:5048/"/>
+  <parameter name="admin.console.url" value="http://localhost:4848/"/>
   <parameter name="resources.xml.relative.path" value="admin/resources/resources.xml"/>
   <test name="admincli_tests">
         <classes>
@@ -58,7 +58,7 @@
 <!-- AMX -->
   <parameter name="amx.debug" value="true"/>
 <!-- AMX: port of the JMX RMI -->
-  <parameter name="amx.rmiport" value="5086"/>
+  <parameter name="amx.rmiport" value="8686"/>
 
 <!-- AMX -->
   <test name="amx_tests">

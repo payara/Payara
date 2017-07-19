@@ -66,40 +66,52 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Andrew Pielage
  */
-@Service (name = "asadmin-recorder")
+@Service(name = "asadmin-recorder")
 @RunLevel(StartupRunLevel.VAL)
 public class AsadminRecorderService implements EventListener {
+
     private static final List<String> FILTERED_PARAMETERS = Arrays.asList("userpassword");
-    
+
     private List<String> filteredCommands;
     private String filteredCommandsString;
-       
+
+    private List<String> prependedOptions;
+    private String prependedOptionsString;
+
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional
     AsadminRecorderConfiguration asadminRecorderConfiguration;
-    
+
     @Inject
     Events events;
-    
+
     @Inject
     ServiceLocator habitat;
-    
+
     @PostConstruct
     void postConstruct() {
         events.register(this);
         asadminRecorderConfiguration = habitat.getService(AsadminRecorderConfiguration.class);
+        splitFilteredCommands();
+        setPrependedOptions();
     }
-    
+
     @Override
-    public void event(Event event) {           
+    public void event(Event event) {
     }
-    
-    private String constructAsadminCommand(String commandName, 
-            ParameterMap parameters) {
-        
+
+    private String constructAsadminCommand(String commandName, ParameterMap parameters) {
+
         String asadminCommand = commandName;
         String mandatoryOption = "";
+
+        if (Boolean.parseBoolean(asadminRecorderConfiguration.prependEnabled()) && prependedOptions != null) {
+            for (String s : prependedOptions) {
+                asadminCommand += " " + s;
+            }
+        }
+
         for (Map.Entry<String, List<String>> parameter : parameters.entrySet()) {
             // Check for broken parameters
             if (!FILTERED_PARAMETERS.contains(parameter.getKey())) {
@@ -111,17 +123,16 @@ public class AsadminRecorderService implements EventListener {
                         if (i != (parameter.getValue().size() - 1)) {
                             mandatoryOption += " ";
                         }
-                    }    
+                    }
                 } else {
-                    asadminCommand += " --" + parameter.getKey() + "="
-                        + parameter.getValue().get(0); 
+                    asadminCommand += " --" + parameter.getKey() + "=" + parameter.getValue().get(0);
                 }
             }
         }
 
         asadminCommand += " " + mandatoryOption;
         asadminCommand += "\n";
-        
+
         return asadminCommand;
     }
 
@@ -129,64 +140,74 @@ public class AsadminRecorderService implements EventListener {
         boolean enabled = false;
         if (asadminRecorderConfiguration == null) {
             Logger.getLogger(AsadminRecorderService.class.getName()).
-                    log(Level.FINE, "No Asadmin Recorder Service configuration "
-                            + "found, it is likely missing from the domain.xml."
-                            + " Setting enabled to default of false");
+                    log(Level.FINE, "No Asadmin Recorder Service configuration found, it is likely missing from the"
+                            + " domain.xml. Setting enabled to default of false");
         } else {
             enabled = Boolean.parseBoolean(asadminRecorderConfiguration.isEnabled());
         }
         return enabled;
     }
-    
-    public void recordAsadminCommand(String commandName, 
-            ParameterMap parameters) {
+
+    public void recordAsadminCommand(String commandName, ParameterMap parameters) {
         String asadminCommand = "";
-     
-        // Initialise the string if it hasn't been yet
-        if (filteredCommandsString == null) {
-            splitFilteredCommands();
+
+        if (asadminRecorderConfiguration.getPrependedOptions() != null
+                && !prependedOptionsString.equals(asadminRecorderConfiguration.getPrependedOptions())) {
+            setPrependedOptions();
         }
-        
+
         // Check if the configuration has been updated
-        if (!filteredCommandsString.equals(asadminRecorderConfiguration.
-                getFilteredCommands())) {
+        if (!filteredCommandsString.equals(asadminRecorderConfiguration.getFilteredCommands())) {
             splitFilteredCommands();
         }
-        
+
         if (Boolean.parseBoolean(asadminRecorderConfiguration.filterCommands())) {
             if (!(filteredCommands.contains(commandName))) {
                 boolean regexMatched = false;
-                
+
                 // Check regular expressions
                 for (String filteredCommand : filteredCommands) {
                     if (commandName.matches(filteredCommand)) {
                         regexMatched = true;
                     }
                 }
-                
+
                 if (!regexMatched) {
-                    asadminCommand = constructAsadminCommand(commandName, 
-                            parameters);
+                    asadminCommand = constructAsadminCommand(commandName, parameters);
                 }
             }
         } else {
             asadminCommand = constructAsadminCommand(commandName, parameters);
         }
-        
+
         // Append to file
         try (Writer writer = new BufferedWriter(new FileWriter(new File(
                 asadminRecorderConfiguration.getOutputLocation()), true))) {
             writer.write(asadminCommand);
         } catch (IOException ex) {
-            Logger.getLogger(AsadminRecorderService.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            Logger.getLogger(AsadminRecorderService.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     private void splitFilteredCommands() {
-        filteredCommandsString = asadminRecorderConfiguration.
-                getFilteredCommands();
-        filteredCommands = new ArrayList<>(Arrays.asList(filteredCommandsString.
-                split(",")));
-    }         
+        filteredCommandsString = asadminRecorderConfiguration.getFilteredCommands();
+        filteredCommands = new ArrayList<>(Arrays.asList(filteredCommandsString.split(",")));
+    }
+
+    private void setPrependedOptions() {
+        prependedOptionsString = asadminRecorderConfiguration.getPrependedOptions();
+        if (prependedOptionsString != null) {
+            prependedOptions = new ArrayList<>(Arrays.asList(prependedOptionsString.split(",")));
+            for (String option : prependedOptions) {
+                // As some options have parameters and single character options use one hyphen, check the size of the first 
+                // option, ignorning any parameters present by splitting on " " or "=".
+                String optionWithoutParameters = option.split("( |=)")[0];
+                if (optionWithoutParameters.length() == 1) {
+                    prependedOptions.set(prependedOptions.indexOf(option), "-" + option);
+                } else {
+                    prependedOptions.set(prependedOptions.indexOf(option), "--" + option);
+                }
+            }
+        }
+    }
 }

@@ -61,7 +61,7 @@
 
     <property file="../build.properties"/>
 
-    <property name="server.log.path" location="${glassfish.home}/domains/domain2/logs/server.log"/>
+    <property name="server.log.path" location="${glassfish.home}/domains/test-domain/logs/server.log"/>
     <property name="log.msg.excl.path" location="gfproject/log_msg_excl.txt"/>
     <tempfile property="log.msg.tmp.path" destdir="../test-output" prefix="server_log_filtered" deleteonexit="true"/>
 
