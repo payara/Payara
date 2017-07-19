@@ -52,7 +52,7 @@ public class ExistStatusTests {
     @Test
     public void createJDBCPool() throws Exception {
 //        System.out.println(ASADMIN);
-        cmd = ASADMIN + " create-jdbc-connection-pool --port 5048 " +
+        cmd = ASADMIN + " create-jdbc-connection-pool --port 4848 " +
             "--datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property " +
             "DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:Password=APP:User=APP QLJdbcPool";
 
@@ -63,16 +63,16 @@ public class ExistStatusTests {
     @Test(dependsOnMethods = { "createJDBCPool" })
     public void pingJDBCPool() throws Exception {
 //      extra ping of DerbyPool to create sun-appserv-samples DB.
-        cmd = ASADMIN + " ping-connection-pool --port 5048 DerbyPool";
+        cmd = ASADMIN + " ping-connection-pool --port 4848 DerbyPool";
         RtExec.execute(cmd);
-        cmd1 = ASADMIN + " ping-connection-pool --port 5048 QLJdbcPool";
+        cmd1 = ASADMIN + " ping-connection-pool --port 4848 QLJdbcPool";
         execReturn = RtExec.execute(cmd1);
         Assert.assertEquals(execReturn, true, "Ping jdbc connection pool failed ...");
     }
 
     @Test(dependsOnMethods = { "pingJDBCPool" })
     public void deleteJDBCPool() throws Exception {
-        cmd = ASADMIN + " delete-jdbc-connection-pool --port 5048 QLJdbcPool";
+        cmd = ASADMIN + " delete-jdbc-connection-pool --port 4848 QLJdbcPool";
         execReturn = RtExec.execute(cmd);
         Assert.assertEquals(execReturn, true, "Delete jdbc connection pool failed ...");
     }
