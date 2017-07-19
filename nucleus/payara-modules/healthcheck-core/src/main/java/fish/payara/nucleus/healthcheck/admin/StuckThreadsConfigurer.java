@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,50 +40,54 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
+import fish.payara.nucleus.healthcheck.preliminary.StuckThreadsHealthCheck;
+import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
-
-import javax.inject.Inject;
-import java.beans.PropertyVetoException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.validation.constraints.Min;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- * Admin command to enable/disable specific health check service given with its
- * name
- *
- * @author mertcaliskan
+ * @since 4.1.2.173
+ * @author jonathan coustick
  */
-@Service(name = "healthcheck-configure-service")
+@Service(name = "healthcheck-stuckthreads-configure")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("healthcheck.configure.service")
-@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
+@I18n("healthcheck.stuckthreads.configure")
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
-            path = "healthcheck-configure-service",
-            description = "Enables/Disables Health Check Service Specified With Name")
+            path = "healthcheck-stuckthreads-configure",
+            description = "Configures the Stuck Threads Checker")
 })
-public class HealthCheckServiceConfigurer implements AdminCommand {
+public class StuckThreadsConfigurer implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
 
@@ -102,95 +106,76 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
 
+    @Param(name = "dynamic", optional = true, defaultValue = "false")
+    private Boolean dynamic;
+    
     @Param(name = "time", optional = true)
     @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "unit", optional = true, 
-            acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
+    @Param(name = "unit", optional = true, acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String unit;
-
-    @Param(name = "serviceName", optional = false, 
-            acceptableValues = "healthcheck-cpu,healthcheck-gc,healthcheck-cpool,healthcheck-heap,healthcheck-threads,"
-                    + "healthcheck-machinemem,healthcheck-stuckthreads")
-    private String serviceName;
-
-    @Param(name = "name", optional = true)
-    @Deprecated
-    private String name;
+    
+    @Param(name="threshold", optional=true)
+    @Min(value = 1, message = "Threshold length must be 1 or more")
+    private String threshold;
+    
+    @Param(name = "thresholdUnit", optional = true, acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
+    private String thresholdUnit;
 
     @Param(name = "checkerName", optional = true)
     private String checkerName;
     
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    protected Boolean dynamic;
-
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
     
     @Inject
     ServerEnvironment server;
-
+    
+    
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport actionReport = context.getActionReport();
-        Properties extraProperties = actionReport.getExtraProperties();
-        if (extraProperties == null) {
-            extraProperties = new Properties();
-            actionReport.setExtraProperties(extraProperties);
-        }
-
         Config config = targetUtil.getConfig(target);
-
-        final BaseHealthCheck service = habitat.getService(BaseHealthCheck.class, serviceName);
+        StuckThreadsHealthCheck service = habitat.getService(StuckThreadsHealthCheck.class);
+        final ActionReport actionReport = context.getActionReport();
         if (service == null) {
-            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.status.error",
-                    "Service with name {0} could not be found.", serviceName));
+            actionReport.appendMessage(strings.getLocalString("healthcheck.stuckthreads.configure.status.error",
+                    "Stuck Threads Checker Service could not be found"));
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
-        // Warn about deprecated option
-        if (name != null) {
-            actionReport.appendMessage("\n--name parameter is decremented, please begin using the --checkerName option\n");
-        }
         
-        HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
-        final Checker checker = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
-
         try {
-            final Checker[] createdChecker = {null};
-            if (checker == null) {
+            HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
+            StuckThreadsChecker stuckThreadConfiguration = healthCheckServiceConfiguration.getCheckerByType(StuckThreadsChecker.class);
+            if (stuckThreadConfiguration == null) {
                 ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
                     @Override
                     public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
-                        Checker checkerProxy = (Checker) healthCheckServiceConfigurationProxy.createChild(service.getCheckerType());
+                        StuckThreadsChecker checkerProxy = healthCheckServiceConfigurationProxy.createChild(StuckThreadsChecker.class);
                         applyValues(checkerProxy);
                         healthCheckServiceConfigurationProxy.getCheckerList().add(checkerProxy);
-                        createdChecker[0] = checkerProxy;
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return healthCheckServiceConfigurationProxy;
                     }
                 }, healthCheckServiceConfiguration);
-            }
-            else {
-                createdChecker[0] = checker;
-                ConfigSupport.apply(new SingleConfigCode<Checker>() {
+            } else {
+                ConfigSupport.apply(new SingleConfigCode<StuckThreadsChecker>() {
                     @Override
-                    public Object run(final Checker checkerProxy) throws
+                    public Object run(final StuckThreadsChecker hoggingThreadConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
-                        applyValues(checkerProxy);
+                        applyValues(hoggingThreadConfigurationProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return checkerProxy;
+                        return hoggingThreadConfigurationProxy;
                     }
-                }, checker);
+                }, stuckThreadConfiguration);
             }
-
+            
             if (dynamic) {
                 if (server.isDas()) {
                     if (targetUtil.getConfig(target).isDas()) {
-                        Checker checkerByType = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
+                        StuckThreadsChecker checkerByType = healthCheckServiceConfiguration.getCheckerByType(StuckThreadsChecker.class);
                         service.setOptions(service.constructOptions(checkerByType));
                         healthCheckService.registerCheck(checkerByType.getName(), service);
                         healthCheckService.reboot();
@@ -198,37 +183,46 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
                 } else {
                     // it implicitly targetted to us as we are not the DAS
                     // restart the service
-                    Checker checkerByType = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
-                    service.setOptions(service.constructOptions(checkerByType));
+                    StuckThreadsChecker checkerByType = healthCheckServiceConfiguration.getCheckerByType(StuckThreadsChecker.class);
+                    service.setOptions(service.constructOptions(stuckThreadConfiguration));
                     healthCheckService.registerCheck(checkerByType.getName(), service);
                     healthCheckService.reboot();
                 }
             }
-        }
-        catch (TransactionFailure ex) {
+
+        } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-    }
 
-    private void applyValues(Checker checkerProxy) throws PropertyVetoException {
+    }
+    
+    private void applyValues(StuckThreadsChecker checkerProxy) throws PropertyVetoException {
         if (enabled != null) {
             checkerProxy.setEnabled(enabled.toString());
-        }
-        if (time != null) {
-            checkerProxy.setTime(time);
-        }
-        if (unit != null) {
-            checkerProxy.setUnit(unit);
-        }
-        if (name != null) {
-            checkerProxy.setName(name);
         }
         
         // Take priority over deprecated parameter
         if (checkerName != null) {
             checkerProxy.setName(checkerName);
         }
+        
+        if (time != null) {
+            checkerProxy.setTime(time);
+        }
+        
+        if (unit != null) {
+            checkerProxy.setUnit(unit);
+        }
+        
+        if (threshold != null){
+            checkerProxy.setThreshhold(threshold);
+        }
+        
+        if (thresholdUnit != null){
+            checkerProxy.setThreshholdTimeUnit(thresholdUnit);
+        }
     }
+    
 }
