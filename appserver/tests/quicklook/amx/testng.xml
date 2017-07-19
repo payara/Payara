@@ -44,7 +44,7 @@
  
 <suite name="QuickLookTests" verbose="2" >
   <parameter name="amx.debug" value="true"/>
-  <parameter name="amx.rmiport" value="5086"/>
+  <parameter name="amx.rmiport" value="8686"/>
   <parameter name="resources.xml.relative.path" value="resources/resources.xml"/>
   
   <test name="amx_tests">
