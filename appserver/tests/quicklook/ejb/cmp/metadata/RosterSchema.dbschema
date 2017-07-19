@@ -44,7 +44,7 @@
 <OBJECT CLASS="com.sun.forte4j.modules.dbmodel.SchemaElement" ID="com.sun.forte4j.modules.dbmodel.SchemaElement335787804">
   <versionNo>2</versionNo>
   <impl>
-    <OBJECT CLASS="com.sun.forte4j.modules.dbmodel.jdbcimpl.SchemaElementImpl" ID="com.sun.forte4j.modules.dbmodel.jdbcimpl.SchemaElementImpl4508150">
+    <OBJECT CLASS="com.sun.forte4j.modules.dbmodel.jdbcimpl.SchemaElementImpl" ID="com.sun.forte4j.modules.dbmodel.jdbcimpl.SchemaElementImpl4808150">
       <element>
         <OBJECT REFERENCE="com.sun.forte4j.modules.dbmodel.SchemaElement335787804"/>
       </element>
@@ -1240,7 +1240,7 @@
             </ARRAY>
           </_template>
           <owner>
-            <OBJECT REFERENCE="com.sun.forte4j.modules.dbmodel.jdbcimpl.SchemaElementImpl4508150"/>
+            <OBJECT REFERENCE="com.sun.forte4j.modules.dbmodel.jdbcimpl.SchemaElementImpl4808150"/>
           </owner>
         </OBJECT>
       </tables>
