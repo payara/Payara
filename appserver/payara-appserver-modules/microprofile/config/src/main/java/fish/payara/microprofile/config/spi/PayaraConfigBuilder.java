@@ -82,7 +82,8 @@ public class PayaraConfigBuilder implements ConfigBuilder {
 
     @Override
     public ConfigBuilder addDiscoveredConverters() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        converters.addAll(resolver.getDiscoveredConverters(resolver.getAppInfo(loader)));
+        return this;
     }
 
     @Override

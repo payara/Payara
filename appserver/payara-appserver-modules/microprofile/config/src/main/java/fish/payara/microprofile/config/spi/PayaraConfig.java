@@ -50,6 +50,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Priority;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
 

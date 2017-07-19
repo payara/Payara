@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
@@ -55,7 +56,7 @@ public class URLConverter implements Converter<URL> {
 
     @Override
     public URL convert(String value) {
-        if (value == null) return null;
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         
         try {
             URL result = new URL(value);

@@ -42,6 +42,7 @@ package fish.payara.microprofile.config.converters;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
 import javax.annotation.Priority;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
@@ -53,7 +54,7 @@ public class OffsetTimeConverter implements Converter<OffsetTime> {
 
     @Override
     public OffsetTime convert(String value) {
-        if (value == null) return null;
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         try {
             return OffsetTime.parse(value);
         }catch (DateTimeParseException nfe) {

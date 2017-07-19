@@ -42,6 +42,7 @@ package fish.payara.microprofile.config.converters;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import javax.annotation.Priority;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
@@ -53,7 +54,7 @@ public class InstantConverter implements Converter<Instant> {
 
     @Override
     public Instant convert(String value) {
-        if (value == null) return null;
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         try {
             return Instant.parse(value);
         }catch (DateTimeParseException nfe) {

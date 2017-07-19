@@ -40,6 +40,7 @@
 package fish.payara.microprofile.config.converters;
 
 import javax.annotation.Priority;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
@@ -51,7 +52,7 @@ public class LongConverter implements Converter<Long> {
 
     @Override
     public Long convert(String value) {
-        if (value == null) return null;
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         try {
             return Long.parseLong(value);
         }catch (NumberFormatException nfe) {

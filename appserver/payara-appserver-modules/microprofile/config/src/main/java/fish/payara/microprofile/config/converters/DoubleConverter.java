@@ -40,6 +40,7 @@
 package fish.payara.microprofile.config.converters;
 
 import javax.annotation.Priority;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
@@ -51,7 +52,7 @@ public class DoubleConverter implements Converter<Double> {
 
     @Override
     public Double convert(String value) {
-        if (value == null) return null;
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         try {
             return Double.parseDouble(value);
         }catch (NumberFormatException nfe) {

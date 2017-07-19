@@ -281,7 +281,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return sources;
     }
 
-    private List<Converter> getDefaultConverters() {
+    List<Converter> getDefaultConverters() {
         LinkedList<Converter> result = new LinkedList<>();
         result.add(new BooleanConverter());
         result.add(new IntegerConverter());
@@ -301,7 +301,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         
     }
 
-    private List<Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
+    List<Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
         LinkedList<Converter> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, LinkedList.class);
         if (converters == null) {
             converters = new LinkedList<>();
@@ -310,7 +310,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             for (Converter converter : serviceLoader) {
                 converters.add(converter);
             }
-            appInfo.addTransientAppMetaData(CUSTOM_SOURCES_KEY, converters);
+            appInfo.addTransientAppMetaData(CUSTOM_CONVERTERS_KEY, converters);
         }
         return converters;
     }

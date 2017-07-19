@@ -41,9 +41,8 @@ package fish.payara.microprofile.config.converters;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Priority;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
@@ -55,7 +54,7 @@ public class InetAddressConverter implements Converter<InetAddress> {
 
     @Override
     public InetAddress convert(String value) {
-        if (value == null) return null;
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         
         try {
             return InetAddress.getByName(value);
