@@ -56,11 +56,11 @@ public interface StuckThreadsChecker extends Checker, ThresholdDiagnosticsChecke
     void setName(String value) throws PropertyVetoException;
     
     @Attribute(defaultValue = "5", dataType = Long.class)
-    String getThresholdTime();
-    void setThreshhold(String value) throws PropertyVetoException;
+    String getThreshold();
+    void setThreshold(String value) throws PropertyVetoException;
     
     @Attribute(defaultValue = "MINUTES")
     String getThresholdTimeUnit();
-    void setThreshholdTimeUnit(String value) throws PropertyVetoException;
+    void setThresholdTimeUnit(String value) throws PropertyVetoException;
     
 }

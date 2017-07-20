@@ -44,6 +44,8 @@ import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckStuckThreadExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
+import fish.payara.nucleus.requesttracing.RequestEventStore;
+import fish.payara.nucleus.requesttracing.RequestTrace;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -51,9 +53,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -66,12 +70,15 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(11)
 public class StuckThreadsHealthCheck extends BaseHealthCheck<HealthCheckStuckThreadExecutionOptions,
         StuckThreadsChecker>{
-
-    Map<Thread,StackTraceElement[]> stackTraces;
+    
+    @Inject
+    RequestEventStore requestStore;
+    
+    @Inject
+    StuckThreadsChecker checker;
     
     @PostConstruct
     void postConstruct() {
-        stackTraces = new HashMap<Thread,StackTraceElement[]>();
         postConstruct(this, StuckThreadsChecker.class);
     }
     
@@ -92,51 +99,20 @@ public class StuckThreadsHealthCheck extends BaseHealthCheck<HealthCheckStuckThr
             }
         }
         
-        Map<Thread,StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
-        for (Thread thread: allStackTraces.keySet()){
-            thread.getState();
-            
-            if (!thread.isAlive()) {
-                //To make sure that old threads aren't held on to and are garbage collected
-                allStackTraces.remove(thread);
-            } else {
-
-                checkForStuck(thread, result);
-                
-            }
-
+        RequestTrace trace = requestStore.getTrace();
+        long time = trace.getElapsedTime();
+        long maxTime = TimeUnit.MILLISECONDS.convert(options.getTimeStuck(), options.getUnitStuck());
+        if (time > maxTime) {
+            result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread:" + trace.toString()));
         }
-        stackTraces = allStackTraces;
+        
         return result;
     }
-    
-    private void checkForStuck(Thread thread, HealthCheckResult result) {
-        if (stackTraces.containsKey(thread)) {
-            StackTraceElement[] previousStackTraceArray = stackTraces.get(thread);
-            
-            if (Arrays.equals(thread.getStackTrace(), previousStackTraceArray)) {
-                
-                String message = "Stuck Thread " + thread.getName() + "at\n";
-                
-                for (StackTraceElement element : thread.getStackTrace()) {
-                    //A parked thread is not stuck
-                    if (element.toString().equals("sun.misc.Unsafe.park(Native Method)")) {
-                        return;
-                    }
-
-                    message += element + "\n";
-                }
-                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, message));
-
-            }
-        }
-    }
-
 
     @Override
     public HealthCheckStuckThreadExecutionOptions constructOptions(StuckThreadsChecker checker) {
         return new HealthCheckStuckThreadExecutionOptions(Boolean.valueOf(checker.getEnabled()), Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()),
-                Long.parseLong(checker.getThresholdTime()), asTimeUnit(checker.getThresholdTimeUnit()));
+                Long.parseLong(checker.getThreshold()), asTimeUnit(checker.getThresholdTimeUnit()));
     }    
     
 }

@@ -217,11 +217,11 @@ public class StuckThreadsConfigurer implements AdminCommand {
         }
         
         if (threshold != null){
-            checkerProxy.setThreshhold(threshold);
+            checkerProxy.setThreshold(threshold);
         }
         
         if (thresholdUnit != null){
-            checkerProxy.setThreshholdTimeUnit(thresholdUnit);
+            checkerProxy.setThresholdTimeUnit(thresholdUnit);
         }
     }
     
