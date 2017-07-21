@@ -122,7 +122,7 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
     
     @Param(name = "serviceName", optional = false, 
             acceptableValues = "healthcheck-cpu,healthcheck-gc,healthcheck-cpool,healthcheck-heap,healthcheck-threads,"
-                    + "healthcheck-machinemem, healthcheck-stuckthreads")
+                    + "healthcheck-machinemem, healthcheck-stuck")
     private String serviceName;
 
     @Param(name = "thresholdCritical", optional = true)

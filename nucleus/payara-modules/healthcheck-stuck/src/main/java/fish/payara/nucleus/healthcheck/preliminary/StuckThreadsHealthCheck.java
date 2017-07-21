@@ -44,15 +44,10 @@ import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckStuckThreadExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
-import fish.payara.nucleus.requesttracing.RequestEventStore;
-import fish.payara.nucleus.requesttracing.RequestTrace;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,13 +61,13 @@ import org.jvnet.hk2.annotations.Service;
  * @since 4.1.2.173
  * @author jonathan coustick
  */
-@Service(name = "healthcheck-stuckthreads")
-@RunLevel(11)
+@Service(name = "healthcheck-stuck")
+@RunLevel(StartupRunLevel.VAL)
 public class StuckThreadsHealthCheck extends BaseHealthCheck<HealthCheckStuckThreadExecutionOptions,
         StuckThreadsChecker>{
     
     @Inject
-    RequestEventStore requestStore;
+    StuckThreadsStore stuckThreadsStore;
     
     @Inject
     StuckThreadsChecker checker;
@@ -99,11 +94,19 @@ public class StuckThreadsHealthCheck extends BaseHealthCheck<HealthCheckStuckThr
             }
         }
         
-        RequestTrace trace = requestStore.getTrace();
-        long time = trace.getElapsedTime();
-        long maxTime = TimeUnit.MILLISECONDS.convert(options.getTimeStuck(), options.getUnitStuck());
-        if (time > maxTime) {
-            result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread:" + trace.toString()));
+        Long thresholdNanos = TimeUnit.NANOSECONDS.convert(options.getTimeStuck(), options.getUnitStuck());
+        
+        ConcurrentHashMap<Long, Long> threads = stuckThreadsStore.getThreads();
+        for (Long thread : threads.keySet()){
+            Long timeHeld = threads.get(thread);
+            if (timeHeld > thresholdNanos){
+                String message = "Stuck Thread " + thread;
+                /*for (StackTraceElement line : thread.getStackTrace()){
+                    message += line + "\n";
+                }*/
+                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, message));
+            }
+            
         }
         
         return result;

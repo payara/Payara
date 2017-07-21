@@ -58,6 +58,7 @@
 
 package org.apache.catalina.connector;
 
+import fish.payara.nucleus.healthcheck.preliminary.StuckThreadsStore;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.channels.InterruptedByTimeoutException;
@@ -90,7 +91,7 @@ import org.glassfish.tyrus.servlet.TyrusHttpUpgradeHandler;
  *
  * @author Remy Maucherat
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 public class InputBuffer extends Reader
     implements ByteInputChannel, CharChunk.CharInputChannel,
                CharChunk.CharOutputChannel {
@@ -99,6 +100,7 @@ public class InputBuffer extends Reader
     private static final ResourceBundle rb = log.getResourceBundle();
     
     private RequestTracingService requestTracing;
+    private StuckThreadsStore stuckThreadsStore;
 
     // -------------------------------------------------------------- Constants
 
@@ -132,6 +134,7 @@ public class InputBuffer extends Reader
 
         this(DEFAULT_BUFFER_SIZE);
         requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        stuckThreadsStore = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
     }
 
 
@@ -469,12 +472,14 @@ public class InputBuffer extends Reader
                         // if it's a Tyrus websocket conn.
                         if (isWebSocketRequest()) {
                             requestTracing.startTrace();
+                            stuckThreadsStore.registerThread(Thread.currentThread().getId());
                         }
                         readListener.onDataAvailable();
                         if (isWebSocketRequest()) {
                             RequestEvent requestEvent = new RequestEvent("WebSocketRequest");
                             requestTracing.traceRequestEvent(requestEvent);
                             requestTracing.endTrace();
+                            stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
                         }
                     } catch(Throwable t) {
                         disable = true;
