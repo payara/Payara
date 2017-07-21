@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2017] Payara Foundation and/or affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -106,8 +107,9 @@ public abstract class JMSDestination {
 
 
     protected void validateJMSDestName(String destName) {
-                if(destName==null || destName.length() <= 0)
+                if(destName==null || destName.length() <= 0 || destName.contains("/")){
                     throw new IllegalArgumentException(localStrings.getLocalString("admin.mbeans.rmb.invalid_jms_destname",destName));
+                }                
          }
 
         protected void validateJMSDestType(String destType) {
@@ -117,6 +119,7 @@ public abstract class JMSDestination {
                  !destType.equals(JMS_DEST_TYPE_TOPIC))
                 throw new IllegalArgumentException(localStrings.getLocalString("admin.mbeans.rmb.invalid_jms_desttype",destType));
          }
+        
     protected MQJMXConnectorInfo getMQJMXConnectorInfo(String target, Config config, ServerContext serverContext, Domain domain, ConnectorRuntime connectorRuntime)
                                                         throws Exception {
                     logger.log(Level.FINE, "getMQJMXConnectorInfo for " + target);
