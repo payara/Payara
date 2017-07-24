@@ -583,7 +583,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     servletFilterMapping.addURLPattern(PROBE_FILTER_URL_PATTERN);
                     servletFilterMapping.addDispatcher(PROBE_FILTER_DISPATCHER_TYPE);
                     wDesc.addServletFilterMapping(servletFilterMapping);
-            }
+                }
             }
 
             if (developmentMode) {
@@ -643,7 +643,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     private boolean isDevelopmentMode(DeploymentContext context) {
         DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
-        boolean devMode = deployParams.isDevMode() || Boolean.getBoolean(DEV_MODE_PROPERTY);
+        boolean devMode = deployParams.isCdiDevMode() || Boolean.getBoolean(DEV_MODE_PROPERTY);
         WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
         if (!devMode && wDesc != null) {
             Enumeration<ContextParameter> cpEnumeration = wDesc.getContextParameters();
