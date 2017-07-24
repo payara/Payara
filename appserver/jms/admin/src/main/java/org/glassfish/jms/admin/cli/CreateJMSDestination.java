@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2017] Payara Foundation and/or affiliates
+
 package org.glassfish.jms.admin.cli;
 
 import javax.security.auth.Subject;
@@ -127,6 +129,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
     @Inject
     ServerContext serverContext;
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -212,7 +215,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
             } else if (destType.equalsIgnoreCase(JMS_DEST_TYPE_QUEUE)) {
                 destType = DESTINATION_TYPE_QUEUE;
             }
-            if ((destAttrs == null) || (destAttrs.size() == 0)) {
+            if ((destAttrs == null) || (destAttrs.isEmpty())) {
                 signature = new String[]{
                             "java.lang.String",
                             "java.lang.String"};
@@ -226,7 +229,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
             }
 
             mbsc.invoke(on, "create", params, signature);
-            report.setMessage(localStrings.getLocalString("create.jms.destination.success", "JMS Desctination {0} created.", destName));
+            report.setMessage(localStrings.getLocalString("create.jms.destination.success", "JMS Destination {0} created.", destName));
         } catch (Exception e) {
             logAndHandleException(e, "admin.mbeans.rmb.error_creating_jms_dest");
         } finally {

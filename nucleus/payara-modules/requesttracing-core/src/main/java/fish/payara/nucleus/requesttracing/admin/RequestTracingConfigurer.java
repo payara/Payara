@@ -1,25 +1,47 @@
 /*
-
- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
- Copyright (c) 2016 Payara Foundation. All rights reserved.
-
- The contents of this file are subject to the terms of the Common Development
- and Distribution License("CDDL") (collectively, the "License").  You
- may not use this file except in compliance with the License.  You can
- obtain a copy of the License at
- https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- or packager/legal/LICENSE.txt.  See the License for the specific
- language governing permissions and limitations under the License.
-
- When distributing the software, include this License Header Notice in each
- file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 package fish.payara.nucleus.requesttracing.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.notification.TimeUtil;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import org.glassfish.api.ActionReport;
@@ -97,6 +119,9 @@ public class RequestTracingConfigurer implements AdminCommand {
     @Param(name = "historicalTraceStoreSize", optional = true)
     private Integer historicalTraceStoreSize;
 
+    @Param(name = "historicalTraceStoreTimeout", optional = true)
+    private String historicalTraceStoreTimeout;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -133,6 +158,9 @@ public class RequestTracingConfigurer implements AdminCommand {
                         }
                         if (historicalTraceStoreSize != null) {
                             requestTracingServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
+                        if (historicalTraceStoreTimeout != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
                         }
 
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -181,6 +209,12 @@ public class RequestTracingConfigurer implements AdminCommand {
             service.getExecutionOptions().setHistoricalTraceStoreSize(historicalTraceStoreSize);
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.storesize.success",
                     "Request Tracing Historical Trace Store Size is set to {0}.", historicalTraceStoreSize) + "\n");
+        }
+
+        if (historicalTraceStoreTimeout != null) {
+            service.getExecutionOptions().setHistoricalTraceTimeout(TimeUtil.setStoreTimeLimit(historicalTraceStoreTimeout));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.timeout.success",
+                    "Request Tracing Historical Trace Store Timeout is set to {0}.", historicalTraceStoreTimeout) + "\n");
         }
 
         service.bootstrapRequestTracingService();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,9 @@ package fish.payara.micro;
 
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.PayaraMicroLauncher;
+import fish.payara.micro.boot.loader.OpenURLClassLoader;
 import java.io.File;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,7 +61,7 @@ public class PayaraMicro {
 
     /**
      * Obtains the static singleton instance of the Payara Micro Server. If it
-     * does not exist it will be create.
+     * does not exist it will be created.
      *
      * @return The singleton instance
      */
@@ -369,6 +371,16 @@ public class PayaraMicro {
         } catch (Exception ex) {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, "Unable to create implementation class", ex);
         }
+    }
+    
+    /**
+     * Adds the library to the classloader and loads it
+     * 
+     * @param lib The URL or filepath of the library to add
+     * @since 4.1.2.173
+     */
+    public void addLibrary(File lib){  
+        wrappee.addLibrary(lib);
     }
     
 }
