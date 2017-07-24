@@ -143,5 +143,13 @@
         parentId="col3"
         content="payaraRestEndpoints/payaraRestEndpointsApplication.jsf"
     />
+    
+    <integration-point
+        id="cdiDevModeLink"
+        type="org.glassfish.admingui:subComponentTablePage"
+        priority="120"
+        parentId="col3"
+        content="cdiDevMode/cdiDevModeApplication.jsf"
+    />
 
 </console-config>

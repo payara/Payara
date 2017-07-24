@@ -44,6 +44,7 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -264,6 +265,49 @@ public class PayaraRestApiHandlers
             }
           }catch(Exception ex){
             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.hasRestEndpoints") + ex.getLocalizedMessage());
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+                ex.printStackTrace();
+            }
+          }
+          handlerCtx.setOutputValue("result", result);
+    }
+    
+    /**
+     * Gets a map of components with CDI dev mode status
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.isCDIDevMode",
+        input = {
+            @HandlerInput(name = "appName", type = String.class, required = true),
+            @HandlerInput(name = "rowList", type = java.util.List.class, required = true)},
+        output = {
+            @HandlerOutput(name = "result", type = java.util.Map.class)})
+    public static void isCDIDevMode(HandlerContext handlerCtx) {
+        Map result = new HashMap();
+        try{
+            String appName = (String) handlerCtx.getInputValue("appName");
+            String encodedAppName = URLEncoder.encode(appName, "UTF-8");
+            List rowList = (List) handlerCtx.getInputValue("rowList");
+            for(Object row : rowList) {
+                Map rowMap = (Map) row;
+                String componentName = (String) rowMap.get("name");
+                String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
+                result.put(componentName, false);
+                if(!((String)rowMap.get("sniffers")).contains("weld")){
+                    continue;
+                }
+                
+                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
+                Map attrMap = Collections.singletonMap("componentname", encodedComponentName);
+                Map payaraEndpointDataMap = RestUtil.restRequest(endpoint, attrMap, "GET", null, true, false);
+                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+                Map entity = (Map)payaraEndpointsExtraProps.get("entity");
+                if(Boolean.parseBoolean((String)entity.get("cdiDevMode"))){
+                      result.put(componentName, true);
+                }
+            }
+          }catch(Exception ex){
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.isCDIDevMode"), ex.getLocalizedMessage()});
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
