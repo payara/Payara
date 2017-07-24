@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
@@ -96,7 +96,7 @@
             setPageSessionAttribute(key="pageTitleHelp" value="$resource{i18n.enterpriseApplications.editPageTitleHelp}");
         }
         setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
-        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "availabilityEnabled"});
+        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "availabilityEnabled", "cdiDevMode"});
 
         gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");

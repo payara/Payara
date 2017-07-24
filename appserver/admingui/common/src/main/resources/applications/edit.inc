@@ -93,6 +93,10 @@
             <sun:checkbox id="implicitCdi" disabled="true" label="$resource{i18n.common.Enabled}" selected="#{pageSession.implicitCdiEnabled}" selectedValue="true" />
         </sun:property>
 
+        <sun:property id="cdiDevModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.cdiDevMode}" helpText="$resource{i18n.deploy.cdiDevModeHelp}">
+            <sun:checkbox id="cdiDevMode" label=" " selected="#{pageSession.valueMap['cdiDevMode']}" selectedValue="true" />
+        </sun:property>
+
         <sun:property id="availability" rendered="#{pageSession.finalShowAvail}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
             <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['availabilityEnabled']}" selectedValue="true" />
         </sun:property>

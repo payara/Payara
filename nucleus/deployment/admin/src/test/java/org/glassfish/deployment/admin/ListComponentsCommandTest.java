@@ -245,6 +245,8 @@ public class ListComponentsCommandTest {
         public void setDeploymentOrder(String value) throws PropertyVetoException {}
         public String getDeploymentTime() { return "0"; }
         public void setDeploymentTime(String value) throws PropertyVetoException {}
+        public String getCdiDevMode() { return "false";}
+        public void setCdiDevMode(String string) throws PropertyVetoException {}
         public List<Engine> getEngine(){ return null;}
         public List<Property> getProperty(){ return null;}
 

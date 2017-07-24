@@ -64,6 +64,7 @@ import org.jvnet.hk2.config.Element;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
 import fish.payara.api.admin.config.ApplicationDeploymentTime;
+import fish.payara.api.admin.config.ApplicationCDIDevMode;
 
 @Configured
 @RestRedirects({
@@ -71,7 +72,8 @@ import fish.payara.api.admin.config.ApplicationDeploymentTime;
     @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "redeploy")
 })
 @ContextRootCheck(message="{contextroot.duplicate}", payload=Application.class)
-public interface Application extends ApplicationName, ApplicationDeploymentTime, PropertyBag {
+public interface Application extends ApplicationName,
+        ApplicationCDIDevMode, ApplicationDeploymentTime, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";           
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";
@@ -249,7 +251,7 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
      *              {@link String }
      */
     void setDeploymentOrder(String value) throws PropertyVetoException;
-
+    
     @Element
     List<Module> getModule();
 
@@ -403,6 +405,7 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
                 deploymentParams.virtualservers = appRef.getVirtualServers();
             }
             deploymentParams.deploymentorder = new Integer(app.getDeploymentOrder());
+            deploymentParams.cdidevmode = Boolean.parseBoolean(app.getCdiDevMode());
             for (Property prop : app.getProperty()) {
                 if (prop.getName().equals(ARCHIVE_TYPE_PROP_NAME)) {
                     deploymentParams.type = prop.getValue();

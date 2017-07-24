@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -165,10 +166,12 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                         // enable or disable application accordingly
                         handleAppEnableChange(event.getSource(), 
                             appName, Boolean.valueOf((String)newValue));
-                    } else if (event.getPropertyName().equals(ServerTags.CONTEXT_ROOT) || event.getPropertyName().equals(ServerTags.VIRTUAL_SERVERS) || event.getPropertyName().equals(ServerTags.AVAILABILITY_ENABLED)) {
+                    } else if (event.getPropertyName().equals(ServerTags.CONTEXT_ROOT) 
+                            || event.getPropertyName().equals(ServerTags.VIRTUAL_SERVERS) 
+                            || event.getPropertyName().equals(ServerTags.AVAILABILITY_ENABLED)
+                            || event.getPropertyName().equals(ServerTags.CDI_DEV_MODE)) {
                         // for other changes, reload the application
-                        handleOtherAppConfigChanges(event.getSource(), 
-                            appName);
+                        handleOtherAppConfigChanges(event.getSource(), appName);
                     }
                 }
             }
