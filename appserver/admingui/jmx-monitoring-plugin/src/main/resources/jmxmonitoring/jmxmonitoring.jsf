@@ -118,7 +118,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                              <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Dynamic}" helpText="$resource{i18njmx.jmxmonitoring.DynamicHelp}">
                                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>
                             </sun:property>
-                            <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.TimeLabel}" helpText="$resource{jmxmonitoring.TimeLabelHelpText}">
+                            <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.TimeLabel}" helpText="$resource{i18njmx.jmxmonitoring.TimeLabelHelpText}">
                                 <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer" text="#{pageSession.valueMap['logfrequency']}"/>
                             </sun:property>                            
                             <sun:property id="logfrequencyunitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.UnitLabel}" helpText="$resource{i18njmx.jmxmonitoring.UnitLabelHelp}">
