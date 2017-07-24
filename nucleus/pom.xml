@@ -210,7 +210,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1-m09</jax-rs-api.impl.version>
-        <jersey.version>2.26-b06</jersey.version>
+        <jersey.version>2.26-b08</jersey.version>
         
         <!-- Bean Validation -->
         <javax.validation.version>1.1.0.Final</javax.validation.version>
@@ -231,8 +231,8 @@
         <!-- Other -->
         
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <hk2.version>2.5.0-b38</hk2.version>
-        <hk2.plugin.version>2.5.0-b38</hk2.plugin.version>
+        <hk2.version>2.5.0-b42</hk2.version>
+        <hk2.plugin.version>2.5.0-b42</hk2.plugin.version>
 
         <glassfish-corba.version>4.0.1.payara-p6</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
