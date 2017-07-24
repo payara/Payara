@@ -57,7 +57,7 @@ holder.
                 method="GET" result="#{requestScope.resp}");      
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.healthcheckConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");       
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});        
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});
         py.getHistoricHealthcheckMessages(parentEndpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
@@ -67,7 +67,7 @@ holder.
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
-        
+
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
         setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
         if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
@@ -92,7 +92,7 @@ holder.
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierEnabled" value="#{pageSession.notifierEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" 
+                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
                             value="#{pageSession.historicalTraceEnabledSelected}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/healthcheck-configure" 
@@ -127,6 +127,12 @@ holder.
                       helpText="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreSizeLabelHelpText}">
             <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['historicalTraceStoreSize']}"/>
+        </sun:property>
+        <sun:property id="historicalTraceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreTimeoutLabel}"
+                      helpText="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreTimeoutLabelHelpText}">
+            <sun:textField id="historicalTraceStoreTimeoutField" columns="$int{40}" maxLength="250"
+                           text="#{pageSession.valueMap['historicalTraceStoreTimeout']}"/>
         </sun:property>
     </sun:propertySheetSection>
 
