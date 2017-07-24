@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,15 +36,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.admin;
+package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.requesttracing.HistoricRequestEventStore;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-import fish.payara.nucleus.requesttracing.domain.HistoricRequestEvent;
-import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.HistoricHealthCheckEvent;
+import fish.payara.nucleus.healthcheck.HistoricHealthCheckEventStore;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -56,25 +55,28 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * @author mertcaliskan
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "list-historic-requesttraces")
+@Service(name = "list-historic-healthchecks")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
 @I18n("requesttracing.configure")
 @RestEndpoints({
-        @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
-                path = "list-historic-requesttraces",
-                description = "List slowest request traces stored historically.")
+        @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "list-historic-healthchecks",
+                description = "List latest health checks traces stored historically.")
 })
-public class HistoricRequestEventRetriever implements AdminCommand {
+public class ListHistoricHealthChecks implements AdminCommand {
 
-    private final String headers[] = {"Elapsed Time", "Traced Message"};
+    private static final String SEPARATOR = " - ";
+    private static final String headers[] = {"Occurring Date", "Health Check Message"};
 
     @Inject
     protected Target targetUtil;
@@ -86,10 +88,10 @@ public class HistoricRequestEventRetriever implements AdminCommand {
     private Integer first;
 
     @Inject
-    private RequestTracingService service;
+    private HealthCheckService service;
 
     @Inject
-    private HistoricRequestEventStore eventStore;
+    private HistoricHealthCheckEventStore eventStore;
 
     @Inject
     ServerEnvironment server;
@@ -98,12 +100,10 @@ public class HistoricRequestEventRetriever implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
 
-        RequestTracingExecutionOptions executionOptions = service.getExecutionOptions();
-        if (!executionOptions.isHistoricalTraceEnabled()) {
-            actionReport.setMessage("Request Tracing Historical Trace is not enabled!");
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        if (!service.isEnabled()){
+            actionReport.setMessage("Health Check service is not enabled");
             return;
-        }
+        }      
         else {
             if (server.isDas()) {
                 if (targetUtil.getConfig(target).isDas()) {
@@ -117,21 +117,42 @@ public class HistoricRequestEventRetriever implements AdminCommand {
     }
 
     private void generateReport(ActionReport actionReport) {
-        RequestTracingExecutionOptions executionOptions = service.getExecutionOptions();
-
         if (first == null) {
-            first = executionOptions.getHistoricalTraceStoreSize();
+            first = service.getHistoricalTraceStoreSize();
         }
-        HistoricRequestEvent[] traces = eventStore.getTraces(first);
+        HistoricHealthCheckEvent[] traces = eventStore.getTraces(first);
 
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        for (HistoricRequestEvent historicRequestEvent : traces) {
-            Object values[] = new Object[2];
-            values[0] = historicRequestEvent.getElapsedTime();
-            values[1] = historicRequestEvent.getMessage();
-            columnFormatter.addRow(values);
+        Properties extrasProps = new Properties();
+        List historic = new ArrayList<>();
+
+        if (traces != null) {
+            for (HistoricHealthCheckEvent historicHealthCheckEvent : traces) {
+                LinkedHashMap<String, String> messages = new LinkedHashMap<String, String>();
+                Object values[] = new Object[2];
+                values[0] = new Date(historicHealthCheckEvent.getOccurringTime());
+                values[1] = constructMessage(historicHealthCheckEvent);
+                messages.put("dateTime",values[0].toString());
+                messages.put("message", (String) values[1]);
+                historic.add(messages);
+                columnFormatter.addRow(values);
+            }
         }
+
         actionReport.setMessage(columnFormatter.toString());
+        extrasProps.put("historicmessages", historic);
+        actionReport.setExtraProperties(extrasProps);
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+
+    private String constructMessage(HistoricHealthCheckEvent event) {
+        if (event.getParameters() != null && event.getParameters().length > 0) {
+            String formattedText = MessageFormat.format(event.getMessage(), event.getParameters());
+            return event.getLevel() + SEPARATOR + (event.getUserMessage() != null ?
+                    event.getUserMessage() + SEPARATOR + formattedText : formattedText);
+        } else {
+            return event.getLevel() + SEPARATOR + (event.getUserMessage() != null ?
+                    event.getUserMessage() + SEPARATOR + event.getMessage() : event.getMessage());
+        }
     }
 }

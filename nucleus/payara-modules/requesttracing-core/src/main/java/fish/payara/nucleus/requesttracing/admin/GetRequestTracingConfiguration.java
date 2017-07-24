@@ -41,6 +41,7 @@
 package fish.payara.nucleus.requesttracing.admin;
 
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
@@ -122,6 +123,10 @@ public class GetRequestTracingConfiguration implements AdminCommand {
                 mainActionReport.appendMessage("Historical Tracing Store Size: " 
                         + configuration.getHistoricalTraceStoreSize() + "\n");
             }
+            if (!Strings.isNullOrEmpty(configuration.getHistoricalTraceStoreTimeout())) {
+                mainActionReport.appendMessage("Historical Tracing Store Timeout in Seconds: "
+                        + configuration.getHistoricalTraceStoreTimeout() + "\n");
+            }
         }
         
         // Create the extraProps for the general request tracing configuration
@@ -131,6 +136,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         mainExtraPropsMap.put("enabled", configuration.getEnabled());
         mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
         mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
+        mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
         mainExtraPropsMap.put("thresholdUnit", configuration.getThresholdUnit());
         mainExtraPropsMap.put("thresholdValue", configuration.getThresholdValue());
         

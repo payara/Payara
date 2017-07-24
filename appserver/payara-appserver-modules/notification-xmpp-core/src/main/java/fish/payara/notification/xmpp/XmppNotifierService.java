@@ -82,7 +82,7 @@ public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificat
         try {
             executionOptions = (XmppNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-            if (executionOptions != null) {
+            if (executionOptions != null && executionOptions.isEnabled()) {
                 initializeExecutor();
 
                 XMPPTCPConnectionConfiguration configuration = XMPPTCPConnectionConfiguration.builder()

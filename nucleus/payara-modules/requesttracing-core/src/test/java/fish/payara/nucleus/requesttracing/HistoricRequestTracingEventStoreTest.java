@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,7 @@
 package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import fish.payara.nucleus.requesttracing.domain.HistoricRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,13 +60,13 @@ import static org.mockito.Mockito.when;
  * @author mertcaliskan
  */
 @RunWith(MockitoJUnitRunner.class)
-public class HistoricRequestEventStoreTest {
+public class HistoricRequestTracingEventStoreTest {
 
     @Mock
     HazelcastCore hzCore;
 
     @InjectMocks
-    HistoricRequestEventStore store = new HistoricRequestEventStore();
+    HistoricRequestTracingEventStore store = new HistoricRequestTracingEventStore();
 
     @Before
     public void setup() {
@@ -96,7 +96,7 @@ public class HistoricRequestEventStoreTest {
 
         assertNotNull(store.getTraces());
         assertThat(store.getTraces().length, is(5));
-        assertThat(Arrays.asList(store.getTraces()), not(hasItem(new HistoricRequestEvent(100, "quick execution 1"))));
-        assertThat(Arrays.asList(store.getTraces()), hasItem(new HistoricRequestEvent(101, "quick execution 2")));
+        assertThat(Arrays.asList(store.getTraces()), not(hasItem(new HistoricRequestTracingEvent(System.currentTimeMillis(), 100, "quick execution 1"))));
+        assertThat(Arrays.asList(store.getTraces()), hasItem(new HistoricRequestTracingEvent(System.currentTimeMillis(), 101, "quick execution 2")));
     }
 }
