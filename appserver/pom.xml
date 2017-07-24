@@ -153,8 +153,12 @@
         
         <!-- JAX-WS -->
         <jaxws-api.version>2.3.0</jaxws-api.version>
-        <!-- 2.3.2-b608.payara-p3 --> 
-        <webservices.version>2.4.0-b170626.1307</webservices.version>
+        <!-- Metro Webservices is the JAX-WS impl --> 
+        <webservices.version>2.4.0-b170703.2107</webservices.version>
+        <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
+        <woodstox.version>4.4.1</woodstox.version>
+        <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
+        <stax2-api.version>3.1.4</stax2-api.version>
         
         <!-- Web Services Metadata  -->
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
@@ -194,15 +198,11 @@
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
 
         <jsf-ext.version>0.2</jsf-ext.version>
-        <woodstock.version>4.0.2.10.payara-p6</woodstock.version>
         
         <jsftemplating.version>2.1.2</jsftemplating.version>
-        <woodstox.version>4.2.0</woodstox.version>
         
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        
-        <stax2-api.version>3.1.1</stax2-api.version>
         
         <dbschema.version>3.1.1</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
