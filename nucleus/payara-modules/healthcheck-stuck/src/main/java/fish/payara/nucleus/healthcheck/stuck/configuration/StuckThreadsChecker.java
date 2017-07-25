@@ -37,74 +37,34 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck.preliminary;
+package fish.payara.nucleus.healthcheck.stuck.configuration;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.api.Rank;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
+import fish.payara.nucleus.healthcheck.configuration.CheckerType;
+import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
+import java.beans.PropertyVetoException;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
 /**
  * @since 4.1.2.173
  * @author jonathan coustick
  */
-@Service(name = "stuck-threads-store")
-@RunLevel(10)
-public class StuckThreadsStore {
-
-    private ConcurrentHashMap<Long, Long> threads;
-
-    private Logger logger;
-
-    public StuckThreadsStore() {
-        threads = new ConcurrentHashMap<Long, Long>();
-    }
-
-    @PostConstruct
-    public void postConstruct() {
-        logger = Logger.getLogger("fish.payara.nucleus.healthcheck");
-    }
-
-    /**
-     * Registers a thread with the store
-     *
-     * @param thread
-     */
-    /*public void registerThread(Thread thread) {
-        threads.put(thread, System.nanoTime());
-    }*/
+@Configured
+@CheckerConfigurationType(type = CheckerType.STUCK_THREAD)
+public interface StuckThreadsChecker extends Checker, ThresholdDiagnosticsChecker{
     
-    public void registerThread(Long threadid){
-        threads.put(threadid, System.nanoTime());
-    }
-
-    /**
-     * Removes a thread from the store. This means that the thread is not stuck.
-     *
-     * @param thread
-     */
-    /*public void deregisterThread(Thread thread) {
-        if (threads.remove(thread) == null) {
-            logger.log(Level.WARNING, "Tried to deregister non-existent thread " + thread.toString());
-        }
-    }*/
+    @Attribute(defaultValue = "STUCK")
+    String getName();
+    void setName(String value) throws PropertyVetoException;
     
-    public void deregisterThread(long threadid){
-        if (threads.remove(threadid) == null) {
-            logger.log(Level.WARNING, "Tried to deregister non-existent thread " + threadid);
-        }
-    }
-
-    /**
-     * Returns a HashMap of the threads in the store with the values of time the thread was registered.
-     * @return 
-     */
-    public ConcurrentHashMap<Long, Long> getThreads() {
-        return threads;
-    }
-
+    @Attribute(defaultValue = "5", dataType = Long.class)
+    String getThreshold();
+    void setThreshold(String value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "MINUTES")
+    String getThresholdTimeUnit();
+    void setThresholdTimeUnit(String value) throws PropertyVetoException;
+    
 }

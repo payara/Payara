@@ -37,16 +37,16 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck.preliminary;
+package fish.payara.nucleus.healthcheck.cpool;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;
-import fish.payara.nucleus.healthcheck.HealthCheckConnectionPoolExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
-import fish.payara.nucleus.healthcheck.configuration.ConnectionPoolChecker;
+import fish.payara.nucleus.healthcheck.cpool.configuration.ConnectionPoolChecker;
+import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.jdbc.config.JdbcConnectionPool;

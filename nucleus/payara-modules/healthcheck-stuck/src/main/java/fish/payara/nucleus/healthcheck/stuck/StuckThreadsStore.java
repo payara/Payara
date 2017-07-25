@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,28 +37,74 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck;
+package fish.payara.nucleus.healthcheck.stuck;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.Rank;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * @author mertcaliskan
+ * @since 4.1.2.173
+ * @author jonathan coustick
  */
-public class HealthCheckConnectionPoolExecutionOptions extends HealthCheckWithThresholdExecutionOptions {
+@Service(name = "stuck-threads-store")
+@RunLevel(10)
+public class StuckThreadsStore {
 
-    private String poolName;
+    private ConcurrentHashMap<Long, Long> threads;
 
-    public HealthCheckConnectionPoolExecutionOptions(boolean enabled, long time, TimeUnit unit, String
-            thresholdCritical, String thresholdWarning, String thresholdGood, String poolName) {
-        super(enabled, time, unit, thresholdCritical, thresholdWarning, thresholdGood);
-        this.poolName = poolName;
+    private Logger logger;
+
+    public StuckThreadsStore() {
+        threads = new ConcurrentHashMap<Long, Long>();
     }
 
-    public String getPoolName() {
-        return poolName;
+    @PostConstruct
+    public void postConstruct() {
+        logger = Logger.getLogger("fish.payara.nucleus.healthcheck");
     }
 
-    public void setPoolName(String poolName) {
-        this.poolName = poolName;
+    /**
+     * Registers a thread with the store
+     *
+     * @param thread
+     */
+    /*public void registerThread(Thread thread) {
+        threads.put(thread, System.nanoTime());
+    }*/
+    
+    public void registerThread(Long threadid){
+        threads.put(threadid, System.nanoTime());
     }
+
+    /**
+     * Removes a thread from the store. This means that the thread is not stuck.
+     *
+     * @param thread
+     */
+    /*public void deregisterThread(Thread thread) {
+        if (threads.remove(thread) == null) {
+            logger.log(Level.WARNING, "Tried to deregister non-existent thread " + thread.toString());
+        }
+    }*/
+    
+    public void deregisterThread(long threadid){
+        if (threads.remove(threadid) == null) {
+            logger.log(Level.WARNING, "Tried to deregister non-existent thread " + threadid);
+        }
+    }
+
+    /**
+     * Returns a HashMap of the threads in the store with the values of time the thread was registered.
+     * @return 
+     */
+    public ConcurrentHashMap<Long, Long> getThreads() {
+        return threads;
+    }
+
 }

@@ -58,7 +58,7 @@
 
 package org.apache.catalina.connector;
 
-import fish.payara.nucleus.healthcheck.preliminary.StuckThreadsStore;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.channels.InterruptedByTimeoutException;

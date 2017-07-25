@@ -37,14 +37,15 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck.admin;
+package fish.payara.nucleus.healthcheck.stuck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.admin.HealthCheckServiceConfigurer;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
-import fish.payara.nucleus.healthcheck.preliminary.StuckThreadsHealthCheck;
+import fish.payara.nucleus.healthcheck.stuck.configuration.StuckThreadsChecker;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsHealthCheck;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

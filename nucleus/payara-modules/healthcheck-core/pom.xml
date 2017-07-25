@@ -83,7 +83,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             </resource>
         </resources>
         
-        <plugins>
+       <!-- <plugins>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -109,7 +109,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
+        </plugins>-->
         
     </build>
 

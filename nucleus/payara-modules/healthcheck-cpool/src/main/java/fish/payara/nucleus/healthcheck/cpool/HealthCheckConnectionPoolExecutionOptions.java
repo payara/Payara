@@ -37,25 +37,29 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck.configuration;
+package fish.payara.nucleus.healthcheck.cpool;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mertcaliskan
  */
-@Configured
-@CheckerConfigurationType(type = CheckerType.CONNECTION_POOL)
-public interface ConnectionPoolChecker extends Checker, ThresholdDiagnosticsChecker {
+public class HealthCheckConnectionPoolExecutionOptions extends HealthCheckWithThresholdExecutionOptions {
 
-    @Attribute(defaultValue = "CONP")
-    String getName();
-    void setName(String value) throws PropertyVetoException;
+    private String poolName;
 
-    @Attribute
-    String getPoolName();
-    void setPoolName(String poolName) throws PropertyVetoException;
+    public HealthCheckConnectionPoolExecutionOptions(boolean enabled, long time, TimeUnit unit, String
+            thresholdCritical, String thresholdWarning, String thresholdGood, String poolName) {
+        super(enabled, time, unit, thresholdCritical, thresholdWarning, thresholdGood);
+        this.poolName = poolName;
+    }
+
+    public String getPoolName() {
+        return poolName;
+    }
+
+    public void setPoolName(String poolName) {
+        this.poolName = poolName;
+    }
 }

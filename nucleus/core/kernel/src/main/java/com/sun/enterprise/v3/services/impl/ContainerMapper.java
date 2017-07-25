@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.v3.services.impl;
 
-import fish.payara.nucleus.healthcheck.preliminary.StuckThreadsStore;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.Sniffer;
