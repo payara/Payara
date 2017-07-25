@@ -70,9 +70,6 @@
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
-        <javaee.major_version>7</javaee.major_version>
-        <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
-        <javaee.version>${javaee.major_version}.${minor_version}${javaee.version_qualifier}</javaee.version>
         
         <!-- JSP -->
         <jsp-api.version>2.3.2-b01</jsp-api.version>
@@ -105,8 +102,8 @@
         <jsonp-jaxrs.version>1.1.1</jsonp-jaxrs.version>
         
         <!-- JPA -->
-        <javax-persistence-api.version>2.1.0</javax-persistence-api.version>
-        <eclipselink.version>2.6.4.payara-p2</eclipselink.version>
+        <javax-persistence-api.version>2.2.0-RC1</javax-persistence-api.version>
+        <eclipselink.version>2.7.0-RC1</eclipselink.version>
         
         <!-- JTA -->
         <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
