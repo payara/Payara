@@ -152,6 +152,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "javax.servlet.http.*";
               
+    private static final String PROBE_ALLOW_REMOTE_ADDRESS = "";
+              
     @Inject
     private Events events;
 
@@ -590,6 +592,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
              
                 externalConfiguration.setProbeEventMonitorExcludeType(PROBE_EVENT_MONITOR_EXCLUDE_TYPE);
                 externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
+                externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
                 deploymentImpl.addDynamicExtension(createProbeExtension());
             }
 

@@ -42,6 +42,7 @@ package org.glassfish.weld.services;
 import java.util.HashMap;
 import java.util.Map;
 import static org.jboss.weld.config.ConfigurationKey.BEAN_IDENTIFIER_INDEX_OPTIMIZATION;
+import static org.jboss.weld.config.ConfigurationKey.PROBE_ALLOW_REMOTE_ADDRESS;
 import static org.jboss.weld.config.ConfigurationKey.PROBE_EVENT_MONITOR_EXCLUDE_TYPE;
 import static org.jboss.weld.config.ConfigurationKey.PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE;
 import static org.jboss.weld.config.ConfigurationKey.ROLLING_UPGRADES_ID_DELIMITER;
@@ -72,6 +73,11 @@ public class ExternalConfigurationImpl implements ExternalConfiguration {
     public void setProbeEventMonitorExcludeType(String probeEventMonitorExcludeType) {
         propsMap.put(PROBE_EVENT_MONITOR_EXCLUDE_TYPE.get(), 
                 System.getProperty(PROBE_EVENT_MONITOR_EXCLUDE_TYPE.get(), probeEventMonitorExcludeType));
+    }
+
+    public void setProbeAllowRemoteAddress(String probeAllowRemoteAddress) {
+        propsMap.put(PROBE_ALLOW_REMOTE_ADDRESS.get(), 
+                System.getProperty(PROBE_ALLOW_REMOTE_ADDRESS.get(), probeAllowRemoteAddress));
     }
 
     @Override
