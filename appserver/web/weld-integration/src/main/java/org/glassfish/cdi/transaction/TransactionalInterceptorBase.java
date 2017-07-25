@@ -342,7 +342,7 @@ public class TransactionalInterceptorBase implements Serializable {
         if (currentInvocation == null) {
             //there should always be a currentInvocation and so this would seem a bug
             // but not a fatal one as app should not be relying on this, so log warning only
-            System.out.println("TransactionalInterceptorBase.markThreadAsTransactional currentInvocation==null");
+            _logger.log(java.util.logging.Level.WARNING, "TransactionalInterceptorBase.markThreadAsTransactional currentInvocation==null");
             return;
         }
         currentInvocation.setTransactionOperationsManager(preexistingTransactionOperationsManager);
