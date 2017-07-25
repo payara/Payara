@@ -83,52 +83,70 @@ public class SetEnvironmentWarningConfigurationCommand implements AdminCommand {
 
     @Inject
     private Target targetUtil;
-    
-    @Param(name = "enabled", alias = "Enabled")
+
+    @Param(name = "enabled", alias = "Enabled", optional = true)
     private Boolean enabled;
-    
-    @Param(name = "message", alias = "Message")
+
+    @Param(name = "message", alias = "Message", optional = true)
     private String message;
-    
-    @Param(name = "backgroundColour", alias = "BackgroundColour")
+
+    @Param(name = "backgroundColour", alias = "BackgroundColour", optional = true)
     private String backgroundColour;
-    
-    @Param(name = "textColour", alias = "TextColour")
+
+    @Param(name = "textColour", alias = "TextColour", optional = true)
     private String textColour;
-    
+
     private final String target = "server-config";
-    
+
     @Override
     public void execute(AdminCommandContext acc) {
         Config config = targetUtil.getConfig(target);
         ActionReport actionReport = acc.getActionReport();
-        
-        EnvironmentWarningConfiguration environmentWarningConfiguration = 
-                config.getExtensionByType(EnvironmentWarningConfiguration.class);
-        
+
+        EnvironmentWarningConfiguration environmentWarningConfiguration
+                = config.getExtensionByType(EnvironmentWarningConfiguration.class);
+
         if (environmentWarningConfiguration != null) {
             try {
-                ConfigSupport.apply(new SingleConfigCode<EnvironmentWarningConfiguration>(){
+                ConfigSupport.apply(new SingleConfigCode<EnvironmentWarningConfiguration>() {
                     @Override
-                    public Object run(EnvironmentWarningConfiguration config) throws PropertyVetoException{
-                        config.setEnabled(enabled);
-                        config.setMessage(message);
-                        if(backgroundColour.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
-                            config.setBackgroundColour(backgroundColour);
-                        } else {
-                            throw new PropertyVetoException("Invalid data for background colour, must be a hex value.", new PropertyChangeEvent(config, "backgroundColour", config.getBackgroundColour(), backgroundColour));
+                    public Object run(EnvironmentWarningConfiguration config) throws PropertyVetoException {
+
+                        if (enabled != null) {
+                            config.setEnabled(enabled);
                         }
-                        if(textColour.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
-                            config.setTextColour(textColour);
-                        } else {
-                            throw new PropertyVetoException("Invalid data for text colour, must be a hex value.", new PropertyChangeEvent(config, "textColour", config.getTextColour(), textColour));
+
+                        if (message != null) {
+                            config.setMessage(message);
+                        }
+
+                        if (backgroundColour != null) {
+                            if (backgroundColour.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
+                                config.setBackgroundColour(backgroundColour);
+                            } else {
+                                throw new PropertyVetoException(
+                                        "Invalid data for background colour, must be a hex value.",
+                                        new PropertyChangeEvent(config, "backgroundColour",
+                                                config.getBackgroundColour(), backgroundColour));
+                            }
+                        }
+
+                        if (textColour != null) {
+                            if (textColour.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
+                                config.setTextColour(textColour);
+                            } else {
+                                throw new PropertyVetoException(
+                                        "Invalid data for text colour, must be a hex value.",
+                                        new PropertyChangeEvent(config, "textColour", 
+                                                config.getTextColour(), textColour));
+                            }
                         }
                         return null;
                     }
                 }, environmentWarningConfiguration);
             } catch (TransactionFailure ex) {
                 // Set failure
-                actionReport.failure(Logger.getLogger(SetEnvironmentWarningConfigurationCommand.class.getName()), 
+                actionReport.failure(Logger.getLogger(SetEnvironmentWarningConfigurationCommand.class.getName()),
                         "Failed to update configuration", ex);
             }
         }
