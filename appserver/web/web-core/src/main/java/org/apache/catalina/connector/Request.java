@@ -178,27 +178,8 @@ public class Request
      */
     private static boolean enforceScope = false;
 
-    /**
-     * The notes key for the password used to authenticate this user.
-     */
-    private static final String SESS_PASSWORD_NOTE =
-      "org.apache.catalina.session.PASSWORD";
-
-
-    /**
-     * The notes key for the username used to authenticate this user.
-     */
-    private static final String SESS_USERNAME_NOTE =
-      "org.apache.catalina.session.USERNAME";
-
     // END CR 6309511
     // START OF SJSAS 6231069
-    /*
-    protected SimpleDateFormat formats[] = {
-    new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US),
-    new SimpleDateFormat("EEEEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US),
-    new SimpleDateFormat("EEE MMMM d HH:mm:ss yyyy", Locale.US)
-    }*/
     /**
      * The set of SimpleDateFormat formats to use in getDateHeader().
      *
@@ -221,6 +202,7 @@ public class Request
 
     protected SimpleDateFormat formats[];
     // END OF SJSAS 6231069    
+    
     /**
      * ThreadLocal object to keep track of the reentrancy status of each thread.
      * It contains a byte[] object whose single element is either 0 (initial
@@ -351,6 +333,7 @@ public class Request
 
     // Temporary holder for URI params from which session id is parsed
     protected CharChunk uriParamsCC = new CharChunk();
+    
     /**
      * Was the requested session ID received in a URL?
      */
@@ -363,10 +346,7 @@ public class Request
      * Parse locales.
      */
     protected boolean localesParsed = false;
-    /**
-     * The string parser we will use for parsing request lines.
-     */
-    private StringParser parser = new StringParser();
+ 
     /**
      * Local port
      */
@@ -1238,27 +1218,12 @@ public class Request
                 attributes.put(name, attr);
             }
         } else if (isSSLAttribute(name)) {
-            /* SJSAS 6419950
-            coyoteRequest.action(ActionCode.ACTION_REQ_SSL_ATTRIBUTE,
-            coyoteRequest);
-            attr = coyoteRequest.getAttribute(Globals.CERTIFICATES_ATTR);
-            if( attr != null) {
-            attributes.put(Globals.CERTIFICATES_ATTR, attr);
-            }
-            attr = coyoteRequest.getAttribute(Globals.CIPHER_SUITE_ATTR);
-            if(attr != null) {
-            attributes.put(Globals.CIPHER_SUITE_ATTR, attr);
-            }
-            attr = coyoteRequest.getAttribute(Globals.KEY_SIZE_ATTR);
-            if(attr != null) {
-            attributes.put(Globals.KEY_SIZE_ATTR, attr);
-            }
-             */
             // START SJSAS 6419950
             RequestUtils.populateSSLAttributes(coyoteRequest);
             // END SJSAS 6419950
             attr = attributes.get(name);
         }
+        
         return attr;
     }
 
@@ -1336,8 +1301,8 @@ public class Request
         if (inputStream == null) {
             inputStream = new CoyoteInputStream(inputBuffer);
         }
+        
         return inputStream;
-
     }
 
     /**
@@ -1349,16 +1314,6 @@ public class Request
     @Override
     public Locale getLocale() {
         return coyoteRequest.getLocale();
-//        if (!localesParsed) {
-//            parseLocales();
-//        }
-//
-//        if (locales.size() > 0) {
-//            return locales.get(0);
-//        } else {
-//            return defaultLocale;
-//        }
-
     }
 
     /**
@@ -1370,16 +1325,6 @@ public class Request
     @Override
     public Enumeration<Locale> getLocales() {
         return new Enumerator<Locale>(coyoteRequest.getLocales());
-//        if (!localesParsed) {
-//            parseLocales();
-//        }
-//
-//        if (locales.size() > 0) {
-//            return (new Enumerator<Locale>(locales));
-//        }
-//        ArrayList<Locale> results = new ArrayList<Locale>();
-//        results.add(defaultLocale);
-//        return (new Enumerator<Locale>(results));
     }
 
     private void processParameters() {
@@ -1406,12 +1351,6 @@ public class Request
      */
     @Override
     public String getParameter(String name) {
-
-/*
-        if (!requestParametersParsed) {
-            parseRequestParameters();
-        }
-*/
         processParameters();
 
         return coyoteRequest.getParameter(name);
@@ -1451,11 +1390,6 @@ public class Request
      */
     @Override
     public Enumeration<String> getParameterNames() {
-/*
-        if (!requestParametersParsed) {
-            parseRequestParameters();
-        }
-*/
         processParameters();
 
         return new Enumerator<String>(coyoteRequest.getParameterNames());
@@ -1469,11 +1403,6 @@ public class Request
      */
     @Override
     public String[] getParameterValues(String name) {
-/*
-        if (!requestParametersParsed) {
-            parseRequestParameters();
-        }
-*/
         processParameters();
 
         return coyoteRequest.getParameterValues(name);
@@ -2931,7 +2860,6 @@ public class Request
 
             //START SJSAS 6232464
             if (realRole != null &&
-                    //realm.hasRole(userPrincipal, realRole))
                     realm.hasRole(this, (HttpResponse) response,
                     userPrincipal, realRole)) {
                 return true;
@@ -2940,7 +2868,6 @@ public class Request
 
         // Check for a role defined directly as a <security-role>
 
-        //return (realm.hasRole(userPrincipal, role));
         return realm.hasRole(this, (HttpResponse) response,
                 userPrincipal, role);
         //END SJSAS 6232464
@@ -3235,7 +3162,6 @@ public class Request
             // END GlassFish 1024
             if (context != null) {
                 // START OF SJSAS 6231069
-                // contextPath = getContext().getEncodedPath();
                 contextPath = context.getPath();
                 // END OF SJSAS 6231069
             }
@@ -3297,10 +3223,6 @@ public class Request
         for (int i = 0; i < count; i++) {
             org.glassfish.grizzly.http.Cookie scookie = serverCookies[i];
             try {
-                /* GlassFish 898
-                Cookie cookie = new Cookie(scookie.getName().toString(),
-                scookie.getValue().toString());
-                 */
                 // START GlassFish 898
                 Cookie cookie = makeCookie(scookie);
                 // END GlassFish 898
@@ -3341,99 +3263,6 @@ public class Request
     }
     // END GlassFish 898
 
-    /**
-     * Parse request parameters.
-     */
-//    protected void parseRequestParameters() {
-//
-//        /* SJSAS 4936855
-//        requestParametersParsed = true;
-//         */
-//
-//        Parameters parameters = coyoteRequest.getParameters();
-//
-//        // getCharacterEncoding() may have been overridden to search for
-//        // hidden form field containing request encoding
-//        String enc = getCharacterEncoding();
-//        // START SJSAS 4936855
-//        // Delay updating requestParametersParsed to TRUE until
-//        // after getCharacterEncoding() has been called, because
-//        // getCharacterEncoding() may cause setCharacterEncoding() to be
-//        // called, and the latter will ignore the specified encoding if
-//        // requestParametersParsed is TRUE
-//        requestParametersParsed = true;
-//        // END SJSAS 4936855
-//        if (enc != null) {
-//            parameters.setEncoding(enc);
-//            parameters.setQueryStringEncoding(enc);
-//        } else {
-//            parameters.setEncoding(org.glassfish.grizzly.http.server.Constants.DEFAULT_CHARACTER_ENCODING);
-//            parameters.setQueryStringEncoding(org.glassfish.grizzly.http.server.Constants.DEFAULT_CHARACTER_ENCODING);
-//        }
-//
-//        parameters.handleQueryParameters();
-//
-//        if (usingInputStream || usingReader) {
-//            return;
-//        }
-//
-//        if (!"POST".equalsIgnoreCase(getMethod())) {
-//            return;
-//        }
-//
-//        String contentType = getContentType();
-//        if (contentType == null) {
-//            contentType = "";
-//        }
-//        int semicolon = contentType.indexOf(';');
-//        if (semicolon >= 0) {
-//            contentType = contentType.substring(0, semicolon).trim();
-//        } else {
-//            contentType = contentType.trim();
-//        }
-//        if (!"application/x-www-form-urlencoded".equals(contentType)) {
-//            return;
-//        }
-//
-//        int len = getContentLength();
-//
-//        if (len > 0) {
-//            int maxPostSize = ((Connector) connector).getMaxPostSize();
-//            if (maxPostSize > 0 && len > maxPostSize) {
-//                log(sm.getString("coyoteRequest.postTooLarge"));
-
-                  //coyoteRequest.postTooLarge=PWC4004: Parameters were not parsed because the size of the posted data was too big.
-                  // Use the maxPostSize attribute of the connector to resolve this if the application should accept large POSTs.
-//
-//                throw new IllegalStateException("Post too large");
-//            }
-//            try {
-//                /* SJSAS 6346738
-//                byte[] formData = null;
-//                if (len < CACHED_POST_LEN) {
-//                if (postData == null)
-//                postData = new byte[CACHED_POST_LEN];
-//                formData = postData;
-//                } else {
-//                formData = new byte[len];
-//                }
-//                int actualLen = readPostBody(formData, len);
-//                if (actualLen == len) {
-//                parameters.processParameters(formData, 0, len);
-//                }
-//                 */
-//                // START SJSAS 6346738
-//                byte[] formData = getPostBody();
-//                if (formData != null) {
-//                    parameters.processParameters(formData, 0, len);
-//                }
-//                // END SJSAS 6346738
-//            } catch (Throwable t) {
-//                ; // Ignore
-//            }
-//        }
-//
-//    }
 
     // START SJSAS 6346738
     /**
@@ -3476,134 +3305,6 @@ public class Request
 
     }
 
-    /**
-     * Parse request locales.
-     */
-//    protected void parseLocales() {
-//
-//        localesParsed = true;
-//        for (String value : getHeaders("accept-language")) {
-//            parseLocalesHeader(value);
-//        }
-//
-//    }
-
-    /**
-     * Parse accept-language header value.
-     */
-//    protected void parseLocalesHeader(String value) {
-//
-        // Store the accumulated languages that have been requested in
-//        // a local collection, sorted by the quality value (so we can
-//        // add Locales in descending order).  The values will be ArrayLists
-//        // containing the corresponding Locales to be added
-//        TreeMap<Double, ArrayList<Locale>> locales = new TreeMap<Double, ArrayList<Locale>>();
-//
-//        // Preprocess the value to remove all whitespace
-//        int white = value.indexOf(' ');
-//        if (white < 0) {
-//            white = value.indexOf('\t');
-//        }
-//        if (white >= 0) {
-//            StringBuilder sb = new StringBuilder();
-//            int len = value.length();
-//            for (int i = 0; i < len; i++) {
-//                char ch = value.charAt(i);
-//                if ((ch != ' ') && (ch != '\t')) {
-//                    sb.append(ch);
-//                }
-//            }
-//            value = sb.toString();
-//        }
-//
-//        // Process each comma-delimited language specification
-//        parser.setString(value);        // ASSERT: parser is available to us
-//        int length = parser.getLength();
-//        while (true) {
-//
-//            // Extract the next comma-delimited entry
-//            int start = parser.getIndex();
-//            if (start >= length) {
-//                break;
-//            }
-//            int end = parser.findChar(',');
-//            String entry = parser.extract(start, end).trim();
-//            parser.advance();   // For the following entry
-//
-//            // Extract the quality factor for this entry
-//            double quality = 1.0;
-//            int semi = entry.indexOf(";q=");
-//            if (semi >= 0) {
-//                try {
-//                    String strQuality = entry.substring(semi + 3);
-//                    if (strQuality.length() <= 5) {
-//                        quality = Double.parseDouble(strQuality);
-//                    } else {
-//                        quality = 0.0;
-//                    }
-//                } catch (NumberFormatException e) {
-//                    quality = 0.0;
-//                }
-//                entry = entry.substring(0, semi);
-//            }
-//
-//            // Skip entries we are not going to keep track of
-//            if (quality < 0.00005) {
-//                continue;       // Zero (or effectively zero) quality factors
-//            }
-//            if ("*".equals(entry)) {
-//                continue;       // FIXME - "*" entries are not handled
-//            }
-//            // Extract the language and country for this entry
-//            String language = null;
-//            String country = null;
-//            String variant = null;
-//            int dash = entry.indexOf('-');
-//            if (dash < 0) {
-//                language = entry;
-//                country = "";
-//                variant = "";
-//            } else {
-//                language = entry.substring(0, dash);
-//                country = entry.substring(dash + 1);
-//                int vDash = country.indexOf('-');
-//                if (vDash > 0) {
-//                    String cTemp = country.substring(0, vDash);
-//                    variant = country.substring(vDash + 1);
-//                    country = cTemp;
-//                } else {
-//                    variant = "";
-//                }
-//            }
-//
-//            if (!isAlpha(language) || !isAlpha(country) || !isAlpha(variant)) {
-//                continue;
-//            }
-//
-//            // Add a new Locale to the list of Locales for this quality level
-//            Locale locale = new Locale(language, country, variant);
-//            Double key = Double.valueOf(-quality);  // Reverse the order
-//            ArrayList<Locale> values = locales.get(key);
-//            if (values == null) {
-//                values = new ArrayList<Locale>();
-//                locales.put(key, values);
-//            }
-//            values.add(locale);
-//
-//        }
-//
-//        // Process the quality values in highest->lowest order (due to
-//        // negating the Double value when creating the key)
-//        for (ArrayList<Locale> list : locales.values()) {
-//            Iterator<Locale> values = list.iterator();
-//            while (values.hasNext()) {
-//                Locale locale = values.next();
-//                addLocale(locale);
-//            }
-//        }
-//
-//    }
-
     /*
      * Returns true if the given string is composed of upper- or lowercase
      * letters only, false otherwise.
@@ -3641,54 +3342,6 @@ public class Request
      * Parse session id in URL.
      */
     protected void parseSessionId(String sessionParameterName, CharChunk uriBB) {
-        //START GLASSFISH-15508
-        /*
-        if (coyoteRequest.isRequestedSessionIdFromURL() &&
-                sessionParam.equals(Globals.SESSION_PARAMETER_NAME)) {
-            setRequestedSessionURL(true);
-            setRequestedSessionId(coyoteRequest.getRequestedSessionId());
-            setJrouteId(coyoteRequest.getJrouteId());
-
-            return;
-        }
-
-        sessionParam = ";" + sessionParam + "=";
-        int semicolon = uriBB.indexOf(sessionParam, 0, sessionParam.length(),
-                0);
-        if (semicolon >= 0) {
-
-            // Parse session ID, and extract it from the decoded request URI
-            int start = uriBB.getStart();
-            int end = uriBB.getEnd();
-
-            int sessionIdStart = start + semicolon + sessionParam.length();
-            int semicolon2 = uriBB.indexOf(';', sessionIdStart);
-        */
-        //END GLASSFISH-15508
-            /* SJSAS 6346226
-            if (semicolon2 >= 0) {
-            setRequestedSessionId
-            (new String(uriBB.getBuffer(), sessionIdStart,
-            semicolon2 - semicolon - match.length()));
-            } else {
-            setRequestedSessionId
-            (new String(uriBB.getBuffer(), sessionIdStart,
-            end - sessionIdStart));
-            }
-             */
-            //START GLASSFISH-15508
-            /*
-            // START SJSAS 6346226
-            String sessionId = null;
-            if (semicolon2 >= 0) {
-                sessionId = new String(uriBB.getBuffer(), sessionIdStart,
-                        semicolon2 - semicolon - sessionParam.length());
-            } else {
-                sessionId = new String(uriBB.getBuffer(), sessionIdStart,
-                        end - sessionIdStart);
-            }
-            */
-            //END GLASSFISH-15508
         
         // Parse session ID, and extract it from the decoded request URI
         String sessionParam = ";" + sessionParameterName + "=";
@@ -3710,29 +3363,6 @@ public class Request
 
             setRequestedSessionURL(true);
 
-            /* SJSWS 6376484
-            // Extract session ID from request URI
-            ByteChunk uriBC = coyoteRequest.requestURI().getByteChunk();
-            start = uriBC.getStart();
-            end = uriBC.getEnd();
-            semicolon = uriBC.indexOf(match, 0, match.length(), 0);
-
-            if (semicolon > 0) {
-            sessionIdStart = start + semicolon;
-            semicolon2 = uriBB.indexOf
-            (';', start + semicolon + match.length());
-            uriBC.setEnd(start + semicolon);
-            byte[] buf = uriBC.getBuffer();
-            if (semicolon2 >= 0) {
-            for (int i = 0; i < end - start - semicolon2; i++) {
-            buf[start + semicolon + i]
-            = buf[start + i + semicolon2];
-            }
-            uriBC.setBytes(buf, start, semicolon
-            + (end - start - semicolon2));
-            }
-            }
-             */
             // START SJSWS 6376484
             /*
              * Parse the session id from the encoded URI only if the encoded
@@ -3762,9 +3392,7 @@ public class Request
         if (sessionVersionString != null) {
             parseSessionVersionString(sessionVersionString);
 
-//            if (!coyoteRequest.requestURI().getByteChunk().isNull()) {
-                removeParameterFromRequestURI(Globals.SESSION_VERSION_PARAMETER);
-//            }
+            removeParameterFromRequestURI(Globals.SESSION_VERSION_PARAMETER);
         }
     }
 
@@ -3780,9 +3408,8 @@ public class Request
             if (session != null) {
                 session.setNote(Globals.JREPLICA_SESSION_NOTE, jreplica);
             }
-//            if (!coyoteRequest.requestURI().getByteChunk().isNull()) {
-                removeParameterFromRequestURI(Globals.JREPLICA_PARAMETER);
-//            }
+            
+            removeParameterFromRequestURI(Globals.JREPLICA_PARAMETER);
         }
 
     }
@@ -3851,8 +3478,6 @@ public class Request
         final DataChunk uriBC =
                 coyoteRequest.getRequest().getRequestURIRef().getRequestURIBC();
         
-//        start = uriBC.getStart();
-//        end = uriBC.getEnd();
         semicolon = uriBC.indexOf(parameter, 0);
 
         if (semicolon > 0) {
@@ -3867,15 +3492,6 @@ public class Request
             }
             
             uriBC.delete(semicolon, end);
-//            uriBC.setEnd(start + semicolon);
-//            byte[] buf = uriBC.getBuffer();
-//            if (semicolon2 >= 0) {
-//                for (int i = 0; i < end - start - semicolon2; i++) {
-//                    buf[start + semicolon + i] = buf[start + i + semicolon2];
-//                }
-//                uriBC.setBytes(buf, start, semicolon
-//                               + (end - start - semicolon2));
-//            }
         }
     }
     // END SJSWS 6376484
@@ -4584,88 +4200,4 @@ public class Request
             context.getManager() != null &&
             context.getManager().isSessionVersioningSupported();
     }
-
-    /**
-     * This class will be invoked by Grizzly when a suspended operation is
-     * resumed {@link org.glassfish.grizzly.http.server.Response#resume} or has timed out.
-     * See {@link org.glassfish.grizzly.http.server.Response.ResponseAttachment} for details.
-     */
-//    private final static class RequestAttachment<A> extends
-//            org.glassfish.grizzly.http.server.Response.ResponseAttachment {
-//
-//        private Response res;
-//
-//        public RequestAttachment(Long timeout, A attachment,
-//                CompletionHandler<? super A> completionHandler,
-//                Response res) {
-//            super(timeout, attachment, completionHandler, res.getCoyoteResponse());
-//            this.res = res;
-//        }
-//
-//        @Override
-//        public void resume() {
-//            getCompletionHandler().resumed(getAttachment());
-//            if (log.isLoggable(Level.FINE)) {
-//                log.log(Level.FINE, "RequestAttachement.resume: " + res);
-//            }
-//            completeProcessing();
-//        }
-//
-//        /**
-//         * {@inheritDoc}
-//         */
-//        //@Override
-//        public void handleSelectedKey(SelectionKey selectionKey) {
-//            if (!selectionKey.isValid() || discardDisconnectEvent){
-//                selectionKey.cancel();
-//                return;
-//            }
-//            try {
-//                ((Request)getAttachment()).clientClosedConnection = ((SocketChannel)selectionKey.channel()).
-//                    read(ByteBuffer.allocate(1)) == -1;
-//            } catch (IOException ex) {
-//
-//            } finally{
-//                if (((Request)getAttachment()).clientClosedConnection){
-//                   selectionKey.cancel();
-//                   getCompletionHandler().cancelled(getAttachment());
-//                }
-//            }
-//        }
-//
-//        void completeProcessing() {
-//            try {
-//                res.finishResponse();
-//            } catch (IOException ex) {
-//                if (log.isLoggable(Level.FINE)) {
-//                    log.log(Level.FINE, "res.finishResponse()" + res);
-//                }
-//            }
-//            res.recycle();
-//            res.getRequest().recycle();
-//        }
-//
-//        @Override
-//        public boolean timeout() {
-//            // If the buffers are empty, commit the response header
-//            boolean result = true;
-//
-//            try {
-//                if (log.isLoggable(Level.FINE)) {
-//                    log.log(Level.FINE, "RequestAttachement.timeout: " + res);
-//                }
-//                cancel();
-//            } finally {
-//                Request req = (Request)getAttachment();
-//                final AsyncContextImpl asyncContext = req.asyncContext;
-//                if (asyncContext != null && !asyncContext.getAndResetDispatchInScope()) {
-//                completeProcessing();
-//                } else {
-//                    result = false;
-//            }
-//        }
-//
-//            return result;
-//    }
-//}
 }
