@@ -174,6 +174,9 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             if (requestTracing != null) {
                 requestTracing.startTrace();
             }
+            if (stuckThreadsStore != null){
+                stuckThreadsStore.registerThread(Thread.currentThread().getId());
+            }
             handler.call();
         } catch (Exception ex) {
             try {

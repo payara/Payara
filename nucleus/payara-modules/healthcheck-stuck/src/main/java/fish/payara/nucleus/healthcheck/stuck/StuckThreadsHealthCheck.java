@@ -81,19 +81,8 @@ public class StuckThreadsHealthCheck extends BaseHealthCheck<HealthCheckStuckThr
     @Override
     public HealthCheckResult doCheck() {
         
-        
         HealthCheckResult result = new HealthCheckResult();
-        result.add(new HealthCheckResultEntry(HealthCheckResultStatus.GOOD, "Running stuck threads checker"));
-        Logger.getGlobal().log(Level.INFO, "Running stuck threads checker");
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        long[] deadlockthreadids = bean.findDeadlockedThreads();
-        if (deadlockthreadids != null) {
-            ThreadInfo[] lockedThreads = bean.getThreadInfo(deadlockthreadids);
-            for (ThreadInfo info : lockedThreads) {
-                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread: " + info.toString()));
-
-            }
-        }
         
         Long thresholdNanos = TimeUnit.NANOSECONDS.convert(options.getTimeStuck(), options.getUnitStuck());
         
@@ -101,13 +90,12 @@ public class StuckThreadsHealthCheck extends BaseHealthCheck<HealthCheckStuckThr
         for (Long thread : threads.keySet()){
             Long timeHeld = threads.get(thread);
             if (timeHeld > thresholdNanos){
-                String message = "Stuck Thread " + thread;
-                /*for (StackTraceElement line : thread.getStackTrace()){
-                    message += line + "\n";
-                }*/
-                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, message));
+                ThreadInfo info = bean.getThreadInfo(thread, Integer.MAX_VALUE);
+                if (info != null){//check thread hasn't died already
+                    result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread: " + info.toString()));
+                    
+                }
             }
-            
         }
         
         return result;
