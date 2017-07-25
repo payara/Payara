@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author jonathan coustick
  */
 @Service(name = "stuck-threads-store")
-@RunLevel(10)
+@RunLevel(StartupRunLevel.VAL)
 public class StuckThreadsStore {
 
     private ConcurrentHashMap<Long, Long> threads;

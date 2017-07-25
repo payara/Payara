@@ -42,7 +42,6 @@ package fish.payara.nucleus.healthcheck.stuck.configuration;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
 import fish.payara.nucleus.healthcheck.configuration.CheckerType;
-import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import java.beans.PropertyVetoException;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
@@ -53,7 +52,7 @@ import org.jvnet.hk2.config.Configured;
  */
 @Configured
 @CheckerConfigurationType(type = CheckerType.STUCK_THREAD)
-public interface StuckThreadsChecker extends Checker, ThresholdDiagnosticsChecker{
+public interface StuckThreadsChecker extends Checker {
     
     @Attribute(defaultValue = "STUCK")
     String getName();
