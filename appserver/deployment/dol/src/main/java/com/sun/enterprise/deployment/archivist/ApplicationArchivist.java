@@ -40,6 +40,11 @@
 
 package com.sun.enterprise.deployment.archivist;
 
+import static com.sun.enterprise.deployment.util.DOLUtils.getDefaultLogger;
+import static com.sun.enterprise.deployment.util.DOLUtils.readAlternativeRuntimeDescriptor;
+import static com.sun.enterprise.deployment.util.DOLUtils.setExtensionArchivistForSubArchivist;
+import static com.sun.enterprise.deployment.util.DOLUtils.warType;
+import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 
 import java.io.BufferedOutputStream;
@@ -72,6 +77,7 @@ import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EarType;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
@@ -529,18 +535,22 @@ public class ApplicationArchivist extends Archivist<Application> {
     public boolean readModulesDescriptors(Application app, ReadableArchive appArchive) throws IOException, SAXParseException {
 
         List<ModuleDescriptor> nonexistentModules = new ArrayList<ModuleDescriptor>();
-
         List<ModuleDescriptor> sortedModules = sortModules(app);
 
         for (ModuleDescriptor aModule : sortedModules) {
             if (aModule.getArchiveUri().indexOf(" ") != -1) {
-                throw new IllegalArgumentException(localStrings.getLocalString("enterprise.deployment.unsupporturi",
-                        "Unsupported module URI {0}, it contains space(s)", new Object[] { aModule.getArchiveUri() }));
+                throw new IllegalArgumentException(
+                    localStrings.getLocalString(
+                        "enterprise.deployment.unsupporturi", "Unsupported module URI {0}, it contains space(s)", 
+                        new Object[] { aModule.getArchiveUri() }));
             }
-            if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
-                DOLUtils.getDefaultLogger().fine("Opening sub-module " + aModule);
+            
+            if (getDefaultLogger().isLoggable(FINE)) {
+                getDefaultLogger().fine("Opening sub-module " + aModule);
             }
+            
             BundleDescriptor descriptor = null;
+            
             Archivist newArchivist = archivistFactory.get().getArchivist(aModule.getModuleType());
             newArchivist.initializeContext(this);
             newArchivist.setRuntimeXMLValidation(this.getRuntimeXMLValidation());
@@ -549,15 +559,17 @@ public class ApplicationArchivist extends Archivist<Application> {
 
             ReadableArchive embeddedArchive = appArchive.getSubArchive(aModule.getArchiveUri());
             if (embeddedArchive == null) {
-                throw new IllegalArgumentException(localStrings.getLocalString("enterprise.deployment.nosuchmodule",
-                        "Could not find sub module [{0}] as defined in application.xml", new Object[] { aModule.getArchiveUri() }));
+                throw new IllegalArgumentException(
+                    localStrings.getLocalString(
+                        "enterprise.deployment.nosuchmodule", "Could not find sub module [{0}] as defined in application.xml", 
+                        new Object[] { aModule.getArchiveUri() }));
             }
+            
             embeddedArchive.setParentArchive(appArchive);
-            DOLUtils.setExtensionArchivistForSubArchivist(habitat, embeddedArchive, aModule, app, newArchivist);
+            setExtensionArchivistForSubArchivist(habitat, embeddedArchive, aModule, app, newArchivist);
 
             if (aModule.getAlternateDescriptor() != null) {
-                // the module use alternate deployement descriptor, ignore the
-                // DDs in the archive.
+                // The module use alternate deployement descriptor, ignore the DDs in the archive.
                 InputStream is = appArchive.getEntry(aModule.getAlternateDescriptor());
                 DeploymentDescriptorFile ddFile = newArchivist.getStandardDDFile();
                 ddFile.setXMLValidation(newArchivist.getXMLValidation());
@@ -582,27 +594,33 @@ public class ApplicationArchivist extends Archivist<Application> {
                         }
                     }
                 }
+                
                 newArchivist.postStandardDDsRead(descriptor, embeddedArchive, extensions);
                 newArchivist.readAnnotations(embeddedArchive, descriptor, extensions);
                 newArchivist.postAnnotationProcess(descriptor, embeddedArchive);
                 newArchivist.postOpen(descriptor, embeddedArchive);
-                // now reads the runtime deployment descriptor...
+                
+                // Now reads the runtime deployment descriptor...
                 if (isHandlingRuntimeInfo()) {
-                    DOLUtils.readAlternativeRuntimeDescriptor(appArchive, embeddedArchive, newArchivist, descriptor,
-                            aModule.getAlternateDescriptor());
-                    // read extensions runtime deployment descriptors if any
+                    
+                    readAlternativeRuntimeDescriptor(
+                        appArchive, embeddedArchive, newArchivist, descriptor,
+                        aModule.getAlternateDescriptor());
+                    
+                    // Read extensions runtime deployment descriptors if any
                     for (Map.Entry<ExtensionsArchivist, RootDeploymentDescriptor> extension : extensions.entrySet()) {
-                        // after standard DD and annotations are processed
-                        // we should have an extension descriptor now
+                        
+                        // After standard DD and annotations are processed we should have an extension descriptor now
                         if (extension.getValue() != null) {
                             extension.getKey().readRuntimeDeploymentDescriptor(newArchivist, embeddedArchive, extension.getValue());
                         }
                     }
                 }
             } else {
-                // open the subarchive to get the deployment descriptor...
+                // Open the subarchive to get the deployment descriptor...
                 descriptor = newArchivist.open(embeddedArchive, app);
             }
+            
             embeddedArchive.close();
             if (descriptor != null) {
                 descriptor.getModuleDescriptor().setArchiveUri(aModule.getArchiveUri());
@@ -611,23 +629,33 @@ public class ApplicationArchivist extends Archivist<Application> {
                 descriptor.setApplication(app);
                 aModule.setManifest(newArchivist.getManifest());
                 
-                // for optional application.xml case, set the
-                // context root as module name for web modules
+                // For optional application.xml case, set the context root as module name for web modules
                 if (!appArchive.exists("META-INF/application.xml")) {
-                    if (aModule.getModuleType().equals(DOLUtils.warType())) {
-                        aModule.setContextRoot(aModule.getModuleName());
+                    if (aModule.getModuleType().equals(warType())) {
+                        
+                        // Need to honour the default-context-path element specified in web.xml in case application.xml is not 
+                        // present in an EAR.
+                        WebBundleDescriptor webBundleDescriptor = (WebBundleDescriptor) descriptor;
+                        if (webBundleDescriptor.getContextRoot() != null && !webBundleDescriptor.getContextRoot().equals("")) {
+                            aModule.setContextRoot(webBundleDescriptor.getContextRoot());
+                        }
+                        else {
+                            aModule.setContextRoot(aModule.getModuleName());
+                        }
                     }
                 }
             } else {
-                // display a message only if we had a handle on the sub archive
+                // Display a message only if we had a handle on the sub archive
                 return false;
             }
         }
-        // now remove all the non-existent modules from app so these modules
+        
+        // Now remove all the non-existent modules from app so these modules
         // don't get processed further
         for (ModuleDescriptor nonexistentModule : nonexistentModules) {
             app.removeModule(nonexistentModule);
         }
+        
         return true;
     }
 
