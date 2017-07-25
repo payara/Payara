@@ -106,5 +106,10 @@ public class StuckThreadsHealthCheck extends BaseHealthCheck<HealthCheckStuckThr
         return new HealthCheckStuckThreadExecutionOptions(Boolean.valueOf(checker.getEnabled()), Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()),
                 Long.parseLong(checker.getThreshold()), asTimeUnit(checker.getThresholdTimeUnit()));
     }    
+
+    @Override
+    protected String getDescription() {
+        return "healthcheck.description.stuckThreads";
+    }
     
 }
