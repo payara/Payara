@@ -204,7 +204,7 @@
         
         <!-- Servlet -->
         <servlet-api.version>4.0.0-b07</servlet-api.version>
-        <grizzly.version>2.4.0-beta9</grizzly.version>
+        <grizzly.version>2.4.0</grizzly.version>
         <grizzly.npn.version>1.5</grizzly.npn.version>
         
         <!-- JAX-RS -->
@@ -221,7 +221,7 @@
         <javax.el-api.version>3.0.1-b04</javax.el-api.version>
         
         <!-- JavaMail -->
-        <mail.version>1.6.0-rc2</mail.version>
+        <mail.version>1.6.0</mail.version>
         
         <management-api.version>1.1-rev-1</management-api.version>
         
@@ -231,9 +231,10 @@
         <!-- Other -->
         
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <hk2.version>2.5.0-b42</hk2.version>
-        <hk2.plugin.version>2.5.0-b42</hk2.plugin.version>
+        <hk2.version>2.5.0-b44</hk2.version>
+        <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
 
+        <!-- 4.1.1-b001  -->
         <glassfish-corba.version>4.0.1.payara-p6</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <saaj-api.version>1.4.0</saaj-api.version>
