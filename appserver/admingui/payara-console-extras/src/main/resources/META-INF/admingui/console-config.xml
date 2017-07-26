@@ -65,9 +65,9 @@
     
     <integration-point
         id="asadminRecorder"
-        type="org.glassfish.admingui:serverInstTab"
+        type="org.glassfish.admingui:domainTab"
         priority="50"
-        parentId="serverInstTabs"
+        parentId="domainTabs"
         content="asadminRecorder/asadminRecorderTabs.jsf"
     />
     

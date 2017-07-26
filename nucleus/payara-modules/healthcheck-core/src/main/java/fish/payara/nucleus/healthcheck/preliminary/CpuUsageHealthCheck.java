@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -74,6 +75,11 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWit
     @Override
     public HealthCheckWithThresholdExecutionOptions constructOptions(CpuUsageChecker checker) {
         return super.constructThresholdOptions(checker);
+    }
+
+    @Override
+    protected String getDescription() {
+        return "healthcheck.description.cpu";
     }
 
     @Override
