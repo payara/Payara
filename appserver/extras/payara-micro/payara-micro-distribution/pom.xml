@@ -406,7 +406,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.batch</groupId>
+            <groupId>fish.payara.appserver</groupId>
             <artifactId>payara-jbatch</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
