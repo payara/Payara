@@ -37,11 +37,8 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck.stuck.configuration;
+package fish.payara.nucleus.healthcheck.configuration;
 
-import fish.payara.nucleus.healthcheck.configuration.Checker;
-import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
-import fish.payara.nucleus.healthcheck.configuration.CheckerType;
 import java.beans.PropertyVetoException;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;

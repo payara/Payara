@@ -81,36 +81,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     <include>**/*.properties</include>
                 </includes>
             </resource>
-        </resources>
-        
-       <!-- <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                        <configuration>
-                            <instructions>
-                                <Export-Package>
-                                    fish.payara.nucleus.healthcheck,
-                                    fish.payara.nucleus.healthcheck.admin,
-                                    fish.payara.nucleus.healthcheck.admin.notifier,
-                                    fish.payara.nucleus.healthcheck.configuration,
-                                    fish.payara.nucleus.healthcheck.preliminary,
-                                    fish.payara.nucleus.healthcheck.entity
-                                </Export-Package>
-                            </instructions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>-->
-        
+        </resources>        
     </build>
 
     <dependencies>

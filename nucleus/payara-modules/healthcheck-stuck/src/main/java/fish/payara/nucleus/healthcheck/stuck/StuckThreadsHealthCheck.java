@@ -44,7 +44,7 @@ import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckStuckThreadExecutionOptions;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
-import fish.payara.nucleus.healthcheck.stuck.configuration.StuckThreadsChecker;
+import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
