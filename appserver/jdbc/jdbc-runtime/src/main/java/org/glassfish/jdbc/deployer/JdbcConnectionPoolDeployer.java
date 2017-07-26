@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.jdbc.deployer;
 
@@ -545,6 +545,11 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
                     propList.add(new ConnectorConfigProperty("TimeToKeepQueriesInMinutes",
                             rp.getValue(), "TimeToKeepQueriesInMinutes", "java.lang.String"));
 
+                } else if ("MAXCACHESIZE".equals(name.toUpperCase(Locale.getDefault())) || "MAX-CACHE-SIZE".equals(name.toUpperCase(Locale.getDefault()))){
+                    
+                    propList.add(new ConnectorConfigProperty("MaxCacheSize",
+                            rp.getValue(), "MaxCacheSize", "java.lang.String"));
+                    
                 } else if (mcfConPropKeys.containsKey(name.toUpperCase(Locale.getDefault()))) {
 
                     propList.add(new ConnectorConfigProperty(

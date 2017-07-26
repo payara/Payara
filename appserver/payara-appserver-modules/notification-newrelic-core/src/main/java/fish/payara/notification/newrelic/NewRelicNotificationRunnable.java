@@ -80,7 +80,9 @@ public class NewRelicNotificationRunnable extends NotificationRunnable<NewRelicE
                     objectMapper.writeValue(outputStream, message);
                     if (connection.getResponseCode() != 200) {
                         logger.log(Level.SEVERE, "Error occurred while connecting New Relic. " +
-                                "Check your Account ID and Key. HTTP response code: " + connection.getResponseCode());
+                                "Check your Account ID and Key. HTTP response code: " + connection.getResponseCode() + connection.getResponseMessage());
+                    } else {
+                        logger.log(Level.FINE, "Message sent successfully");
                     }
                 }
             }
