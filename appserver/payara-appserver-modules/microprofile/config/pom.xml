@@ -54,7 +54,7 @@ holder.
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>1.0-RC2</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.nucleus.microprofile.config</groupId>

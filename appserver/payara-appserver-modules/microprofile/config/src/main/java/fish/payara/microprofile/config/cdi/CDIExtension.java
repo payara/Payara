@@ -52,15 +52,39 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanAttributes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.DeploymentException;
 import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessInjectionPoint;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
  * CDI extension that implements the Microprofile Config API ConfigProperty injection
  * @author Steve Millidge <Payara Services Limited>
  */
 public class CDIExtension implements Extension {
+    
+    public void validateInjectionPoint(@Observes ProcessInjectionPoint<?, ?> pip) {
+        
+        // we need to validate the injection point for the ConfigProperty to meet the 3 TCK tests
+        // (1) Deployment should fail if there is no converter for a class
+        // (2) Deployment should fail if there is no value for an injected primitive
+        // (3) Deployment should fail if a primitive conversion will fail from the property value
+        
+        // ok check this is a config property injection point
+        ConfigProperty property = pip.getInjectionPoint().getAnnotated().getAnnotation(ConfigProperty.class);
+        if (property != null) {
+            // see if we can resolve the injection point in the future
+            try {
+                if (Class.class.isInstance(pip.getInjectionPoint().getType())) {
+                    ConfigPropertyProducer.getGenericProperty(pip.getInjectionPoint());
+                }
+            }catch (Throwable de ) {
+                pip.addDefinitionError(new DeploymentException("Deploment Failure for ConfigProperty " + property.name() + " in class " + pip.getInjectionPoint().getBean().getBeanClass().getName(),de));
+            }
+        }
+    }
 
     /**
      * Register the ConfigProducer bean that has producer methods for Config and Optional
