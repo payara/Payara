@@ -706,16 +706,6 @@ public class VersioningUtilsTest {
         public void setDeploymentTime(String value) throws PropertyVetoException{
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
-        @Override
-        public String getCdiDevMode() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void setCdiDevMode(String string) throws PropertyVetoException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
 
         @Override
         public List<Module> getModule() {

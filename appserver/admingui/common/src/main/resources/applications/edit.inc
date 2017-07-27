@@ -94,7 +94,7 @@
         </sun:property>
 
         <sun:property id="cdiDevModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.cdiDevMode}" helpText="$resource{i18n.deploy.cdiDevModeHelp}">
-            <sun:checkbox id="cdiDevMode" label=" " selected="#{pageSession.valueMap['cdiDevMode']}" selectedValue="true" />
+            <sun:checkbox id="cdiDevMode" label="$resource{i18n.common.Enabled}" selected="#{pageSession.cdiDevModeEnabled}" selectedValue="true" />
         </sun:property>
 
         <sun:property id="availability" rendered="#{pageSession.finalShowAvail}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
@@ -131,12 +131,16 @@
         <!beforeCreate
             setPageSessionAttribute(key="javaWebStartEnabled" value="true");
             setPageSessionAttribute(key="implicitCdiEnabled" value="true");
+            setPageSessionAttribute(key="cdiDevModeEnabled" value="true");
             foreach (var="oneProp" list="#{pageSession.tableList}") {
                 if (#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}){
                     setPageSessionAttribute(key="javaWebStartEnabled" value="#{requestScope.oneProp.value}");
                 }
                 if (#{requestScope.oneProp.name}=implicitCdiEnabled){
                     setPageSessionAttribute(key="implicitCdiEnabled" value="#{requestScope.oneProp.value}");
+                }
+                if (#{requestScope.oneProp.name}=cdiDevModeEnabled){
+                    setPageSessionAttribute(key="cdiDevModeEnabled" value="#{requestScope.oneProp.value}");
                 }
             }
         />

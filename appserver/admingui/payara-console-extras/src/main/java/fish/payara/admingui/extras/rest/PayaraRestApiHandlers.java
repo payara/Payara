@@ -37,6 +37,7 @@
  */
 package fish.payara.admingui.extras.rest;
 
+import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -297,13 +298,16 @@ public class PayaraRestApiHandlers
                     continue;
                 }
                 
-                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
+                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName + "/property";
                 Map attrMap = Collections.singletonMap("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(endpoint, attrMap, "GET", null, true, false);
                 Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
-                Map entity = (Map)payaraEndpointsExtraProps.get("entity");
-                if(Boolean.parseBoolean((String)entity.get("cdiDevMode"))){
-                      result.put(componentName, true);
+                List<Map> properties = (List<Map>)payaraEndpointsExtraProps.get("properties");
+                for (Map property : properties) {
+                    if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
+                            && Boolean.parseBoolean((String) property.get("value"))) {
+                        result.put(componentName, true);
+                    }
                 }
             }
           }catch(Exception ex){

@@ -195,7 +195,7 @@ public class ServerTags  {
     static public final String APPLICATION_REF = "application-ref";
     //static public final String ENABLED = "enabled";
     static public final String VIRTUAL_SERVERS = "virtual-servers";
-    static public final String CDI_DEV_MODE = "cdi-dev-mode";
+    static public final String CDI_DEV_MODE_ENABLED_PROP = "cdiDevModeEnabled";
     
     //static public final String LB_ENABLED = "lb-enabled";
     //static public final String DISABLE_TIMEOUT_IN_MINUTES = "disable-timeout-in-minutes";

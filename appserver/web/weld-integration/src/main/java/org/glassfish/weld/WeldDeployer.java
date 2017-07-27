@@ -100,6 +100,7 @@ import java.security.AccessController;
 import javax.enterprise.inject.spi.Extension;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
+import org.glassfish.weld.connector.WeldUtils;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
@@ -645,8 +646,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     }
 
     private boolean isDevelopmentMode(DeploymentContext context) {
-        DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
-        boolean devMode = deployParams.isCdiDevMode() || Boolean.getBoolean(DEV_MODE_PROPERTY);
+        boolean devMode = WeldUtils.isCDIDevModeEnabled(context) || Boolean.getBoolean(DEV_MODE_PROPERTY);
         WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
         if (!devMode && wDesc != null) {
             Enumeration<ContextParameter> cpEnumeration = wDesc.getContextParameters();

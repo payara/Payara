@@ -220,15 +220,6 @@ public class DeployCommandParameters extends OpsParams {
     @Param(name=ParameterNames.DEPLOYMENT_ORDER, optional=true)
     public Integer deploymentorder = 100;
 
-    @Param(name=ParameterNames.CDI_DEV_MODE, optional=true, defaultValue="false")
-    public Boolean cdidevmode ;
-    public Boolean isCdiDevMode () {
-        if (cdidevmode == null) {
-            return false;
-        }
-        return cdidevmode;
-    }
-
     // todo : why is this not a param ?
     public Boolean clientJarRequested = true;
     public Boolean isClientJarRequested() {
@@ -273,7 +264,6 @@ public class DeployCommandParameters extends OpsParams {
         public static final String SKIP_DS_FAILURE = "skipdsfailure";
         public static final String DEPLOYMENT_PLAN = "deploymentplan";
         public static final String DEPLOYMENT_ORDER = "deploymentorder";
-        public static final String CDI_DEV_MODE = "cdidevmode";
         public static final String ALT_DD = "altdd";
         public static final String RUNTIME_ALT_DD = "runtimealtdd";
     }

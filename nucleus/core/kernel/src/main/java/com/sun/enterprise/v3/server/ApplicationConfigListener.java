@@ -73,6 +73,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.TransactionListener;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+import org.jvnet.hk2.config.types.Property;
 
 @Service
 @RunLevel(PostStartupRunLevel.VAL)
@@ -141,9 +142,11 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
 
         for (PropertyChangeEvent event : changes) {
             if (event.getSource() instanceof Application || 
-                event.getSource() instanceof ApplicationRef) {
+                event.getSource() instanceof ApplicationRef ||
+                event.getSource() instanceof Property) {
                 Object oldValue = event.getOldValue();
                 Object newValue = event.getNewValue();
+                String propertyName = null;
                 if (oldValue != null && newValue != null && 
                     oldValue instanceof String && 
                     newValue instanceof String &&
@@ -154,22 +157,27 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                     String appName = null;
                     if (parent instanceof Application) {
                         appName = ((Application)parent).getName();
+                        propertyName = event.getPropertyName();
                     } else if (parent instanceof ApplicationRef) {
                         appName = ((ApplicationRef)parent).getRef();
+                        propertyName = event.getPropertyName();
+                    } else if (parent instanceof Property) {
+                        appName = ((Property)parent).getParent(Application.class).getName();
+                        propertyName = ((Property)parent).getName();
                     }
                     // if it's not a user application, let's not do
                     // anything
                     if (applications.getApplication(appName) == null) {
                         return;
                     }
-                    if (event.getPropertyName().equals(ServerTags.ENABLED)) {
+                    if (ServerTags.ENABLED.equals(propertyName)) {
                         // enable or disable application accordingly
                         handleAppEnableChange(event.getSource(), 
                             appName, Boolean.valueOf((String)newValue));
-                    } else if (event.getPropertyName().equals(ServerTags.CONTEXT_ROOT) 
-                            || event.getPropertyName().equals(ServerTags.VIRTUAL_SERVERS) 
-                            || event.getPropertyName().equals(ServerTags.AVAILABILITY_ENABLED)
-                            || event.getPropertyName().equals(ServerTags.CDI_DEV_MODE)) {
+                    } else if (ServerTags.CONTEXT_ROOT.equals(propertyName)
+                            || ServerTags.VIRTUAL_SERVERS.equals(propertyName)
+                            || ServerTags.AVAILABILITY_ENABLED.equals(propertyName)
+                            || ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(propertyName)) {
                         // for other changes, reload the application
                         handleOtherAppConfigChanges(event.getSource(), appName);
                     }
