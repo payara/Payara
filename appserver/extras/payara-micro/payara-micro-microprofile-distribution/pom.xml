@@ -160,10 +160,9 @@
             <artifactId>asm-all-repackaged</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate.validator.version}</version>
-            <classifier>payara-p1</classifier>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>
@@ -709,10 +708,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator-cdi</artifactId>
             <version>${hibernate.validator.version}</version>
-            <classifier>payara-p1</classifier>
         </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>
