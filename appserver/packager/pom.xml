@@ -180,9 +180,20 @@
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
         <module>payara-fang</module>
-        <module>microprofile-package</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>microprofile-package</module>
+            </modules>
+        </profile>
+    </profiles>
+    
     <build>
         <outputDirectory>${temp.dir}</outputDirectory>
         <pluginManagement>
