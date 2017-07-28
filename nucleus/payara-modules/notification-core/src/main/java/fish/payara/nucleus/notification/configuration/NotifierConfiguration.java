@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 import java.beans.PropertyVetoException;
+import org.glassfish.api.admin.config.ConfigExtension;
 
 /**
  * Main configuration class that is being extended by specific notifier configurations, such as {@link LogNotifierConfiguration}.
@@ -51,7 +52,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
-public interface NotifierConfiguration extends ConfigBeanProxy {
+public interface NotifierConfiguration extends ConfigBeanProxy, ConfigExtension {
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
