@@ -2027,7 +2027,7 @@ var AppComponent = (function () {
         this.zendeskService.genericFields = [];
         this.zendeskService.OAuthToken = null;
         this.router.navigate(['/login']);
-        this.payaraService.setStoredEmail('');
+        this.payaraService.setStoredEmail(null);
     };
     return AppComponent;
 }());
