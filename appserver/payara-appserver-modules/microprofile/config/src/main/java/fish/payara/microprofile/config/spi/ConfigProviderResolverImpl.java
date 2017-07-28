@@ -139,6 +139,13 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 if (testInfo.getAppClassLoader().equals(loader)) {
                     appInfo = testInfo;
                     return appInfo;
+                } else {
+                    // search the modules within the app info to see if they have the classloader
+                    for (ModuleInfo mi : testInfo.getModuleInfos()) {
+                        if (mi.getModuleClassLoader().equals(loader)) {
+                            return testInfo;
+                        }
+                    }
                 }
             }
         } else {           
