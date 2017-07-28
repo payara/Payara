@@ -25,6 +25,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <groupId>fish.payara.appserver</groupId>
     <artifactId>payara-jbatch</artifactId>
     <packaging>jar</packaging>
     <name>IBM JBatch Combined</name>
