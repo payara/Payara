@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.notification.TimeUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -121,6 +122,9 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Min(value = 1, message = "Store size must be greater than 0")
     private Integer historicalTraceStoreSize;
 
+    @Param(name = "historicalTraceStoreTimeout", optional = true)
+    private String historicalTraceStoreTimeout;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -147,6 +151,10 @@ public class HealthCheckConfigurer implements AdminCommand {
                         }
                         if (historicalTraceStoreSize != null) {
                             healthCheckServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
+
+                        if (historicalTraceStoreTimeout != null) {
+                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return healthCheckServiceConfigurationProxy;
@@ -175,7 +183,6 @@ public class HealthCheckConfigurer implements AdminCommand {
         enableLogNotifier(context);
     }
 
-
     private void enableLogNotifier(AdminCommandContext context) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
@@ -187,6 +194,9 @@ public class HealthCheckConfigurer implements AdminCommand {
         params.add("target", target);
         if (notifierEnabled != null) {
             params.add("enabled", notifierEnabled.toString());
+        }
+        if (notifierEnabled == null && enabled != null) {
+            params.add("enabled", enabled.toString());
         }
         inv.parameters(params);
         inv.execute();
@@ -205,6 +215,10 @@ public class HealthCheckConfigurer implements AdminCommand {
         }
         if (historicalTraceStoreSize != null) {
             service.setHistoricalTraceStoreSize(historicalTraceStoreSize);
+        }
+        if (historicalTraceStoreTimeout != null) {
+            long timeout = TimeUtil.setStoreTimeLimit(this.historicalTraceStoreTimeout);
+            service.setHistoricalTraceStoreTimeout(timeout);
         }
     }
 }

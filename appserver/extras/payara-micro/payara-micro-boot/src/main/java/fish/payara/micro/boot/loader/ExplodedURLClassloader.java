@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,7 @@ import java.util.logging.Logger;
  *
  * @author steve
  */
-public class ExplodedURLClassloader extends URLClassLoader {
+public class ExplodedURLClassloader extends OpenURLClassLoader {
 
     private final File explodedDir;
     private boolean deleteOnExit = false;
@@ -150,4 +150,5 @@ public class ExplodedURLClassloader extends URLClassLoader {
         }
 
     }
+     
 }

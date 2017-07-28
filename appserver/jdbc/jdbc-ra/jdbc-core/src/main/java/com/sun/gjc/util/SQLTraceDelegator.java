@@ -37,14 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.gjc.util;
 
 import com.sun.gjc.monitoring.JdbcRAConstants;
 import com.sun.gjc.monitoring.SQLTraceProbeProvider;
 import com.sun.logging.LogDomains;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.jdbc.SQLTraceListener;
@@ -61,7 +62,7 @@ import org.glassfish.api.jdbc.SQLTraceRecord;
 public class SQLTraceDelegator implements SQLTraceListener {
 
     //List of listeners 
-    protected List<SQLTraceListener> sqlTraceListenersList;
+    protected Map<Class<? extends SQLTraceListener>, SQLTraceListener> sqlTraceListeners;
     private String poolName;
     private String appName;
     private String moduleName;
@@ -99,16 +100,13 @@ public class SQLTraceDelegator implements SQLTraceListener {
      * @param listener
      */
     public void registerSQLTraceListener(SQLTraceListener listener) {
-        if (sqlTraceListenersList == null) {
-            sqlTraceListenersList = new ArrayList<>();
+        if (sqlTraceListeners == null) {
+            sqlTraceListeners = new HashMap<>();
         }
         // check there isn't already a listener of the specified type
-        for (SQLTraceListener test : sqlTraceListenersList) {
-            if (test.getClass().equals(listener.getClass())) {
-                return;
-            }
+        if (sqlTraceListeners.get(listener.getClass()) == null) {
+            sqlTraceListeners.put(listener.getClass(), listener);
         }
-        sqlTraceListenersList.add(listener);
     }
 
     /**
@@ -117,16 +115,10 @@ public class SQLTraceDelegator implements SQLTraceListener {
      * @param listener The class of listener to remove
      */
     public void deregisterSQLTraceListener(Class listener) {
-        if (sqlTraceListenersList == null) {
+        if (sqlTraceListeners == null) {
             return;
         }
-        
-        for (SQLTraceListener registeredListener : sqlTraceListenersList) {
-            if (registeredListener.getClass().equals(listener)) {
-                sqlTraceListenersList.remove(registeredListener);
-                break;
-            }
-        }
+        sqlTraceListeners.remove(listener);
     }
     
     /**
@@ -134,25 +126,19 @@ public class SQLTraceDelegator implements SQLTraceListener {
      * @return true if there are listeners registered.
      */
     public boolean listenersRegistered() {
-        boolean listenersRegistered = false;
-        
-        if (!sqlTraceListenersList.isEmpty()) {
-            listenersRegistered = true;
-        }
-        
-        return listenersRegistered;
+        return !sqlTraceListeners.isEmpty();
     }
-    
+        
     @Override
     public void sqlTrace(SQLTraceRecord record) {
         if (record != null) {
             record.setPoolName(poolName);
-            if (sqlTraceListenersList != null) {
-                for (SQLTraceListener listener : sqlTraceListenersList) {
+            if (sqlTraceListeners != null) {
+                for (SQLTraceListener listener : sqlTraceListeners.values()) {
                     try {
                         listener.sqlTrace(record);
                     } catch (Throwable t) { // don't let a broken listener break the JDBC calls
-                      logger.log(Level.WARNING, "SQL Trace Listener threw exception", t);
+                        logger.log(Level.WARNING, "SQL Trace Listener threw exception", t);
                     }
                 }
             }
@@ -170,7 +156,7 @@ public class SQLTraceDelegator implements SQLTraceListener {
                         break;
                     }
                     if (sqlQuery != null) {
-                        probeProvider.traceSQLEvent(poolName, appName, moduleName, sqlQuery);
+                        probeProvider.traceSQLEvent(poolName, appName, moduleName, sqlQuery, record.getExecutionTime());
                     }
                 }
             }

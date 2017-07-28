@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ 
+ // Portions Copyright [2017] [Payara Foundation and/or its affiliates.]
 
 /*
  * JmsResourceHandler.java
@@ -52,69 +54,76 @@
  */
 package org.glassfish.admingui.common.handlers;
 
+import static java.util.logging.Level.FINE;
+import static org.glassfish.admingui.common.util.GuiUtil.getCommonMessage;
+import static org.glassfish.admingui.common.util.GuiUtil.getLogger;
+import static org.glassfish.admingui.common.util.GuiUtil.getSessionValue;
+import static org.glassfish.admingui.common.util.RestUtil.getAttributesMap;
+
+import java.net.URLEncoder;
+import java.util.List;
+import java.util.Map;
+
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.admingui.common.util.RestUtil;
 
 public class JmsResourceHandler {
 
-    public JmsResourceHandler() {
-    }
+	/**
+	 * <p>
+	 * This handler return the list of JMS Resources to be displayed in the table.
+	 */
+	@Handler(id = "getJmsResourcesInfo", input = { @HandlerInput(name = "resourcesList", type = List.class),
+	        @HandlerInput(name = "isConnectionFactory", type = Boolean.class) }, output = {
+	                @HandlerOutput(name = "result", type = List.class) })
+	public static void getJmsResourcesInfo(HandlerContext handlerCtx) {
 
-    /**
-     *	<p> This handler return the list of JMS Resources to be displayed in the table.
-     */
-    @Handler(id = "getJmsResourcesInfo",
-    input = {
-        @HandlerInput(name = "resourcesList", type = List.class),
-        @HandlerInput(name = "isConnectionFactory", type = Boolean.class)},
-    output = {
-        @HandlerOutput(name = "result", type = java.util.List.class)
-    })
-    public static void getJmsResourcesInfo(HandlerContext handlerCtx) {
-        
-        List<Map<String, Object>> resourcesList = (List) handlerCtx.getInputValue("resourcesList");
-        Boolean isConnectionFactory = (Boolean) handlerCtx.getInputValue("isConnectionFactory");
-        String prefix = isConnectionFactory ? GuiUtil.getSessionValue("REST_URL") + "/resources/connector-resource/" : 
-                GuiUtil.getSessionValue("REST_URL") + "/resources/admin-object-resource/";
-        try{
-            for(Map<String, Object> one : resourcesList){
-                String encodedName = URLEncoder.encode((String) one.get("name"), "UTF-8");
-                String endpoint = prefix + encodedName;
-                Map attrs = (Map) RestUtil.getAttributesMap(endpoint);
-                if (isConnectionFactory){
-                    String poolName = URLEncoder.encode((String)attrs.get("poolName"), "UTF-8");
-                    String e1 = (String) GuiUtil.getSessionValue("REST_URL") + "/resources/connector-connection-pool/" + poolName;
-                    Map poolAttrs = (Map) RestUtil.getAttributesMap(e1);
-                    one.put("resType", (String) poolAttrs.get("connectionDefinitionName"));
-                    String lname = (String) one.get("logical-jndi-name");
-                    one.put("logicalJndiName", (lname==null)? "" : lname);
-                    one.put("encodedPoolName", poolName);
-                    one.put("objectType", (String) attrs.get("objectType"));
-                }else{
-                    one.put("resType", (String) attrs.get("resType"));
-                }
-                one.put("selected", false);
-                one.put("enabled", (String) attrs.get("enabled"));
-                one.put("encodedName", encodedName);
-                String desc = (String)attrs.get("description");
-                one.put("description", (desc == null)? "" : desc);
-            }
-        }catch(Exception ex){
-             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getJMSResources") + ex.getLocalizedMessage());
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
-                ex.printStackTrace();
-            }
-        }
-        handlerCtx.setOutputValue("result", resourcesList);
-    }
-    
-   
+		List<Map<String, Object>> resourcesList = (List) handlerCtx.getInputValue("resourcesList");
+		Boolean isConnectionFactory = (Boolean) handlerCtx.getInputValue("isConnectionFactory");
+		
+		String prefix = isConnectionFactory ? 
+				getSessionValue("REST_URL") + "/resources/connector-resource/" : 
+				getSessionValue("REST_URL") + "/resources/admin-object-resource/";
+		
+		try {
+			for (Map<String, Object> one : resourcesList) {
+				String encodedName = URLEncoder.encode((String) one.get("name"), "UTF-8");
+				String endpoint = prefix + encodedName;
+				Map attrs = (Map) getAttributesMap(endpoint);
+				
+				String description = null;
+				if (isConnectionFactory) {
+					String poolName = URLEncoder.encode((String) attrs.get("poolName"), "UTF-8");
+					String e1 = (String) getSessionValue("REST_URL") + "/resources/connector-connection-pool/" + poolName;
+					
+					Map poolAttrs = (Map) getAttributesMap(e1);
+					one.put("resType", (String) poolAttrs.get("connectionDefinitionName"));
+					
+					String lname = (String) one.get("logical-jndi-name");
+					one.put("logicalJndiName", lname == null ? "" : lname);
+					one.put("encodedPoolName", poolName);
+					one.put("objectType", (String) attrs.get("objectType"));
+					description = (String) poolAttrs.get("description");
+				} else {
+					one.put("resType", (String) attrs.get("resType"));
+					description = (String) attrs.get("description");
+				}
+				
+				one.put("selected", false);
+				one.put("enabled", (String) attrs.get("enabled"));
+				one.put("encodedName", encodedName);
+				one.put("description", description == null ? "" : description);
+			}
+		} catch (Exception ex) {
+			getLogger().info(getCommonMessage("log.error.getJMSResources") + ex.getLocalizedMessage());
+			if (getLogger().isLoggable(FINE)) {
+				ex.printStackTrace();
+			}
+		}
+		
+		handlerCtx.setOutputValue("result", resourcesList);
+	}
+
 }

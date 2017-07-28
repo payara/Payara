@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
@@ -466,7 +468,10 @@ public class CommandRunnerImpl implements CommandRunner {
                 });
         try {
             Thread.currentThread().setContextClassLoader(Validation.class.getClassLoader());
-            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+            Configuration<?> configuration = Validation.byDefaultProvider().providerResolver(
+                    new HibernateValidationProviderResolver()
+            ).configure();
+            ValidatorFactory validatorFactory = configuration.buildValidatorFactory();
             ValidatorContext validatorContext = validatorFactory.usingContext();
             validatorContext.messageInterpolator(new MessageInterpolatorImpl());                
             beanValidator = validatorContext.getValidator();

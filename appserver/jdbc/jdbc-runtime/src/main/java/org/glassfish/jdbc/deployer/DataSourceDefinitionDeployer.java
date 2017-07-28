@@ -514,6 +514,26 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         }
 
         @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Property getProperty(String name) {
             return null;
         }
@@ -986,6 +1006,26 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             }
 
             return dataSourceProperties;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            throw new UnsupportedOperationException();
         }
 
         private boolean isStandardPropertiesSet(DataSourceDefinitionDescriptor desc){

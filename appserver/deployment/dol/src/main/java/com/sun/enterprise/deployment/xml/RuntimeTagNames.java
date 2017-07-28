@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.xml;
 
@@ -108,6 +108,7 @@ public interface RuntimeTagNames extends TagNames {
     public static final String EJB_NAME = "ejb-name";
     public static final String EJB20_CMP = "ejb20-cmp";
     public static final String EJBS = "enterprise-beans";
+    public static final String WEBSERVICE_DEFAULT_LOGIN_CONFIG = "webservice-default-login-config";
     public static final String FIELD = "field";
 
     public static final String GROUP = "group";

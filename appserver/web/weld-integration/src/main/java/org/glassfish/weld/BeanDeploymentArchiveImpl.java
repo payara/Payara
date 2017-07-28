@@ -751,7 +751,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return cdiAnnotatedClassNames.contains(className);
     }
 
-
+    @SuppressWarnings("unchecked")
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         WeldBootstrap wb = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP,
                                                            WeldBootstrap.class);
@@ -826,6 +826,14 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         sb.append(WEB_INF_LIB).append(SEPARATOR_CHAR);
         sb.append(stripMavenVersion(jarArchiveName));
         return sb.toString();
+    }
+
+    static String stripApplicationVersion(String appName) {
+        int idx = appName.lastIndexOf(':');
+        if (idx < 0) {
+            return appName;
+        }
+        return appName.substring(0, idx);
     }
 
     static String stripMavenVersion(String name) {

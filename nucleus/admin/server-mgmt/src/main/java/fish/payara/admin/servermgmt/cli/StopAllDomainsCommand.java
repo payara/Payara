@@ -70,8 +70,16 @@ public class StopAllDomainsCommand extends StopDomainCommand {
     private static final long WAIT_FOR_DAS_TIME_MS = 60000; // 1 minute
       
     private static final LocalStringsImpl strings = new LocalStringsImpl(ListDomainsCommand.class);
-    
-     @Override
+
+    @Override
+    protected void prevalidate() throws CommandException {
+        if (operands != null && operands.size() > 0) {
+            throw new CommandException(strings.get("StopAllDomains.tooManyOperands"));
+        }
+        super.prevalidate();
+    }
+
+    @Override
     protected void validate()
             throws CommandException, CommandValidationException {
     }    
@@ -83,19 +91,14 @@ public class StopAllDomainsCommand extends StopDomainCommand {
             for (String domain : domainsList){
                 setConfig(domain);
                 RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
-                if (kill){
-                    
-                } else {
-                    logger.fine("Stopping domain " + domain);
-                    try {
+                logger.fine("Stopping domain " + domain);
+                try {
                     cmd.executeAndReturnOutput("stop-domain","--force", force.toString());
-                    } catch (Exception e){
-                        //System.out.println(e.getLocalizedMessage());
-                    }
-                    logger.fine("Stopped domain");
+                } catch (Exception e){
+                    //System.out.println(e.getLocalizedMessage());
                 }
-                
-            }          
+                logger.fine("Stopped domain");
+            }      
         return 0;
         } catch (Exception ex) {
             throw new CommandException(ex.getLocalizedMessage());
@@ -153,6 +156,15 @@ public class StopAllDomainsCommand extends StopDomainCommand {
             }
             logger.finer("DAS is running");
             programOpts.setInteractive(false);
+        }
+        return 0;
+    }
+
+    // PAYARA-1704 now fails gracefully
+    @Override
+    protected int dasNotRunning() throws CommandException {
+        if (kill && isLocal()) {
+            return kill();
         }
         return 0;
     }

@@ -61,10 +61,10 @@ public class ClusterTeardownTest extends AdminBaseDevTest {
         // previously deleteInstanceTest would never say boo no matter what happened...
     @Test
     public void deleteInstanceTest() throws Exception{
-        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node","localhost-domain2","--kill", i1name);
-        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node","localhost-domain2","--kill", i2name);
-        AsadminReturn ar3 = asadminWithOutput("delete-local-instance", "--node","localhost-domain2",i1name);
-        AsadminReturn ar4 = asadminWithOutput("delete-local-instance", "--node","localhost-domain2",i2name);
+        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node","localhost-test-domain","--kill", i1name);
+        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node","localhost-test-domain","--kill", i2name);
+        AsadminReturn ar3 = asadminWithOutput("delete-local-instance", "--node","localhost-test-domain",i1name);
+        AsadminReturn ar4 = asadminWithOutput("delete-local-instance", "--node","localhost-test-domain",i2name);
 
         report(tn + "stop-local-instance1", ar1.returnValue);
         report(tn + "stop-local-instance2", ar2.returnValue);

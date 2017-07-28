@@ -44,7 +44,7 @@ holder.
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.2.172</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.payara-appserver-modules</groupId>

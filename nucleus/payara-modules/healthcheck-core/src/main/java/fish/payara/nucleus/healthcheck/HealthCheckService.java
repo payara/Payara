@@ -41,6 +41,7 @@ package fish.payara.nucleus.healthcheck;
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import fish.payara.nucleus.notification.TimeUtil;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
@@ -71,6 +72,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,10 +118,12 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
     private ScheduledExecutorService executor;
-    private final Map<String, HealthCheckTask> registeredTasks = new HashMap<String, HealthCheckTask>();
+    private ScheduledExecutorService historicCleanerExecutor;
+    private Map<String, HealthCheckTask> registeredTasks = new HashMap<>();
     private boolean enabled;
     private boolean historicalTraceEnabled;
     private Integer historicalTraceStoreSize;
+    private Long historicalTraceStoreTimeout;
 
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_SHUTDOWN) && executor != null) {
@@ -164,21 +168,50 @@ public class HealthCheckService implements EventListener, ConfigListener {
             String historicalTraceStoreSizeConfig = configuration.getHistoricalTraceStoreSize();
             if (historicalTraceStoreSizeConfig != null) {
                 this.historicalTraceStoreSize = Integer.parseInt(historicalTraceStoreSizeConfig);
+
+                String historicalTraceStoreTimeLimit = configuration.getHistoricalTraceStoreTimeout();
+                if (historicalTraceStoreTimeLimit != null) {
+                    this.historicalTraceStoreTimeout = TimeUtil.setStoreTimeLimit(historicalTraceStoreTimeLimit);
+                }
             }
         }
     }
 
     public void bootstrapHealthCheck() {
         if (configuration != null) {
+            final Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
+                public void uncaughtException(Thread th, Throwable ex) {
+                    logger.log(Level.SEVERE, "Uncaught exception in Health Check thread " + ex);
+                }
+            };
+
             executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size(),  new ThreadFactory() {
                 public Thread newThread(Runnable r) {
-                    return new Thread(r, PREFIX + threadNumber.getAndIncrement());
+                    Thread thread = new Thread(r, PREFIX + threadNumber.getAndIncrement());
+                    thread.setUncaughtExceptionHandler(exceptionHandler);
+                    return thread;
                 }
             });
+
+            historicCleanerExecutor = Executors.newScheduledThreadPool(1,  new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, "health-check-historic-trace-store-cleanup-task");
+                }
+            });
+
             if (enabled) {
                 executeTasks();
                 if (historicalTraceEnabled) {
                     healthCheckEventStore.initialize(historicalTraceStoreSize);
+
+                    if (historicalTraceStoreTimeout != null && historicalTraceStoreTimeout > 0) {
+                        // if timeout is bigger than 5 minutes execute the cleaner task in 5 minutes periods,
+                        // if not use timeout value as period
+                        long period = historicalTraceStoreTimeout > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
+                                ? TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD : historicalTraceStoreTimeout;
+                        historicCleanerExecutor.scheduleAtFixedRate(
+                                new HistoricHealthCheckCleanupTask(historicalTraceStoreTimeout), 0, period, TimeUnit.SECONDS);
+                    }
                 }
                 logger.info("Payara Health Check Service Started.");
             }
@@ -205,8 +238,10 @@ public class HealthCheckService implements EventListener, ConfigListener {
     }
 
     private void executeTasks() {
-        for (HealthCheckTask registeredTask : registeredTasks.values()) {
+        for (String registeredTaskKey : registeredTasks.keySet()) {
+            HealthCheckTask registeredTask = registeredTasks.get(registeredTaskKey);
             logger.info("Scheduling Health Check for task: " + registeredTask.getName());
+
             if (registeredTask.getCheck().getOptions().isEnabled()) {
                 executor.scheduleAtFixedRate(registeredTask, 0,
                         registeredTask.getCheck().getOptions().getTime(),
@@ -248,9 +283,13 @@ public class HealthCheckService implements EventListener, ConfigListener {
 
     public void shutdownHealthCheck() {
         if (executor != null) {
-            executor.shutdown();
-            Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
+            executor.shutdownNow();
         }
+        if (historicCleanerExecutor != null) {
+            historicCleanerExecutor.shutdownNow();
+        }
+
+        Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
     }
 
     public BaseHealthCheck getCheck(String serviceName) {
@@ -279,6 +318,10 @@ public class HealthCheckService implements EventListener, ConfigListener {
 
     public void setHistoricalTraceStoreSize(Integer historicalTraceStoreSize) {
         this.historicalTraceStoreSize = historicalTraceStoreSize;
+    }
+
+    public void setHistoricalTraceStoreTimeout(long historicalTraceStoreTimeout) {
+        this.historicalTraceStoreTimeout = historicalTraceStoreTimeout;
     }
 
     public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {

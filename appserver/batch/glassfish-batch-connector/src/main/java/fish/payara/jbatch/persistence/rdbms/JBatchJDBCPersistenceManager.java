@@ -16,6 +16,12 @@
 
 package fish.payara.jbatch.persistence.rdbms;
 
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
+import static org.glassfish.internal.api.Globals.getDefaultHabitat;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,7 +51,6 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -68,10 +73,9 @@ import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.spi.services.IBatchConfig;
+
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
-import org.glassfish.internal.api.Globals;
 
 /**
  * 
@@ -102,7 +106,7 @@ public class JBatchJDBCPersistenceManager implements
 	// derby create table strings
 	protected Map<String, String> createDerbyStrings;
 
-        private RequestTracingService requestTracing;
+    private RequestTracingService requestTracing;
         
 	/*
 	 * (non-Javadoc)
@@ -112,70 +116,123 @@ public class JBatchJDBCPersistenceManager implements
 	 * #init(com.ibm.jbatch.container.IBatchConfig)
 	 */
 	@Override
-	public void init(IBatchConfig batchConfig)
-			throws BatchContainerServiceException {
-            logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
+	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+            
+	    logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
 
-            this.batchConfig = batchConfig;
+        this.batchConfig = batchConfig;
 
-            schema = batchConfig.getDatabaseConfigurationBean().getSchema();
+        schema = batchConfig.getDatabaseConfigurationBean().getSchema();
+        jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+        
+        logger.config("JNDI name = " + jndiName);
 
-            jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+        if (jndiName == null || jndiName.equals("")) {
+            throw new BatchContainerServiceException("JNDI name is not defined.");
+        }
 
-            Context ctx = null;
-            try {
-                    ctx = new InitialContext();
-                    dataSource = (DataSource) ctx.lookup(jndiName);
+        try {
+            dataSource = (DataSource) new InitialContext().lookup(jndiName);
+        } catch (NamingException e) {
+            logger.severe(
+                "Lookup failed for JNDI name: " + jndiName + ". " + 
+                " One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
+            throw new BatchContainerServiceException(e);
+        }
 
-            } catch (NamingException e) {
-                    logger.severe("Lookup failed for JNDI name: "
-                                    + jndiName
-                                    + ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
-                    throw new BatchContainerServiceException(e);
+        // Load the table names and queries shared between different database types
+        tableNames = getSharedTableMap(batchConfig);
+
+        try {
+            queryStrings = getSharedQueryMap(batchConfig);
+        } catch (SQLException e1) {
+            throw new BatchContainerServiceException(e1);
+        }
+
+        try {
+            if (!isDerbySchemaValid()) {
+                setDefaultSchema();
             }
+            checkDerbyTables();
 
+        } catch (SQLException e) {
+            logger.severe(e.getLocalizedMessage());
+            throw new BatchContainerServiceException(e);
+        }
 
-            // Load the table names and queries shared between different datstabase
-            // types
+        try {
+            requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
+        } catch (NullPointerException ex) {
+            logger.log(INFO,
+                "Error retrieving Request Tracing service " + 
+                "during initialisation of JBatchJDBCPersistenceManager - NullPointerException");
+        }
 
-            tableNames = getSharedTableMap(batchConfig);
+        logger.config("Exiting CLASSNAME.init()");
+    }
 
-            try {
-                    queryStrings = getSharedQueryMap(batchConfig);
-            } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
-                    throw new BatchContainerServiceException(e1);
-            }
-            // put the create table strings into a hashmap
-            // createTableStrings = setCreateTableMap(batchConfig);
-
-            logger.config("JNDI name = " + jndiName);
-
-            if (jndiName == null || jndiName.equals("")) {
-                    throw new BatchContainerServiceException(
-                                    "JNDI name is not defined.");
-            }
-
-            try {
-                    if (!isDerbySchemaValid()) {
-                            setDefaultSchema();
-                    }
-                    checkDerbyTables();
-
-            } catch (SQLException e) {
-                    logger.severe(e.getLocalizedMessage());
-                    throw new BatchContainerServiceException(e);
-            }
-
-            try {
-                requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-            } catch (NullPointerException ex) {
-                logger.log(Level.INFO, "Error retrieving Request Tracing service "
-                        + "during initialisation of JBatchJDBCPersistenceManager - NullPointerException");
-            }
-
-            logger.config("Exiting CLASSNAME.init()");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl
+     * #getCheckpointData
+     * (com.ibm.ws.batch.container.checkpoint.CheckpointDataKey)
+     */
+    @Override
+    public CheckpointData getCheckpointData(CheckpointDataKey key) {
+        logger.entering(CLASSNAME, "getCheckpointData", key == null ? "<null>" : key);
+        
+        tryObtainTableLock();
+        
+        CheckpointData checkpointData = queryCheckpointData(key.getCommaSeparatedKey());
+        
+        logger.exiting(CLASSNAME, "getCheckpointData", checkpointData == null ? "<null>" : checkpointData);
+        return checkpointData;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl
+     * #updateCheckpointData
+     * (com.ibm.ws.batch.container.checkpoint.CheckpointDataKey,
+     * com.ibm.ws.batch.container.checkpoint.CheckpointData)
+     */
+    @Override
+    public void updateCheckpointData(CheckpointDataKey key, CheckpointData value) {
+        logger.entering(CLASSNAME, "updateCheckpointData", new Object[] { key, value });
+        
+        tryObtainTableLock();
+        
+        CheckpointData data = queryCheckpointData(key.getCommaSeparatedKey());
+        if (data != null) {
+            updateCheckpointData(key.getCommaSeparatedKey(), value);
+        } else {
+            createCheckpointData(key, value);
+        }
+        
+        logger.exiting(CLASSNAME, "updateCheckpointData");
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl
+     * #createCheckpointData
+     * (com.ibm.ws.batch.container.checkpoint.CheckpointDataKey,
+     * com.ibm.ws.batch.container.checkpoint.CheckpointData)
+     */
+    @Override
+    public void createCheckpointData(CheckpointDataKey key, CheckpointData value) {
+        logger.entering(CLASSNAME, "createCheckpointData", new Object[] { key, value });
+        
+        insertCheckpointData(key.getCommaSeparatedKey(), value);
+        
+        logger.exiting(CLASSNAME, "createCheckpointData");
+    }
 
 	/**
 	 * Set the default schema to the username obtained from the connection based
@@ -184,14 +241,11 @@ public class JBatchJDBCPersistenceManager implements
 
 	public String setDefaultSchema() throws SQLException {
 		logger.finest("Entering setDefaultSchema");
-		Connection connection = null;
 
-		logger.finest("J2EE mode, getting connection from data source");
-		try {
-			connection = dataSource.getConnection();
+		logger.finest("Java EE mode, getting connection from data source");
+		try (Connection connection = dataSource.getConnection())  {
 
-			DatabaseMetaData dbmd = null;
-			dbmd = connection.getMetaData();
+			DatabaseMetaData dbmd = connection.getMetaData();
 			schema = dbmd.getUserName();
 			if (dbmd.getDatabaseProductName().toLowerCase().contains("mysql")) {
 				schema = "test";
@@ -200,15 +254,16 @@ public class JBatchJDBCPersistenceManager implements
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		} finally {
-			cleanupConnection(connection, null, null);
 		}
-
+		
 		logger.finest("Exiting setDefaultSchema");
 		return schema;
-
 	}
 
+	private boolean isDerby(Connection connection) throws SQLException {
+        return connection.getMetaData().getDatabaseProductName().toLowerCase().contains("derby");
+    }
+	
 	/**
 	 * Checks if the schema exists in the database. If not connect to the
 	 * default schema
@@ -218,26 +273,19 @@ public class JBatchJDBCPersistenceManager implements
 	 */
 	protected boolean isDerbySchemaValid() throws SQLException {
 		logger.entering(CLASSNAME, "isDerbySchemaValid");
-		Connection conn = null;
-		DatabaseMetaData dbmd = null;
-		ResultSet rs = null;
-		try {
-			conn = getConnectionToDefaultSchema();
-			dbmd = conn.getMetaData();
-			rs = dbmd.getSchemas();
-
-			while (rs.next()) {
-				String schemaname = rs.getString("TABLE_SCHEM");
-				if (schema.equalsIgnoreCase(schemaname)) {
-					logger.exiting(CLASSNAME, "isSchemaValid", true);
-					return true;
-				}
+		
+		try (Connection connection = getConnectionToDefaultSchema()) {
+			try (ResultSet rs = connection.getMetaData().getSchemas()) {
+    			while (rs.next()) {
+    				if (schema.equalsIgnoreCase(rs.getString("TABLE_SCHEM"))) {
+    					logger.exiting(CLASSNAME, "isSchemaValid", true);
+    					return true;
+    				}
+    			}
 			}
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		} finally {
-			cleanupConnection(conn, rs, null);
 		}
 
 		logger.exiting(CLASSNAME, "isDerbySchemaValid", false);
@@ -271,31 +319,21 @@ public class JBatchJDBCPersistenceManager implements
 	/**
 	 * Create the Derby tables
 	 **/
-
-	protected void createDerbyTableNotExists(String tableName,
-			String createTableStatement) throws SQLException {
-		logger.entering(CLASSNAME, "createIfNotExists", new Object[] {
-				tableName, createTableStatement });
-		Connection conn = null;
-		DatabaseMetaData dbmd = null;
-		ResultSet rs = null;
-		PreparedStatement ps = null;
-		try {
-			conn = getConnection();
-			dbmd = conn.getMetaData();
-			rs = dbmd.getTables(null, schema, tableName, null);
-
-			if (!rs.next()) {
-				logger.log(Level.INFO, tableName
-						+ " table does not exists. Trying to create it.");
-				ps = conn.prepareStatement(createTableStatement);
-				ps.executeUpdate();
+	protected void createDerbyTableNotExists(String tableName, String createTableStatement) throws SQLException {
+		logger.entering(CLASSNAME, "createIfNotExists", new Object[] { tableName, createTableStatement });
+		
+		try (Connection connection = getConnection()) {
+			try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
+    			if (!resultSet.next()) {
+    				logger.log(INFO, tableName + " table does not exists. Trying to create it.");
+    				try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
+    				    statement.executeUpdate();
+    				}
+    			}
 			}
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		} finally {
-			cleanupConnection(conn, rs, ps);
 		}
 
 		logger.exiting(CLASSNAME, "createIfNotExists");
@@ -306,13 +344,13 @@ public class JBatchJDBCPersistenceManager implements
 	 * check if a table exists in a given schema
 	 **/
 
-	public int getTableRowCount(ResultSet rs) throws SQLException {
+	public int getTableRowCount(ResultSet resultSet) throws SQLException {
 		int rowcount = 0;
 
 		try {
-			if (rs.last()) {
-				rowcount = rs.getRow();
-				rs.beforeFirst();
+			if (resultSet.last()) {
+				rowcount = resultSet.getRow();
+				resultSet.beforeFirst();
 			}
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -320,7 +358,6 @@ public class JBatchJDBCPersistenceManager implements
 		}
 
 		return rowcount;
-
 	}
 
 	/**
@@ -331,79 +368,17 @@ public class JBatchJDBCPersistenceManager implements
 	 */
 	protected void executeStatement(String statement) throws SQLException {
 		logger.entering(CLASSNAME, "executeStatement", statement);
-		Connection conn = null;
-		PreparedStatement ps = null;
 
-		try {
-			conn = getConnection();
-			ps = conn.prepareStatement(statement);
-			ps.executeUpdate();
+		try (Connection connection = getConnection()) {
+		    try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+		        preparedStatement.executeUpdate();
+		    }
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		} finally {
-			cleanupConnection(conn, ps);
 		}
 
 		logger.exiting(CLASSNAME, "executeStatement");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl
-	 * #createCheckpointData
-	 * (com.ibm.ws.batch.container.checkpoint.CheckpointDataKey,
-	 * com.ibm.ws.batch.container.checkpoint.CheckpointData)
-	 */
-	@Override
-	public void createCheckpointData(CheckpointDataKey key, CheckpointData value) {
-		logger.entering(CLASSNAME, "createCheckpointData", new Object[] { key,
-				value });
-		insertCheckpointData(key.getCommaSeparatedKey(), value);
-		logger.exiting(CLASSNAME, "createCheckpointData");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl
-	 * #getCheckpointData
-	 * (com.ibm.ws.batch.container.checkpoint.CheckpointDataKey)
-	 */
-	@Override
-	public CheckpointData getCheckpointData(CheckpointDataKey key) {
-		logger.entering(CLASSNAME, "getCheckpointData", key == null ? "<null>"
-				: key);
-		CheckpointData checkpointData = queryCheckpointData(key
-				.getCommaSeparatedKey());
-		logger.exiting(CLASSNAME, "getCheckpointData",
-				checkpointData == null ? "<null>" : checkpointData);
-		return checkpointData;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl
-	 * #updateCheckpointData
-	 * (com.ibm.ws.batch.container.checkpoint.CheckpointDataKey,
-	 * com.ibm.ws.batch.container.checkpoint.CheckpointData)
-	 */
-	@Override
-	public void updateCheckpointData(CheckpointDataKey key, CheckpointData value) {
-		logger.entering(CLASSNAME, "updateCheckpointData", new Object[] { key,
-				value });
-		CheckpointData data = queryCheckpointData(key.getCommaSeparatedKey());
-		if (data != null) {
-			updateCheckpointData(key.getCommaSeparatedKey(), value);
-		} else {
-			createCheckpointData(key, value);
-		}
-		logger.exiting(CLASSNAME, "updateCheckpointData");
 	}
 
 	/**
@@ -415,16 +390,14 @@ public class JBatchJDBCPersistenceManager implements
 	 */
 	protected Connection getConnection() throws SQLException {
 		logger.finest("Entering: " + CLASSNAME + ".getConnection");
-		Connection connection = null;
 
-		logger.finest("J2EE mode, getting connection from data source");
-		connection = dataSource.getConnection();
+		logger.finest("Java EE mode, getting connection from data source");
+		Connection connection = dataSource.getConnection();
 		logger.finest("autocommit=" + connection.getAutoCommit());
 
 		setSchemaOnConnection(connection);
 
-		logger.finest("Exiting: " + CLASSNAME + ".getConnection() with conn ="
-				+ connection);
+		logger.finest("Exiting: " + CLASSNAME + ".getConnection() with connection =" + connection);
 		return connection;
 	}
 
@@ -437,7 +410,7 @@ public class JBatchJDBCPersistenceManager implements
 		logger.finest("Entering getConnectionToDefaultSchema");
 		Connection connection = null;
 
-		logger.finest("J2EE mode, getting connection from data source");
+		logger.finest("Java EE mode, getting connection from data source");
 		try {
 			connection = dataSource.getConnection();
 
@@ -447,17 +420,15 @@ public class JBatchJDBCPersistenceManager implements
 		}
 		logger.finest("autocommit=" + connection.getAutoCommit());
 
-		logger.finest("Exiting from getConnectionToDefaultSchema, conn= "
-				+ connection);
+		logger.finest("Exiting from getConnectionToDefaultSchema, conn= " + connection);
 		return connection;
 	}
 
 	protected void logException(String msg, Exception e) {
 		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		e.printStackTrace(pw);
+		e.printStackTrace(new PrintWriter(sw));
 
-		logger.log(Level.SEVERE, msg + "; Exception stack trace: " + sw);
+		logger.log(SEVERE, msg + "; Exception stack trace: " + sw);
 	}
 
 	/**
@@ -467,18 +438,14 @@ public class JBatchJDBCPersistenceManager implements
 	 * @param connection
 	 * @throws SQLException
 	 */
-	protected void setSchemaOnConnection(Connection connection)
-			throws SQLException {
+	protected void setSchemaOnConnection(Connection connection) throws SQLException {
 		logger.finest("Entering " + CLASSNAME + ".setSchemaOnConnection()");
 
-		String productname = connection.getMetaData().getDatabaseProductName();
-		if (!(productname.contains("Oracle"))) {
-
-			PreparedStatement ps = null;
-			ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA));
-			ps.setString(1, schema);
-			ps.executeUpdate();
-			ps.close();
+		if (!(connection.getMetaData().getDatabaseProductName().contains("Oracle"))) {
+			try (PreparedStatement preparedStatement = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA))) {
+			    preparedStatement.setString(1, schema);
+	            preparedStatement.executeUpdate();
+			}
 		}
 
 		logger.finest("Exiting " + CLASSNAME + ".setSchemaOnConnection()");
@@ -494,45 +461,41 @@ public class JBatchJDBCPersistenceManager implements
 	 *         Ex. select id, obj from tablename where id = ?
 	 */
 	protected CheckpointData queryCheckpointData(Object key) {
-		logger.entering(CLASSNAME, "queryCheckpointData", new Object[] { key,
-				SELECT_CHECKPOINTDATA });
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		ObjectInputStream objectIn = null;
+		logger.entering(CLASSNAME, "queryCheckpointData", new Object[] { key, SELECT_CHECKPOINTDATA });
+		
 		CheckpointData data = null;
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(queryStrings
-					.get(SELECT_CHECKPOINTDATA));
-			statement.setObject(1, key);
-			rs = statement.executeQuery();
-			if (rs.next()) {
-				byte[] buf = rs.getBytes("obj");
-				data = (CheckpointData) deserializeObject(buf);
-			}
-		} catch (SQLException e) {
+		
+		try (Connection connection = getConnection()) {
+		    try (PreparedStatement statement = connection.prepareStatement(queryStrings.get(SELECT_CHECKPOINTDATA))) {
+    			statement.setObject(1, key);
+    			ResultSet resultSet = statement.executeQuery();
+    			if (resultSet.next()) {
+    				data = (CheckpointData) deserializeObject(resultSet.getBytes("obj"));
+    			}
+		    }
+		} catch (SQLException |IOException | ClassNotFoundException e) {
 			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} catch (ClassNotFoundException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (objectIn != null) {
-				try {
-					objectIn.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, rs, statement);
-		}
+		} 
+		
 		logger.exiting(CLASSNAME, "queryCheckpointData");
 		return data;
 	}
+	
+   private void tryObtainTableLock() {
+        
+        try (Connection connection = getConnection()) {
+            if (isDerby(connection)) {
+                try (PreparedStatement statement = connection.prepareStatement(queryStrings.get(LOCK_CHECKPOINTDATA))) {
+                   statement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new PersistenceException(e);
+        } 
+    }
 
 	/**
-	 * insert data to DB table
+	 * Insert data to DB table
 	 * 
 	 * @param key
 	 *            - the IPersistenceDataKey object
@@ -542,47 +505,24 @@ public class JBatchJDBCPersistenceManager implements
 	 *            Ex. insert into tablename values(?, ?)
 	 */
 	protected <T> void insertCheckpointData(Object key, T value) {
-		logger.entering(CLASSNAME, "insertCheckpointData", new Object[] { key,
-				value });
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oout = null;
-		byte[] b;
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(queryStrings
-					.get(INSERT_CHECKPOINTDATA));
-			baos = new ByteArrayOutputStream();
-			oout = new ObjectOutputStream(baos);
-			oout.writeObject(value);
-
-			b = baos.toByteArray();
-
-			statement.setObject(1, key);
-			statement.setBytes(2, b);
-			statement.executeUpdate();
-		} catch (SQLException e) {
+		logger.entering(CLASSNAME, "insertCheckpointData", new Object[] { key, value });
+		
+		try (Connection connection = getConnection()) {
+		    try (PreparedStatement statement = connection.prepareStatement(queryStrings.get(INSERT_CHECKPOINTDATA))) {
+		        ByteArrayOutputStream baos = new ByteArrayOutputStream();;
+		        try (ObjectOutputStream oout = new ObjectOutputStream(baos)) {
+		            oout.writeObject(value);
+		            
+		            statement.setObject(1, key);
+		            statement.setBytes(2, baos.toByteArray());
+		            statement.executeUpdate();
+		        }
+		        
+		    }
+		} catch (SQLException | IOException  e) {
 			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (baos != null) {
-				try {
-					baos.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			if (oout != null) {
-				try {
-					oout.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, null, statement);
-		}
+		} 
+		
 		logger.exiting(CLASSNAME, "insertCheckpointData");
 	}
 
@@ -2515,19 +2455,17 @@ public class JBatchJDBCPersistenceManager implements
 	 **/
 
 	protected Map<String, String> getSharedTableMap(IBatchConfig batchConfig) {
-		String prefix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
+		String prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+		String suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
+		
 		Map<String, String> result = new HashMap<String, String>(6);
 		result.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
-		result.put(EXECUTION_INSTANCE_TABLE_KEY, prefix
-				+ "EXECUTIONINSTANCEDATA" + suffix);
-		result.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix
-				+ "STEPEXECUTIONINSTANCEDATA" + suffix);
+		result.put(EXECUTION_INSTANCE_TABLE_KEY, prefix	+ "EXECUTIONINSTANCEDATA" + suffix);
+		result.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);
 		result.put(JOB_STATUS_TABLE_KEY, prefix + "JOBSTATUS" + suffix);
 		result.put(STEP_STATUS_TABLE_KEY, prefix + "STEPSTATUS" + suffix);
 		result.put(CHECKPOINT_TABLE_KEY, prefix + "CHECKPOINTDATA" + suffix);
+		
 		return result;
 	}
 
@@ -2539,19 +2477,40 @@ public class JBatchJDBCPersistenceManager implements
 
 	protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
 		queryStrings = new HashMap<>();
-		queryStrings.put(Q_SET_SCHEMA, "SET SCHEMA ?");
-		queryStrings.put(SELECT_CHECKPOINTDATA, "select id, obj from "
-				+ tableNames.get(CHECKPOINT_TABLE_KEY) + " where id = ?");
-		queryStrings.put(INSERT_CHECKPOINTDATA,
-				"insert into " + tableNames.get(CHECKPOINT_TABLE_KEY)
-						+ " values(?, ?)");
-		queryStrings.put(UPDATE_CHECKPOINTDATA,
-				"update " + tableNames.get(CHECKPOINT_TABLE_KEY)
-						+ " set obj = ? where id = ?");
+		
+		queryStrings.put(
+	        Q_SET_SCHEMA, 
+	        "SET SCHEMA ?");
+		
+		queryStrings.put(
+	        SELECT_CHECKPOINTDATA, 
+	        "select id, obj from " + 
+	            tableNames.get(CHECKPOINT_TABLE_KEY) + 
+            " where id = ?");
+		
+		queryStrings.put(
+	        INSERT_CHECKPOINTDATA,
+			"insert into " + 
+		        tableNames.get(CHECKPOINT_TABLE_KEY) + 
+	        " values(?, ?)");
+		
+		queryStrings.put(
+	        UPDATE_CHECKPOINTDATA,
+			"update " + 
+		        tableNames.get(CHECKPOINT_TABLE_KEY) + 
+	        " set obj = ? where id = ?");
+		
+		queryStrings.put(
+            LOCK_CHECKPOINTDATA,
+            "lock table " + 
+                tableNames.get(CHECKPOINT_TABLE_KEY) + 
+            " in exclusive mode");
+	
 		queryStrings.put(JOBOPERATOR_GET_JOB_INSTANCE_COUNT,
 				"select count(jobinstanceid) as jobinstancecount from "
 						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
 						+ " where name = ? and apptag = ?");
+		
 		queryStrings.put(SELECT_JOBINSTANCEDATA_COUNT,
 				"select count(jobinstanceid) as jobinstancecount from "
 						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)

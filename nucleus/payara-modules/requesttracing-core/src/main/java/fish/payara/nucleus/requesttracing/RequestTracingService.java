@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.TimeUtil;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.domain.*;
@@ -70,6 +71,9 @@ import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,6 +88,11 @@ import java.util.logging.Logger;
 public class RequestTracingService implements EventListener, ConfigListener {
 
     private static final Logger logger = Logger.getLogger(RequestTracingService.class.getCanonicalName());
+
+    private static final int SECOND = 1;
+    private static final int MINUTE = 60 * SECOND;
+    private static final int HOUR = 60 * MINUTE;
+    private static final int DAY = 24 * HOUR;
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -115,13 +124,15 @@ public class RequestTracingService implements EventListener, ConfigListener {
     RequestEventStore requestEventStore;
 
     @Inject
-    HistoricRequestEventStore historicRequestEventStore;
+    HistoricRequestTracingEventStore historicRequestTracingEventStore;
 
     @Inject
     NotificationEventFactoryStore eventFactoryStore;
 
     @Inject
     private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
+
+    private ScheduledExecutorService historicCleanerExecutor;
 
     private RequestTracingExecutionOptions executionOptions = new RequestTracingExecutionOptions();
 
@@ -162,16 +173,39 @@ public class RequestTracingService implements EventListener, ConfigListener {
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
             executionOptions.setHistoricalTraceEnabled(Boolean.parseBoolean(configuration.getHistoricalTraceEnabled()));
             executionOptions.setHistoricalTraceStoreSize(Integer.parseInt(configuration.getHistoricalTraceStoreSize()));
+            executionOptions.setHistoricalTraceTimeout(TimeUtil.setStoreTimeLimit(configuration.getHistoricalTraceStoreTimeout()));
+
+            historicCleanerExecutor = Executors.newScheduledThreadPool(1,  new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, "request-tracing-historic-trace-store-cleanup-task");
+                }
+            });
 
             bootstrapNotifierList();
         }
 
         if (executionOptions != null && executionOptions.isEnabled()) {
             if (executionOptions.isHistoricalTraceEnabled()) {
-                historicRequestEventStore.initialize(executionOptions.getHistoricalTraceStoreSize());
+                historicRequestTracingEventStore.initialize(executionOptions.getHistoricalTraceStoreSize());
+
+                if (executionOptions.getHistoricalTraceTimeout() != null && executionOptions.getHistoricalTraceTimeout() > 0) {
+                    // if timeout is bigger than 5 minutes execute the cleaner task in 5 minutes periods,
+                    // if not use timeout value as period
+                    long period = executionOptions.getHistoricalTraceTimeout() > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
+                            ? TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD : executionOptions.getHistoricalTraceTimeout();
+                    historicCleanerExecutor.scheduleAtFixedRate(
+                            new HistoricRequestTracingCleanupTask(executionOptions.getHistoricalTraceTimeout()), 0, period, TimeUnit.SECONDS);
+                }
+
             }
 
             logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
+        }
+        else {
+            if (historicCleanerExecutor != null) {
+                historicCleanerExecutor.shutdownNow();
+                historicCleanerExecutor = null;
+            }
         }
     }
 
@@ -246,7 +280,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
             String traceAsString = requestEventStore.getTraceAsString();
 
             if (executionOptions.isHistoricalTraceEnabled()) {
-                historicRequestEventStore.addTrace(elapsedTime, traceAsString);
+                historicRequestTracingEventStore.addTrace(elapsedTime, traceAsString);
             }
 
             for (NotifierExecutionOptions notifierExecutionOptions : getExecutionOptions().getNotifierExecutionOptionsList().values()) {

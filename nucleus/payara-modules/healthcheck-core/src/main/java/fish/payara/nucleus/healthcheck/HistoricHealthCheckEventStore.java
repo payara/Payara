@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,17 +38,16 @@
  */
 package fish.payara.nucleus.healthcheck;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.notification.domain.BoundedTreeSet;
+import fish.payara.nucleus.store.ClusteredStore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Collections;
-import java.util.SortedSet;
+import java.util.NavigableSet;
 import java.util.logging.Level;
 
 /**
@@ -68,26 +67,23 @@ public class HistoricHealthCheckEventStore {
     @Inject
     private ServerEnvironment serverEnv;
 
-    private HazelcastInstance instance;
+    @Inject
+    ClusteredStore store;
 
-    private SortedSet<HistoricHealthCheckEvent> historicStore;
+    private BoundedTreeSet<HistoricHealthCheckEvent> historicStore;
 
     void initialize(int storeSize) {
-        historicStore = Collections.synchronizedSortedSet(new BoundedTreeSet<HistoricHealthCheckEvent>(storeSize));
+        historicStore = new BoundedTreeSet<>(storeSize);
 
         if (hzCore.isEnabled()) {
-            instance = hzCore.getInstance();
             String instanceName = serverEnv.getInstanceName();
-            IMap<String, SortedSet<HistoricHealthCheckEvent>> map
-                    = instance.getMap(HISTORIC_HEALTHCHECK_EVENT_STORE);
-            if (map != null) {
-                SortedSet<HistoricHealthCheckEvent> instanceHistoricStore = map.get(instanceName);
-                if (instanceHistoricStore == null) {
-                    map.put(instanceName, historicStore);
-                }
-                else {
-                    historicStore = instanceHistoricStore;
-                }
+            BoundedTreeSet<HistoricHealthCheckEvent> instanceHistoricStore = (BoundedTreeSet<HistoricHealthCheckEvent>) store.get(HISTORIC_HEALTHCHECK_EVENT_STORE, instanceName);
+
+            if (instanceHistoricStore == null) {
+                store.set(HISTORIC_HEALTHCHECK_EVENT_STORE, instanceName, historicStore);
+            }
+            else {
+                historicStore = instanceHistoricStore;
             }
         }
     }
@@ -105,16 +101,21 @@ public class HistoricHealthCheckEventStore {
     }
 
     public HistoricHealthCheckEvent[] getTraces(Integer limit) {
-        HistoricHealthCheckEvent[] result;
-        HistoricHealthCheckEvent[] historicEvents = historicStore.toArray(new HistoricHealthCheckEvent[historicStore.size()]);
-        if (limit < historicEvents.length) {
-            result = new HistoricHealthCheckEvent[limit];
-            System.arraycopy(historicEvents, 0, result, 0, limit);
-        }
-        else {
-            result = historicEvents;
+        HistoricHealthCheckEvent[] result = null;
+        if (historicStore != null) {
+            HistoricHealthCheckEvent[] historicEvents = historicStore.toArray(new HistoricHealthCheckEvent[historicStore.size()]);
+            if (limit < historicEvents.length) {
+                result = new HistoricHealthCheckEvent[limit];
+                System.arraycopy(historicEvents, 0, result, 0, limit);
+            } else {
+                result = historicEvents;
+            }
         }
         return result;
+    }
+
+    public NavigableSet<HistoricHealthCheckEvent> getHistoricStore() {
+        return historicStore;
     }
 }
 

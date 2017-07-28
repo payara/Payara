@@ -95,7 +95,7 @@ public class SetNotificationConfiguration implements AdminCommand {
     @Param(name = "notifierEnabled")
     private Boolean notifierEnabled;
 
-    @Param(name = "useSeparateLogFile", defaultValue = "false")
+    @Param(name = "useSeparateLogFile", defaultValue = "false", optional = true)
     private Boolean useSeparateLogFile;
 
     @Inject

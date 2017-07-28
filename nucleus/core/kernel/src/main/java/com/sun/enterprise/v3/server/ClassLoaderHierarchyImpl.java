@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affilates
  */
 
 package com.sun.enterprise.v3.server;
@@ -98,18 +100,22 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
 
     SystemVariableResolver resolver = new SystemVariableResolver();
 
+    @Override
     public ClassLoader getAPIClassLoader() {
         return apiCLS.getAPIClassLoader();
     }
 
+    @Override
     public ClassLoader getCommonClassLoader() {
         return commonCLS.getCommonClassLoader();
     }
 
+    @Override
     public String getCommonClassPath() {
         return commonCLS.getCommonClassPath();
     }
 
+    @Override
     public DelegatingClassLoader getConnectorClassLoader(String application) {
         // For distributions where connector module (connector CL) is not available, use empty classloader with parent
         if(connectorCLS != null){
@@ -123,10 +129,12 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
         }
     }
 
+    @Override
     public ClassLoader getAppLibClassLoader(String application, List<URI> libURIs) throws MalformedURLException {
         return applibCLS.getAppLibClassLoader(application, libURIs);
     }
 
+    @Override
     public DelegatingClassLoader.ClassFinder getAppLibClassFinder(List<URI> libURIs) throws MalformedURLException {
         return applibCLS.getAppLibClassFinder(libURIs);
     }
@@ -145,6 +153,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
      * @return class loader capable of loading public APIs identified by the deployers
      * @throws ResolveError if one of the deployer's public API module is not found.
      */
+    @Override
     public ClassLoader createApplicationParentCL(ClassLoader parent, DeploymentContext context)
         throws ResolveError {
 
@@ -241,6 +250,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
 	    super();
 	}
 
+        @Override
 	protected String getVariableValue(final String varName) throws TranslationException {
 	    String result = null;
 
@@ -258,7 +268,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
 	    Return true if the string is a template string of the for ${...}
 	 */
 	public static boolean needsResolving(final String value) {
-	    return (value != null) && (value.indexOf("${") != -1);
+	    return (value != null) && (value.contains("${"));
 	}
 
 	/**

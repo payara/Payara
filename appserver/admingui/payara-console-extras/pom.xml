@@ -44,7 +44,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>4.1.2.172</version>
+        <version>4.1.2.173-SNAPSHOT</version>
     </parent>
     <artifactId>payara-console-extras</artifactId>
     <packaging>glassfish-jar</packaging>
