@@ -190,8 +190,8 @@
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version>1</minor_version>
-        <update_version>2</update_version>
+        <minor_version>0</minor_version>
+        <update_version>0</update_version>
         <payara_version>173-SNAPSHOT</payara_version>
         <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
