@@ -42,6 +42,7 @@
 package org.glassfish.weld.connector;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import java.io.IOException;
 import java.io.InputStream;
@@ -487,8 +488,7 @@ public class WeldUtils {
 
         return result;
     }
-
-
+    
     public static boolean isImplicitBeanDiscoveryEnabled(DeploymentContext context) {
         boolean result = false;
 
@@ -508,7 +508,11 @@ public class WeldUtils {
         return result;
     }
 
-
+    public static boolean isCDIDevModeEnabled(DeploymentContext context) {
+        Object propValue = context.getAppProps().get(ServerTags.CDI_DEV_MODE_ENABLED_PROP);
+        return propValue != null && Boolean.parseBoolean((String) propValue);
+    }
+    
   public static InputStream getBeansXmlInputStream(DeploymentContext context) {
     return getBeansXmlInputStream( context.getSource() );
   }

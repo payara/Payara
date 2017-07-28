@@ -70,6 +70,7 @@
                             com.ibm.jbatch.spi.services,
                             com.ibm.jbatch.container.services,
                             com.ibm.jbatch.container.servicesmanager,
+                            com.ibm.jbatch.container.cdi,
                             com.ibm.jbatch.container.context.impl,
                             com.ibm.jbatch.container.impl,
                             com.ibm.jbatch.container.jobinstance,
