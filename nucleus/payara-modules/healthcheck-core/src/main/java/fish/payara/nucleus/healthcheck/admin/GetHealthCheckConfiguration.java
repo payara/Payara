@@ -51,6 +51,7 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import java.util.HashMap;
 
 import fish.payara.nucleus.notification.configuration.Notifier;
@@ -98,6 +99,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             "Retry Count"};
     final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
+    final static String stuckThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Threshold Time", "Threshold Unit"};
     final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
     
     private final String garbageCollectorPropertyName = "garbageCollector";
@@ -106,6 +108,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     private final String heapMemoryUsagePropertyName = "heapMemoryUsage";
     private final String machineMemoryUsagePropertyName = "machineMemoryUsage";
     private final String hoggingThreadsPropertyName = "hoggingThreads";
+    private final String stuckThreadsPropertyName = "stuckThreads";
     
     @Inject
     ServiceLocator habitat;
@@ -130,9 +133,11 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         ActionReport baseActionReport = mainActionReport.addSubActionsReport(); // subReport(0)
         ActionReport hoggingThreadsActionReport = mainActionReport.addSubActionsReport(); // subReport(1)
         ActionReport thresholdDiagnosticsActionReport = mainActionReport.addSubActionsReport(); // subReport(2) 
+        ActionReport stuckThreadsActionReport = mainActionReport.addSubActionsReport(); //subReport(3)
 
         ColumnFormatter baseColumnFormatter = new ColumnFormatter(baseHeaders);
         ColumnFormatter hoggingThreadsColumnFormatter = new ColumnFormatter(hoggingThreadsHeaders);
+        ColumnFormatter stuckThreadsColumnFormatter = new ColumnFormatter(stuckThreadsHeaders);
         ColumnFormatter thresholdDiagnosticsColumnFormatter = new ColumnFormatter(thresholdDiagnosticsHeaders);
         ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);
 
@@ -207,6 +212,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
 
         Properties baseExtraProps = new Properties();
         Properties hoggingThreadsExtraProps = new Properties();
+        Properties stuckThreadsExtrasProps = new Properties();
         Properties thresholdDiagnosticsExtraProps = new Properties();
         
         for (ServiceHandle<BaseHealthCheck> serviceHandle : allServiceHandles) {
@@ -226,8 +232,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 
                 // Create the extra props map for a hogging thread checker
                 addHoggingThreadsCheckerExtraProps(hoggingThreadsExtraProps, hoggingThreadsChecker);
-            }
-            else if (checker instanceof ThresholdDiagnosticsChecker) {
+            } else if (checker instanceof ThresholdDiagnosticsChecker) {
                 ThresholdDiagnosticsChecker thresholdDiagnosticsChecker = (ThresholdDiagnosticsChecker) checker;
 
                 Object values[] = new Object[7];
@@ -246,8 +251,21 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 // Create the extra props map for a checker with thresholds
                 addThresholdDiagnosticsCheckerExtraProps(thresholdDiagnosticsExtraProps, 
                         thresholdDiagnosticsChecker);
-            }
-            else if (checker != null) {
+            } else if (checker instanceof StuckThreadsChecker) {
+                StuckThreadsChecker stuckThreadsChecker = (StuckThreadsChecker) checker;
+                
+                Object values[] = new Object[6];
+                values[0] = stuckThreadsChecker.getName();
+                values[1] = stuckThreadsChecker.getEnabled();
+                values[2] = stuckThreadsChecker.getTime();
+                values[3] = stuckThreadsChecker.getUnit();
+                values[4] = stuckThreadsChecker.getThreshold();
+                values[5] = stuckThreadsChecker.getThresholdTimeUnit();
+                stuckThreadsColumnFormatter.addRow(values);
+                
+                addStuckThreadsCheckerExtrasProps(stuckThreadsExtrasProps, stuckThreadsChecker);
+                
+            } else if (checker != null) {
                 Object values[] = new Object[4];
                 values[0] = checker.getName();
                 values[1] = checker.getEnabled();
@@ -272,10 +290,15 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             thresholdDiagnosticsActionReport.setMessage(thresholdDiagnosticsColumnFormatter.toString());
             thresholdDiagnosticsActionReport.appendMessage(StringUtils.EOL);
         }
+        if (!stuckThreadsColumnFormatter.getContent().isEmpty()){
+            stuckThreadsActionReport.setMessage(stuckThreadsColumnFormatter.toString());
+            stuckThreadsActionReport.appendMessage(StringUtils.EOL);
+        }
         
         // Populate the extraProps with defaults for any checker that isn't present
         baseExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, garbageCollectorPropertyName);
         hoggingThreadsExtraProps = checkCheckerPropertyPresence(hoggingThreadsExtraProps, hoggingThreadsPropertyName);
+        stuckThreadsExtrasProps = checkCheckerPropertyPresence(stuckThreadsExtrasProps, stuckThreadsPropertyName);
         thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
                 cpuUsagePropertyName);
         thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
@@ -289,7 +312,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         baseActionReport.setExtraProperties(baseExtraProps);
         hoggingThreadsActionReport.setExtraProperties(hoggingThreadsExtraProps);
         thresholdDiagnosticsActionReport.setExtraProperties(thresholdDiagnosticsExtraProps);
-
+        stuckThreadsActionReport.setExtraProperties(stuckThreadsExtrasProps);
+        
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
     
@@ -305,6 +329,20 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("retry-count", hoggingThreadsChecker.getRetryCount());
         
         hoggingThreadsExtraProps.put(hoggingThreadsPropertyName, extraPropsMap);
+    }
+    
+    private void addStuckThreadsCheckerExtrasProps(Properties stuckThreadsExtrasProps, StuckThreadsChecker stuckThreadsChecker){
+        Map<String, Object> extraPropsMap = new HashMap<String, Object>(6);
+        
+        extraPropsMap.put("checkerName", stuckThreadsChecker.getName());
+        extraPropsMap.put("enabled", stuckThreadsChecker.getEnabled());
+        extraPropsMap.put("time", stuckThreadsChecker.getTime());
+        extraPropsMap.put("unit", stuckThreadsChecker.getUnit());
+        extraPropsMap.put("threshold", stuckThreadsChecker.getThreshold());
+        extraPropsMap.put("thresholdUnit", stuckThreadsChecker.getThresholdTimeUnit());
+        
+        stuckThreadsExtrasProps.put(stuckThreadsPropertyName, extraPropsMap);
+        
     }
     
     private void addThresholdDiagnosticsCheckerExtraProps(Properties thresholdDiagnosticsExtraProps, 
@@ -348,6 +386,10 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             case MACHINE_MEMORY_USAGE:
                 thresholdDiagnosticsExtraProps.put(machineMemoryUsagePropertyName, extraPropsMap);
                 break;
+            case STUCK_THREAD:
+                thresholdDiagnosticsExtraProps.put(stuckThreadsPropertyName, extraPropsMap);
+                break;
+                
         }
     }
     
@@ -396,6 +438,11 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                     extraPropsMap.put("checkerName", DEFAULT_MACHINE_MEMORY_USAGE_NAME);
                     extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
                     break;
+                case stuckThreadsPropertyName:
+                    extraPropsMap = new HashMap<>(6);
+                    extraPropsMap.put("checkerName", DEFUALT_STUCK_THEAD_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
             }
         }
         
@@ -412,6 +459,9 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         if (extraPropsMap.containsValue(DEFAULT_HOGGING_THREADS_NAME)) {
             extraPropsMap.put("threshold-percentage", DEFAULT_THRESHOLD_PERCENTAGE);
             extraPropsMap.put("retry-count", DEFAULT_RETRY_COUNT);
+        } else if (extraPropsMap.containsValue(DEFUALT_STUCK_THEAD_NAME)){
+            extraPropsMap.put("threshold",  DEFAULT_TIME);
+            extraPropsMap.put("thresholdUnit", DEFAULT_UNIT);
         } else {
             extraPropsMap.put("thresholdCritical", THRESHOLD_DEFAULTVAL_CRITICAL);
             extraPropsMap.put("thresholdWarning", THRESHOLD_DEFAULTVAL_WARNING);
