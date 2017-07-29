@@ -61,5 +61,6 @@
         <module>service-exemplar</module>
         <module>notification-eventbus-core</module>
         <module>notification-cdi-eventbus-core</module>
+        <module>jsr107-repackaged</module>
     </modules>
 </project>
