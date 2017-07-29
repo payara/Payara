@@ -1,6 +1,7 @@
-/*
+/**
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,56 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.domain;
+package fish.payara.monitoring.fang.processor;
+
+import javax.management.openmbean.SimpleType;
 
 /**
- * @author mertcaliskan
+ *
+ * @author Fraser Savage
  */
-public class HistoricRequestEvent implements Comparable<HistoricRequestEvent> {
-
-    private long elapsedTime;
-    private String message;
-
-    public HistoricRequestEvent(long elapsedTime, String message) {
-        this.elapsedTime = elapsedTime;
-        this.message = message;
-    }
-
-    public long getElapsedTime() {
-        return elapsedTime;
-    }
-
-    public String getMessage() {
-        return message;
-    }
+// @PROPOSED - FANG-2: Flesh out flexible converter system.
+public class SimpleTypeProcessor implements TypeProcessor<SimpleType> {
 
     @Override
-    public int compareTo(HistoricRequestEvent e) {
-        return Long.compare(e.elapsedTime, elapsedTime);
+    public Object processObject(Object object) {
+            return object;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
 
-        HistoricRequestEvent that = (HistoricRequestEvent) o;
-
-        return elapsedTime == that.elapsedTime && (message != null ? message.equals(that.message) : that.message == null);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (elapsedTime ^ (elapsedTime >>> 32));
-        result = 31 * result + (message != null ? message.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "HistoricRequestEvent{" +
-                "elapsedTime=" + elapsedTime +
-                ", message='" + message + '\'' +
-                '}';
-    }
 }
+
+

@@ -42,6 +42,7 @@ package fish.payara.micro.boot;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
 import java.io.File;
+import java.net.URL;
 
 /**
  *
@@ -495,5 +496,13 @@ public interface PayaraMicroBoot {
      * @throws BootstrapException
      */
     void shutdown() throws BootstrapException;
+    
+    /**
+     * Adds the library to the classloader and loads it
+     * 
+     * @param lib The library to add
+     * @since 4.1.2.173
+     */
+    public void addLibrary(File lib);
     
 }

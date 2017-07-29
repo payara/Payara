@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright [2016] [Payara Foundation and/or its affiliates]
+ * Copyright [2016-2017] [Payara Foundation and/or its affiliates]
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,7 @@ import java.net.URLStreamHandlerFactory;
 import java.util.logging.Logger;
 
 /**
- * As the name suggests, loads classes via current class loader ahead of paren class loader
+ * As the name suggests, loads classes via current class loader ahead of parent class loader
  * by default, classes are loaded from the parent ClassLoader first, thus this class is 
  * needed to allow overriding App Server's Modules / JAR files by placing them
  * into &lt;domain_dir&gt;/lib or EAR lib directory
@@ -159,7 +159,11 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
         return name.startsWith("sun") || name.startsWith("javax");
     }
 
-
+    @Override
+    public void addURL(URL url){
+        super.addURL(url);
+    }
+    
     protected boolean currentBeforeParentEnabled = false;
     
     private final ClassLoader system = getClass().getClassLoader();

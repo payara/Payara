@@ -1,8 +1,7 @@
 <!--
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-   Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,31 +48,34 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 <event>
     <!beforeCreate 
         getRequestValue(key="configName" value="#{pageSession.configName}" );
-        setPageSessionAttribute(key="REQUEST_TRACING_CONFIG_URL", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/request-tracing-service-configuration");
-        createMap(result="#{pageSession.attrsMap}")
-        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
-        gf.restRequest(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}/get-requesttracing-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
+        setSessionAttribute(key="REQUEST_TRACING_CONFIG_URL",
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/request-tracing-service-configuration");
+
+        gf.restRequest(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}/get-requesttracing-configuration?target=#{pageSession.configName}"
+                method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
-        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
-        
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic","historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "notifierEnabled", "dynamic", "notifierDynamic", "historicalTraceEnabled"});
+        py.getHistoricRequestTracingMessages(parentEndpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
             setPageSessionAttribute(key="historicalTraceEnabled", value="true");
         }
+
+        setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="notifierDynamic", value="true");
+
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
+        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
         if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
             convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
             gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
         }
         py.sortRequestTracingEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.subReports.get(0).extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
         convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
-        setPageSessionAttribute(key="dynamic", value="true");
-        setPageSessionAttribute(key="notifierDynamic", value="true");
-        /> 
+        />
 </event>
         
 <sun:form id="propertyForm">
@@ -87,11 +89,11 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" 
+                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
                             value="#{pageSession.historicalTraceEnabled}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                    py.updateNotifiers(endpoint="#{pageSession.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+                    gf.updateEntity(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    py.updateNotifiers(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
                     />
             </sun:button>
         </sun:panelGroup>
@@ -125,7 +127,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}"  styleClass="integer" maxLength="30" 
                            text="#{pageSession.valueMap['historicalTraceStoreSize']}" />
         </sun:property>
-        
+      <sun:property id="historicalTraceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                    label="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreTimeoutLabel}"
+                    helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreTimeoutLabelHelpText}">
+          <sun:textField id="historicalTraceStoreTimeoutField" columns="$int{40}" maxLength="250"
+                         text="#{pageSession.valueMap['historicalTraceStoreTimeout']}"/>
+      </sun:property>
     </sun:propertySheetSection>
 
     <sun:propertySheetSection id="notifiers">
@@ -137,6 +144,32 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                 availableItemsLabel="$resource{i18nrt.requestTracing.configuration.availableNotifiers}"
                 selectedItemsLabel="$resource{i18nrt.requestTracing.configuration.selectedNotifiers}">
             </sun:addRemove>
+        </sun:property>
+    </sun:propertySheetSection>
+
+    <sun:propertySheetSection id="historic">
+        <sun:property>
+            <sun:table id="historicRequestTracingTable" title="$resource{i18nrt.requestTracing.historic.table.name}" >
+                <sun:tableRowGroup id="historicRequestTracingRowGroup" data={"$attribute{historic}"} sourceVar="td"
+                    emptyDataMsg="$resource{i18nrt.requestTracing.historic.table.empty}">
+                    <sun:tableColumn header="$resource{i18nrt.requestTracing.historic.table.headings.elapsedTime}" sort="elapsedTime" rowHeader="$boolean{true}" id="col1">
+                        <staticText id="elapsedTime" value="#{td.value.elapsedTime}" />
+                    </sun:tableColumn>
+                    <sun:tableColumn header="$resource{i18nrt.requestTracing.historic.table.headings.message}" sort="message" rowHeader="$boolean{true}" id="col2">
+                        <staticText id="message" value="#{td.value.message}" />
+                    </sun:tableColumn>
+                </sun:tableRowGroup>
+            </sun:table>
+        </sun:property>
+
+        <sun:property>
+            <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text.prefix}" />
+            <sun:hyperlink
+                    toolTip="$resource{i18nrt.requestTracing.link.to.notification.page.text}"
+                    url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
+                <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text}" />
+            </sun:hyperlink>
+            <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text.suffix}" />
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>

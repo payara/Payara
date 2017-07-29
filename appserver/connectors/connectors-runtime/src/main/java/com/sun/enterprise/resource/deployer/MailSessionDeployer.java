@@ -72,6 +72,7 @@ import java.beans.PropertyVetoException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * Handle deployment of resources defined by @MailSessionDefinition
@@ -363,7 +364,7 @@ public class MailSessionDeployer implements ResourceDeployer {
         }
 
         public String getValue() {
-            return value;
+            return (String) TranslatedConfigView.getTranslatedValue(value);
         }
 
         public void setValue(String value) throws PropertyVetoException {
@@ -441,7 +442,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getHost() {
-            return desc.getHost();
+            return (String) TranslatedConfigView.getTranslatedValue(desc.getHost());
         }
 
         @Override
@@ -451,7 +452,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getUser() {
-            return desc.getUser();
+            return (String) TranslatedConfigView.getTranslatedValue(desc.getUser());
         }
 
         @Override
@@ -461,7 +462,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getPassword(){
-            return desc.getPassword();
+            return (String) TranslatedConfigView.getTranslatedValue(desc.getPassword());
         }
         
         @Override
@@ -483,7 +484,7 @@ public class MailSessionDeployer implements ResourceDeployer {
         
         @Override
         public String getFrom() {
-            return desc.getFrom();
+            return (String) TranslatedConfigView.getTranslatedValue(desc.getFrom());
         }
 
         @Override

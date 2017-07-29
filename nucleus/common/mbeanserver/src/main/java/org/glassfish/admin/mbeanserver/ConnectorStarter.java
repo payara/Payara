@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.mbeanserver;
 
 import org.glassfish.hk2.api.ServiceLocator;
@@ -77,8 +78,10 @@ abstract class ConnectorStarter {
     }
 
     public String hostname() throws UnknownHostException {
-        if (mHostName.equals("") || mHostName.equals("0.0.0.0")) {
+        if (mHostName.equals("")) {
             return Util.localhost();
+        } else if (mHostName.equals("*")) {
+            return "0.0.0.0";
         } else if (mHostName.contains(":") && !mHostName.startsWith("[")) {
             return "["+mHostName+"]";
         }
