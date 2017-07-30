@@ -82,10 +82,12 @@ public class GetEventbusNotifierConfiguration extends BaseGetNotifierConfigurati
     @Override
     protected Map<String, Object> getNotifierConfiguration(EventbusNotifierConfiguration configuration) {
         Map<String, Object> map = new HashMap<>(2);
-        
-        map.put("enabled", configuration.getEnabled());
-        map.put("topicName", configuration.getTopicName());
-        
+
+        if (configuration != null) {
+            map.put("enabled", configuration.getEnabled());
+            map.put("topicName", configuration.getTopicName());
+        }
+
         return map;
     }
 }

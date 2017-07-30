@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.concurrent.runtime;
 
@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import org.glassfish.internal.api.Globals;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
@@ -82,6 +83,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private boolean classloading, security, naming, workArea;
 
     private RequestTracingService requestTracing;
+    private StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
                                     Deployment deployment,
@@ -97,6 +99,12 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
         } catch (NullPointerException ex) {
             logger.log(Level.INFO, "Error retrieving Request Tracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException");
+        }
+        try {
+            this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
                     + "during initialisation of Concurrent Context - NullPointerException");
         }
         
@@ -191,7 +199,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private RequestEvent constructConcurrentContextEvent(ComponentInvocation invocation) {
         requestTracing.startTrace();
-        
+        if (stuckThreads != null){
+            stuckThreads.registerThread(Thread.currentThread().getId());
+        }
         RequestEvent requestEvent = new RequestEvent("ConcurrentContextTrace");
         
         requestEvent.addProperty("App Name", invocation.getAppName());
@@ -240,6 +250,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             requestTracing.endTrace();
+        }
+        if (stuckThreads != null){
+            stuckThreads.deregisterThread(Thread.currentThread().getId());
         }
     }
     
