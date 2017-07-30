@@ -40,7 +40,9 @@
 package fish.payara.microprofile.config.cdi;
 
 import fish.payara.microprofile.config.spi.PayaraConfig;
+import java.lang.reflect.Member;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.DeploymentException;
 import javax.enterprise.inject.spi.InjectionPoint;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -71,8 +73,22 @@ public class ConfigPropertyProducer {
         String name = property.name();
         if (name.isEmpty()) {
             // derive the property name from the injection point
-            name = ip.getBean().getBeanClass().getCanonicalName().toLowerCase();
-            name += ip.getMember().getName();
+            Class beanClass = null;
+            Bean bean = ip.getBean();
+            if (bean == null) {
+                Member member = ip.getMember();
+                beanClass = member.getDeclaringClass();
+            } else {
+                beanClass = bean.getBeanClass();
+            }
+            StringBuilder sb = new StringBuilder(beanClass.getCanonicalName().length() + ip.getMember().getName().length());
+            sb.append(beanClass.getPackage().getName());
+            sb.append('.');
+            sb.append(beanClass.getSimpleName().substring(0,1).toLowerCase());
+            sb.append(beanClass.getSimpleName().substring(1));
+            sb.append('.');
+            sb.append(ip.getMember().getName());
+            name = sb.toString();
         }
         result = config.getValue(name, property.defaultValue(),type);
         if (result == null) {

@@ -81,7 +81,14 @@ public class CDIExtension implements Extension {
                     ConfigPropertyProducer.getGenericProperty(pip.getInjectionPoint());
                 }
             }catch (Throwable de ) {
-                pip.addDefinitionError(new DeploymentException("Deploment Failure for ConfigProperty " + property.name() + " in class " + pip.getInjectionPoint().getBean().getBeanClass().getName(),de));
+                Class failingClass = null;
+                Bean bean = pip.getInjectionPoint().getBean();
+                if (bean == null) {
+                    failingClass = pip.getInjectionPoint().getMember().getDeclaringClass();
+                } else {
+                    failingClass = pip.getInjectionPoint().getBean().getBeanClass();
+                }
+                pip.addDefinitionError(new DeploymentException("Deploment Failure for ConfigProperty " + property.name() + " in class " + failingClass.getCanonicalName() + " Reason " + de.getMessage(),de));
             }
         }
     }

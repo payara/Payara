@@ -157,8 +157,19 @@ public class PayaraConfig implements Config {
     }
     
     private <T> Converter<T> getConverter(Class<T> propertyType) {
-        Converter<T> result = null;
-        return result;
+        Class type = propertyType;
+        if (type.equals(int.class)) {
+            type = Integer.class;
+        } else if (type.equals(long.class)) {
+            type = Long.class;
+        } else if (type.equals(double.class)) {
+            type = Double.class;
+        } else if (type.equals(float.class)) {
+            type = Float.class;
+        } else if (type.equals(boolean.class)) {
+            type = Boolean.class;
+        }
+        return converters.get(type);
     }
     
     private int getPriority(Converter converter) {
@@ -176,7 +187,7 @@ public class PayaraConfig implements Config {
         }
         
         // find a converter
-        Converter<T> converter = converters.get(propertyType);
+        Converter<T> converter = getConverter(propertyType);
         if (converter == null) {
             throw new IllegalArgumentException("No converter for class " + propertyType);
         }
