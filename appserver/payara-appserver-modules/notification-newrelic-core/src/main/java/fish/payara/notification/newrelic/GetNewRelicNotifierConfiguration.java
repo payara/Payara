@@ -83,10 +83,12 @@ public class GetNewRelicNotifierConfiguration extends BaseGetNotifierConfigurati
     @Override
     protected Map<String, Object> getNotifierConfiguration(NewRelicNotifierConfiguration configuration) {
         Map<String, Object> map = new HashMap<>(3);
-        
-        map.put("enabled", configuration.getEnabled());
-        map.put("key", configuration.getKey());
-        map.put("accountId", configuration.getAccountId());
+
+        if (configuration != null) {
+            map.put("enabled", configuration.getEnabled());
+            map.put("key", configuration.getKey());
+            map.put("accountId", configuration.getAccountId());
+        }
 
         return map;
     }

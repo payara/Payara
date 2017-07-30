@@ -89,14 +89,13 @@ public abstract class BaseGetNotifierConfiguration<NC> implements AdminCommand {
 
         String message;
         Properties extraProps = new Properties();
-        Map<String, Object> configMap;
+        Map<String, Object> configMap = getNotifierConfiguration(nc);
+
         if (nc == null) {
             message = "Notifier Configuration is not defined";
-            configMap = new HashMap<>();
         }
         else {
             message = listConfiguration(nc);
-            configMap = getNotifierConfiguration(nc);
         }
         mainActionReport.setMessage(message);
         extraProps.put("notifierConfiguration", configMap);
