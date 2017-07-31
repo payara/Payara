@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.ejb.mdb;
@@ -43,6 +45,7 @@ package org.glassfish.ejb.mdb;
 import com.sun.appserv.connectors.internal.api.ResourceHandle;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import java.lang.reflect.Method;
 import java.util.UUID;
 import javax.jms.Destination;
@@ -64,6 +67,7 @@ public class MessageBeanListenerImpl implements MessageBeanListener {
     private final MessageBeanContainer container_;
     private ResourceHandle resourceHandle_;
     private final RequestTracingService requestTracing;
+    private final StuckThreadsStore stuckThreadsStore;
 
     MessageBeanListenerImpl(MessageBeanContainer container, 
                             ResourceHandle handle) {
@@ -74,6 +78,7 @@ public class MessageBeanListenerImpl implements MessageBeanListener {
         
         // get the request tracing service
         requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        stuckThreadsStore = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
     }
 
     @Override
@@ -94,6 +99,10 @@ public class MessageBeanListenerImpl implements MessageBeanListener {
     
     @Override
     public Object deliverMessage(Object[] params) throws Throwable {
+        if (stuckThreadsStore != null){
+            stuckThreadsStore.registerThread(Thread.currentThread().getId());
+        }
+        
         if (requestTracing!= null && requestTracing.isRequestTracingEnabled()) {
             requestTracing.startTrace();
             RequestEvent re = new RequestEvent("MDB START Delivery");
@@ -127,6 +136,9 @@ public class MessageBeanListenerImpl implements MessageBeanListener {
                 re.addProperty("JNDI", container_.getEjbDescriptor().getJndiName());
                 requestTracing.traceRequestEvent(re);
                 requestTracing.endTrace();
+            }
+            if (stuckThreadsStore != null){
+                stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
             }
         }
     }

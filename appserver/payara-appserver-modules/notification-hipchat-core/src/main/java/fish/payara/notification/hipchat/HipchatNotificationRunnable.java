@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,8 +76,10 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
                     outputStream.write((message.getSubject() + "\n" + message.getMessage()).getBytes(Charsets.UTF8_CHARSET));
                     if (connection.getResponseCode() != 204) {
                         logger.log(Level.SEVERE,
-                                "Error occurred while connecting Hipchat. Check your room name and token. HTTP response code",
-                                connection.getResponseCode());
+                                "Error occurred while connecting Hipchat. Check your room name and token. HTTP response code: "
+                                        + connection.getResponseCode());
+                    } else {
+                        logger.log(Level.FINE, "Message successfully sent");
                     }
                 }
             }

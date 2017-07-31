@@ -83,11 +83,13 @@ public class GetHipchatNotifierConfiguration extends BaseGetNotifierConfiguratio
     @Override
     protected Map<String, Object> getNotifierConfiguration(HipchatNotifierConfiguration configuration) {
         Map<String, Object> map = new HashMap<>(3);
-        
-        map.put("enabled", configuration.getEnabled());
-        map.put("roomName", configuration.getRoomName());
-        map.put("token", configuration.getToken());
-        
+
+        if (configuration != null) {
+            map.put("enabled", configuration.getEnabled());
+            map.put("roomName", configuration.getRoomName());
+            map.put("token", configuration.getToken());
+        }
+
         return map;
     }
 }

@@ -101,6 +101,8 @@ public class DeploymentImpl implements CDI11Deployment {
 
     private Iterable<Metadata<Extension>> extensions;
 
+    private List<Metadata<Extension>> dynamicExtensions = new ArrayList();
+
     private Collection<EjbDescriptor> deployedEjbs = new LinkedList<>();
     private ArchiveFactory archiveFactory;
 
@@ -477,9 +479,22 @@ public class DeploymentImpl implements CDI11Deployment {
                 }
             }
         }
+        extnList.addAll(dynamicExtensions);
         return extnList;
     }
 
+    public boolean addDynamicExtension(Metadata<Extension> extension) {
+        return dynamicExtensions.add(extension);
+    }
+
+    public boolean removeDynamicExtension(Metadata<Extension> extension) {
+        return dynamicExtensions.remove(extension);
+    }
+
+    public void clearDynamicExtensions() {
+        dynamicExtensions.clear();
+    }
+    
     @Override
     public String toString() {
         StringBuffer valBuff = new StringBuffer();
