@@ -17,9 +17,13 @@
  */
 package fish.payara.nucleus.store;
 
+import com.hazelcast.core.IMap;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -65,8 +69,11 @@ public class ClusteredStore implements EventListener {
     public boolean remove(String storeName, Serializable key) {
         boolean result = false;
         if (isEnabled()) {
-            Object value = hzCore.getInstance().getMap(storeName).remove(key);
-            result = true;
+            IMap map = hzCore.getInstance().getMap(storeName);
+            if (map != null) {
+                Object value = map.remove(key);
+                result = true;
+            }
         }
         return result;
     }
@@ -74,7 +81,10 @@ public class ClusteredStore implements EventListener {
     public boolean containsKey(String storeName, Serializable key) {
          boolean result = false;
         if (isEnabled()) {
-            result = hzCore.getInstance().getMap(storeName).containsKey(key);
+            IMap map = hzCore.getInstance().getMap(storeName);
+            if (map != null) {
+                result = map.containsKey(key);
+            }
         }
         return result;       
     }
@@ -82,7 +92,10 @@ public class ClusteredStore implements EventListener {
     public Serializable get(String storeName, Serializable key) {
         Serializable result = null;
         if (isEnabled()) {
-            result = (Serializable) hzCore.getInstance().getMap(storeName).get(key);
+            IMap map = hzCore.getInstance().getMap(storeName);
+            if (map != null) {
+                result = (Serializable) map.get(key);
+            }
         }
         return result;
     }
@@ -94,6 +107,20 @@ public class ClusteredStore implements EventListener {
                 logger.info("Payara Clustered Store Service Enabled");
             }
         }
+    }
+
+    public Map<Serializable, Serializable> getMap(String storeName) {
+        HashMap<Serializable,Serializable> result = new HashMap<>();
+        if (hzCore.isEnabled()) {
+            IMap map = hzCore.getInstance().getMap(storeName);
+            if (map != null) {
+                Set<Serializable> keys = map.keySet();
+                for (Serializable key : keys) {
+                    result.put(key, (Serializable) map.get(key));
+                }
+            }
+        }
+        return result;
     }
     
 }
