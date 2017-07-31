@@ -62,8 +62,19 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <module>asadmin-recorder</module>
         <module>service-exemplar</module>
         <module>notification-eventbus-core</module>
-        <module>nucleus-microprofile</module>
         <module>notification-cdi-eventbus-core</module>
         <module>jsr107-repackaged</module>
     </modules>
+    
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>nucleus-microprofile</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
