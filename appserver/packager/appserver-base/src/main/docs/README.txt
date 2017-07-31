@@ -1,4 +1,4 @@
-Thank you for downloading Payara Blue 4.1.2.172!
+Thank you for downloading Payara Blue 4.1.2.173!
 
 Here are a few short steps to get you started...
 
@@ -6,7 +6,7 @@ Here are a few short steps to get you started...
 0. Prerequisite
 ===============
 
-Payara Blue 4.1.2.172 requires IBM JDK Version 7, SR9 FP40 or higher, IBM JDK Version 7 Release 1, SR3 FP40 or higher or IBM JDK Version 8 SR3 or higher. 
+Payara Blue 4.1.2.173 requires IBM JDK Version 7, SR9 FP40 or higher, IBM JDK Version 7 Release 1, SR3 FP40 or higher or IBM JDK Version 8 SR3 or higher. 
 Check http://www.ibm.com/developerworks/java/jdk/ to download the JDK.
 
 For IBM J9 support, please download Payara Blue from http://www.payara.fish/downloads
@@ -14,7 +14,7 @@ For IBM J9 support, please download Payara Blue from http://www.payara.fish/down
 1. Installing Payara Blue
 =========================
 
-Installing Payara Blue is just a matter of unzipping the Payara Blue archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Blue. If not, just type the following command in the directory where you want Payara Blue to be installed: jar xvf payara-4.1.2.172.zip
+Installing Payara Blue is just a matter of unzipping the Payara Blue archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Blue. If not, just type the following command in the directory where you want Payara Blue to be installed: jar xvf payara-4.1.2.173.zip
 
 The default domain called 'domain1' is already installed and preconfigured.
 
@@ -47,13 +47,13 @@ To stop Payara Blue, just issue the following command:
 Open the following in your browser: https://payara.gitbooks.io/payara-server/content/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 4.1.2 Release Notes as they contain important information: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-172.html
+Make sure to also check the Payara Server 4.1.2 Release Notes as they contain important information: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-173.html
 
 
 5. Documentation 
 ================
 
-Payara Server 4.1.2.172 Release Notes: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-172.html
+Payara Server 4.1.2.173 Release Notes: https://payara.gitbooks.io/payara-server/content/release-notes/release-notes-173.html
 
 Payara Documentation: https://payara.gitbooks.io/payara-server/content/
 
