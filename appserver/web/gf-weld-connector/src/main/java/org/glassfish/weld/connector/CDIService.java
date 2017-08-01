@@ -37,15 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
+import java.beans.PropertyVetoException;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
 /**
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
+ * @author Gaurav Gupta
  */
 @Configured
 public interface CDIService extends ConfigExtension {
@@ -63,5 +66,22 @@ public interface CDIService extends ConfigExtension {
      * @param value allowed object is {@link String }
      */
     void setEnableImplicitCdi(String value);
+    
+    /**
+     * Gets the value of the cdidevmode property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getEnableCdiDevMode();
+
+    /**
+     * Sets the value of the cdidevmode property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setEnableCdiDevMode(String value) throws PropertyVetoException;
 
 }

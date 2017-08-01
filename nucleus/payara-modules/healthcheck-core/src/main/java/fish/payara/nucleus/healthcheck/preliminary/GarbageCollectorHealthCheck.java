@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -78,6 +79,11 @@ public class GarbageCollectorHealthCheck extends BaseThresholdHealthCheck<Health
     @Override
     public HealthCheckWithThresholdExecutionOptions constructOptions(GarbageCollectorChecker checker) {
         return super.constructThresholdOptions(checker);
+    }
+
+    @Override
+    protected String getDescription() {
+        return "healthcheck.description.garbageCollector";
     }
 
     @Override

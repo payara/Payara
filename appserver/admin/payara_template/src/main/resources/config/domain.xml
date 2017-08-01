@@ -227,6 +227,7 @@
       </thread-pools>
       <system-property name="fish.payara.classloading.delegate" value="false"/>
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
+      <system-property name="org.jboss.weld.probe.allowRemoteAddress" value="127.0.0.1|::1|::1%.+|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:1%.+"/>
     </config>
      <config name="default-config" dynamic-reconfiguration-enabled="true" >
          <http-service>

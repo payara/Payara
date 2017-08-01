@@ -87,16 +87,18 @@ public class GetJmsNotifierConfiguration extends BaseGetNotifierConfiguration<Jm
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(JmsNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(4);
-        
-        map.put("enabled", configuration.getEnabled());
-        map.put("contextFactoryClass", configuration.getContextFactoryClass());
-        map.put("connectionFactoryName", configuration.getConnectionFactoryName());
-        map.put("queueName", configuration.getQueueName());
-        map.put("url", configuration.getUrl());
-        map.put("username", configuration.getUsername());
-        map.put("password", configuration.getPassword());
-        
+        Map<String, Object> map = new HashMap<>(7);
+
+        if (configuration != null) {
+            map.put("enabled", configuration.getEnabled());
+            map.put("contextFactoryClass", configuration.getContextFactoryClass());
+            map.put("connectionFactoryName", configuration.getConnectionFactoryName());
+            map.put("queueName", configuration.getQueueName());
+            map.put("url", configuration.getUrl());
+            map.put("username", configuration.getUsername());
+            map.put("password", configuration.getPassword());
+        }
+
         return map;
     }
 }
