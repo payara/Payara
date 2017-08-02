@@ -42,7 +42,6 @@
 package org.glassfish.ejb.deployment.annotation.handlers;
 
 import fish.payara.cluster.Clustered;
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import javax.ejb.DependsOn;
@@ -170,9 +169,7 @@ public class SingletonHandler extends AbstractEjbHandler {
 
         Clustered clusteredAnnotation = clz.getAnnotation(Clustered.class);
         if(clusteredAnnotation != null) {
-            if(!Serializable.class.isAssignableFrom(clz)) {
-                throw new AnnotationProcessorException(String.format("Clustered Singleton %s must be Serializable", ejbClass.getName()));
-            }
+            desc.setClustered(true);
         }
     }
 }

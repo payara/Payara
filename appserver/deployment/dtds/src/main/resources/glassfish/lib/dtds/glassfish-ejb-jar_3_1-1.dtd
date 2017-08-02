@@ -91,7 +91,7 @@ Additional properties applicable to a message-driven bean:
 
 <!ELEMENT ejb (ejb-name, jndi-name?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, pass-by-reference?, 
                cmp?, principal?, mdb-connection-factory?, jms-durable-subscription-name?, 
-               jms-max-messages-load?, ior-security-config?, is-read-only-bean?, 
+               jms-max-messages-load?, ior-security-config?, is-read-only-bean?, clustered-bean?,
                refresh-period-in-seconds?, commit-option?, cmt-timeout-in-seconds?, use-thread-pool-id?, gen-classes?, 
                bean-pool?, bean-cache?, mdb-resource-adapter?, webservice-endpoint*, flush-at-end-of-method?, checkpointed-methods?, checkpoint-at-end-of-method?, per-request-load-balancing?)>
 
@@ -111,6 +111,11 @@ Used in ejb, method
 The text in this element is a true/false flag for read only beans.
 -->
 <!ELEMENT is-read-only-bean (#PCDATA)>
+
+<!--
+The text in this element is a true/false flag for Payara clustered singleton beans.
+-->
+<!ELEMENT clustered-bean (#PCDATA)>
 
 <!--
 This element contains a true/false flag that controls the per-request load balancing

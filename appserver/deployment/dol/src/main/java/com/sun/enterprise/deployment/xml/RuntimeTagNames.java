@@ -74,6 +74,7 @@ public interface RuntimeTagNames extends TagNames {
     // The name of the deployment context property used to disable implicit bean discovery for a
     // particular application deployment.
     public final static String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
+    public final static String PAYARA_CLUSTERED_BEAN = "clustered-bean";
 
     String AS_CONTEXT = "as-context";
     String AUTH_METHOD = "auth-method";

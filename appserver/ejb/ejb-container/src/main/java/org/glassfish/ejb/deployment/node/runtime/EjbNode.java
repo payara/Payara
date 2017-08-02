@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -176,6 +177,8 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
                 value);
         } else if(RuntimeTagNames.PER_REQUEST_LOAD_BALANCING.equals(element.getQName())) {
             descriptor.getIASEjbExtraDescriptors().setPerRequestLoadBalancing(Boolean.valueOf(value));
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_BEAN.equals(element.getQName())) {
+            ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setClustered(Boolean.valueOf(value));
         }
         else super.setElementValue(element, value);
     }

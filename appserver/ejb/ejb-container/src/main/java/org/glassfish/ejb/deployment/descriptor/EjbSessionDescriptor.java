@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -100,6 +101,8 @@ public class EjbSessionDescriptor extends EjbDescriptor
     // ejb3.2 spec 4.6.5 Disabling Passivation of Stateful Session Beans
     private boolean isPassivationCapable = true;
     private boolean passivationCapableIsSet = false;
+
+    private boolean clustered = false;
 
     private List<MethodDescriptor> readLockMethods = new ArrayList<MethodDescriptor>();
     private List<MethodDescriptor> writeLockMethods = new ArrayList<MethodDescriptor>();
@@ -203,6 +206,16 @@ public class EjbSessionDescriptor extends EjbDescriptor
     public boolean isSessionTypeSet() {
         return sessionTypeIsSet;
     }
+
+    @Override
+    public boolean isClustered() {
+        return clustered;
+    }
+
+    public void setClustered(boolean clustered) {
+        this.clustered = clustered;
+    }
+
     
 	/**
 	* Sets my type

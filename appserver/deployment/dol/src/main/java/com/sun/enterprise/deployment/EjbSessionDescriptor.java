@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -66,4 +67,5 @@ public interface EjbSessionDescriptor extends EjbDescriptor {
 
     String getPortableJndiName(String clientViewType);
 
+    boolean isClustered();
 }
