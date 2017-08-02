@@ -218,8 +218,7 @@
         
         <!-- Other -->
         
-        <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <hk2.version>2.5.0-b44</hk2.version>
+        <hk2.version>2.5.0-b45-SNAPSHOT</hk2.version>
         <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
 
         <!-- 4.1.1-b001  -->
@@ -230,18 +229,26 @@
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.3.3</classmate.version>
         <jboss.logging.version>3.3.1.Final</jboss.logging.version>
+        <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.22.0-CR2</javassist.version>
        
         <!-- A pure Java implementation of the SSH-2 protocol, a successor to Ganymed  -->
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
-        <pfl.version>4.0.0-b004</pfl.version>
+        
+        <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
+        <pfl.version>4.0.0-b004</pfl.version> <!-- 4.0.1-b001 -->
+        <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0-b001</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
         
+        <!-- Jackson is a high-performance JSON processor (parser, generator) -->
         <jackson.version>2.8.8</jackson.version>
+        <!-- A StAX implementation for JSON. -->
         <jettison.version>1.3.8</jettison.version>
        
         <mimepull.version>1.9.7</mimepull.version>
+        
+        <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <jbi.version>1.0</jbi.version>
         <glassfish-management-api.version>3.2.1-b002</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
@@ -267,9 +274,10 @@
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.7</command-security-plugin.version>
+        <command-security-plugin.version>1.0.8</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
+        <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         
         <!-- Debug / analysis -->
         
@@ -864,12 +872,25 @@ Parent is ${project.parent}</echo>
                 <artifactId>jersey-hk2</artifactId>
                 <version>2.26-b06</version>
             </dependency>
-            
+
+
+            <!-- Bean Validation (BVal) -->
             <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>${javax.annotation-api.version}</version>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${javax.validation.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator-cdi</artifactId>
+                <version>${hibernate.validator.version}</version>
+            </dependency>
+            
             
             <!-- Expression Language (EL) -->
             <dependency>
@@ -883,6 +904,7 @@ Parent is ${project.parent}</echo>
                 <version>${javax.el.version}</version>
             </dependency>
             
+            
             <!-- JavaMail -->
             <dependency>
                 <groupId>javax.mail</groupId>
@@ -894,7 +916,12 @@ Parent is ${project.parent}</echo>
                 <artifactId>javax.mail</artifactId>
                 <version>${mail.version}</version>
             </dependency>
-        
+            
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax.annotation-api.version}</version>
+            </dependency>
         
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
@@ -903,6 +930,7 @@ Parent is ${project.parent}</echo>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
