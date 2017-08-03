@@ -42,8 +42,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
-        <artifactId>payara-appserver-modules</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+	<artifactId>payara-appserver-modules</artifactId>
+	<version>5.0.0.173-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver.payara-fang</groupId>
     <artifactId>payara-fang-parent</artifactId>

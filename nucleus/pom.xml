@@ -54,7 +54,7 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>5.1.2.173-SNAPSHOT</version>
+    <version>5.0.0.173-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.1.2.173-SNAPSHOT</tag>
+        <tag>payara-server-5.0.0.173-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
