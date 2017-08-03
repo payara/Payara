@@ -72,7 +72,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class SetConfigProperty implements AdminCommand {
 
-    @Param(acceptableValues = "domain,config,server,application,module,cluster", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
