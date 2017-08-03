@@ -148,8 +148,20 @@
            		<enabled>true</enabled>
            	</releases>
             	<snapshots>
-                	<enabled>false</enabled>
+                	<enabled>true</enabled> <!-- TEMP for HK2 until b45 released -->
             	</snapshots>
+        </repository>
+        
+        <repository>
+           <id>payara-patched-externals-local</id>
+           <name>Payara Patched Externals local</name>
+           <url>file:///Users/arjan/eclipse47rc2/workspace/Payara_PatchedProjects</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+                <snapshots>
+                    <enabled>false</enabled>
+                </snapshots>
         </repository>
     </repositories>
     
@@ -202,7 +214,7 @@
         
         <!-- Bean Validation -->
         <javax.validation.version>2.0.0.CR3</javax.validation.version>
-        <hibernate.validator.version>6.0.0.CR3</hibernate.validator.version>
+        <hibernate.validator.version>6.0.0.CR3-payara-p1</hibernate.validator.version>
         
         <!-- Expression language -->
         <javax.el.version>3.0.1-b04</javax.el.version>
