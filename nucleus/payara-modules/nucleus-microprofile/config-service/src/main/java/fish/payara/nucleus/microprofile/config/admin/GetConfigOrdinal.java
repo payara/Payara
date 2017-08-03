@@ -116,6 +116,9 @@ public class GetConfigOrdinal implements AdminCommand {
                 case "cluster": {
                     result = serviceConfig.getClusterOrdinality();
                     break;
+                }case "jndi": {
+                    result = serviceConfig.getJNDIOrdinality();
+                    break;
                 }
             }
             context.getActionReport().setMessage(result.toString());

@@ -128,7 +128,10 @@ public class SetConfigOrdinal implements AdminCommand {
                                 config.setClusterOrdinality(ordinal);
                                 break;
                             } 
-                                
+                            case "jndi": {
+                                config.setJNDIOrdinality(ordinal);
+                                break;
+                            } 
                         }
                         return null;
                     }
