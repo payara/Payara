@@ -152,10 +152,11 @@
             	</snapshots>
         </repository>
         
+        <!-- 
         <repository>
            <id>payara-patched-externals-local</id>
            <name>Payara Patched Externals local</name>
-           <url>file:///Users/arjan/eclipse47rc2/workspace/Payara_PatchedProjects</url>
+           <url>file:///opt/PayaraDev/Payara_PatchedProjects</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -163,6 +164,7 @@
                     <enabled>false</enabled>
                 </snapshots>
         </repository>
+         -->
     </repositories>
     
     <pluginRepositories>
