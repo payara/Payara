@@ -127,7 +127,7 @@ public class SetConfigProperty implements AdminCommand {
             }
             case "module": {
                 if (sourceName == null || moduleName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters module is the source");
+                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
                 } else {
                     service.setModuleProperty(sourceName, moduleName, propertyName, propertyValue);
                 }
