@@ -78,7 +78,7 @@ public class SetConfigOrdinal implements AdminCommand {
     @Param()
     int ordinal;
     
-    @Param(acceptableValues = "domain,config,server,application,module,cluster,jndi", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi", defaultValue = "domain")
     String source;
     
     @Param (optional = true, defaultValue = "server") // if no target is specified it will be the DAS
