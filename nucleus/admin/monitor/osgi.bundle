@@ -42,7 +42,6 @@
                         com.sun.enterprise.admin.monitor.jndi; \
                         com.sun.enterprise.admin.monitor.util; \
                         com.sun.enterprise.management.support; \
-                        org.glassfish.flashlight; \
                         org.glassfish.flashlight.annotations; \
                         org.glassfish.flashlight.datatree.factory; \
                         org.glassfish.flashlight.statistics; \
