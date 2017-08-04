@@ -70,6 +70,8 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
@@ -146,6 +148,23 @@ public class MonitoringService implements EventListener {
                     TimeUnit.SECONDS.convert(Long.valueOf(configuration.getLogFrequency()),
                             TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
                     TimeUnit.SECONDS);
+        }
+    }
+    
+    public void bootstrapNotifierList() {
+        executionOptions.resetNotifierExecutionOptions();
+        if (configuration.getNotifierList() != null) {
+            for (Notifier notifier : configuration.getNotifierList()) {
+                ConfigView view = ConfigSupport.getImpl(notifier);
+                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+                executionOptions.addNotifierExecutionOption(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+            }
+        }
+        if (executionOptions.getNotifierExecutionOptionsList().isEmpty()) {
+            // Add logging execution options by default
+            LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
+            logNotifierExecutionOptions.setEnabled(true);
+            executionOptions.addNotifierExecutionOption(logNotifierExecutionOptions);
         }
     }
 
