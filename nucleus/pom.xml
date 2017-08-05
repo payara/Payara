@@ -211,8 +211,8 @@
         
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
-        <jax-rs-api.impl.version>2.1-m09</jax-rs-api.impl.version>
-        <jersey.version>2.26-b09</jersey.version>
+        <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
+        <jersey.version>2.26</jersey.version>
         
         <!-- Bean Validation -->
         <javax.validation.version>2.0.0.CR3</javax.validation.version>
