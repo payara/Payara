@@ -53,7 +53,7 @@ public class PayaraMicroProducer {
     
     private final PayaraInstance instance;
     
-    PayaraMicroProducer() {
+    protected PayaraMicroProducer() {
         instance = Globals.getDefaultHabitat().getService(PayaraInstance.class);
     }
     

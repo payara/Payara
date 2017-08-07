@@ -14,8 +14,6 @@ For IBM J9 support, please download Payara Blue from http://www.payara.fish/down
 1. Installing Payara Blue
 =========================
 
-Installing Payara Blue is just a matter of unzipping the Payara Blue archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Blue. If not, just type the following command in the directory where you want Payara Blue to be installed: jar xvf payara-4.1.2.172.zip
-
 The default domain called 'domain1' is already installed and preconfigured.
 
 

@@ -51,7 +51,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>payara-jsr107</module>
-        <module>jsr107-repackaged</module>
         <module>hazelcast-ejb-timer</module>
         <module>requesttracing-api</module>
         <module>jmx-monitoring-service</module>
@@ -71,4 +70,16 @@
         <module>payara-rest-endpoints</module>
         <module>payara-fang</module>
     </modules>
+    
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>microprofile</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

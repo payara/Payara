@@ -63,9 +63,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
-            <version>1.0.0</version>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>jsr107-repackaged</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

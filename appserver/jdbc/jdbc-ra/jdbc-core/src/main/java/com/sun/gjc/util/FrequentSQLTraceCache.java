@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Maintains the Sql Tracing Cache used to store SQL statements used by the
@@ -54,8 +55,16 @@ import java.util.List;
  */
 public class FrequentSQLTraceCache extends SQLTraceCache {
 
-    public FrequentSQLTraceCache(String poolName, int maxSize, long timeToKeepQueries) {
-        super(poolName, maxSize, timeToKeepQueries);
+    //Maximum size of the cache.
+    protected long maxStoredEntries = 10000;
+    
+    public FrequentSQLTraceCache(String poolName, int numToReport, long timeToKeepQueries) {
+        super(poolName, numToReport, timeToKeepQueries);
+    }
+    
+    public FrequentSQLTraceCache(String poolName, int numToReport, long timeToKeepQueries, long maxStoredEntries) {
+        super(poolName, numToReport, timeToKeepQueries);
+        this.maxStoredEntries = maxStoredEntries;
     }
 
     /**
@@ -76,7 +85,11 @@ public class FrequentSQLTraceCache extends SQLTraceCache {
                 trace.setNumExecutions(trace.getNumExecutions() + 1);
                 trace.setLastUsageTime(System.currentTimeMillis());
             } else {
-                cache.put(cacheObj.getQueryName(), cacheObj);
+                if (cache.size() < maxStoredEntries){
+                    cache.put(cacheObj.getQueryName(), cacheObj);
+                } else {
+                    _logger.log(Level.WARNING, "Frequent SQL Trace Cache full, {0} not stored", cacheObj.getQueryName());
+                }
             }
         }
     }

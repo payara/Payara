@@ -182,6 +182,18 @@
         <module>payara-fang</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>microprofile-package</module>
+            </modules>
+        </profile>
+    </profiles>
+    
     <build>
         <outputDirectory>${temp.dir}</outputDirectory>
         <pluginManagement>

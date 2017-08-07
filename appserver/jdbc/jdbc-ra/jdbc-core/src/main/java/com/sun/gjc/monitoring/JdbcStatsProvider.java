@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.monitoring;
 
@@ -96,6 +96,15 @@ public class JdbcStatsProvider {
         poolInfo = new PoolInfo(poolName, appName, moduleName);
         if(sqlTraceCacheSize > 0) {
             this.freqSqlTraceCache = new FrequentSQLTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
+            this.slowSqlTraceCache = new SlowSqlTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
+        }
+    }
+    
+    public JdbcStatsProvider(String poolName, String appName, String moduleName, int sqlTraceCacheSize,
+            long timeToKeepQueries, int maxStoredEntries) {
+        poolInfo = new PoolInfo(poolName, appName, moduleName);
+        if(sqlTraceCacheSize > 0) {
+            this.freqSqlTraceCache = new FrequentSQLTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries, maxStoredEntries);
             this.slowSqlTraceCache = new SlowSqlTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
         }
     }

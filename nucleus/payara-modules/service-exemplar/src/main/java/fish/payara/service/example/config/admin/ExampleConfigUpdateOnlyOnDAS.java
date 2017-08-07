@@ -45,8 +45,8 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 @Service(name = "example-das-command") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run it is mandatory for admin commands
-@ExecuteOn(value=RuntimeType.DAS) // this means the command can ONLY run on the DAS
-@TargetType(value = {CommandTarget.CONFIG}) // says the target can only be a named configuration
+@ExecuteOn(value=RuntimeType.INSTANCE) // this means the command can ONLY run on the DAS
+@TargetType(value = {CommandTarget.DAS}) // says the target can only be a named configuration
 @RestEndpoints({  // creates a REST endpoint needed for integration with the admin interface
     @RestEndpoint(configBean = ExampleServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update

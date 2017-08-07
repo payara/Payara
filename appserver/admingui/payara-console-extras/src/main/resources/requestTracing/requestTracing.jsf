@@ -152,8 +152,8 @@
             <sun:table id="historicRequestTracingTable" title="$resource{i18nrt.requestTracing.historic.table.name}" >
                 <sun:tableRowGroup id="historicRequestTracingRowGroup" data={"$attribute{historic}"} sourceVar="td"
                     emptyDataMsg="$resource{i18nrt.requestTracing.historic.table.empty}">
-                    <sun:tableColumn header="$resource{i18nrt.requestTracing.historic.table.headings.dateTime}" sort="dateTime" rowHeader="$boolean{true}" id="col1">
-                        <staticText id="dateTime" value="#{td.value.dateTime}" />
+                    <sun:tableColumn header="$resource{i18nrt.requestTracing.historic.table.headings.elapsedTime}" sort="elapsedTime" rowHeader="$boolean{true}" id="col1">
+                        <staticText id="elapsedTime" value="#{td.value.elapsedTime}" />
                     </sun:tableColumn>
                     <sun:tableColumn header="$resource{i18nrt.requestTracing.historic.table.headings.message}" sort="message" rowHeader="$boolean{true}" id="col2">
                         <staticText id="message" value="#{td.value.message}" />
