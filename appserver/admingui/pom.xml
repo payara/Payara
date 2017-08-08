@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
     Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
@@ -47,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1.2.173-SNAPSHOT</version>
+        <version>4.1.2.174-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.admingui</groupId>
@@ -145,6 +144,7 @@
         <module>slack-notifier-console-plugin</module>
         <module>hipchat-notifier-console-plugin</module>
         <module>eventbus-notifier-console-plugin</module>
+        <module>cdieventbus-notifier-console-plugin</module>
     	<module>email-notifier-console-plugin</module>
         <module>snmp-notifier-console-plugin</module>
         <module>xmpp-notifier-console-plugin</module>

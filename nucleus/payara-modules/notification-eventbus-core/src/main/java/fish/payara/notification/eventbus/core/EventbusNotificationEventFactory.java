@@ -105,7 +105,7 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
      * @param e 
      */
     private void setHazelcastAsInstanceName(EventbusNotificationEvent e){
-        e.setInstanceName(hazelcast.getMemberName());
+        e.setInstanceName(hazelcast.getUUID());
         
     }
     

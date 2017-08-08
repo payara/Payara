@@ -129,11 +129,13 @@ public class ListHistoricRequestTraces implements AdminCommand {
         HistoricRequestTracingEvent[] traces = eventStore.getTraces(first);
         for (HistoricRequestTracingEvent historicRequestEvent : traces) {
             Map<String, String> messages = new LinkedHashMap<>();
-            Object values[] = new Object[2];
-            values[0] = historicRequestEvent.getElapsedTime();
-            values[1] = historicRequestEvent.getMessage();
-            messages.put("dateTime",values[0].toString());
-            messages.put("message", (String) values[1]);
+            Object values[] = new Object[3];
+            values[0] = historicRequestEvent.getOccurringTime();
+            values[1] = historicRequestEvent.getElapsedTime();
+            values[2] = historicRequestEvent.getMessage();
+            messages.put("occuringTime",values[0].toString());
+            messages.put("elapsedTime",values[1].toString());
+            messages.put("message", (String) values[2]);
             historic.add(messages);
             columnFormatter.addRow(values);
         }

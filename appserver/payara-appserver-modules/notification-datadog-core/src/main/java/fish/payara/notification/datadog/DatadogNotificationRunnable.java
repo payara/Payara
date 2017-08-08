@@ -79,6 +79,8 @@ public class DatadogNotificationRunnable extends NotificationRunnable<DatadogMes
                     if (connection.getResponseCode() < 200 || connection.getResponseCode() >= 300) {
                         logger.log(Level.SEVERE, "Error occurred while connecting Datadog. " +
                                 "Check your parameters. HTTP response code: " + connection.getResponseCode());
+                    } else {
+                        logger.log(Level.FINE, "Message sent successfully");
                     }
                 }
             }

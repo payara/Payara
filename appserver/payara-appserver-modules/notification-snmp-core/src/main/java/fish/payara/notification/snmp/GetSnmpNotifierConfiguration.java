@@ -86,14 +86,16 @@ public class GetSnmpNotifierConfiguration extends BaseGetNotifierConfiguration<S
     @Override
     protected Map<String, Object> getNotifierConfiguration(SnmpNotifierConfiguration configuration) {
         Map<String, Object> map = new HashMap<>(6);
-        
-        map.put("enabled", configuration.getEnabled());
-        map.put("community", configuration.getCommunity());
-        map.put("oid", configuration.getOid());
-        map.put("version", configuration.getVersion());
-        map.put("hostName", configuration.getHost());
-        map.put("port", configuration.getPort());
-        
+
+        if (configuration != null) {
+            map.put("enabled", configuration.getEnabled());
+            map.put("community", configuration.getCommunity());
+            map.put("oid", configuration.getOid());
+            map.put("version", configuration.getVersion());
+            map.put("hostName", configuration.getHost());
+            map.put("port", configuration.getPort());
+        }
+
         return map;
     }
 }

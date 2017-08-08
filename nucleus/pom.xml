@@ -53,7 +53,7 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>4.1.2.173-SNAPSHOT</version>
+    <version>4.1.2.174-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
@@ -61,7 +61,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-blue-4.1.2.173-SNAPSHOT</tag>
+        <tag>payara-blue-4.1.2.174-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -113,6 +113,13 @@
             </snapshots>
         </repository>
         <repository>
+          <id>eclipse.microprofile</id>
+          <name>Eclipse MicroProfile Repository</name>
+          <url>https://repo.eclipse.org/content/groups/microprofile/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
            <id>payara-patched-externals</id>
 	   <name>Payara Patched Externals</name>
 	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
@@ -162,14 +169,14 @@
         <findbugs.version>2.5.2</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
 
-        <glassfish-corba.version>4.0.1.payara-p7</glassfish-corba.version>
+        <glassfish-corba.version>4.0.1.payara-p8</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <servlet-api.version>3.1.0</servlet-api.version>
         <grizzly.version>2.3.31</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
-        <hk2.version>2.5.0-b42</hk2.version>
-        <hk2.plugin.version>2.5.0-b42</hk2.plugin.version>
+        <hk2.version>2.5.0-b44</hk2.version>
+        <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
         <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
         <javax.validation.version>1.1.0.Final</javax.validation.version>
         <classmate.version>1.3.3</classmate.version>

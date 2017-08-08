@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
 <!-- deploymentWeb.jsf -->
 <!-- This is the plugin property sheet for deploying web apps.
      id of the property sheet has to be the same as the plugin options for the Type dropdown in the deployment page.
@@ -49,7 +49,7 @@
     <!beforeCreate
         createMap(result="#{pageSession.war}")
         mapPut(map="#{pageSession.deployMap}", key="war", value="#{pageSession.war}");
-        mapPut(map="#{pageSession.war}", key="convertToFalseList", value={"enabled", "precompilejsp", "availabilityEnabled","PROPERTY-implicitCdiEnabled", "verify" ,"force", "keepState",  "PROPERTY-preserveAppScopedResources" } );
+        mapPut(map="#{pageSession.war}", key="convertToFalseList", value={"enabled", "precompilejsp", "availabilityEnabled","PROPERTY-implicitCdiEnabled", "PROPERTY-cdiDevModeEnabled", "verify" ,"force", "keepState",  "PROPERTY-preserveAppScopedResources" } );
         mapPut(map="#{pageSession.war}", key="PROPERTY-implicitCdiEnabled", value="true");
 
      />

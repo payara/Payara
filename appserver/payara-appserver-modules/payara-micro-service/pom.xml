@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.2.173-SNAPSHOT</version>
+        <version>4.1.2.174-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-service</artifactId>
@@ -106,6 +106,16 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>container-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

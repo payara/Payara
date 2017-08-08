@@ -132,7 +132,7 @@ public class GAVConvertor {
      * @throws IOException 
      */
     private URL findArtefactURL(List<URL> repositoryURLs, String relativeURLString) throws MalformedURLException {     
-        final String[] archiveTypes = new String[]{".jar", ".war", ".ear"};
+        final String[] archiveTypes = new String[]{".jar", ".war", ".ear", ".rar"};
         
         boolean validURLFound = false;
         

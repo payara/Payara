@@ -249,7 +249,7 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
      *              {@link String }
      */
     void setDeploymentOrder(String value) throws PropertyVetoException;
-
+    
     @Element
     List<Module> getModule();
 
