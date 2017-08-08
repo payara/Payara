@@ -205,7 +205,7 @@
         <schema2beans.version>3.1.1</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
         
-        <javadb.version>10.10.2.0</javadb.version>
+        <javadb.version>10.13.1.1</javadb.version>
         
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
