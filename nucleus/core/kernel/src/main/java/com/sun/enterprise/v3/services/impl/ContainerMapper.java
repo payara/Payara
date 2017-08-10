@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or affiliates]
+
 package com.sun.enterprise.v3.services.impl;
 
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.Sniffer;
@@ -91,6 +93,7 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             Request.<DataChunk>createNote("DataChunk");
     private final ReentrantReadWriteLock mapperLock;
     private RequestTracingService requestTracing;
+    private StuckThreadsStore stuckThreadsStore;
     
     private static final AfterServiceListener afterServiceListener =
             new AfterServiceListenerImpl();
@@ -105,6 +108,8 @@ public class ContainerMapper extends ADBAwareHttpHandler {
         grizzlyService = service;
         mapperLock = service.obtainMapperLock();
         requestTracing = grizzlyService.getHabitat().getService(RequestTracingService.class);
+        stuckThreadsStore = grizzlyService.getHabitat().getService(StuckThreadsStore.class);
+
     }
 
     /**
@@ -163,8 +168,14 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             request.addAfterServiceListener(afterServiceListener);
             
             final Callable handler = lookupHandler(request, response);
+            if (stuckThreadsStore != null){
+                stuckThreadsStore.registerThread(Thread.currentThread().getId());
+            }
             if (requestTracing != null) {
                 requestTracing.startTrace();
+            }
+            if (stuckThreadsStore != null){
+                stuckThreadsStore.registerThread(Thread.currentThread().getId());
             }
             handler.call();
         } catch (Exception ex) {
@@ -184,6 +195,9 @@ public class ContainerMapper extends ADBAwareHttpHandler {
         finally {
             if (requestTracing != null) {
                 requestTracing.endTrace();
+            }
+            if (stuckThreadsStore != null){
+                stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
             }
         }
     }

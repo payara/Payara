@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -194,6 +195,8 @@ public class ServerTags  {
     static public final String APPLICATION_REF = "application-ref";
     //static public final String ENABLED = "enabled";
     static public final String VIRTUAL_SERVERS = "virtual-servers";
+    static public final String CDI_DEV_MODE_ENABLED_PROP = "cdiDevModeEnabled";
+    
     //static public final String LB_ENABLED = "lb-enabled";
     //static public final String DISABLE_TIMEOUT_IN_MINUTES = "disable-timeout-in-minutes";
     //static public final String REF = "ref";

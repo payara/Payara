@@ -406,7 +406,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.batch</groupId>
+            <groupId>fish.payara.appserver</groupId>
             <artifactId>payara-jbatch</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
@@ -427,7 +427,13 @@
             <version>${jackson.version}</version>
             <optional>true</optional>
         </dependency>
-      </dependencies>
+        <!-- JMS Annotation handlers -->
+        <dependency>
+            <groupId>org.glassfish.main.jms</groupId>
+            <artifactId>jms-handlers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->
@@ -481,5 +487,29 @@
             </build>
         </profile>
         
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <!-- Add Microprofile 1.1 apis -->
+                <dependency>
+                    <groupId>org.eclipse.microprofile.config</groupId>
+                    <artifactId>microprofile-config-api</artifactId>
+                    <version>1.0-payara-p1</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.nucleus.microprofile.config</groupId>
+                    <artifactId>microprofile-config-service</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.microprofile.config</groupId>
+                    <artifactId>microprofile-config</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 </project>

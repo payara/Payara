@@ -50,12 +50,22 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <artifactId>healthcheck-package</artifactId>
     <name>Nucleus HealthCheck Package</name>
     <packaging>distribution-fragment</packaging>
-    <description>This pom describes how to assemble the Nucleus HealthCheck package</description>
+    <description>This pom describes how to assemble the Nucleus HealthCheck packages</description>
 
     <dependencies>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>healthcheck-cpool</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>healthcheck-stuck</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

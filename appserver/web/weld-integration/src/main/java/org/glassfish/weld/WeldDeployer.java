@@ -100,13 +100,22 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import java.security.AccessController;
+import javax.enterprise.inject.spi.Extension;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
+import org.glassfish.weld.connector.WeldUtils;
+import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
+import org.jboss.weld.exceptions.WeldException;
+import org.jboss.weld.probe.ProbeExtension;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.module.ejb.WeldEjbModule;
 import org.jboss.weld.module.WeldModule;
+import org.jboss.weld.security.NewInstanceAction;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer>
@@ -137,6 +146,23 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.module.web.servlet.ConversationFilter";
     private static final String WELD_CONVERSATION_FILTER_NAME = "CDI Conversation Filter";
     
+    
+    private static final String DEV_MODE_PROPERTY = "org.jboss.weld.development";
+    
+    private static final String PROBE_FILTER_NAME = "weld-probe-filter";
+    
+    private static final String PROBE_FILTER_CLASS_NAME = "org.jboss.weld.probe.ProbeFilter";
+    
+    private static final String PROBE_FILTER_URL_PATTERN = "/*";
+    
+    private static final String PROBE_FILTER_DISPATCHER_TYPE = "REQUEST";
+
+    private static final String PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE = ".*payara.*|.*glassfish.*";
+
+    private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "javax.servlet.http.*";
+              
+    private static final String PROBE_ALLOW_REMOTE_ADDRESS = "";
+              
     @Inject
     private Events events;
 
@@ -516,16 +542,18 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // EJB Services is registered as a top-level service
             deploymentImpl.getServices().add(EjbServices.class, ejbServices);
         }
-
+        
         DeployCommandParameters dc = context.getCommandParameters(DeployCommandParameters.class);
-        deploymentImpl.getServices().add(ExternalConfiguration.class,
-                new ExternalConfigurationImpl(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"),
-                dc != null? !dc.isAvailabilityEnabled() : true));
+        ExternalConfigurationImpl externalConfiguration = new ExternalConfigurationImpl();
+        externalConfiguration.setRollingUpgradesDelimiter(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"));
+        externalConfiguration.setBeanIndexOptimization(dc != null? !dc.isAvailabilityEnabled() : true);
+        deploymentImpl.getServices().add(ExternalConfiguration.class, externalConfiguration);
 
         BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
         if (bda != null && !bda.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
 
             WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
+            boolean developmentMode = isDevelopmentMode(context);
             if( wDesc != null) {
                 wDesc.setExtensionProperty(WELD_EXTENSION, "true");
 
@@ -553,10 +581,32 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                             break;
                       }
                 }
+                
+                if (developmentMode) {
+                    // if development mode enabled then for WAR register ProbeFilter and register ProbeExtension for every deployment
+                    ServletFilterDescriptor servletFilter = new ServletFilterDescriptor();
+                    servletFilter.setClassName(PROBE_FILTER_CLASS_NAME);
+                    servletFilter.setName(PROBE_FILTER_NAME);
+                    wDesc.addServletFilter(servletFilter);
+
+                    ServletFilterMappingDescriptor servletFilterMapping = new ServletFilterMappingDescriptor();
+                    servletFilterMapping.setName(PROBE_FILTER_NAME);
+                    servletFilterMapping.addURLPattern(PROBE_FILTER_URL_PATTERN);
+                    servletFilterMapping.addDispatcher(PROBE_FILTER_DISPATCHER_TYPE);
+                    wDesc.addServletFilterMapping(servletFilterMapping);
+                }
+            }
+
+            if (developmentMode) {
+             
+                externalConfiguration.setProbeEventMonitorExcludeType(PROBE_EVENT_MONITOR_EXCLUDE_TYPE);
+                externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
+                externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
+                deploymentImpl.addDynamicExtension(createProbeExtension());
             }
 
             BundleDescriptor bundle = (wDesc != null) ? wDesc : ejbBundle;
-            if( bundle != null) {
+            if (bundle != null) {
 
                 if (!bda.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
                     // Register EE injection manager at the bean deployment archive level.
@@ -623,6 +673,37 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return eeModuleDescriptor;
     }
 
+    private boolean isDevelopmentMode(DeploymentContext context) {
+        boolean devMode = WeldUtils.isCDIDevModeEnabled(context) || Boolean.getBoolean(DEV_MODE_PROPERTY);
+        WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
+        if (!devMode && wDesc != null) {
+            Enumeration<ContextParameter> cpEnumeration = wDesc.getContextParameters();
+            while (cpEnumeration.hasMoreElements()) {
+                ContextParameter param = cpEnumeration.nextElement();
+                if (DEV_MODE_PROPERTY.equals(param.getName()) && Boolean.valueOf(param.getValue())) {
+                    devMode = true;
+                    break;
+                }
+            }
+        }
+        return devMode;
+    }
+
+    private Metadata<Extension> createProbeExtension() {
+        ProbeExtension probeExtension;
+        Class<ProbeExtension> probeExtensionClass = ProbeExtension.class;
+        try {
+            if (System.getSecurityManager() != null) {
+                probeExtension = AccessController.doPrivileged(NewInstanceAction.of(probeExtensionClass));
+            } else {
+                probeExtension = probeExtensionClass.newInstance();
+            }
+        } catch (Exception e) {
+            throw new WeldException(e.getCause());
+        }
+        return new MetadataImpl<Extension>(probeExtension, "N/A");
+    }
+    
     private void addWeldListenerToAllWars(DeploymentContext context) {
         // if there's at least 1 ejb jar then add the listener to all wars
         ApplicationHolder applicationHolder = context.getModuleMetaData(ApplicationHolder.class);

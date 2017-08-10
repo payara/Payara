@@ -70,4 +70,10 @@
             gf.redirect(page="#{request.contextPath}/common/applications/targetListing.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
         />
     </sun:tab>
+     <sun:tab id="propertiesTab" rendered="true" immediate="true" text="$resource{i18nc.headings.ApplicationProperties}" toolTip="$resource{i18nc.headings.ApplicationPropertiesTab}">
+        <!command
+            setSessionAttribute(key="appGeneralTabs" value="propertiesTab");
+            gf.redirect(page="#{request.contextPath}/common/applications/appProperties.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
+        />
+    </sun:tab>
 </sun:tabSet>
