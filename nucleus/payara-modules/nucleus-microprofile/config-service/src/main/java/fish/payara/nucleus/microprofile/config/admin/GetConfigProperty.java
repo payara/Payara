@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.admin;
 
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
 import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
 import java.util.logging.Logger;
@@ -64,7 +65,7 @@ import org.jvnet.hk2.annotations.Service;
 @ExecuteOn()
 @TargetType()
 @RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface
-    
+
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
             path = "get-config-property",
@@ -75,7 +76,7 @@ public class GetConfigProperty implements AdminCommand {
     @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster", defaultValue = "domain")
     String source;
 
-    @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
+    @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
     String target;
 
     @Param
@@ -92,7 +93,7 @@ public class GetConfigProperty implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        
+
         String result = null;
         switch (source) {
             case "domain": {
@@ -133,6 +134,14 @@ public class GetConfigProperty implements AdminCommand {
             }
             case "cluster": {
                 result = service.getClusteredProperty(propertyName);
+                break;
+            }
+            case "jndi": {
+                if (sourceName == null) {
+                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the JNDI resource if JNDI is the source");
+                } else {
+                    result = service.getJNDIProperty(sourceName, propertyName, target);
+                }
                 break;
             }
         }
