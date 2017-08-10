@@ -93,7 +93,7 @@
         <jaxb.version>2.3.0</jaxb.version>
         
         <!-- JSON-B -->
-        <jsonb-api.version>1.0</jsonb-api.version>
+        <json.bind-api.version>1.0</json.bind-api.version>
         <yasson.version>1.0</yasson.version>
         
         <!-- JSON-P -->
@@ -292,11 +292,11 @@
                              <artifact>
                                  <groupId>javax.json.bind</groupId>
                                  <artifactId>javax.json.bind-api</artifactId>
-                                 <version>${jsonb-api.version}</version>
+                                 <version>${json.bind-api.version}</version>
                              </artifact>
                              <nonFinal>false</nonFinal>
                              <jarType>api</jarType>
-                             <specVersion>${jsonb-api.version}</specVersion>
+                             <specVersion>${json.bind-api.version}</specVersion>
                              <specImplVersion>${yasson.version}</specImplVersion>
                              <apiPackage>javax.json.bind</apiPackage>
                              <implNamespace>org.eclipse</implNamespace>
@@ -955,7 +955,7 @@
             <dependency>
                 <groupId>javax.json.bind</groupId>
                 <artifactId>javax.json.bind-api</artifactId>
-                <version>${jsonb-api.version}</version>
+                <version>${json.bind-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse</groupId>
