@@ -255,4 +255,22 @@
             <type>zip</type>
         </dependency>
     </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <!-- Microprofile -->
+                <dependency>
+                    <groupId>org.glassfish.main.packager</groupId>
+                    <artifactId>microprofile-package</artifactId>
+                    <version>${project.version}</version>
+                    <type>zip</type>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

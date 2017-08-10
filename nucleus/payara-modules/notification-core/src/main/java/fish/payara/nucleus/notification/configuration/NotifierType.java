@@ -54,5 +54,6 @@ public enum NotifierType {
     SNMP,
     EVENTBUS,
     NEWRELIC,
-    DATADOG
+    DATADOG,
+    CDIEVENTBUS
 }
