@@ -64,6 +64,11 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.naming.InitialContext;
+import static javax.naming.InitialContext.doLookup;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -390,12 +395,12 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         attrList.put("factory-class", "org.glassfish.resources.custom.factory.PrimitivesAndStringFactory");
         attrList.put("res-type", "java.lang.String");
         attrList.put(ResourceConstants.ENABLED, Boolean.TRUE.toString());
-        attrList.put(JNDI_NAME, PROPERTY_PREFIX + resourceName);
+        attrList.put(JNDI_NAME, PROPERTY_PREFIX + resourceName + "/" + name);
         attrList.put(ServerTags.DESCRIPTION, "MicroProfile Config " + resourceName + " Properties");
 
         Properties props = new Properties();
-        
-        props.put(name, value);
+
+        props.put("value", value);
 
         try {
             customResMgr.create(domainConfiguration.getResources(), attrList, props, target);
@@ -405,7 +410,11 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
     }
 
     public String getJNDIProperty(String resourceName, String name, String target) {
-        // todo
+        try {
+            return doLookup(PROPERTY_PREFIX + resourceName + "/" + name);
+        } catch (NamingException ex) {
+            Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return null;
     }
 
