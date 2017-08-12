@@ -39,33 +39,24 @@
  */
 package fish.payara.cluster;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * This annotation can be added to @Singleton EJB beans
- * and @ApplicationScoped CDI beans to specify that they are
- * custer-wide singletons, not just a singleton per server instance
+ * Specifies the type of distributed locking to be performed
  *
  * @author lprimak
  */
-@Documented
-@Inherited
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Clustered {
+public enum DistributedLockType {
     /**
-     * key in the distributed map to bind this clustered object to.
-     * Default is the name of the bean
+     * Inherits the distributed locking behavior of the annotated class to the extent possible,
+     * for example, @javax.ejb.Singleton classes are locked by default, so distributed locking
+     * would be performed on those
      */
-    String keyName() default "";
-
+    INHERIT,
     /**
-     * specifies the type of distributed locking to be performed
+     * No distributed locking is performed
      */
-    DistributedLockType lock() default DistributedLockType.INHERIT;
+    LOCK_NONE,
+    /**
+     * DIstributed locking is performed on this object
+     */
+    LOCK
 }

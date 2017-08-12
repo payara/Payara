@@ -37,9 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IAtomicLong;
+import com.hazelcast.core.IMap;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -66,9 +70,12 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.startup.SingletonLifeCycleManager;
+import org.glassfish.internal.api.Globals;
 
 
 public abstract class AbstractSingletonContainer
@@ -411,19 +418,42 @@ public abstract class AbstractSingletonContainer
     { 
         EjbInvocation ejbInv = null;
         SingletonContextImpl context;
+        Object ejb;
 
         // Track whether initialization got as far as preInvokeTx.
         // Needed for adequate error handling in the face of an initialization
         // exception.
         boolean initGotToPreInvokeTx = false;
+        boolean doPostConstruct = true;
 
         try {
-
-            // a dummy invocation will be created by the BaseContainer to support
-            // possible AroundConstruct interceptors
-            context = (SingletonContextImpl) createEjbInstanceAndContext();
-
-            Object ejb = context.getEJB();
+            EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+            if(sessDesc.isClustered()) {
+                HazelcastInstance hzInst = Globals.getDefaultHabitat().getService(HazelcastCore.class).getInstance();
+                IMap<String, Object> singletonMap = hzInst.getMap("Payara/" + componentId);
+                // +++ locking semantics
+                // +++ test with interceptors
+                // +++ test with Hz disabled
+                if(!singletonMap.containsKey(sessDesc.getName())) {
+                    context = (SingletonContextImpl) createEjbInstanceAndContext();
+                    ejb = singletonMap.putIfAbsent(sessDesc.getName(), context.getEJB());
+                    if(ejb != context.getEJB()) {
+                        doPostConstruct = false;
+                    }
+                    hzInst.getAtomicLong("Payara/" + sessDesc.getName() + "/count").incrementAndGet();
+                }
+                else {
+                    context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessDesc.getName()));
+                    ejb = context.getEJB();
+                    doPostConstruct = false;
+                }
+            }
+            else {
+                // a dummy invocation will be created by the BaseContainer to support
+                // possible AroundConstruct interceptors
+                context = (SingletonContextImpl) createEjbInstanceAndContext();
+                ejb = context.getEJB();
+            }
 
             // this allows JNDI lookups from setSessionContext, ejbCreate
             ejbInv = createEjbInvocation(ejb, context);
@@ -465,8 +495,9 @@ public abstract class AbstractSingletonContainer
 
             context.setInstanceKey(singletonInstanceKey);
 
-            intercept(CallbackType.POST_CONSTRUCT, context);
-
+            if(doPostConstruct) {
+                intercept(CallbackType.POST_CONSTRUCT, context);
+            }
 
         } catch ( Throwable th ) {
             if (ejbInv != null) {
@@ -663,6 +694,18 @@ public abstract class AbstractSingletonContainer
 
                 // Called from pool implementation to reduce the pool size.
                 // So we need to call @PreDestroy and mark context as destroyed
+                boolean doPreDestroy = true;
+
+                EjbSessionDescriptor sessDesc = (EjbSessionDescriptor) ejbDescriptor;
+                if (sessDesc.isClustered()) {
+                    HazelcastInstance hzInst = Globals.getDefaultHabitat().getService(HazelcastCore.class).getInstance();
+                    IAtomicLong count = hzInst.getAtomicLong("Payara/" + sessDesc.getName() + "/count");
+                    if(count.decrementAndGet() <= 0) {
+                        hzInst.getMap("Payara/" + componentId).destroy();
+                        count.destroy();
+                        doPreDestroy = false;
+                    }
+                }
 
                 singletonCtx.setState(EJBContextImpl.BeanState.DESTROYED);
                 EjbInvocation ejbInv = null;
@@ -678,7 +721,9 @@ public abstract class AbstractSingletonContainer
                     ejbInv.invocationInfo = preDestroyInvInfo;
                     preInvokeTx(ejbInv);
 
-                    intercept(CallbackType.PRE_DESTROY, singletonCtx);
+                    if(doPreDestroy) {
+                        intercept(CallbackType.PRE_DESTROY, singletonCtx);
+                    }
 
                 } catch ( Throwable t ) {
                     if( ejbInv != null ) {
