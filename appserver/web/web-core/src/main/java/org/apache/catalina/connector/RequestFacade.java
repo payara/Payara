@@ -441,7 +441,8 @@ public class RequestFacade
         return request.getInputStream();
     }
     
-	public HttpServletMapping getServletMapping() {
+    @Override
+	public HttpServletMapping getHttpServletMapping() {
 		if (request == null) {
 			throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
 		}
