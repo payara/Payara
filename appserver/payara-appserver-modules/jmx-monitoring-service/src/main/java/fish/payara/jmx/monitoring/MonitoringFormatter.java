@@ -96,26 +96,26 @@ public class MonitoringFormatter implements Runnable {
             monitoringString.append(job.getMonitoringInfo(mBeanServer));
         }
 
-        //LOGGER.info(monitoringString.toString());
         sendNotification(Level.INFO, monitoringString.toString(), jobs.toArray());
     }
 
     /**
      * Sends a notification to all notifiers enabled with the monitoring service
-     *
+     * <p>
+     * The subject of the notification will be {@code PAYARA-MONITORING:}
+     * @since 4.1.2.174
      * @param level Log level to notification at
-     * @param message
-     * @param parameters
+     * @param message The message to send
+     * @param parameters An array of the objects that the notification is about i.e. the Mbeans being monitored
      */
     private void sendNotification(Level level, String message, Object[] parameters) {
-        String subject = "";
-        //LOGGER.log(level, message);
+        //String subject = "PAYARA MONITORING";
 
         if (monitoringService.getNotifierExecutionOptionsList() != null) {
             for (NotifierExecutionOptions options : monitoringService.getNotifierExecutionOptionsList()) {
                 if (options.isEnabled()) {
                     NotificationEventFactory notificationEventFactory = eventFactoryStore.get(options.getNotifierType());
-                    NotificationEvent event = notificationEventFactory.buildNotificationEvent(level, subject, message, parameters);
+                    NotificationEvent event = notificationEventFactory.buildNotificationEvent(level, LOGMESSAGE_PREFIX, message, parameters);
                     notificationService.notify(EventSource.MONITORING, event);
                 }
             }
