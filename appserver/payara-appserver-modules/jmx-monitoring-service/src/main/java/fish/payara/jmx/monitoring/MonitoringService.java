@@ -102,8 +102,6 @@ public class MonitoringService implements EventListener {
     @Inject
     ServiceLocator habitat;
     
-    private MonitoringNotificationSender notificationsSender;
-    
     @Inject
     private Events events;
     
