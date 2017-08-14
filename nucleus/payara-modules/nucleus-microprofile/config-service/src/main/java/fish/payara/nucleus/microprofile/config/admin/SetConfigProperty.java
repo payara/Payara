@@ -73,7 +73,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class SetConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster, jndi", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -140,11 +140,7 @@ public class SetConfigProperty implements AdminCommand {
             }
 
             case "jndi": {
-                if (sourceName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the JNDI resource if JNDI is the source");
-                } else {
-                    service.setJNDIProperty(sourceName, propertyName, propertyValue, target);
-                }
+                service.setJNDIProperty(propertyName, propertyValue, target);
                 break;
             }
 

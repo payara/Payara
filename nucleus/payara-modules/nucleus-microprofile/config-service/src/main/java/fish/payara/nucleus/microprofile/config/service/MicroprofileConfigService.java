@@ -64,10 +64,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.naming.InitialContext;
 import static javax.naming.InitialContext.doLookup;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -83,6 +80,7 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
 import org.glassfish.resources.config.CustomResource;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.glassfish.resources.admin.cli.DeleteCustomResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -389,14 +387,14 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         return result;
     }
 
-    public void setJNDIProperty(final String resourceName, final String name, final String value, final String target) {
+    public void setJNDIProperty(final String name, final String value, final String target) {
 
         HashMap attrList = new HashMap();
         attrList.put("factory-class", "org.glassfish.resources.custom.factory.PrimitivesAndStringFactory");
         attrList.put("res-type", "java.lang.String");
         attrList.put(ResourceConstants.ENABLED, Boolean.TRUE.toString());
-        attrList.put(JNDI_NAME, PROPERTY_PREFIX + resourceName + "/" + name);
-        attrList.put(ServerTags.DESCRIPTION, "MicroProfile Config " + resourceName + " Properties");
+        attrList.put(JNDI_NAME, name);
+        attrList.put(ServerTags.DESCRIPTION, "MicroProfile Config property for " + name);
 
         Properties props = new Properties();
 
@@ -405,15 +403,19 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         try {
             customResMgr.create(domainConfiguration.getResources(), attrList, props, target);
         } catch (Exception ex) {
-            Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.WARNING, "Unable to set MicroProfile property " + name + " on JNDI resource " + resourceName, ex);
+            Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.WARNING, "Unable to set MicroProfile Config property " + name, ex);
         }
     }
 
-    public String getJNDIProperty(String resourceName, String name, String target) {
-        try {
-            return doLookup(PROPERTY_PREFIX + resourceName + "/" + name);
-        } catch (NamingException ex) {
-            Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+    public String getJNDIProperty(String name, String target) {
+        Collection<CustomResource> customResources
+                = domainConfiguration.getResources().getResources(CustomResource.class);
+        for (CustomResource customResource : customResources) {
+            if (bindableResourcesHelper.resourceExists(customResource.getJndiName(), target)) {
+                if (customResource.getJndiName().equals(name)) {
+                    return customResource.getPropertyValue("value");
+                }
+            }
         }
         return null;
     }
