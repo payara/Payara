@@ -70,6 +70,7 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
@@ -88,6 +89,11 @@ public class MonitoringService implements EventListener {
     MonitoringServiceConfiguration configuration;
 
     @Inject
+    ServiceLocator habitat;
+    
+    private MonitoringNotificationSender notificationsSender;
+    
+    @Inject
     private Events events;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -101,6 +107,7 @@ public class MonitoringService implements EventListener {
     @PostConstruct
     public void postConstruct() throws NamingException {
         events.register(this);
+        notificationsSender = habitat.getService(MonitoringNotificationSender.class);
     }
 
     @Override
@@ -134,7 +141,7 @@ public class MonitoringService implements EventListener {
 
             final MBeanServer server = getPlatformMBeanServer();
 
-            formatter = new MonitoringFormatter(server, buildJobs());
+            formatter = new MonitoringFormatter(server, buildJobs(), notificationsSender);
 
             Logger.getLogger(MonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
 
