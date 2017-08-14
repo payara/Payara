@@ -122,6 +122,7 @@ public class MonitoringService implements EventListener {
     public void postConstruct() throws NamingException {
         events.register(this);
         notificationsSender = habitat.getService(MonitoringNotificationSender.class);
+        //notificationsSender = new MonitoringNotificationSender();
     }
 
     @Override
@@ -189,6 +190,15 @@ public class MonitoringService implements EventListener {
             logNotifierExecutionOptions.setEnabled(true);
             notifierExecutionOptionsList.add(logNotifierExecutionOptions);
         }
+    }
+    
+    /**
+     * Returns the configuration of all the notifiers configured with the monitoring service
+     * @since 4.1.2.174
+     * @return 
+     */
+    public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
+        return notifierExecutionOptionsList;
     }
 
     /**

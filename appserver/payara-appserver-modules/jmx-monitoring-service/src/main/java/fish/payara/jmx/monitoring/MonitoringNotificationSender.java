@@ -48,6 +48,8 @@ import org.glassfish.api.StartupRunLevel;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.EventSource;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import java.util.logging.Logger;
 
 /**
@@ -58,24 +60,37 @@ import java.util.logging.Logger;
 @Service
 @RunLevel(StartupRunLevel.VAL)
 public class MonitoringNotificationSender {
- 
-    @Inject
-    NotificationEventFactory eventFactory;
     
     @Inject
     NotificationService notificationService;
     
+    @Inject
+    private NotificationEventFactoryStore eventFactoryStore;
+    
+    @Inject
+    MonitoringService monitoringService;
+    
     private static final Logger LOGGER = Logger.getLogger(MonitoringFormatter.class.getCanonicalName());
     
+    /**
+     * Sends a notification to all notifiers enabled with the monitoring service
+     * @param level Log level to notification at
+     * @param message
+     * @param parameters 
+     */
     public void sendNotification(Level level, String message, Object[] parameters){
-        String subject = "Monitoring notification with severity level: " + level.getName();
-        
-        NotificationEvent event = eventFactory.buildNotificationEvent(level, subject, message, parameters);
-        
+        String subject = "PAYARA-MONITORING: ";
         LOGGER.log(level, message);
-        notificationService.notify(EventSource.MONITORING, event);
-        //NotificationEvent event = eventFactory.buildNotificationEvent(level, subject, message, parameters);
         
+        if (monitoringService.getNotifierExecutionOptionsList() != null){
+            for (NotifierExecutionOptions options : monitoringService.getNotifierExecutionOptionsList()){
+                if (options.isEnabled()){
+                    NotificationEventFactory notificationEventFactory = eventFactoryStore.get(options.getNotifierType());
+                    NotificationEvent event = notificationEventFactory.buildNotificationEvent(level, subject, message, parameters);
+                    notificationService.notify(EventSource.MONITORING, event);
+                }
+            }
+        }
         
     }
     
