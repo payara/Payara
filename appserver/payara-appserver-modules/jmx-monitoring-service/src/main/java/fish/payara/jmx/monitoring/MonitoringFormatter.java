@@ -39,6 +39,12 @@
  */
 package fish.payara.jmx.monitoring;
 
+import fish.payara.nucleus.notification.domain.EventSource;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,30 +57,34 @@ import javax.management.MBeanServer;
  * @author savage
  */
 public class MonitoringFormatter implements Runnable {
+
     private static final Logger LOGGER = Logger.getLogger(MonitoringFormatter.class.getCanonicalName());
     private final String LOGMESSAGE_PREFIX = "PAYARA-MONITORING: ";
 
     private final MBeanServer mBeanServer;
     private final List<MonitoringJob> jobs;
-    private final MonitoringNotificationSender notify;
+    private final MonitoringService monitoringService;
+    private NotificationEventFactoryStore eventFactoryStore;
+    private NotificationService notificationService;
 
     /**
      * Constructor for the MonitoringFormatter class.
-     * 
+     *
      * @param mBeanServer The MBeanServer to monitor.
      * @param jobs List of monitoring jobs to perform.
      * @param notify
      */
-    public MonitoringFormatter(MBeanServer mBeanServer,List<MonitoringJob> jobs, MonitoringNotificationSender notify) {
+    public MonitoringFormatter(MBeanServer mBeanServer, List<MonitoringJob> jobs, MonitoringService monitoringService, NotificationEventFactoryStore store,
+            NotificationService notificationService) {
         this.mBeanServer = mBeanServer;
         this.jobs = jobs;
-        this.notify = notify;
+        this.monitoringService = monitoringService;
+        this.eventFactoryStore = store;
+        this.notificationService = notificationService;
     }
-   
+
     /**
-     * Class runnable method.
-     *  Calls getMonitoringInfo on all MonitoringJobs passing the MBeanServer.
-     *  Uses the results to build a String for the log message.
+     * Class runnable method. Calls getMonitoringInfo on all MonitoringJobs passing the MBeanServer. Uses the results to build a String for the log message.
      */
     @Override
     public void run() {
@@ -83,11 +93,34 @@ public class MonitoringFormatter implements Runnable {
         monitoringString.append(LOGMESSAGE_PREFIX);
 
         for (MonitoringJob job : jobs) {
-                monitoringString.append(job.getMonitoringInfo(mBeanServer));
+            monitoringString.append(job.getMonitoringInfo(mBeanServer));
         }
-        
+
         //LOGGER.info(monitoringString.toString());
-        notify.sendNotification(Level.INFO, monitoringString.toString(), jobs.toArray());
+        sendNotification(Level.INFO, monitoringString.toString(), jobs.toArray());
     }
-    
+
+    /**
+     * Sends a notification to all notifiers enabled with the monitoring service
+     *
+     * @param level Log level to notification at
+     * @param message
+     * @param parameters
+     */
+    private void sendNotification(Level level, String message, Object[] parameters) {
+        String subject = "";
+        //LOGGER.log(level, message);
+
+        if (monitoringService.getNotifierExecutionOptionsList() != null) {
+            for (NotifierExecutionOptions options : monitoringService.getNotifierExecutionOptionsList()) {
+                if (options.isEnabled()) {
+                    NotificationEventFactory notificationEventFactory = eventFactoryStore.get(options.getNotifierType());
+                    NotificationEvent event = notificationEventFactory.buildNotificationEvent(level, subject, message, parameters);
+                    notificationService.notify(EventSource.MONITORING, event);
+                }
+            }
+        }
+
+    }
+
 }

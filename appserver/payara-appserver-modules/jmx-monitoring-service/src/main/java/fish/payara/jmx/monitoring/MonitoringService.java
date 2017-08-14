@@ -40,11 +40,13 @@
 package fish.payara.jmx.monitoring;
 
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
+import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -107,6 +109,12 @@ public class MonitoringService implements EventListener {
     
     @Inject
     private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
+    
+    @Inject
+    private NotificationEventFactoryStore eventStore;
+    
+    @Inject
+    private NotificationService notificationService;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -121,7 +129,7 @@ public class MonitoringService implements EventListener {
     @PostConstruct
     public void postConstruct() throws NamingException {
         events.register(this);
-        notificationsSender = habitat.getService(MonitoringNotificationSender.class);
+        //notificationsSender = habitat.getService(MonitoringNotificationSender.class);
         //notificationsSender = new MonitoringNotificationSender();
     }
 
@@ -156,7 +164,7 @@ public class MonitoringService implements EventListener {
 
             final MBeanServer server = getPlatformMBeanServer();
 
-            formatter = new MonitoringFormatter(server, buildJobs(), notificationsSender);
+            formatter = new MonitoringFormatter(server, buildJobs(), this, eventStore, notificationService);
 
             Logger.getLogger(MonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
 
@@ -168,6 +176,8 @@ public class MonitoringService implements EventListener {
                     TimeUnit.SECONDS.convert(Long.valueOf(configuration.getLogFrequency()),
                             TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
                     TimeUnit.SECONDS);
+            
+            bootstrapNotifierList();
         }
     }
     

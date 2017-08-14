@@ -57,8 +57,8 @@ import java.util.logging.Logger;
  * @since 4.1.2.174
  * @author jonathan coustick
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
+//@Service
+//@RunLevel(StartupRunLevel.VAL)
 public class MonitoringNotificationSender {
     
     @Inject
