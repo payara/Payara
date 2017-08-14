@@ -40,6 +40,11 @@
 package fish.payara.jmx.monitoring;
 
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -70,6 +75,7 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import java.util.ArrayList;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
@@ -77,6 +83,7 @@ import org.jvnet.hk2.config.ConfigView;
 /**
  * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
  *
+ * @since 4.1.1.163
  * @author savage
  */
 @Service(name = "payara-monitoring")
@@ -97,6 +104,9 @@ public class MonitoringService implements EventListener {
     
     @Inject
     private Events events;
+    
+    @Inject
+    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -106,6 +116,8 @@ public class MonitoringService implements EventListener {
     private int amxBootDelay = 10;
     private int monitoringDelay = amxBootDelay + 15;
 
+    private List<NotifierExecutionOptions> notifierExecutionOptionsList;
+    
     @PostConstruct
     public void postConstruct() throws NamingException {
         events.register(this);
@@ -131,7 +143,7 @@ public class MonitoringService implements EventListener {
      *  Schedules the MonitoringFormatter to execute at a specified fixed rate 
      * if enabled in the configuration.
      */
-    private void bootstrapMonitoringService() {
+    public void bootstrapMonitoringService() {
         if (configuration != null) {
             executor = Executors.newScheduledThreadPool(2, new ThreadFactory() {
                 @Override
@@ -158,20 +170,24 @@ public class MonitoringService implements EventListener {
         }
     }
     
+    /**
+     * Starts notifiers that are enabled with the monitoring service
+     * @since 4.1.2.174
+     */
     public void bootstrapNotifierList() {
-        executionOptions.resetNotifierExecutionOptions();
+        notifierExecutionOptionsList = new ArrayList<>();
         if (configuration.getNotifierList() != null) {
             for (Notifier notifier : configuration.getNotifierList()) {
                 ConfigView view = ConfigSupport.getImpl(notifier);
                 NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                executionOptions.addNotifierExecutionOption(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+                notifierExecutionOptionsList.add(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
             }
         }
-        if (executionOptions.getNotifierExecutionOptionsList().isEmpty()) {
+        if (notifierExecutionOptionsList.isEmpty()) {
             // Add logging execution options by default
             LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
             logNotifierExecutionOptions.setEnabled(true);
-            executionOptions.addNotifierExecutionOption(logNotifierExecutionOptions);
+            notifierExecutionOptionsList.add(logNotifierExecutionOptions);
         }
     }
 
