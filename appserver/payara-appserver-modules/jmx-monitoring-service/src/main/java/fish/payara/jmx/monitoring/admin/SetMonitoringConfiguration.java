@@ -169,7 +169,10 @@ public class SetMonitoringConfiguration implements AdminCommand {
 
         // Build the parameters
         ParameterMap params = new ParameterMap();
-        params.add("enabled", enabled.toString());
+        if (enabled != null){
+            params.add("enabled", enabled.toString());
+        }
+        
         params.add("target", target);
         invocation.parameters(params);
         invocation.execute();
