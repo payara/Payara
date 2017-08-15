@@ -64,16 +64,20 @@ public class MonitoringFormatter implements Runnable {
     private final MBeanServer mBeanServer;
     private final List<MonitoringJob> jobs;
     private final MonitoringService monitoringService;
-    private NotificationEventFactoryStore eventFactoryStore;
-    private NotificationService notificationService;
+    private final NotificationEventFactoryStore eventFactoryStore;
+    private final NotificationService notificationService;
 
     /**
      * Constructor for the MonitoringFormatter class.
      *
      * @param mBeanServer The MBeanServer to monitor.
      * @param jobs List of monitoring jobs to perform.
-     * @param notify
+     * @param monitoringService the monitoring service
+     * @param store the store that holds the various event factories that are needed to build notification events
+     * @param notificationService the notification service containing all the notifiers
      */
+    //This is done this way and not through injection as the result is a hk2 circular dependency error as this class
+    //is also used in MonitoringService and each cannot be injected into the other
     public MonitoringFormatter(MBeanServer mBeanServer, List<MonitoringJob> jobs, MonitoringService monitoringService, NotificationEventFactoryStore store,
             NotificationService notificationService) {
         this.mBeanServer = mBeanServer;
@@ -109,7 +113,6 @@ public class MonitoringFormatter implements Runnable {
      * @param parameters An array of the objects that the notification is about i.e. the Mbeans being monitored
      */
     private void sendNotification(Level level, String message, Object[] parameters) {
-        //String subject = "PAYARA MONITORING";
 
         if (monitoringService.getNotifierExecutionOptionsList() != null) {
             for (NotifierExecutionOptions options : monitoringService.getNotifierExecutionOptionsList()) {

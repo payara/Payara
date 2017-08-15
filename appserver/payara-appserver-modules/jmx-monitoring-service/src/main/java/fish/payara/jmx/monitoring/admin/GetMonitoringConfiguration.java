@@ -125,9 +125,9 @@ public class GetMonitoringConfiguration implements AdminCommand {
         }
 
         ActionReport actionReport = context.getActionReport();
+        ActionReport notifiersReport = actionReport.addSubActionsReport();
         ActionReport attributeReport = actionReport.addSubActionsReport();
-        ColumnFormatter attributeColumnFormatter;
-        attributeColumnFormatter = new ColumnFormatter(ATTRIBUTE_HEADERS);
+        ColumnFormatter attributeColumnFormatter = new ColumnFormatter(ATTRIBUTE_HEADERS);
         ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(NOTIFIER_HEADERS);
 
         MonitoringServiceConfiguration monitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
@@ -197,6 +197,8 @@ public class GetMonitoringConfiguration implements AdminCommand {
             }
         }
 
+        notifiersReport.setMessage(notifiersColumnFormatter.toString());
+        notifiersReport.appendMessage(StringUtils.EOL);
         attributeReport.setMessage(attributeColumnFormatter.toString());
         attributeReport.appendMessage(StringUtils.EOL);
 

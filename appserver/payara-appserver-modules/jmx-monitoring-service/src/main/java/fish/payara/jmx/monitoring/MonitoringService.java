@@ -127,8 +127,6 @@ public class MonitoringService implements EventListener {
     @PostConstruct
     public void postConstruct() throws NamingException {
         events.register(this);
-        //notificationsSender = habitat.getService(MonitoringNotificationSender.class);
-        //notificationsSender = new MonitoringNotificationSender();
     }
 
     @Override

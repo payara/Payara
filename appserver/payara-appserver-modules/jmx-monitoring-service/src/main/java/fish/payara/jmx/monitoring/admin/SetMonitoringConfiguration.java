@@ -122,6 +122,8 @@ public class SetMonitoringConfiguration implements AdminCommand {
 
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
+    
+    private MonitoringServiceConfiguration monitoringConfig;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -135,7 +137,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
             return;
         }       
 
-        MonitoringServiceConfiguration monitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
+        monitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringServiceConfiguration>() {
                 @Override
@@ -182,6 +184,12 @@ public class SetMonitoringConfiguration implements AdminCommand {
         }
     }
 
+    /**
+     * 
+     * @param actionReport
+     * @param context
+     * @param enabled 
+     */
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
@@ -195,10 +203,8 @@ public class SetMonitoringConfiguration implements AdminCommand {
 
         // Build the parameters
         ParameterMap params = new ParameterMap();
-        if (enabled != null){
-            params.add("enabled", enabled.toString());
-        }
-        
+        enabled = Boolean.valueOf(monitoringConfig.getEnabled());
+        params.add("enabled", enabled.toString());        
         params.add("target", target);
         invocation.parameters(params);
         invocation.execute();
