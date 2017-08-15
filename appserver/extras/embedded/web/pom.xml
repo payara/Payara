@@ -294,8 +294,17 @@
            <version>${project.version}</version>
            <type>zip</type>
            <optional>true</optional>
-       </dependency>
+        </dependency>
 
+        <!-- Healthcheck Package -->
+        <dependency>
+            <groupId>fish.payara.packager</groupId>
+            <artifactId>healthcheck-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+       
         <dependency>
           <groupId>fish.payara.packager</groupId>
           <artifactId>payara-api-package</artifactId>
