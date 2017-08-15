@@ -425,6 +425,7 @@ public class PayaraRestApiHandlers
 
         boolean forRequestTracing = false;
         boolean forHealthCheck = false;
+        boolean forMonitoring = false;
 
         for (String notifier : notifiers){
             String name = notifier.split("-")[1];
@@ -435,6 +436,9 @@ public class PayaraRestApiHandlers
             } else if (endpoint.contains("health-check-service-configuration")){
                 restEndpoint = endpoint + "/healthcheck-" + name + "-notifier-configure";
                 forHealthCheck = true;
+            } else if (endpoint.contains("monitoring-service-configuration")){
+                restEndpoint = endpoint + "/monitoring-" + name + "-notifier-configure";
+                forMonitoring = true;
             } else {
                 //Unknown service being configured
                 throw new UnknownConfigurationException();
@@ -459,6 +463,10 @@ public class PayaraRestApiHandlers
             }
             if (forHealthCheck) {
                 String restEndpoint = endpoint +  "/bootstrap-healthcheck";
+                RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
+            }
+            if (forMonitoring){
+                String restEndpoint = endpoint + "/bootstrap-monitoring";
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
         }
