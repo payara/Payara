@@ -53,6 +53,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.beans.PropertyVetoException;
 
 /**
+ * Asadmin command to configure the JMS notifier with the monitoring service
  * @since 4.1.2.174
  * @author jonathan coustick
  */

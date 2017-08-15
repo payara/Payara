@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Base class for configuring notifiers with the monitoring service
  * @since 4.1.2.174
  * @author jonathan coustick
  */
