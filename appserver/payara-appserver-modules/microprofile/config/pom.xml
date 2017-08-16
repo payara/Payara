@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>4.1.2.173</version>
+        <version>4.1.2.173.0.1</version>
     </parent>
     <groupId>fish.payara.microprofile.config</groupId>
     <artifactId>microprofile-config</artifactId>
@@ -59,13 +59,13 @@ holder.
         <dependency>
             <groupId>fish.payara.nucleus.microprofile.config</groupId>
             <artifactId>microprofile-config-service</artifactId>
-            <version>4.1.2.173</version>
+            <version>4.1.2.173.0.1</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>4.1.2.173</version>
+            <version>4.1.2.173.0.1</version>
             <type>jar</type>
         </dependency>
         <dependency>
