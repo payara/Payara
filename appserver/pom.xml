@@ -105,9 +105,6 @@
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
-
-
-
         <javaee.major_version>7</javaee.major_version>
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
         <javaee.version>${javaee.major_version}.${minor_version}${javaee.version_qualifier}</javaee.version>
@@ -145,9 +142,9 @@
         <com.ibm.jbatch.container.version>1.0.1.payara-p2</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.1</com.ibm.jbatch.spi.version>
         <javax.xml.soap-api.version>1.3.7</javax.xml.soap-api.version>
-    	  <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
+        <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
-	      <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
+        <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
         <guava.version>19.0</guava.version>
         <payara.fang.version>1.0.0-Beta</payara.fang.version>
         <osgi-ee-resources.version>2.0.0</osgi-ee-resources.version>
@@ -561,9 +558,9 @@
                 <version>${jsr181-api.version}</version>
             </dependency>
       	    <dependency>
-      		      <groupId>javax.resource</groupId>
-      		        <artifactId>javax.resource-api</artifactId>
-      		          <version>${javax.resource-api.version}</version>
+      	        <groupId>javax.resource</groupId>
+      	        <artifactId>javax.resource-api</artifactId>
+      	        <version>${javax.resource-api.version}</version>
       	    </dependency>
             <dependency>
                 <groupId>javax.enterprise.deploy</groupId>
@@ -665,10 +662,10 @@
                 <artifactId>jaxb-api</artifactId>
                 <version>${jaxb-api.version}</version>
             </dependency>
-	          <dependency>
-            	  <groupId>javax.xml.registry</groupId>
-	              <artifactId>javax.xml.registry-api</artifactId>
-		            <version>${javax.xml.registry-api.version}</version>
+            <dependency>
+        	<groupId>javax.xml.registry</groupId>
+	        <artifactId>javax.xml.registry-api</artifactId>
+		<version>${javax.xml.registry-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
