@@ -93,6 +93,7 @@ import org.jboss.weld.bean.InterceptorImpl;
 import org.jboss.weld.bean.attributes.BeanAttributesFactory;
 import org.jboss.weld.context.CreationalContextImpl;
 import org.jboss.weld.manager.BeanManagerImpl;
+import static org.jboss.weld.util.reflection.Reflections.cast;
 
 @Service
 @Rank(10)
@@ -315,23 +316,17 @@ public class JCDIServiceImpl implements JCDIService {
         BeanAttributes<T> attributes = BeanAttributesFactory.forBean(type, beanManager);
         InterceptorImpl<T> interceptor = InterceptorImpl.of(attributes, type, beanManager);
 
-        // Create the injection target
-        InjectionTargetFactoryImpl injectionTargetFactory = (InjectionTargetFactoryImpl) (beanManager).getInjectionTargetFactory(annotatedType);
-        InjectionTarget it = injectionTargetFactory.createInjectionTarget(type, interceptor, true);
-
         // Create the creational context
+        CreationalContext<?> ctx;
         org.jboss.weld.ejb.spi.EjbDescriptor ejbWeldDesc = weldManager.getEjbDescriptor(ejbDesc.getName());
         if (ejbWeldDesc == null) {
-            return null;
-        }
-        Bean<?> sessionBean = weldManager.getBean(ejbWeldDesc);
-        CreationalContext<?> ctx = beanManager.createCreationalContext(sessionBean);
-        if (ctx instanceof CreationalContextImpl<?>) {
-            ctx = ((CreationalContextImpl<?>) ctx).getCreationalContext(interceptor);
+            ctx = beanManager.createCreationalContext(null);
+        } else {
+            Bean<?> sessionBean = weldManager.getBean(ejbWeldDesc);
+            ctx = beanManager.createCreationalContext(sessionBean);
         }
 
-        T interceptorInstance = (T) it.produce(ctx);
-        it.inject(interceptorInstance, ctx);
+        T interceptorInstance = cast(beanManager.getReference(interceptor, interceptor.getBeanClass(), ctx));
         return interceptorInstance;
     }
 

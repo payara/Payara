@@ -107,6 +107,7 @@
                                 org.jboss.weld.injection.producer,
                                 org.jboss.weld.resources,
                                 org.jboss.weld.util.collections,
+                                org.jboss.weld.util.reflection,
                                 org.jboss.weld.annotated.enhanced,
                                 org.jboss.weld.annotated.slim,
                                 org.jboss.weld.annotated.slim.backed,
