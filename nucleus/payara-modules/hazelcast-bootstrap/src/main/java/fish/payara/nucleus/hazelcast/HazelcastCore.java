@@ -40,7 +40,6 @@
 package fish.payara.nucleus.hazelcast;
 
 import org.glassfish.internal.api.JavaEEContextUtil;
-import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
@@ -55,7 +54,9 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
+import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -72,14 +73,16 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import lombok.extern.java.Log;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.api.logging.LogLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
@@ -89,6 +92,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "hazelcast-core")
 @RunLevel(StartupRunLevel.VAL)
+@Log
 public class HazelcastCore implements EventListener {
 
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
@@ -181,10 +185,17 @@ public class HazelcastCore implements EventListener {
 
     @Override
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+        log.log(LogLevel.FINER, "Event Name: {0}, Event Type: {1}", new Object[] { event.name(), event.type().getHookType() != null? event.hook() : "<none>"});
+        if (event.is(Deployment.ALL_APPLICATIONS_STOPPED)) {
             shutdownHazelcast();
-        } else if (event.is(EventTypes.SERVER_STARTUP)) {
-            bootstrapHazelcast();
+        } else if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
+            ClassLoader oldCL = Utility.getClassLoader();
+            try {
+                Utility.setContextClassLoader(clh.getCommonClassLoader());
+                bootstrapHazelcast();
+            } finally {
+                Utility.setContextClassLoader(oldCL);
+            }
         }
     }
 
@@ -295,6 +306,8 @@ public class HazelcastCore implements EventListener {
 
     private void shutdownHazelcast() {
         if (theInstance != null) {
+            enabled = false;
+            events.send(new Event(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED, true));
             unbindFromJNDI();
             hazelcastCachingProvider.getCacheManager().close();
             hazelcastCachingProvider.close();

@@ -119,7 +119,7 @@
 	  <fileset dir="${runtimedir}" includes="**/appserver-domain*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/payara-domain*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/nucleus-domain.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/weld-se-core.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/weld-se-shaded.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/derbyLocale*.jar"/>
 	</delete>

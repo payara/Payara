@@ -38,7 +38,7 @@
 # holder.
 #
 
--exportcontents:org.apache.taglibs.standard; \
+Export-Package: \
                 org.glassfish.jstl.integration; version=${project.osgi.version}
 
 Import-Package: \

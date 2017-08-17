@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,6 +96,9 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionIdListener;
 import javax.servlet.http.HttpSessionListener;
 import javax.servlet.http.HttpUpgradeHandler;
+
+import static java.util.logging.Level.FINE;
+
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
@@ -103,6 +106,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.servlet.http.HttpServletMapping;
+import org.apache.catalina.connector.MappingImpl;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -130,6 +135,8 @@ public class StandardContext
     // have two similar messages
     // have two similar messages
     // have to similar messages
+	
+	private static final String DEFAULT_RESPONSE_CHARACTER_ENCODING = "ISO-8859-1";
 
     private static final ClassLoader standardContextClassLoader =
         StandardContext.class.getClassLoader();
@@ -239,6 +246,16 @@ public class StandardContext
      * The Java class name of the CharsetMapper class to be created.
      */
     private String charsetMapperClass = CharsetMapper.class.getName();
+    
+	/**
+	 * The request character encoding.
+	 */
+	private String requestCharacterEncoding;
+
+	/**
+	 * The response character encoding.
+	 */
+	private String responseCharacterEncoding;
 
     /**
      * The path to a file to save this Context information.
@@ -992,6 +1009,26 @@ public class StandardContext
         support.firePropertyChange("charsetMapper", oldCharsetMapper,
                                    this.charsetMapper);
     }
+    
+	@Override
+	public String getRequestCharacterEncoding() {
+		return requestCharacterEncoding;
+	}
+
+	@Override
+	public void setRequestCharacterEncoding(String encoding) {
+		this.requestCharacterEncoding = encoding;
+	}
+
+	@Override
+	public String getResponseCharacterEncoding() {
+		return responseCharacterEncoding;
+	}
+
+	@Override
+	public void setResponseCharacterEncoding(String encoding) {
+		responseCharacterEncoding = encoding;
+	}
 
     /**
      * @return the path to a file to save this Context information
@@ -2830,7 +2867,7 @@ public class StandardContext
      */
     @Override
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        return DEFAULT_SESSION_TRACKING_MODES;
+        return EnumSet.copyOf(DEFAULT_SESSION_TRACKING_MODES);
     }
 
     /**
@@ -2842,8 +2879,9 @@ public class StandardContext
      */
     @Override
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        return (sessionTrackingModes != null ? sessionTrackingModes :
-            DEFAULT_SESSION_TRACKING_MODES);
+        return sessionTrackingModes != null ? 
+            new HashSet<>(sessionTrackingModes) :
+            getDefaultSessionTrackingModes();
     }
 
     /**
@@ -3661,6 +3699,50 @@ public class StandardContext
             return regis;
         }
     }
+
+    /*
+     * Adds the servlet with the given name and jsp file to this servlet
+     * context.
+     */
+    /*
+     * Adds the servlet with the given name and jsp file to this servlet
+     * context.
+     */
+    @Override
+	public ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) {
+
+		if (isContextInitializedCalled) {
+			String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+			        new Object[] { "addJspFile", getName() });
+			throw new IllegalStateException(msg);
+		}
+
+		if (servletName == null || servletName.length() == 0) {
+			throw new IllegalArgumentException(rb.getString(LogFacade.NULL_EMPTY_SERVLET_NAME_EXCEPTION));
+		}
+
+		synchronized (children) {
+			if (findChild(servletName) == null) {
+				DynamicServletRegistrationImpl regis = (DynamicServletRegistrationImpl) servletRegisMap.get(servletName);
+				Wrapper wrapper = null;
+				if (regis == null) {
+					wrapper = createWrapper();
+				} else {
+					// Override an existing registration
+					wrapper = regis.getWrapper();
+				}
+				wrapper.setJspFile(jspFile);
+				wrapper.setName(servletName);
+				addChild(wrapper, true, (null == regis));
+				if (null == regis) {
+					regis = (DynamicServletRegistrationImpl) servletRegisMap.get(servletName);
+				}
+				return regis;
+			} else {
+				return null;
+			}
+		}
+	}
 
     /**
      * This method is overridden in web-glue to also remove the given
@@ -5888,9 +5970,9 @@ public class StandardContext
     }
 
     private void resetContext() throws Exception, MBeanRegistrationException {
-        // Restore the original state ( pre reading web.xml in start )
+        // Restore the original state (pre reading web.xml in start)
         // If you extend this - override this method and make sure to clean up
-        children=new HashMap<String, Container>();
+		children = new HashMap<String, Container>();
         startupTime = 0;
         startTimeMillis = 0;
         tldScanTime = 0;
@@ -5901,9 +5983,12 @@ public class StandardContext
         eventListeners.clear();
         contextListeners.clear();
         sessionListeners.clear();
+        
+        requestCharacterEncoding = null;
+        responseCharacterEncoding = DEFAULT_RESPONSE_CHARACTER_ENCODING;
 
-        if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "resetContext " + oname);
+        if (log.isLoggable(FINE)) {
+            log.log(FINE, "resetContext " + oname);
         }
     }
 
@@ -6914,14 +6999,14 @@ public class StandardContext
 
         // Validate the name argument
         if (name == null)
-            return (null);
+            return null;
 
         // Create and return a corresponding request dispatcher
         Wrapper wrapper = (Wrapper) findChild(name);
         if (wrapper == null)
-            return (null);
-
-        return new ApplicationDispatcher(wrapper, null, null, null, null, name);
+            return null;
+        
+        return new ApplicationDispatcher(wrapper, null, null, null, null, null, name);
 
     }
 
@@ -7323,12 +7408,13 @@ public class StandardContext
         Wrapper wrapper = (Wrapper) mappingData.wrapper;
         String wrapperPath = mappingData.wrapperPath.toString();
         String pathInfo = mappingData.pathInfo.toString();
+        HttpServletMapping mappingForDispatch = new MappingImpl(mappingData);
 
         mappingData.recycle();
 
         // Construct a RequestDispatcher to process this request
         return new ApplicationDispatcher
-            (wrapper, uriCC.toString(), wrapperPath, pathInfo,
+            (wrapper, mappingForDispatch, uriCC.toString(), wrapperPath, pathInfo,
              queryString, null);
     }
 

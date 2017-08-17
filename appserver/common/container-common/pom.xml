@@ -42,16 +42,16 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common</artifactId>
-        <version>4.1.2.174-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>container-common</artifactId>
     <packaging>glassfish-jar</packaging>
-    
     <name>Container Common</name>
 
     <developers>
@@ -91,6 +91,10 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

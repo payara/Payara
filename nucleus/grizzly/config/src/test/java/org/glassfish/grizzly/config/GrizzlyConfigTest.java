@@ -58,7 +58,6 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.memory.ByteBufferManager;
 import org.glassfish.grizzly.memory.HeapMemoryManager;
 import org.glassfish.grizzly.memory.MemoryManager;
-import org.glassfish.grizzly.memory.PooledMemoryManager;
 import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
@@ -74,9 +73,11 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings({"IOResourceOpenedButNotSafelyClosed"})
 public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
+    
     @Test
     public void processConfig() throws IOException, InstantiationException {
         GrizzlyConfig grizzlyConfig = null;
+        
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-config.xml");
             grizzlyConfig.setupNetwork();
@@ -152,7 +153,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
             GenericGrizzlyListener genericGrizzlyListener =
                     (GenericGrizzlyListener) getListener(grizzlyConfig, "http-listener-1");
             MemoryManager mm = genericGrizzlyListener.getTransport().getMemoryManager();
-            assertEquals(PooledMemoryManager.class.getName(), mm.getClass().getName());
+            assertEquals(HeapMemoryManager.class.getName(), mm.getClass().getName());
         } finally {
             if (grizzlyConfig != null) {
                 grizzlyConfig.shutdownNetwork();

@@ -46,8 +46,9 @@
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>4.1.2.174-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
+    
     <artifactId>admin-util</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -114,6 +115,7 @@
             </resource>
         </resources>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -173,9 +175,18 @@
             <artifactId>jettison</artifactId>
             <scope>provided</scope>
         </dependency>
+        
         <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-base</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -45,6 +45,7 @@ import com.sun.enterprise.container.common.spi.JavaEEInterceptorBuilder;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
@@ -58,6 +59,7 @@ import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:phil.zampino@oracle.com">Phil Zampino</a>
@@ -65,46 +67,38 @@ import javax.servlet.ServletContext;
 @Service
 public class ACCJCDIServiceImpl implements JCDIService {
 
-    private WeldContainer weldContainer = null;
+    private WeldContainer weldContainer;
 
     @Inject
     private InjectionManager injectionMgr;
-
-
 
     @Override
     public boolean isCurrentModuleJCDIEnabled() {
         return hasBeansXML(Thread.currentThread().getContextClassLoader());
     }
 
-
     @Override
     public boolean isJCDIEnabled(BundleDescriptor bundle) {
         return hasBeansXML(bundle.getClassLoader());
     }
-
 
     @Override
     public boolean isCDIScoped(Class<?> clazz) {
         throw new UnsupportedOperationException("Application Client Container");
     }
 
-
     @Override
     public void setELResolver(ServletContext servletContext) throws NamingException {
         throw new UnsupportedOperationException("Application Client Container");
     }
-
 
     @Override
     public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle) {
         return createManagedObject(managedClass, bundle, true);
     }
 
-
     private <T> T createEEManagedObject(ManagedBeanDescriptor desc) throws Exception {
-        JavaEEInterceptorBuilder interceptorBuilder =
-                                        (JavaEEInterceptorBuilder) desc.getInterceptorBuilder();
+        JavaEEInterceptorBuilder interceptorBuilder = (JavaEEInterceptorBuilder) desc.getInterceptorBuilder();
 
         InterceptorInvoker interceptorInvoker = interceptorBuilder.createInvoker(null);
 
@@ -118,6 +112,7 @@ public class ACCJCDIServiceImpl implements JCDIService {
         interceptorInvoker.invokeAroundConstruct();
 
         // This is the managed bean class instance
+        @SuppressWarnings("unchecked")
         T managedBean = (T) interceptorInvoker.getTargetInstance();
 
         injectionMgr.injectInstance(managedBean, desc);
@@ -132,9 +127,7 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public JCDIInjectionContext createManagedObject(Class            managedClass,
-                                                    BundleDescriptor bundle,
-                                                    boolean          invokePostConstruct) {
+    public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle, boolean invokePostConstruct) {
         JCDIInjectionContext context = null;
 
         Object managedObject = null;
@@ -187,7 +180,8 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
 
     @Override
-    public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle) {
+    public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle, JCDIService.JCDIInjectionContext<?> ejbContext,
+            Set<EjbInterceptor> ejbInterceptors) {
 
         T interceptorInstance = null;
 
@@ -270,7 +264,20 @@ public class ACCJCDIServiceImpl implements JCDIService {
             it.dispose(instance);
             cc.release();
         }
-    }
+        
+        @Override
+        public InjectionTarget getInjectionTarget() {
+            return it;
+        }
 
+        @Override
+        public CreationalContext getCreationalContext() {
+            return cc;
+        }
+
+        public void addDependentContext(JCDIInjectionContext dependentContext) {
+            // nothing for now
+        }
+    }
 
 }

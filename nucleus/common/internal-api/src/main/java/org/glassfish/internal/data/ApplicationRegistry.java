@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
@@ -47,6 +48,7 @@ import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.glassfish.internal.deployment.Deployment;
 
 /**
  * Registry for deployed Applications
@@ -61,6 +63,7 @@ import java.util.Set;
 public class ApplicationRegistry {
 
     private Map<String, ApplicationInfo> apps = new HashMap<String, ApplicationInfo>();
+    private final Map<String, Deployment.ApplicationDeployment> transientDeployments = new HashMap<>();
 
     public synchronized void add(String name, ApplicationInfo info) {
         apps.put(name, info);
@@ -79,4 +82,22 @@ public class ApplicationRegistry {
         return apps.keySet();
     }
 
+    /**
+     * transient apps are deployed, but not initialized yet
+     *
+     * @param depl
+     */
+    public void addTransient(Deployment.ApplicationDeployment depl) {
+        if(depl != null && depl.appInfo != null) {
+            transientDeployments.put(depl.appInfo.getName(), depl);
+        }
+    }
+
+    public void removeTransient(String appName) {
+        transientDeployments.remove(appName);
+    }
+
+    public Deployment.ApplicationDeployment getTransient(String appName) {
+        return transientDeployments.get(appName);
+    }
 }

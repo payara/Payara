@@ -47,9 +47,11 @@ import org.glassfish.ejb.api.EjbContainerServices;
 
 /**
  */
-public class  SessionObjectReferenceImpl implements SessionObjectReference
-{
-    private EjbContainerServices ejbContainerServices;
+public class SessionObjectReferenceImpl implements SessionObjectReference {
+	
+	private static final long serialVersionUID = 1L;
+	
+	private EjbContainerServices ejbContainerServices;
     private Object ejbRef;
 
     public SessionObjectReferenceImpl(EjbContainerServices s, Object ref) {
@@ -58,16 +60,11 @@ public class  SessionObjectReferenceImpl implements SessionObjectReference
     }
 
     public <S> S getBusinessObject(java.lang.Class<S> sClass) {
-
-
         return ejbContainerServices.getBusinessObject(ejbRef, sClass);
-        
     }
 
     public void remove() {
-
         ejbContainerServices.remove(ejbRef);
-
     }
 
     public boolean isRemoved() {

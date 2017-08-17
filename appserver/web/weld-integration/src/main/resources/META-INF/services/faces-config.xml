@@ -47,12 +47,8 @@
               version="2.0"
               metadata-complete="true">
     <application>
-        <view-handler>org.jboss.weld.jsf.ConversationAwareViewHandler</view-handler>
+        <view-handler>org.jboss.weld.module.jsf.ConversationAwareViewHandler</view-handler>
     </application>
-
-    <!--<lifecycle>-->
-        <!--<phase-listener>org.jboss.weld.jsf.WeldPhaseListener</phase-listener>-->
-    <!--</lifecycle>-->
 
     <factory>
         <application-factory>org.glassfish.weld.jsf.WeldApplicationFactory</application-factory>

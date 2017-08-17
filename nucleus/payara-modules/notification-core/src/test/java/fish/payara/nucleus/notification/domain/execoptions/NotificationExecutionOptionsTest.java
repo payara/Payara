@@ -13,15 +13,18 @@
  */
 package fish.payara.nucleus.notification.domain.execoptions;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotificationExecutionOptions;
-import fish.payara.nucleus.notification.log.LogNotifierConfigurationExecutionOptions;
+import static fish.payara.nucleus.notification.configuration.NotifierType.LOG;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertNotNull;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationExecutionOptions;
+import fish.payara.nucleus.notification.log.LogNotifierConfigurationExecutionOptions;
 
 /**
  * @author mertcaliskan
@@ -37,13 +40,17 @@ public class NotificationExecutionOptionsTest {
 
     @Test
     public void logNotifierConfigurationExecutionOptionAddedSuccessfully() {
-        LogNotifierConfigurationExecutionOptions logExecOptions = new LogNotifierConfigurationExecutionOptions();
-        executionOptions.addNotifierConfigurationExecutionOption(logExecOptions);
+        executionOptions.addNotifierConfigurationExecutionOption(new LogNotifierConfigurationExecutionOptions());
 
         assertNotNull(executionOptions.getNotifierConfigurationExecutionOptionsList());
-        assertThat(executionOptions.getNotifierConfigurationExecutionOptionsList().size(), is(1));
-        assertThat(executionOptions.getNotifierConfigurationExecutionOptionsList().get(NotifierType.LOG),
-                is(LogNotifierConfigurationExecutionOptions.class));
+        
+        assertThat(
+        		executionOptions.getNotifierConfigurationExecutionOptionsList().size(), 
+        		is(1));
+        
+        assertThat(
+        		executionOptions.getNotifierConfigurationExecutionOptionsList().get(LOG),
+        		is(instanceOf(LogNotifierConfigurationExecutionOptions.class)));
     }
 
     @Test
@@ -65,6 +72,6 @@ public class NotificationExecutionOptionsTest {
         executionOptions.addNotifierConfigurationExecutionOption(logExecOptions);
 
         assertNotNull(executionOptions.getNotifierConfigurationExecutionOptionsList());
-        assertThat(executionOptions.isNotifierServiceEnabled(NotifierType.LOG), is(true));
+        assertThat(executionOptions.isNotifierServiceEnabled(LOG), is(true));
     }
 }

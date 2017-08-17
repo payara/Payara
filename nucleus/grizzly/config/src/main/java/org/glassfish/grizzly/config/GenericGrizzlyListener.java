@@ -40,6 +40,8 @@
 // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
+import static java.util.logging.Level.WARNING;
+
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -145,8 +147,9 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected volatile boolean isAjpEnabled;
     // spdy enabled flag
     protected volatile boolean isSpdyEnabled;
-    // spdy enabled flag
+    // HTTP2 enabled flag
     protected volatile boolean isHttp2Enabled;
+    protected volatile boolean skipHttp2;
     // websocket enabled flag
     protected volatile boolean isWebSocketEnabled;
     // comet enabled flag
@@ -450,6 +453,16 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         ProtocolFinder.class, finderClassname, finderClassname);
                     configureElement(habitat, networkListener, finderConfig, protocolFinder);
                     final Protocol subProtocol = finderConfig.findProtocol();
+                    
+                    if (subProtocol.getHttp() != null) {
+                        if (LOGGER.isLoggable(WARNING)) {
+                            LOGGER.log(WARNING, 
+                                "HTTP/2 (enabled by default) is unsupported with port " + 
+                                "unification and will be disabled for network listener {0}.", networkListener.getName());
+                        }
+                        skipHttp2 = true;
+                    }
+                    
                     final FilterChainBuilder subProtocolFilterChainBuilder =
                         puFilter.getPUFilterChainBuilder();
                     // If subprotocol is secured - we need to wrap it under SSLProtocolFinder
@@ -791,7 +804,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final Http2 http2Element,
                                         final FilterChainBuilder builder,
                                         final boolean secure) {
-        if (http2Element != null && GrizzlyConfig.toBoolean(http2Element.getEnabled())) {
+        if (!skipHttp2 && http2Element != null && GrizzlyConfig.toBoolean(http2Element.getEnabled())) {
 
             // first try to lookup a service appropriate for the mode
             // that has been configured.

@@ -44,14 +44,17 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.2.174-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
+    
     <artifactId>glassfish-jcdi</artifactId>
     <name>Glassfish JCDI Package</name>
     <packaging>distribution-fragment</packaging>
+    
     <description>This pom describes how to assemble the GlassFish JCDI package</description>
 
     <build>
@@ -79,6 +82,7 @@
             </plugin>
         </plugins>
     </build>
+    
     <profiles>
         <profile>
             <id>ips</id>
@@ -135,7 +139,6 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-osgi-bundle</artifactId>
-            <classifier>glassfish4</classifier>
         </dependency>
         <dependency>
             <groupId>org.jboss.classfilewriter</groupId>
@@ -147,10 +150,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator-cdi</artifactId>
-            <version>${hibernate.validator.version}</version>
-            <classifier>payara-p1</classifier>
         </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>

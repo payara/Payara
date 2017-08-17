@@ -985,12 +985,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             
             // boot the server
             preBootCommands.executeCommands(gf.getCommandRunner());
+            gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false");
             gf.start();
             postBootCommands.executeCommands(gf.getCommandRunner());
             this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
-            // do deployments
+            // load all applications, but do not start them until Hazelcast gets a chance to initialize
             deployAll();
+            if(!noCluster) {
+                gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=true");
+                gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true");
+            }
+
+            gf.getCommandRunner().run("initialize-all-applications");
 
             postBootActions();
             postDeployCommands.executeCommands(gf.getCommandRunner());
@@ -1376,7 +1383,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                     deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
                             "true", "--contextroot",
-                            contextRoot, "--name", name, "--force", "true");
+                            contextRoot, "--name", name, "--force","true", "--loadOnly", "true");
                     deploymentCount++;
                 }
             } catch (IOException ioe) {
@@ -1391,9 +1398,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             for (File war : deployments) {
                 if (war.exists() && war.canRead()) {
                     if (war.getName().startsWith("ROOT.")) {
-                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/");
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        deployer.deploy(war, "--availabilityenabled=true", "--force=true");
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
                     }
                     deploymentCount++;
                 } else {
@@ -1408,9 +1415,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 String warPath = war.getAbsolutePath();
                 if (war.isFile() && war.canRead() && (warPath.endsWith(".war") || warPath.endsWith(".ear") || warPath.endsWith(".jar") || warPath.endsWith(".rar"))) {
                     if (war.getName().startsWith("ROOT.")) {
-                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/");
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        deployer.deploy(war, "--availabilityenabled=true", "--force=true");
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
                     }
                     deploymentCount++;
                 }
@@ -1430,7 +1437,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                         deployer.deploy(artefactURI, "--availabilityenabled",
                                 "true", "--contextroot",
-                                deploymentMapEntry.getKey(), "--force=true");
+                                deploymentMapEntry.getKey(), "--force=true", "--loadOnly", "true");
 
                         deploymentCount++;
                     } catch (URISyntaxException ex) {

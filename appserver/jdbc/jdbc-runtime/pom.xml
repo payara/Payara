@@ -41,15 +41,16 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.jdbc</groupId>
         <artifactId>jdbc</artifactId>
-        <version>4.1.2.174-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>jdbc-runtime</artifactId>
     <packaging>glassfish-jar</packaging>
-    
     <name>JDBC Runtime Module</name>
 
     <build>
@@ -59,40 +60,47 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
-		        <manifestEntries>
-                    <probe-provider-class-names>org.glassfish.jdbc.pool.monitor.JdbcConnPoolProbeProvider,org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppProbeProvider</probe-provider-class-names>
+                        <manifestEntries>
+                            <probe-provider-class-names>org.glassfish.jdbc.pool.monitor.JdbcConnPoolProbeProvider,org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppProbeProvider</probe-provider-class-names>
                         </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
-	    <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.8</version>
                 <configuration>
-		   <classpathDependencyExcludes>
-                        <classpathDependencyExcludes>org.glassfish.main.core:kernel</classpathDependencyExcludes>		    
-		   </classpathDependencyExcludes>
+                    <classpathDependencyExcludes>
+                        <classpathDependencyExcludes>org.glassfish.main.core:kernel</classpathDependencyExcludes>
+                    </classpathDependencyExcludes>
                 </configuration>
-	    </plugin>
+            </plugin>
         </plugins>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
-	<dependency>
-            <groupId>org.glassfish.main.tests</groupId>
-	    <artifactId>utils</artifactId>
-	    <version>${project.version}</version>
-	    <scope>test</scope>
-	</dependency>
-        <dependency>
+         <dependency>
             <groupId>org.glassfish.main.jdbc</groupId>
             <artifactId>jdbc-config</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.glassfish.main.tests</groupId>
+            <artifactId>utils</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <scope>test</scope>
+        </dependency>
+       
     </dependencies>
 </project>

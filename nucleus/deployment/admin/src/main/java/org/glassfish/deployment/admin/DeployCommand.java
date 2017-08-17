@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.deployment.admin;
 
 import java.net.URI;
@@ -484,8 +485,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.DEPLOY);
             }
-            ApplicationInfo appInfo;
-            appInfo = deployment.deploy(deploymentContext);
+            Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
+            if(!loadOnly) {
+                deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
+            }
+            ApplicationInfo appInfo = deplResult.appInfo;
 
             /*
              * Various deployers might have added to the downloadable or
@@ -603,7 +607,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                 }
             }
-            if (deploymentContext != null) {
+            if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
             }
         }

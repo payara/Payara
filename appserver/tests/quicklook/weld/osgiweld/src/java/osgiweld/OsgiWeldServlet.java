@@ -82,7 +82,7 @@ public class OsgiWeldServlet extends HttpServlet {
             if (gfhome != null) {
                 String jarFile = gfhome + File.separator + ".."
                         + File.separator + ".." + File.separator
-                        + "modules" + File.separator + "weld-osgi-bundle-glassfish4.jar";
+                        + "modules" + File.separator + "weld-osgi-bundle.jar";
                 //System.out.println("Weld Osgi module = " + jarFile);
                 JarFile jar = new JarFile(jarFile);
                 Manifest manifest = jar.getManifest();

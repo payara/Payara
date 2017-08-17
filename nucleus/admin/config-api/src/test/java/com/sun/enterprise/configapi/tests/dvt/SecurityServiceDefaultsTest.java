@@ -54,24 +54,24 @@ import static org.junit.Assert.*;
 
 public class SecurityServiceDefaultsTest extends ConfigApiTest {
 
-    SecurityService ss = null;
+    SecurityService securityService;
     
     public SecurityServiceDefaultsTest() {
     }
 
     @Override
     public String getFileName() {
-        return ("SecurityServiceDefaults"); //this is the xml to load
+        return "SecurityServiceDefaults"; // this is the xml to load
     }
 
     @Before
     public void setUp() {
-        ss = super.getHabitat().getService(SecurityService.class);
+        securityService = getHabitat().getService(SecurityService.class);
     }
 
     @After
     public void tearDown() {
-        ss = null;
+        securityService = null;
     }
 
     // TODO add test methods here.
@@ -79,11 +79,11 @@ public class SecurityServiceDefaultsTest extends ConfigApiTest {
     //
     @Test
     public void testFewDefaults() {
-        assertEquals("file", ss.getDefaultRealm());
-        assertEquals("false", ss.getActivateDefaultPrincipalToRoleMapping());
-        assertEquals("AttributeDeprecated", ss.getAnonymousRole());
-        assertEquals("false", ss.getAuditEnabled());
-        assertEquals("default", ss.getAuditModules());
-        assertEquals("default", ss.getJacc());
+        assertEquals("file", securityService.getDefaultRealm());
+        assertEquals("true", securityService.getActivateDefaultPrincipalToRoleMapping());
+        assertEquals("AttributeDeprecated", securityService.getAnonymousRole());
+        assertEquals("false", securityService.getAuditEnabled());
+        assertEquals("default", securityService.getAuditModules());
+        assertEquals("default", securityService.getJacc());
     }
 }

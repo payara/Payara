@@ -145,6 +145,12 @@ public class DeployCommandParameters extends OpsParams {
       return enabled;
     }
 
+    @Param(name=ParameterNames.LOAD_ONLY, optional=true)
+    public Boolean loadOnly = false;
+    public Boolean isLoadOnly() {
+      return loadOnly;
+    }
+
     @Param(optional=true, defaultValue="false")
     public Boolean generatermistubs = false;
     public Boolean isGenerateRMIStubs() {
@@ -260,6 +266,7 @@ public class DeployCommandParameters extends OpsParams {
         public static final String DIRECTORY_DEPLOYED = "directorydeployed";
         public static final String LOCATION = "location";
         public static final String ENABLED = "enabled";
+        public static final String LOAD_ONLY = "loadOnly";
         public static final String PRECOMPILE_JSP = "precompilejsp";
         public static final String SKIP_DS_FAILURE = "skipdsfailure";
         public static final String DEPLOYMENT_PLAN = "deploymentplan";
