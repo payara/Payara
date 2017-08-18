@@ -129,9 +129,9 @@
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
         
         <!-- Java EE Security API -->
-        <javax.security.enterprise-spec.version>1.0-b06</javax.security.enterprise-spec.version>
-        <javax.security.enterprise-api.version>1.0-b06</javax.security.enterprise-api.version>
-        <soteria.version>1.0-b06</soteria.version>
+        <javax.security.enterprise-spec.version>1.0-b11</javax.security.enterprise-spec.version>
+        <javax.security.enterprise-api.version>1.0-b11</javax.security.enterprise-api.version>
+        <soteria.version>1.0-b07</soteria.version>
         
         <!-- JACC -->
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
@@ -692,7 +692,7 @@
             
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
-                <artifactId>soteria</artifactId>
+                <artifactId>javax.security.enterprise</artifactId>
                 <version>${soteria.version}</version>
             </dependency>
             

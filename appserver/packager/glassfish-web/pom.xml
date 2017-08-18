@@ -225,7 +225,7 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
             
         <dependency>
              <groupId>org.glassfish.soteria</groupId>
-             <artifactId>soteria</artifactId>
+             <artifactId>javax.security.enterprise</artifactId>
         </dependency>
         
         <dependency>
