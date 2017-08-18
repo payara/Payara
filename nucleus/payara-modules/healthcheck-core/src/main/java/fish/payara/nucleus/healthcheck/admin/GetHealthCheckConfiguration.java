@@ -1,24 +1,45 @@
 /*
- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-
- Copyright (c) 2016 Payara Foundation. All rights reserved.
-
-
- The contents of this file are subject to the terms of the Common Development
- and Distribution License("CDDL") (collectively, the "License").  You
- may not use this file except in compliance with the License.  You can
- obtain a copy of the License at
- https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- or packager/legal/LICENSE.txt.  See the License for the specific
- language governing permissions and limitations under the License.
-
- When distributing the software, include this License Header Notice in each
- file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
@@ -30,6 +51,7 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import java.util.HashMap;
 
 import fish.payara.nucleus.notification.configuration.Notifier;
@@ -77,6 +99,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             "Retry Count"};
     final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
+    final static String stuckThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Threshold Time", "Threshold Unit"};
     final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
     
     private final String garbageCollectorPropertyName = "garbageCollector";
@@ -85,6 +108,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     private final String heapMemoryUsagePropertyName = "heapMemoryUsage";
     private final String machineMemoryUsagePropertyName = "machineMemoryUsage";
     private final String hoggingThreadsPropertyName = "hoggingThreads";
+    private final String stuckThreadsPropertyName = "stuckThreads";
     
     @Inject
     ServiceLocator habitat;
@@ -109,9 +133,11 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         ActionReport baseActionReport = mainActionReport.addSubActionsReport(); // subReport(0)
         ActionReport hoggingThreadsActionReport = mainActionReport.addSubActionsReport(); // subReport(1)
         ActionReport thresholdDiagnosticsActionReport = mainActionReport.addSubActionsReport(); // subReport(2) 
+        ActionReport stuckThreadsActionReport = mainActionReport.addSubActionsReport(); //subReport(3)
 
         ColumnFormatter baseColumnFormatter = new ColumnFormatter(baseHeaders);
         ColumnFormatter hoggingThreadsColumnFormatter = new ColumnFormatter(hoggingThreadsHeaders);
+        ColumnFormatter stuckThreadsColumnFormatter = new ColumnFormatter(stuckThreadsHeaders);
         ColumnFormatter thresholdDiagnosticsColumnFormatter = new ColumnFormatter(thresholdDiagnosticsHeaders);
         ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);
 
@@ -128,6 +154,11 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 mainActionReport.appendMessage("Historical Tracing Store Size: " 
                         + configuration.getHistoricalTraceStoreSize() + "\n");
             }
+
+            if (!Strings.isNullOrEmpty(configuration.getHistoricalTraceStoreTimeout())) {
+                mainActionReport.appendMessage("Health Check Historical Tracing Store Timeout in Seconds: "
+                        + configuration.getHistoricalTraceStoreTimeout() + "\n");
+            }
         }
 
         // Create the extraProps map for the general healthcheck configuration
@@ -137,7 +168,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         mainExtraPropsMap.put("enabled", configuration.getEnabled());
         mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
         mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
-        
+        mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
+
         mainExtraProps.put("healthcheckConfiguration", mainExtraPropsMap);
         mainActionReport.setExtraProperties(mainExtraProps);
 
@@ -180,6 +212,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
 
         Properties baseExtraProps = new Properties();
         Properties hoggingThreadsExtraProps = new Properties();
+        Properties stuckThreadsExtrasProps = new Properties();
         Properties thresholdDiagnosticsExtraProps = new Properties();
         
         for (ServiceHandle<BaseHealthCheck> serviceHandle : allServiceHandles) {
@@ -199,8 +232,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 
                 // Create the extra props map for a hogging thread checker
                 addHoggingThreadsCheckerExtraProps(hoggingThreadsExtraProps, hoggingThreadsChecker);
-            }
-            else if (checker instanceof ThresholdDiagnosticsChecker) {
+            } else if (checker instanceof ThresholdDiagnosticsChecker) {
                 ThresholdDiagnosticsChecker thresholdDiagnosticsChecker = (ThresholdDiagnosticsChecker) checker;
 
                 Object values[] = new Object[7];
@@ -219,8 +251,21 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 // Create the extra props map for a checker with thresholds
                 addThresholdDiagnosticsCheckerExtraProps(thresholdDiagnosticsExtraProps, 
                         thresholdDiagnosticsChecker);
-            }
-            else if (checker != null) {
+            } else if (checker instanceof StuckThreadsChecker) {
+                StuckThreadsChecker stuckThreadsChecker = (StuckThreadsChecker) checker;
+                
+                Object values[] = new Object[6];
+                values[0] = stuckThreadsChecker.getName();
+                values[1] = stuckThreadsChecker.getEnabled();
+                values[2] = stuckThreadsChecker.getTime();
+                values[3] = stuckThreadsChecker.getUnit();
+                values[4] = stuckThreadsChecker.getThreshold();
+                values[5] = stuckThreadsChecker.getThresholdTimeUnit();
+                stuckThreadsColumnFormatter.addRow(values);
+                
+                addStuckThreadsCheckerExtrasProps(stuckThreadsExtrasProps, stuckThreadsChecker);
+                
+            } else if (checker != null) {
                 Object values[] = new Object[4];
                 values[0] = checker.getName();
                 values[1] = checker.getEnabled();
@@ -245,10 +290,15 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             thresholdDiagnosticsActionReport.setMessage(thresholdDiagnosticsColumnFormatter.toString());
             thresholdDiagnosticsActionReport.appendMessage(StringUtils.EOL);
         }
+        if (!stuckThreadsColumnFormatter.getContent().isEmpty()){
+            stuckThreadsActionReport.setMessage(stuckThreadsColumnFormatter.toString());
+            stuckThreadsActionReport.appendMessage(StringUtils.EOL);
+        }
         
         // Populate the extraProps with defaults for any checker that isn't present
-        baseExtraProps = checkCheckerPropertyPresence(baseExtraProps, garbageCollectorPropertyName);
+        baseExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, garbageCollectorPropertyName);
         hoggingThreadsExtraProps = checkCheckerPropertyPresence(hoggingThreadsExtraProps, hoggingThreadsPropertyName);
+        stuckThreadsExtrasProps = checkCheckerPropertyPresence(stuckThreadsExtrasProps, stuckThreadsPropertyName);
         thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
                 cpuUsagePropertyName);
         thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
@@ -262,7 +312,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         baseActionReport.setExtraProperties(baseExtraProps);
         hoggingThreadsActionReport.setExtraProperties(hoggingThreadsExtraProps);
         thresholdDiagnosticsActionReport.setExtraProperties(thresholdDiagnosticsExtraProps);
-
+        stuckThreadsActionReport.setExtraProperties(stuckThreadsExtrasProps);
+        
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
     
@@ -280,6 +331,20 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         hoggingThreadsExtraProps.put(hoggingThreadsPropertyName, extraPropsMap);
     }
     
+    private void addStuckThreadsCheckerExtrasProps(Properties stuckThreadsExtrasProps, StuckThreadsChecker stuckThreadsChecker){
+        Map<String, Object> extraPropsMap = new HashMap<String, Object>(6);
+        
+        extraPropsMap.put("checkerName", stuckThreadsChecker.getName());
+        extraPropsMap.put("enabled", stuckThreadsChecker.getEnabled());
+        extraPropsMap.put("time", stuckThreadsChecker.getTime());
+        extraPropsMap.put("unit", stuckThreadsChecker.getUnit());
+        extraPropsMap.put("threshold", stuckThreadsChecker.getThreshold());
+        extraPropsMap.put("thresholdUnit", stuckThreadsChecker.getThresholdTimeUnit());
+        
+        stuckThreadsExtrasProps.put(stuckThreadsPropertyName, extraPropsMap);
+        
+    }
+    
     private void addThresholdDiagnosticsCheckerExtraProps(Properties thresholdDiagnosticsExtraProps, 
             ThresholdDiagnosticsChecker thresholdDiagnosticsChecker) {
         
@@ -289,9 +354,16 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", thresholdDiagnosticsChecker.getEnabled());
         extraPropsMap.put("time", thresholdDiagnosticsChecker.getTime());
         extraPropsMap.put("unit", thresholdDiagnosticsChecker.getUnit());
-        extraPropsMap.put("thresholdCritical", thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL).getValue());
-        extraPropsMap.put("thresholdWarning", thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING).getValue());
-        extraPropsMap.put("thresholdGood", thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD).getValue());
+
+        if (thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL) != null) {
+            extraPropsMap.put("thresholdCritical", thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL).getValue());
+        }
+        if (thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING) != null) {
+            extraPropsMap.put("thresholdWarning", thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING).getValue());
+        }
+        if (thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD) != null) {
+            extraPropsMap.put("thresholdGood", thresholdDiagnosticsChecker.getProperty(THRESHOLD_GOOD).getValue());
+        }
 
         // Get the checker type
         ConfigView view = ConfigSupport.getImpl(thresholdDiagnosticsChecker);
@@ -305,12 +377,19 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             case CPU_USAGE:
                 thresholdDiagnosticsExtraProps.put(cpuUsagePropertyName, extraPropsMap);
                 break;
+            case GARBAGE_COLLECTOR:
+                thresholdDiagnosticsExtraProps.put(garbageCollectorPropertyName, extraPropsMap);
+                break;
             case HEAP_MEMORY_USAGE:
                 thresholdDiagnosticsExtraProps.put(heapMemoryUsagePropertyName, extraPropsMap);
                 break;
             case MACHINE_MEMORY_USAGE:
                 thresholdDiagnosticsExtraProps.put(machineMemoryUsagePropertyName, extraPropsMap);
                 break;
+            case STUCK_THREAD:
+                thresholdDiagnosticsExtraProps.put(stuckThreadsPropertyName, extraPropsMap);
+                break;
+                
         }
     }
     
@@ -322,17 +401,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", checker.getEnabled());
         extraPropsMap.put("time", checker.getTime());
         extraPropsMap.put("unit", checker.getUnit());
-
-        // Get the checker type
-        ConfigView view = ConfigSupport.getImpl(checker);
-        CheckerConfigurationType annotation = view.getProxyType().getAnnotation(CheckerConfigurationType.class);
-        
-        // Add the extraPropsMap as a property with a name matching its checker type
-        switch (annotation.type()) {
-            case GARBAGE_COLLECTOR:
-                baseExtraProps.put(garbageCollectorPropertyName, extraPropsMap);
-                break;
-        }
     }
     
     private Properties checkCheckerPropertyPresence(Properties extraProps, String checkerName) {
@@ -341,7 +409,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             Map<String, Object> extraPropsMap;
             switch (checkerName) {
                 case garbageCollectorPropertyName:
-                    extraPropsMap = new HashMap<>(4);
+                    extraPropsMap = new HashMap<>(7);
                     extraPropsMap.put("checkerName", DEFAULT_GARBAGE_COLLECTOR_NAME);
                     extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
                     break;
@@ -370,6 +438,11 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                     extraPropsMap.put("checkerName", DEFAULT_MACHINE_MEMORY_USAGE_NAME);
                     extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
                     break;
+                case stuckThreadsPropertyName:
+                    extraPropsMap = new HashMap<>(6);
+                    extraPropsMap.put("checkerName", DEFUALT_STUCK_THEAD_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
             }
         }
         
@@ -383,11 +456,13 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("unit", DEFAULT_UNIT);
         
         // Add default properties for hogging threads checker, or add default properties for a thresholdDiagnostics checker
-        // if the checker type isn't a hogging thread or garbage collector checker (the only current base checker)
         if (extraPropsMap.containsValue(DEFAULT_HOGGING_THREADS_NAME)) {
             extraPropsMap.put("threshold-percentage", DEFAULT_THRESHOLD_PERCENTAGE);
             extraPropsMap.put("retry-count", DEFAULT_RETRY_COUNT);
-        } else if (!extraPropsMap.containsValue(DEFAULT_GARBAGE_COLLECTOR_NAME)) {
+        } else if (extraPropsMap.containsValue(DEFUALT_STUCK_THEAD_NAME)){
+            extraPropsMap.put("threshold",  DEFAULT_TIME);
+            extraPropsMap.put("thresholdUnit", DEFAULT_UNIT);
+        } else {
             extraPropsMap.put("thresholdCritical", THRESHOLD_DEFAULTVAL_CRITICAL);
             extraPropsMap.put("thresholdWarning", THRESHOLD_DEFAULTVAL_WARNING);
             extraPropsMap.put("thresholdGood", THRESHOLD_DEFAULTVAL_GOOD);

@@ -48,7 +48,7 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
     
     <artifactId>glassfish-web</artifactId>
@@ -219,13 +219,12 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
         
         <!-- Java EE Security -->
         <dependency>
-             <groupId>javax.security.enterprise</groupId>
-             <artifactId>javax.security.enterprise-api</artifactId>
+            <groupId>javax.security.enterprise</groupId>
+            <artifactId>javax.security.enterprise-api</artifactId>
         </dependency>
-            
         <dependency>
-             <groupId>org.glassfish.soteria</groupId>
-             <artifactId>javax.security.enterprise</artifactId>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>javax.security.enterprise</artifactId>
         </dependency>
         
         <dependency>

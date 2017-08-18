@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,9 +74,9 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
 
     private static Logger logger = Logger.getLogger(SnmpNotifierService.class.getCanonicalName());
 
-    private static final String ADDRESS_SEPARATOR = "/";
-    private static final String version1  = "v1";
-    private static final String version2c = "v2c";
+    static final String ADDRESS_SEPARATOR = "/";
+    static final String version1  = "v1";
+    static final String version2c = "v2c";
     private Snmp snmp;
     private SnmpNotifierConfigurationExecutionOptions execOptions;
 
@@ -98,7 +98,7 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
         register(NotifierType.SNMP, SnmpNotifier.class, SnmpNotifierConfiguration.class, this);
         execOptions = (SnmpNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-        if (execOptions != null) {
+        if (execOptions != null && execOptions.isEnabled()) {
             try {
                 TransportMapping transport = new DefaultUdpTransportMapping();
                 snmp = new Snmp(transport);
@@ -134,7 +134,7 @@ public class SnmpNotifierService extends QueueBasedNotifierService<SnmpNotificat
         }
     }
 
-    private int decideOnSnmpVersion(String version) throws InvalidSnmpVersion {
+    static int decideOnSnmpVersion(String version) throws InvalidSnmpVersion {
         switch (version) {
             case version1:
                 return SnmpConstants.version1;

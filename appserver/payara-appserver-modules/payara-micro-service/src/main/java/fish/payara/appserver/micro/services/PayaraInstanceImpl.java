@@ -1,26 +1,48 @@
 /*
-
- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
- Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
-
- The contents of this file are subject to the terms of the Common Development
- and Distribution License("CDDL") (collectively, the "License").  You
- may not use this file except in compliance with the License.  You can
- obtain a copy of the License at
- https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- or packager/legal/LICENSE.txt.  See the License for the specific
- language governing permissions and limitations under the License.
-
- When distributing the software, include this License Header Notice in each
- file and include the License file at packager/legal/LICENSE.txt.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
+
 package fish.payara.appserver.micro.services;
 
 import fish.payara.micro.PayaraInstance;
 import fish.payara.micro.event.PayaraClusterListener;
 import fish.payara.micro.event.CDIEventListener;
-import com.sun.enterprise.deployment.Application;
 import fish.payara.appserver.micro.services.command.AsAdminCallable;
 import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
 import fish.payara.micro.data.ApplicationDescriptor;
@@ -44,14 +66,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import lombok.extern.java.Log;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -60,6 +80,7 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
@@ -71,7 +92,8 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-instance")
 @RunLevel(StartupRunLevel.VAL)
-@Contract()
+@Contract
+@Log
 public class PayaraInstanceImpl implements EventListener, MessageReceiver, PayaraInstance {
 
     public static final String INSTANCE_STORE_NAME = "payara.instance.store";
@@ -82,8 +104,6 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";    
     
-    private static final Logger logger = Logger.getLogger(PayaraInstanceImpl.class.getName());
-
     @Inject
     private PayaraCluster cluster;
 
@@ -112,6 +132,9 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     
     @Inject
     private HazelcastCore hazelcast;
+
+    @Inject
+    private ApplicationRegistry appRegistry;
     
     @Override
     public String getInstanceName() {
@@ -190,7 +213,6 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         events.register(this);
         myListeners = new HashSet<>(1);
         myCDIListeners = new HashSet<>(1);       
-        initialiseInstanceDescriptor();
     }
 
     /**
@@ -205,33 +227,24 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, me);
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
-
+            for(String appName : appRegistry.getAllApplicationNames()) {
+                me.addApplication(new ApplicationDescriptorImpl(appRegistry.get(appName)));
+            }
+            cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
         } 
         // Adds the application to the clustered register of deployed applications
-        else if (event.is(Deployment.APPLICATION_LOADED)) {
+        else if (event.is(Deployment.APPLICATION_STARTED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+                if (me == null){//race check
+                    initialiseInstanceDescriptor();
+                }
                 me.addApplication(new ApplicationDescriptorImpl(applicationInfo));
+                log.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
+                    myCurrentID, applicationInfo.getName() });
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
         }
-        // ensures the same application id is used when there is a deployment 
-        // if the application id is in the cluster keyed by application name
-        else if (event.is(Deployment.APPLICATION_PREPARED)) {
-            if (event.hook() != null && event.hook() instanceof DeploymentContext) {
-                DeploymentContext deploymentContext = (DeploymentContext) event.hook();
-                Application app = deploymentContext.getModuleMetaData(Application.class);
-                if(app != null) {
-                    Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
-                    if (appID != null) {
-                        app.setUniqueId(appID);
-                    } else {
-                        cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), app.getUniqueId());
-                    }
-                }
-            }
-        } 
-        
         // removes the application from the clustered registry of applications
         else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
@@ -239,7 +252,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                 me.removeApplication(new ApplicationDescriptorImpl(applicationInfo));
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
-        } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
+        } else if (event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED)) {
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, me);
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getClusteredStore().remove(INSTANCE_STORE_NAME, myCurrentID);
@@ -249,6 +262,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         // When Hazelcast is bootstrapped, update the instance descriptor with any new information
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
             initialiseInstanceDescriptor();
+            log.log(Level.FINE, "Hz Bootstrap Complete, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(), myCurrentID });
             // remove listener first
             cluster.getEventBus().removeMessageReceiver(INTERNAL_EVENTS_NAME, this);
             cluster.getEventBus().removeMessageReceiver(CDI_EVENTS_NAME, this);
@@ -411,7 +425,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }  
         } catch (UnknownHostException ex) {
-            logger.log(Level.SEVERE, "Could not find local hostname", ex);
+            log.log(Level.SEVERE, "Could not find local hostname", ex);
         }
     }
     

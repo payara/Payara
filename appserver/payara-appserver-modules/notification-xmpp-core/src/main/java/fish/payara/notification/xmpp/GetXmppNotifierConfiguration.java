@@ -88,16 +88,18 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
     @Override
     protected Map<String, Object> getNotifierConfiguration(XmppNotifierConfiguration configuration) {
         Map<String, Object> map = new HashMap<>(8);
-        
-        map.put("enabled", configuration.getEnabled());
-        map.put("hostName", configuration.getHost());
-        map.put("port", configuration.getPort());
-        map.put("serviceName", configuration.getServiceName());
-        map.put("username", configuration.getUsername());
-        map.put("password", configuration.getPassword());
-        map.put("securityDisabled", configuration.getSecurityDisabled());
-        map.put("roomId", configuration.getRoomId());
-        
+
+        if (configuration != null) {
+            map.put("enabled", configuration.getEnabled());
+            map.put("hostName", configuration.getHost());
+            map.put("port", configuration.getPort());
+            map.put("serviceName", configuration.getServiceName());
+            map.put("username", configuration.getUsername());
+            map.put("password", configuration.getPassword());
+            map.put("securityDisabled", configuration.getSecurityDisabled());
+            map.put("roomId", configuration.getRoomId());
+        }
+
         return map;
     }
 }

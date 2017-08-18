@@ -69,13 +69,14 @@ public class EventbusNotificationConfigurer extends BaseNotificationConfigurer<E
     @Param(name = "topicName", defaultValue = "payara.notification.event", optional = true)
     private String topicName;
 
+
     protected void applyValues(EventbusNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
 
-        if(!Strings.isNullOrEmpty(topicName)) {
-            configuration.setTopicName(topicName);
+        if(this.topicName != null) {
+            configuration.setTopicName(this.topicName);
         }
     }
 

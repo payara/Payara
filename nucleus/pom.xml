@@ -54,7 +54,7 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>5.1.2.173-SNAPSHOT</version>
+    <version>5.0.0.173-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.1.2.173-SNAPSHOT</tag>
+        <tag>payara-server-5.0.0.173-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -140,6 +140,14 @@
         </repository>
         
         <repository>
+          <id>eclipse.microprofile</id>
+          <name>Eclipse MicroProfile Repository</name>
+          <url>https://repo.eclipse.org/content/groups/microprofile/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        
+        <repository>
            <id>payara-patched-externals</id>
 	       <name>Payara Patched Externals</name>
 	       <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
@@ -148,21 +156,23 @@
            		<enabled>true</enabled>
            	</releases>
             	<snapshots>
-                	<enabled>false</enabled>
+                	<enabled>true</enabled> <!-- TEMP for HK2 until b45 released -->
             	</snapshots>
         </repository>
         
+        <!-- 
         <repository>
-           <id>javaee-security-spec-bintray</id>
-           <name>Soteria Bintray</name>
-           <url>https://dl.bintray.com/javaee-security-spec/maven/</url>
+           <id>payara-patched-externals-local</id>
+           <name>Payara Patched Externals local</name>
+           <url>file:///opt/PayaraDev/Payara_PatchedProjects</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-         </repository>
+                <snapshots>
+                    <enabled>false</enabled>
+                </snapshots>
+        </repository>
+         -->
     </repositories>
     
     <pluginRepositories>
@@ -179,9 +189,9 @@
         </pluginRepository>
         <pluginRepository>
            <id>payara-patched-externals</id>
-	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
+	       <name>Payara Patched Externals</name>
+	       <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+	       <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
            	<releases>
            		<enabled>true</enabled>
            	</releases>
@@ -204,24 +214,24 @@
         
         <!-- Servlet -->
         <servlet-api.version>4.0.0-b07</servlet-api.version>
-        <grizzly.version>2.4.0-beta9</grizzly.version>
+        <grizzly.version>2.4.0</grizzly.version>
         <grizzly.npn.version>1.5</grizzly.npn.version>
         
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
-        <jax-rs-api.impl.version>2.1-m09</jax-rs-api.impl.version>
-        <jersey.version>2.26-b06</jersey.version>
+        <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
+        <jersey.version>2.26</jersey.version>
         
         <!-- Bean Validation -->
-        <javax.validation.version>1.1.0.Final</javax.validation.version>
-        <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
+        <javax.validation.version>2.0.0.CR3</javax.validation.version>
+        <hibernate.validator.version>6.0.0.CR3-payara-p1</hibernate.validator.version>
         
         <!-- Expression language -->
         <javax.el.version>3.0.1-b04</javax.el.version>
         <javax.el-api.version>3.0.1-b04</javax.el-api.version>
         
         <!-- JavaMail -->
-        <mail.version>1.6.0-rc2</mail.version>
+        <mail.version>1.6.0</mail.version>
         
         <management-api.version>1.1-rev-1</management-api.version>
         
@@ -230,29 +240,37 @@
         
         <!-- Other -->
         
-        <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <hk2.version>2.5.0-b38</hk2.version>
-        <hk2.plugin.version>2.5.0-b38</hk2.plugin.version>
+        <hk2.version>2.5.0-b45-SNAPSHOT</hk2.version>
+        <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
 
+        <!-- 4.1.1-b001  -->
         <glassfish-corba.version>4.0.1.payara-p6</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <saaj-api.version>1.3.4</saaj-api.version>
+        <saaj-api.version>1.4.0</saaj-api.version>
         
+        <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.3.3</classmate.version>
         <jboss.logging.version>3.3.1.Final</jboss.logging.version>
-        <!-- PAYARA-625 -->
-        <javassist.version>3.20.0-GA</javassist.version>
+        <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
+        <javassist.version>3.22.0-CR2</javassist.version>
        
+        <!-- A pure Java implementation of the SSH-2 protocol, a successor to Ganymed  -->
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
-        <pfl.version>4.0.0-b004</pfl.version>
+        
+        <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
+        <pfl.version>4.0.0-b004</pfl.version> <!-- 4.0.1-b001 -->
+        <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0-b001</gmbal.version>
-        <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.7</antlr.version>
         
+        <!-- Jackson is a high-performance JSON processor (parser, generator) -->
         <jackson.version>2.8.8</jackson.version>
+        <!-- A StAX implementation for JSON. -->
         <jettison.version>1.3.8</jettison.version>
        
         <mimepull.version>1.9.7</mimepull.version>
+        
+        <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <jbi.version>1.0</jbi.version>
         <glassfish-management-api.version>3.2.1-b002</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
@@ -278,9 +296,10 @@
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.7</command-security-plugin.version>
+        <command-security-plugin.version>1.0.8</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
+        <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         
         <!-- Debug / analysis -->
         
@@ -875,12 +894,25 @@ Parent is ${project.parent}</echo>
                 <artifactId>jersey-hk2</artifactId>
                 <version>2.26-b06</version>
             </dependency>
-            
+
+
+            <!-- Bean Validation (BVal) -->
             <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>${javax.annotation-api.version}</version>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${javax.validation.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator-cdi</artifactId>
+                <version>${hibernate.validator.version}</version>
+            </dependency>
+            
             
             <!-- Expression Language (EL) -->
             <dependency>
@@ -894,6 +926,7 @@ Parent is ${project.parent}</echo>
                 <version>${javax.el.version}</version>
             </dependency>
             
+            
             <!-- JavaMail -->
             <dependency>
                 <groupId>javax.mail</groupId>
@@ -905,7 +938,12 @@ Parent is ${project.parent}</echo>
                 <artifactId>javax.mail</artifactId>
                 <version>${mail.version}</version>
             </dependency>
-        
+            
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax.annotation-api.version}</version>
+            </dependency>
         
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
@@ -914,6 +952,7 @@ Parent is ${project.parent}</echo>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
@@ -985,11 +1024,6 @@ Parent is ${project.parent}</echo>
             </dependency>
           
             <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-base</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
@@ -1005,8 +1039,8 @@ Parent is ${project.parent}</echo>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>

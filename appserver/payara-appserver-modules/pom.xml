@@ -43,7 +43,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
     <artifactId>payara-appserver-modules</artifactId>
     <name>Payara Appserver Modules</name>
@@ -51,7 +51,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>payara-jsr107</module>
-        <module>jsr107-repackaged</module>
         <module>hazelcast-ejb-timer</module>
         <module>requesttracing-api</module>
         <module>jmx-monitoring-service</module>
@@ -69,5 +68,18 @@
         <module>zendesk-support</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
+        <module>payara-fang</module>
     </modules>
+    
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>microprofile</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

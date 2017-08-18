@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
     <artifactId>payara-web</artifactId>
     <name>Payara Web Featureset</name>
@@ -233,13 +233,13 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- zendesk support --><!-- Removed for now
+        <!-- zendesk support --><!-- Removed for now -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>zendesk-support</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-        </dependency>-->
+        </dependency><!---->
         <!-- environment warning -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -255,4 +255,22 @@
             <type>zip</type>
         </dependency>
     </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <!-- Microprofile -->
+                <dependency>
+                    <groupId>org.glassfish.main.packager</groupId>
+                    <artifactId>microprofile-package</artifactId>
+                    <version>${project.version}</version>
+                    <type>zip</type>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

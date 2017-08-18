@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
     
@@ -60,7 +60,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-        <tag>payara-server-5.1.2.173-SNAPSHOT</tag>
+        <tag>payara-server-5.0.0.173-SNAPSHOT</tag>
     </scm>
     
     <properties>
@@ -70,9 +70,6 @@
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
-        <javaee.major_version>7</javaee.major_version>
-        <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
-        <javaee.version>${javaee.major_version}.${minor_version}${javaee.version_qualifier}</javaee.version>
         
         <!-- JSP -->
         <jsp-api.version>2.3.2-b01</jsp-api.version>
@@ -85,7 +82,7 @@
         <!-- JSF -->
         <javax.faces-spec.version>2.3</javax.faces-spec.version>
         <javax.faces-api.version>2.3</javax.faces-api.version>
-        <mojarra.version>2.3.1</mojarra.version>
+        <mojarra.version>2.3.2</mojarra.version>
         
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
@@ -93,10 +90,10 @@
         
         <!-- JAX-B -->
         <jaxb-api.version>2.3.0</jaxb-api.version>
-        <jaxb.version>2.3.0-b170624.2321</jaxb.version>
+        <jaxb.version>2.3.0</jaxb.version>
         
         <!-- JSON-B -->
-        <jsonb-api.version>1.0</jsonb-api.version>
+        <json.bind-api.version>1.0</json.bind-api.version>
         <yasson.version>1.0</yasson.version>
         
         <!-- JSON-P -->
@@ -105,8 +102,8 @@
         <jsonp-jaxrs.version>1.1.1</jsonp-jaxrs.version>
         
         <!-- JPA -->
-        <javax-persistence-api.version>2.1.0</javax-persistence-api.version>
-        <eclipselink.version>2.6.4.payara-p2</eclipselink.version>
+        <javax-persistence-api.version>2.2.0-RC1</javax-persistence-api.version>
+        <eclipselink.version>2.7.0-RC1</eclipselink.version>
         
         <!-- JTA -->
         <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
@@ -115,11 +112,8 @@
         <concurrent-api.version>1.0</concurrent-api.version>
         <concurrent.version>1.0.payara-p1</concurrent.version>
         
-        <!-- Bean Validation -->
-        <javax.validation-api.version>1.1.0.Final</javax.validation-api.version>
-        
          <!-- Interceptor -->
-        <javax.interceptor-api.version>1.2</javax.interceptor-api.version>
+        <javax.interceptor-api.version>1.2.1</javax.interceptor-api.version>
         
         <!-- CDI -->
         <cdi-api.version>2.0</cdi-api.version>
@@ -131,7 +125,7 @@
         <!-- Java EE Security API -->
         <javax.security.enterprise-spec.version>1.0-b11</javax.security.enterprise-spec.version>
         <javax.security.enterprise-api.version>1.0-b11</javax.security.enterprise-api.version>
-        <soteria.version>1.0-b07</soteria.version>
+        <javax.security.enterprise.version>1.0-b07</javax.security.enterprise.version>
         
         <!-- JACC -->
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
@@ -141,7 +135,9 @@
         
         <!-- JMS -->
         <jms-api.version>2.0.1</jms-api.version>
-        <mq.version>5.1.1-b02.payara-p1</mq.version>
+        
+        <!-- 5.1.1-b02.payara-p1 -->
+        <mq.version>5.1.1-b05</mq.version>
         
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
@@ -153,13 +149,17 @@
         
         <!-- JAX-WS -->
         <jaxws-api.version>2.3.0</jaxws-api.version>
-        <!-- 2.3.2-b608.payara-p3 --> 
-        <webservices.version>2.4.0-b170626.1307</webservices.version>
+        <!-- Metro Webservices is the JAX-WS impl --> 
+        <webservices.version>2.4.0</webservices.version>
+        <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
+        <woodstox.version>4.4.1</woodstox.version>
+        <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
+        <stax2-api.version>3.1.4</stax2-api.version>
         
         <!-- Web Services Metadata  -->
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         
-        <javax.xml.soap-api.version>1.3.7</javax.xml.soap-api.version>
+        <javax.xml.soap-api.version>1.4.0</javax.xml.soap-api.version>
         <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
         <javax.xml.rpc-api.version>1.1.1</javax.xml.rpc-api.version>
         
@@ -187,22 +187,18 @@
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version>1</minor_version>
-        <update_version>2</update_version>
+        <minor_version>0</minor_version>
+        <update_version>0</update_version>
         <payara_version>173-SNAPSHOT</payara_version>
         <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
 
         <jsf-ext.version>0.2</jsf-ext.version>
-        <woodstock.version>4.0.2.10.payara-p6</woodstock.version>
-        
         <jsftemplating.version>2.1.2</jsftemplating.version>
-        <woodstox.version>4.2.0</woodstox.version>
+        <woodstock.version>4.0.2.10.payara-p6</woodstock.version>
         
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        
-        <stax2-api.version>3.1.1</stax2-api.version>
         
         <dbschema.version>3.1.1</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
@@ -217,6 +213,8 @@
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>19.0</guava.version>
+        
+        <payara.fang.version>1.0.0-Beta</payara.fang.version>
     </properties>
 
     <modules>
@@ -294,11 +292,11 @@
                              <artifact>
                                  <groupId>javax.json.bind</groupId>
                                  <artifactId>javax.json.bind-api</artifactId>
-                                 <version>${jsonb-api.version}</version>
+                                 <version>${json.bind-api.version}</version>
                              </artifact>
                              <nonFinal>false</nonFinal>
                              <jarType>api</jarType>
-                             <specVersion>${jsonb-api.version}</specVersion>
+                             <specVersion>${json.bind-api.version}</specVersion>
                              <specImplVersion>${yasson.version}</specImplVersion>
                              <apiPackage>javax.json.bind</apiPackage>
                              <implNamespace>org.eclipse</implNamespace>
@@ -344,7 +342,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${javax.security.enterprise-spec.version}</specVersion>
-                            <specImplVersion>${soteria.version}</specImplVersion>
+                            <specImplVersion>${javax.security.enterprise.version}</specImplVersion>
                             <apiPackage>javax.security.enterprise</apiPackage>
                             <implNamespace>org.glassfish.soteria</implNamespace>
                         </spec>
@@ -689,11 +687,10 @@
                 <artifactId>javax.security.enterprise-api</artifactId>
                 <version>${javax.security.enterprise-api.version}</version>
             </dependency>
-            
-            <dependency>
+             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>javax.security.enterprise</artifactId>
-                <version>${soteria.version}</version>
+                <version>${javax.security.enterprise.version}</version>
             </dependency>
             
             <!-- JACC -->
@@ -958,7 +955,7 @@
             <dependency>
                 <groupId>javax.json.bind</groupId>
                 <artifactId>javax.json.bind-api</artifactId>
-                <version>${jsonb-api.version}</version>
+                <version>${json.bind-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse</groupId>

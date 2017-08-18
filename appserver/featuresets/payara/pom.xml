@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
     <artifactId>payara</artifactId>
     <name>Payara Featureset</name>
@@ -128,6 +128,13 @@
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>notification-jms</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <!-- Payara Fang -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-fang</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.mbeanserver;
 
 import java.io.File;
@@ -137,7 +139,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
         }
 
         final boolean ENABLED = true;
-        mBindToSingleIP = ENABLED && !(address.equals("0.0.0.0") || address.equals(""));
+        mBindToSingleIP = ENABLED && !(address.equals("0.0.0.0") || address.equals("*")|| address.equals("")); 
 
         final InetAddress inetAddr = getAddress(address);
 
@@ -181,8 +183,9 @@ final class RMIConnectorStarter extends ConnectorStarter {
         String actual = addrSpec;
         if (addrSpec.equals("localhost")) {
             actual = "127.0.0.1";
+        } else if (addrSpec.equals("*")) {
+            actual = "0.0.0.0";
         }
-
         final InetAddress addr = InetAddress.getByName(actual);
         return addr;
     }
@@ -202,10 +205,6 @@ final class RMIConnectorStarter extends ConnectorStarter {
                 throw new IllegalStateException("Something changed " + RMI_HOSTNAME_PROP + " to " + temp);
             }
         }
-    }
-
-    private static void debug(final Object o) {
-        System.out.println("" + o);
     }
 
     /**
@@ -274,7 +273,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
 
         final String name = "jmxrmi";
         final String hostname = hostname();
-        final Map<String, Object> env = new HashMap<String, Object>();
+        final Map<String, Object> env = new HashMap<>();
 
         env.put("jmx.remote.jndi.rebind", "true");
 

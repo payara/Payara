@@ -86,7 +86,7 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
         register(NotifierType.EMAIL, EmailNotifier.class, EmailNotifierConfiguration.class, this);
 
         executionOptions = (EmailNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        if(executionOptions != null) {
+        if(executionOptions != null && executionOptions.isEnabled()) {
             initializeExecutor();
 
             try {

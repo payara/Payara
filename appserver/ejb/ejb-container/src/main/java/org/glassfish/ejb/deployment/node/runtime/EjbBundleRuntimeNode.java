@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -81,6 +81,8 @@ public class EjbBundleRuntimeNode extends
                 EnterpriseBeansRuntimeNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
                 ResourcePropertyNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.WEBSERVICE_DEFAULT_LOGIN_CONFIG),
+                DefaultWebServiceLoginConfigNode.class);
     }
 
     public EjbBundleRuntimeNode() {

@@ -23,10 +23,11 @@
     <parent>
         <groupId>org.glassfish.main.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.173-SNAPSHOT</version>
     </parent>
     
     <artifactId>payara-jbatch</artifactId>
+    <groupId>fish.payara.appserver</groupId>
     <packaging>jar</packaging>
     <name>IBM JBatch Combined</name>
     <description>Combining of all IBM JBatch jars</description>
@@ -89,7 +90,19 @@
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            com.ibm.jbatch.*
+                            com.ibm.jbatch.jsl.model,
+                            com.ibm.jbatch.spi.services,
+                            com.ibm.jbatch.container.services,
+                            com.ibm.jbatch.container.servicesmanager,
+                            com.ibm.jbatch.container.cdi,
+                            com.ibm.jbatch.container.context.impl,
+                            com.ibm.jbatch.container.impl,
+                            com.ibm.jbatch.container.jobinstance,
+                            com.ibm.jbatch.container.persistence,
+                            com.ibm.jbatch.container.util,
+                            com.ibm.jbatch.container.exception,
+                            com.ibm.jbatch.container.status,
+                            com.ibm.jbatch.spi
                         </Export-Package>
                         <Import-Package>
                             com.ibm.websphere.asynchbeans;resolution:=optional,
