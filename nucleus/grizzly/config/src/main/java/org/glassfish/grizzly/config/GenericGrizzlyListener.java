@@ -626,7 +626,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         poolConfig.setInitialClassLoader(this.getClass().getClassLoader());
 
         poolConfig.setKeepAliveTime(timeout < 0 ? Long.MAX_VALUE : timeout, TimeUnit.SECONDS);
-        if (transactionTimeoutMillis > 0 && !Utils.isDebugVM()) {
+        if (transactionTimeoutMillis > 0) {
             poolConfig.setTransactionTimeout(obtainDelayedExecutor(),
                     transactionTimeoutMillis, TimeUnit.MILLISECONDS);
         }
