@@ -40,24 +40,15 @@
 package fish.payara.microprofile.config.cdi;
 
 import fish.payara.microprofile.config.spi.PayaraConfig;
-import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanAttributes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessInjectionPoint;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.*;
+import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * CDI extension that implements the Microprofile Config API ConfigProperty injection
@@ -100,7 +91,7 @@ public class CDIExtension implements Extension {
      */
     public void createConfigProducer(@Observes BeforeBeanDiscovery event, BeanManager bm) {
         AnnotatedType<ConfigProducer> at = bm.createAnnotatedType(ConfigProducer.class);
-        event.addAnnotatedType(at);
+        event.addAnnotatedType(at, ConfigProducer.class.getName());
     }
 
     /**
