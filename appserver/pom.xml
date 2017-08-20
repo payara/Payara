@@ -123,9 +123,9 @@
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
         
         <!-- Java EE Security API -->
-        <javax.security.enterprise-spec.version>1.0-b08</javax.security.enterprise-spec.version>
-        <javax.security.enterprise-api.version>1.0-b08</javax.security.enterprise-api.version>
-        <javax.security.enterprise.version>1.0-b10</javax.security.enterprise.version>
+        <javax.security.enterprise-spec.version>1.0-b11</javax.security.enterprise-spec.version>
+        <javax.security.enterprise-api.version>1.0-b11</javax.security.enterprise-api.version>
+        <javax.security.enterprise.version>1.0-b07</javax.security.enterprise.version>
         
         <!-- JACC -->
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
