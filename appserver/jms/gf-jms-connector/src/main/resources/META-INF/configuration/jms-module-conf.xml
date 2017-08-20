@@ -51,7 +51,7 @@
 <![CDATA[
     <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
         <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"/>
-   <!--</jms-service>-->
+   </jms-service>
 ]]>
         </configuration-element>
     </config-bundle>
