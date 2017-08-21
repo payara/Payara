@@ -63,18 +63,6 @@
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
         <tag>payara-server-4.1.2.174-SNAPSHOT</tag>
     </scm>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>payara-nexus</id>
-            <url>https://nexus.payara.fish/content/repositories/payara-snapshots</url>
-        </snapshotRepository>
-        
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
     
     <issueManagement>
         <system>Github</system>
@@ -1255,6 +1243,14 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>payara-nexus</id>
+                    <url>https://nexus.payara.fish/content/repositories/payara-snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+            
             <build>
                 <plugins>
                     <plugin>
@@ -1263,7 +1259,7 @@
                         <version>1.6.8</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <serverId>ossrh</serverId>
+                            <serverId>payara-nexus</serverId>
                             <nexusUrl>https://nexus.payara.fish/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
@@ -1277,6 +1273,14 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+            
             <build>
                 <plugins>
                     <plugin>
