@@ -1254,9 +1254,6 @@
             <id>DeploySnapshot-Internal</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>DeploySnapshot</name>
-                </property>
             </activation>
             <build>
                 <plugins>
@@ -1279,9 +1276,6 @@
             <id>DeploySnapshot-Sonatype</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>DeploySnapshot</name>
-                </property>
             </activation>
             <build>
                 <plugins>
