@@ -233,7 +233,7 @@ public class HazelcastCore implements EventListener {
                                     new PayaraHazelcastSerializer(ctxUtil, null))
                                     .setOverrideJavaSerialization(true));
                     config.setSerializationConfig(serializationConfig);
-                } else if (serConfig.getGlobalSerializerConfig() == null) {
+                } else {
                     serConfig.setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(
                             new PayaraHazelcastSerializer(ctxUtil, null))
                             .setOverrideJavaSerialization(true));
