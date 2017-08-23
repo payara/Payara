@@ -55,7 +55,7 @@
     <artifactId>payara-nucleus-parent</artifactId>
     <version>4.1.2.174-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>GlassFish Nucleus Parent Project</name>
+    <name>Payara Nucleus Parent Project</name>
 
     <scm>
         <connection>scm:git:git@github.com:payara/payara.git</connection>
