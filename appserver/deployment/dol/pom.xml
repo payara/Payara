@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
+        <version>5.0.0.174-SNAPSHOT</version>
     </parent>
     
     <artifactId>dol</artifactId>
