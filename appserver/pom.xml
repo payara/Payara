@@ -45,12 +45,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
         <version>4.1.2.174-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
-    <artifactId>glassfish-parent</artifactId>
+    <artifactId>payara-parent</artifactId>
     <packaging>pom</packaging>
     <name>Payara Appserver Parent Project</name>
     
@@ -59,8 +59,8 @@
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
       <tag>payara-server-4.1.2.174-SNAPSHOT</tag>
-  </scm>
-    
+    </scm>
+  
     <properties>
         <jms-api.version>2.0.1</jms-api.version>
         <jsp-api.version>2.3.2-b01</jsp-api.version>
@@ -1136,5 +1136,30 @@
                 <module>javaee-api</module>
             </modules>
         </profile>   
-      </profiles>
+        
+        <profile>
+            <id>DeploySnapshot</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>DeploySnapshot</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>payara-nexus</serverId>
+                            <nexusUrl>https://nexus.payara.fish/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
