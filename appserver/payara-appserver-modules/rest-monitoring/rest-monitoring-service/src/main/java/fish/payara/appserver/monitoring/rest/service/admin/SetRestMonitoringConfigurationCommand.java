@@ -243,7 +243,7 @@ public class SetRestMonitoringConfigurationCommand implements AdminCommand {
          
         ParameterMap parameters = new ParameterMap();
         parameters.add("groups", "rest-monitoring");
-        parameters.add("userpassword", "fang");
+        parameters.add("userpassword", "rest");
         parameters.add("target", target);
         parameters.add("authrealmname", "file");
         parameters.add("DEFAULT", DEFAULT_USER_NAME);
