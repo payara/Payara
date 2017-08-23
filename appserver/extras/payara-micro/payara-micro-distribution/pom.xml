@@ -54,72 +54,65 @@
   <name>Payara Micro Distribution</name>
   <packaging>jar</packaging>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-  <build>
-    <defaultGoal>install</defaultGoal>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>copy-dependencies</id>
-                    <goals>
-                        <goal>copy-dependencies</goal>
-                    </goals>
-                    <configuration>
-                        <outputDirectory>${project.build.directory}/packager_zips</outputDirectory>
-                        <overWriteReleases>false</overWriteReleases>
-                        <overWriteSnapshots>true</overWriteSnapshots>
-                        <excludeTransitive>true</excludeTransitive>
-                        <includeScope>compile</includeScope>
-                        <includeScope>runtime</includeScope>
-                    </configuration>
-               </execution>
-            </executions>
-        </plugin>
-        <plugin>
-            <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-            <artifactId>maven-antrun-extended-plugin</artifactId>
-            <executions>
-                <execution>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>run</goal>
-                    </goals>
-                    <configuration>
-                        <tasks>
-                            <ant dir="." antfile="build.xml" target="new.create">
-                                <property name="bundlename" value="fish.payara.micro" />
-                                <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
-                                <property name="install.dir.name" value="${install.dir.name}" />                            
-                            </ant>
-                        </tasks>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-        <plugin>
-            <artifactId>maven-jar-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>default-jar</id>
-                    <phase>never</phase>
-                    <configuration>
-                        <finalName>unwanted</finalName>
-                        <classifier>unwanted</classifier>
-                    </configuration>
-                </execution>
-            </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/packager_zips</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <includeScope>compile</includeScope>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                <artifactId>maven-antrun-extended-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <ant dir="." antfile="build.xml" target="new.create">
+                                    <property name="bundlename" value="fish.payara.micro" />
+                                    <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
+                                    <property name="install.dir.name" value="${install.dir.name}" />                            
+                                </ant>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>never</phase>
+                        <configuration>
+                            <finalName>unwanted</finalName>
+                            <classifier>unwanted</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
       <dependencies>
         <dependency>
@@ -458,30 +451,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>DeploySnapshot</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>DeploySnapshot</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
