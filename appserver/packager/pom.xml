@@ -179,7 +179,7 @@
         <module>payara-api</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
-        <module>payara-fang</module>
+        <module>rest-monitoring</module>
     </modules>
 
     <profiles>
