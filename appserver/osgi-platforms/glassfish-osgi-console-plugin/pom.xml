@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
+        <version>5.0.0.174-SNAPSHOT</version>
       <relativePath>../../admingui/pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-osgi-console-plugin</artifactId>

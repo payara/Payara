@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main.cluster</groupId>
         <artifactId>cluster</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
+        <version>5.0.0.174-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gms-adapter</artifactId>
