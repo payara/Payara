@@ -46,13 +46,12 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
         <version>5.0.0.174-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
-    
-    <artifactId>glassfish-parent</artifactId>
+    <artifactId>payara-parent</artifactId>
     <packaging>pom</packaging>
     <name>Payara Appserver Parent Project</name>
     
@@ -1295,5 +1294,5 @@
                 <module>javaee-api</module>
             </modules>
         </profile>   
-      </profiles>
+    </profiles>
 </project>

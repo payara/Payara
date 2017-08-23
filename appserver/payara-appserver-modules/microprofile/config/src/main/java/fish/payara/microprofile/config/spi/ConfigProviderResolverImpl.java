@@ -136,13 +136,13 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             Set<String> allApplicationNames = appRegistry.getAllApplicationNames();
             for (String allApplicationName : allApplicationNames) {
                 ApplicationInfo testInfo = appRegistry.get(allApplicationName);
-                if (testInfo.getAppClassLoader().equals(loader)) {
+                if (loader.equals(testInfo.getAppClassLoader())) {
                     appInfo = testInfo;
                     return appInfo;
                 } else {
                     // search the modules within the app info to see if they have the classloader
                     for (ModuleInfo mi : testInfo.getModuleInfos()) {
-                        if (mi.getModuleClassLoader().equals(loader)) {
+                        if (loader.equals(mi.getModuleClassLoader())) {
                             return testInfo;
                         }
                     }
@@ -160,7 +160,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         // search the modules
         if (appInfo != null) {
             for (ModuleInfo mInfo : appInfo.getModuleInfos()) {
-                if (mInfo.getModuleClassLoader().equals(loader)) {
+                if (loader.equals(mInfo.getModuleClassLoader())) {
                     return appInfo;
                 }
             }
