@@ -1123,6 +1123,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case rootdir:
                         rootDir = new File(value);
                         break;
+                    case addlibs:
                     case addjars:
                         String[] alljars = value.split(":");
                         for (String jarname : alljars) {
