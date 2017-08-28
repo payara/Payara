@@ -434,7 +434,7 @@ public abstract class AbstractSingletonContainer
                 if(!singletonMap.containsKey(sessDesc.getName())) {
                     context = (SingletonContextImpl) createEjbInstanceAndContext();
                     ejb = singletonMap.putIfAbsent(sessDesc.getName(), context.getEJB());
-                    if(ejb != context.getEJB()) {
+                    if((ejb != null) && (ejb != context.getEJB())) {
                         doPostConstruct = false;
                     }
                     hzInst.getAtomicLong("Payara/" + sessDesc.getName() + "/count").incrementAndGet();
@@ -704,6 +704,8 @@ public abstract class AbstractSingletonContainer
                     if(count.decrementAndGet() <= 0) {
                         hzInst.getMap("Payara/" + componentId).destroy();
                         count.destroy();
+                    }
+                    else {
                         doPreDestroy = false;
                     }
                 }
