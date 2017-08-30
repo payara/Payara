@@ -217,7 +217,7 @@
         
         <!-- Servlet -->
         <servlet-api.version>4.0.0-b07</servlet-api.version>
-        <grizzly.version>2.4.0</grizzly.version>
+        <grizzly.version>2.4.1</grizzly.version>
         <grizzly.npn.version>1.5</grizzly.npn.version>
         
         <!-- JAX-RS -->
