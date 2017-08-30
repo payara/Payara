@@ -37,19 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.url.AbstractURLStreamHandlerService;
-import org.osgi.service.url.URLConstants;
-import org.osgi.service.url.URLStreamHandlerService;
+import static org.osgi.service.url.URLConstants.URL_HANDLER_PROTOCOL;
 
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Hashtable;
 import java.util.Properties;
+
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.url.AbstractURLStreamHandlerService;
+import org.osgi.service.url.URLStreamHandlerService;
 
 /**
  * This class is responsible for adding {@code DirContextURLStreamHandler}
@@ -91,14 +94,16 @@ public class DirContextURLStreamHandlerService
         return new DelegatingDirContextURLStreamHandler().toExternalForm(u);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void start(BundleContext context) throws Exception {
-        Properties p = new Properties();
-        p.put(URLConstants.URL_HANDLER_PROTOCOL,
-                new String[]{"jndi"});
+        
+        Properties properties = new Properties();
+        properties.put(URL_HANDLER_PROTOCOL, new String[] { "jndi" });
+        
         context.registerService(
                 URLStreamHandlerService.class.getName(),
                 this,
-                p);
+                (Hashtable) properties);
     }
 
     public void stop(BundleContext context) throws Exception {
