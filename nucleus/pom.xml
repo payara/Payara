@@ -268,7 +268,7 @@
         <antlr.version>2.7.7</antlr.version>
         
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.8.8</jackson.version>
+        <jackson.version>2.8.9</jackson.version>
         <!-- A StAX implementation for JSON. -->
         <jettison.version>1.3.8</jettison.version>
        
