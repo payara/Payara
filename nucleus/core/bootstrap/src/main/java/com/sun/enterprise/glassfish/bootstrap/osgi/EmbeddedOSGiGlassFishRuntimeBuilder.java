@@ -37,11 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
-import com.sun.enterprise.glassfish.bootstrap.Constants;
+import static com.sun.enterprise.glassfish.bootstrap.Constants.BUILDER_NAME_PROPERTY;
+import static com.sun.enterprise.glassfish.bootstrap.Constants.PLATFORM_PROPERTY_KEY;
+
+import java.util.Hashtable;
+
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishRuntime;
@@ -67,21 +72,28 @@ public class EmbeddedOSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
 
     public boolean handles(BootstrapProperties bsProps) {
         return EmbeddedOSGiGlassFishRuntimeBuilder.class.getName().
-                equals(bsProps.getProperties().getProperty(Constants.BUILDER_NAME_PROPERTY));
+                equals(bsProps.getProperties().getProperty(BUILDER_NAME_PROPERTY));
     }
 
-    public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
-        configureBundles(bsProps);
-        provisionBundles(bsProps);
-        GlassFishRuntime gfr = new EmbeddedOSGiGlassFishRuntime(getBundleContext());
-        getBundleContext().registerService(GlassFishRuntime.class.getName(), gfr, bsProps.getProperties());
-        return gfr;
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public GlassFishRuntime build(BootstrapProperties bootstrapProperties) throws GlassFishException {
+        configureBundles(bootstrapProperties);
+        provisionBundles(bootstrapProperties);
+        
+        GlassFishRuntime glassFishRuntime = new EmbeddedOSGiGlassFishRuntime(getBundleContext());
+        
+        getBundleContext().registerService(
+            GlassFishRuntime.class.getName(), 
+            glassFishRuntime, 
+            (Hashtable) bootstrapProperties.getProperties());
+        
+        return glassFishRuntime;
     }
 
     private void configureBundles(BootstrapProperties bsProps) {
-        if (System.getProperty(Constants.PLATFORM_PROPERTY_KEY) == null) { // See GLASSFISH-16511 for null check
+        if (System.getProperty(PLATFORM_PROPERTY_KEY) == null) { // See GLASSFISH-16511 for null check
             // Set this, because some stupid downstream code may be relying on this property
-            System.setProperty(Constants.PLATFORM_PROPERTY_KEY, "GenericOSGi");
+            System.setProperty(PLATFORM_PROPERTY_KEY, "GenericOSGi");
         }
     }
 

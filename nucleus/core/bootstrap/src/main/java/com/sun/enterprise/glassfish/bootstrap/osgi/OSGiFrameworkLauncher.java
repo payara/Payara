@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
@@ -47,6 +48,7 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.util.tracker.ServiceTracker;
 
+import java.util.Hashtable;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
@@ -68,20 +70,23 @@ public class OSGiFrameworkLauncher {
         this.properties = properties;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Framework launchOSGiFrameWork() throws Exception {
         if (!isOSGiEnv()) {
             // Locate an OSGi framework and initialize it
             ServiceLoader<FrameworkFactory> frameworkFactories =
                     ServiceLoader.load(FrameworkFactory.class, getClass().getClassLoader());
-            for (FrameworkFactory ff : frameworkFactories) {
-                framework = ff.newFramework(properties);
+            for (FrameworkFactory frameworkFactory : frameworkFactories) {
+                framework = frameworkFactory.newFramework((Hashtable)properties);
                 break;
             }
+            
             if (framework == null) {
                 throw new RuntimeException("No OSGi framework in classpath");
             }
+            
             // init framework in a daemon thread so that the framework spwaned internal threads will be daemons
-            Thread t = new Thread() {
+            Thread thread = new Thread() {
                 @Override
                 public void run() {
                     try {
@@ -91,12 +96,13 @@ public class OSGiFrameworkLauncher {
                     }
                 }
             };
-            t.setDaemon(true);
-            t.start();
-            t.join();
+            thread.setDaemon(true);
+            thread.start();
+            thread.join();
         } else {
             throw new IllegalStateException("An OSGi framework is already running...");
         }
+        
         return framework;
     }
 
@@ -104,6 +110,7 @@ public class OSGiFrameworkLauncher {
         if (framework == null) {
             throw new IllegalStateException("OSGi framework has not yet been launched.");
         }
+        
         final BundleContext context = framework.getBundleContext();
         ServiceTracker tracker = new ServiceTracker(context, type.getName(), null);
         try {
