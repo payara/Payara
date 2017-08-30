@@ -61,6 +61,7 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+            
             <modules>
                 <module>applicationDispatcher</module>
                 <module>dirListing</module>
@@ -81,6 +82,7 @@
                 <module>multipleApps</module>
             </modules>
         </profile>
+        
         <profile>
             <id>run-with-snapshot-builds</id>
             <activation>
@@ -89,6 +91,7 @@
                     <value>snapshot</value>
                 </property>
             </activation>
+            
             <modules>
                 <module>init</module>
                 <module>applicationDispatcher</module>
@@ -109,6 +112,7 @@
                 <module>multipleApps</module>
             </modules>
         </profile>
+        
         <profile>
             <id>run-with-shell-jar</id>
             <activation>
@@ -234,7 +238,7 @@
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
-                <version>4.0.0-b07</version>
+                <version>4.0.0</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
