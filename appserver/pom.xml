@@ -213,7 +213,7 @@
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>19.0</guava.version>
         
-        <payara.fang.version>1.0.0-Beta</payara.fang.version>
+        <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
     </properties>
 
     <modules>

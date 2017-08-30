@@ -131,7 +131,8 @@ public abstract class AbstractListCommandProxy
             if (subReport.getExtraProperties() != null && subReport.getExtraProperties().size() > 0)
                 postInvoke(context, subReport);
             else {
-                if (subReport.getSubActionsReport() != null && subReport.getSubActionsReport().size() > 0) {
+                if (subReport.getSubActionsReport() != null && subReport.getSubActionsReport().size() > 0
+                        && subReport.getSubActionsReport().get(0).getExtraProperties() != null) {
                     postInvoke(context, subReport.getSubActionsReport().get(0));
                 } else {
                     actionReport.setMessage(subReport.getMessage());
