@@ -115,10 +115,10 @@
         <javax.interceptor-api.version>1.2.1</javax.interceptor-api.version>
         
         <!-- CDI -->
-        <cdi-api.version>2.0</cdi-api.version>
         <javax.inject.version>1</javax.inject.version>
-        <weld-api.version>3.0.Final</weld-api.version>
-        <weld.version>3.0.0.Final</weld.version>
+        <cdi-api.version>2.0</cdi-api.version>
+        <weld.version>3.0.1.Final</weld.version>
+        <weld-api.version>3.0.SP1</weld-api.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
         
         <!-- Java EE Security API -->
@@ -820,13 +820,18 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-osgi-bundle</artifactId>
-                <version>${weld.version}</version>
+                <version>${weld.version}-payara-p1</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.classfilewriter</groupId>
                         <artifactId>jboss-classfilewriter</artifactId>
                     </exclusion>
                 </exclusions>                
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-api</artifactId>
+                <version>${weld-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.classfilewriter</groupId>
