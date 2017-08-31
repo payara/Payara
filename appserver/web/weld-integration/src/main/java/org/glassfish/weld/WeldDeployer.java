@@ -145,6 +145,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     
     private static final String PROBE_FILTER_CLASS_NAME = "org.jboss.weld.probe.ProbeFilter";
     
+    private static final boolean PROBE_FILTER_ASYNC_SUPPORT = true;
+    
     private static final String PROBE_FILTER_URL_PATTERN = "/*";
     
     private static final String PROBE_FILTER_DISPATCHER_TYPE = "REQUEST";
@@ -579,6 +581,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     ServletFilterDescriptor servletFilter = new ServletFilterDescriptor();
                     servletFilter.setClassName(PROBE_FILTER_CLASS_NAME);
                     servletFilter.setName(PROBE_FILTER_NAME);
+                    servletFilter.setAsyncSupported(PROBE_FILTER_ASYNC_SUPPORT);
                     wDesc.addServletFilter(servletFilter);
 
                     ServletFilterMappingDescriptor servletFilterMapping = new ServletFilterMappingDescriptor();
