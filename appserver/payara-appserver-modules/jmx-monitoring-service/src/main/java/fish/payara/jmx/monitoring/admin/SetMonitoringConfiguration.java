@@ -45,6 +45,7 @@ import fish.payara.jmx.monitoring.MonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -108,7 +109,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Param(name = "logfrequency", optional = true)
     private String logfrequency;
 
-    @Param(name = "logfrequencyunit", optional = true)
+    @Param(name = "logfrequencyunit", optional = true, acceptableValues = "NANOSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS")
     private String logfrequencyunit;
 
     @Param(name = "addproperty", optional = true)

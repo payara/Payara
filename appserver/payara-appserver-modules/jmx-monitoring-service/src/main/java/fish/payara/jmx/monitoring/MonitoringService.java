@@ -150,7 +150,9 @@ public class MonitoringService implements EventListener {
      */
     public void bootstrapMonitoringService() {
         if (configuration != null) {
-            executor = Executors.newScheduledThreadPool(2, new ThreadFactory() {
+            shutdownMonitoringService();//To make sure that there aren't multiple monitoring services running
+            
+            executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
                     return new Thread(r, PREFIX.concat(Integer.toString(threadNumber.getAndIncrement())).concat(")")
@@ -219,14 +221,13 @@ public class MonitoringService implements EventListener {
 
     /**
      * Sets the service to be enabled/disabled.
-     *  Has no effect if there is no change in the value.
-     * @param enabled 
+     * @param enabled If true will reboot the monitoring service
      */
     public void setEnabled(Boolean enabled) {
         amxBootDelay = 0;
         monitoringDelay = amxBootDelay + 5;
         
-        if (!this.enabled && enabled) {
+        if (enabled) {
             this.enabled = enabled;
             bootstrapMonitoringService();
         } else if (this.enabled && !enabled) {
