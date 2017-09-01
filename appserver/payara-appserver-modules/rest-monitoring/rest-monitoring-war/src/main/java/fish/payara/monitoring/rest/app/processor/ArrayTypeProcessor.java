@@ -40,9 +40,12 @@
 package fish.payara.monitoring.rest.app.processor;
 
 import java.lang.reflect.Array;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonValue;
 import javax.management.openmbean.ArrayType;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 
 /**
  *
@@ -52,7 +55,7 @@ import org.codehaus.jettison.json.JSONException;
 public class ArrayTypeProcessor implements TypeProcessor<ArrayType> {
 
     @Override
-    public Object processObject(Object object) throws JSONException {
+    public JsonValue processObject(Object object) throws JsonException {
         Object[] arrayObject;
         if (Object[].class.isAssignableFrom(object.getClass())) {
             arrayObject = (Object[]) object;
@@ -66,17 +69,17 @@ public class ArrayTypeProcessor implements TypeProcessor<ArrayType> {
         return processObject(arrayObject);
     }
 
-    private JSONArray processObject(Object[] arrayObject) throws JSONException {
-        JSONArray jsonArray = new JSONArray();
+    private JsonArray processObject(Object[] arrayObject) throws JsonException {
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 
         for (Object arrayItem : arrayObject) {
             TypeProcessor<?> processor = ProcessorFactory
                     .getTypeProcessor(arrayItem);
 
-            jsonArray.put(processor.processObject(arrayItem));
+            arrayBuilder.add(processor.processObject(arrayItem));
         }
 
-        return jsonArray;
+        return arrayBuilder.build();
     }
 
 }

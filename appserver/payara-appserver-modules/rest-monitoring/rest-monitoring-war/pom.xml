@@ -58,13 +58,13 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.codehaus.jettison</groupId>
-            <artifactId>jettison</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
             <type>jar</type>
         </dependency>
         <dependency>

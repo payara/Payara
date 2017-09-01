@@ -39,6 +39,13 @@
  */
 package fish.payara.monitoring.rest.app.processor;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Date;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonValue;
+import javax.management.ObjectName;
 import javax.management.openmbean.SimpleType;
 
 /**
@@ -49,11 +56,43 @@ import javax.management.openmbean.SimpleType;
 public class SimpleTypeProcessor implements TypeProcessor<SimpleType> {
 
     @Override
-    public Object processObject(Object object) {
-            return object;
+    public JsonValue processObject(Object object) {
+        if (SimpleType.BIGDECIMAL.isValue(object)) {
+            return Json.createValue((BigDecimal) object);
+        } else if (SimpleType.BIGINTEGER.isValue(object)) {
+            return Json.createValue((BigInteger) object);
+        } else if (SimpleType.BOOLEAN.isValue(object)) {
+            Boolean value = (Boolean) object;
+            if (value) {
+                return JsonValue.TRUE;
+            } else {
+                return JsonValue.FALSE;
+            }
+        } else if (SimpleType.DOUBLE.isValue(object)) {
+            return Json.createValue((Double) object);
+        } else if (SimpleType.INTEGER.isValue(object)) {
+            return Json.createValue((Integer) object);
+        } else if (SimpleType.LONG.isValue(object)) {
+            return Json.createValue((Long) object);
+        } else if (SimpleType.STRING.isValue(object)) {
+            return Json.createValue((String) object);
+        } else if (object == null || SimpleType.VOID.isValue(object)){
+            return JsonValue.NULL;         
+        } else if (SimpleType.BYTE.isValue(object)) {
+            return Json.createValue(((Byte) object).intValue());
+        } else if (SimpleType.CHARACTER.isValue(object)) {
+            return Json.createValue(((Character) object).toString());
+        } else if (SimpleType.DATE.isValue(object)) {
+            return Json.createValue(((Date) object).toString());
+        } else if (SimpleType.FLOAT.isValue(object)) {
+            return Json.createValue(BigDecimal.valueOf((Long) object));
+        } else if (SimpleType.OBJECTNAME.isValue(object)) {
+            return Json.createValue(((ObjectName) object).toString());
+        } else if (SimpleType.SHORT.isValue(object)) {
+            return Json.createValue(((Short) object).intValue());
+        } else {
+            throw new JsonException("Unable to process object: " + object);
+        }
     }
 
-
 }
-
-

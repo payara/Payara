@@ -39,8 +39,9 @@
  */
 package fish.payara.monitoring.rest.app.processor;
 
+import javax.json.JsonException;
+import javax.json.JsonValue;
 import javax.management.openmbean.OpenType;
-import org.codehaus.jettison.json.JSONException;
 
 /**
  *
@@ -51,15 +52,15 @@ import org.codehaus.jettison.json.JSONException;
 public interface TypeProcessor<T extends OpenType> {
 
     /**
-     * Returns an {@link Object} which has been processed for serving by a JSON
+     * Returns an {@link Object} which has been processed for serving by a Json
      * REST resource.
      * The object parameter must be the correct {@link OpenType}.
-     * Should return either an {@link Object} or a {@link JSONObject}.
+     * Should return either an {@link Object} or a {@link JsonObject}.
      * 
      * @param object The object to process.
      * @return The processed {@link Object} form of object.
-     * @throws JSONException {@inheritDoc}
+     * @throws JsonException {@inheritDoc}
      */
-    public Object processObject(Object object) throws JSONException;
+    public JsonValue processObject(Object object) throws JsonException;
 
 }
