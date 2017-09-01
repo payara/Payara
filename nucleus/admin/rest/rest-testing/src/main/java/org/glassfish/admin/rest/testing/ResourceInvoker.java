@@ -36,13 +36,16 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -50,8 +53,6 @@ import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-
-import org.codehaus.jettison.json.JSONObject;
 
 public abstract class ResourceInvoker {
 
@@ -70,7 +71,7 @@ public abstract class ResourceInvoker {
     private String host = null;
     private String port = null;
     private String username = null;
-    private JSONObject body = new JSONObject();
+    private JsonObject body = Json.createObjectBuilder().build();
 
     protected ResourceInvoker(Environment env) {
         this.env = env;
@@ -178,17 +179,17 @@ public abstract class ResourceInvoker {
         return this;
     }
 
-    protected JSONObject getBody() {
+    protected JsonObject getBody() {
         return this.body;
     }
 
-    public ResourceInvoker body(JSONObject val) {
+    public ResourceInvoker body(JsonObject val) {
         this.body = val;
         return this;
     }
 
     public ResourceInvoker body(ObjectValue val) throws Exception {
-        return body(val.toJSONObject());
+        return body(val.toJsonObject());
     }
 
     public Response options() throws Exception {
