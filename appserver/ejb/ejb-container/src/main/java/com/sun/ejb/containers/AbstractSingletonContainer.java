@@ -428,26 +428,27 @@ public abstract class AbstractSingletonContainer
         try {
             EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
             HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+            String sessionKey = sessDesc.getClusteredKeyValue().isEmpty()? sessDesc.getName() : sessDesc.getClusteredKeyValue();
             if(sessDesc.isClustered() && hzCore.isEnabled()) {
                 HazelcastInstance hzInst = hzCore.getInstance();
                 IMap<String, Object> singletonMap = hzInst.getMap("Payara/" + componentId);
-                if(!singletonMap.containsKey(sessDesc.getName())) {
+                if(!singletonMap.containsKey(sessionKey)) {
                     context = (SingletonContextImpl) createEjbInstanceAndContext();
-                    ejb = singletonMap.putIfAbsent(sessDesc.getName(), context.getEJB());
+                    ejb = singletonMap.putIfAbsent(sessionKey, context.getEJB());
                     if((ejb != null) && (ejb != context.getEJB())) {
                         doPostConstruct = false;
                     }
-                    hzInst.getAtomicLong("Payara/" + sessDesc.getName() + "/count").incrementAndGet();
+                    hzInst.getAtomicLong("Payara/" + sessionKey + "/count").incrementAndGet();
                 }
                 else {
-                    context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessDesc.getName()));
+                    context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessionKey));
                     ejb = context.getEJB();
                     doPostConstruct = false;
                 }
             }
             else {
                 if(sessDesc.isClustered() && !hzCore.isEnabled()) {
-                    _logger.log(Level.WARNING, "Clustered Singleton {0} not available - Hazelcast is Disabled", sessDesc.getName());
+                    _logger.log(Level.WARNING, "Clustered Singleton {0} not available - Hazelcast is Disabled", sessionKey);
                 }
                 // a dummy invocation will be created by the BaseContainer to support
                 // possible AroundConstruct interceptors
@@ -700,7 +701,8 @@ public abstract class AbstractSingletonContainer
                 HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
                 if (sessDesc.isClustered() && hzCore.isEnabled()) {
                     HazelcastInstance hzInst = hzCore.getInstance();
-                    IAtomicLong count = hzInst.getAtomicLong("Payara/" + sessDesc.getName() + "/count");
+                    String sessionKey = sessDesc.getClusteredKeyValue().isEmpty()? sessDesc.getName() : sessDesc.getClusteredKeyValue();
+                    IAtomicLong count = hzInst.getAtomicLong("Payara/" + sessionKey + "/count");
                     if(count.decrementAndGet() <= 0) {
                         hzInst.getMap("Payara/" + componentId).destroy();
                         count.destroy();

@@ -41,6 +41,11 @@
 
 package org.glassfish.ejb.deployment.descriptor;
 
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.util.TypeUtil;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,12 +56,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
-
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.util.TypeUtil;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.AnnotationTypesProvider;
 
@@ -103,6 +102,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
     private boolean passivationCapableIsSet = false;
 
     private boolean clustered = false;
+    private String clusteredKeyValue = "";
 
     private List<MethodDescriptor> readLockMethods = new ArrayList<MethodDescriptor>();
     private List<MethodDescriptor> writeLockMethods = new ArrayList<MethodDescriptor>();
@@ -216,7 +216,15 @@ public class EjbSessionDescriptor extends EjbDescriptor
         this.clustered = clustered;
     }
 
-    
+    @Override
+    public String getClusteredKeyValue() {
+        return clusteredKeyValue;
+    }
+
+    public void setClusteredKeyValue(String clusteredKeyValue) {
+        this.clusteredKeyValue = clusteredKeyValue;
+    }
+
 	/**
 	* Sets my type
 	*/

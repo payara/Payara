@@ -68,4 +68,5 @@ public interface EjbSessionDescriptor extends EjbDescriptor {
     String getPortableJndiName(String clientViewType);
 
     boolean isClustered();
+    String getClusteredKeyValue();
 }

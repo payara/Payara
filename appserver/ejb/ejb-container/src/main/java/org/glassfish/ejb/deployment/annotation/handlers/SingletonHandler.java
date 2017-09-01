@@ -47,7 +47,6 @@ import java.lang.reflect.AnnotatedElement;
 import javax.ejb.DependsOn;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -156,13 +155,13 @@ public class SingletonHandler extends AbstractEjbHandler {
     private void doSingletonSpecificProcessing(EjbSessionDescriptor desc, Class<?> ejbClass) throws AnnotationProcessorException {
         Class<?> clz = ejbClass;
 
-        Startup st = (Startup) clz.getAnnotation(Startup.class);
+        Startup st = clz.getAnnotation(Startup.class);
         if (st != null) {
             // Only set if not explicitly set in .xml
             desc.setInitOnStartupIfNotAlreadySet(true);
         }
 
-        DependsOn dep = (DependsOn) clz.getAnnotation(DependsOn.class);
+        DependsOn dep = clz.getAnnotation(DependsOn.class);
         if (dep != null) {
             desc.setDependsOnIfNotSet(dep.value());
         }
@@ -170,6 +169,7 @@ public class SingletonHandler extends AbstractEjbHandler {
         Clustered clusteredAnnotation = clz.getAnnotation(Clustered.class);
         if(clusteredAnnotation != null) {
             desc.setClustered(true);
+            desc.setClusteredKeyValue(clusteredAnnotation.keyName());
         }
     }
 }

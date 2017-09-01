@@ -41,9 +41,6 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.Map;
-import java.util.logging.Level;
-
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
@@ -61,6 +58,8 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.Map;
+import java.util.logging.Level;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
@@ -179,6 +178,7 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
             descriptor.getIASEjbExtraDescriptors().setPerRequestLoadBalancing(Boolean.valueOf(value));
         } else if(RuntimeTagNames.PAYARA_CLUSTERED_BEAN.equals(element.getQName())) {
             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setClustered(Boolean.valueOf(value));
+            // +++ key value + locking
         }
         else super.setElementValue(element, value);
     }
