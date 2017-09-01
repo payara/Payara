@@ -41,6 +41,8 @@ package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -119,7 +121,7 @@ public class RequestTrace {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{\"RequestTrace\": {");
-        sb.append("\"startTime\":\"").append(startTimeEpoched).append('"')
+        sb.append("\"startTime\":\"").append(DateFormat.getDateTimeInstance().format(new Date(startTimeEpoched))).append('"')
           .append(",\"elapsedTime\":\"").append(elapsedTime).append('"').append(',');
         for (RequestEvent re : trace) {
             sb.append(re.toString()); 

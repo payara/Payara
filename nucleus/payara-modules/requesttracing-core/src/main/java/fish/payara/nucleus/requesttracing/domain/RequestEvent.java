@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.requesttracing.domain;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -148,7 +150,7 @@ public class RequestEvent {
                 .append("\"eventName\":\"").append(eventName).append("\",")
                 .append("\"id=\":\"").append(id).append("\",")
                 .append("\"conversationId=\":\"").append(conversationId).append("\",")
-                .append("\"timeOccured=\":\"").append(timeOccured).append("\",");
+                .append("\"timeOccured=\":\"").append(DateFormat.getDateTimeInstance().format(new Date(timeOccured))).append("\",");
 
         if (properties != null) {
             for (String key : properties.keySet()) {
