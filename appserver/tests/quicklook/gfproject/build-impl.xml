@@ -133,8 +133,8 @@
 
         <mkdir dir="${test.class.output}"/>
         <javac   debug="true"
-                 source="1.5"
-                 target="1.5"
+                 source="1.8"
+                 target="1.8"
                  classpathref="class.path"
                  srcdir="${basedir}/src/test"
                  sourcepath=""
@@ -147,8 +147,8 @@
 	    description="compile the test ng util">
         <mkdir dir="${test.class.output}"/>
         <javac   debug="true"
-                 source="1.5"
-		 target="1.5"
+                 source="1.8"
+		 target="1.8"
 		 classpathref="class.path"
                  srcdir="${ws.root}/admincli/src/test/admincli/util:${ws.root}/utils"
                  destdir="${test.class.output}">
@@ -195,8 +195,8 @@
 	    <delete dir="$class.output}"/>
 	    <mkdir dir="${class.output}"/>
         <javac   debug="true"
-                 source="1.5"
-		 target="1.5"
+                 source="1.8"
+		 target="1.8"
                  classpathref="class.path"
                  srcdir="src"
                  destdir="${class.output}"/>
@@ -212,8 +212,8 @@
     <mkdir dir="${class.output}"/>
     <mkdir dir="${dist.dir}"/>
     <javac   debug="true"
-    source="1.5"
-    target="1.5"
+    source="1.8"
+    target="1.8"
     classpathref="class.path"
     srcdir="src/java"
     failonerror="false"
@@ -259,8 +259,8 @@
     <mkdir dir="${dist.dir}"/>
     <echo message="Now compiling"/>
     <javac   debug="true"
-    source="1.5"
-    target="1.5"
+    source="1.8"
+    target="1.8"
     classpathref="class.path"
     srcdir="src/java"
     destdir="${class.output}"/>
@@ -276,8 +276,8 @@
     <mkdir dir="${class.output}"/>
     <mkdir dir="${dist.dir}"/>
     <javac   debug="true"
-    source="1.5"
-    target="1.5"
+    source="1.8"
+    target="1.8"
     classpathref="class.path"
     srcdir="src/java"
     failonerror="false"
@@ -312,8 +312,8 @@
     <mkdir dir="${class.output}"/>
     <mkdir dir="${dist.dir}"/>
     <javac   debug="true"
-    source="1.5"
-    target="1.5"
+    source="1.8"
+    target="1.8"
     classpathref="class.path"
     srcdir="src/com"
     failonerror="false"
