@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.deployment;
 
+import fish.payara.cluster.DistributedLockType;
 import java.util.Set;
 
 public interface EjbSessionDescriptor extends EjbDescriptor {
@@ -69,4 +70,5 @@ public interface EjbSessionDescriptor extends EjbDescriptor {
 
     boolean isClustered();
     String getClusteredKeyValue();
+    DistributedLockType getClusteredLockType();
 }

@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.cluster.DistributedLockType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,6 +104,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
 
     private boolean clustered = false;
     private String clusteredKeyValue = "";
+    private DistributedLockType clusteredLockType = DistributedLockType.INHERIT;
 
     private List<MethodDescriptor> readLockMethods = new ArrayList<MethodDescriptor>();
     private List<MethodDescriptor> writeLockMethods = new ArrayList<MethodDescriptor>();
@@ -223,6 +225,15 @@ public class EjbSessionDescriptor extends EjbDescriptor
 
     public void setClusteredKeyValue(String clusteredKeyValue) {
         this.clusteredKeyValue = clusteredKeyValue;
+    }
+
+    @Override
+    public DistributedLockType getClusteredLockType() {
+        return clusteredLockType;
+    }
+
+    public void setClusteredLockType(DistributedLockType lockType) {
+        this.clusteredLockType = lockType;
     }
 
 	/**

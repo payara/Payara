@@ -279,5 +279,10 @@
             <artifactId>cdi-api</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

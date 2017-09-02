@@ -75,6 +75,8 @@ public interface RuntimeTagNames extends TagNames {
     // particular application deployment.
     public final static String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
     public final static String PAYARA_CLUSTERED_BEAN = "clustered-bean";
+    public final static String PAYARA_CLUSTERED_KEY_NAME = "clustered-key-name";
+    public final static String PAYARA_CLUSTERED_LOCK_TYPE = "clustered-lock-type";
 
     String AS_CONTEXT = "as-context";
     String AUTH_METHOD = "auth-method";
