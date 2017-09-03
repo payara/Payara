@@ -474,6 +474,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 type = archiveHandler.getArchiveType();
             }
             appProps.setProperty(Application.ARCHIVE_TYPE_PROP_NAME, type);
+            if (appProps.getProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP) == null) {
+                appProps.setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, Boolean.FALSE.toString());
+            }
 
             savedAppConfig.store(appProps);
 
