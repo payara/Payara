@@ -42,16 +42,17 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
-import com.hazelcast.config.DiscoveryStrategyConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.config.PartitionGroupConfig;
 import com.hazelcast.config.ScheduledExecutorConfig;
 import com.hazelcast.config.SerializationConfig;
+import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.serialization.Serializer;
@@ -71,7 +72,6 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
@@ -302,19 +302,11 @@ public class HazelcastCore implements EventListener {
                     setPayaraSerializerConfig(serializationConfig);
                     config.setSerializationConfig(serializationConfig);
                 }
-                MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
-                config.getNetworkConfig().setPortAutoIncrement(true);
-                mcConfig.setEnabled(false);                // check Payara micro overrides
-
-                mcConfig.setMulticastGroup(configuration.getMulticastGroup());
-                mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
-                config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
+                
+                buildNetworkConfiguration(config);
+               
                 config.setLicenseKey(configuration.getLicenseKey());
                 config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
-                
-                //build the discovery config
-                config.setProperty("hazelcast.discovery.enabled", "true");
-                config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());
                 
                 
                 // set group config
@@ -357,6 +349,40 @@ public class HazelcastCore implements EventListener {
         serConfig.setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(
                 new PayaraHazelcastSerializer(ctxUtil, null))
                 .setOverrideJavaSerialization(true));
+    }
+
+    private void buildNetworkConfiguration(Config config) throws NumberFormatException {
+        NetworkConfig nConfig = config.getNetworkConfig();
+        if (!configuration.getInterface().isEmpty()) {
+            // add an interfaces configuration
+           String[] interfaceNames = configuration.getInterface().split(",");
+            for (String interfaceName : interfaceNames) {
+                nConfig.getInterfaces().addInterface(memberName);
+            }
+        }
+        
+        String discoveryMode = configuration.getDiscoveryMode();
+        if (discoveryMode.startsWith("tcpip")) {
+            TcpIpConfig tConfig = config.getNetworkConfig().getJoin().getTcpIpConfig();
+            tConfig.setEnabled(true);
+            tConfig.addMember(configuration.getTcpIPMembers());
+        } else if (discoveryMode.startsWith("multicast")) {
+            // build networking
+            MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
+            config.getNetworkConfig().setPortAutoIncrement(true);
+            mcConfig.setEnabled(true);                       
+            mcConfig.setMulticastGroup(configuration.getMulticastGroup());
+            mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));      
+        } else {   
+            //build the domain discovery config
+            config.setProperty("hazelcast.discovery.enabled", "true");
+            config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            
+        }
+        int port = Integer.valueOf(configuration.getStartPort());
+        if (env.isDas()) {
+            port = Integer.valueOf(configuration.getDASPort());
+        }
+        config.getNetworkConfig().setPort(port);
     }
 
     private void shutdownHazelcast() {

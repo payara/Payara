@@ -224,6 +224,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         return instance;
     }
+    private String joinmode;
 
     /**
      * Gets the cluster group
@@ -1298,6 +1299,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case postdeploycommandfile:
                         postDeployFileName = value;
+                        break;
+                    case joinmode:
+                        joinmode = value;
                         break;
                     default:
                         break;

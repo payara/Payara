@@ -63,16 +63,38 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "5900")
     String getStartPort();
     public void setStartPort(String value);
+
+    @Attribute(defaultValue = "")
+    String getDASHost();
+    public void setDASHost(String value);
+    
+    @Attribute(defaultValue = "4900")
+    String getDASPort();
+    public void setDASPort(String value);
     
     @Attribute(defaultValue = "224.2.2.3")
     String getMulticastGroup();
     public void setMulticastGroup(String value);
+        
+    @Attribute(defaultValue = "54327")
+    String getMulticastPort();
+    public void setMulticastPort(String value);
     
+    @Attribute(defaultValue = "127.0.0.1:5900")
+    String getTcpIPMembers();
+    public void setTcpIPMembers(String value);
+    
+    // valid discovery modes
+    // domain
+    // multicast
+    // tcpip
+    @Attribute(defaultValue = "domain")
+    String getDiscoveryMode();
+    public void setDiscoveryMode();
     
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getGenerateNames();
     public void setGenerateNames(String value);
-
     
     @Attribute(defaultValue = "payara")
     String getMemberName();
@@ -82,6 +104,10 @@ public interface HazelcastRuntimeConfiguration
     String getMemberGroup();
     public void setMemberGroup(String value);
 
+    // can be commaseparated value
+    @Attribute(defaultValue = "")
+    String getInterface();
+    public void setInterface();
     
     @Attribute(defaultValue = "development")
     String getClusterGroupName();
@@ -90,10 +116,6 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "D3v3l0pm3nt")
     String getClusterGroupPassword();
     public void setClusterGroupPassword(String value);
-    
-    @Attribute(defaultValue = "54327")
-    String getMulticastPort();
-    public void setMulticastPort(String value);
     
     @Attribute(defaultValue = "payara/Hazelcast")
     String getJNDIName();

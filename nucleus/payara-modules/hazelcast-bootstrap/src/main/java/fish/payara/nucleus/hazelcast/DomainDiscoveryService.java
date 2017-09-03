@@ -44,12 +44,19 @@ import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
 import com.hazelcast.spi.discovery.integration.DiscoveryService;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.util.io.InstanceDirs;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -57,7 +64,9 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 
 /**
- *
+ * Provides a Discovery SPI implementation for Hazelcast that uses knowledge 
+ * of the domain topology to build out the cluster and discover members
+ * @since 5.0
  * @author steve
  */
 public class DomainDiscoveryService implements DiscoveryService {
@@ -74,12 +83,58 @@ public class DomainDiscoveryService implements DiscoveryService {
         ServerContext ctxt = Globals.getDefaultHabitat().getService(ServerContext.class);
         ServerEnvironment env = Globals.getDefaultHabitat().getService(ServerEnvironment.class);
         // add the DAS
+        HazelcastRuntimeConfiguration hzConfig = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
 
         if (!env.isDas()) {
-            HazelcastRuntimeConfiguration hzConfig = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
-            
-        } else {
+            try {
+                // first get hold of the DAS host
+                String dasHost = hzConfig.getDASHost();
+                
+                if (dasHost.isEmpty()) {
+                    // ok drag it off the properties file
+                    InstanceDirs instance = new InstanceDirs(env.getInstanceRoot());
+                    Properties dasProps = new Properties();
+                    dasProps.load(new FileInputStream(instance.getDasPropertiesFile()));
+                    dasHost = dasProps.getProperty("agent.das.host");
+                }
+                    
+                if (dasHost.equals("localhost")) {
+                        Enumeration e = NetworkInterface.getNetworkInterfaces();
+                        while (e.hasMoreElements()) {
+                            NetworkInterface ni = (NetworkInterface) e.nextElement();
+                            if (ni.isUp() && !ni.isLoopback()) {
+                                for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
+                                    nodes.add(new SimpleDiscoveryNode(new Address(ia.getAddress(), Integer.valueOf(hzConfig.getDASPort()))));
+                                }
+                            }
+                        }
+                } else {
+                    nodes.add(new SimpleDiscoveryNode(new Address(dasHost, Integer.valueOf(hzConfig.getDASPort()))));
+                }
 
+                // also add all nodes we are aware of
+                for (Node node : domain.getNodes().getNode()) {
+                    nodes.add(new SimpleDiscoveryNode(new Address(node.getNodeHost(), Integer.valueOf(hzConfig.getStartPort()))));
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        } else if (env.isMicro()) {
+            try {
+                nodes.add(new SimpleDiscoveryNode(new Address(hzConfig.getDASHost(), Integer.valueOf(hzConfig.getDASPort()))));
+            } catch (UnknownHostException ex) {
+                Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            // ok this is the DAS
+            for (Node node : domain.getNodes().getNode()) {
+                try {
+                    nodes.add(new SimpleDiscoveryNode(new Address(node.getNodeHost(),Integer.valueOf(hzConfig.getStartPort()))));
+                } catch (UnknownHostException ex) {
+                    Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
         return nodes;
     }
