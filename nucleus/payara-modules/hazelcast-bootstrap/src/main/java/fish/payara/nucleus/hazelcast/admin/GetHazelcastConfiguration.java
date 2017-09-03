@@ -39,7 +39,6 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -82,22 +81,15 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetHazelcastConfiguration implements AdminCommand {
     @Inject
-    private Target targetUtil;
+    private Domain domain;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
     @Override
     public void execute(AdminCommandContext context) {
-        
-        Config config = targetUtil.getConfig(target);
-        if (config == null) {
-            context.getActionReport().setMessage("No such config named: " + target);
-            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        
-        HazelcastRuntimeConfiguration runtimeConfiguration = config.getExtensionByType(HazelcastRuntimeConfiguration.class);
+       
+        HazelcastRuntimeConfiguration runtimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
         String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member","Cluster Name","Cluster Password", "License Key", "Host Aware Paritioning"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
