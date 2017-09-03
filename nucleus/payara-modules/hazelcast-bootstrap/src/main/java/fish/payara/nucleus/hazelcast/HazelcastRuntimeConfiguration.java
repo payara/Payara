@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import org.glassfish.api.admin.config.ConfigExtension;
+import com.sun.enterprise.config.serverbeans.DomainExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -50,9 +50,9 @@ import org.jvnet.hk2.config.Configured;
  */
 @Configured
 public interface HazelcastRuntimeConfiguration 
-    extends ConfigBeanProxy, ConfigExtension {
+    extends ConfigBeanProxy, DomainExtension {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getEnabled();
     public void setEnabled(String value);
     

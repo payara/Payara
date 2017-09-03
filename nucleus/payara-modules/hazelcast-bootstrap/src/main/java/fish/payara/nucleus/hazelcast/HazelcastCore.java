@@ -42,6 +42,9 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
+import com.hazelcast.config.DiscoveryStrategyConfig;
+import com.hazelcast.config.GlobalSerializerConfig;
+import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
@@ -117,7 +120,6 @@ public class HazelcastCore implements EventListener {
     ServerEnvironment env;
 
     @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HazelcastRuntimeConfiguration configuration;
 
     @Inject
@@ -309,13 +311,19 @@ public class HazelcastCore implements EventListener {
                 }
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 config.getNetworkConfig().setPortAutoIncrement(true);
-                mcConfig.setEnabled(true);                // check Payara micro overrides
+                mcConfig.setEnabled(false);                // check Payara micro overrides
 
                 mcConfig.setMulticastGroup(configuration.getMulticastGroup());
                 mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
                 config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
                 config.setLicenseKey(configuration.getLicenseKey());
                 config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
+                
+                //build the discovery config
+                config.setProperty("hazelcast.discovery.enabled", "true");
+                config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());
+                
+                
                 // set group config
                 GroupConfig gc = config.getGroupConfig();
                 gc.setName(configuration.getClusterGroupName());
