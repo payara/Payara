@@ -39,22 +39,20 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import org.glassfish.internal.api.JavaEEContextUtil;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
-import com.hazelcast.config.GlobalSerializerConfig;
-import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.ExecutorConfig;
+import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.PartitionGroupConfig;
 import com.hazelcast.config.ScheduledExecutorConfig;
+import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import java.io.File;
@@ -73,16 +71,15 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import lombok.extern.java.Log;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.api.logging.LogLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
@@ -92,7 +89,6 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "hazelcast-core")
 @RunLevel(StartupRunLevel.VAL)
-@Log
 public class HazelcastCore implements EventListener {
 
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
@@ -185,17 +181,10 @@ public class HazelcastCore implements EventListener {
 
     @Override
     public void event(Event event) {
-        log.log(LogLevel.FINER, "Event Name: {0}, Event Type: {1}", new Object[] { event.name(), event.type().getHookType() != null? event.hook() : "<none>"});
-        if (event.is(Deployment.ALL_APPLICATIONS_STOPPED)) {
+        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             shutdownHazelcast();
-        } else if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
-            ClassLoader oldCL = Utility.getClassLoader();
-            try {
-                Utility.setContextClassLoader(clh.getCommonClassLoader());
-                bootstrapHazelcast();
-            } finally {
-                Utility.setContextClassLoader(oldCL);
-            }
+        } else if (event.is(EventTypes.SERVER_STARTUP)) {
+            bootstrapHazelcast();
         }
     }
 
@@ -236,30 +225,31 @@ public class HazelcastCore implements EventListener {
                 config.setClassLoader(clh.getCommonClassLoader());
                 if(ctxUtil == null) {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Application Object Serialization Not Available");
-                }
-                SerializationConfig serConfig = config.getSerializationConfig();
-                if (serConfig == null || serConfig.getGlobalSerializerConfig() == null) {
-                    SerializationConfig serializationConfig = new SerializationConfig()
-                            .setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(
-                                    new PayaraHazelcastSerializer(ctxUtil, null))
-                                    .setOverrideJavaSerialization(true));
-                    config.setSerializationConfig(serializationConfig);
-                }
-                Serializer ser = config.getSerializationConfig().getGlobalSerializerConfig().getImplementation();
-                if(ctxUtil != null && ser instanceof StreamSerializer) {
-                    config.getSerializationConfig().getGlobalSerializerConfig().setImplementation(
-                            new PayaraHazelcastSerializer(ctxUtil, (StreamSerializer<?>)ser));
-                }
-                else {
-                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Global serializer is not StreamSerializer: {0}", ser.getClass().getName());
+                } else {
+                    SerializationConfig serConfig = config.getSerializationConfig();
+                    if (serConfig == null) {
+                        serConfig = new SerializationConfig();
+                        setPayaraSerializerConfig(serConfig);
+                        config.setSerializationConfig(serConfig);
+                    } else {
+                        if(serConfig.getGlobalSerializerConfig() == null) {
+                            setPayaraSerializerConfig(serConfig);
+                        } else {
+                            Serializer ser = serConfig.getGlobalSerializerConfig().getImplementation();
+                            if (ser instanceof StreamSerializer) {
+                                config.getSerializationConfig().getGlobalSerializerConfig().setImplementation(
+                                        new PayaraHazelcastSerializer(ctxUtil, (StreamSerializer<?>) ser));
+                            } else {
+                                Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Global serializer is not StreamSerializer: {0}", ser.getClass().getName());
+                            }
+                        }
+                    }
                 }
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
                 if(ctxUtil != null) {
-                    SerializationConfig serializationConfig = new SerializationConfig()
-                            .setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(
-                                    new PayaraHazelcastSerializer(ctxUtil, null))
-                                    .setOverrideJavaSerialization(true));
+                    SerializationConfig serializationConfig = new SerializationConfig();
+                    setPayaraSerializerConfig(serializationConfig);
                     config.setSerializationConfig(serializationConfig);
                 }
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
@@ -304,10 +294,17 @@ public class HazelcastCore implements EventListener {
         return config;
     }
 
+    private void setPayaraSerializerConfig(SerializationConfig serConfig) {
+        if(serConfig == null || ctxUtil == null) {
+            throw new IllegalStateException("either serialization config or ctxUtil is null");
+        }
+        serConfig.setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(
+                new PayaraHazelcastSerializer(ctxUtil, null))
+                .setOverrideJavaSerialization(true));
+    }
+
     private void shutdownHazelcast() {
         if (theInstance != null) {
-            enabled = false;
-            events.send(new Event(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED, true));
             unbindFromJNDI();
             hazelcastCachingProvider.getCacheManager().close();
             hazelcastCachingProvider.close();
