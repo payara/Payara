@@ -195,6 +195,19 @@
     <a href="{@docRoot}/doc-files/speclicense.html" target="_top">license terms</a>.
 ]]>
                         </bottom>
+
+                        <links>
+                            <link>http://docs.oracle.com/javase/8/docs/api/</link>
+                            <link>http://docs.oracle.com/javaee/7/api/</link>
+                        </links>
+                        <tags>
+                            <tag>
+                                <name>implSpec</name>
+                                <placement>a</placement>
+                                <head>Implementation Specification:</head>
+                            </tag>
+                        </tags>
+                        
                     </configuration>
                 </plugin>
             </plugins>

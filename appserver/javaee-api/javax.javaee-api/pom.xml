@@ -148,11 +148,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>javax.security.auth.message-api</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>javax.enterprise.concurrent</groupId>
             <artifactId>javax.enterprise.concurrent-api</artifactId>
             <optional>true</optional>
