@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.ServerTags;
 import fish.payara.nucleus.store.ClusteredStore;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -51,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -62,6 +64,8 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import static javax.naming.InitialContext.doLookup;
+import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -71,6 +75,12 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.resources.admin.cli.CustomResourceManager;
+import org.glassfish.resources.admin.cli.ResourceConstants;
+import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
+import org.glassfish.resources.config.CustomResource;
+import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.glassfish.resources.admin.cli.DeleteCustomResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -120,17 +130,22 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
 
     @Inject
     Domain domainConfiguration;
-        
+
+    @Inject
+    private CustomResourceManager customResMgr;
+
+    @Inject
+    private BindableResourcesHelper bindableResourcesHelper;
+
     // This injects the configuration from the domain.xml magically
     // and for the correct server configuation
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     MicroprofileConfigConfiguration configuration;
-    
+
     // Provides ability to register a configuration listener
     @Inject
     Transactions transactions;
-    
 
     @PostConstruct
     public void postConstruct() {
@@ -140,8 +155,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
 
     @Override
     public void event(Event event) {
-        if (event.is(Deployment.APPLICATION_LOADED)) 
-        {
+        if (event.is(Deployment.APPLICATION_LOADED)) {
             // TO DO look for microprofile config files in the application classloader
             ApplicationInfo info = (ApplicationInfo) event.hook();
             LinkedList<Properties> appConfigProperties = new LinkedList<>();
@@ -159,7 +173,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
             } catch (IOException ex) {
                 Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }    
+        }
     }
 
     @Override
@@ -346,7 +360,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         }
         return result;
     }
-    
+
     public List<Properties> getDeployedApplicationProperties(String applicationName) {
         ApplicationInfo info = applicationRegistry.get(applicationName);
         List<Properties> result = null;
@@ -355,7 +369,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         }
         return result;
     }
-    
+
     public String getDeployedApplicationProperty(String applicationName, String name) {
         String result = null;
         ApplicationInfo info = applicationRegistry.get(applicationName);
@@ -371,6 +385,39 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
             }
         }
         return result;
+    }
+
+    public void setJNDIProperty(final String name, final String value, final String target) {
+
+        HashMap attrList = new HashMap();
+        attrList.put("factory-class", "org.glassfish.resources.custom.factory.PrimitivesAndStringFactory");
+        attrList.put("res-type", "java.lang.String");
+        attrList.put(ResourceConstants.ENABLED, Boolean.TRUE.toString());
+        attrList.put(JNDI_NAME, name);
+        attrList.put(ServerTags.DESCRIPTION, "MicroProfile Config property for " + name);
+
+        Properties props = new Properties();
+
+        props.put("value", value);
+
+        try {
+            customResMgr.create(domainConfiguration.getResources(), attrList, props, target);
+        } catch (Exception ex) {
+            Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.WARNING, "Unable to set MicroProfile Config property " + name, ex);
+        }
+    }
+
+    public String getJNDIProperty(String name, String target) {
+        Collection<CustomResource> customResources
+                = domainConfiguration.getResources().getResources(CustomResource.class);
+        for (CustomResource customResource : customResources) {
+            if (bindableResourcesHelper.resourceExists(customResource.getJndiName(), target)) {
+                if (customResource.getJndiName().equals(name)) {
+                    return customResource.getPropertyValue("value");
+                }
+            }
+        }
+        return null;
     }
 
     public String getEnvironmentVariable(String name) {
@@ -396,7 +443,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
 
     public Map<String, String> getDomainProperyMap() {
         List<Property> properties = domainConfiguration.getProperty();
-        HashMap<String,String> result = new HashMap<>(properties.size());
+        HashMap<String, String> result = new HashMap<>(properties.size());
         for (Property property : properties) {
             result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
         }
@@ -405,7 +452,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
 
     public Map<String, String> getConfigPropertyMap(String configName) {
         Config config = domainConfiguration.getConfigNamed(configName);
-        HashMap<String,String> result = new HashMap<>();
+        HashMap<String, String> result = new HashMap<>();
         if (config != null) {
             List<Property> properties = config.getProperty();
             for (Property property : properties) {
@@ -414,7 +461,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         }
         return result;
     }
-    
+
     public Map<String, String> getServerPropertyMap(String configName) {
         Server config = domainConfiguration.getServerNamed(configName);
         HashMap<String, String> result = new HashMap<>();
@@ -426,9 +473,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         }
         return result;
     }
-    
-    
-    
+
     public Map<String, String> getApplicationPropertyMap(String configName) {
         Application config = domainConfiguration.getApplications().getApplication(configName);
         HashMap<String, String> result = new HashMap<>();
@@ -440,7 +485,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         }
         return result;
     }
-    
+
     public Map<String, String> getModulePropertyMap(String configName, String moduleName) {
         Application config = domainConfiguration.getApplications().getApplication(configName);
         HashMap<String, String> result = new HashMap<>();
@@ -455,12 +500,12 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         }
         return result;
     }
-    
-    public Map<String,String> getClusteredPropertyMap() {
+
+    public Map<String, String> getClusteredPropertyMap() {
         Map<Serializable, Serializable> map = clusterStore.getMap(CLUSTERED_CONFIG_STORE);
-        HashMap<String,String> result = new HashMap<>();
+        HashMap<String, String> result = new HashMap<>();
         for (Serializable key : map.keySet()) {
-            result.put((String)key, (String)map.get(key));
+            result.put((String) key, (String) map.get(key));
         }
         return result;
     }
