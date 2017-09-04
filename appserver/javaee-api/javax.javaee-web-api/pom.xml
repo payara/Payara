@@ -206,5 +206,15 @@
             <artifactId>javax.inject</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>javax.security.auth.message</groupId>
+            <artifactId>javax.security.auth.message-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>javax.security.enterprise</groupId>
+            <artifactId>javax.security.enterprise-api</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
