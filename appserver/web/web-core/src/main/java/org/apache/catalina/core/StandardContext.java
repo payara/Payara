@@ -59,61 +59,144 @@
 
 package org.apache.catalina.core;
 
-import org.glassfish.grizzly.http.server.util.AlternateDocBase;
-import org.glassfish.grizzly.http.server.util.Mapper;
-import org.glassfish.grizzly.http.server.util.MappingData;
-import org.glassfish.pfl.basic.logex.Log;
-import org.apache.catalina.*;
-import org.apache.catalina.deploy.*;
-import org.apache.catalina.loader.WebappLoader;
-import org.apache.catalina.session.ManagerBase;
-import org.apache.catalina.session.PersistentManagerBase;
-import org.apache.catalina.session.StandardManager;
-import org.apache.catalina.servlets.DefaultServlet;
-import org.apache.catalina.startup.ContextConfig;
-import org.apache.catalina.util.*;
-import org.apache.naming.ContextBindings;
-import org.apache.naming.resources.BaseDirContext;
-import org.apache.naming.resources.DirContextURLStreamHandler;
-import org.apache.naming.resources.FileDirContext;
-import org.apache.naming.resources.WebDirContext;
-import org.apache.naming.resources.ProxyDirContext;
-import org.apache.naming.resources.Resource;
-import org.apache.naming.resources.WARDirContext;
-import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.web.loader.WebappClassLoader;
-import org.glassfish.web.loader.ServletContainerInitializerUtil;
-import org.glassfish.web.valve.GlassFishValve;
+import static java.text.MessageFormat.format;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static org.apache.catalina.ContainerEvent.AFTER_CONTEXT_INITIALIZER_ON_STARTUP;
+import static org.apache.catalina.ContainerEvent.BEFORE_CONTEXT_INITIALIZER_ON_STARTUP;
+import static org.apache.catalina.LogFacade.INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION;
 
-import javax.management.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URLDecoder;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+
+import javax.management.MBeanRegistrationException;
+import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
 import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterConfig;
+import javax.servlet.FilterRegistration;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextAttributeListener;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletRequestAttributeListener;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.SingleThreadModel;
 import javax.servlet.descriptor.JspConfigDescriptor;
+import javax.servlet.http.HttpServletMapping;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionIdListener;
 import javax.servlet.http.HttpSessionListener;
 import javax.servlet.http.HttpUpgradeHandler;
 
-import static java.util.logging.Level.FINE;
-
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URLDecoder;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.text.MessageFormat;
-import java.util.*;
-import javax.servlet.http.HttpServletMapping;
+import org.apache.catalina.Auditor;
+import org.apache.catalina.Authenticator;
+import org.apache.catalina.Container;
+import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.ContainerListener;
+import org.apache.catalina.Context;
+import org.apache.catalina.Globals;
+import org.apache.catalina.Host;
+import org.apache.catalina.InstanceListener;
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleListener;
+import org.apache.catalina.Loader;
+import org.apache.catalina.LogFacade;
+import org.apache.catalina.Pipeline;
+import org.apache.catalina.Server;
+import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.MappingImpl;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
+import org.apache.catalina.deploy.ApplicationParameter;
+import org.apache.catalina.deploy.ContextEjb;
+import org.apache.catalina.deploy.ContextEnvironment;
+import org.apache.catalina.deploy.ContextLocalEjb;
+import org.apache.catalina.deploy.ContextResource;
+import org.apache.catalina.deploy.ContextResourceLink;
+import org.apache.catalina.deploy.ErrorPage;
+import org.apache.catalina.deploy.FilterDef;
+import org.apache.catalina.deploy.FilterMap;
+import org.apache.catalina.deploy.FilterMaps;
+import org.apache.catalina.deploy.LoginConfig;
+import org.apache.catalina.deploy.MessageDestination;
+import org.apache.catalina.deploy.MessageDestinationRef;
+import org.apache.catalina.deploy.NamingResources;
+import org.apache.catalina.deploy.ResourceParams;
+import org.apache.catalina.deploy.SecurityCollection;
+import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.deploy.ServletMap;
+import org.apache.catalina.loader.WebappLoader;
+import org.apache.catalina.servlets.DefaultServlet;
+import org.apache.catalina.session.ManagerBase;
+import org.apache.catalina.session.PersistentManagerBase;
+import org.apache.catalina.session.StandardManager;
+import org.apache.catalina.startup.ContextConfig;
+import org.apache.catalina.util.CharsetMapper;
+import org.apache.catalina.util.CustomObjectInputStream;
+import org.apache.catalina.util.ExtensionValidator;
+import org.apache.catalina.util.RequestUtil;
+import org.apache.catalina.util.URLEncoder;
+import org.apache.naming.ContextBindings;
+import org.apache.naming.resources.BaseDirContext;
+import org.apache.naming.resources.DirContextURLStreamHandler;
+import org.apache.naming.resources.FileDirContext;
+import org.apache.naming.resources.ProxyDirContext;
+import org.apache.naming.resources.Resource;
+import org.apache.naming.resources.WARDirContext;
+import org.apache.naming.resources.WebDirContext;
+import org.glassfish.grizzly.http.server.util.AlternateDocBase;
+import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.web.loader.ServletContainerInitializerUtil;
+import org.glassfish.web.loader.WebappClassLoader;
+import org.glassfish.web.valve.GlassFishValve;
 
 /**
  * Standard implementation of the <b>Context</b> interface.  Each
@@ -5697,27 +5780,30 @@ public class StandardContext
         // only within the scope of ServletContainerInitializer#onStartup
         isProgrammaticServletContextListenerRegistrationAllowed = true;
 
-        // We have the list of initializers and the classes that satisfy
-        // the condition. Time to call the initializers
+        // We have the list of initializers and the classes that satisfy the condition. 
+        // Time to call the initializers
         ServletContext ctxt = this.getServletContext();
         try {
-            for (Map.Entry<Class<? extends ServletContainerInitializer>, Set<Class<?>>> e :
-                    initializerList.entrySet()) {
+            for (Map.Entry<Class<? extends ServletContainerInitializer>, Set<Class<?>>> e : initializerList.entrySet()) {
                 Class<? extends ServletContainerInitializer> initializer = e.getKey();
 
                 try {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, "Calling ServletContainerInitializer [" + initializer
-                                + "] onStartup with classes " + e.getValue());
+                    if (log.isLoggable(FINE)) {
+                        log.log(FINE, 
+                            "Calling ServletContainerInitializer [" + initializer + "] onStartup with classes " + e.getValue());
                     }
-                    ServletContainerInitializer iniInstance =
-                        initializer.newInstance();
-                    iniInstance.onStartup(
-                        initializerList.get(initializer), ctxt);
+                    ServletContainerInitializer iniInstance = initializer.newInstance();
+                    
+                    fireContainerEvent(BEFORE_CONTEXT_INITIALIZER_ON_STARTUP, iniInstance);
+                    
+                    iniInstance.onStartup(initializerList.get(initializer), ctxt);
+                    
+                    fireContainerEvent(AFTER_CONTEXT_INITIALIZER_ON_STARTUP, iniInstance);
                 } catch (Throwable t) {
-                    String msg = MessageFormat.format(rb.getString(LogFacade.INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION),
-                                                      initializer.getCanonicalName());
-                    log.log(Level.SEVERE, msg, t);
+                    log.log(SEVERE, 
+                        format(rb.getString(INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION), initializer.getCanonicalName()), 
+                        t
+                    );
                     throw new LifecycleException(t);
                 }
             }
@@ -5726,9 +5812,7 @@ public class StandardContext
         }
     }
 
-    public void setServletContainerInitializerInterestList(
-            Iterable<ServletContainerInitializer> initializers)
- {
+    public void setServletContainerInitializerInterestList(Iterable<ServletContainerInitializer> initializers) {
         servletContainerInitializers = initializers;
     }
 
