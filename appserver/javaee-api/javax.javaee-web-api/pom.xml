@@ -41,20 +41,21 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>javaee-api-parent</artifactId>
         <version>5.0.0.174-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>javaee-web-api</artifactId>
     <name>Java(TM) EE 7 Web Specification APIs</name>
     <description>Java(TM) EE 7 Web Specification APIs</description>
     
     <developers>
         <developer>
-            <id>shannon</id>
+            <id>bshannon</id>
             <name>Bill Shannon</name>
             <organization>Oracle Corp.</organization>
             <roles>
@@ -78,18 +79,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>process-license</id>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>            
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
