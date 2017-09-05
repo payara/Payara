@@ -80,24 +80,21 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
         return desiredType.isAssignableFrom(type);
     }
 
+    /**
+     * Returns the content of the {@link ActionReporter} in Json format as a {@link String}.
+     * @param ar
+     * @return 
+     */
     @Override
     public String getContent(ActionReporter ar) {
-        String JsonP=getCallBackJSONP();
+        String JsonP = getCallBackJSONP();
         try {
             JsonObject result = processReport(ar);
-            int indent = getFormattingIndentLevel();
-            if (indent > -1) {
-                if (JsonP==null){
-                    return result.toString();
-                }else{
-                    return JsonP +"("+result.toString()+")";
-                }
+            
+            if (JsonP == null) {
+                return result.toString();
             } else {
-                if (JsonP==null){
-                    return result.toString();
-                }else{
-                    return JsonP +"("+result.toString()+")";
-                }
+                return JsonP + "(" + result.toString() + ")";
             }
         } catch (JsonException ex) {
             ex.printStackTrace();
@@ -110,16 +107,16 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
         result.add("message", (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : decodeEol(ar.getMessage()));
         result.add("command", ar.getActionDescription());
         result.add("exit_code", ar.getActionExitCode().toString());
-
+        
         Properties properties = ar.getTopMessagePart().getProps();
         if ((properties != null) && (!properties.isEmpty())) {
-            JsonObjectBuilder propBuilder = Json.createObjectBuilder((Map)properties);
-            result.addAll(propBuilder);
+            JsonObject propBuilder = Json.createObjectBuilder((Map)properties).build();
+            result.add("properties", propBuilder);
         }
-
+       
         Properties extraProperties = ar.getExtraProperties();
         if ((extraProperties != null) && (!extraProperties.isEmpty())) {
-            result.add("extraProperties", getExtraProperties(result.build(), extraProperties));
+            result.add("extraProperties", getExtraProperties(extraProperties));
         }
 
         List<MessagePart> children = ar.getTopMessagePart().getChildren();
@@ -151,7 +148,7 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
             if (children.size() > 0) {
                 object.add("children", processChildren(part.getChildren()));
             }
-            array.add(object);
+            array.add(object.build());
         }
 
         return array.build();
@@ -167,11 +164,11 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
         return array.build();
     }
 
-    protected JsonObject getExtraProperties(JsonObject object, Properties props) throws JsonException {
+    protected JsonObject getExtraProperties(Properties props) throws JsonException {
         JsonObjectBuilder extraProperties = Json.createObjectBuilder();
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String key = entry.getKey().toString();
-            Object value = JsonUtil.getJsonObject(entry.getValue());
+            Object value = JsonUtil.getJsonValue(entry.getValue());
             extraProperties.add(key, JsonUtil.getJsonValue(value));
         }
 

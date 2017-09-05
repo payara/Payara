@@ -336,7 +336,6 @@ public class CompositeUtil {
 
         for (int i = 0; i < array.size(); i++) {
             JsonValue element = array.get(i);
-            System.out.println("element is of type " + element.getClass().getCanonicalName());
             if (JsonObject.class.isAssignableFrom(element.getClass())) {
                 if (isArray) {
                     Array.set(values, i, unmarshallClass(locale, (Class) type, (JsonObject) element));
@@ -371,7 +370,6 @@ public class CompositeUtil {
                     }
                     
                 } else {
-                    ValueType jsonvalue = element.getValueType();
                     ((List)values).add(element);
                 }
             }

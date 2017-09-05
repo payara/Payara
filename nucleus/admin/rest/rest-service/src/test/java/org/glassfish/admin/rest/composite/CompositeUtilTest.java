@@ -81,7 +81,6 @@ public class CompositeUtilTest {
         parser.next();
         JsonObject o = parser.getObject();
         BaseModel model = CompositeUtil.instance().unmarshallClass(locale, BaseModel.class, o);
-        System.out.println();
 
         Assert.assertEquals(model.getName(), "testModel");
         Assert.assertEquals(model.getRelated().size(), 2);

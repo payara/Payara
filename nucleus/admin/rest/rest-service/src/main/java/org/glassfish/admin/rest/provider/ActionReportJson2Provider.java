@@ -68,6 +68,9 @@ public class ActionReportJson2Provider extends ActionReportJsonProvider {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder(result);
         String combinedMessage = result.getString("message", "");
         String msg = decodeEol(ar.getTopMessagePart().getMessage());
+        System.err.println("AcionReport combinedMessage: " + combinedMessage);
+        System.err.println("ActionReport msg output: " + msg);
+
         if (combinedMessage != null && !combinedMessage.equals(msg)) {
             if (msg != null){
                 objectBuilder.add("top_message", msg);
