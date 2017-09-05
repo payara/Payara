@@ -70,6 +70,14 @@
            <groupId>org.apache.felix</groupId>
            <artifactId>org.apache.felix.gogo.command</artifactId>
         </dependency>
+        <!-- 
+            Needed by OSGiShellCommand as a fallback. Dynamically imported but Felix
+            checks for it anyway. Doesn't seem to be actually used.
+         -->
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.shell</artifactId>
+        </dependency>
         <!-- We install fileinstall bundle which monitors modules
               dir and autodeploy dir for addition/removal/updation of bundles -->
         <dependency>

@@ -12,3 +12,10 @@ target/
 gfbuild.log
 /nucleus/payara-modules/requesttracing-core/nbproject/
 nb-configuration.xml
+/appserver/tests/quicklook/classes/
+/appserver/tests/quicklook/dist/
+/appserver/tests/quicklook/test-output/
+/appserver/tests/quicklook/*.output
+/appserver/tests/quicklook/*.log
+/appserver/tests/quicklook/**/*.war
+
