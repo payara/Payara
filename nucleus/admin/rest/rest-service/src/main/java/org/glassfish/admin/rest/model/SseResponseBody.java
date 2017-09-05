@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.model;
 
@@ -43,8 +45,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 /**
  *
@@ -76,21 +80,21 @@ public class SseResponseBody extends ResponseBody {
     }
 
     @Override
-    public JSONObject toJson() throws JSONException {
-        JSONObject json = super.toJson();
+    public JsonObject toJson() throws JsonException {
+        JsonObjectBuilder json = Json.createObjectBuilder(super.toJson());
 
         if (!headers.isEmpty()) {
-            JSONObject o = new JSONObject();
+            JsonObjectBuilder o = Json.createObjectBuilder();
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
                 final String key = entry.getKey();
                 for (String value : entry.getValue()) {
-                    o.accumulate(key, value);
+                    o.add(key, value);
                 }
             }
-            json.accumulate("headers", o);
+            json.add("headers", o);
         }
 
-        return json;
+        return json.build();
     }
 
 

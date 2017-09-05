@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite.metadata;
 
@@ -44,16 +46,18 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MultivaluedHashMap;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.OptionsCapable;
+import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
  *
@@ -123,24 +127,24 @@ public class RestResourceMetadata {
         return a;
     }
 
-    public JSONObject toJson() throws JSONException {
-        JSONObject o = new JSONObject();
+    public JsonObject toJson() throws JsonException {
+        JsonObjectBuilder o = Json.createObjectBuilder();
 
         if (!resourceMethods.isEmpty()) {
-            final JSONObject methods = new JSONObject();
+            final JsonObjectBuilder methods = Json.createObjectBuilder();
             for (String key : resourceMethods.keySet()) {
                 for (RestMethodMetadata rmm : resourceMethods.get(key)) {
-                    methods.accumulate(key, rmm.toJson());
+                    methods.add(key, rmm.toJson());
                 }
             }
 
-            o.accumulate("resourceMethods", methods);
+            o.add("resourceMethods", methods);
         }
 
         if (!subResources.isEmpty()) {
-            o.put("subResources", subResources);
+            o.add("subResources", JsonUtil.getJsonValue(subResources));
         }
 
-        return o;
+        return o.build();
     }
 }

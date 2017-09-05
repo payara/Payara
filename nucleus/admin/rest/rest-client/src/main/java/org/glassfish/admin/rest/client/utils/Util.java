@@ -52,6 +52,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.stream.JsonParser;
 import org.glassfish.api.logging.LogHelper;
 
 /**
@@ -63,7 +64,12 @@ public class Util {
     public static Map<String, Object> processJsonMap(String json) {
         Map<String, Object> map;
         try {
-            map = processJsonObject(Json.createParser(new StringReader(json)).getObject());
+            JsonParser parser = Json.createParser(new StringReader(json));
+            if (parser.hasNext()){
+                 map = processJsonObject(parser.getObject());
+            } else {
+                map = new HashMap<String, Object>();
+            }
         } catch (JsonException e) {
             map = new HashMap();
         }

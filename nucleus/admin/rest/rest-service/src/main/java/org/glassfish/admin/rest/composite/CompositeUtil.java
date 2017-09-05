@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2017] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -66,6 +66,14 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.security.auth.Subject;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -77,9 +85,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
@@ -252,36 +257,46 @@ public class CompositeUtil {
     }
 
     /**
-     * Convert the given <code>RestModel</code> encoded as JSON to a live Java Object.
+     * Convert the given <code>RestModel</code> encoded as Json to a live Java Object.
      *
+     * @param locale
      * @param modelClass The target <code>RestModel</code> type
      * @param json       The json encoding of the object
      * @return
      */
-    public <T> T unmarshallClass(Locale locale, Class<T> modelClass, JSONObject json) throws JSONException {
+    public <T> T unmarshallClass(Locale locale, Class<T> modelClass, JsonObject json) throws JsonException {
         T model = getModel(modelClass);
         for (Method setter : getSetters(modelClass)) {
             String name = setter.getName();
             String attribute = name.substring(3, 4).toLowerCase(Locale.getDefault()) + name.substring(4);
             Type param0 = setter.getGenericParameterTypes()[0];
             Class class0 = setter.getParameterTypes()[0];
-            if (json.has(attribute)) {
+            if (json.containsKey(attribute)) {
                 java.lang.Object o = json.get(attribute);
-                if (JSONArray.class.isAssignableFrom(o.getClass())) {
-                    Object values = processJsonArray(locale, param0, (JSONArray) o);
+                if (JsonArray.class.isAssignableFrom(o.getClass())) {
+                    Object values = processJsonArray(locale, param0, (JsonArray) o);
                     invoke(locale, setter, attribute, model, values);
-                } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
-                    invoke(locale, setter, attribute, model, unmarshallClass(locale, class0, (JSONObject) o));
+                } else if (JsonObject.class.isAssignableFrom(o.getClass())) {
+                    invoke(locale, setter, attribute, model, unmarshallClass(locale, class0, (JsonObject) o));
+                } else if (JsonString.class.isAssignableFrom(o.getClass())){
+                    System.out.println(o);
+                    invoke(locale, setter, attribute, model, ((JsonString)o).getString());
+                } else if (JsonNumber.class.isAssignableFrom(o.getClass())){
+                    invoke(locale, setter, attribute, model, ((JsonNumber) o).numberValue());
                 } else {
                     if ("null".equals(o.toString())) {
                         o = null;
+                    } else if ("true".equals(o.toString())){
+                        o = true;
+                    } else if ("false".equals(o.toString())) {
+                        o = false;
                     }
                     if (!isUnmodifiedConfidentialProperty(modelClass, name, o)) {
                         invoke(locale, setter, attribute, model, o);
+                        }
                     }
                 }
             }
-        }
         return model;
     }
 
@@ -297,7 +312,15 @@ public class CompositeUtil {
         return JsonUtil.isConfidentialProperty(modelClass, getterMethodName);
     }
 
-    private Object processJsonArray(Locale locale, Type param0, JSONArray array) throws JSONException {
+    /**
+     * Turns a JsonArray into an array or a list of the unboxed type it contains
+     * @param locale
+     * @param param0 The type of the array or list to create i.e. java.lang.String
+     * @param array
+     * @return
+     * @throws JsonException 
+     */
+    private Object processJsonArray(Locale locale, Type param0, JsonArray array) throws JsonException {
         Type type;
         boolean isArray = false;
         if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
@@ -308,21 +331,47 @@ public class CompositeUtil {
         }
         // TODO: We either have a List<T> or T[]. While this works, perhaps we should only support List<T>. It's cleaner.
         Object values = isArray ?
-                Array.newInstance((Class<?>) type, array.length()) :
+                Array.newInstance((Class<?>) type, array.size()) :
                 new ArrayList();
 
-        for (int i = 0; i < array.length(); i++) {
-            Object element = array.get(i);
-            if (JSONObject.class.isAssignableFrom(element.getClass())) {
+        for (int i = 0; i < array.size(); i++) {
+            JsonValue element = array.get(i);
+            System.out.println("element is of type " + element.getClass().getCanonicalName());
+            if (JsonObject.class.isAssignableFrom(element.getClass())) {
                 if (isArray) {
-                    Array.set(values, i, unmarshallClass(locale, (Class) type, (JSONObject) element));
+                    Array.set(values, i, unmarshallClass(locale, (Class) type, (JsonObject) element));
                 } else {
-                    ((List)values).add(unmarshallClass(locale, (Class) type, (JSONObject) element));
+                    ((List)values).add(unmarshallClass(locale, (Class) type, (JsonObject) element));
                 }
             } else {
                 if (isArray) {
-                    Array.set(values, i, element);
+                    ValueType jsonvalue = element.getValueType();
+                    switch (jsonvalue){
+                        case STRING:
+                            Array.set(values, i, element.toString());
+                            break;
+                        case NUMBER:
+                            Array.set(values, i, ((JsonNumber)element).numberValue());
+                            break;
+                        case NULL:
+                            Array.set(values, i, null);
+                            break;
+                        case TRUE:
+                            Array.set(values, i, true);
+                            break;
+                        case FALSE:
+                            Array.set(values, i, false);
+                            break;
+                        case ARRAY:
+                            Array.set(values, i, processJsonArray(locale, param0, (JsonArray) element));
+                            break;
+                        default:
+                            //Should never get here
+                            throw new JsonException("Json Element " + element + "not valid valuetype: " + jsonvalue);
+                    }
+                    
                 } else {
+                    ValueType jsonvalue = element.getValueType();
                     ((List)values).add(element);
                 }
             }

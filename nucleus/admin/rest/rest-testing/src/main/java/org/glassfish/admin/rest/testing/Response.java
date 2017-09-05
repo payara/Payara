@@ -45,6 +45,8 @@ package org.glassfish.admin.rest.testing;
 import java.io.StringReader;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import static org.glassfish.admin.rest.testing.Common.*;
 
 public class Response {
@@ -85,7 +87,13 @@ public class Response {
     }
 
     public JsonObject getJsonBody() throws Exception {
-        return Json.createParser(new StringReader(getStringBody())).getObject();
+        JsonParser parser = Json.createParser(new StringReader(getStringBody()));
+        if (parser.hasNext()){
+            parser.next();
+            return parser.getObject();
+        } else {
+            return JsonValue.EMPTY_JSON_OBJECT;
+        }
     }
 
     public JsonObject getItem() throws Exception {

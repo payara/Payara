@@ -36,19 +36,22 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foudation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonObjectBuilder;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.ext.Provider;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
@@ -73,28 +76,28 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
         boolean wrapObject = ((wrapObjectHeader != null) && (wrapObjectHeader.size() > 0));
         boolean skipMetadata = ((skipMetadataHeader != null) && (skipMetadataHeader.get(0).equalsIgnoreCase("true")));
 
-        JSONArray models = new JSONArray();
-        JSONArray metadata = new JSONArray();
+        JsonArrayBuilder models = Json.createArrayBuilder();
+        JsonArrayBuilder metadata = Json.createArrayBuilder();
         for (Map.Entry<RestModelMetadata, RestModel> entry : (Set<Map.Entry<RestModelMetadata, RestModel>>)proxy.entrySet()) {
             try {
-                models.put(JsonUtil.getJsonObject(entry.getValue()));
+                models.add(JsonUtil.getJsonValue(entry.getValue()));
 
                 RestModelMetadata md = entry.getKey();
-                JSONObject mdo = new JSONObject();
-                mdo.put("id", md.getId());
-                metadata.put(mdo);
-            } catch (JSONException e) {
+                JsonObjectBuilder mdo = Json.createObjectBuilder();
+                mdo.add("id", md.getId());
+                metadata.add(mdo);
+            } catch (JsonException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
-        JSONObject response = new JSONObject();
+        JsonObjectBuilder response = Json.createObjectBuilder();
         try {
-            response.put("items", models);
+            response.add("items", models);
             if (!skipMetadata) {
-                response.put("metadata", metadata);
+                response.add("metadata", metadata);
             }
-            sb.append(response.toString(getFormattingIndentLevel()));
-        } catch (JSONException e) {
+            sb.append(response.toString());
+        } catch (JsonException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 

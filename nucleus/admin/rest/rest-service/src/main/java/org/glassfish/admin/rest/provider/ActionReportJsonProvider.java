@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.provider;
@@ -46,12 +48,16 @@ import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.utils.JsonUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.MessagePart;
@@ -76,93 +82,100 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
 
     @Override
     public String getContent(ActionReporter ar) {
-        String JSONP=getCallBackJSONP();
+        String JsonP=getCallBackJSONP();
         try {
-            JSONObject result = processReport(ar);
+            JsonObject result = processReport(ar);
             int indent = getFormattingIndentLevel();
             if (indent > -1) {
-                if (JSONP==null){
-                    return result.toString(indent);
-                }else{
-                    return JSONP +"("+result.toString(indent)+")";
-                }
-            } else {
-                if (JSONP==null){
+                if (JsonP==null){
                     return result.toString();
                 }else{
-                    return JSONP +"("+result.toString()+")";
+                    return JsonP +"("+result.toString()+")";
+                }
+            } else {
+                if (JsonP==null){
+                    return result.toString();
+                }else{
+                    return JsonP +"("+result.toString()+")";
                 }
             }
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
+            ex.printStackTrace();
             throw new RuntimeException(ex);
         }
     }
 
-    protected JSONObject processReport(ActionReporter ar) throws JSONException {
-        JSONObject result = new JSONObject();
-        result.put("message", (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : decodeEol(ar.getMessage()));
-        result.put("command", ar.getActionDescription());
-        result.put("exit_code", ar.getActionExitCode());
+    protected JsonObject processReport(ActionReporter ar) throws JsonException {
+        JsonObjectBuilder result = Json.createObjectBuilder();
+        result.add("message", (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : decodeEol(ar.getMessage()));
+        result.add("command", ar.getActionDescription());
+        result.add("exit_code", ar.getActionExitCode().toString());
 
         Properties properties = ar.getTopMessagePart().getProps();
         if ((properties != null) && (!properties.isEmpty())) {
-            result.put("properties", properties);
+            JsonObjectBuilder propBuilder = Json.createObjectBuilder((Map)properties);
+            result.addAll(propBuilder);
         }
 
         Properties extraProperties = ar.getExtraProperties();
         if ((extraProperties != null) && (!extraProperties.isEmpty())) {
-            result.put("extraProperties", getExtraProperties(result, extraProperties));
+            result.add("extraProperties", getExtraProperties(result.build(), extraProperties));
         }
 
         List<MessagePart> children = ar.getTopMessagePart().getChildren();
         if ((children != null) && (!children.isEmpty())) {
-            result.put("children", processChildren(children));
+            result.add("children", processChildren(children));
         }
 
         List<ActionReporter> subReports = ar.getSubActionsReport();
         if ((subReports != null) && (!subReports.isEmpty())) {
-            result.put("subReports", processSubReports(subReports));
+            result.add("subReports", processSubReports(subReports));
         }
 
-        return result;
+        return result.build();
     }
 
-    protected JSONArray processChildren(List<MessagePart> parts) throws JSONException {
-        JSONArray array = new JSONArray();
+    protected JsonArray processChildren(List<MessagePart> parts) throws JsonException {
+        JsonArrayBuilder array = Json.createArrayBuilder();
 
         for (MessagePart part : parts) {
-            JSONObject object = new JSONObject();
-            object.put("message", decodeEol(part.getMessage()));
-            object.put("properties", part.getProps());
+            JsonObjectBuilder object = Json.createObjectBuilder();
+            String message = decodeEol(part.getMessage());
+            if (message != null){
+                object.add("message", decodeEol(part.getMessage()));
+            } else {
+                 object.add("message", JsonValue.NULL);
+            }
+            object.add("properties", Json.createObjectBuilder((Map)part.getProps()).build());
             List<MessagePart> children = part.getChildren();
             if (children.size() > 0) {
-                object.put("children", processChildren(part.getChildren()));
+                object.add("children", processChildren(part.getChildren()));
             }
-            array.put(object);
+            array.add(object);
         }
 
-        return array;
+        return array.build();
     }
 
-    protected JSONArray processSubReports(List<ActionReporter> subReports) throws JSONException {
-        JSONArray array = new JSONArray();
+    protected JsonArray processSubReports(List<ActionReporter> subReports) throws JsonException {
+        JsonArrayBuilder array = Json.createArrayBuilder();
 
         for (ActionReporter subReport : subReports) {
-            array.put(processReport(subReport));
+            array.add(processReport(subReport));
         }
 
-        return array;
+        return array.build();
     }
 
-    protected JSONObject getExtraProperties(JSONObject object, Properties props) throws JSONException {
-        JSONObject extraProperties = new JSONObject();
+    protected JsonObject getExtraProperties(JsonObject object, Properties props) throws JsonException {
+        JsonObjectBuilder extraProperties = Json.createObjectBuilder();
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String key = entry.getKey().toString();
             Object value = JsonUtil.getJsonObject(entry.getValue());
-            extraProperties.put(key, value);
+            extraProperties.add(key, JsonUtil.getJsonValue(value));
         }
 
-        return extraProperties;
+        return extraProperties.build();
     }
 
     protected <T> T getFieldValue(final ActionReporter ar, final String name, final T type) {

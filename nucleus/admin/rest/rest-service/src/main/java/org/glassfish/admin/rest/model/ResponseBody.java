@@ -36,15 +36,15 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.model;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.*;
 
 public class ResponseBody {
     public static final String EVENT_NAME="response/body";
@@ -146,27 +146,27 @@ public class ResponseBody {
         return this;
     }
 
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        populateJson(object);
-        return object;
+    public JsonObject toJson() throws JsonException {        
+        JsonObject jsonobject = JsonObject.EMPTY_JSON_OBJECT;
+        populateJson(jsonobject);
+        return jsonobject;
     }
 
-    protected void populateJson(JSONObject object) throws JSONException {
+    protected void populateJson(JsonObject object) throws JsonException {
         if (!getMessages().isEmpty()) {
-            JSONArray array = new JSONArray();
+            JsonArrayBuilder array = Json.createArrayBuilder();
             for (Message message : getMessages()) {
-                array.put(message.toJson());
+                array.add(message.toJson());
             }
-            object.put("messages", array);
+            object.put("messages", array.build());
         }
         if (includeResourceLinks) {
             if (!getResourceLinks().isEmpty()) {
-                JSONArray array = new JSONArray();
+                JsonArrayBuilder array = Json.createArrayBuilder();
                 for (ResourceLink link : getResourceLinks()) {
-                    array.put(link.toJson());
+                    array.add(link.toJson());
                 }
-                object.put("resources", array);
+                object.put("resources", array.build());
             }
         }
     }

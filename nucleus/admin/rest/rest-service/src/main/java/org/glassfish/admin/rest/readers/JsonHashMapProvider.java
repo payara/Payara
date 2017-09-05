@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -46,15 +48,17 @@ import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.Iterator;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  * @author Ludovic Champenois
@@ -74,31 +78,35 @@ public class JsonHashMapProvider implements MessageBodyReader<HashMap<String, St
             InputStream in) throws IOException {
         HashMap map = new HashMap();
         try {
-            JSONObject obj = new JSONObject(inputStreamAsString(in));
-            Iterator  iter=obj.keys();
-
-            while (iter.hasNext()){
-                String k = (String) iter.next();
+            JsonParser parser = Json.createParser(in);
+            JsonObject obj;
+            if (parser.hasNext()){
+                parser.next();
+                obj = parser.getObject();
+            } else {
+                obj = JsonValue.EMPTY_JSON_OBJECT;
+            }
+            
+            for (String k : obj.keySet()) {
                 map.put(k, ""+obj.get(k));
-              
             }
             return map;
 
-        } catch (IOException | JSONException ex) {
+        } catch (JsonException ex) {
 //            map.put("error", "Entity Parsing Error: " + ex.getMessage());
             return map;
         }
     }
 
     public static String inputStreamAsString(InputStream stream) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
+        StringBuilder sb;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(stream))) {
+            sb = new StringBuilder();
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
         }
-        br.close();
         return sb.toString();
     }
 }

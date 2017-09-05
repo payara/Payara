@@ -36,22 +36,27 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.provider;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.results.GetResultList;
 import org.jvnet.hk2.config.Dom;
-
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonValue;
 import org.glassfish.admin.rest.RestLogging;
 
 import static org.glassfish.admin.rest.provider.ProviderUtil.*;
@@ -72,40 +77,40 @@ public class GetResultListJsonProvider extends BaseProvider<GetResultList> {
 
     @Override
     public String getContent(GetResultList proxy) {
-        JSONObject obj = new JSONObject();
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         try {
-            obj.put(KEY_ENTITY, new JSONObject());
-            obj.put(KEY_METHODS, getJsonForMethodMetaData(proxy.getMetaData()));
+            objectBuilder.add(KEY_ENTITY, JsonValue.EMPTY_JSON_OBJECT);
+            objectBuilder.add(KEY_METHODS, getJsonForMethodMetaData(proxy.getMetaData()));
             if (proxy.getDomList().size() > 0) {
-                obj.put(KEY_CHILD_RESOURCES, getResourcesLinks(proxy.getDomList()));
+                objectBuilder.add(KEY_CHILD_RESOURCES, getResourcesLinks(proxy.getDomList()));
             }
             if (proxy.getCommandResourcesPaths().length > 0) {
-                obj.put(KEY_COMMANDS, getCommandLinks(proxy.getCommandResourcesPaths()));
+                objectBuilder.add(KEY_COMMANDS, getCommandLinks(proxy.getCommandResourcesPaths()));
             }
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 
-        return obj.toString();
+        return objectBuilder.build().toString();
     }
 
-    private JSONArray getResourcesLinks(List<Dom> proxyList) {
-        JSONArray array = new JSONArray();
+    private JsonArray getResourcesLinks(List<Dom> proxyList) {
+        JsonArrayBuilder array = Json.createArrayBuilder();
         String elementName;
         for (Map.Entry<String, String> link : getResourceLinks(proxyList).entrySet()) {
-             array.put(link.getValue());
+             array.add(link.getValue());
         }
-        return array;
+        return array.build();
     }
 
-    private JSONArray getCommandLinks(String[][] commandResourcesPaths) throws JSONException {
-        JSONArray array = new JSONArray();
+    private JsonArray getCommandLinks(String[][] commandResourcesPaths) throws JsonException {
+        JsonArrayBuilder array = Json.createArrayBuilder();
 
         //TODO commandResourcePath is two dimensional array. It seems the second e.x. see DomainResource#getCommandResourcesPaths().
         //The second dimension POST/GET etc. does not seem to be used. Discussed with Ludo. Need to be removed in a separate checkin.
         for (String[] commandResourcePath : commandResourcesPaths) {
-            array.put(getElementLink(uriInfo.get(), commandResourcePath[0]));
+            array.add(getElementLink(uriInfo.get(), commandResourcePath[0]));
         }
-        return array;
+        return array.build();
     }
 }
