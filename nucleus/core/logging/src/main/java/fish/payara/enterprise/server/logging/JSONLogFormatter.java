@@ -1,16 +1,42 @@
 /*
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-Copyright (c) 2016 Payara Foundation. All rights reserved.
-The contents of this file are subject to the terms of the Common Development
-and Distribution License("CDDL") (collectively, the "License").  You
-may not use this file except in compliance with the License.  You can
-obtain a copy of the License at
-https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-or packager/legal/LICENSE.txt.  See the License for the specific
-language governing permissions and limitations under the License.
-When distributing the software, include this License Header Notice in each
-file and include the License file at packager/legal/LICENSE.txt.
-*/
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
@@ -33,13 +59,15 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import org.glassfish.api.VersionInfo;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  *
@@ -168,7 +196,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private String jsonLogFormat(LogRecord record) {
         try {
             LogEventImpl logEvent = new LogEventImpl(); 
-            JSONObject eventObject = new JSONObject(); 
+            JsonObjectBuilder eventObject = Json.createObjectBuilder();
             
             /*
              * Create the timestamp field and append to object.
@@ -184,21 +212,21 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             date.setTime(record.getMillis());
             String timestampValue = dateFormatter.format(date);
             logEvent.setTimestamp(timestampValue);
-            eventObject.put(TIMESTAMP_KEY, timestampValue);
+            eventObject.add(TIMESTAMP_KEY, timestampValue);
 
             /*
              * Create the event level field and append to object.
              */
             Level eventLevel = record.getLevel();
             logEvent.setLevel(eventLevel.getName());
-            eventObject.put(LOG_LEVEL_KEY, String.valueOf(eventLevel));
+            eventObject.add(LOG_LEVEL_KEY, String.valueOf(eventLevel));
 
             /*
              * Get the product id and append to object.
              */
             productId = getProductId();
             logEvent.setComponentId(productId);
-            eventObject.put(PRODUCT_ID_KEY, productId);
+            eventObject.add(PRODUCT_ID_KEY, productId);
 
             /*
              * Get the logger name and append to object.
@@ -210,7 +238,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             }
 
             logEvent.setLogger(loggerName);
-            eventObject.put(LOGGER_NAME_KEY, loggerName);
+            eventObject.add(LOGGER_NAME_KEY, loggerName);
 
             /*
              * Get thread information and append to object if not excluded.
@@ -220,7 +248,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 // Thread ID
                 int threadId = record.getThreadID();
                 logEvent.setThreadId(threadId);
-                eventObject.put(THREAD_ID_KEY, String.valueOf(threadId));
+                eventObject.add(THREAD_ID_KEY, String.valueOf(threadId));
                 
                 // Thread Name
                 String threadName;
@@ -232,7 +260,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 }
 
                 logEvent.setThreadName(threadName);
-                eventObject.put(THREAD_NAME_KEY, threadName);
+                eventObject.add(THREAD_NAME_KEY, threadName);
             }
 
             /*
@@ -242,7 +270,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                     .SupplementalAttribute.USERID)) {
                 String userId = logEvent.getUser();
                 if (null != userId && !userId.isEmpty()) {
-                    eventObject.put(USER_ID_KEY, userId);
+                    eventObject.add(USER_ID_KEY, userId);
                 }
             }
 
@@ -253,7 +281,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                     .SupplementalAttribute.ECID)) {
                 String ecid = logEvent.getECId();
                 if (null != ecid && !ecid.isEmpty()) {
-                    eventObject.put(ECID_KEY, ecid);
+                    eventObject.add(ECID_KEY, ecid);
                 }
             }
 
@@ -264,7 +292,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                     .SupplementalAttribute.TIME_MILLIS)) {
                 Long timestamp = record.getMillis();
                 logEvent.setTimeMillis(timestamp);
-                eventObject.put(TIME_MILLIS_KEY, String.valueOf(timestamp));
+                eventObject.add(TIME_MILLIS_KEY, String.valueOf(timestamp));
             }
 
             /*
@@ -275,7 +303,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                     .SupplementalAttribute.LEVEL_VALUE)) {
                 int levelValue = level.intValue();
                 logEvent.setLevelValue(levelValue);
-                eventObject.put(LEVEL_VALUE_KEY, String.valueOf(levelValue));
+                eventObject.add(LEVEL_VALUE_KEY, String.valueOf(levelValue));
             }
 
             /*
@@ -284,7 +312,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             String messageId = getMessageId(record);
             if (messageId != null && !messageId.isEmpty()) {
                 logEvent.setMessageId(messageId);
-                eventObject.put(MESSAGE_ID_KEY, messageId);
+                eventObject.add(MESSAGE_ID_KEY, messageId);
             }
 
             /*
@@ -297,7 +325,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 if (null != sourceClassName && !sourceClassName.isEmpty()) {
                     logEvent.getSupplementalAttributes()
                             .put(CLASS_NAME, sourceClassName);
-                    eventObject.put(CLASS_NAME, sourceClassName);
+                    eventObject.add(CLASS_NAME, sourceClassName);
                 }
 
                 String sourceMethodName = record.getSourceMethodName();
@@ -305,7 +333,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 if (null != sourceMethodName && !sourceMethodName.isEmpty()) {
                     logEvent.getSupplementalAttributes()
                             .put(METHOD_NAME, sourceMethodName);
-                    eventObject.put(METHOD_NAME, sourceMethodName);
+                    eventObject.add(METHOD_NAME, sourceMethodName);
                 }
             }
 
@@ -316,7 +344,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 recordNumber++;
                 logEvent.getSupplementalAttributes()
                         .put(RECORD_NUMBER, recordNumber);
-                eventObject.put(RECORD_NUMBER, String.valueOf(recordNumber));
+                eventObject.add(RECORD_NUMBER, String.valueOf(recordNumber));
             }
 
             if (null != _delegate) {
@@ -331,13 +359,13 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 if (null != throwable) {
                     try (StringWriter stringWriter = new StringWriter(); 
                          PrintWriter printWriter = new PrintWriter(stringWriter)) {
-                        JSONObject traceObject = new JSONObject(); 
+                        JsonObjectBuilder traceObject = Json.createObjectBuilder();
                         throwable.printStackTrace(printWriter);
                         logMessage = stringWriter.toString();
-                        traceObject.put(EXCEPTION_KEY, throwable.getMessage());
-                        traceObject.put(STACK_TRACE_KEY, logMessage);
+                        traceObject.add(EXCEPTION_KEY, throwable.getMessage());
+                        traceObject.add(STACK_TRACE_KEY, logMessage);
                         logEvent.setMessage(logMessage);
-                        eventObject.put(LOG_MESSAGE_KEY, traceObject);
+                        eventObject.add(LOG_MESSAGE_KEY, traceObject.build());
                     }
                 } 
             } else {
@@ -366,23 +394,23 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 if (null != throwable) {
                     try (StringWriter stringWriter = new StringWriter(); 
                          PrintWriter printWriter = new PrintWriter(stringWriter)) {
-                        JSONObject traceObject = new JSONObject();
+                        JsonObjectBuilder traceObject =Json.createObjectBuilder();
                         throwable.printStackTrace(printWriter);
                         logMessage = stringWriter.toString();
-                        traceObject.put(EXCEPTION_KEY, logMessageBuilder.toString());
-                        traceObject.put(STACK_TRACE_KEY, logMessage);
+                        traceObject.add(EXCEPTION_KEY, logMessageBuilder.toString());
+                        traceObject.add(STACK_TRACE_KEY, logMessage);
                         logEvent.setMessage(logMessage);
-                        eventObject.put(LOG_MESSAGE_KEY, traceObject);
+                        eventObject.add(LOG_MESSAGE_KEY, traceObject.build());
                     }
                 } else {
                     logMessage = logMessageBuilder.toString();
                     logEvent.setMessage(logMessage);
-                    eventObject.put(LOG_MESSAGE_KEY, logMessage);
+                    eventObject.add(LOG_MESSAGE_KEY, logMessage);
                 }
             }
 
             informLogEventListeners(logEvent); 
-            return eventObject.toString() + LINE_SEPARATOR;
+            return eventObject.build().toString() + LINE_SEPARATOR;
 
         } catch (Exception ex) {
             new ErrorManager().error(
