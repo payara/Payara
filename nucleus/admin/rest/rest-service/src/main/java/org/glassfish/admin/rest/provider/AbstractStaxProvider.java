@@ -57,6 +57,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.codehaus.jettison.mapped.MappedNamespaceConvention;
 import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
+//import com.fasterxml.jackson.annotation.xml.XmlMapper;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.jvnet.hk2.config.IndentingXMLStreamWriter;
@@ -124,6 +125,7 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
 
     protected static XMLStreamWriter getJsonWriter(final OutputStream os, boolean indent) 
             throws UnsupportedEncodingException {
+        
         return new MappedXMLStreamWriter(JSON_CONVENTION, new OutputStreamWriter(os, Constants.ENCODING));
     }
     

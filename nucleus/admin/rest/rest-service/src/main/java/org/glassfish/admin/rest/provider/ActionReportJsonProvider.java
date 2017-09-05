@@ -105,7 +105,12 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
     protected JsonObject processReport(ActionReporter ar) throws JsonException {
         JsonObjectBuilder result = Json.createObjectBuilder();
         result.add("message", (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : decodeEol(ar.getMessage()));
-        result.add("command", ar.getActionDescription());
+        String desc = ar.getActionDescription();
+        if (desc != null){
+            result.add("command", ar.getActionDescription());
+        } else {
+            result.add("command", JsonValue.NULL);
+        }
         result.add("exit_code", ar.getActionExitCode().toString());
         
         Properties properties = ar.getTopMessagePart().getProps();

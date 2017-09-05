@@ -122,7 +122,12 @@
             <artifactId>jersey-media-json-jackson</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>${jsonp.version}</version>
+            <type>jar</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
@@ -163,6 +168,11 @@
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-processing</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
             <type>jar</type>
         </dependency>
     </dependencies>

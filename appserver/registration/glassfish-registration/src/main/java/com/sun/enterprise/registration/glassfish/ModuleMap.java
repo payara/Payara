@@ -121,7 +121,7 @@ public class ModuleMap {
                 put("org.apache.felix.shell", 62);
                 put("org.apache.felix.shell.remote", 63);
                 put("org.apache.felix.shell.tui", 64);
-                put("javax.json", 65);
+                put("org.codehaus.jettison.jettison", 65);
                 put("org.eclipse.persistence.antlr", 66);
                 put("org.eclipse.persistence.asm", 67);
                 put("org.eclipse.persistence.core", 68);
