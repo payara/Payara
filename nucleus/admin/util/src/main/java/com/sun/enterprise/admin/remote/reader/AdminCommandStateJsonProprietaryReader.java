@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] PAyara Foundation and/or affiliates
  */
 package com.sun.enterprise.admin.remote.reader;
 
@@ -45,11 +47,14 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.stream.JsonParser;
 import org.glassfish.api.admin.AdminCommandState;
 
 /**
@@ -77,25 +82,26 @@ public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader
         FileUtils.copy(is, baos, 0);
         String str = baos.toString("UTF-8");
         try {
-            JSONObject json = new JSONObject(str);
+            JsonParser parser = Json.createParser(new StringReader(str));
+            JsonObject json = parser.getObject();
             return readAdminCommandState(json);
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             LoggerRef.logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
             throw new IOException(ex);
         }
     }
     
-    public static AdminCommandStateImpl readAdminCommandState(JSONObject json) throws JSONException {
-        String strState = json.optString("state");
+    public static AdminCommandStateImpl readAdminCommandState(JsonObject json) throws JsonException {
+        String strState = json.getString("state");
         AdminCommandState.State state = (strState == null) ? null : AdminCommandState.State.valueOf(strState);
-        boolean emptyPayload = json.optBoolean("empty-payload", true);
+        boolean emptyPayload = json.getBoolean("empty-payload", true);
         CliActionReport ar = null;
-        JSONObject jsonReport = json.optJSONObject("action-report");
+        JsonObject jsonReport = json.getJsonObject("action-report");
         if (jsonReport != null) {
             ar = new CliActionReport();
             ActionReportJsonProprietaryReader.fillActionReport(ar, jsonReport);
         }
-        String id = json.optString("id");
+        String id = json.getString("id");
         return new AdminCommandStateImpl(state, ar, emptyPayload, id);
     }
     

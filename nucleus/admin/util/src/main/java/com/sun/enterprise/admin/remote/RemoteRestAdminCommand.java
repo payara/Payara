@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.admin.remote;
@@ -44,7 +46,6 @@ import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.reader.CliActionReport;
 import com.sun.enterprise.admin.remote.reader.ProprietaryReader;
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
-import com.sun.enterprise.admin.remote.reader.StringProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseEventReceiver;
 import com.sun.enterprise.admin.remote.sse.GfSseEventReceiverProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
@@ -72,15 +73,17 @@ import com.sun.enterprise.admin.util.HttpConnectorAddress;
 import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.net.NetUtils;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.api.admin.Payload;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.common.util.admin.AuthTokenManager;
-import org.w3c.dom.*;
 
 /**
  * Utility class for executing remote admin commands.
@@ -128,7 +131,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private static final String READ_TIMEOUT = "AS_ADMIN_READTIMEOUT";
     public static final String COMMAND_MODEL_MATCH_HEADER = "X-If-Command-Model-Match";
     private static final String MEDIATYPE_TXT = "text/plain";
-    private static final String MEDIATYPE_JSON = "application/json";
+    private static final String MEDIATYPE_Json = "application/json";
     private static final String MEDIATYPE_MULTIPART = "multipart/*";
     private static final String MEDIATYPE_SSE = "text/event-stream";
     private static final String EOL = StringUtils.EOL;
@@ -449,44 +452,46 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
         try {
             boolean sawFile = false;
-            JSONObject obj = new JSONObject(str);
-            obj = obj.getJSONObject("command");
+            JsonParser parser = Json.createParser(new StringReader(str));
+            parser.next();
+            JsonObject obj = parser.getObject();
+            obj = obj.getJsonObject("command");
             CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), etag);
-            cm.dashOk = obj.optBoolean("@unknown-options-are-operands", false);
-            cm.managedJob = obj.optBoolean("@managed-job", false);
-            cm.setUsage(obj.optString("usage", null));
-            Object optns = obj.opt("option");
-            if (!JSONObject.NULL.equals(optns)) {
-                JSONArray jsonOptions;
-                if (optns instanceof JSONArray) {
-                    jsonOptions = (JSONArray) optns;
+            cm.dashOk = obj.getBoolean("@unknown-options-are-operands", false);
+            cm.managedJob = obj.getBoolean("@managed-job", false);
+            cm.setUsage(obj.getString("usage", null));
+            JsonValue optns = obj.get("option");
+            if (!JsonObject.NULL.equals(optns)) {
+                JsonArray jsonOptions;
+                if (optns instanceof JsonArray) {
+                    jsonOptions = (JsonArray) optns;
                 } else {
-                    jsonOptions = new JSONArray();
-                    jsonOptions.put(optns);
+                    jsonOptions = JsonArray.EMPTY_JSON_ARRAY;
+                    jsonOptions.add(optns);
                 }
-                for (int i = 0; i < jsonOptions.length(); i++) {
-                    JSONObject jsOpt = jsonOptions.getJSONObject(i);
+                for (int i = 0; i < jsonOptions.size(); i++) {
+                    JsonObject jsOpt = jsonOptions.getJsonObject(i);
                     String type = jsOpt.getString("@type");
                     ParamModelData opt = new ParamModelData(
                             jsOpt.getString("@name"),
                             typeOf(type),
-                            jsOpt.optBoolean("@optional", false),
-                            jsOpt.optString("@default"),
-                            jsOpt.optString("@short"),
-                            jsOpt.optBoolean("@obsolete", false),
-                            jsOpt.optString("@alias"));
-                    opt.param._acceptableValues = jsOpt.optString("@acceptable-values");
+                            jsOpt.getBoolean("@optional", false),
+                            jsOpt.getString("@default"),
+                            jsOpt.getString("@short"),
+                            jsOpt.getBoolean("@obsolete", false),
+                            jsOpt.getString("@alias"));
+                    opt.param._acceptableValues = jsOpt.getString("@acceptable-values");
                     if ("PASSWORD".equals(type)) {
                         opt.param._password = true;
-                        opt.prompt = jsOpt.optString("@prompt");
-                        opt.promptAgain = jsOpt.optString("@prompt-again");
+                        opt.prompt = jsOpt.getString("@prompt");
+                        opt.promptAgain = jsOpt.getString("@prompt-again");
                     } else if ("FILE".equals(type)) {
                         sawFile = true;
                     }
-                    if (jsOpt.optBoolean("@primary", false)) {
+                    if (jsOpt.getBoolean("@primary", false)) {
                         opt.param._primary = true;
                     }
-                    if (jsOpt.optBoolean("@multiple", false)) {
+                    if (jsOpt.getBoolean("@multiple", false)) {
                         if (opt.type == File.class) {
                             opt.type = File[].class;
                         } else {
@@ -508,7 +513,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             }
             this.usage = cm.getUsage();
             return cm;
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             logger.log(Level.FINER, "Can not parse command metadata", ex);
             return null;
         }
@@ -749,7 +754,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     if (useSse()) {
                         urlConnection.addRequestProperty("Accept", MEDIATYPE_SSE);
                     } else {
-                        urlConnection.addRequestProperty("Accept", MEDIATYPE_JSON + "; q=0.8, "
+                        urlConnection.addRequestProperty("Accept", MEDIATYPE_Json + "; q=0.8, "
                                 + MEDIATYPE_MULTIPART + "; q=0.9");
                     }
                 } catch (CommandException cex) {
@@ -798,7 +803,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                 }
                                 fireEvent(event.getName(), event);
                                 if (AdminCommandState.EVENT_STATE_CHANGED.equals(event.getName())) {
-                                    AdminCommandState acs = event.getData(AdminCommandState.class, MEDIATYPE_JSON);
+                                    AdminCommandState acs = event.getData(AdminCommandState.class, MEDIATYPE_Json);
                                     if (acs.getId() != null) {
                                         instanceId = acs.getId();
                                         if (logger.isLoggable(Level.FINEST)) {
@@ -1440,7 +1445,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
             @Override
             public void prepareConnection(HttpURLConnection urlConnection) {
-                urlConnection.setRequestProperty("Accept", MEDIATYPE_JSON);
+                urlConnection.setRequestProperty("Accept", MEDIATYPE_Json);
             }
 
             @Override
