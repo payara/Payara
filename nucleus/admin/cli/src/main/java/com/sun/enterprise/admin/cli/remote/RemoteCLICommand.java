@@ -797,6 +797,9 @@ public class RemoteCLICommand extends CLICommand {
             }*/
             try {
                 output = rac.executeCommand(options);
+            } catch (Exception e){
+                e.printStackTrace();
+                throw e;
             }
             finally {
                 rac.statusPrinter.deleteLastMessage();

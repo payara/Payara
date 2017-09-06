@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] PAyara Foundation and/or affiliates
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package com.sun.enterprise.admin.remote.reader;
 
@@ -92,7 +92,7 @@ public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader
     }
     
     public static AdminCommandStateImpl readAdminCommandState(JsonObject json) throws JsonException {
-        String strState = json.getString("state");
+        String strState = json.getString("state", null);
         AdminCommandState.State state = (strState == null) ? null : AdminCommandState.State.valueOf(strState);
         boolean emptyPayload = json.getBoolean("empty-payload", true);
         CliActionReport ar = null;
@@ -101,7 +101,7 @@ public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader
             ar = new CliActionReport();
             ActionReportJsonProprietaryReader.fillActionReport(ar, jsonReport);
         }
-        String id = json.getString("id");
+        String id = json.getString("id", null);
         return new AdminCommandStateImpl(state, ar, emptyPayload, id);
     }
     

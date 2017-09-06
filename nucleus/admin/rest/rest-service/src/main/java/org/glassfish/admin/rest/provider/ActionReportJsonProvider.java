@@ -82,6 +82,8 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
 
     /**
      * Returns the content of the {@link ActionReporter} in Json format as a {@link String}.
+     * <p>
+     * This is equivalent to {@code processReport(ar).toString()}
      * @param ar
      * @return 
      */
@@ -102,9 +104,19 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
         }
     }
 
+    /**
+     * Converts an ActionReport into a JsonObject
+     * @param ar
+     * @return
+     * @throws JsonException 
+     */
     protected JsonObject processReport(ActionReporter ar) throws JsonException {
         JsonObjectBuilder result = Json.createObjectBuilder();
-        result.add("message", (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : decodeEol(ar.getMessage()));
+        if (ar instanceof RestActionReporter){
+            result.add("message", ((RestActionReporter)ar).getCombinedMessage());
+        } else {
+            result.add("message", decodeEol(ar.getMessage()));
+        }
         String desc = ar.getActionDescription();
         if (desc != null){
             result.add("command", ar.getActionDescription());
@@ -200,7 +212,7 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
     
     protected String decodeEol(String str) {
         if (str == null) {
-            return str;
+            return JsonValue.NULL.toString();
         }
         return str.replace(ActionReporter.EOL_MARKER, "\n");
     }

@@ -75,6 +75,7 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.net.NetUtils;
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -400,6 +401,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     }
                 }
             } catch (Exception ex) {
+                ex.printStackTrace();
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
                 }
@@ -461,13 +463,17 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             cm.managedJob = obj.getBoolean("@managed-job", false);
             cm.setUsage(obj.getString("usage", null));
             JsonValue optns = obj.get("option");
-            if (!JsonObject.NULL.equals(optns)) {
+            if (!JsonObject.NULL.equals(optns) && optns != null) {
                 JsonArray jsonOptions;
                 if (optns instanceof JsonArray) {
                     jsonOptions = (JsonArray) optns;
                 } else {
-                    jsonOptions = JsonArray.EMPTY_JSON_ARRAY;
-                    jsonOptions.add(optns);
+                    JsonArrayBuilder optBuilder = Json.createArrayBuilder();
+                    optBuilder.add(optns);
+                    jsonOptions = optBuilder.build();
+                    //jsonOptions = JsonArray.EMPTY_JSON_ARRAY;
+                    //jsonOptions.add(optns);
+                    
                 }
                 for (int i = 0; i < jsonOptions.size(); i++) {
                     JsonObject jsOpt = jsonOptions.getJsonObject(i);
@@ -476,15 +482,15 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                             jsOpt.getString("@name"),
                             typeOf(type),
                             jsOpt.getBoolean("@optional", false),
-                            jsOpt.getString("@default"),
-                            jsOpt.getString("@short"),
+                            jsOpt.getString("@default", null),
+                            jsOpt.getString("@short", null),
                             jsOpt.getBoolean("@obsolete", false),
-                            jsOpt.getString("@alias"));
-                    opt.param._acceptableValues = jsOpt.getString("@acceptable-values");
+                            jsOpt.getString("@alias", null));
+                    opt.param._acceptableValues = jsOpt.getString("@acceptable-values", "");
                     if ("PASSWORD".equals(type)) {
                         opt.param._password = true;
-                        opt.prompt = jsOpt.getString("@prompt");
-                        opt.promptAgain = jsOpt.getString("@prompt-again");
+                        opt.prompt = jsOpt.getString("@prompt", null);
+                        opt.promptAgain = jsOpt.getString("@prompt-again", null);
                     } else if ("FILE".equals(type)) {
                         sawFile = true;
                     }
@@ -513,8 +519,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             }
             this.usage = cm.getUsage();
             return cm;
-        } catch (JsonException ex) {
-            logger.log(Level.FINER, "Can not parse command metadata", ex);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.log(Level.SEVERE, "Can not parse command metadata", ex);
             return null;
         }
     }

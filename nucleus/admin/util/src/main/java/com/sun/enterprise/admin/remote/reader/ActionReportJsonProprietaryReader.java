@@ -101,13 +101,13 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
     
     public static void fillActionReport(final ActionReport ar, final JsonObject json) throws JsonException {
         ar.setActionExitCode(ActionReport.ExitCode.valueOf(json.getString("exit_code")));
-        ar.setActionDescription(json.getString("command"));
-        String failure = json.getString("failure_cause");
+        ar.setActionDescription(json.getString("command", null));
+        String failure = json.getString("failure_cause", null);
         if (failure != null && !failure.isEmpty()) {
             ar.setFailureCause(new Exception(failure));
         }
         ar.setExtraProperties((Properties) extractMap(json.getJsonObject("extraProperties"), new Properties()));
-        ar.getTopMessagePart().setMessage(json.getString("top_message", json.getString("message")));
+        ar.getTopMessagePart().setMessage(json.getString("top_message", json.getString("message", null)));
         Properties props = (Properties) extractMap(json.getJsonObject("properties"), new Properties());
         for (Map.Entry entry : props.entrySet()) {
             ar.getTopMessagePart().addProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
@@ -131,7 +131,7 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         for (int i = 0; i < json.size(); i++) {
             JsonObject subJson = json.getJsonObject(i);
             MessagePart child = mp.addChild();
-            child.setMessage(subJson.getString("message"));
+            child.setMessage(subJson.getString("message", null));
             Properties props = (Properties) extractMap(subJson.getJsonObject("properties"), new Properties());
             for (Map.Entry entry : props.entrySet()) {
                 child.addProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));

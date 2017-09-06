@@ -138,6 +138,8 @@ public class JsonUtil {
             result = Json.createValue((BigInteger) object);
         } else if (object instanceof BigDecimal){
             result = Json.createValue((BigDecimal) object);
+        } else if (object.getClass().isEnum()){
+            result = Json.createValue(object.toString());
         } else {
             Class<?> clazz = object.getClass();
             if (clazz.isArray()) {
