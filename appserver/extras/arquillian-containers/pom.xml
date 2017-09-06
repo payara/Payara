@@ -63,7 +63,7 @@
 
     <groupId>fish.payara.arquillian</groupId>
     <artifactId>parent-payara-containers</artifactId>
-    <version>1.0-beta1</version>
+    <version>1.0-beta2</version>
     <packaging>pom</packaging>
 
     <name>Arquillian Container Parent Payara</name>
@@ -75,10 +75,10 @@
 
     <properties>
         <version.arquillian_core>1.1.13.Final</version.arquillian_core>
-        <version.jersey>2.25.1</version.jersey>
+        <version.jersey>2.26</version.jersey>
 
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
     
     <distributionManagement>
@@ -87,6 +87,66 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+    
+    <repositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    
+        <repository>
+            <id>jvnet-nexus-releases</id>
+            <name>Java.net Releases Repositories</name>
+            <url>https://maven.java.net/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <repository>
+            <id>jvnet-nexus-staging</id>
+            <name>Java.net Staging Repositories</name>
+            <url>https://maven.java.net/content/repositories/staging</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <repository>
+            <id>jvnet-nexus-promoted</id>
+            <name>Java.net Promoted Repositories</name>
+            <url>https://maven.java.net/content/repositories/promoted/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <repository>
+            <id>jvnet-nexus-1074</id>
+            <name>Java.net orgglassfish-1074 Repositories</name>
+            <url>https://maven.java.net/content/repositories/orgglassfish-1074/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <modules>
         <module>payara-common</module>
@@ -102,10 +162,28 @@
                 <artifactId>jersey-client</artifactId>
                 <version>${version.jersey}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>org.glassfish.jersey.inject</groupId>
+                <artifactId>jersey-hk2</artifactId>
+                <version>${version.jersey}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-common</artifactId>
+                <version>${version.jersey}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-server</artifactId>
+                <version>${version.jersey}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-sse</artifactId>
                 <version>${version.jersey}</version>
             </dependency>
 
@@ -120,6 +198,19 @@
                 <artifactId>jersey-media-jaxb</artifactId>
                 <version>${version.jersey}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-processing</artifactId>
+                <version>${version.jersey}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>${version.jersey}</version>
+            </dependency>
+            
 
             <dependency>
                 <groupId>javax</groupId>
@@ -192,7 +283,7 @@
                     <javadocVersion>${javadoc.version}</javadocVersion>
                     <notimestamp>true</notimestamp>
                     <splitindex>true</splitindex>
-                    <doctitle>OmniFaces API documentation</doctitle>
+                    <doctitle>Arquillian connector</doctitle>
                     <links>
                         <link>https://docs.oracle.com/javaee/${javaee.version}/api/</link>
                     </links>
