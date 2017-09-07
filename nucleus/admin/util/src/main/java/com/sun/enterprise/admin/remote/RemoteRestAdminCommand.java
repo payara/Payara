@@ -76,7 +76,6 @@ import com.sun.enterprise.util.net.NetUtils;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
@@ -401,7 +400,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
                 }

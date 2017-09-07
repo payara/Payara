@@ -56,12 +56,15 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 
 /** Reads ActionReport from Json format.
  *
+ * @since 4.0
  * @author mmares
  */
 public class ActionReportJsonProprietaryReader implements ProprietaryReader<ActionReport> {
@@ -99,6 +102,14 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         }
     }
     
+    /**
+     * Turns a {@link JsonObject} into an {@link ActionReport}
+     * <p>
+     * The Json Object must contain a valid {@code exit_code} at the top level.
+     * @param ar
+     * @param json
+     * @throws JsonException 
+     */
     public static void fillActionReport(final ActionReport ar, final JsonObject json) throws JsonException {
         ar.setActionExitCode(ActionReport.ExitCode.valueOf(json.getString("exit_code")));
         ar.setActionDescription(json.getString("command", null));
@@ -110,7 +121,15 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         ar.getTopMessagePart().setMessage(json.getString("top_message", json.getString("message", null)));
         Properties props = (Properties) extractMap(json.getJsonObject("properties"), new Properties());
         for (Map.Entry entry : props.entrySet()) {
-            ar.getTopMessagePart().addProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+            Object entryValue = entry.getValue();
+            //Check if it is a JsonString, because String.valueOf(getValue() is equivalent to getValue().toString
+            //which for JsonString is "entry" and the speech marks need to be removed to that it is just entry
+            //See difference between JsonString.toString and JsonString.getValue
+            if (entryValue instanceof JsonString){
+                ar.getTopMessagePart().addProperty(String.valueOf(entry.getKey()), ((JsonString)entry.getValue()).getString());
+            } else {
+                ar.getTopMessagePart().addProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+            }
         }
         //Sub messages
         fillSubMessages(ar.getTopMessagePart(), json.getJsonArray("children"));
@@ -124,6 +143,12 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         }
     }
     
+    /**
+     * Fills all messages below top_message of an action report
+     * @param mp
+     * @param json
+     * @throws JsonException 
+     */
     private static void fillSubMessages(final ActionReport.MessagePart mp, final JsonArray json) throws JsonException {
         if (json == null) {
             return;
@@ -134,6 +159,12 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
             child.setMessage(subJson.getString("message", null));
             Properties props = (Properties) extractMap(subJson.getJsonObject("properties"), new Properties());
             for (Map.Entry entry : props.entrySet()) {
+                Object entryValue = entry.getValue();
+                if (entryValue instanceof JsonString) {
+                    child.addProperty(String.valueOf(entry.getKey()), ((JsonString) entry.getValue()).getString());
+                } else {
+                    child.addProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+                }
                 child.addProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
             }
             fillSubMessages(child, subJson.getJsonArray("children"));
@@ -167,6 +198,13 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         }
     }
     
+    /**
+     * Adds a {@link JsonObject} to a {@link Map}
+     * @param json
+     * @param preferredResult
+     * @return
+     * @throws JsonException 
+     */
     private static Map extractMap(final JsonObject json, Map preferredResult) throws JsonException {
         if (json == null) {
             return preferredResult;

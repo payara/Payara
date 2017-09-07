@@ -63,6 +63,7 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.MessagePart;
 
 /**
+ * @since 4.0
  * @author Ludovic Champenois
  * @author Jason Lee
  * @author mmares
@@ -115,7 +116,10 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
         if (ar instanceof RestActionReporter){
             result.add("message", ((RestActionReporter)ar).getCombinedMessage());
         } else {
-            result.add("message", decodeEol(ar.getMessage()));
+            String message = decodeEol(ar.getMessage());
+            if (message != null){
+                result.add("message", message);
+            }
         }
         String desc = ar.getActionDescription();
         if (desc != null){
@@ -212,8 +216,9 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
     
     protected String decodeEol(String str) {
         if (str == null) {
-            return JsonValue.NULL.toString();
+            return null;
         }
+        
         return str.replace(ActionReporter.EOL_MARKER, "\n");
     }
 }

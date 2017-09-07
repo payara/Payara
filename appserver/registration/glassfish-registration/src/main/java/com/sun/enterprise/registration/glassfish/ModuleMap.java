@@ -121,7 +121,7 @@ public class ModuleMap {
                 put("org.apache.felix.shell", 62);
                 put("org.apache.felix.shell.remote", 63);
                 put("org.apache.felix.shell.tui", 64);
-                put("org.codehaus.jettison.jettison", 65);
+                //put("org.codehaus.jettison.jettison", 65);
                 put("org.eclipse.persistence.antlr", 66);
                 put("org.eclipse.persistence.asm", 67);
                 put("org.eclipse.persistence.core", 68);
@@ -324,6 +324,7 @@ public class ModuleMap {
                 put("org.shoal.gms-impl", 265);
                 put("stax2-api", 266);
                 put("woodstox-core-asl", 267);
+                put("com.fasterxml.jackson.dataformat.xml", 268);
             }});
 
     public ModuleMap() {

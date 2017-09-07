@@ -53,7 +53,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 
 /**
- *
+ * @since 4.0
  * @author mmares
  */
 @Provider
@@ -68,8 +68,6 @@ public class ActionReportJson2Provider extends ActionReportJsonProvider {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder(result);
         String combinedMessage = result.getString("message", null);
         String msg = decodeEol(ar.getTopMessagePart().getMessage());
-        System.err.println("AcionReport combinedMessage: " + combinedMessage);
-        System.err.println("ActionReport msg output: " + msg);
 
         if (combinedMessage != null && !combinedMessage.equals(msg)) {
             if (msg != null){

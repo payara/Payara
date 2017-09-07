@@ -55,9 +55,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
-//import com.fasterxml.jackson.annotation.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.jvnet.hk2.config.IndentingXMLStreamWriter;
@@ -65,12 +63,12 @@ import org.jvnet.hk2.config.IndentingXMLStreamWriter;
 /** Abstract implementation for entity writers to STaX API. This supports 
  * XML and JSON.
  *
+ * @since 4.0
  * @author mmares
  */
 public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
     
     private static final XMLOutputFactory XML_FACTORY = XMLOutputFactory.newInstance();
-    private static final MappedNamespaceConvention JSON_CONVENTION = new MappedNamespaceConvention();
     private static final MediaType ANY_XML_MEDIATYPE = new MediaType(MediaType.MEDIA_TYPE_WILDCARD, "xml");
     
     protected class PrePostFixedWriter {
@@ -124,9 +122,9 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
     }
 
     protected static XMLStreamWriter getJsonWriter(final OutputStream os, boolean indent) 
-            throws UnsupportedEncodingException {
-        
-        return new MappedXMLStreamWriter(JSON_CONVENTION, new OutputStreamWriter(os, Constants.ENCODING));
+            throws UnsupportedEncodingException, IOException {
+        XmlFactory factory = new XmlFactory();
+        return factory.createGenerator(new OutputStreamWriter(os, Constants.ENCODING)).getStaxWriter();
     }
     
     /** Returns XML StAX API for any media types with "xml" subtype. Otherwise returns JSON StAX API
