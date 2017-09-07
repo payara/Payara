@@ -69,10 +69,7 @@ public class EncodingTest {
         RestActionReporter ar = buildActionReport();
         ActionReportResultJsonProvider provider = new ActionReportResultJsonProvider();
         ActionReportResult result = new ActionReportResult("test", ar);
-        ActionReport report = result.getActionReport();
-        System.out.println(report.getMessage());
         String json = provider.getContent(result);
-        System.out.println(json);
         Map responseMap = MarshallingUtils.buildMapFromDocument(json);
         assertEquals(7, responseMap.size());
         assertEquals(4, ((Map)responseMap.get("extraProperties")).size());

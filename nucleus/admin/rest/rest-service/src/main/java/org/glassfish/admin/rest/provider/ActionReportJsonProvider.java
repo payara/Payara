@@ -100,7 +100,6 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
                 return JsonP + "(" + result.toString() + ")";
             }
         } catch (JsonException ex) {
-            ex.printStackTrace();
             throw new RuntimeException(ex);
         }
     }

@@ -44,7 +44,6 @@ package org.glassfish.admin.rest.client.utils;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,6 +51,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 import org.glassfish.api.logging.LogHelper;
 
@@ -80,7 +80,7 @@ public class Util {
         Map<String, Object> map = new HashMap<String, Object>();
         try {
             for (String key : jo.keySet()) {
-                Object value = jo.get(key);
+                JsonValue value = jo.get(key);
                 if (value instanceof JsonArray) {
                     map.put(key, processJsonArray((JsonArray) value));
                 } else if (value instanceof JsonObject) {

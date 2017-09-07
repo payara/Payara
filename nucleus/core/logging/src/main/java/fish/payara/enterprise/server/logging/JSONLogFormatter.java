@@ -60,7 +60,6 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import org.glassfish.api.VersionInfo;
 import org.glassfish.hk2.api.PerLookup;
@@ -70,7 +69,8 @@ import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Class for converting a {@link LogRecord} to Json format
+ * @since 4.1.1.164
  * @author savage
  */
 @Service()

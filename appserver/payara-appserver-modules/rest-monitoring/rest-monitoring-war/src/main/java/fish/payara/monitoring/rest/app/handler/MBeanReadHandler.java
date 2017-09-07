@@ -57,7 +57,7 @@ import javax.management.ReflectionException;
 import javax.ws.rs.core.Response;
 
 /**
- *
+ * @since 4.1.2.173
  * @author Fraser Savage
  */
 public class MBeanReadHandler extends ReadHandler {
@@ -103,7 +103,6 @@ public class MBeanReadHandler extends ReadHandler {
     }
 
     private JsonObject buildAttributes(MBeanInfo mbean) throws JsonException {
-        //sonObject attributesObject = new JsonObject();
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         MBeanAttributeInfo[] attributes = mbean.getAttributes();
 

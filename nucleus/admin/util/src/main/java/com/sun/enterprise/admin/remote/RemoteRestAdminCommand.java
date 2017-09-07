@@ -131,7 +131,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private static final String READ_TIMEOUT = "AS_ADMIN_READTIMEOUT";
     public static final String COMMAND_MODEL_MATCH_HEADER = "X-If-Command-Model-Match";
     private static final String MEDIATYPE_TXT = "text/plain";
-    private static final String MEDIATYPE_Json = "application/json";
+    private static final String MEDIATYPE_JSON = "application/json";
     private static final String MEDIATYPE_MULTIPART = "multipart/*";
     private static final String MEDIATYPE_SSE = "text/event-stream";
     private static final String EOL = StringUtils.EOL;
@@ -461,18 +461,16 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             cm.managedJob = obj.getBoolean("@managed-job", false);
             cm.setUsage(obj.getString("usage", null));
             JsonValue optns = obj.get("option");
-            if (!JsonObject.NULL.equals(optns) && optns != null) {
+            if (!JsonValue.NULL.equals(optns) && optns != null) {
                 JsonArray jsonOptions;
                 if (optns instanceof JsonArray) {
                     jsonOptions = (JsonArray) optns;
                 } else {
                     JsonArrayBuilder optBuilder = Json.createArrayBuilder();
                     optBuilder.add(optns);
-                    jsonOptions = optBuilder.build();
-                    //jsonOptions = JsonArray.EMPTY_JSON_ARRAY;
-                    //jsonOptions.add(optns);
-                    
+                    jsonOptions = optBuilder.build();                    
                 }
+                
                 for (int i = 0; i < jsonOptions.size(); i++) {
                     JsonObject jsOpt = jsonOptions.getJsonObject(i);
                     String type = jsOpt.getString("@type");
@@ -518,7 +516,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             this.usage = cm.getUsage();
             return cm;
         } catch (Exception ex) {
-            ex.printStackTrace();
             logger.log(Level.SEVERE, "Can not parse command metadata", ex);
             return null;
         }
@@ -759,7 +756,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     if (useSse()) {
                         urlConnection.addRequestProperty("Accept", MEDIATYPE_SSE);
                     } else {
-                        urlConnection.addRequestProperty("Accept", MEDIATYPE_Json + "; q=0.8, "
+                        urlConnection.addRequestProperty("Accept", MEDIATYPE_JSON + "; q=0.8, "
                                 + MEDIATYPE_MULTIPART + "; q=0.9");
                     }
                 } catch (CommandException cex) {
@@ -808,7 +805,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                 }
                                 fireEvent(event.getName(), event);
                                 if (AdminCommandState.EVENT_STATE_CHANGED.equals(event.getName())) {
-                                    AdminCommandState acs = event.getData(AdminCommandState.class, MEDIATYPE_Json);
+                                    AdminCommandState acs = event.getData(AdminCommandState.class, MEDIATYPE_JSON);
                                     if (acs.getId() != null) {
                                         instanceId = acs.getId();
                                         if (logger.isLoggable(Level.FINEST)) {
@@ -1450,7 +1447,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
             @Override
             public void prepareConnection(HttpURLConnection urlConnection) {
-                urlConnection.setRequestProperty("Accept", MEDIATYPE_Json);
+                urlConnection.setRequestProperty("Accept", MEDIATYPE_JSON);
             }
 
             @Override

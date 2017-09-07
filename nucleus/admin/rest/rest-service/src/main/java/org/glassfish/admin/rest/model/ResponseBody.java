@@ -44,7 +44,10 @@ package org.glassfish.admin.rest.model;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonObject;
 
 public class ResponseBody {
     public static final String EVENT_NAME="response/body";

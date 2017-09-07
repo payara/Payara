@@ -150,7 +150,6 @@ public class JsonUtil {
                 }
                 result = array.build();
             } else {
-                System.err.println("Object is of type " + clazz.getCanonicalName());
                 throw new JsonException("Unable to convert object to JsonValue: " + object);
             }
         }
@@ -186,7 +185,7 @@ public class JsonUtil {
 //              if (model.isSet(propName)) {
                     // Only include properties whose value has been set in the model
                     try {
-                        result.add(propName, getJsonObject(getRestModelProperty(model, m, hideConfidentialProperties)));
+                        result.add(propName, getJsonValue(getRestModelProperty(model, m, hideConfidentialProperties)));
                     } catch (Exception e) {
                     }
                 }
@@ -241,7 +240,7 @@ public class JsonUtil {
         JsonArrayBuilder result = Json.createArrayBuilder();
         Iterator i = c.iterator();
         while (i.hasNext()) {
-            Object item = getJsonObject(i.next());
+            JsonValue item = getJsonValue(i.next());
             result.add(JsonUtil.getJsonValue(item));
         }
 
@@ -252,31 +251,53 @@ public class JsonUtil {
         JsonObjectBuilder result = Json.createObjectBuilder();
 
         for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
-            result.add(entry.getKey().toString(), getJsonObject(entry.getValue()));
+            result.add(entry.getKey().toString(), getJsonValue(entry.getValue()));
         }
 
         return result.build();
     }
 
+    /**
+     * Gets a String from a {@link JsonObject}
+     * @param jsonObject
+     * @param key
+     * @param dflt returned if there is no mapping for the key
+     * @return 
+     */
     public static String getString(JsonObject jsonObject, String key, String dflt) {
         try {
             if (jsonObject.isNull(key)) {
                 return null;
             }
-            return jsonObject.getString(key);
+            return jsonObject.getString(key, dflt);
         } catch (JsonException e) {
             return dflt;
         }
     }
 
+    /**
+     * Gets an integer from a {@link JsonObject}
+     * @param jsonObject
+     * @param key
+     * @param dflt returned if there is no mapping for the key
+     * @return 
+     */
     public static int getInt(JsonObject jsonObject, String key, int dflt) {
         try {
-            return jsonObject.getInt(key);
+            return jsonObject.getInt(key, dflt);
         } catch (JsonException e) {
             return dflt;
         }
     }
 
+    /**
+     * Puts a value into the specified jsonObject
+     * <p>
+     * This method is synchronised on the jsonObject
+     * @param jsonObject
+     * @param key
+     * @param value 
+     */
     public static void put(JsonObject jsonObject, String key, Object value) {
         try {
             synchronized(jsonObject) {
@@ -288,9 +309,42 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Puts a {@link JsonObject} into a {@link JsonArray}
+     * <p>
+     * This method is synchronised on the jsonArray
+     * @param jsonArray
+     * @param item 
+     */
     public static void put(JsonArray jsonArray, JsonObject item) {
         synchronized(jsonArray) {
             jsonArray.add(item);
+        }
+    }
+    
+    /**
+     * Puts a value into a {@link JsonObject} with the specified key. 
+     * <p>
+     * If the key already exists then a {@link JsonArray} is used to store all the values. This differs to {@link JsonObject#put(Object, Object)}
+     * as put replaces the value if the key already exists.
+     * @param jsonObject
+     * @param key
+     * @param value
+     * @since 5.0
+     */
+    public static void accumalate(JsonObject jsonObject, String key, JsonValue value){
+        if (jsonObject.containsKey(key)){
+            JsonValue previous = jsonObject.get(key);
+            if (previous instanceof JsonArray){
+                ((JsonArray) previous).add(value);
+            } else {
+                JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+                arrayBuilder.add(previous);
+                arrayBuilder.add(value);
+                jsonObject.put(key, arrayBuilder.build());
+            }
+        } else {
+            jsonObject.put(key, value);
         }
     }
 }

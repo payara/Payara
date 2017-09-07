@@ -314,7 +314,7 @@ public class CompositeUtil {
     /**
      * Turns a JsonArray into an array or a list of the unboxed type it contains
      * @param locale
-     * @param param0 The type of the array or list to create i.e. java.lang.String
+     * @param param0 The type of the array or list to create i.e. java.lang.String[]
      * @param array
      * @return
      * @throws JsonException 

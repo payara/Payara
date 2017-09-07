@@ -49,6 +49,7 @@ import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
  *
@@ -81,20 +82,20 @@ public class SseResponseBody extends ResponseBody {
 
     @Override
     public JsonObject toJson() throws JsonException {
-        JsonObjectBuilder json = Json.createObjectBuilder(super.toJson());
+        JsonObject json = Json.createObjectBuilder(super.toJson()).build();
 
         if (!headers.isEmpty()) {
-            JsonObjectBuilder o = Json.createObjectBuilder();
+            JsonObject o = Json.createObjectBuilder().build();
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
                 final String key = entry.getKey();
                 for (String value : entry.getValue()) {
-                    o.add(key, value);
+                    JsonUtil.accumalate(o, key, JsonUtil.getJsonValue(value));
                 }
             }
-            json.add("headers", o);
+            JsonUtil.accumalate(json, "headers", o);
         }
 
-        return json.build();
+        return json;
     }
 
 

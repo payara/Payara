@@ -56,6 +56,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -83,7 +84,7 @@ public class MarshallingUtils {
                 parser.next();
                 properties = processJsonArray(parser.getArray());
             } catch (JsonException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
             }
         } else {
             throw new RuntimeException("The Json string must start with { or ["); // i18n
@@ -176,6 +177,11 @@ public class MarshallingUtils {
         });
     }
 
+    /**
+     * Converts a list of properties into Json format
+     * @param properties
+     * @return A String representation of the resulting Json array
+     */
     public static String getJsonForProperties(List<Map<String, String>> properties) {
         return Json.createArrayBuilder(properties).build().toString();
     }
@@ -258,7 +264,7 @@ public class MarshallingUtils {
         Map<String, Object> map = new HashMap<String, Object>();
         try {
             for (String key : jo.keySet()) {
-                Object value = jo.get(key);
+                JsonValue value = jo.get(key);
                 if (value instanceof JsonArray) {
                     map.put(key, processJsonArray((JsonArray) value));
                 } else if (value instanceof JsonObject) {

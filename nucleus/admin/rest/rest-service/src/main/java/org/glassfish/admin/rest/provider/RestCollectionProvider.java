@@ -44,6 +44,8 @@ package org.glassfish.admin.rest.provider;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonException;
@@ -59,6 +61,7 @@ import org.glassfish.admin.rest.composite.metadata.RestModelMetadata;
 import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
+ * @since 4.0
  * @author: jdlee
  */
 @Provider
@@ -68,6 +71,11 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
         super(RestCollection.class, Constants.MEDIA_TYPE_JSON_TYPE);
     }
 
+    /**
+     * Converts a {@link RestCollection} into a Json object and then returns it as as String representation.
+     * @param proxy
+     * @return 
+     */
     @Override
     public String getContent(RestCollection proxy) {
         StringBuilder sb = new StringBuilder();
@@ -85,20 +93,20 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
                 RestModelMetadata md = entry.getKey();
                 JsonObjectBuilder mdo = Json.createObjectBuilder();
                 mdo.add("id", md.getId());
-                metadata.add(mdo);
+                metadata.add(mdo.build());
             } catch (JsonException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                Logger.getLogger(RestCollectionProvider.class.getName()).log(Level.SEVERE,"Unable to parse create Json",e);
             }
         }
         JsonObjectBuilder response = Json.createObjectBuilder();
         try {
-            response.add("items", models);
+            response.add("items", models.build());
             if (!skipMetadata) {
-                response.add("metadata", metadata);
+                response.add("metadata", metadata.build());
             }
             sb.append(response.toString());
         } catch (JsonException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Logger.getLogger(RestCollectionProvider.class.getName()).log(Level.SEVERE,"Unable to parse create Json",e);
         }
 
         return (wrapObject ? " { items : " : "") + sb.toString() + (wrapObject ? "}" : "");
