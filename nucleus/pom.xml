@@ -296,7 +296,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>3.6.2</version>
                     <configuration>
                         <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                         <source>1.7</source>
@@ -312,7 +312,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>3.0.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
@@ -389,7 +389,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.5</version>
+                    <version>3.6</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
