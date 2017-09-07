@@ -78,14 +78,6 @@ public class RarDetector implements ArchiveDetector {
             javax.resource.spi.ConfigProperty.class,
             javax.resource.spi.ConnectionDefinition.class,
             javax.resource.spi.ConnectionDefinitions.class,
-            javax.resource.spi.Activation.class,
-            javax.resource.spi.AdministeredObject.class,
-            javax.resource.spi.AuthenticationMechanism.class,        
-            javax.resource.spi.SecurityPermission.class,
-            javax.resource.AdministeredObjectDefinition.class,
-            javax.resource.AdministeredObjectDefinitions.class,
-            javax.resource.ConnectionFactoryDefinition.class,
-            javax.resource.ConnectionFactoryDefinitions.class
     };
 
     public static final String RAR_DETECTOR_RANK_PROP = "glassfish.rar.detector.rank";
