@@ -270,7 +270,7 @@ public class GlassFishMain {
                 CommandRunner cmdRunner = gf.getCommandRunner();
                 
                 while (line != null) {
-                    line = getEnvrironmentSubsitution(line);
+                    line = getEnvrironmentSubstitution(line);
                     runCommand(cmdRunner, line);
                     line = reader.readLine();
                 }
@@ -282,7 +282,7 @@ public class GlassFishMain {
         }
         
         
-        private String getEnvrironmentSubsitution(String value){
+        private String getEnvrironmentSubstitution(String value){
              String origValue = value;
             int i = 0;            // Perform Environment variable substitution
             Matcher m2 = p.matcher(value);
@@ -298,7 +298,7 @@ public class GlassFishMain {
                 i++;     
             }
             if (i >= MAX_SUBSTITUTION_DEPTH) {
-                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, "System property subsistution exceeded maximum of " + MAX_SUBSTITUTION_DEPTH);
+                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, "System property substitution exceeded maximum of " + MAX_SUBSTITUTION_DEPTH);
             }
             return value;
         }
