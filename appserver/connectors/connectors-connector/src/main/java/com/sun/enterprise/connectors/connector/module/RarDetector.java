@@ -75,7 +75,7 @@ public class RarDetector implements ArchiveDetector {
      */
     private static final Class[] connectorAnnotations = new Class[]{
             javax.resource.spi.Connector.class,
-            javax.resource.spi.ConfigProperty.class,
+            javax.resource.spi.Activation.class,
             javax.resource.spi.ConnectionDefinition.class,
             javax.resource.spi.ConnectionDefinitions.class,
     };
