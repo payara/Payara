@@ -270,7 +270,7 @@ public class GlassFishMain {
                 CommandRunner cmdRunner = gf.getCommandRunner();
                 
                 while (line != null) {
-                    line = getEnvrironmentSubstitution(line);
+                    line = getEnvironmentSubstitution(line);
                     runCommand(cmdRunner, line);
                     line = reader.readLine();
                 }
@@ -282,7 +282,7 @@ public class GlassFishMain {
         }
         
         
-        private String getEnvrironmentSubstitution(String value){
+        private String getEnvironmentSubstitution(String value){
              String origValue = value;
             int i = 0;            // Perform Environment variable substitution
             Matcher m2 = p.matcher(value);
