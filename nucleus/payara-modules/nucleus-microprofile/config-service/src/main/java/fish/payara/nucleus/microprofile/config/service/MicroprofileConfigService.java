@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -363,9 +364,12 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
 
     public List<Properties> getDeployedApplicationProperties(String applicationName) {
         ApplicationInfo info = applicationRegistry.get(applicationName);
-        List<Properties> result = null;
+        List<Properties> result = Collections.EMPTY_LIST;
         if (info != null) {
-            result = info.getTransientAppMetaData(METADATA_KEY, LinkedList.class);
+            List<Properties> transientAppMetaData = info.getTransientAppMetaData(METADATA_KEY, LinkedList.class);
+            if (transientAppMetaData != null) {
+                result = transientAppMetaData;
+            }
         }
         return result;
     }
