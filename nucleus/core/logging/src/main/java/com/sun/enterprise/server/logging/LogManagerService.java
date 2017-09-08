@@ -51,6 +51,7 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.EarlyLogger;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
+import fish.payara.enterprise.server.logging.JSONLogFormatter;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
@@ -373,6 +374,16 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                         break;
                     }
                 }
+            } else if (formatterClassName.equals(JSONLogFormatter.class.getName())) {
+                JSONLogFormatter formatter = new JSONLogFormatter();
+                formatter.setExcludeFields(excludeFields);
+                for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                    // only get the ConsoleHandler
+                    if (handler.getClass().equals(ConsoleHandler.class)) {
+                        handler.setFormatter(formatter);
+                        break;
+                    }
+                }                
             }
 
             //setting default attributes value for all properties
