@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or afiliates
  */
 
 package org.glassfish.gms.bootstrap;
@@ -172,7 +174,7 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
      */
     public GMSAdapter getGMSAdapter() {
         synchronized(lock) {
-            if (gmsAdapters.size() > 1) {
+            if (gmsAdapters.size() > 1 && !env.isDas()) {
                 throw new IllegalStateException(
                     strings.getString("use.getByName"));
             } else if (gmsAdapters.size() == 1) {

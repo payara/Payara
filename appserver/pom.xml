@@ -45,12 +45,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
         <version>4.1.2.174-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
-    </parent>
-    <artifactId>glassfish-parent</artifactId>
+    </parent>    
+    <artifactId>payara-parent</artifactId>
     <packaging>pom</packaging>
     <name>Payara Appserver Parent Project</name>
 
@@ -59,8 +59,8 @@
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
       <tag>payara-server-4.1.2.174-SNAPSHOT</tag>
-  </scm>
-
+    </scm>
+  
     <properties>
         <jms-api.version>2.0.1</jms-api.version>
         <jsp-api.version>2.3.2-b01</jsp-api.version>
@@ -146,7 +146,6 @@
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
         <guava.version>19.0</guava.version>
-        <payara.fang.version>1.0.0-Beta</payara.fang.version>
         <osgi-ee-resources.version>2.0.0</osgi-ee-resources.version>
         <osgi-jta.version>1.0.1</osgi-jta.version>
         <osgi-cdi.version>1.0.3</osgi-cdi.version>
@@ -165,6 +164,7 @@
         <dojo-ajax-nodemo.version>0.4.4</dojo-ajax-nodemo.version>
         <json.version>1.0</json.version>
         <ddl.version>RELEASE65</ddl.version>
+        <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
     </properties>
 
     <modules>
@@ -1129,6 +1129,6 @@
             <modules>
                 <module>javaee-api</module>
             </modules>
-        </profile>
-      </profiles>
+        </profile>   
+    </profiles>
 </project>

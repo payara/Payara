@@ -131,10 +131,10 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- Payara Fang -->
+        <!-- Rest Monitoring -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>payara-fang</artifactId>
+            <artifactId>rest-monitoring</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -56,7 +56,9 @@ import org.glassfish.weld.connector.WeldUtils;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.api.WeldManager;
+import org.jboss.weld.manager.InjectionTargetFactoryImpl;
 import org.jvnet.hk2.annotations.Service;
+import org.jboss.weld.resources.ClassTransformer;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -85,7 +87,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.enterprise.inject.spi.BeanAttributes;
+import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
+import org.jboss.weld.bean.InterceptorImpl;
+import org.jboss.weld.bean.attributes.BeanAttributesFactory;
+import org.jboss.weld.context.CreationalContextImpl;
+import org.jboss.weld.manager.BeanManagerImpl;
+import static org.jboss.weld.util.reflection.Reflections.cast;
 
 @Service
 @Rank(10)
@@ -290,21 +298,35 @@ public class JCDIServiceImpl implements JCDIService {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public <T> T createInterceptorInstance(Class<T> interceptorClass,  BundleDescriptor bundle) {
+    @Override
+    public <T> T createInterceptorInstance(Class<T> interceptorClass, EjbDescriptor ejbDesc) {
+        BundleDescriptor bundle = ejbDesc.getEjbBundleDescriptor();
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
 
         // First get BeanDeploymentArchive for this ejb
         BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(topLevelBundleDesc);
         WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
-        BeanManager beanManager = bootstrap.getManager(bda);
-        CreationalContext cc = beanManager.createCreationalContext(null);
+        BeanManagerImpl beanManager = bootstrap.getManager(bda);
+        WeldManager weldManager = beanManager;
 
         AnnotatedType annotatedType = beanManager.createAnnotatedType(interceptorClass);
-        InjectionTarget it =
-            ((WeldManager) beanManager).getInjectionTargetFactory(annotatedType).createInterceptorInjectionTarget();
-        T interceptorInstance = (T) it.produce(cc);
-        it.inject(interceptorInstance, cc);
+        EnhancedAnnotatedType<T> type = ((ClassTransformer) beanManager.getServices().get(ClassTransformer.class)).getEnhancedAnnotatedType(annotatedType, beanManager.getId());
 
+        // Get an the Bean object
+        BeanAttributes<T> attributes = BeanAttributesFactory.forBean(type, beanManager);
+        InterceptorImpl<T> interceptor = InterceptorImpl.of(attributes, type, beanManager);
+
+        // Create the creational context
+        CreationalContext<?> ctx;
+        org.jboss.weld.ejb.spi.EjbDescriptor ejbWeldDesc = weldManager.getEjbDescriptor(ejbDesc.getName());
+        if (ejbWeldDesc == null) {
+            ctx = beanManager.createCreationalContext(null);
+        } else {
+            Bean<?> sessionBean = weldManager.getBean(ejbWeldDesc);
+            ctx = beanManager.createCreationalContext(sessionBean);
+        }
+
+        T interceptorInstance = cast(beanManager.getReference(interceptor, interceptor.getBeanClass(), ctx));
         return interceptorInstance;
     }
 

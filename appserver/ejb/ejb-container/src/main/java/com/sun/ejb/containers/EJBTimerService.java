@@ -239,7 +239,7 @@ public class EJBTimerService {
                 synchronized (lock) {
                     // choose service based on the configuration setting
                     EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
-                    String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEJBTimerService();
+                    String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEjbTimerService();
                     PersistentTimerService persistentTS = null;
                     for (PersistentTimerService pts : persistentTSList) {
                         if (pts.getClass().getSimpleName().startsWith(serviceType)) {
