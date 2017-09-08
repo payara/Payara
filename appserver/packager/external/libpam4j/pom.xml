@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
@@ -52,7 +53,7 @@
     <artifactId>libpam4j-repackaged</artifactId>
     <packaging>jar</packaging>
     <properties>
-      <libpam4j.version>3.1</libpam4j.version>
+      <libpam4j.version>4.0.0</libpam4j.version>
     </properties>
     <name>libpam4j repackaged as a module</name>
     <description>libpam4j repackaged as a module</description>
@@ -117,10 +118,10 @@
              won't package them. It is sufficient to package the wrapped jar. 
         -->
         <dependency>
-	  <groupId>org.jvnet.libpam4j</groupId>
-  	  <artifactId>libpam4j</artifactId>
-	   <version>1.3</version>
-  	  <optional>true</optional>
+            <groupId>org.kohsuke</groupId>
+            <artifactId>libpam4j</artifactId>
+            <version>1.8</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
