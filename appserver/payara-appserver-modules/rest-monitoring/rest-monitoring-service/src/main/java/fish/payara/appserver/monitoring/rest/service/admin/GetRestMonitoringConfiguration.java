@@ -91,15 +91,15 @@ public class GetRestMonitoringConfiguration implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         Config config = targetUtil.getConfig(target);
-        
-        RestMonitoringConfiguration restMonitoringConfiguration = config
-                .getExtensionByType(RestMonitoringConfiguration.class);
-        
+               
         if (config == null) {
             context.getActionReport().setMessage("No such config name: " + targetUtil);
             context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
+
+        RestMonitoringConfiguration restMonitoringConfiguration = config
+                .getExtensionByType(RestMonitoringConfiguration.class);
         
         ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
         Object[] outputValues = {
