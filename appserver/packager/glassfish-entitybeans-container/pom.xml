@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.0.0.174-SNAPSHOT</version>
+        <version>5.0.0.Alpha1</version>
     </parent>
     <artifactId>glassfish-entitybeans-container</artifactId>
     <name>Glassfish EntityBeans Container Package</name>
