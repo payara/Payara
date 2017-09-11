@@ -48,12 +48,34 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface VersionInfo {
 
+    /**
+     * Returns the short name of the product. E.g. Payara.
+     * @return The product name.
+     */
     public String getAbbreviatedProductName();
     
+    /**
+     * Returns the any prefixes to the products version. E.g. Alpha.
+     * @return The product version prefix.
+     */
     public String getVersionPrefix();
     
+    /**
+     * Returns the major version of the product. E.g. for Payara 5 the major version is 5.
+     * @return The major version of the product.
+     */
     public String getMajorVersion();
     
+    /**
+     * Returns the minor version of the product. E.g. for Payara 5.1 the minor version is 1.
+     * @return The minor version of the product.
+     */
     public String getMinorVersion();
+    
+    /**
+     * Returns the Payara version. E.g. for Payara 5.1.181 the Payara version is 181.
+     * @return The Payara version.
+     */
+    public String getPayaraVersion();
 
 }
