@@ -354,7 +354,7 @@ public class MultipartStream {
         }
         
         this.input = input;
-        this.bufSize = bufSize;
+        this.bufSize = Math.max(bufSize, boundaryLength * 2);
         this.buffer = new byte[bufSize];
         this.notifier = pNotifier;
         
