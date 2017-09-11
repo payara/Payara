@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>5.0.0.174-SNAPSHOT</version>
+        <version>5.0.0.Alpha1</version>
     </parent>
 
     <artifactId>ejb-timer-databases</artifactId>
