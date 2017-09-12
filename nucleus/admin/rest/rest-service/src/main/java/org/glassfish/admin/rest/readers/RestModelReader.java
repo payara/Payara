@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -47,6 +49,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Locale;
 import java.util.Set;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -57,8 +64,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestModel;
@@ -88,15 +93,16 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
         MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException, IOException {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
-            StringBuilder sb = new StringBuilder();
-            String line = in.readLine();
-            while (line != null) {
-                sb.append(line);
-                line = in.readLine();
-            }
+            JsonParser parser = Json.createParser(in);
 
             final Locale locale = CompositeUtil.instance().getLocale(mm);
-            JSONObject o = new JSONObject(sb.toString());
+            JsonObject o;
+            if (parser.hasNext()){
+                parser.next();
+                o = parser.getObject();
+            } else {
+                o = JsonValue.EMPTY_JSON_OBJECT;
+            }
             T model = CompositeUtil.instance().unmarshallClass(locale, type, o);
             Set<ConstraintViolation<T>> cv = CompositeUtil.instance().validateRestModel(locale, model);
             if (!cv.isEmpty()) {
@@ -106,7 +112,7 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
                 throw new WebApplicationException(response);
             }
             return (T) model;
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
                     .entity(ex.getLocalizedMessage()).build());
         }

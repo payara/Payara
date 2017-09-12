@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -45,15 +47,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Iterator;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.admin.ParameterMap;
 
 /**
@@ -74,25 +78,28 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
             InputStream in) throws IOException {
 
 
-        JSONObject obj;
+        JsonObject obj;
         try {
-            obj = new JSONObject(inputStreamAsString(in));
-            Iterator iter = obj.keys();
+            JsonParser parser = Json.createParser(in);
+            if (parser.hasNext()){
+                parser.next();
+                obj = parser.getObject();
+            } else {
+                obj = JsonValue.EMPTY_JSON_OBJECT;
+            }
+            
             ParameterMap map = new ParameterMap();
-
-            while (iter.hasNext()) {
-                String k = (String) iter.next();
+            for (String k : obj.keySet()) {
                 Object value = obj.get(k);
-                if (value instanceof JSONArray) {
-                    JSONArray array = (JSONArray) value;
-                    for (int i = 0; i < array.length(); i++) {
+                if (value instanceof JsonArray) {
+                    JsonArray array = (JsonArray) value;
+                    for (int i = 0; i < array.size(); i++) {
                         map.add(k, "" + array.get(i));
                     }
 
                 } else {
                     map.add(k, "" + value);
                 }
-
             }
             return map;
 

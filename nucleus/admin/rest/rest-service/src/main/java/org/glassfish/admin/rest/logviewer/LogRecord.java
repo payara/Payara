@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.logviewer;
@@ -43,6 +45,9 @@ package org.glassfish.admin.rest.logviewer;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.logging.Level;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObjectBuilder;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,8 +60,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestLogging;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -64,7 +67,7 @@ import org.w3c.dom.Node;
 
 /**
  * internal REST wrapper for a log record
- * will be used to emit JSON easily with Jackson framework
+ * will be used to emit Json easily
  *
  * @author ludo
  */
@@ -143,18 +146,18 @@ public class LogRecord {
         this.recordNumber = recordNumber;
     }
 
-    public String toJSON() {
-        JSONObject obj = new JSONObject();
+    public String toJson() {
+        JsonObjectBuilder obj = Json.createObjectBuilder();
         try {
-            obj.put("recordNumber", recordNumber);
-            obj.put("loggedDateTimeInMS", (loggedDateTime != null) ? loggedDateTime.getTime() : null);
-            obj.put("loggedLevel", loggedLevel);
-            obj.put("productName", productName);
-            obj.put("loggerName", loggerName);
-            obj.put("nameValuePairs", nameValuePairs);
-            obj.put("messageID", messageID);
-            obj.put("Message", message); //.replaceAll("\n", Matcher.quoteReplacement("\\\n")).replaceAll("\"", Matcher.quoteReplacement("\\\"")));
-        } catch (JSONException ex) {
+            obj.add("recordNumber", recordNumber);
+            obj.add("loggedDateTimeInMS", (loggedDateTime != null) ? loggedDateTime.getTime() : null);
+            obj.add("loggedLevel", loggedLevel);
+            obj.add("productName", productName);
+            obj.add("loggerName", loggerName);
+            obj.add("nameValuePairs", nameValuePairs);
+            obj.add("messageID", messageID);
+            obj.add("Message", message); //.replaceAll("\n", Matcher.quoteReplacement("\\\n")).replaceAll("\"", Matcher.quoteReplacement("\\\"")));
+        } catch (JsonException ex) {
             throw new RuntimeException(ex);
         }
         return obj.toString();

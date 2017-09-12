@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
@@ -128,6 +130,12 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     public abstract String getContent(T proxy);
 
+    /**
+     * 
+     * @return
+     * @deprecated since 5.0 as Json-P does not support configurable indentation levels
+     */
+    @Deprecated
     protected int getFormattingIndentLevel() {
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
         if (rg == null){
@@ -155,7 +163,6 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
      * returns true if the HTML viewer displays the deprecated elements or attributes
      * of a config bean
      */
-
     protected boolean canShowDeprecatedItems() {
 
         RestConfig rg = ResourceUtil.getRestConfig(habitat);

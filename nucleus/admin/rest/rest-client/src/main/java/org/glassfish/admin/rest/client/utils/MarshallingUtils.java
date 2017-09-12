@@ -36,30 +36,34 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
-
 package org.glassfish.admin.rest.client.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.logging.LogHelper;
 
 /**
@@ -67,6 +71,7 @@ import org.glassfish.api.logging.LogHelper;
  * @author jasonlee
  */
 public class MarshallingUtils {
+
     public static List<Map<String, String>> getPropertiesFromJson(String json) {
         List<Map<String, String>> properties = null;
         json = json.trim();
@@ -75,12 +80,14 @@ public class MarshallingUtils {
             properties.add(processJsonMap(json));
         } else if (json.startsWith("[")) {
             try {
-                properties = processJsonArray(new JSONArray(json));
-            } catch (JSONException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                JsonParser parser = Json.createParser(new StringReader(json));
+                parser.next();
+                properties = processJsonArray(parser.getArray());
+            } catch (JsonException e) {
+                LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
             }
         } else {
-            throw new RuntimeException("The JSON string must start with { or ["); // i18n
+            throw new RuntimeException("The Json string must start with { or ["); // i18n
         }
 
         return properties;
@@ -126,7 +133,11 @@ public class MarshallingUtils {
     }
 
     public static String getXmlForProperties(final Map<String, String> properties) {
-        return getXmlForProperties(new ArrayList<Map<String, String>>() {{ add(properties); }} );
+        return getXmlForProperties(new ArrayList<Map<String, String>>() {
+            {
+                add(properties);
+            }
+        });
     }
 
     public static String getXmlForProperties(List<Map<String, String>> properties) {
@@ -135,15 +146,15 @@ public class MarshallingUtils {
             XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
             StringWriter sw = new StringWriter();
             XMLStreamWriter writer = outputFactory.createXMLStreamWriter(sw);
-            writer.writeStartDocument("UTF-8","1.0");
+            writer.writeStartDocument("UTF-8", "1.0");
             writer.writeStartElement("list");
             for (Map<String, String> property : properties) {
                 writer.writeStartElement("map");
                 for (Map.Entry<String, String> entry : property.entrySet()) {
-                writer.writeStartElement("entry");
+                    writer.writeStartElement("entry");
                     writer.writeAttribute("key", entry.getKey());
                     writer.writeAttribute("value", entry.getValue());
-                writer.writeEndElement();
+                    writer.writeEndElement();
                 }
                 writer.writeEndElement();
             }
@@ -159,19 +170,27 @@ public class MarshallingUtils {
     }
 
     public static String getJsonForProperties(final Map<String, String> properties) {
-        return getJsonForProperties(new ArrayList<Map<String, String>>() {{ add(properties); }} );
+        return getJsonForProperties(new ArrayList<Map<String, String>>() {
+            {
+                add(properties);
+            }
+        });
     }
 
+    /**
+     * Converts a list of properties into Json format
+     * @param properties
+     * @return A String representation of the resulting Json array
+     */
     public static String getJsonForProperties(List<Map<String, String>> properties) {
-        JSONArray list = new JSONArray();
-
-        for (Map<String, String> property : properties) {
-            list.put(property);
-        }
-
-        return list.toString();
+        return Json.createArrayBuilder(properties).build().toString();
     }
 
+    /**
+     * Converts a json or xml document into a map
+     * @param text A String containg the correctly formatted json or xml
+     * @return
+     */
     public static Map buildMapFromDocument(String text) {
         Map map = null;
         if ((text == null) || text.isEmpty()) {
@@ -220,34 +239,36 @@ public class MarshallingUtils {
             }
         } else {
             System.out.println(text);
-            throw new RuntimeException ("An unknown document type was provided:  " + text); //.substring(0, 10));
+            throw new RuntimeException("An unknown document type was provided:  " + text); //.substring(0, 10));
         }
 
         return map;
     }
 
-    /**************************************************************************/
+    /**
+     * ***********************************************************************
+     */
     private static Map processJsonMap(String json) {
         Map map;
         try {
-            map = processJsonObject(new JSONObject(json));
-        } catch (JSONException e) {
+            JsonParser parser = Json.createParser(new StringReader(json));
+            parser.next();
+            map = processJsonObject(parser.getObject());
+        } catch (JsonException e) {
             map = new HashMap();
         }
         return map;
     }
 
-    private static Map processJsonObject(JSONObject jo) {
+    private static Map processJsonObject(JsonObject jo) {
         Map<String, Object> map = new HashMap<String, Object>();
         try {
-            Iterator i = jo.keys();
-            while (i.hasNext()) {
-                String key = (String)i.next();
-                Object value = jo.get(key);
-                if (value instanceof JSONArray) {
-                    map.put(key, processJsonArray((JSONArray)value));
-                } else if (value instanceof JSONObject) {
-                    map.put(key, processJsonObject((JSONObject)value));
+            for (String key : jo.keySet()) {
+                JsonValue value = jo.get(key);
+                if (value instanceof JsonArray) {
+                    map.put(key, processJsonArray((JsonArray) value));
+                } else if (value instanceof JsonObject) {
+                    map.put(key, processJsonObject((JsonObject) value));
                 } else if (value.getClass().getSimpleName().equalsIgnoreCase("null")) {
                     // The Map may not store null values, but we shouldn't rely on
                     // that behavior, just to be safe
@@ -256,28 +277,28 @@ public class MarshallingUtils {
                     map.put(key, value);
                 }
             }
-        } catch (JSONException e) {
+        } catch (JsonException e) {
             LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
         }
 
         return map;
     }
 
-    private static List processJsonArray(JSONArray ja) {
+    private static List processJsonArray(JsonArray ja) {
         List results = new ArrayList();
 
         try {
-            for (int i = 0; i < ja.length(); i++) {
+            for (int i = 0; i < ja.size(); i++) {
                 Object entry = ja.get(i);
-                if (entry instanceof JSONArray) {
-                    results.add(processJsonArray((JSONArray)entry));
-                } else if (entry instanceof JSONObject) {
-                    results.add(processJsonObject((JSONObject)entry));
+                if (entry instanceof JsonArray) {
+                    results.add(processJsonArray((JsonArray) entry));
+                } else if (entry instanceof JsonObject) {
+                    results.add(processJsonObject((JsonObject) entry));
                 } else {
                     results.add(entry);
                 }
             }
-        } catch (JSONException e) {
+        } catch (JsonException e) {
             LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
         }
 
@@ -319,7 +340,7 @@ public class MarshallingUtils {
                     break;
                 }
                 default: {
-                    String text=parser.getText();
+                    String text = parser.getText();
                     if (element != null) {
                         if ("number".equals(element)) {
                             if (text.contains(".")) {

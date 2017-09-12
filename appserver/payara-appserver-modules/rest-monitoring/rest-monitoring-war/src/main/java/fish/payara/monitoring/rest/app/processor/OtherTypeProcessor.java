@@ -39,6 +39,8 @@
  */
 package fish.payara.monitoring.rest.app.processor;
 
+import javax.json.Json;
+import javax.json.JsonValue;
 import javax.management.openmbean.OpenType;
 
 /**
@@ -49,8 +51,8 @@ import javax.management.openmbean.OpenType;
 public class OtherTypeProcessor implements TypeProcessor<OpenType> {
 
     @Override
-    public Object processObject(Object object) {
-        return object.toString();
+    public JsonValue processObject(Object object) {
+        return Json.createValue(object.toString());
     }
-    
+
 }
