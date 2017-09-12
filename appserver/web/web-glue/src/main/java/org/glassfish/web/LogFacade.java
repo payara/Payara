@@ -222,7 +222,7 @@ public class LogFacade {
     public static final String SESSION_DESTROYED = prefix + "00030";
 
     @LogMessageInfo(
-            message = "Process request for ''{0}'",
+            message = "Process request for ''{0}''",
             level = "FINE")
     public static final String REQUEST_PROCESSED = prefix + "00031";
 
