@@ -90,7 +90,7 @@ public class LogFacade {
     private static final String prefix = "AS-WEB-UTIL-";
 
     @LogMessageInfo(
-            message = "Resource '{0}' is missing",
+            message = "Resource ''{0}'' is missing",
             level = "SEVERE",
             cause = "A naming exception is encountered",
             action = "Check the list of resources")
