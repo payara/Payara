@@ -249,6 +249,7 @@ public class GlassFishMain {
             }
             line = line.replaceAll("^\\s*#.*", ""); // Removes comments at the start of lines
             line = line.replaceAll("\\s#.*", ""); // Removes comments with whitespace before them. This allows for hashtags used in commands to be ignored.
+            line = line.replaceAll("\"", "");
             if (line.isEmpty() || line.replaceAll("\\s", "").isEmpty()) {
                 return null;
             }
