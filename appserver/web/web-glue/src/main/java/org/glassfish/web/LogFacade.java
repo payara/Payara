@@ -184,7 +184,7 @@ public class LogFacade {
     @LogMessageInfo(
             message = "''in-range'' constraint requires a value for the upper bound of the range; check your value [{0}]",
             level = "WARNING")
-    public static final String RANGE_REQ_UPPER_BOUND= "AS-WEB-GLUE-00023";
+    public static final String RANGE_REQ_UPPER_BOUND= prefix + "00023";
 
     @LogMessageInfo(
             message = "''in-range'' constraint requires numeric values for the upper bound [{0}]",
@@ -680,7 +680,7 @@ public class LogFacade {
     @LogMessageInfo(
             message = "globalAvailability = {0}",
             level = "FINEST")
-    public static final String GLOBAL_AVAILABILITY= "AS-WEB-GLUE-00118";
+    public static final String GLOBAL_AVAILABILITY= prefix + "00118";
 
     @LogMessageInfo(
             message = "webContainerAvailability = {0}",
@@ -873,7 +873,7 @@ public class LogFacade {
     @LogMessageInfo(
             message = "Disabling Single Sign On (SSO) for virtual server {0} as configured",
             level = "FINE")
-    public static final String DISABLE_SSO= "AS-WEB-GLUE-00153";
+    public static final String DISABLE_SSO= prefix + "00153";
 
     @LogMessageInfo(
             message = "Enabling Single Sign On (SSO) for virtual server {0} as configured",
@@ -883,7 +883,7 @@ public class LogFacade {
     @LogMessageInfo(
             message = "SSO entry max idle time set to {0} for virtual server {1}",
             level = "FINE")
-    public static final String SSO_MAX_INACTIVE_SET= "AS-WEB-GLUE-00155";
+    public static final String SSO_MAX_INACTIVE_SET= prefix + "00155";
 
     @LogMessageInfo(
             message = "SSO expire thread interval set to {0} for virtual server {1}",
@@ -1057,7 +1057,7 @@ public class LogFacade {
             cause = "There is no web context deployed on the given" +
                     "virtual server that matches the given default context path",
             action = "Verify if the default context path is deployed on the virtual server")
-    public static final String DEFAULT_WEB_MODULE_ERROR= "AS-WEB-GLUE-00186";
+    public static final String DEFAULT_WEB_MODULE_ERROR= prefix + "00186";
 
     @LogMessageInfo(
             message = "Unable to load web module {0} at context root {1}, because it is not correctly encoded",
@@ -1116,7 +1116,7 @@ public class LogFacade {
     @LogMessageInfo(
             message = "Virtual server {0} cannot be updated, because it does not exist",
             level = "WARNING")
-    public static final String CANNOT_UPDATE_NON_EXISTENCE_VS= "AS-WEB-GLUE-00197";
+    public static final String CANNOT_UPDATE_NON_EXISTENCE_VS= prefix + "00197";
 
     @LogMessageInfo(
             message = "Created HTTP listener {0} on host/port {1}:{2}",
@@ -1200,7 +1200,7 @@ public class LogFacade {
     @LogMessageInfo(
             message = "-DjvmRoute updated with {0}",
             level = "FINE")
-    public static final String JVM_ROUTE_UPDATED= "AS-WEB-GLUE-00213";
+    public static final String JVM_ROUTE_UPDATED= prefix + "00213";
 
     @LogMessageInfo(
             message = "Unable to parse port number {0} of network-listener {1}",

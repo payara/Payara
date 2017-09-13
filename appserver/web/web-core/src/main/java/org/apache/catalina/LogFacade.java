@@ -656,7 +656,7 @@ public class LogFacade {
         cause = "Could not release filter chain",
         action = "Verify the availability of current filter chain"
     )
-    public static final String RELEASE_FILTERS_EXCEPTION_SEVERE = "AS-WEB-CORE-00091";
+    public static final String RELEASE_FILTERS_EXCEPTION_SEVERE = prefix + "00091";
 
     @LogMessageInfo(
         message = "Deallocate exception for servlet {0}",
