@@ -186,7 +186,7 @@
         <update_version>0</update_version>
         <payara_version>Alpha2-SNAPSHOT</payara_version>
         <payara_update_version></payara_update_version>
-        <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
+        <install.dir.name>payara${major_version}</install.dir.name>
 
         <jsf-ext.version>0.2</jsf-ext.version>
         <jsftemplating.version>2.1.2</jsftemplating.version>
