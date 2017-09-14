@@ -55,6 +55,7 @@ import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -133,15 +134,15 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
 
     protected String prettyPrintBytes(long value) {
         String result;
-
+        DecimalFormat format = new DecimalFormat("#.00");
         if (value / ONE_GB > 0) {
-            result = (value / ONE_GB) + " Gb";
+            result = format.format((double)value / ONE_GB) + " Gb";
         }
         else if (value / ONE_MB > 0) {
-            result = (value / ONE_MB) + " Mb";
+            result = format.format((double)value / ONE_MB) + " Mb";
         }
         else if (value / ONE_KB > 0) {
-            result = (value / ONE_KB) + " Kb";
+            result = format.format((double)value / ONE_KB) + " Kb";
         }
         else {
             result = (value) + " bytes";
