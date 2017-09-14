@@ -361,8 +361,12 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
                     if (mappedusername != null && !mappedusername.isEmpty()) {
                         bp.setUserName(mappedusername);
                     }
-                    if (mappedpassword != null && !mappedpassword.isEmpty()) {
-                        bp.setPassword(mappedpassword);
+                    if (mappedpassword != null) {
+                        if(mappedpassword.isEmpty()) {
+                            bp.setPassword(null);
+                        } else {
+                            bp.setPassword(mappedpassword);
+                        }
                     }
 
                     return sm;
