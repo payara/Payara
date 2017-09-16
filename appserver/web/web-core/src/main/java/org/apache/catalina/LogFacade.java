@@ -134,7 +134,7 @@ public class LogFacade {
     public static final String PROCESS_SESSION_DESTROYED_INFO = PREFIX + "00007";
 
     @LogMessageInfo(
-            message = "Process request for '{0}'",
+            message = "Process request for ''{0}''",
             level = "INFO"
     )
     public static final String PROCESS_REQUEST_INFO = PREFIX + "00008";

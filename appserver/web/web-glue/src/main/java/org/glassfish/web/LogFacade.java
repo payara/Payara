@@ -223,12 +223,12 @@ public class LogFacade {
     public static final String SESSION_DESTROYED = PREFIX + "00030";
 
     @LogMessageInfo(
-            message = "Process request for '{0}'",
+            message = "Process request for ''{0}''",
             level = "FINE")
     public static final String REQUEST_PROCESSED = PREFIX + "00031";
 
     @LogMessageInfo(
-            message = "Principal '{0}' has already been authenticated",
+            message = "Principal ''{0}'' has already been authenticated",
             level = "FINE")
     public static final String PRINCIPAL_ALREADY_AUTHENTICATED = PREFIX + "00032";
 
@@ -248,7 +248,7 @@ public class LogFacade {
     public static final String NO_REALM_CONFIGURED = PREFIX + "00035";
 
     @LogMessageInfo(
-            message = "This application uses realm '{0}'",
+            message = "This application uses realm ''{0}''",
             level = "FINE")
     public static final String APP_REALM = PREFIX + "00036";
 
@@ -258,12 +258,12 @@ public class LogFacade {
     public static final String CHECKING_CACHED_PRINCIPAL = PREFIX + "00037";
 
     @LogMessageInfo(
-            message = "Found cached principal '{0}' with auth type '{1}' in realm '{2}'",
+            message = "Found cached principal ''{0}'' with auth type ''{1}'' in realm ''{2}''",
             level = "FINE")
     public static final String FOUND_CACHED_PRINCIPAL = PREFIX + "00038";
 
     @LogMessageInfo(
-            message = "Ignoring SSO entry which does not match application realm '{0}'",
+            message = "Ignoring SSO entry which does not match application realm ''{0}''",
             level = "FINE")
     public static final String IGNORING_SSO = PREFIX + "00039";
 
@@ -273,7 +273,7 @@ public class LogFacade {
     public static final String NO_CACHED_PRINCIPAL_FOUND = PREFIX + "00040";
 
     @LogMessageInfo(
-            message = "Deregistering sso id '{0}'",
+            message = "Deregistering sso id ''{0}''",
             level = "FINE")
     public static final String DEREGISTER_SSO = PREFIX + "00041";
 
@@ -587,7 +587,7 @@ public class LogFacade {
     public static final String ACCESS_LOG_UNABLE_TO_WRITE = PREFIX + "00098";
 
     @LogMessageInfo(
-            message = "Setting accesslog directory for virtual server '{0}' to {1}",
+            message = "Setting accesslog directory for virtual server ''{0}'' to {1}",
             level = "FINE")
     public static final String ACCESS_LOG_DIRECTORY_SET = PREFIX + "00099";
 
