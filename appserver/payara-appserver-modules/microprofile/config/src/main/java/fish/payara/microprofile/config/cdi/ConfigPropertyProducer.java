@@ -81,14 +81,10 @@ public class ConfigPropertyProducer {
             } else {
                 beanClass = bean.getBeanClass();
             }
-            StringBuilder sb = new StringBuilder(beanClass.getCanonicalName().length() + ip.getMember().getName().length());
-            sb.append(beanClass.getPackage().getName());
-            sb.append('.');
-            sb.append(beanClass.getSimpleName().substring(0,1).toLowerCase());
-            sb.append(beanClass.getSimpleName().substring(1));
+            StringBuilder sb = new StringBuilder(beanClass.getCanonicalName());
             sb.append('.');
             sb.append(ip.getMember().getName());
-            name = sb.toString();
+            name =  sb.toString();
         }
         result = config.getValue(name, property.defaultValue(),type);
         if (result == null) {

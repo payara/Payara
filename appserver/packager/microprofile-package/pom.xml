@@ -124,7 +124,7 @@
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>1.0-RC2</version>
+            <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.nucleus.microprofile.config</groupId>
