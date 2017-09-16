@@ -220,6 +220,22 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
 
     public void addManagedBean(ManagedBeanDescriptor desc) {
         if (!hasManagedBeanByBeanClass(desc.getBeanClassName())) {
+            //check for uniqueness of ManagedBean name, if defined
+            if (desc.isNamed()) {
+                for (ManagedBeanDescriptor managedBeanDescriptor : managedBeans) {
+                    if (managedBeanDescriptor.isNamed() && desc.getName().equals(managedBeanDescriptor.getName())) {
+                        //duplicate ManagedBean found
+                        throw new RuntimeException(localStrings.getLocalString(
+                                "entreprise.deployment.exceptionduplicatemanagedbeandefinition",
+                                "ManagedBean [{0}] cannot have same name [{1}] already used by "
+                                        + "another ManagedBean [{2}]", new Object[]{
+                                        desc.getBeanClassName(),
+                                        managedBeanDescriptor.getName(),
+                                        managedBeanDescriptor.getBeanClassName()
+                                }));
+                    }
+                }
+            }
             managedBeans.add(desc);
             desc.setBundle(this);
         }
