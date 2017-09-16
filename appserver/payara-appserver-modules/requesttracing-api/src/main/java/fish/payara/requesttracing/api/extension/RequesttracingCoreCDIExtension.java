@@ -37,9 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.api.extension;
+package fish.payara.requesttracing.api.extension;
 
-import fish.payara.nucleus.requesttracing.api.RequestTracingCdiInterceptor;
+import fish.payara.requesttracing.api.RequestTracingCdiInterceptor;
 import fish.payara.nucleus.requesttracing.api.Traced;
 
 import javax.enterprise.event.Observes;
