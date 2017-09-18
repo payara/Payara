@@ -115,7 +115,7 @@ public class StatefulSessionBeanStatsProvider extends EjbMonitoringStatsProvider
             @ProbeParam("modName") String modName,
             @ProbeParam("ejbName") String ejbName) {
         if (this.beanId == beanId) {
-            log ("methodReadyRemoveEvent", "StatefulSessionBeanStatsProvider");
+            log("methodReadyRemoveEvent", "StatefulSessionBeanStatsProvider");
             methodReadyCount.decrementAndGet();
         }
     }
@@ -128,9 +128,9 @@ public class StatefulSessionBeanStatsProvider extends EjbMonitoringStatsProvider
             @ProbeParam("ejbName") String ejbName,
             @ProbeParam("success") boolean success) {
         if (this.beanId == beanId && success) {
-            log ("beanPassivatedEvent", "StatefulSessionBeanStatsProvider");
+            log("beanPassivatedEvent", "StatefulSessionBeanStatsProvider");
             passivations.incrementAndGet();
-}
+        }
     }
 
     @ProbeListener("glassfish:ejb:cache:expiredSessionsRemovedEvent")
@@ -141,7 +141,7 @@ public class StatefulSessionBeanStatsProvider extends EjbMonitoringStatsProvider
             @ProbeParam("ejbName") String ejbName,
             @ProbeParam("num") long num) {
         if (this.beanId == beanId) {
-            log ("expiredSessionsRemovedEvent", "StatefulSessionBeanStatsProvider");
+            log("expiredSessionsRemovedEvent", "StatefulSessionBeanStatsProvider");
             passivations.addAndGet(-num);
         }
     }
