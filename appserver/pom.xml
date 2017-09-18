@@ -165,6 +165,9 @@
         <json.version>1.0</json.version>
         <ddl.version>RELEASE65</ddl.version>
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
+        
+        <!-- Microprofile version properties -->
+        <microprofile-config.version>1.1</microprofile-config.version>
     </properties>
 
     <modules>

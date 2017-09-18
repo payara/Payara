@@ -65,8 +65,6 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import static javax.naming.InitialContext.doLookup;
-import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -81,7 +79,6 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
 import org.glassfish.resources.config.CustomResource;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
-import org.glassfish.resources.admin.cli.DeleteCustomResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -449,7 +446,9 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         List<Property> properties = domainConfiguration.getProperty();
         HashMap<String, String> result = new HashMap<>(properties.size());
         for (Property property : properties) {
-            result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+            if (property.getName().startsWith(PROPERTY_PREFIX)) {
+                result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+            }
         }
         return result;
     }
@@ -460,7 +459,9 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         if (config != null) {
             List<Property> properties = config.getProperty();
             for (Property property : properties) {
-                result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                if (property.getName().startsWith(PROPERTY_PREFIX)) {
+                    result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                }
             }
         }
         return result;
@@ -472,7 +473,9 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         if (config != null) {
             List<Property> properties = config.getProperty();
             for (Property property : properties) {
-                result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                if (property.getName().startsWith(PROPERTY_PREFIX)) {
+                    result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                }
             }
         }
         return result;
@@ -484,7 +487,9 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
         if (config != null) {
             List<Property> properties = config.getProperty();
             for (Property property : properties) {
-                result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                if (property.getName().startsWith(PROPERTY_PREFIX)) {
+                    result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                }
             }
         }
         return result;
@@ -498,7 +503,9 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
             if (module != null) {
                 List<Property> properties = module.getProperty();
                 for (Property property : properties) {
-                    result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                    if (property.getName().startsWith(PROPERTY_PREFIX)) {
+                        result.put(property.getName().substring(PROPERTY_PREFIX.length()), property.getValue());
+                    }
                 }
             }
         }
