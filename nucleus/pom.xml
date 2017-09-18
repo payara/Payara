@@ -234,7 +234,7 @@
         <junit.version>4.10</junit.version>
         <testng.version>6.5.2</testng.version>
         <jmockit.version>0.999.15</jmockit.version>
-        <commons-io.version>1.3.1</commons-io.version>
+        <commons-io.version>2.5</commons-io.version>
         <ant.version>1.8.2</ant.version>
         <ant-launcher.version>1.8.2</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
