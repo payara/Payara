@@ -51,6 +51,10 @@
             onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
         <!command
             createMap(result="#{requestScope.attrsMap}");
+            mapPut(map="#{pageSession.valueMap}", key="LocalDeliveryPreferred", value="#{pageSession.LocalDeliveryPreferredSelected}");
+            mapPut(map="#{pageSession.valueMap}", key="UseDMQ", value="#{pageSession.UseDMQSelected}");
+            mapPut(map="#{pageSession.valueMap}", key="ValidateXMLSchemaEnabled", value="#{pageSession.ValidateXMLSchemaSelected}");
+
             if ("#{type} = topic") {
                 mapPut(map="#{pageSession.valueMap}", key="MaxNumActiveConsumers", value="#{null}");
                 mapPut(map="#{pageSession.valueMap}", key="MaxNumBackupConsumers", value="#{null}");
@@ -71,6 +75,10 @@
             onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
         <!command
             createMap(result="#{requestScope.attrsMap}");
+            mapPut(map="#{pageSession.valueMap}", key="LocalDeliveryPreferred", value="#{pageSession.LocalDeliveryPreferredSelected}");
+            mapPut(map="#{pageSession.valueMap}", key="UseDMQ", value="#{pageSession.UseDMQSelected}");
+            mapPut(map="#{pageSession.valueMap}", key="ValidateXMLSchemaEnabled", value="#{pageSession.ValidateXMLSchemaSelected}");
+            
             mapJoin(map="#{pageSession.valueMap}", sep=":", result="#{requestScope.properties}");
 
             mapPut(map="#{requestScope.attrsMap}" key="property" value="#{requestScope.properties}");
@@ -81,7 +89,6 @@
             gf.restRequest(endpoint="#{baseUrl}/__update-jmsdest", method="post", attrs="#{requestScope.attrsMap}", result="#{requestScope.result}");
 
 //            updatePhysicalDestination(name="#{pageSession.destName}", type="#{pageSession.destType}", attributes="#{pageSession.valueMap}");
-            gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}")
         />
     </sun:button>
     <sun:button id="cancelButton" immediate="#{true}" text="$resource{i18n.button.Cancel}" primary="#{false}">
@@ -135,16 +142,16 @@
             <sun:textField id="consumerFlowLimit" text="#{pageSession.valueMap['ConsumerFlowLimit']}" columns="$int{6}" maxLength="#{sessionScope.fieldLengths['maxLength.jmsPhysDestinations.ConsumerFlowLimit']}" />
         </sun:property>
         <sun:property id="localDeliveryPreferredProp" labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" rendered="#{pageSession.destType != 'topic'}" label="$resource{i18njms.jmsPhysDestinations.LocalDeliveryPreferred}" helpText="$resource{i18njms.jmsPhysDestinations.LocalDeliveryPreferredHelp}" >
-            <sun:dropDown id="localDeliveryPreferred" values={"true", "false"} labels={"$resource{i18n.common.true}", "$resource{i18n.common.false}"} selected="#{pageSession.valueMap['LocalDeliveryPreferred']}" selectedValue="true"/>
+            <sun:checkbox id="localDeliveryPreferred" label="$resource{i18n.common.Enabled}" selected="#{pageSession.LocalDeliveryPreferredSelected}" />
         </sun:property>
         <sun:property id="useDmqProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jmsPhysDestinations.UseDMQ}" helpText="$resource{i18njms.jmsPhysDestinations.UseDMQHelp}" >
-            <sun:dropDown id="useDmq" values={"true", "false"} labels={"$resource{i18n.common.true}", "$resource{i18n.common.false}"} selected="#{pageSession.valueMap['UseDMQ']}" selectedValue="true"/>
+            <sun:checkbox id="useDmq" label="$resource{i18n.common.Enabled}" selected="#{pageSession.UseDMQSelected}"/>
         </sun:property>
         <sun:property id="validateSchemaProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jmsPhysDestinations.ValidateXMLSchemaEnabled}" helpText="$resource{i18njms.jmsPhysDestinations.ValidateXMLSchemaEnabledHelp}" >
-            <sun:dropDown id="validateXMLSchemaEnabled" values={"true", "false"} labels={"$resource{i18n.common.true}", "$resource{i18n.common.false}"} selected="#{pageSession.valueMap['ValidateXMLSchemaEnabled']}" selectedValue="true"/>
+            <sun:checkbox id="validateXMLSchemaEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.ValidateXMLSchemaSelected}" />
         </sun:property>
         <sun:property id="xmlSchemeUrlProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jmsPhysDestinations.XMLSchemaURIList}" helpText="$resource{i18njms.jmsPhysDestinations.XMLSchemaURIListHelp}" >
-            <sun:textField id="xmlSchemaURIList" text="#{pageSession.valueMap['XmlSchemaURIList']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.jmsPhysDestinations.XMLSchemaURIList']}" />
+            <sun:textField id="xmlSchemaURIList" text="#{pageSession.valueMap['XmlSchemaURIList']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.jmsPhysDestinations.XMLSchemaURIList']}"/>
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>

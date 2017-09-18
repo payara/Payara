@@ -54,8 +54,8 @@
         setPageSessionAttribute(key="parentPage" value="#{param.parentPage}");
         setPageSessionAttribute(key="target" value="#{param.target}");
         setPageSessionAttribute(key="edit" value="#{true}");
-        getRequestValue(key="name" value=>$page{destName});
-        getRequestValue(key="type" value=>$page{destType});
+        getRequestValue(key="name" value="#{pageSession.destName}");
+        getRequestValue(key="type" value="#{pageSession.destType}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jms/physdest/jmsPhysicalDestinationEdit.jsf?name=#{pageSession.destName}&type=#{pageSession.destType}&target=#{pageSession.target}&parentPage=#{pageSession.parentPage}")
 
         if ("#{targetType} = instance") {
@@ -67,6 +67,25 @@
 
         gf.restRequest(endpoint="#{pageSession.baseUrl}/__get-jmsdest?id=#{pageSession.destName}&destType=#{pageSession.destType}", method="get", result="#{requestScope.restResponse}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.restResponse.data.extraProperties.entity}");
+        
+        if ("#{pageSession.valueMap['UseDMQ']} = true") {
+            setPageSessionAttribute(key="UseDMQSelected", value="#{true}");
+        }
+        if ("#{pageSession.valueMap['UseDMQ']} = false") {
+            setPageSessionAttribute(key="UseDMQSelected", value="#{false}");
+        } 
+        if ("#{pageSession.valueMap['LocalDeliveryPreferred']} = true") {
+            setPageSessionAttribute(key="LocalDeliveryPreferredSelected", value="#{true}");
+        }
+        if ("#{pageSession.valueMap['LocalDeliveryPreferred']} = false") {
+            setPageSessionAttribute(key="LocalDeliveryPreferredSelected", value="#{false}");
+        }
+        if ("#{pageSession.valueMap['ValidateXMLSchemaEnabled']} = true") {
+            setPageSessionAttribute(key="ValidateXMLSchemaSelected", value="#{true}");
+        }
+        if ("#{pageSession.valueMap['ValidateXMLSchemaEnabled']} = false") {
+            setPageSessionAttribute(key="ValidateXMLSchemaSelected", value="#{false}");
+        }
     />
     </event>
     <sun:form id="jmsPhysDestForm">
