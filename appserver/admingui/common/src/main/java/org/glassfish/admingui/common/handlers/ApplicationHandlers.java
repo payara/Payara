@@ -70,6 +70,8 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.util.Date;
 
 
 import java.util.TreeSet;
@@ -125,6 +127,7 @@ public class ApplicationHandlers {
             oneRow.put("sniffers", engines);
             oneRow.put("deploymentOrder", RestUtil.getAttributesMap(prefix+encodedName).get("deploymentOrder"));
             oneRow.put("deploymentTime", RestUtil.getAttributesMap(prefix+encodedName).get("deploymentTime"));
+            oneRow.put("deploymentOccuranceTime", DateFormat.getDateTimeInstance().format(new Date(Long.valueOf((String)RestUtil.getAttributesMap(prefix+encodedName).get("timeDeployed")))));
 
             List sniffersList = GuiUtil.parseStringList(engines, ",");
             oneRow.put("sniffersList", sniffersList);

@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -96,6 +96,7 @@
                                 org.jboss.weld.context.http,
                                 org.jboss.weld.context.bound,
                                 org.jboss.weld.context.cache,
+                                org.jboss.weld.bean.attributes,
                                 org.jboss.weld.bean.builtin.ee,
                                 javassist.util.proxy,
                                 org.jboss.weld.interceptor.proxy,
@@ -103,7 +104,11 @@
                                 org.jboss.weld.util.bean,
                                 org.jboss.weld.serialization,
                                 org.jboss.weld.injection.attributes,
+                                org.jboss.weld.injection.producer,
+                                org.jboss.weld.resources,
                                 org.jboss.weld.util.collections,
+                                org.jboss.weld.util.reflection,
+                                org.jboss.weld.annotated.enhanced,
                                 org.jboss.weld.annotated.slim,
                                 org.jboss.weld.annotated.slim.backed,
                                 org.jboss.weld.security

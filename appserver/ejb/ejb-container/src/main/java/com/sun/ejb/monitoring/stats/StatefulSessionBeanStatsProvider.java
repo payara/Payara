@@ -42,6 +42,7 @@
 package com.sun.ejb.monitoring.stats;
 
 import com.sun.ejb.containers.StatefulSessionContainer;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.glassfish.external.probe.provider.annotations.*;
 import org.glassfish.external.statistics.*;
@@ -60,14 +61,13 @@ public class StatefulSessionBeanStatsProvider extends EjbMonitoringStatsProvider
     private BoundedRangeStatisticImpl methodReadyStat = null;
     private BoundedRangeStatisticImpl passiveCount = null;
 
-    private int methodReadyCount = 0;
-    private StatefulSessionContainer delegate;
+    private final AtomicLong methodReadyCount = new AtomicLong();
+    private final AtomicLong passivations = new AtomicLong();
 
     public StatefulSessionBeanStatsProvider(StatefulSessionContainer delegate,
             long beanId, String appName, String moduleName, String beanName) {
 
         super(beanId, appName, moduleName, beanName);
-        this.delegate = delegate;
 
         long now = System.currentTimeMillis();
 
@@ -85,14 +85,14 @@ public class StatefulSessionBeanStatsProvider extends EjbMonitoringStatsProvider
     @ManagedAttribute(id="methodreadycount")
     @Description( "Number of stateful session beans in MethodReady state")
     public RangeStatistic getMethodReadyCount() {
-        methodReadyStat.setCurrent(methodReadyCount);
+        methodReadyStat.setCurrent(methodReadyCount.get());
         return methodReadyStat;
     }
 
     @ManagedAttribute(id="passivecount")
     @Description( "Number of stateful session beans in Passive state")
     public RangeStatistic getPassiveCount() {
-        passiveCount.setCurrent(delegate.getPassiveCount());
+        passiveCount.setCurrent(passivations.get());
         return passiveCount;
     }
 
@@ -104,7 +104,7 @@ public class StatefulSessionBeanStatsProvider extends EjbMonitoringStatsProvider
             @ProbeParam("ejbName") String ejbName) {
         if (this.beanId == beanId) {
             log ("methodReadyAddEvent", "StatefulSessionBeanStatsProvider");
-            methodReadyCount++;
+            methodReadyCount.incrementAndGet();
         }
     }
 
@@ -115,9 +115,38 @@ public class StatefulSessionBeanStatsProvider extends EjbMonitoringStatsProvider
             @ProbeParam("modName") String modName,
             @ProbeParam("ejbName") String ejbName) {
         if (this.beanId == beanId) {
-            log ("methodReadyRemoveEvent", "StatefulSessionBeanStatsProvider");
-            methodReadyCount--;
+            log("methodReadyRemoveEvent", "StatefulSessionBeanStatsProvider");
+            methodReadyCount.decrementAndGet();
         }
     }
 
+    @ProbeListener("glassfish:ejb:cache:beanPassivatedEvent")
+    public void ejbBeanPassivatedEvent(
+            @ProbeParam("beanId") long beanId,
+            @ProbeParam("appName") String appName,
+            @ProbeParam("modName") String modName,
+            @ProbeParam("ejbName") String ejbName,
+            @ProbeParam("success") boolean success) {
+        if (this.beanId == beanId && success) {
+            log("beanPassivatedEvent", "StatefulSessionBeanStatsProvider");
+            passivations.incrementAndGet();
+        }
+    }
+
+    @ProbeListener("glassfish:ejb:cache:expiredSessionsRemovedEvent")
+    public void ejbExpiredSessionsRemovedEvent(
+            @ProbeParam("beanId") long beanId,
+            @ProbeParam("appName") String appName,
+            @ProbeParam("modName") String modName,
+            @ProbeParam("ejbName") String ejbName,
+            @ProbeParam("num") long num) {
+        if (this.beanId == beanId) {
+            log("expiredSessionsRemovedEvent", "StatefulSessionBeanStatsProvider");
+            passivations.addAndGet(-num);
+        }
+    }
+
+    public void setPassiveCount(long passiveCount) {
+        passivations.set(passiveCount);
+    }
 }

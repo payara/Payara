@@ -1,0 +1,2 @@
+-exportcontents: fish.payara.requesttracing.api.extension; \
+                 fish.payara.requesttracing.api; version=${project.osgi.version}

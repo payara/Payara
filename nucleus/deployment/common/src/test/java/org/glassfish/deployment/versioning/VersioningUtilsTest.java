@@ -691,18 +691,22 @@ public class VersioningUtilsTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
  
+        @Override
         public String getDeploymentOrder() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void setDeploymentOrder(String value) throws PropertyVetoException{
             throw new UnsupportedOperationException("Not supported yet.");
         }
  
+        @Override
         public String getDeploymentTime() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void setDeploymentTime(String value) throws PropertyVetoException{
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -847,6 +851,16 @@ public class VersioningUtilsTest {
         @Override
         public <T extends ApplicationExtension> List<T> getExtensionsByType(Class<T> type) {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getTimeDeployed() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void setTimeDeployed(String value) throws PropertyVetoException {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
     }

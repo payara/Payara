@@ -122,11 +122,11 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWit
         }
 
         long  totalCpuTime = getTotalCpuTime();
-        long time = System.currentTimeMillis();
+        long time = System.nanoTime();
         double percentage = ((double)(totalCpuTime - totalTimeBefore) / (double)(time - timeBefore)) * 100;
 
             result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + new DecimalFormat("#.00").format(percentage)
-                    + ", Time CPU used: " + prettyPrintDuration(getTotalCpuTime() - totalTimeBefore)));
+                    + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime() - totalTimeBefore))));
 
         totalTimeBefore = totalCpuTime;
         timeBefore = time;
