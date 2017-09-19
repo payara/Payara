@@ -64,7 +64,7 @@ public class WeldSniffer extends GenericSniffer {
 
   public WeldSniffer() {
     // We do not haGenericSniffer(String containerName, String appStigma, String urlPattern
-    super("weld", null /* appStigma */, null /* urlPattern */);
+    super("cdi", null /* appStigma */, null /* urlPattern */);
   }
 
   /**
