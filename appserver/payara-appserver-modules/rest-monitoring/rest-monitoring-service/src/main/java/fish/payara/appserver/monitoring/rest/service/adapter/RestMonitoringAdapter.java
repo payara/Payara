@@ -110,7 +110,7 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
     RestMonitoringConfiguration restMonitoringServiceConfiguration;
     
     private final static Logger logger = Logger.getLogger(RestMonitoringAdapter.class.getName());
-    private final static String RESOURCE_PACKAGE = "fish/payara/appserver/monitoring/rest/adapter";
+    private final static String RESOURCE_PACKAGE = "fish/payara/appserver/monitoring/rest/service/adapter";
     private final CountDownLatch latch = new CountDownLatch(1);
     
     @PostConstruct
@@ -223,7 +223,7 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
                 }
                 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, ioe.toString(), ioe);
+                     logger.log(Level.FINE, ioe.toString(), ioe);
                 }
             }
             
@@ -234,7 +234,7 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
     }
     
     private ResourceBundle getResourceBundle(Locale locale) {
-        return ResourceBundle.getBundle("com.sun.enterprise.v3.admin.adapter.LocalStrings", locale);
+        return ResourceBundle.getBundle(RestMonitoringAdapter.class.getPackage().getName() + ".LocalStrings", locale);
     }
     
     private boolean checkHttpMethodAllowed(Method method) {
@@ -284,7 +284,7 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
 
         try (InputStream inputStream = loader.getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                logger.log(Level.WARNING, "Resource not found: {0}", resourcePath);
+                logger.log(Level.WARNING, "null input stream, Resource not found: {0}", resourcePath);
                 return;
             }
             
