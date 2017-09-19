@@ -284,7 +284,7 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
 
         try (InputStream inputStream = loader.getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                logger.log(Level.WARNING, "null input stream, Resource not found: {0}", resourcePath);
+                logger.log(Level.WARNING, "Resource not found: {0}", resourcePath);
                 return;
             }
             
