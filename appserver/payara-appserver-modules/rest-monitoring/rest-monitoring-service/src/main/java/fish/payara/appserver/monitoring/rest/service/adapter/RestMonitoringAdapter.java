@@ -223,7 +223,7 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
                 }
                 
                 if (logger.isLoggable(Level.FINE)) {
-                     logger.log(Level.FINE, ioe.toString(), ioe);
+                    logger.log(Level.FINE, ioe.toString(), ioe);
                 }
             }
             
