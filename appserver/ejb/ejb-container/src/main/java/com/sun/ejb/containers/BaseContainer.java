@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2016,2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.ejb.containers;
 
 import com.sun.ejb.*;
@@ -61,6 +62,7 @@ import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.SecurityManager;
@@ -68,8 +70,28 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
+import fish.payara.cluster.DistributedLockType;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import java.io.Serializable;
+import java.lang.reflect.*;
+import java.rmi.AccessException;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.*;
+import javax.enterprise.inject.Vetoed;
+import javax.interceptor.AroundConstruct;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.transaction.*;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -78,8 +100,6 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.deployment.descriptor.*;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.spi.EjbContainerInterceptor;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
@@ -90,29 +110,6 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.logging.annotation.LogMessageInfo;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.*;
-import javax.interceptor.AroundConstruct;
-import javax.naming.NamingException;
-import javax.naming.Reference;
-import javax.naming.StringRefAddr;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.transaction.*;
-
-import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
-
-import java.io.Serializable;
-import java.lang.reflect.*;
-import java.rmi.AccessException;
-import java.rmi.RemoteException;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.enterprise.inject.Vetoed;
 
 /**
  * This class implements part of the com.sun.ejb.Container interface.
@@ -3090,12 +3087,26 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             List<MethodDescriptor> readLockMethods = singletonDesc.getReadLockMethods();
             List<MethodDescriptor> writeLockMethods = singletonDesc.getWriteLockMethods();
 
+            DistributedLockType distLockType = singletonDesc.isClustered()?
+                    singletonDesc.getClusteredLockType() : DistributedLockType.LOCK_NONE;
+
             for(MethodDescriptor readLockMethodDesc : readLockMethods) {
                 Method readLockMethod = readLockMethodDesc.getMethod(singletonDesc);
                 if(implMethodMatchesInvInfoMethod(invInfoMethod, methodIntf, readLockMethod)) {
 
                     lockInfo = new MethodLockInfo();
-                    lockInfo.setLockType(LockType.READ);
+                    switch(distLockType) {
+                        case INHERIT:
+                        {
+                            _logger.log(Level.WARNING, "Distributed Read Lock for Method {0} Upgraded to Read/Write", readLockMethod.getName());
+                            lockInfo.setLockType(LockType.WRITE, true);
+                            break;
+                        }
+                        case LOCK_NONE:
+                        {
+                            lockInfo.setLockType(LockType.READ, false);
+                        }
+                    }
                     break;
                 }
             }
@@ -3106,7 +3117,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     if(implMethodMatchesInvInfoMethod(invInfoMethod, methodIntf, writeLockMethod)) {
 
                         lockInfo = new MethodLockInfo();
-                        lockInfo.setLockType(LockType.WRITE);
+                        lockInfo.setLockType(LockType.WRITE, distLockType != DistributedLockType.LOCK_NONE);
                         break;
                     }
                 }

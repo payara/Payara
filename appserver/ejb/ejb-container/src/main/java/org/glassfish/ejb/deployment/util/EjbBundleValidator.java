@@ -41,15 +41,6 @@
 
 package org.glassfish.ejb.deployment.util;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
@@ -67,7 +58,16 @@ import com.sun.enterprise.deployment.util.ComponentValidator;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.cluster.DistributedLockType;
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.deployment.descriptor.DummyEjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
@@ -322,6 +322,9 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                     }
                     if (!Serializable.class.isAssignableFrom(ejbClass)) {
                         throw new IllegalStateException(String.format("Clustered Singleton %s must be Serializable", desc.getName()));
+                    }
+                    if(desc.getClusteredLockType() == DistributedLockType.LOCK) {
+                        throw new IllegalStateException(String.format("Clustered Singleton %s - incompatible lock type LOCK", desc.getName()));
                     }
                 }
             }

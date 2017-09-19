@@ -190,9 +190,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
                 case "none":
                     ejbDesc.setClusteredLockType(DistributedLockType.LOCK_NONE);
                     break;
-                case "lock":
-                    ejbDesc.setClusteredLockType(DistributedLockType.LOCK);
-                    break;
                 default:
                     DOLUtils.getDefaultLogger().log(Level.WARNING, "Invalid clustered lock type: {0}", value);
             }
