@@ -42,18 +42,14 @@ package com.sun.enterprise.deployment.annotation.impl;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import java.net.URISyntaxException;
-import java.util.logging.Logger;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.ParsingContext;
-
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.deployment.common.GenericAnnotationDetector;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
-
 import com.sun.enterprise.deployment.deploy.shared.MultiReadableArchive;
 import java.io.File;
 import java.io.IOException;

@@ -40,35 +40,26 @@
 
 package com.sun.enterprise.deployment.annotation.impl;
 
-import com.sun.enterprise.deployment.annotation.introspection.ClassFile;
-import com.sun.enterprise.deployment.annotation.introspection.ConstantPoolInfo;
 import com.sun.enterprise.deployment.annotation.introspection.DefaultAnnotationScanner;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import java.io.ByteArrayOutputStream;
-import java.util.Enumeration;
-import java.util.jar.JarFile;
 import java.util.zip.ZipException;
 import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.JavaEEScanner;
 import org.glassfish.hk2.classmodel.reflect.*;
 import javax.inject.Inject;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.jar.JarEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import java.net.URL;
 import java.util.concurrent.*;
 
 import org.glassfish.logging.annotation.LogMessageInfo;

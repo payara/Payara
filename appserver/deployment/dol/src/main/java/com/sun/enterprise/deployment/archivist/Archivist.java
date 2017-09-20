@@ -47,7 +47,6 @@ import com.sun.enterprise.deployment.annotation.factory.SJSASFactory;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.PERSISTENCE_DD_ENTRY;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.EJB_WEBSERVICES_JAR_ENTRY;
@@ -68,7 +67,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Optional;
 import org.xml.sax.SAXParseException;
 
 import java.io.*;
