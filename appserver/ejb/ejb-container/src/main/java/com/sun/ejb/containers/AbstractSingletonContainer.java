@@ -43,6 +43,7 @@ package com.sun.ejb.containers;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IAtomicLong;
+import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
@@ -412,6 +413,37 @@ public abstract class AbstractSingletonContainer
 	return new SingletonContextImpl(instance, this);
     }
 
+    private HazelcastInstance getHazelcastInstance() {
+        HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+        if(!hzCore.isEnabled()) {
+            throw new IllegalStateException("getDistributedSingletonMap() - Hazelcast is Disabled");
+        }
+        return hzCore.getInstance();
+    }
+
+    protected ILock getDistributedLock() {
+        return getHazelcastInstance().getLock("Payara/" + getClusteredSessionKey() + "/lock");
+    }
+
+    private IMap<String, Object> getClusteredSingletonMap() {
+        return getHazelcastInstance().getMap("Payara/" + componentId);
+    }
+
+    private String getClusteredSessionKey() {
+        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+        return sessDesc.getClusteredKeyValue().isEmpty()? sessDesc.getName() : sessDesc.getClusteredKeyValue();
+    }
+
+    protected boolean isClusteredEnabled() {
+        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+        HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+        return sessDesc.isClustered() && hzCore.isEnabled();
+    }
+
+    private IAtomicLong getClusteredUsageCount() {
+        return getHazelcastInstance().getAtomicLong("Payara/" + getClusteredSessionKey() + "/count");
+    }
+
     private SingletonContextImpl createSingletonEJB()
         throws CreateException
     {
@@ -426,19 +458,16 @@ public abstract class AbstractSingletonContainer
         boolean doPostConstruct = true;
 
         try {
-            EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
-            HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
-            String sessionKey = sessDesc.getClusteredKeyValue().isEmpty()? sessDesc.getName() : sessDesc.getClusteredKeyValue();
-            if(sessDesc.isClustered() && hzCore.isEnabled()) {
-                HazelcastInstance hzInst = hzCore.getInstance();
-                IMap<String, Object> singletonMap = hzInst.getMap("Payara/" + componentId);
+            String sessionKey = getClusteredSessionKey();
+            if(isClusteredEnabled()) {
+                IMap<String, Object> singletonMap = getClusteredSingletonMap();
                 if(!singletonMap.containsKey(sessionKey)) {
                     context = (SingletonContextImpl) createEjbInstanceAndContext();
                     ejb = singletonMap.putIfAbsent(sessionKey, context.getEJB());
                     if((ejb != null) && (ejb != context.getEJB())) {
                         doPostConstruct = false;
                     }
-                    hzInst.getAtomicLong("Payara/" + sessionKey + "/count").incrementAndGet();
+                    getClusteredUsageCount().incrementAndGet();
                 }
                 else {
                     context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessionKey));
@@ -447,7 +476,8 @@ public abstract class AbstractSingletonContainer
                 }
             }
             else {
-                if(sessDesc.isClustered() && !hzCore.isEnabled()) {
+                EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+                if(sessDesc.isClustered() && !Globals.getDefaultHabitat().getService(HazelcastCore.class).isEnabled()) {
                     _logger.log(Level.WARNING, "Clustered Singleton {0} not available - Hazelcast is Disabled", sessionKey);
                 }
                 // a dummy invocation will be created by the BaseContainer to support
@@ -697,14 +727,10 @@ public abstract class AbstractSingletonContainer
                 // So we need to call @PreDestroy and mark context as destroyed
                 boolean doPreDestroy = true;
 
-                EjbSessionDescriptor sessDesc = (EjbSessionDescriptor) ejbDescriptor;
-                HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
-                if (sessDesc.isClustered() && hzCore.isEnabled()) {
-                    HazelcastInstance hzInst = hzCore.getInstance();
-                    String sessionKey = sessDesc.getClusteredKeyValue().isEmpty()? sessDesc.getName() : sessDesc.getClusteredKeyValue();
-                    IAtomicLong count = hzInst.getAtomicLong("Payara/" + sessionKey + "/count");
+                if (isClusteredEnabled()) {
+                    IAtomicLong count = getClusteredUsageCount();
                     if(count.decrementAndGet() <= 0) {
-                        hzInst.getMap("Payara/" + componentId).destroy();
+                        getClusteredSingletonMap().destroy();
                         count.destroy();
                     }
                     else {

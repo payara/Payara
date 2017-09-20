@@ -98,7 +98,7 @@ public class MethodLockInfo {
     }
 
     public String toString() {
-        return lockType + ":" + timeout + ":" + timeUnit;
+        return lockType + "(Distributed=" + (distributed? "yes" : "no") + "):" + timeout + ":" + timeUnit;
     }
 
 }
