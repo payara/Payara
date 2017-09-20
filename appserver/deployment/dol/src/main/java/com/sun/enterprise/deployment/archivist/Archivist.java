@@ -474,6 +474,14 @@ public abstract class Archivist<T extends BundleDescriptor> {
                             RootDeploymentDescriptor o = extension.getKey().getDefaultDescriptor();
                             if( o != null ) {
                                 o.setModuleDescriptor(descriptor.getModuleDescriptor());
+                                // for the case of extension descriptor not 
+                                // present, set the metadata-complete attribute 
+                                // value of the extension descriptor using the 
+                                // metadata-complete value of main descriptor
+                                if (o instanceof BundleDescriptor) {
+                                    boolean isFullMain = descriptor.isFullAttribute();
+                                    ((BundleDescriptor)o).setFullAttribute(String.valueOf(isFullMain));
+                                }
                             }
                             processAnnotations(o, extension.getKey().getScanner(), archive);
                             if (o!=null && !o.isEmpty()) {
@@ -600,7 +608,12 @@ public abstract class Archivist<T extends BundleDescriptor> {
                                 "{0} in archive {1} is of version {2}, which cannot support annotations in an application.  Please upgrade the deployment descriptor to be a version supported by Java EE 5.0 (or later).",
                                 new Object[]{ddName, archiveName, bundleDesc.getSpecVersion()}));
             }
-            AnnotationProcessor ap = annotationFactory.getAnnotationProcessor();
+            boolean isFullAttribute = false;
+            if (bundleDesc instanceof BundleDescriptor) {
+                isFullAttribute = ((BundleDescriptor)bundleDesc).isFullAttribute();
+            }
+
+            AnnotationProcessor ap = annotationFactory.getAnnotationProcessor(isFullAttribute);
             ProcessingContext ctx = ap.createContext();
             ctx.setArchive(archive);
             if (annotationErrorHandler != null) {
@@ -1677,19 +1690,15 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     protected boolean isProcessAnnotation(BundleDescriptor descriptor) {
-        // if the system property is set to process annotation for pre-JavaEE5
-        // DD, the semantics of isFull flag is: full attribute is set to 
-        // true in DD. Otherwise the semantics is full attribute set to 
-        // true or it is pre-JavaEE5 DD.
+        // if the system property is set to not process annotation for 
+        // pre-JavaEE5 DD, check whether the current DD is a pre-JavaEE5 DD.
         boolean isFull = false;
-        if (processAnnotationForOldDD) {
-            isFull = descriptor.isFullAttribute();
-        } else {
+        if (!processAnnotationForOldDD) {
             isFull = descriptor.isFullFlag();
         }
 
         // only process annotation when these two requirements satisfied:
-        // 1. It is not a full deployment descriptor
+        // 1. This version of DD should be processed for annotation
         // 2. It is called through dynamic deployment
         return (!isFull && annotationProcessingRequested && classLoader != null);
     }

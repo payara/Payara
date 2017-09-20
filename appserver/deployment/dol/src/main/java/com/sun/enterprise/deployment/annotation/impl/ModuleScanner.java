@@ -132,7 +132,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         setParser(parser);
         process(file, bundleDesc, classLoader);
         completeProcess(bundleDesc, archiveFile);
-        calculateResults();
+        calculateResults(bundleDesc);
     }
 
     /**
@@ -150,7 +150,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         addLibraryJars(bundleDescr, archive);
     }
 
-    protected void calculateResults() {
+    protected void calculateResults(T bundleDesc) {
         try {
             classParser.awaitTermination();
         } catch (InterruptedException e) {
@@ -162,7 +162,12 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         Level logLevel = (System.getProperty("glassfish.deployment.dump.scanning")!=null?Level.INFO:Level.FINE);
         boolean shouldLog = deplLogger.isLoggable(logLevel);
         ParsingContext context = classParser.getContext();
-        for (String annotation: defaultScanner.getAnnotations()) {
+        boolean isFullAttribute = false;
+        if (bundleDesc instanceof BundleDescriptor) {
+            isFullAttribute = ((BundleDescriptor)bundleDesc).isFullAttribute();
+        }
+        Set<String> annotationsToProcess = defaultScanner.getAnnotations(isFullAttribute);
+        for (String annotation: annotationsToProcess) {
             Type type = context.getTypes().getBy(annotation);
 
             // we never found anyone using that type

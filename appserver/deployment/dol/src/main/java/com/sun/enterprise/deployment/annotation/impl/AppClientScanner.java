@@ -80,7 +80,7 @@ public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor>
         setParser(parser);
         doProcess(archive, bundleDesc, classLoader);
         completeProcess(bundleDesc, archive);
-        calculateResults();
+        calculateResults(bundleDesc);
     }
 
     public void process(File archiveFile, ApplicationClientDescriptor bundleDesc, ClassLoader classLoader) throws IOException {

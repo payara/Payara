@@ -57,6 +57,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -75,20 +76,34 @@ public class SJSASFactory extends Factory {
     @Inject
     private ServiceLocator locator;
 
-    private Set<String> annotationClassNames = new HashSet<String>();
+    private final Set<String> annotationClassNames = new HashSet<>();
+    private final Set<String> annotationClassNamesMetaDataComplete = new HashSet<>();
 
+    // we have two system processors to process annotations:
+    // one to process all JavaEE annotations when metadata-complete is false,
+    // another to process a subset of JavaEE annotations when 
+    // metadata-complete is true
     private AnnotationProcessorImpl systemProcessor=null;
+    private AnnotationProcessorImpl systemProcessorMetaDataComplete=null;
 
-    public AnnotationProcessor getAnnotationProcessor() {
+    public AnnotationProcessor getAnnotationProcessor(boolean isMetaDataComplete) {
         AnnotationProcessorImpl processor =
             Factory.getDefaultAnnotationProcessor();
-        processor.setDelegate(systemProcessor);
+        if (!isMetaDataComplete) { 
+            processor.setDelegate(systemProcessor);
+        } else {
+            processor.setDelegate(systemProcessorMetaDataComplete);
+        }
         return processor;
     }
 
     @SuppressWarnings("unchecked")
-    public Set<String> getAnnotations() {
-        return (HashSet<String>)((HashSet<String>)annotationClassNames).clone();
+    public Set<String> getAnnotations(boolean isMetaDataComplete) {
+        if (!isMetaDataComplete) {
+            return (Set<String>)((HashSet<String>)annotationClassNames).clone();
+        } else {
+            return (Set<String>)((HashSet<String>)annotationClassNamesMetaDataComplete).clone();
+        }
     }
     
     private static String getAnnotationHandlerForStringValue(ActiveDescriptor<AnnotationHandler> onMe) {
@@ -102,24 +117,32 @@ public class SJSASFactory extends Factory {
     @SuppressWarnings({ "unused", "unchecked" })
     @PostConstruct
     private void postConstruct() {
-        if (systemProcessor != null) return;
+        if (systemProcessor != null && 
+            systemProcessorMetaDataComplete != null) return;
         
         // initialize our system annotation processor...            
         systemProcessor = new AnnotationProcessorImpl();
+        systemProcessorMetaDataComplete = new AnnotationProcessorImpl();
         for (ActiveDescriptor<?> i : locator.getDescriptors(BuilderHelper.createContractFilter(
                 AnnotationHandler.class.getName()))) {
             ActiveDescriptor<AnnotationHandler> descriptor = (ActiveDescriptor<AnnotationHandler>) i;
             
             String annotationTypeName = getAnnotationHandlerForStringValue(descriptor);
             if (annotationTypeName == null) continue;
-                
+          
             systemProcessor.pushAnnotationHandler(annotationTypeName, new LazyAnnotationHandler(descriptor)); 
-            annotationClassNames.add("L" +
-                    annotationTypeName.
-                    replace('.', '/') + ";");
+            annotationClassNames.add("L" + annotationTypeName.replace('.', '/') + ";");  
+
+            // In the current set of the annotations processed by the 
+            // deployment layer, the only annotation that should be
+            // processed even when metadata-complete atribute value is true
+            // is javax.annotation.ManagedBean. If there are more annotations
+            // falling in this category in the future, add them to this list
+            if (annotationTypeName.equals("javax.annotation.ManagedBean")) {
+                systemProcessorMetaDataComplete.pushAnnotationHandler(annotationTypeName, new LazyAnnotationHandler(descriptor));
+                annotationClassNamesMetaDataComplete.add("L" + annotationTypeName.replace('.', '/') + ";");
+            }
         }
-        
-        
     }
     
     private class LazyAnnotationHandler implements AnnotationHandler {
