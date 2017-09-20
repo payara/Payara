@@ -58,6 +58,7 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
+import fish.payara.cluster.DistributedLockType;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
@@ -423,6 +424,13 @@ public abstract class AbstractSingletonContainer
 
     protected ILock getDistributedLock() {
         return getHazelcastInstance().getLock("Payara/" + getClusteredSessionKey() + "/lock");
+    }
+
+    protected boolean isDistributedLockEnabled() {
+        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+        DistributedLockType distLockType = sessDesc.isClustered()?
+                    sessDesc.getClusteredLockType() : DistributedLockType.LOCK_NONE;
+        return isClusteredEnabled() && distLockType != DistributedLockType.LOCK_NONE;
     }
 
     private IMap<String, Object> getClusteredSingletonMap() {

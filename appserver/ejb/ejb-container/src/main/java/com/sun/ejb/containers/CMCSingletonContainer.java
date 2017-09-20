@@ -77,8 +77,7 @@ public class CMCSingletonContainer
 
         // In absence of any method lock info default is WRITE lock with no timeout.
         defaultMethodLockInfo = new MethodLockInfo();
-        defaultMethodLockInfo.setLockType(LockType.WRITE, isClusteredEnabled());
-
+        defaultMethodLockInfo.setLockType(LockType.WRITE, isDistributedLockEnabled());
     }
 
     /*
