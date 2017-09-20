@@ -52,7 +52,7 @@
     <event>
         <!beforeCreate
             setSessionAttribute(key="serverInstTabs" value="jmsPhysDest");
-            setPageSessionAttribute(key="selfPage" value="jms/physdest/serverPhysDest.jsf");
+            setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jms/physdest/serverPhysDest.jsf");
             setPageSessionAttribute(key="target" value="server");
             setPageSessionAttribute(key="instanceName" value="server");
             setPageSessionAttribute(key="encodedInstanceName" value="server");
