@@ -142,7 +142,7 @@ whether to call @PreDestroy methods when detaching bean from the cluster when
 the bean already exists on another node.
 Default is true
 -->
-<!ELEMENT clustered-attach-postconstruct (#PCDATA)>
+<!ELEMENT clustered-detach-predestroy (#PCDATA)>
 
 <!--
 This element contains a true/false flag that controls the per-request load balancing
