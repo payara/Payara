@@ -72,7 +72,7 @@
                         attrs="#{requestScope.attrsMap}", method="delete", result="#{requestScope.result}");
                 }
                 setAttribute(key="selectedRows" value="${selectedRows}");
-                gf.redirect(page="#{pageSession.selfPage}");
+                gf.redirect(page="#{request.contextPath}/jms/physdest/serverPhysDest.jsf");
             />
             </sun:button>
             <sun:button id="flushButton" text="$resource{i18njms.jmsPhysDestinations.purge}" disabled="#{true}" primary="#{false}"
