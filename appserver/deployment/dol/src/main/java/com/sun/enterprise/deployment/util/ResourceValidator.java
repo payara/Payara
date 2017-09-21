@@ -63,11 +63,14 @@ import java.net.MalformedURLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
 
 /**
  * Created by Krishna Deepak on 6/9/17.
  */
 @Service
+@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_VALIDATING)
 public class ResourceValidator implements EventListener, ResourceValidatorVisitor {
 
     public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
