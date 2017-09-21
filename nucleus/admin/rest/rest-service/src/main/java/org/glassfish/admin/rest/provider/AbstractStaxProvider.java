@@ -58,7 +58,6 @@ import javax.xml.stream.XMLStreamWriter;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
-import org.jvnet.hk2.config.IndentingXMLStreamWriter;
 
 /** Abstract implementation for entity writers to STaX API. This supports 
  * XML and JSON.
@@ -113,15 +112,12 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
         return desiredType.isAssignableFrom(type);
     }
     
-    protected static XMLStreamWriter getXmlWriter(final OutputStream os, boolean indent) throws XMLStreamException {
+    protected static XMLStreamWriter getXmlWriter(final OutputStream os) throws XMLStreamException {
         XMLStreamWriter wr = XML_FACTORY.createXMLStreamWriter(os, Constants.ENCODING);
-        if (indent) {
-            wr = new IndentingXMLStreamWriter(wr);
-        }
         return wr;
     }
 
-    protected static XMLStreamWriter getJsonWriter(final OutputStream os, boolean indent) 
+    protected static XMLStreamWriter getJsonWriter(final OutputStream os) 
             throws UnsupportedEncodingException, IOException {
         XmlFactory factory = new XmlFactory();
         return factory.createGenerator(new OutputStreamWriter(os, Constants.ENCODING)).getStaxWriter();
@@ -129,22 +125,22 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
     
     /** Returns XML StAX API for any media types with "xml" subtype. Otherwise returns JSON StAX API
      */
-    protected PrePostFixedWriter getWriter(final MediaType mediaType, final OutputStream os, boolean indent) 
+    protected PrePostFixedWriter getWriter(final MediaType mediaType, final OutputStream os) 
             throws IOException {
         if (mediaType != null && "xml".equals(mediaType.getSubtype())) {
             try {
-                return new PrePostFixedWriter(getXmlWriter(os, indent));
+                return new PrePostFixedWriter(getXmlWriter(os));
             } catch (XMLStreamException ex) {
                 throw new IOException(ex);
             }
         } else {
             String callBackJSONP = getCallBackJSONP();
             if (callBackJSONP != null) {
-                return new PrePostFixedWriter(getJsonWriter(os, indent),
+                return new PrePostFixedWriter(getJsonWriter(os),
                         callBackJSONP + "(",
                         ")");
             } else {
-                return new PrePostFixedWriter(getJsonWriter(os, indent));
+                return new PrePostFixedWriter(getJsonWriter(os));
             }
         }
     }
@@ -167,8 +163,8 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
     @Override
     public void writeTo(T proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+        PrePostFixedWriter writer = getWriter(mediaType, entityStream);
         try {
-            PrePostFixedWriter writer = getWriter(mediaType, entityStream, super.getFormattingIndentLevel() > -1);
             //Write it
             if (writer.getPrefix() != null) {
                 entityStream.write(writer.getPrefix().getBytes(Constants.ENCODING));
@@ -180,6 +176,13 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
         } catch (XMLStreamException uee) {
             RestLogging.restLogger.log(Level.SEVERE,RestLogging.CANNOT_MARSHAL, uee);
             throw new WebApplicationException(uee, Response.Status.INTERNAL_SERVER_ERROR);
+        } finally {
+            try {
+                writer.getWriter().close();
+            } catch (XMLStreamException ex) {
+                RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION, ex);
+                throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
+            }
         }
     }
     

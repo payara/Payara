@@ -68,7 +68,7 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
     @Override
     public String getContent(ActionReporter ar) {
         XmlObject result = processReport(ar);
-        return result.toString(getFormattingIndentLevel());
+        return result.toString();
     }
     
     @Override
