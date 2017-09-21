@@ -131,15 +131,15 @@ It can be one of inherit, none, and lock
 <!--
 The text in this element is a true/false flag for Payara clustered singleton beans
 whether to call @PostConstruct methods when attaching bean to the cluster when
-the bean already exists on another node.
+this bean already exists on another node. (not really created)
 Default is true
 -->
 <!ELEMENT clustered-attach-postconstruct (#PCDATA)>
 
 <!--
 The text in this element is a true/false flag for Payara clustered singleton beans
-whether to call @PreDestroy methods when detaching bean from the cluster when
-the bean already exists on another node.
+whether to call @PreDestroy methods when detaching bean from the cluster and
+this bean also exists on another node. (not really destroyed)
 Default is true
 -->
 <!ELEMENT clustered-detach-predestroy (#PCDATA)>

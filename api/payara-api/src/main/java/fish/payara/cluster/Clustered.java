@@ -74,14 +74,14 @@ public @interface Clustered {
 
     /**
      * Specifies whether to call @PostConstruct when the singleton is attached to a cluster
-     * and the singleton already exists on the other node.
+     * and this singleton already exists on the other node. (not truly created)
      * Default is true
      */
     boolean callPostConstructOnAttach() default true;
 
     /**
      * Specifies whether to call @PreDestroy when the singleton is detached from a cluster
-     * and the singleton already exists on the other node.
+     * and this singleton also exists on the other node. (not truly destroyed)
      * Default is true
      */
     boolean callPreDestoyOnDetach () default true;
