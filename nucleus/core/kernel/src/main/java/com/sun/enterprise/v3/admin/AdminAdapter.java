@@ -37,35 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.common_impl.LogHelper;
-import com.sun.enterprise.universal.GFBase64Decoder;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.uuid.UuidGenerator;
-import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
-import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
-import java.io.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.WARNING;
+import static org.glassfish.kernel.KernelLoggerInfo.cantDecodeParameter;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
+
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.Payload;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
@@ -87,6 +99,19 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
 
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.config.serverbeans.AdminService;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.common_impl.LogHelper;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.uuid.UuidGenerator;
+import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
+import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+
 /**
  * Listen to admin commands...
  * @author dochez
@@ -97,7 +122,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     public final static String PREFIX_URI = "/" + VS_NAME;
     private final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(AdminAdapter.class);
     private final static Logger aalogger = KernelLoggerInfo.getLogger();
-    private static final GFBase64Decoder decoder = new GFBase64Decoder();
+    
+    private static final Base64.Decoder decoder = Base64.getMimeDecoder();
+    
     private static final String BASIC = "Basic ";
 
     private static final String SET_COOKIE_HEADER = "Set-Cookie";
@@ -406,11 +433,14 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         if (authHeader == null) {
             return new String[]{"", ""};
         }
-        String enc = authHeader.substring(BASIC.length());
-        String dec = new String(decoder.decodeBuffer(enc));
+        
+        String dec = new String(decoder.decode(authHeader.substring(BASIC.length())), UTF_8);
         int i = dec.indexOf(':');
-        if (i < 0)
+        
+        if (i < 0) {
             return new String[] { "", "" };
+        }
+        
         return new String[] { dec.substring(0, i), dec.substring(i + 1) };
     }
 
@@ -605,10 +635,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             }
 
             try {               
-                value = new String(decoder.decodeBuffer(value));
-            } catch (IOException e) {
-                aalogger.log(Level.WARNING, KernelLoggerInfo.cantDecodeParameter,
-                        new Object[] { paramName, value });
+                value = new String(decoder.decode(value), UTF_8);
+            } catch (IllegalArgumentException e) {
+                aalogger.log(WARNING, cantDecodeParameter, new Object[] { paramName, value });
                 continue;
             }
             pmap.add(paramName, value);

@@ -38,15 +38,17 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
-import com.sun.enterprise.universal.GFBase64Encoder;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocketFactory;
@@ -351,7 +353,7 @@ public final class HttpConnectorAddress {
     }
   
     private String getBase64Encoded(String clearString) {
-        return new GFBase64Encoder().encode(clearString.getBytes());
+        return new String(Base64.getMimeEncoder().encode(clearString.getBytes()), UTF_8);
     }
 
     public static class BasicHostnameVerifier implements HostnameVerifier {
