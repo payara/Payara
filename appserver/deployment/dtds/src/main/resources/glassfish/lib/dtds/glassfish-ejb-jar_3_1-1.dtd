@@ -91,7 +91,7 @@ Additional properties applicable to a message-driven bean:
 
 <!ELEMENT ejb (ejb-name, jndi-name?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, pass-by-reference?, 
                cmp?, principal?, mdb-connection-factory?, jms-durable-subscription-name?, 
-               jms-max-messages-load?, ior-security-config?, is-read-only-bean?, clustered-bean?, clustered-key-name?, clustered-lock-type?,
+               jms-max-messages-load?, ior-security-config?, is-read-only-bean?, clustered-bean?, clustered-key-name?, clustered-lock-type?, clustered-attach-postconstruct?, clustered-detach-predestroy?,
                refresh-period-in-seconds?, commit-option?, cmt-timeout-in-seconds?, use-thread-pool-id?, gen-classes?, 
                bean-pool?, bean-cache?, mdb-resource-adapter?, webservice-endpoint*, flush-at-end-of-method?, checkpointed-methods?, checkpoint-at-end-of-method?, per-request-load-balancing?)>
 
@@ -127,6 +127,22 @@ The text in this element is a lock type for Payara clustered singleton bean.
 It can be one of inherit, none, and lock
 -->
 <!ELEMENT clustered-lock-type (#PCDATA)>
+
+<!--
+The text in this element is a true/false flag for Payara clustered singleton beans
+whether to call @PostConstruct methods when attaching bean to the cluster when
+the bean already exists on another node.
+Default is true
+-->
+<!ELEMENT clustered-attach-postconstruct (#PCDATA)>
+
+<!--
+The text in this element is a true/false flag for Payara clustered singleton beans
+whether to call @PreDestroy methods when detaching bean from the cluster when
+the bean already exists on another node.
+Default is true
+-->
+<!ELEMENT clustered-attach-postconstruct (#PCDATA)>
 
 <!--
 This element contains a true/false flag that controls the per-request load balancing

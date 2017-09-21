@@ -193,6 +193,10 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
                 default:
                     DOLUtils.getDefaultLogger().log(Level.WARNING, "Invalid clustered lock type: {0}", value);
             }
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH.equals(element.getQName())) {
+             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setDontCallPostConstructOnAttach(!Boolean.valueOf(value));
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH.equals(element.getQName())) {
+             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setDontCallPreDestroyOnDetach(!Boolean.valueOf(value));
         }
         else super.setElementValue(element, value);
     }

@@ -170,6 +170,8 @@ public class SingletonHandler extends AbstractEjbHandler {
         if(clusteredAnnotation != null) {
             desc.setClustered(true);
             desc.setClusteredKeyValue(clusteredAnnotation.keyName());
+            desc.setDontCallPostConstructOnAttach(!clusteredAnnotation.callPostConstructOnAttach());
+            desc.setDontCallPreDestroyOnDetach(!clusteredAnnotation.callPreDestoyOnDetach());
         }
     }
 }

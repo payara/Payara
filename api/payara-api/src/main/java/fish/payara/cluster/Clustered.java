@@ -71,4 +71,18 @@ public @interface Clustered {
      * and the other valid value for CDI beans is LOCK
      */
     DistributedLockType lock() default DistributedLockType.INHERIT;
+
+    /**
+     * Specifies whether to call @PostConstruct when the singleton is attached to a cluster
+     * and the singleton already exists on the other node.
+     * Default is true
+     */
+    boolean callPostConstructOnAttach() default true;
+
+    /**
+     * Specifies whether to call @PreDestroy when the singleton is detached from a cluster
+     * and the singleton already exists on the other node.
+     * Default is true
+     */
+    boolean callPreDestoyOnDetach () default true;
 }

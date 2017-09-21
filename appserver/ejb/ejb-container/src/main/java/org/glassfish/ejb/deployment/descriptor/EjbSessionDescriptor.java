@@ -103,6 +103,8 @@ public class EjbSessionDescriptor extends EjbDescriptor
     private boolean passivationCapableIsSet = false;
 
     private boolean clustered = false;
+    private boolean dontCallPostConstructOnAttach = false;
+    private boolean dontCallPreDestroyOnDetach = false;
     private String clusteredKeyValue = "";
     private DistributedLockType clusteredLockType = DistributedLockType.INHERIT;
 
@@ -234,6 +236,22 @@ public class EjbSessionDescriptor extends EjbDescriptor
 
     public void setClusteredLockType(DistributedLockType lockType) {
         this.clusteredLockType = lockType;
+    }
+
+    public boolean dontCallPostConstructOnAttach() {
+        return dontCallPostConstructOnAttach;
+    }
+
+    public void setDontCallPostConstructOnAttach(boolean dontCallPostConstructOnAttach) {
+        this.dontCallPostConstructOnAttach = dontCallPostConstructOnAttach;
+    }
+
+    public void setDontCallPreDestroyOnDetach(boolean dontCallPreDestroyOnDetach) {
+        this.dontCallPreDestroyOnDetach = dontCallPreDestroyOnDetach;
+    }
+
+    public boolean dontCallPreDestroyOnDetach() {
+        return dontCallPreDestroyOnDetach;
     }
 
 	/**

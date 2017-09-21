@@ -422,8 +422,12 @@ public abstract class AbstractSingletonContainer
         return hzCore.getInstance();
     }
 
+    private String getClusteredSessionHazelcastKey() {
+        return "Payara/" + componentId + "/" + getClusteredSessionKey();
+    }
+
     protected ILock getDistributedLock() {
-        return getHazelcastInstance().getLock("Payara/" + getClusteredSessionKey() + "/lock");
+        return getHazelcastInstance().getLock(getClusteredSessionHazelcastKey() + "/lock");
     }
 
     protected boolean isDistributedLockEnabled() {
@@ -449,7 +453,7 @@ public abstract class AbstractSingletonContainer
     }
 
     private IAtomicLong getClusteredUsageCount() {
-        return getHazelcastInstance().getAtomicLong("Payara/" + getClusteredSessionKey() + "/count");
+        return getHazelcastInstance().getAtomicLong(getClusteredSessionHazelcastKey() + "/count");
     }
 
     private SingletonContextImpl createSingletonEJB()
@@ -467,24 +471,26 @@ public abstract class AbstractSingletonContainer
 
         try {
             String sessionKey = getClusteredSessionKey();
+            EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
             if(isClusteredEnabled()) {
                 IMap<String, Object> singletonMap = getClusteredSingletonMap();
                 if(!singletonMap.containsKey(sessionKey)) {
                     context = (SingletonContextImpl) createEjbInstanceAndContext();
                     ejb = singletonMap.putIfAbsent(sessionKey, context.getEJB());
-                    if((ejb != null) && (ejb != context.getEJB())) {
+                    if((ejb != null) && (ejb != context.getEJB()) && sessDesc.dontCallPostConstructOnAttach()) {
                         doPostConstruct = false;
                     }
-                    getClusteredUsageCount().incrementAndGet();
                 }
                 else {
                     context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessionKey));
                     ejb = context.getEJB();
-                    doPostConstruct = false;
+                    if(sessDesc.dontCallPostConstructOnAttach()) {
+                        doPostConstruct = false;
+                    }
                 }
+                getClusteredUsageCount().incrementAndGet();
             }
             else {
-                EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
                 if(sessDesc.isClustered() && !Globals.getDefaultHabitat().getService(HazelcastCore.class).isEnabled()) {
                     _logger.log(Level.WARNING, "Clustered Singleton {0} not available - Hazelcast is Disabled", sessionKey);
                 }
@@ -736,12 +742,13 @@ public abstract class AbstractSingletonContainer
                 boolean doPreDestroy = true;
 
                 if (isClusteredEnabled()) {
+                    EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
                     IAtomicLong count = getClusteredUsageCount();
                     if(count.decrementAndGet() <= 0) {
-                        getClusteredSingletonMap().destroy();
+                        getClusteredSingletonMap().delete(getClusteredSessionKey());
                         count.destroy();
                     }
-                    else {
+                    else if(sessDesc.dontCallPreDestroyOnDetach()){
                         doPreDestroy = false;
                     }
                 }

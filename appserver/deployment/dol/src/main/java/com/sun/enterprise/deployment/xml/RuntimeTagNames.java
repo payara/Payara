@@ -77,6 +77,8 @@ public interface RuntimeTagNames extends TagNames {
     public final static String PAYARA_CLUSTERED_BEAN = "clustered-bean";
     public final static String PAYARA_CLUSTERED_KEY_NAME = "clustered-key-name";
     public final static String PAYARA_CLUSTERED_LOCK_TYPE = "clustered-lock-type";
+    public final static String PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH = "clustered-attach-postconstruct";
+    public final static String PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH = "clustered-detach-predestroy";
 
     String AS_CONTEXT = "as-context";
     String AUTH_METHOD = "auth-method";
