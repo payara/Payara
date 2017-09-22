@@ -26,6 +26,8 @@ public interface StreamWriter {
 
     public void writeAttribute(String name, String value) throws Exception;
 
+    public void writeAttribute(String name, Boolean value) throws Exception;
+
     public void close() throws Exception;
 
 }

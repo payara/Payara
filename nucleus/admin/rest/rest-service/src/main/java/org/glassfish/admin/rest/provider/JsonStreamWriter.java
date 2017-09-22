@@ -80,6 +80,11 @@ public class JsonStreamWriter implements StreamWriter {
     }
 
     @Override
+    public void writeAttribute(String name, Boolean value) throws JsonGenerationException {
+        writer.write('@' + name, value);
+    }
+
+    @Override
     public void close() throws JsonGenerationException {
         writer.close();
     }

@@ -69,10 +69,10 @@ public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel>
         wr.writeStartObject("command");
         wr.writeAttribute("name", proxy.getCommandName());
         if (proxy.unknownOptionsAreOperands()) {
-            wr.writeAttribute("unknown-options-are-operands", "true");
+            wr.writeAttribute("unknown-options-are-operands", true);
         }
         if (proxy.isManagedJob()) {
-            wr.writeAttribute("managed-job", "true");
+            wr.writeAttribute("managed-job", true);
         }
         String usage = proxy.getUsageText();
         if (StringUtils.ok(usage)) {
@@ -88,16 +88,16 @@ public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel>
             wr.writeAttribute("name", p.getName());
             wr.writeAttribute("type", simplifiedTypeOf(p));
             if (par.primary()) {
-                wr.writeAttribute("primary", "true");
+                wr.writeAttribute("primary", true);
             }
             if (par.multiple()) {
-                wr.writeAttribute("multiple", "true");
+                wr.writeAttribute("multiple", true);
             }
             if (par.optional()) {
-                wr.writeAttribute("optional", "true");
+                wr.writeAttribute("optional", true);
             }
             if (par.obsolete()) {
-                wr.writeAttribute("obsolete", "true");
+                wr.writeAttribute("obsolete", true);
             }
             String str = par.shortName();
             if (StringUtils.ok(str)) {

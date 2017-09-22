@@ -72,6 +72,11 @@ public class XmlStreamWriter implements StreamWriter {
     }
 
     @Override
+    public void writeAttribute(String name, Boolean value) throws XMLStreamException {
+        writer.writeAttribute(name, Boolean.toString(value));
+    }
+
+    @Override
     public void close() throws XMLStreamException {
         writer.close();
     }

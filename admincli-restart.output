@@ -1,0 +1,11 @@
+
+setOSConditions:
+
+restart-server:
+
+restart-server-unix:
+     [exec] Result: 1
+     [echo] There is no such domain directory: /home/matt/git/Payara/appserver/distributions/payara/target/stage/payara5/glassfish/domains/test-domain
+     [echo] Command restart-domain failed.
+
+restart-server-windows:
