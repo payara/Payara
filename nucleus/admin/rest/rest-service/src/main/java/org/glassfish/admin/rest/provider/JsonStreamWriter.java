@@ -7,6 +7,9 @@ import javax.json.stream.JsonGenerationException;
 import javax.json.stream.JsonGenerator;
 import org.glassfish.admin.rest.Constants;
 
+/**
+ * A {@link StreamWriter} for handling JSON.
+ */
 public class JsonStreamWriter implements StreamWriter {
 
     private final String prefix;
@@ -16,14 +19,27 @@ public class JsonStreamWriter implements StreamWriter {
 
     private boolean inArray;
 
-    public JsonStreamWriter(OutputStream os, String prefix, String postfix) throws IOException {
+    /**
+     * Creates a {@link StreamWriter} for handling JSON.
+     *
+     * @param os The OutputStream to write to.
+     * @param prefix Any data that needs writing at the start of the stream.
+     * @param postfix Any data that needs writing at the end of the stream.
+     */
+    public JsonStreamWriter(OutputStream os, String prefix, String postfix) {
         this.prefix = prefix;
         this.postfix = postfix;
         this.os = os;
         this.writer = Json.createGenerator(os);
     }
 
-    public JsonStreamWriter(OutputStream os) throws IOException {
+    /**
+     * Creates a {@link StreamWriter} for handling JSON, with a {@code null}
+     * prefix and postfix.
+     *
+     * @param os The OutputStream to write to.
+     */
+    public JsonStreamWriter(OutputStream os) {
         this(os, null, null);
     }
 

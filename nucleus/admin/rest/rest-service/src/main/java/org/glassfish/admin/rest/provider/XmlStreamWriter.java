@@ -7,6 +7,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.glassfish.admin.rest.Constants;
 
+/**
+ * A {@link StreamWriter} for handling XML.
+ */
 public class XmlStreamWriter implements StreamWriter {
 
     private final String prefix;
@@ -14,6 +17,15 @@ public class XmlStreamWriter implements StreamWriter {
     private final OutputStream os;
     private final XMLStreamWriter writer;
 
+    /**
+     * Creates a {@link StreamWriter} for handling XML.
+     *
+     * @param os The OutputStream to write to.
+     * @param prefix Any data that needs writing at the start of the stream.
+     * @param postfix Any data that needs writing at the end of the stream.
+     * @throws javax.xml.stream.XMLStreamException Thrown if any errors occur in
+     * creating the XML stream.
+     */
     public XmlStreamWriter(OutputStream os, String prefix, String postfix) throws XMLStreamException {
         this.prefix = prefix;
         this.postfix = postfix;
@@ -21,6 +33,14 @@ public class XmlStreamWriter implements StreamWriter {
         writer = XMLOutputFactory.newInstance().createXMLStreamWriter(os, Constants.ENCODING);
     }
 
+    /**
+     * Creates a {@link StreamWriter} for handling XML, with a {@code null}
+     * prefix and postfix.
+     *
+     * @param os The OutputStream to write to.
+     * @throws javax.xml.stream.XMLStreamException Thrown if any errors occur in
+     * creating the XML stream.
+     */
     public XmlStreamWriter(OutputStream os) throws XMLStreamException {
         this(os, null, null);
     }
