@@ -39,6 +39,9 @@
     holder.
 
 -->
+
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+
 <sun:title id="propertyContentPage" title="#{pageTitle}" helpText="#{pageTitleHelp}">
     <sun:button id="def" rendered="#{edit}" primary="#{false}"  text="$resource{i18n.button.LoadDefaults}" >
         <!command
