@@ -45,8 +45,6 @@ import java.util.Properties;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 
@@ -63,12 +61,12 @@ public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel>
     }
     
     @Override
-    protected void writeContentToStream(CommandModel proxy, XMLStreamWriter wr) throws XMLStreamException {
+    protected void writeContentToStream(CommandModel proxy, StreamWriter wr) throws Exception {
         if (proxy == null) {
             return;
         }
         wr.writeStartDocument();
-        wr.writeStartElement("command");
+        wr.writeStartObject("command");
         wr.writeAttribute("name", proxy.getCommandName());
         if (proxy.unknownOptionsAreOperands()) {
             wr.writeAttribute("unknown-options-are-operands", "true");
@@ -78,14 +76,15 @@ public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel>
         }
         String usage = proxy.getUsageText();
         if (StringUtils.ok(usage)) {
-            wr.writeStartElement("usage");
-            wr.writeCharacters(usage);
-            wr.writeEndElement();
+            wr.writeStartObject("usage");
+            wr.write(usage);
+            wr.writeEndObject();
         }
         //Options
+        wr.writeStartArray("option");
         for (CommandModel.ParamModel p : proxy.getParameters()) {
             Param par = p.getParam();
-            wr.writeStartElement("option");
+            wr.writeStartObject("option");
             wr.writeAttribute("name", p.getName());
             wr.writeAttribute("type", simplifiedTypeOf(p));
             if (par.primary()) {
@@ -128,9 +127,10 @@ public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel>
             if (StringUtils.ok(str)) {
                 wr.writeAttribute("prompt-again", str);
             }
-            wr.writeEndElement();
+            wr.writeEndObject();
         }
-        wr.writeEndElement(); //</command>
+        wr.writeEndArray();
+        wr.writeEndObject(); //</command>
         wr.writeEndDocument();
     }
     

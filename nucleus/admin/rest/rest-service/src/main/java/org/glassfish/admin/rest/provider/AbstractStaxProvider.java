@@ -43,8 +43,6 @@ package org.glassfish.admin.rest.provider;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.logging.Level;
@@ -52,11 +50,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import com.fasterxml.jackson.dataformat.xml.XmlFactory;
-import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 
 /** Abstract implementation for entity writers to STaX API. This supports 
@@ -67,42 +61,6 @@ import org.glassfish.admin.rest.RestLogging;
  */
 public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
     
-    private static final XMLOutputFactory XML_FACTORY = XMLOutputFactory.newInstance();
-    private static final MediaType ANY_XML_MEDIATYPE = new MediaType(MediaType.MEDIA_TYPE_WILDCARD, "xml");
-    
-    protected class PrePostFixedWriter {
-        private String prefix;
-        private String postfix;
-        private XMLStreamWriter writer;
-
-        public PrePostFixedWriter(XMLStreamWriter writer, String prefix, String postfix) {
-            this.prefix = prefix;
-            this.postfix = postfix;
-            this.writer = writer;
-        }
-
-        public PrePostFixedWriter(XMLStreamWriter writer) {
-            this(writer, null, null);
-        }
-
-        /** Must be written after marshaled entity
-         */
-        public String getPostfix() {
-            return postfix;
-        }
-
-        /** Must be written before marshaled entity
-         */
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public XMLStreamWriter getWriter() {
-            return writer;
-        }
-        
-    }
-    
     public AbstractStaxProvider(Class desiredType, MediaType ... mediaType) {
         super(desiredType, mediaType);
     }
@@ -112,46 +70,14 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
         return desiredType.isAssignableFrom(type);
     }
     
-    protected static XMLStreamWriter getXmlWriter(final OutputStream os) throws XMLStreamException {
-        XMLStreamWriter wr = XML_FACTORY.createXMLStreamWriter(os, Constants.ENCODING);
-        return wr;
-    }
-
-    protected static XMLStreamWriter getJsonWriter(final OutputStream os) 
-            throws UnsupportedEncodingException, IOException {
-        XmlFactory factory = new XmlFactory();
-        return factory.createGenerator(new OutputStreamWriter(os, Constants.ENCODING)).getStaxWriter();
-    }
-    
-    /** Returns XML StAX API for any media types with "xml" subtype. Otherwise returns JSON StAX API
-     */
-    protected PrePostFixedWriter getWriter(final MediaType mediaType, final OutputStream os) 
-            throws IOException {
-        if (mediaType != null && "xml".equals(mediaType.getSubtype())) {
-            try {
-                return new PrePostFixedWriter(getXmlWriter(os));
-            } catch (XMLStreamException ex) {
-                throw new IOException(ex);
-            }
-        } else {
-            String callBackJSONP = getCallBackJSONP();
-            if (callBackJSONP != null) {
-                return new PrePostFixedWriter(getJsonWriter(os),
-                        callBackJSONP + "(",
-                        ")");
-            } else {
-                return new PrePostFixedWriter(getJsonWriter(os));
-            }
-        }
-    }
-    
     /** Marshalling implementation here.
      * 
      * @param proxy object to marshal
      * @param wr STaX for marshaling
      * @throws XMLStreamException 
+     * @throws java.io.IOException 
      */ 
-    protected abstract void writeContentToStream(T proxy, final XMLStreamWriter wr) throws XMLStreamException;
+    protected abstract void writeContentToStream(T proxy, final StreamWriter wr) throws Exception;
 
     @Override
     public String getContent(T proxy) {
@@ -163,27 +89,19 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
     @Override
     public void writeTo(T proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        PrePostFixedWriter writer = getWriter(mediaType, entityStream);
+        StreamWriter writer = null;
         try {
-            //Write it
-            if (writer.getPrefix() != null) {
-                entityStream.write(writer.getPrefix().getBytes(Constants.ENCODING));
+            if ("xml".equals(mediaType.getSubtype())) {
+                writer = new XmlStreamWriter(entityStream);
+            } else {
+                writer = new JsonStreamWriter(entityStream);
             }
-            writeContentToStream(proxy, writer.getWriter());
-            if (writer.getPostfix() != null) {
-                entityStream.write(writer.getPostfix().getBytes(Constants.ENCODING));
-            }
-        } catch (XMLStreamException uee) {
-            RestLogging.restLogger.log(Level.SEVERE,RestLogging.CANNOT_MARSHAL, uee);
-            throw new WebApplicationException(uee, Response.Status.INTERNAL_SERVER_ERROR);
-        } finally {
-            try {
-                writer.getWriter().close();
-            } catch (XMLStreamException ex) {
-                RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION, ex);
-                throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
-            }
+            writeContentToStream(proxy, writer);
+            writer.close();
+        } catch (Exception ex) {
+            RestLogging.restLogger.log(Level.SEVERE, RestLogging.CANNOT_MARSHAL, ex);
+            throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
 }
