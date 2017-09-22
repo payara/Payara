@@ -94,7 +94,7 @@ public class CommandResource {
 
     @GET
     @Path("/{command:.*}/")
-    @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-javascript"})
     public Response getCommandModel(@PathParam("command") String command) throws WebApplicationException {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
@@ -107,7 +107,7 @@ public class CommandResource {
 
     @OPTIONS
     @Path("/{command:.*}/")
-    @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-javascript"})
     public Response optionsCommandModel(@PathParam("command") String commandName) throws WebApplicationException {
         return getCommandModel(commandName);
     }
