@@ -1,1 +1,0 @@
--exportcontents: fish.payara.monitoring.fang; version=${project.version}

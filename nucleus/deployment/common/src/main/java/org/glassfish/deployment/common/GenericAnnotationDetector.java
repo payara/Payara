@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2017] [Payara Foundation]
 package org.glassfish.deployment.common;
 
 
@@ -124,6 +124,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
         return found;
     }
 
+    @Override
     public AnnotationVisitor visitAnnotation(String s, boolean b) {
         if (annotations.contains(s)) {
             found = true;
@@ -151,8 +152,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                     } finally {
                         is.close();
                     }
-                } else if (entryName.endsWith(".jar") && 
-                    entryName.indexOf('/') == -1) {
+                } else if (!entryName.contains("/")) {
                     // scan class files inside top level jar
                     try {
                         ReadableArchive jarSubArchive = null;
@@ -163,16 +163,12 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                             while (jarEntries.hasMoreElements()) {
                                 String jarEntryName = jarEntries.nextElement();
                                 if (jarEntryName.endsWith(".class")) {
-                                    InputStream is =
-                                        jarSubArchive.getEntry(jarEntryName);
-                                    try {
+                                    try (InputStream is = jarSubArchive.getEntry(jarEntryName)) {
                                         ClassReader cr = new ClassReader(is);
                                         cr.accept(this, crFlags);
                                         if (found) {
                                             return;
                                         } 
-                                    } finally {
-                                        is.close();
                                     }
                                 }
                             }

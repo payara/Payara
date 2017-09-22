@@ -42,7 +42,6 @@
 package com.sun.gjc.spi;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
 import com.sun.appserv.connectors.internal.spi.BadConnectionEventListener;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
@@ -58,19 +57,6 @@ import com.sun.logging.LogDomains;
 import fish.payara.jdbc.RequestTracingListener;
 import fish.payara.jdbc.SlowSQLLogger;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevelController;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-
-import javax.resource.NotSupportedException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionEvent;
-import javax.resource.spi.ConnectionEventListener;
-import javax.resource.spi.security.PasswordCredential;
-import javax.security.auth.Subject;
-import javax.sql.PooledConnection;
-import javax.sql.XAConnection;
-import javax.transaction.xa.XAResource;
 import java.io.PrintWriter;
 import java.sql.CallableStatement;
 import java.sql.DatabaseMetaData;
@@ -82,7 +68,21 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.resource.NotSupportedException;
+import javax.resource.ResourceException;
+import javax.resource.spi.ConnectionEvent;
+import javax.resource.spi.ConnectionEventListener;
+import javax.resource.spi.security.PasswordCredential;
+import javax.security.auth.Subject;
+import javax.sql.PooledConnection;
+import javax.sql.XAConnection;
+import javax.transaction.xa.XAResource;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 /**
  * <code>ManagedConnection</code> implementation for Generic JDBC Connector.
@@ -1342,6 +1342,11 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     }
 
     private JdbcConnectionPool getJdbcConnectionPool(javax.resource.spi.ManagedConnectionFactory mcf) {
+        if(Globals.getDefaultHabitat().getService(ProcessEnvironment.class).getProcessType() != ProcessEnvironment.ProcessType.Server) {
+            // this is only applicatble in the server environment,
+            // otherwise we bave no domain to draw upon
+            return null;
+        }
         JdbcConnectionPool jdbcConnectionPool = null;
         ManagedConnectionFactoryImpl spiMCF = (ManagedConnectionFactoryImpl) mcf;
         Resources resources = Globals.getDefaultHabitat().getService(Domain.class).getResources();
@@ -1355,5 +1360,4 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     private boolean isSlowQueryLoggingEnabled() {
         return !IS_SLOW_SQL_LOGGING_DISABLED.equals(connectionPool.getSlowQueryThresholdInSeconds());
     }
-    
 }

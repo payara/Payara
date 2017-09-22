@@ -262,6 +262,8 @@ public class PayaraRestApiHandlers
                 result.put(componentName, false);
                 if((List)payaraEndpointsExtraProps.get("endpointList") != null) {
                     result.put(componentName, true);
+                     // Change the component type to JAX-RS. Couldn't be obtained at an earlier point since JAX-RS resources are compiled to JSP.
+                    rowMap.put("type", "JAX-RS");
                 }
             }
           }catch(Exception ex){

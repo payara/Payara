@@ -365,7 +365,7 @@ public class SecurityHandler {
             // before save user synchronize realm, for the case if keyfile is changed
             String tmpEP = GuiUtil.getSessionValue("REST_URL") + "/configs/config/"
                                                     + configName + "/synchronize-realm-from-config";
-            HashMap attrs = new HashMap<String, Object>();
+            HashMap attrs = new HashMap<>();
             attrs.put("id", configName);
             attrs.put("realmName", realmName);
             RestUtil.restRequest(tmpEP, attrs, "POST", handlerCtx, false);
@@ -376,15 +376,17 @@ public class SecurityHandler {
                 endpoint = endpoint + "/update-user?target=" + configName;
             }
 
-            attrs = new HashMap<String, Object>();
+            attrs = new HashMap<>();
             attrs.put("id", userid);
             attrs.put("userpassword", password);
             attrs.put("target", configName);
-            if (grouplist != null && grouplist.contains(","))
+            if (grouplist != null && grouplist.contains(",")) {
                 grouplist = grouplist.replace(',', ':');
+            }
             List<String> grpList = new ArrayList();
-            if (grouplist != null && !grouplist.equals(""))
+            if (grouplist != null) {
                 grpList.add(grouplist);
+            }
             attrs.put("groups", grpList);
             RestUtil.restRequest(endpoint, attrs, "POST", null, true, true );
         } catch(Exception ex) {

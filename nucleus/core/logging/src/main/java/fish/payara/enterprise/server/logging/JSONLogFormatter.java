@@ -14,6 +14,7 @@ file and include the License file at packager/legal/LICENSE.txt.
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
+import com.sun.enterprise.server.logging.AnsiColorFormatter;
 import com.sun.enterprise.server.logging.ExcludeFieldsSupport;
 import com.sun.enterprise.server.logging.FormatterDelegate;
 import com.sun.enterprise.server.logging.LogEvent;
@@ -191,7 +192,9 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
              */
             Level eventLevel = record.getLevel();
             logEvent.setLevel(eventLevel.getName());
-            eventObject.put(LOG_LEVEL_KEY, String.valueOf(eventLevel));
+            StringBuilder levelBuilder = new StringBuilder();
+            levelBuilder.append(eventLevel.getLocalizedName());
+            eventObject.put(LOG_LEVEL_KEY, levelBuilder.toString());
 
             /*
              * Get the product id and append to object.
@@ -210,7 +213,9 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             }
 
             logEvent.setLogger(loggerName);
-            eventObject.put(LOGGER_NAME_KEY, loggerName);
+            StringBuilder loggerBuilder = new StringBuilder();
+            loggerBuilder.append(loggerName);           
+            eventObject.put(LOGGER_NAME_KEY, loggerBuilder.toString());
 
             /*
              * Get thread information and append to object if not excluded.
@@ -467,7 +472,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     /**
      * @param logEventBroadcaster The LogEventBroadcaster to be set.
      */
-    void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {
+    public void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {
         this.logEventBroadcasterDelegate = logEventBroadcaster;
     }
     
@@ -484,7 +489,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     /**
      * @param excludeFields Fields to exclude.
      */
-    void setExcludeFields(String excludeFields) {
+    public void setExcludeFields(String excludeFields) {
         this.excludeFieldsSupport.setExcludeFields(excludeFields);
     }
 }

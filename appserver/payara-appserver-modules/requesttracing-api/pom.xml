@@ -47,6 +47,7 @@
         <version>4.1.2.174-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
+    <packaging>glassfish-jar</packaging>
     <artifactId>requesttracing-api</artifactId>
     <name>Request Tracing CDI API</name>
     <description>Request Tracing CDI API</description>
@@ -65,12 +66,9 @@
                         </goals>
                         <configuration>
                             <instructions>
-                                <Import-Package>
-                                    javax.enterprise.inject.spi,
-                                    fish.payara.nucleus.requesttracing.api
-                                </Import-Package>
                                 <Export-Package>
-                                    fish.payara.nucleus.requesttracing.api.extension
+                                    fish.payara.requesttracing.api,
+                                    fish.payara.requesttracing.api.extension
                                 </Export-Package>
                             </instructions>
                         </configuration>
@@ -87,24 +85,15 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.interceptor</groupId>
-            <artifactId>javax.interceptor-api</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.enterprise</groupId>
-            <artifactId>cdi-api</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
         </dependency>
     </dependencies>
 </project>

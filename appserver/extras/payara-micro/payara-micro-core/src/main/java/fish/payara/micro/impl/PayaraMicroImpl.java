@@ -79,8 +79,6 @@ import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.server.logging.ODLLogFormatter;
 import fish.payara.micro.PayaraMicroRuntime;
 import fish.payara.micro.boot.PayaraMicroBoot;
-import fish.payara.micro.boot.loader.ExplodedURLClassloader;
-import fish.payara.micro.boot.loader.LaunchedURLClassLoader;
 import fish.payara.micro.boot.loader.OpenURLClassLoader;
 import fish.payara.micro.boot.runtime.BootCommands;
 import fish.payara.micro.cmd.options.RUNTIME_OPTION;
@@ -91,6 +89,7 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import org.glassfish.embeddable.CommandResult;
 
@@ -1123,6 +1122,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case rootdir:
                         rootDir = new File(value);
                         break;
+                    case addlibs:
                     case addjars:
                         String[] alljars = value.split(":");
                         for (String jarname : alljars) {
@@ -1536,9 +1536,17 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LogManager.getLogManager().readConfiguration();
 
                 // reset the formatters on the two handlers
+                //Logger rootLogger = Logger.getLogger("");
+                String formatter = LogManager.getLogManager().getProperty("java.util.logging.ConsoleHandler.formatter");
+                Formatter formatterClass = new ODLLogFormatter();
+                try {
+                    formatterClass = (Formatter) Class.forName(formatter).newInstance();
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                    Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, "Specified Formatter class could not be loaded " + formatter, ex);
+                } 
                 Logger rootLogger = Logger.getLogger("");
                 for (Handler handler : rootLogger.getHandlers()) {
-                    handler.setFormatter(new ODLLogFormatter());
+                    handler.setFormatter(formatterClass);
                 }
             } catch (SecurityException | IOException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
@@ -1695,6 +1703,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         // check hazelcast cluster overrides
         if (noCluster) {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false"));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.ejb-container.ejb-timer-service.ejb-timer-service=Dummy"));
         } else {
 
             if (hzPort > Integer.MIN_VALUE) {

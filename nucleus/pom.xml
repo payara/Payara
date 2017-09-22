@@ -51,11 +51,11 @@
         <relativePath />
     </parent>
 
-    <groupId>org.glassfish.main</groupId>
-    <artifactId>glassfish-nucleus-parent</artifactId>
+    <groupId>fish.payara</groupId>
+    <artifactId>payara-nucleus-parent</artifactId>
     <version>4.1.2.174-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>GlassFish Nucleus Parent Project</name>
+    <name>Payara Nucleus Parent Project</name>
 
     <scm>
         <connection>scm:git:git@github.com:payara/payara.git</connection>
@@ -63,12 +63,12 @@
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
         <tag>payara-server-4.1.2.174-SNAPSHOT</tag>
     </scm>
-
+    
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/payara/Payara/issues</url>
     </issueManagement>
-    
+
     <licenses>
       <license>
         <name>CDDL + GPLv2 with classpath exception</name>
@@ -162,14 +162,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- on Hudson and RE, this gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
-        <findbugs.skip>false</findbugs.skip>
+        <findbugs.skip>true</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
         <findbugs.exclude />
         <findbugs.version>2.5.2</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
 
-        <glassfish-corba.version>4.0.1.payara-p8</glassfish-corba.version>
+        <glassfish-corba.version>4.0.1.payara-p9</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <servlet-api.version>3.1.0</servlet-api.version>
@@ -180,15 +180,14 @@
         <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
         <javax.validation.version>1.1.0.Final</javax.validation.version>
         <classmate.version>1.3.3</classmate.version>
-        <jboss.logging.version>3.3.0.Final</jboss.logging.version>
+        <jboss.logging.version>3.3.1.Final</jboss.logging.version>
         <!-- PAYARA-625 / PAYARA-1860 -->
         <javassist.version>3.22.0-CR2</javassist.version>
         <javax.el.version>3.0.1-b03</javax.el.version>
         <javax.el-api.version>3.0.1-b03</javax.el-api.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
-        <pfl.version>4.0.0-b004</pfl.version>
+        <pfl.version>4.0.1-b002</pfl.version>
         <gmbal.version>4.0.0-b001</gmbal.version>
-        <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.7</antlr.version>
         <jersey.version>2.25.1</jersey.version>
         <jackson.version>2.8.8</jackson.version>
@@ -211,7 +210,7 @@
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.7</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
-        <hazelcast.version>3.8</hazelcast.version>
+        <hazelcast.version>3.8.5</hazelcast.version>
         <mail.version>1.5.6</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <smack.version>4.1.9</smack.version>
@@ -225,6 +224,36 @@
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <javadoc.skip>false</javadoc.skip>
         <javadoc.version>2.10.3</javadoc.version>
+        <osgi-resource-locator.version>1.0.1</osgi-resource-locator.version>
+        <sjsxp.version>1.0</sjsxp.version>
+        <org.apache.felix.main.version>4.2.1</org.apache.felix.main.version>
+        <org.apache.felix.webconsole.version>3.1.2</org.apache.felix.webconsole.version>
+        <org.apache.felix.eventadmin.version>1.2.8</org.apache.felix.eventadmin.version>
+        <javahelp.version>2.0.02</javahelp.version>
+        <metainf-services.version>1.1</metainf-services.version>
+        <junit.version>4.10</junit.version>
+        <testng.version>6.5.2</testng.version>
+        <jmockit.version>0.999.15</jmockit.version>
+        <commons-io.version>2.5</commons-io.version>
+        <ant.version>1.8.2</ant.version>
+        <ant-launcher.version>1.8.2</ant-launcher.version>
+        <ldapbp.version>1.0</ldapbp.version>
+        <maven-processor-plugin.version>2.0.4</maven-processor-plugin.version>
+        <org.apache.felix.shell.version>1.4.1</org.apache.felix.shell.version>
+        <org.apache.felix.gogo.runtime.version>0.8.0</org.apache.felix.gogo.runtime.version>
+        <org.apache.felix.gogo.shell.version>0.8.0</org.apache.felix.gogo.shell.version>
+        <org.apache.felix.gogo.command.version>0.8.0</org.apache.felix.gogo.command.version>
+        <org.apache.felix.fileinstall.version>3.1.10</org.apache.felix.fileinstall.version>
+        <org.apache.felix.configadmin.version>1.2.4</org.apache.felix.configadmin.version>
+        <org.apache.felix.scr.version>1.4.0</org.apache.felix.scr.version>
+        <org.apache.felix.bundlerepository.version>1.6.6</org.apache.felix.bundlerepository.version>
+        <jline.version>2.14.2</jline.version>
+        <maven-javadoc-plugin.version>2.8</maven-javadoc-plugin.version>
+        <hawtjni-runtime.version>1.13</hawtjni-runtime.version>
+        <org.osgi.enterprise.version>4.2.0</org.osgi.enterprise.version>
+        <org.osgi.core.version>4.2.0</org.osgi.core.version>
+        <org.osgi.compendium.version>4.2.0</org.osgi.compendium.version>
+        <woodstox.version>4.2.0</woodstox.version>
         <deploy.skip>true</deploy.skip>
     </properties>
 
@@ -296,7 +325,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>3.6.2</version>
                     <configuration>
                         <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                         <source>1.7</source>
@@ -312,7 +341,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>3.0.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
@@ -389,7 +418,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.5</version>
+                    <version>3.6</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -719,12 +748,12 @@
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
-                <version>1.0.1</version>
+                <version>${osgi-resource-locator.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.stream</groupId>
                 <artifactId>sjsxp</artifactId>
-                <version>1.0</version>
+                <version>${sjsxp.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.ws.rs</groupId>
@@ -759,35 +788,35 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
-                <version>4.2.0</version>
+                <version>${org.osgi.compendium.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
-                <version>4.2.0</version>
+                <version>${org.osgi.core.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.enterprise</artifactId>
-                <version>4.2.0</version>
+                <version>${org.osgi.enterprise.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.main</artifactId>
-                <version>4.2.1</version>
+                <version>${org.apache.felix.main.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.webconsole</artifactId>
-                <version>3.1.2</version>
+                <version>${org.apache.felix.webconsole.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.eventadmin</artifactId>
-                <version>1.2.8</version>
+                <version>${org.apache.felix.eventadmin.version}</version>
             </dependency>
 
             <dependency>
@@ -844,7 +873,7 @@
             <dependency>
                 <groupId>javax.help</groupId>
                 <artifactId>javahelp</artifactId>
-                <version>2.0.02</version>
+                <version>${javahelp.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.tools.btrace</groupId>
@@ -924,37 +953,37 @@
             <dependency>
                 <groupId>org.kohsuke.metainf-services</groupId>
                 <artifactId>metainf-services</artifactId>
-                <version>1.1</version>
+                <version>${metainf-services.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.10</version>
+                <version>${junit.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>6.5.2</version>
+                <version>${testng.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
-                <version>0.999.15</version>
+                <version>${jmockit.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>1.3.1</version>
+                <version>${commons-io.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
                 <artifactId>ant</artifactId>
-                <version>1.8.2</version>
+                <version>${ant.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
                 <artifactId>ant-launcher</artifactId>
-                <version>1.8.2</version>
+                <version>${ant-launcher.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -964,7 +993,7 @@
             <dependency>
                 <groupId>com.sun</groupId>
                 <artifactId>ldapbp</artifactId>
-                <version>1.0</version>
+                <version>${ldapbp.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
@@ -999,7 +1028,7 @@
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>2.0.4</version>
+                <version>${maven-processor-plugin.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.annotations</groupId>
@@ -1009,42 +1038,47 @@
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.shell</artifactId>
-                <version>1.4.1</version>
+                <version>${org.apache.felix.shell.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.gogo.runtime</artifactId>
-                <version>0.8.0</version>
+                <version>${org.apache.felix.gogo.runtime.version}</version>
             </dependency>
             <dependency>
                <groupId>org.apache.felix</groupId>
                <artifactId>org.apache.felix.gogo.shell</artifactId>
-               <version>0.8.0</version>
+               <version>${org.apache.felix.gogo.shell.version}</version>
             </dependency>
             <dependency>
                <groupId>org.apache.felix</groupId>
                <artifactId>org.apache.felix.gogo.command</artifactId>
-               <version>0.8.0</version>
+               <version>${org.apache.felix.gogo.command.version}</version>
             </dependency>
             <dependency>
                <groupId>org.apache.felix</groupId>
                <artifactId>org.apache.felix.fileinstall</artifactId>
-               <version>3.1.10</version>
+               <version>${org.apache.felix.fileinstall.version}</version>
             </dependency>
             <dependency>
                <groupId>org.apache.felix</groupId>
                <artifactId>org.apache.felix.configadmin</artifactId>
-               <version>1.2.4</version>
+               <version>${org.apache.felix.configadmin.version}</version>
             </dependency>
             <dependency>
                <groupId>org.apache.felix</groupId>
                <artifactId>org.apache.felix.scr</artifactId>
-               <version>1.4.0</version>
+               <version>${org.apache.felix.scr.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.bundlerepository</artifactId>
-                <version>1.6.6</version>
+                <version>${org.apache.felix.bundlerepository.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>woodstox-core-asl</artifactId>
+                <version>${woodstox.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.docs.man</groupId>
@@ -1074,12 +1108,12 @@
             <dependency>
                 <groupId>jline</groupId>
                 <artifactId>jline</artifactId>
-                <version>2.14.2</version>
+                <version>${jline.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>
                 <artifactId>hawtjni-runtime</artifactId>
-                <version>1.13</version>
+                <version>${hawtjni-runtime.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2.external</groupId>
@@ -1236,6 +1270,66 @@
             <properties>
                 <javadoc.options>-Xdoclint:none</javadoc.options>
             </properties>
+        </profile>
+        
+        <profile>
+            <id>DeploySnapshot-Internal</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>payara-nexus</id>
+                    <url>https://nexus.payara.fish/content/repositories/payara-snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+            
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>payara-nexus</serverId>
+                            <nexusUrl>https://nexus.payara.fish/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>DeploySnapshot-Sonatype</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+            
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

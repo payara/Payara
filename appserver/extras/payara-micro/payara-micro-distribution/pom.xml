@@ -54,13 +54,6 @@
     <name>Payara Micro Distribution</name>
     <packaging>jar</packaging>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <defaultGoal>install</defaultGoal>
         <plugins>
@@ -462,30 +455,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>DeploySnapshot</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>DeploySnapshot</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         
         <profile>
             <id>jdk8</id>
@@ -497,7 +466,7 @@
                 <dependency>
                     <groupId>org.eclipse.microprofile.config</groupId>
                     <artifactId>microprofile-config-api</artifactId>
-                    <version>1.0-RC2</version>
+                    <version>${microprofile-config.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.nucleus.microprofile.config</groupId>
