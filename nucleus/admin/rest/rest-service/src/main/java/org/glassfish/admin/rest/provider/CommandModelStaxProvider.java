@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.provider;
 
+import fish.payara.admin.rest.streams.StreamWriter;
 import com.sun.enterprise.util.StringUtils;
 import java.io.File;
 import java.util.Properties;

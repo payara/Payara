@@ -1,4 +1,4 @@
-package org.glassfish.admin.rest.provider;
+package fish.payara.admin.rest.streams;
 
 import java.io.IOException;
 import java.io.OutputStream;

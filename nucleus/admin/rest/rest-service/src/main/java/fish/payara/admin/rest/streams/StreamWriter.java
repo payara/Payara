@@ -1,4 +1,4 @@
-package org.glassfish.admin.rest.provider;
+package fish.payara.admin.rest.streams;
 
 /**
  * Defines an interface that will handle streaming a data structure to an

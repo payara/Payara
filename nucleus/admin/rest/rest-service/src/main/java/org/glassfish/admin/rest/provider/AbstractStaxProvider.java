@@ -41,6 +41,9 @@
  */
 package org.glassfish.admin.rest.provider;
 
+import fish.payara.admin.rest.streams.StreamWriter;
+import fish.payara.admin.rest.streams.JsonStreamWriter;
+import fish.payara.admin.rest.streams.XmlStreamWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
