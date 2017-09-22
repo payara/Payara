@@ -37,9 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.jdbc;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.io.Reader;
 import java.nio.charset.CharacterCodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -48,6 +51,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -55,30 +60,25 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Level;
-import javax.sql.DataSource;
-//import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-
-import com.sun.enterprise.universal.GFBase64Encoder;
 
 import javax.security.auth.login.LoginException;
-import com.sun.enterprise.security.auth.realm.IASRealm;
-import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
-import com.sun.enterprise.security.auth.realm.InvalidOperationException;
-import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
-import com.sun.enterprise.security.auth.digest.api.Password;
-import com.sun.enterprise.security.ee.auth.realm.DigestRealmBase;
-import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.util.Utility;
-
-import java.io.Reader;
-import java.util.Arrays;
+import javax.sql.DataSource;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
+import com.sun.enterprise.security.auth.digest.api.Password;
+import com.sun.enterprise.security.auth.realm.BadRealmException;
+import com.sun.enterprise.security.auth.realm.IASRealm;
+import com.sun.enterprise.security.auth.realm.InvalidOperationException;
+import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
+import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import com.sun.enterprise.security.common.Util;
+import com.sun.enterprise.security.ee.auth.realm.DigestRealmBase;
+import com.sun.enterprise.util.Utility;
 
 /**
  * Realm for supporting JDBC authentication.
@@ -492,10 +492,7 @@ public final class JDBCRealm extends DigestRealmBase {
     }
 
     private String base64Encode(byte[] bytes) {
-        GFBase64Encoder encoder = new GFBase64Encoder();
-        return encoder.encode(bytes);
-
-        
+        return new String(Base64.getMimeEncoder().encode(bytes), UTF_8);
     }
 
     /**
