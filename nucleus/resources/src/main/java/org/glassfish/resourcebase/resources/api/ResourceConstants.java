@@ -132,6 +132,7 @@ public interface ResourceConstants {
     public static final String JAVA_COMP_SCOPE_PREFIX = "java:comp/";
     public static final String JAVA_MODULE_SCOPE_PREFIX = "java:module/";
     public static final String JAVA_GLOBAL_SCOPE_PREFIX = "java:global/";
+    public static final String JAVA_COMP_ENV_SCOPE_PREFIX = "java:comp/env/";
 
     public static enum TriState {
         TRUE, FALSE, UNKNOWN
@@ -148,6 +149,7 @@ public interface ResourceConstants {
     public static String EMBEDDEDRAR_NAME_DELIMITER="#";
 
     public final static String APP_META_DATA_RESOURCES = "app-level-resources-config";
+    public final static String APP_SCOPED_RESOURCES_JNDI_NAMES = "app-scoped-resources-jndi-names";
     public final static String APP_SCOPED_RESOURCES_MAP = "app-scoped-resources-map";
 
 }
