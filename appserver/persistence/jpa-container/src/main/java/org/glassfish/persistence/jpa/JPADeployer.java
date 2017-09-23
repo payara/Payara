@@ -462,7 +462,12 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                             } catch (PersistenceException e) {
                                 // Exception indicates something went wrong while performing validation. Clean up and rethrow to fail deployment
                                 emf.close();
-                                throw new DeploymentException(e);  // Need to wrap exception in DeploymentException else deployment will not fail !!
+                                DeployCommandParameters dcp = context.getCommandParameters(DeployCommandParameters.class);
+                                if (dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)) {
+                                    logger.log(Level.WARNING, "Resource communication failure exception skipped while loading the pu " + pud.getName(), e);
+                                } else {
+                                    throw new DeploymentException(e);  // Need to wrap exception in DeploymentException else deployment will not fail !!
+                                }
                             } finally {
                                 if (em != null) {
                                     em.close();
