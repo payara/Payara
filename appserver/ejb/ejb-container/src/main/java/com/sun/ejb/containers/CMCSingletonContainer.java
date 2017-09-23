@@ -181,7 +181,11 @@ public class CMCSingletonContainer
      * @see com.sun.ejb.containers.CMCSingletonContainer#_getContext(EjbInvocation inv)
      * @param inv The current EjbInvocation that was passed to _getContext()
      */
+    @Override
     public void releaseContext(EjbInvocation inv) {
+        if(isClusteredEnabled()) {
+            getClusteredSingletonMap().put(getClusteredSessionKey(), inv.context.getEJB());
+        }
         Lock theLock = inv.getCMCLock();
         if (theLock != null) {
             theLock.unlock();

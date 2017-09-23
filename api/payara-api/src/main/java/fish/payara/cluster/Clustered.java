@@ -67,7 +67,7 @@ public @interface Clustered {
     /**
      * specifies the type of distributed locking to be performed
      * For EJB beans, the only INHERIT or NONE are valid,
-     * for CDI beans, only INHERIT is equivalent to NONE,
+     * for CDI beans, INHERIT is equivalent to NONE,
      * and the other valid value for CDI beans is LOCK
      */
     DistributedLockType lock() default DistributedLockType.INHERIT;

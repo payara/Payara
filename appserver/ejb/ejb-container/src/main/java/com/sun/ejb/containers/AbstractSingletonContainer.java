@@ -437,11 +437,11 @@ public abstract class AbstractSingletonContainer
         return isClusteredEnabled() && distLockType != DistributedLockType.LOCK_NONE;
     }
 
-    private IMap<String, Object> getClusteredSingletonMap() {
+    protected IMap<String, Object> getClusteredSingletonMap() {
         return getHazelcastInstance().getMap("Payara/" + componentId);
     }
 
-    private String getClusteredSessionKey() {
+    protected String getClusteredSessionKey() {
         EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
         return sessDesc.getClusteredKeyValue().isEmpty()? sessDesc.getName() : sessDesc.getClusteredKeyValue();
     }
