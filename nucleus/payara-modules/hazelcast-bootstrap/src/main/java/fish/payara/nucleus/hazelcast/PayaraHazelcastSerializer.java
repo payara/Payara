@@ -61,13 +61,15 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
     @Override
     public void write(ObjectDataOutput out, Object object) throws IOException {
         delegate.write(out, ctxUtil.getInvocationComponentId());
+        delegate.write(out, ctxUtil.getApplicationName());
         delegate.write(out, object);
     }
 
     @Override
     public Object read(ObjectDataInput in) throws IOException {
         String componentId = (String)delegate.read(in);
-        ctxUtil.setInstanceComponentId(componentId);
+        String appString = (String)delegate.read(in);
+        ctxUtil.setInstanceComponentId(appString, componentId);
         ctxUtil.setApplicationClassLoader();
         return delegate.read(in);
     }

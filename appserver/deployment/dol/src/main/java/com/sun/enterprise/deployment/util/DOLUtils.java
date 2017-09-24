@@ -220,6 +220,39 @@ public class DOLUtils {
             return input.matcher(entryName).matches();
         }
     }
+    
+    /**
+     * Finds a raw component ID to use when all you have is an ApplicationInfo
+     * @param appInfo
+     * @return 
+     */
+    public static String getRawComponentId(ApplicationInfo appInfo) {
+        // first choose a web module
+        String result = null;
+        if (appInfo != null) {
+            Application app = appInfo.getMetaData(Application.class);
+            // find first web bundle descriptors
+            for (WebBundleDescriptor bdesc : app.getBundleDescriptors(WebBundleDescriptor.class)){
+                // get componentId
+                result = getComponentEnvId(bdesc);
+                if (result != null) {
+                    return result;
+                }
+            }
+            
+            // ok find ejb descriptors
+            for (EjbBundleDescriptor bdesc : app.getBundleDescriptors(EjbBundleDescriptor.class)){
+                // get componentId
+                result = getComponentEnvId(bdesc);
+                if (result != null) {
+                    return result;
+                }
+            }
+            
+            
+        }
+        return result;
+    }
 
     public static List<URI> getLibraryJarURIs(Application app, ReadableArchive archive) throws Exception {
         List<URL> libraryURLs = new ArrayList<URL>();

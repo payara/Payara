@@ -156,10 +156,16 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         ComponentInvocation inv = serverContext.getInvocationManager().getCurrentInvocation();
         return inv != null? inv.getComponentId() : null;
     }
+    
+    @Override
+    public String getApplicationName() {
+        return appName;
+    }
 
     @Override
-    public JavaEEContextUtil setInstanceComponentId(String componentId) {
+    public JavaEEContextUtil setInstanceComponentId(String appName, String componentId) {
         this.componentId = componentId;
+        this.appName = appName;
         if(componentId != null) {
             createInvocationContext();
         }
@@ -175,7 +181,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         else if(componentId != null) {
             // deserialized version
             createInvocationContext();
-        }
+        } 
     }
 
     private ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
@@ -190,10 +196,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     }
 
     private void createInvocationContext() {
-        capturedInvocation = new ComponentInvocation();
+        capturedInvocation = new ComponentInvocation(componentId,ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,null,appName,null);
         capturedInvocation.componentId = componentId;
         capturedInvocation.setJNDIEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
-        capturedInvocation.setComponentInvocationType(ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION);
     }
 
 
@@ -201,5 +206,6 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     private transient ComponentEnvManager compEnvMgr;
     private transient ComponentInvocation capturedInvocation;
     private String componentId;
+    private String appName;
     private static final long serialVersionUID = 1L;
 }

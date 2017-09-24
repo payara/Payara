@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.cdi.extension;
 
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
@@ -54,7 +56,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -66,10 +67,13 @@ import javax.enterprise.inject.spi.EventMetadata;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
+import org.glassfish.api.invocation.ApplicationEnvironment;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 
 /**
  *
@@ -92,21 +96,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     private final static String INSTANCE_PROPERTY = "InstanceName";
     
     private final static String EVENT_PROPERTY = "EventName";
-    
-    @PostConstruct
-    void postConstruct() {
-        runtime.addCDIListener(this);
-        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        if (managedExecutorService == null) {
-            try {
-                InitialContext ctx = new InitialContext();
-                managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
-            } catch (NamingException ex) {
-                Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-        }
-    }
+    private ServerContext serverContext;
+    private ApplicationInfo myApplication;
 
     @PreDestroy
     void preDestroy() {
@@ -114,20 +105,35 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         ctxUtil = null;
     }
     
-    public void onStart(@Observes @Initialized(ApplicationScoped.class) ServletContext init) {
+    public void onStart(@Observes @Initialized(ApplicationScoped.class) Object init) {
        initialize();
        if (runtime.isClustered()) {
-            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized for " + init.getContextPath());
+            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized");
         }
     }
     
     @Override
     public void initialize() {
         
-        // try again
-
+        // Set up the listener
+        runtime.addCDIListener(this);
+        
+        // Now workout which application we are so we can store a context
+        // We need to store a JavaEE context to ensure it is set on the thread when
+        // receiving events
+        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class); 
         if (ctxUtil.getInvocationComponentId() == null) {
-            ctxUtil.setInstanceContext();
+            // OK we didn't capture a component Id
+            serverContext = Globals.getDefaultHabitat().getService(ServerContext.class);
+            ComponentEnvManager envMgr = Globals.getDefaultHabitat().getService(ComponentEnvManager.class);
+            ApplicationRegistry appRegistry = Globals.getDefaultHabitat().getService(ApplicationRegistry.class);
+            ApplicationEnvironment peekAppEnvironment = serverContext.getInvocationManager().peekAppEnvironment();
+            if (peekAppEnvironment != null) {
+                myApplication = appRegistry.get(peekAppEnvironment.getName());
+                if (myApplication != null) {
+                    ctxUtil.setInstanceComponentId(myApplication.getName(),DOLUtils.getRawComponentId(myApplication));
+                }
+            }       
         }
         
         if (managedExecutorService == null) {
@@ -162,6 +168,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         }
 
         try(Context ctx = ctxUtil.pushContext()) {
+            // also need to force the application name onto the current invocation
             managedExecutorService.submit(new Runnable() {
                 @Override
                 public void run() {

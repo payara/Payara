@@ -144,7 +144,7 @@
           <name>Eclipse MicroProfile Repository</name>
           <url>https://repo.eclipse.org/content/groups/microprofile/</url>
           <releases><enabled>true</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
+          <snapshots><enabled>false</enabled></snapshots>
         </repository>
         
         <!-- 
@@ -172,7 +172,7 @@
            	</releases>
             	<snapshots>
                 	<enabled>true</enabled> <!-- TEMP for HK2 until b45 released -->
-                <updatePolicy>always</updatePolicy>
+                <updatePolicy>daily</updatePolicy>
             	</snapshots>
         </repository>
         
