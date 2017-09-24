@@ -36,23 +36,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.domain;
+package fish.payara.jmx.monitoring.admin.notifier;
+
+
+import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.SnmpNotifier;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.beans.PropertyVetoException;
 
 /**
- * @author mertcaliskan
+ * Asadmin command to configure the SNMP notifier with the monitoring service
+ * @since 4.1.2.174
+ * @author jonathan coustick
  */
-public enum EventSource {
-    HEALTHCHECK("HealthCheck"),
-    REQUESTTRACING("RequestTracing"),
-    MONITORING("Monitoring");
+@Service(name = "monitoring-snmp-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = MonitoringServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "monitoring-snmp-notifier-configure",
+                description = "Configures SNMP Notifier for Monitoring Service")
+})
+public class SnmpMonitoringNotifierConfigurer extends BaseMonitoringNotifierConfigurer<SnmpNotifier> {
 
-    private final String value;
-
-    EventSource(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
+    @Override
+    protected void applyValues(SnmpNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
     }
 }
