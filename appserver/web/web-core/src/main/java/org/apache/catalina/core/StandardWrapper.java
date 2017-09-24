@@ -1419,6 +1419,13 @@ public class StandardWrapper
             unavailable(null);
             throw new ServletException(msg(NO_SERVLET_BE_SPECIFIED_EXCEPTION, getName()));
         }
+        
+        // Current compiler targets default to 1.5, which is a little low for current
+        // environments 
+        if (isJspServlet) {
+            parameters.putIfAbsent("compilerTargetVM", "1.8");
+            parameters.putIfAbsent("compilerSourceVM", "1.8");
+        }
 
         // Acquire an instance of the class loader to be used
         Loader loader = getLoader();
