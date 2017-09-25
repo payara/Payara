@@ -37,23 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices.connector.annotation.handlers;
-
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
-
 import org.glassfish.apf.*;
-
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
-
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
-
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
@@ -62,15 +58,15 @@ import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.annotation.context.EjbsContext;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.logging.Level;
-
 import javax.xml.namespace.QName;
-
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.glassfish.webservices.connector.LogUtils;
+import static org.glassfish.webservices.connector.annotation.handlers.WebServiceUtils.getEjbName;
+import static org.glassfish.webservices.connector.annotation.handlers.WebServiceUtils.isJaxwsRIDeployment;
 import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
@@ -88,7 +84,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
 
     private static final LocalStringManagerImpl wsLocalStrings = new LocalStringManagerImpl(WebServiceProviderHandler.class);
     
-    /** Creates a new instance of WebServiceHandler */
+    /** Creates a new instance of WebServiceProviderHandler */
     public WebServiceProviderHandler() {
     }
         
@@ -97,12 +93,14 @@ public class WebServiceProviderHandler extends AbstractHandler {
      * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         /*Class dependencies[] = { javax.ejb.Stateless.class };
         return dependencies;*/
         return getEjbAndWebAnnotationTypes();
     }
     
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo annInfo) 
         throws AnnotationProcessorException     
     {
@@ -150,14 +148,29 @@ public class WebServiceProviderHandler extends AbstractHandler {
         
         try {
             // let's see the type of web service we are dealing with...
-            if ((ejbProvider != null) && ejbProvider.getType("javax.ejb.Stateless") != null && (annCtx instanceof EjbContext)) {
+            if (ejbProvider != null && ejbProvider.getType("javax.ejb.Stateless") != null) {
                 // this is an ejb !
+                if (annCtx instanceof EjbContext) {
                 EjbContext ctx = (EjbContext) annCtx;
                 bundleDesc = ctx.getDescriptor().getEjbBundleDescriptor();
                 bundleDesc.setSpecVersion("3.0");
-            } else {
-                if (annCtx instanceof WebComponentContext) {
-                    bundleDesc = ((WebComponentContext) annCtx).getDescriptor().getWebBundleDescriptor();
+                } else if (annCtx instanceof EjbsContext) {
+                    String name = getEjbName(annElem);
+                    for (EjbContext ejbCtx : ((EjbsContext) annCtx).getEjbContexts()) {
+                        EjbDescriptor descriptor = ejbCtx.getDescriptor();
+                        if (name.equals(descriptor.getName())) {
+                            bundleDesc = descriptor.getEjbBundleDescriptor();
+                            bundleDesc.setSpecVersion("3.0");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (bundleDesc == null) {
+                // this has to be a servlet
+                if(annCtx instanceof WebComponentContext) {
+                    bundleDesc = ((WebComponentContext)annCtx).getDescriptor().getWebBundleDescriptor();
                 } else if (!(annCtx instanceof WebBundleContext)) {
                     return getInvalidAnnotatedElementHandlerResult(
                             annInfo.getProcessingContext().getHandler(), annInfo);
@@ -168,8 +181,8 @@ public class WebServiceProviderHandler extends AbstractHandler {
         } catch (Exception e) {
             throw new AnnotationProcessorException(
                     wsLocalStrings.getLocalString("webservice.annotation.exception",
-                    "WS00023: Exception in processing @Webservice : {0}",
-                    e.getMessage()));
+                            "WS00023: Exception in processing @Webservice : {0}",
+                            e.getMessage()));
         }
 
         // For WSProvider, portComponentName is the fully qualified class name
@@ -316,16 +329,12 @@ public class WebServiceProviderHandler extends AbstractHandler {
                 endpoint.setWebComponentImpl(webComponent);
             }
         } else {
-            if(endpoint.getEjbLink() == null) {
-                EjbDescriptor[] ejbDescs = ((EjbBundleDescriptor) bundleDesc).getEjbByClassName(((Class)annElem).getName());
-                if(ejbDescs.length != 1) {
-                    throw new AnnotationProcessorException(
-                        "Unable to find matching descriptor for EJB endpoint",
-                        annInfo);
-                }
-                endpoint.setEjbComponentImpl(ejbDescs[0]);
-                ejbDescs[0].setWebServiceEndpointInterfaceName(endpoint.getServiceEndpointInterface());
-                endpoint.setEjbLink(ejbDescs[0].getName());
+            String name = getEjbName(annElem);
+            EjbDescriptor ejb = ((EjbBundleDescriptor) bundleDesc).getEjbByName(name);
+            endpoint.setEjbComponentImpl(ejb);
+            ejb.setWebServiceEndpointInterfaceName(endpoint.getServiceEndpointInterface());
+            if (endpoint.getEjbLink() == null) {
+                endpoint.setEjbLink(ejb.getName());
             }
         }
 
@@ -340,27 +349,6 @@ public class WebServiceProviderHandler extends AbstractHandler {
         return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);
     }
 
-    /**
-     *   If WEB-INF/sun-jaxws.xml exists and is not processed in EJB context , then it returns true.
-     * @param annInfo
-     * @return
-     */
-    private boolean isJaxwsRIDeployment(AnnotationInfo annInfo) {
-        boolean riDeployment = false;
-        AnnotatedElementHandler annCtx = annInfo.getProcessingContext().getHandler();
-        try {
-            ReadableArchive moduleArchive = annInfo.getProcessingContext().getArchive();
-            if (moduleArchive != null && moduleArchive.exists("WEB-INF/sun-jaxws.xml")
-                    && !((Class)annInfo.getAnnotatedElement()).isInterface()
-                    && ( (annCtx instanceof WebBundleContext) || (annCtx instanceof WebComponentContext))) {
-                riDeployment = true;
-            }
-        } catch (Exception e) {
-            //continue, processing
-        }
-        return riDeployment;
-    }
-    
     /**
      * This is for the ejb webservices in war case Incase there is an@Stateless
      * and

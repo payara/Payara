@@ -8,7 +8,7 @@ Payara is an open source project, with the code owned by Payara Foundation a Uni
 As we must also comply with the upstream Oracle Common Development and Distribution license the following line should be added to any changed file:
 
 ```
-Portions Copyright [2017] Payara Foundation
+Portions Copyright [2017] Payara Foundation and/or its affiliates
 ```
 
 ## Getting Payara
@@ -34,16 +34,19 @@ git remote add origin https://github.com/<YourUsername>/Payara
 You are now free to start working on Payara issues, adding new features, or tinkering with the codebase.
 
 ## Building Payara
-Payara uses maven to build the server, you can use either JDK 7 or JDK 8 to build Payara Server, we distribute Payara built with JDK7 for backwards compatibility with GlassFish.
+Payara uses maven to build the server, you can use either JDK 7 or JDK 8 to build Payara Server, we distribute Payara built with JDK 8.
 To build Payara from the root of the cloned source code tree execute;
 ```
 mvn -DskipTests clean package
 ```
 When finished the Payara distribution zip file will be available in the directory;
 ```
-appserver\distributions\payara\target\payara.zip
+appserver/distributions/payara/target/payara.zip
 ```
-
+Payara Micro will be available in the path
+```
+appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar
+```
 
 ## Updating your fork
 As Payara is under continuous development, our upstream branch is regularly updated with dev and community commits. It is worth synchronising your repository with the upstream repo you added previously.
@@ -131,7 +134,7 @@ Flip back to your own branch, with your changes:
 git checkout <YourBranchName>
 ```
 
-Merge said changes with the master branch by rebasing your code (effectivaly a neater marge for private repos):
+Merge said changes with the master branch by rebasing your code (effectively a neater marge for private repos):
 
 ```
 git rebase master
@@ -140,7 +143,7 @@ git rebase master
 Finally, push the changes from your branch to a new branch on the main repo (origin), with the same name (so as to preserve the issue numbers and history):
 
 ```
-git push origin <YourBranchName>:<YourBranchName>
+git push origin <YourBranchName>
 ```
 
 ## Feature requests and issues
@@ -154,3 +157,8 @@ If you find a bug within Payara, please post it as a github issue. Github is our
 ## Responses
 
 We continually check the github posted issues for bugs, feature requests, and assorted issues. If you have posted an issue, chances are it has been read by a member of staff. Requests for further information and labels are often posted in order to make it easier for the dev team to see issues. However if your issue has not received a comment or label, don't take this as it having not been read or acted upon!
+
+## Questions, advice and guidance
+
+If you have a question on how to use Payara or you need advice and guidance please don't create a GitHub issue. Please post a message on our Google Group which is monitored both by the community and by Payara Engineers. 
+https://groups.google.com/forum/#!forum/payara-forum 

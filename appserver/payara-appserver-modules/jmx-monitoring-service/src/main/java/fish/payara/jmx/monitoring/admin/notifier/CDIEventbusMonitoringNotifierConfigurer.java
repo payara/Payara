@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,25 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.api.extension;
+package fish.payara.jmx.monitoring.admin.notifier;
 
-import fish.payara.nucleus.requesttracing.api.RequestTracingCdiInterceptor;
-import fish.payara.nucleus.requesttracing.api.Traced;
+import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.CDIEventbusNotifier;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
+import java.beans.PropertyVetoException;
 
 /**
- * @author mertcaliskan
+ * Asadmin command to configure the CDI Eventbus notifier with the monitoring service
+ * @since 4.1.2.174
+ * @author jonathan coustick
  */
-public class RequesttracingCoreCDIExtension implements Extension {
+@Service(name = "monitoring-cdieventbus-notifier-configure")
+@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = MonitoringServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "monitoring-cdieventbus-notifier-configure",
+                description = "Configures CDI Eventbus Notifier for Monitoring Service")
+})
+public class CDIEventbusMonitoringNotifierConfigurer extends BaseMonitoringNotifierConfigurer<CDIEventbusNotifier> {
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-        bbd.addInterceptorBinding(Traced.class);
-        AnnotatedType<RequestTracingCdiInterceptor> cpat = bm.createAnnotatedType(RequestTracingCdiInterceptor.class);
-        bbd.addAnnotatedType(cpat, RequestTracingCdiInterceptor.class.getName());
+    @Override
+    protected void applyValues(CDIEventbusNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
     }
 }

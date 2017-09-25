@@ -94,7 +94,7 @@ public class StuckThreadsStore {
     
     public void deregisterThread(long threadid){
         if (threads.remove(threadid) == null) {
-            logger.log(Level.WARNING, "Tried to deregister non-existent thread " + threadid);
+            logger.log(Level.WARNING, "Tried to deregister non-existent thread {0}", threadid);
         }
     }
 
