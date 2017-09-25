@@ -183,6 +183,8 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 builder.append(version.getMajorVersion());
                 builder.append('.');
                 builder.append(version.getMinorVersion());
+                builder.append('.');
+                builder.append(version.getPayaraVersion());
                 productId = builder.toString();
             }
         }
