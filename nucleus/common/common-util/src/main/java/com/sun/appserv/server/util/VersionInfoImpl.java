@@ -68,4 +68,9 @@ public class VersionInfoImpl implements VersionInfo {
         return Version.getMinorVersion();
     }
 
+    @Override
+    public String getPayaraVersion() {
+        return Version.getPayaraVersion();
+    }
+
 }

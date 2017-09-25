@@ -174,7 +174,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
     protected String getProductId() {
 
         String version = Version.getAbbreviatedVersion() + Version.getVersionPrefix() +
-                Version.getMajorVersion() + "." + Version.getMinorVersion();
+                Version.getMajorVersion() + "." + Version.getMinorVersion() + "." + Version.getPayaraVersion();
         return (version);
     }
 

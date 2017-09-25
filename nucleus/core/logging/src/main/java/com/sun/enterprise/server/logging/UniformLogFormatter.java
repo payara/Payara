@@ -200,6 +200,8 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
                 sb.append(versionInfo.getMajorVersion());
                 sb.append('.');
                 sb.append(versionInfo.getMinorVersion());
+                sb.append('.');
+                sb.append(versionInfo.getPayaraVersion());
                 productId = sb.toString();            
             }            
         }
