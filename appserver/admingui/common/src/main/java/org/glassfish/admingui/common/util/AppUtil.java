@@ -72,7 +72,7 @@ public class AppUtil {
                     for (String oneSniffer: childResourcesMap.keySet()){
                         if (sniffersHide.contains(oneSniffer) )
                             continue;
-                        sniffersList.add(oneSniffer);
+                        sniffersList.add(oneSniffer.replaceAll("weld", "cdi"));
                     }
                     Collections.sort(sniffersList);
                     return sniffersList;
