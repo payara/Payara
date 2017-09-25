@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates.
  */
 package org.glassfish.admin.rest.resources.admin;
 
@@ -94,7 +96,7 @@ public class CommandResource {
 
     @GET
     @Path("/{command:.*}/")
-    @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-javascript"})
     public Response getCommandModel(@PathParam("command") String command) throws WebApplicationException {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
@@ -107,7 +109,7 @@ public class CommandResource {
 
     @OPTIONS
     @Path("/{command:.*}/")
-    @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-javascript"})
     public Response optionsCommandModel(@PathParam("command") String commandName) throws WebApplicationException {
         return getCommandModel(commandName);
     }
