@@ -36,105 +36,108 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates.
  */
 package org.glassfish.admin.rest.provider;
 
+import fish.payara.admin.rest.streams.StreamWriter;
 import com.sun.enterprise.util.StringUtils;
 import java.io.File;
 import java.util.Properties;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 
-/** Marshals {@code CommandModel} into XML and JSON representation.
+/**
+ * Marshals {@code CommandModel} into XML and JSON representation.
  *
  * @author mmares
  */
 @Provider
 @Produces({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON, "application/x-javascript"})
 public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel> {
+
     public CommandModelStaxProvider() {
-        super(CommandModel.class, MediaType.APPLICATION_XML_TYPE, 
-              MediaType.TEXT_XML_TYPE, MediaType.APPLICATION_JSON_TYPE);
+        super(CommandModel.class, MediaType.APPLICATION_XML_TYPE,
+                MediaType.TEXT_XML_TYPE, MediaType.APPLICATION_JSON_TYPE);
     }
-    
+
     @Override
-    protected void writeContentToStream(CommandModel proxy, XMLStreamWriter wr) throws XMLStreamException {
+    protected void writeContentToStream(CommandModel proxy, StreamWriter wr) throws Exception {
         if (proxy == null) {
             return;
         }
         wr.writeStartDocument();
-        wr.writeStartElement("command");
-        wr.writeAttribute("name", proxy.getCommandName());
+        wr.writeStartObject("command");
+        wr.writeAttribute("@name", proxy.getCommandName());
         if (proxy.unknownOptionsAreOperands()) {
-            wr.writeAttribute("unknown-options-are-operands", "true");
+            wr.writeAttribute("@unknown-options-are-operands", true);
         }
         if (proxy.isManagedJob()) {
-            wr.writeAttribute("managed-job", "true");
+            wr.writeAttribute("@managed-job", true);
         }
         String usage = proxy.getUsageText();
         if (StringUtils.ok(usage)) {
-            wr.writeStartElement("usage");
-            wr.writeCharacters(usage);
-            wr.writeEndElement();
+            wr.writeAttribute("usage", usage);
         }
         //Options
+        wr.writeStartArray("option");
         for (CommandModel.ParamModel p : proxy.getParameters()) {
             Param par = p.getParam();
-            wr.writeStartElement("option");
-            wr.writeAttribute("name", p.getName());
-            wr.writeAttribute("type", simplifiedTypeOf(p));
+            wr.writeStartObject("option");
+            wr.writeAttribute("@name", p.getName());
+            wr.writeAttribute("@type", simplifiedTypeOf(p));
             if (par.primary()) {
-                wr.writeAttribute("primary", "true");
+                wr.writeAttribute("@primary", true);
             }
             if (par.multiple()) {
-                wr.writeAttribute("multiple", "true");
+                wr.writeAttribute("@multiple", true);
             }
             if (par.optional()) {
-                wr.writeAttribute("optional", "true");
+                wr.writeAttribute("@optional", true);
             }
             if (par.obsolete()) {
-                wr.writeAttribute("obsolete", "true");
+                wr.writeAttribute("@obsolete", true);
             }
             String str = par.shortName();
             if (StringUtils.ok(str)) {
-                wr.writeAttribute("short", str);
+                wr.writeAttribute("@short", str);
             }
             str = par.defaultValue();
             if (StringUtils.ok(str)) {
-                wr.writeAttribute("default", str);
+                wr.writeAttribute("@default", str);
             }
             str = par.acceptableValues();
             if (StringUtils.ok(str)) {
-                wr.writeAttribute("acceptable-values", str);
+                wr.writeAttribute("@acceptable-values", str);
             }
             str = par.alias();
             if (StringUtils.ok(str)) {
-                wr.writeAttribute("alias", str);
+                wr.writeAttribute("@alias", str);
             }
             str = p.getLocalizedDescription();
             if (StringUtils.ok(str)) {
-                wr.writeAttribute("description", str);
+                wr.writeAttribute("@description", str);
             }
             str = p.getLocalizedPrompt();
             if (StringUtils.ok(str)) {
-                wr.writeAttribute("prompt", str);
+                wr.writeAttribute("@prompt", str);
             }
             str = p.getLocalizedPromptAgain();
             if (StringUtils.ok(str)) {
-                wr.writeAttribute("prompt-again", str);
+                wr.writeAttribute("@prompt-again", str);
             }
-            wr.writeEndElement();
+            wr.writeEndObject();
         }
-        wr.writeEndElement(); //</command>
+        wr.writeEndArray();
+        wr.writeEndObject(); //</command>
         wr.writeEndDocument();
     }
-    
-    public static String simplifiedTypeOf(CommandModel.ParamModel p) {
+
+    private String simplifiedTypeOf(CommandModel.ParamModel p) {
         Class t = p.getType();
         if (t == Boolean.class || t == boolean.class) {
             return "BOOLEAN";
