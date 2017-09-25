@@ -125,16 +125,6 @@ public interface StreamWriter {
     public void writeEndArray() throws Exception;
 
     /**
-     * Writes some raw data.
-     *
-     * @param value The data to write.
-     * @throws Exception Any exception thrown while writing. E.g. for JSON this
-     * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
-     */
-    public void write(String value) throws Exception;
-
-    /**
      * Writes a {@code String} attribute with the specified {@code name} and
      * {@code value}. E.g. for JSON this will write: {@code "name":"value"}.
      *

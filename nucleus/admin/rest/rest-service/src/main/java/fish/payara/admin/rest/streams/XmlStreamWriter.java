@@ -121,18 +121,13 @@ public class XmlStreamWriter implements StreamWriter {
     }
 
     @Override
-    public void write(String value) throws XMLStreamException {
-        writer.writeCharacters(value);
-    }
-
-    @Override
     public void writeAttribute(String name, String value) throws XMLStreamException {
-        writer.writeAttribute(name, value);
+        writer.writeAttribute(name.replaceAll("@", ""), value);
     }
 
     @Override
     public void writeAttribute(String name, Boolean value) throws XMLStreamException {
-        writer.writeAttribute(name, Boolean.toString(value));
+        writer.writeAttribute(name.replaceAll("@", ""), Boolean.toString(value));
     }
 
     @Override

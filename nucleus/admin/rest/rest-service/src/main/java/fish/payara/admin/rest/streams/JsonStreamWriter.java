@@ -125,18 +125,13 @@ public class JsonStreamWriter implements StreamWriter {
     }
 
     @Override
-    public void write(String value) throws JsonGenerationException {
-        writer.write(value);
-    }
-
-    @Override
     public void writeAttribute(String name, String value) throws JsonGenerationException {
-        writer.write('@' + name, value);
+        writer.write(name, value);
     }
 
     @Override
     public void writeAttribute(String name, Boolean value) throws JsonGenerationException {
-        writer.write('@' + name, value);
+        writer.write(name, value);
     }
 
     @Override
