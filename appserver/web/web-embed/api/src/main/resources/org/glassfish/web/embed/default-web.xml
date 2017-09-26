@@ -730,6 +730,10 @@
     <mime-type>text/javascript</mime-type>
   </mime-mapping>
   <mime-mapping>
+    <extension>json</extension>
+    <mime-type>application/json</mime-type>
+  </mime-mapping>
+  <mime-mapping>
     <extension>kar</extension>
     <mime-type>audio/x-midi</mime-type>
   </mime-mapping>

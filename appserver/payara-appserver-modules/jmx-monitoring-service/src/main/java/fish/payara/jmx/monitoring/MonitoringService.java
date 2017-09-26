@@ -40,6 +40,13 @@
 package fish.payara.jmx.monitoring;
 
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
+import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -70,10 +77,15 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import java.util.ArrayList;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
  *
+ * @since 4.1.1.163
  * @author savage
  */
 @Service(name = "payara-monitoring")
@@ -88,7 +100,19 @@ public class MonitoringService implements EventListener {
     MonitoringServiceConfiguration configuration;
 
     @Inject
+    ServiceLocator habitat;
+    
+    @Inject
     private Events events;
+    
+    @Inject
+    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
+    
+    @Inject
+    private NotificationEventFactoryStore eventStore;
+    
+    @Inject
+    private NotificationService notificationService;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -98,6 +122,8 @@ public class MonitoringService implements EventListener {
     private int amxBootDelay = 10;
     private int monitoringDelay = amxBootDelay + 15;
 
+    private List<NotifierExecutionOptions> notifierExecutionOptionsList;
+    
     @PostConstruct
     public void postConstruct() throws NamingException {
         events.register(this);
@@ -122,9 +148,11 @@ public class MonitoringService implements EventListener {
      *  Schedules the MonitoringFormatter to execute at a specified fixed rate 
      * if enabled in the configuration.
      */
-    private void bootstrapMonitoringService() {
+    public void bootstrapMonitoringService() {
         if (configuration != null) {
-            executor = Executors.newScheduledThreadPool(2, new ThreadFactory() {
+            shutdownMonitoringService();//To make sure that there aren't multiple monitoring services running
+            
+            executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
                     return new Thread(r, PREFIX.concat(Integer.toString(threadNumber.getAndIncrement())).concat(")")
@@ -134,7 +162,7 @@ public class MonitoringService implements EventListener {
 
             final MBeanServer server = getPlatformMBeanServer();
 
-            formatter = new MonitoringFormatter(server, buildJobs());
+            formatter = new MonitoringFormatter(server, buildJobs(), this, eventStore, notificationService);
 
             Logger.getLogger(MonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
 
@@ -146,7 +174,39 @@ public class MonitoringService implements EventListener {
                     TimeUnit.SECONDS.convert(Long.valueOf(configuration.getLogFrequency()),
                             TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
                     TimeUnit.SECONDS);
+            
+            bootstrapNotifierList();
         }
+    }
+    
+    /**
+     * Starts notifiers that are enabled with the monitoring service
+     * @since 4.1.2.174
+     */
+    public void bootstrapNotifierList() {
+        notifierExecutionOptionsList = new ArrayList<>();
+        if (configuration.getNotifierList() != null) {
+            for (Notifier notifier : configuration.getNotifierList()) {
+                ConfigView view = ConfigSupport.getImpl(notifier);
+                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+                notifierExecutionOptionsList.add(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+            }
+        }
+        if (notifierExecutionOptionsList.isEmpty()) {
+            // Add logging execution options by default
+            LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
+            logNotifierExecutionOptions.setEnabled(true);
+            notifierExecutionOptionsList.add(logNotifierExecutionOptions);
+        }
+    }
+    
+    /**
+     * Returns the configuration of all the notifiers configured with the monitoring service
+     * @since 4.1.2.174
+     * @return 
+     */
+    public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
+        return notifierExecutionOptionsList;
     }
 
     /**
@@ -161,14 +221,13 @@ public class MonitoringService implements EventListener {
 
     /**
      * Sets the service to be enabled/disabled.
-     *  Has no effect if there is no change in the value.
-     * @param enabled 
+     * @param enabled If true will reboot the monitoring service
      */
     public void setEnabled(Boolean enabled) {
         amxBootDelay = 0;
         monitoringDelay = amxBootDelay + 5;
         
-        if (!this.enabled && enabled) {
+        if (enabled) {
             this.enabled = enabled;
             bootstrapMonitoringService();
         } else if (this.enabled && !enabled) {

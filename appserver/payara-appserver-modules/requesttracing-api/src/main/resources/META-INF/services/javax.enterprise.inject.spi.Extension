@@ -1,1 +1,1 @@
-fish.payara.nucleus.requesttracing.api.extension.RequesttracingCoreCDIExtension
+fish.payara.requesttracing.api.extension.RequesttracingCoreCDIExtension
