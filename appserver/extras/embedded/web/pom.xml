@@ -52,9 +52,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>fish.payara.extras</groupId>
     <artifactId>payara-embedded-web</artifactId>
-    <version>5.0.0.Alpha2-SNAPSHOT</version>
     <name>Embedded Payara Web</name>
     <packaging>jar</packaging>
 

@@ -123,9 +123,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         java.util.Set webBundles = descriptor.getBundleDescriptors(WebBundleDescriptorImpl.class);
         if (webBundles.size()>0) {
             this.descriptor = (WebBundleDescriptorImpl) webBundles.iterator().next();
-            if (this.descriptor.getModuleDescriptor().isStandalone())
-                return;
-            else
+            if (!this.descriptor.getModuleDescriptor().isStandalone())
                 this.descriptor=null;
         }
     }
@@ -329,9 +327,15 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         // process annotations in web-fragment
         // extension annotation processing will be done in top level
         if (isProcessAnnotation(descriptor)) {
-            Map<ExtensionsArchivist, RootDeploymentDescriptor> localExtensions =
-                    new HashMap<ExtensionsArchivist, RootDeploymentDescriptor>();
+            Map<ExtensionsArchivist, RootDeploymentDescriptor> localExtensions = new HashMap<>();
             for (WebFragmentDescriptor wfDesc : wfList) {
+                // if web.xml specifies metadata-complete=true,
+                // all web fragment metadata-complete
+                // should be overridden and be true also
+                if (descriptor.isFullAttribute()) {
+                  wfDesc.setFullAttribute(
+                      String.valueOf(descriptor.isFullAttribute()));
+                }
                 super.readAnnotations(archive, wfDesc, localExtensions);
             }
 
