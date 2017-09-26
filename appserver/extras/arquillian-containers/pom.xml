@@ -63,7 +63,7 @@
 
     <groupId>fish.payara.arquillian</groupId>
     <artifactId>parent-payara-containers</artifactId>
-    <version>1.0-beta1</version>
+    <version>1.0.Beta2</version>
     <packaging>pom</packaging>
 
     <name>Arquillian Container Parent Payara</name>
@@ -72,6 +72,8 @@
         Payara Container integrations for the Arquillian Project. 
         Based on the JBoss GlassFish container integrations.
     </description>
+    
+    <url>https://github.com/payara/Payara</url>
 
     <properties>
         <version.arquillian_core>1.1.13.Final</version.arquillian_core>
@@ -80,6 +82,31 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.source>1.7</maven.compiler.source>
     </properties>
+    
+    <scm>
+        <connection>scm:git:git@github.com:payara/payara.git</connection>
+        <url>scm:git:git@github.com:payara/payara.git</url>
+        <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
+        <tag>payara-server-4.1.2.173</tag>
+    </scm>
+    
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>http://glassfish.java.net/nonav/public/CDDL+GPL.html</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    
+    <developers>
+        <developer>
+            <name>Payara Team</name>
+            <email>info@payara.fish</email>
+            <organization>Payara Foundation</organization>
+            <organizationUrl>http://www.payara.fish</organizationUrl>
+        </developer>
+    </developers>
     
     <distributionManagement>
         <snapshotRepository>
@@ -216,7 +243,7 @@
                 <configuration>
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
                 </configuration>
             </plugin>
         
@@ -230,5 +257,29 @@
             </plugin>
         </plugins>
     </build>
-
+    
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <!-- Signing with GPG is a requirement for a release deployment to Maven central. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
