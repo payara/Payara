@@ -159,7 +159,7 @@ public class WebDirContext extends FileDirContext {
     public Object lookup(String name)
         throws NamingException {
         Object result = null;
-        File file = file(name);
+        File file = file(name, true);
         JarFileEntry jfEntry = null;
         
         if (file == null) {
@@ -208,7 +208,7 @@ public class WebDirContext extends FileDirContext {
         throws NamingException {
 
         List<NamingEntry> namingEntries = null;
-        File file = file(name);
+        File file = file(name, true);
         if (file != null) {
             namingEntries = list(file);
         }
@@ -248,7 +248,7 @@ public class WebDirContext extends FileDirContext {
         throws NamingException {
 
         List<NamingEntry> namingEntries = null;
-        File file = file(name);
+        File file = file(name, true);
         if (file != null) {
             namingEntries = list(file);
         }
@@ -293,7 +293,7 @@ public class WebDirContext extends FileDirContext {
         throws NamingException {
 
         // Building attribute list
-        File file = file(name);
+        File file = file(name, true);
 
         if (file == null) {
             JarFileEntry jfEntry = lookupFromJars(name);

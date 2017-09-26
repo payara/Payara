@@ -1,0 +1,117 @@
+<!--
+
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+   Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://github.com/payara/Payara/blob/master/LICENSE.txt
+    See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at glassfish/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    The Payara Foundation designates this particular file as subject to the "Classpath"
+    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+-->
+
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nc" bundle="org.glassfish.admingui.core.Strings");
+    setResourceBundle(key="i18nrest" bundle="fish.payara.admingui.monitoring.rest.Strings");
+/>
+
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nrest.monitoring.rest.Title}" >
+<!define name="content">
+<event>
+    <!beforeCreate
+    getRequestValue(key="configName" value="#{pageSession.configName}");
+    setPageSessionAttribute(key="REST_MONITORING_CONFIG_URL", 
+            value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/rest-monitoring-configuration"); 
+
+    gf.restRequest(endpoint="#{pageSession.REST_MONITORING_CONFIG_URL}/get-rest-monitoring-configuration?target=#{pageSession.configName}"  
+            method="GET" result="#{requestScope.resp}");
+    setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.restMonitoringConfiguration}");
+    mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+
+    setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "securityenabled"});
+    if (#{pageSession.valueMap['enabled']}=true) {
+        setPageSessionAttribute(key="enabledSelected", value="true");
+    }
+    if (#{pageSession.valueMap['securityenabled']}=true) {
+        setPageSessionAttribute(key="securityEnabled", value="true");
+    }
+    setPageSessionAttribute(key="dynamic", value="true");
+    />
+</event>
+    <sun:form id="propertyForm">
+#include "/common/monitor/monitoringConfigTabs.inc"
+#include "/common/shared/alertMsg.inc"
+        <!-- Page Title -->
+        <sun:title id="propertyContentPage" title="$resource{i18nrest.monitoring.rest.Title}" helpText="$resource{i18nrest.monitoring.rest.PageHelp}">
+            <!facet pageButtonsTop>
+                <sun:panelGroup id="topButtons">
+                    <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
+                            onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                        <!command
+                            mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.isEnabled}");
+                            mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.isDynamic}");
+                            mapPut(map="#{pageSession.valueMap}" key="securityenabled" value="#{pageSession.isSecure}");
+                            prepareSuccessfulMsg();
+                            gf.updateEntity(endpoint="#{pageSession.REST_MONITORING_CONFIG_URL}/set-rest-monitoring-configuration" 
+                                    attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                            />
+                    </sun:button>
+                </sun:panelGroup>
+            </facet>
+        </sun:title>
+        <!-- PropertySheet .... -->
+        <sun:propertySheet id="propertySheet">			 
+            <!-- Text Field section -->
+#include "/common/shared/configNameSection.inc"
+            <sun:propertySheetSection id="propertSectionTextField">
+                <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.Enabled}" helpText="$resource{i18nrest.monitoring.rest.EnabledHelp}">
+                    <sun:checkbox id="isEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isEnabled}" selectedValue="true"/>
+                </sun:property>
+                <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.Dynamic}" helpText="$resource{i18nrest.monitoring.rest.DynamicHelp}">
+                    <sun:checkbox id="isDynamic" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isDynamic}" selectedValue="true"/>
+                </sun:property>
+                <sun:property id="applicationNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.ApplicationName}" helpText="$resource{i18nrest.monitoring.rest.ApplicationNameHelp}">
+                    <sun:textField id="name" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['name']}"/>
+                </sun:property>
+                <sun:property id="contextRootProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.ContextRoot}" helpText="$resource{i18nrest.monitoring.rest.ContextRootHelp}">
+                    <sun:textField id="contextroot" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['contextroot']}"/>
+                </sun:property>
+                <sun:property id="isSecureProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.SecurityEnabled}" helpText="$resource{i18nrest.monitoring.rest.SecurityEnabledHelp}">
+                    <sun:checkbox id="isSecure" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isSecure}" selectedValue="true"/>
+                </sun:property>                  
+                "<br /><br />
+            </sun:propertySheetSection>
+        </sun:propertySheet>
+    </sun:form>
+</define>
+</composition>

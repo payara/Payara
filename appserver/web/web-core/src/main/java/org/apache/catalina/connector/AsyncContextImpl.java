@@ -267,22 +267,12 @@ class AsyncContextImpl implements AsyncContext {
 
     @Override
     public void complete() {
-        tryComplete(true);
-    }
-
-    /**
-     * Try to complete the AsyncContext, if it hasn't completed yet
-     * and if service() thread doesn't rely on request/response existence.
-     * @param failIfCompleted 
-     */
-    void tryComplete(final boolean failIfCompleted) {
         if (isAsyncCompleteCalled.compareAndSet(false, true)) {
             if (delayAsyncDispatchAndComplete) {
                 return;
             }
-            
             doComplete();
-        } else if (failIfCompleted) {
+        } else {
             throw new IllegalStateException(rb.getString(
                     LogFacade.REQUEST_ALREADY_RELEASED_EXCEPTION));
         }

@@ -194,14 +194,15 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             requestTracing.traceRequestEvent(requestEvent);
         }
         
+        if (stuckThreads != null){
+            stuckThreads.registerThread(Thread.currentThread().getId());
+        }
+        
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
 
     private RequestEvent constructConcurrentContextEvent(ComponentInvocation invocation) {
         requestTracing.startTrace();
-        if (stuckThreads != null){
-            stuckThreads.registerThread(Thread.currentThread().getId());
-        }
         RequestEvent requestEvent = new RequestEvent("ConcurrentContextTrace");
         
         requestEvent.addProperty("App Name", invocation.getAppName());

@@ -36,17 +36,17 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 
 package com.sun.enterprise.connectors.connector.module;
 
-import com.sun.enterprise.deploy.shared.FileArchive;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.common.GenericAnnotationDetector;
 
@@ -69,8 +69,16 @@ import javax.inject.Inject;
 @Service(name = RarDetector.ARCHIVE_TYPE)
 @Singleton
 public class RarDetector implements ArchiveDetector {
+    
+    /**
+     * Connector annotations for JCA 1.7
+     */
     private static final Class[] connectorAnnotations = new Class[]{
-            javax.resource.spi.Connector.class};
+            javax.resource.spi.Connector.class,
+            javax.resource.spi.Activation.class,
+            javax.resource.spi.ConnectionDefinition.class,
+            javax.resource.spi.ConnectionDefinitions.class,
+    };
 
     public static final String RAR_DETECTOR_RANK_PROP = "glassfish.rar.detector.rank";
     public static final int DEFAULT_RAR_DETECTOR_RANK = 300;
@@ -115,6 +123,7 @@ public class RarDetector implements ArchiveDetector {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(ReadableArchive archive) throws IOException {
         boolean handles = false;
         try{
@@ -126,7 +135,7 @@ public class RarDetector implements ArchiveDetector {
         }catch(IOException ioe){
             //ignore
         }
-        if (!handles && (archive instanceof FileArchive)) {
+        if (!handles) {
             GenericAnnotationDetector detector =
                     new GenericAnnotationDetector(connectorAnnotations);
             handles = detector.hasAnnotationInArchive(archive);

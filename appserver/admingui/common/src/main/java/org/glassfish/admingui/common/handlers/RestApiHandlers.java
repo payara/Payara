@@ -324,12 +324,12 @@ public class RestApiHandlers {
             String id = (String) handlerCtx.getInputValue("id");
             String prefix = (String) handlerCtx.getInputValue("endpoint");
 
-            Map<String, Object> payload = new HashMap<String, Object>();
+            Map<String, Object> payload = new HashMap<>();
             payload.put("target", (String) handlerCtx.getInputValue("target"));
 
             for ( Map oneRow : selectedRows) {
                 try{
-                    String endpoint = prefix + "/" + oneRow.get(id);
+                    String endpoint = prefix + "/" + URLEncoder.encode((String) oneRow.get(id), "UTF-8");
                     RestUtil.restRequest(endpoint, payload, "DELETE",null, false);
                 }catch (Exception ex){
                     GuiUtil.getLogger().severe(
@@ -337,7 +337,6 @@ public class RestApiHandlers {
                     GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
                     return;
                 }
-                continue;
             }
     }
 

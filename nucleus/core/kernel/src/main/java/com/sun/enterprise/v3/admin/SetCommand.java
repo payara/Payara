@@ -560,7 +560,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 WriteableView writeableParent = (WriteableView) Proxy.getInvocationHandler(param);
 
                 StringTokenizer st = new StringTokenizer(values, ",");
-                List<String> valList = new ArrayList<String>();
+                List<String> valList = new ArrayList<>();
                 while (st.hasMoreTokens()) {
                     valList.add(st.nextToken());
                 }
@@ -572,11 +572,11 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                     // collection parameter that parameterized with the right type
                     Class argClasses[] = m.getParameterTypes();
                     Type argTypes[] = m.getGenericParameterTypes();
-
-                    if (!bean.model.toProperty(m).xmlName().equals(elementName)
+                    ConfigModel.Property prop = bean.model.toProperty(m);
+                    if (prop == null 
+                            || !prop.xmlName().equals(elementName)
                             || argClasses.length != 1
-                            || !Collection.class
-                                    .isAssignableFrom(argClasses[0])
+                            || !Collection.class.isAssignableFrom(argClasses[0])
                             || argTypes.length != 1
                             || !(argTypes[0] instanceof ParameterizedType)
                             || !Types.erasure(Types.getTypeArgument(argTypes[0], 0)).isAssignableFrom(values.getClass())) {
@@ -585,9 +585,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                     // we have the right method.  Now call it
                     try {
                         m.invoke(writeableParent.getProxy(writeableParent.<ConfigBeanProxy>getProxyType()), valList);
-                    } catch (IllegalAccessException e) {
-                        throw new TransactionFailure("Exception while setting element", e);
-                    } catch (InvocationTargetException e) {
+                    } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new TransactionFailure("Exception while setting element", e);
                     }
                     return node;

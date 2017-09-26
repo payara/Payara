@@ -39,13 +39,19 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  */
 package fish.payara.jmx.monitoring.admin;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.service.BaseNotifierService;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -62,8 +68,12 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -86,6 +96,7 @@ import org.jvnet.hk2.config.types.Property;
 public class GetMonitoringConfiguration implements AdminCommand {
 
     private final String ATTRIBUTE_HEADERS[] = {"|Name|", "|Value|", "|Description|"};
+    private final static String NOTIFIER_HEADERS[] = {"Name", "Notifier Enabled"};
 
     @Inject
     private Target targetUtil;
@@ -95,6 +106,9 @@ public class GetMonitoringConfiguration implements AdminCommand {
 
     @Param(name = "target", defaultValue = SystemPropertyConstants.DAS_SERVER_NAME, optional = true)
     private String target;
+    
+    @Inject
+    ServiceLocator habitat;
 
     /**
      * Method that is invoked when the asadmin command is performed.
@@ -111,11 +125,13 @@ public class GetMonitoringConfiguration implements AdminCommand {
         }
 
         ActionReport actionReport = context.getActionReport();
+        ActionReport notifiersReport = actionReport.addSubActionsReport();
         ActionReport attributeReport = actionReport.addSubActionsReport();
-        ColumnFormatter attributeColumnFormatter;
-        attributeColumnFormatter = new ColumnFormatter(ATTRIBUTE_HEADERS);
+        ColumnFormatter attributeColumnFormatter = new ColumnFormatter(ATTRIBUTE_HEADERS);
+        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(NOTIFIER_HEADERS);
 
         MonitoringServiceConfiguration monitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
+        List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
         actionReport.appendMessage("Monitoring Service Configuration is enabled? " + prettyBool(Boolean.valueOf(monitoringConfig.getEnabled())) + "\n");
         actionReport.appendMessage("Monitoring Service Configuration has AMX enabled? " + prettyBool(Boolean.valueOf(monitoringConfig.getAmx())) + "\n");
@@ -146,8 +162,43 @@ public class GetMonitoringConfiguration implements AdminCommand {
         //Cannot change key in line below - required for admingui propertyDescTable.inc
         extraProps.put("properties", propMap);
         
-        actionReport.setExtraProperties(extraProps);             
+        actionReport.setExtraProperties(extraProps);
+        
+        if (!monitoringConfig.getNotifierList().isEmpty()) {
+            List<Class<Notifier>> notifierClassList = Lists.transform(monitoringConfig.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
+                @Override
+                public Class<Notifier> apply(Notifier input) {
+                    return resolveNotifierClass(input);
+                }
+            });
 
+            Properties notifierProps = new Properties();
+            for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {
+                Notifier notifier = monitoringConfig.getNotifierByType(serviceHandle.getService().getNotifierType());
+                if (notifier != null) {
+                    ConfigView view = ConfigSupport.getImpl(notifier);
+                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+
+                    if (notifierClassList.contains(view.<Notifier>getProxyType())) {
+                        Object values[] = new Object[2];
+                        values[0] = annotation.type();
+                        values[1] = notifier.getEnabled();
+                        notifiersColumnFormatter.addRow(values);
+
+                        Map<String, Object> mapNotifiers = new HashMap<>(2);
+                        mapNotifiers.put("notifierName", values[0]);
+                        mapNotifiers.put("notifierEnabled", values[1]);
+
+                        notifierProps.put("notifierList" + annotation.type(), mapNotifiers);
+                    }
+                }
+                
+                actionReport.getExtraProperties().putAll(notifierProps);
+            }
+        }
+
+        notifiersReport.setMessage(notifiersColumnFormatter.toString());
+        notifiersReport.appendMessage(StringUtils.EOL);
         attributeReport.setMessage(attributeColumnFormatter.toString());
         attributeReport.appendMessage(StringUtils.EOL);
 
@@ -169,6 +220,17 @@ public class GetMonitoringConfiguration implements AdminCommand {
         } else {
             return "✗";
         }
+    }
+    
+    /**
+     * 
+     * @since 4.1.2.174
+     * @param input
+     * @return 
+     */
+    private Class<Notifier> resolveNotifierClass(Notifier input) {
+        ConfigView view = ConfigSupport.getImpl(input);
+        return view.getProxyType();
     }
 
 }
