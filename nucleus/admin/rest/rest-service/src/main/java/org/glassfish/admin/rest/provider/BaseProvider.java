@@ -130,23 +130,6 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     public abstract String getContent(T proxy);
 
-    /**
-     * 
-     * @return
-     * @deprecated since 5.0 as Json-P does not support configurable indentation levels
-     */
-    @Deprecated
-    protected int getFormattingIndentLevel() {
-        RestConfig rg = ResourceUtil.getRestConfig(habitat);
-        if (rg == null){
-            return -1;
-        }
-        else {
-            return Integer.parseInt(rg.getIndentLevel());
-        }
-
-    }
-
      /**
       * returns true if the HTML viewer displays the hidden CLI command links
       */
