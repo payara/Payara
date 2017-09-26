@@ -70,10 +70,15 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
+import org.apache.catalina.deploy.FilterMap;
 // END SJSAS 6374691
 
 /**
@@ -330,12 +335,12 @@ final class StandardHostValve
      * @param response The response being generated
      */
     protected void status(Request request, Response response) {
-
+        
         // Handle a custom error page for this status code
         Context context = request.getContext();
         if (context == null)
             return;
-
+        
         /*
          * Only look for error pages when isError() is set.
          * isError() is set when response.sendError() is invoked.
@@ -352,8 +357,30 @@ final class StandardHostValve
                 if (!file.exists()) {
                     File file2 = new File(errorPage.getLocation());
                     if (!file2.exists()) {
-                        log.log(Level.WARNING, LogFacade.ERROR_PAGE_NOT_EXIST,
-                                new Object[]{file.getAbsolutePath(), file2.getAbsolutePath()});
+                        boolean fileExists = false;
+                        for (String mapping : ((StandardHost) getContainer())
+                                .findDeployedApp(context.getPath()).findServletMappings()) {
+                            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + mapping);
+                            Path errorPagePath = Paths.get(errorPage.getLocation());
+                            if (matcher.matches(errorPagePath)) {
+                                fileExists = true;
+                            }
+                        }
+                        if (!fileExists) {
+                            fileExists = false;
+                            for (FilterMap mapping : ((StandardHost) getContainer())
+                                    .findDeployedApp(context.getPath()).findFilterMaps()) {
+                                PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + mapping.getURLPattern());
+                                Path errorPagePath = Paths.get(errorPage.getLocation());
+                                if (matcher.matches(errorPagePath)) {
+                                    fileExists = true;
+                                }
+                            }
+                            if (!fileExists) {
+                                log.log(Level.WARNING, LogFacade.ERROR_PAGE_NOT_EXIST,
+                                    new Object[]{file.getAbsolutePath(), file2.getAbsolutePath()});
+                            }
+                        }
                     }
                 }
             }
