@@ -110,7 +110,7 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
     RestMonitoringConfiguration restMonitoringServiceConfiguration;
     
     private final static Logger logger = Logger.getLogger(RestMonitoringAdapter.class.getName());
-    private final static String RESOURCE_PACKAGE = "fish/payara/appserver/monitoring/rest/adapter";
+    private final static String RESOURCE_PACKAGE = "fish/payara/appserver/monitoring/rest/service/adapter";
     private final CountDownLatch latch = new CountDownLatch(1);
     
     @PostConstruct
@@ -234,7 +234,7 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
     }
     
     private ResourceBundle getResourceBundle(Locale locale) {
-        return ResourceBundle.getBundle("com.sun.enterprise.v3.admin.adapter.LocalStrings", locale);
+        return ResourceBundle.getBundle(RestMonitoringAdapter.class.getPackage().getName() + ".LocalStrings", locale);
     }
     
     private boolean checkHttpMethodAllowed(Method method) {

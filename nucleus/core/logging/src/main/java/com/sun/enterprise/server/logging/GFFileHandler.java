@@ -89,6 +89,7 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
+import fish.payara.enterprise.server.logging.JSONLogFormatter;
 import java.io.FileInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -427,7 +428,10 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             configureUniformLogFormatter(excludeFields, multiLineMode);
         } else if (ODLLogFormatter.class.getName().equals(formatterName)) {
             configureODLFormatter(excludeFields, multiLineMode);
-        } else {
+        } else if (JSONLogFormatter.class.getName().equals(formatterName)) {
+            configureJSONFormatter(excludeFields,multiLineMode);
+        }
+        else {
             // Custom formatter is configured in logging.properties
             // Check if the user specified formatter is in play else
             // log an error message
@@ -499,6 +503,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
         formatterClass.setExcludeFields(excludeFields);
         formatterClass.setMultiLineMode(multiLineMode);
+        formatterClass.noAnsi();
         formatterClass.setLogEventBroadcaster(this);        
     }
 
@@ -519,7 +524,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         formatterClass.setExcludeFields(excludeFields);
         formatterClass.setMultiLineMode(multiLineMode);
         formatterClass.setLogEventBroadcaster(this);
-
+        formatterClass.noAnsi();
         if (formatterClass != null) {
             recordBeginMarker = manager.getProperty(cname + ".logFormatBeginMarker");
             if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
@@ -641,6 +646,21 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
      */
     private synchronized void setLimitForRotation(int rotationLimitInBytes) {
         limitForFileRotation = rotationLimitInBytes;
+    }
+
+    private void configureJSONFormatter(String excludeFields, boolean multiLineMode) {
+        // this loop is used for JSON formatter
+        JSONLogFormatter formatterClass = null;
+        // set the formatter
+        if (agent != null) {
+            formatterClass = new JSONLogFormatter(new AgentFormatterDelegate(agent));
+            setFormatter(formatterClass);
+        } else {
+            formatterClass = new JSONLogFormatter();
+            setFormatter(formatterClass);
+        }
+        formatterClass.setExcludeFields(excludeFields);
+        formatterClass.setLogEventBroadcaster(this);
     }
 
     // NOTE: This private class is copied from java.util.logging.FileHandler

@@ -522,7 +522,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                 if (nameTok.hasMoreTokens()) {
                     String secPart = token.split("=", 2)[1];
                     //Creates a string with any env var references removed, then checks if there is an equals in there
-                    String outside = secPart.replaceAll("\\${.+}", "");
+                    String outside = secPart.replaceAll("\\$\\{.+}", "");
                     if (outside.contains("=")){
                         throw new IllegalArgumentException(
                         localStrings.getLocalString("PropertyExtraEquals",

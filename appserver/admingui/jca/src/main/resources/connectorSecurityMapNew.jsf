@@ -65,6 +65,7 @@
         setPageSessionAttribute(key="showCancelButton" value="#{true}" );
         setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
         setPageSessionAttribute(key="hasPropertyTable" value="#{false}" );
+        setPageSessionAttribute(key="skipAttrsList", value={"userGroupCommaStr" , "principalCommaStr"});
 
     />
     </event>
