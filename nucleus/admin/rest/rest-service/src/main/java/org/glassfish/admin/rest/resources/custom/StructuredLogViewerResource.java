@@ -85,7 +85,7 @@ public class StructuredLogViewerResource {
     }
 
     @GET
-    @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
     public String getJson(
             @QueryParam("logFileName") @DefaultValue("${com.sun.aas.instanceRoot}/logs/server.log") String logFileName,
             @QueryParam("startIndex") @DefaultValue("-1") long startIndex,
