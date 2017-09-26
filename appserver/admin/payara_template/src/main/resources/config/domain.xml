@@ -170,6 +170,8 @@
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-XX:MaxGCPauseMillis=500</jvm-options>
+        <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
+        <jvm-options>-XX:MaxMetaspaceSize=2g</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
@@ -340,6 +342,8 @@
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-XX:MaxGCPauseMillis=500</jvm-options>
+        <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
+        <jvm-options>-XX:MaxMetaspaceSize=2g</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
