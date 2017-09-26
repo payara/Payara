@@ -40,11 +40,10 @@
 
 package com.sun.ejb.containers;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.enterprise.security.SecurityManager;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /**
@@ -73,6 +72,9 @@ public class BMCSingletonContainer
     }
 
     public void releaseContext(EjbInvocation inv) {
+        if(isClusteredEnabled()) {
+            getClusteredSingletonMap().put(getClusteredSessionKey(), inv.context.getEJB());
+        }
         synchronized (invCount) {
             int val = invCount.decrementAndGet();
             if (val == 0) {
