@@ -102,7 +102,7 @@ function logViewerRaw(url) {
     var timeout = 1000;
     
     var success = function(xhr, targetId, requestedUrl) {
-        if (xhr.status == 200 && xhr.getResponseHeader('Content-Type') == "text/plain") {
+        if (xhr.status === 200 && xhr.getResponseHeader('Content-Type').indexOf("text/plain") !== -1) {
             if (xhr.responseText ) {
                 var records = document.createTextNode(xhr.responseText);
                 var documentX = window.pageXOffset || document.body.scrollLeft /* IE */;
