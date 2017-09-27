@@ -68,13 +68,12 @@ import com.sun.logging.LogDomains;
  */
 public class ClassLoaderUtil {
     
-    /** Names of classes and fields of interest for closing the loader's jar files */
+    // ### Names of classes and fields of interest for closing the loader's jar files
     
     private static final String URLCLASSLOADER_UCP_FIELD_NAME = "ucp"; // URLClassPath reference
     
     private static final String URLCLASSPATH_JDK8_CLASS_NAME = "sun.misc.URLClassPath";
     private static final String URLCLASSPATH_JDK9_CLASS_NAME = "jdk.internal.loader.URLClassPath";
-    
     
     private static final String URLCLASSPATH_LOADERS_FIELD_NAME = "loaders"; // ArrayList of URLClassPath.Loader 
     private static final String URLCLASSPATH_URLS_FIELD_NAME = "urls"; // Stack of URL
@@ -84,7 +83,7 @@ public class ClassLoaderUtil {
     private static final String URLCLASSPATH_JARLOADER_JARFILE_FIELD_NAME = "jar";
     
     
-    /** Fields used during processing - they can be set up once and then used repeatedly */
+    // ### Fields used during processing - they can be set up once and then used repeatedly 
     
     private static Field ucpField;      // The search path for classes and resources           - URLClassPath java.net.URLClassLoader.ucp;
     private static Field loadersField;  // The resulting search path of Loaders                - ArrayList<Loader> java.net.URLClassLoader.loaders = new ArrayList<>();
@@ -251,11 +250,11 @@ public class ClassLoaderUtil {
     }
     
     /**
-     *Initializes the class.
-     *<p>
-     *Each utility method should invoke init() before doing their own work
-     *to make sure the initialization is done.
-     *@throws any Throwable detected during static init.
+     * Initializes the class.
+     * <p>
+     * Each utility method should invoke init() before doing their own work
+     * to make sure the initialization is done.
+     * @throws any Throwable detected during static init.
      */
     private static void init() throws Throwable {
         if (!initDone) {
@@ -265,8 +264,8 @@ public class ClassLoaderUtil {
     }
     
     /**
-     *Sets up variables used in closing a loader's jar files.
-     *@throws NoSuchFieldException in case a field of interest is not found where expected
+     * Sets up variables used in closing a loader's jar files.
+     *@ throws NoSuchFieldException in case a field of interest is not found where expected
      */
     private static void initForClosingJars() throws NoSuchFieldException {
         ucpField = getField(URLClassLoader.class, URLCLASSLOADER_UCP_FIELD_NAME);
@@ -295,11 +294,11 @@ public class ClassLoaderUtil {
     }
     
     /**
-     *Retrieves a Field object for a given field on the specified class, having
-     *set it accessible.
-     *@param cls the Class on which the field is expected to be defined
-     *@param fieldName the name of the field of interest
-     *@throws NoSuchFieldException in case of any error retriving information about the field
+     * Retrieves a Field object for a given field on the specified class, having
+     * set it accessible.
+     * @param cls the Class on which the field is expected to be defined
+     * @param fieldName the name of the field of interest
+     * @throws NoSuchFieldException in case of any error retriving information about the field
      */
     private static Field getField(Class<?> cls, String fieldName) throws NoSuchFieldException {
         try {
@@ -334,19 +333,19 @@ public class ClassLoaderUtil {
     }
     
     /**
-     *Returns the logger for the common utils component.
-     *@return the Logger for this component
+     * Returns the logger for the common utils component.
+     * @return the Logger for this component
      */
     private static Logger getLogger() {
         return LogDomains.getLogger(ClassLoaderUtil.class, LogDomains.UTIL_LOGGER);
     }
     
     /**
-     *Returns a formatted string, using the key to find the full message and 
-     *substituting any parameters.
-     *@param key the message key with which to locate the message of interest
-     *@param o the object(s), if any, to be substituted into the message
-     *@return a String containing the formatted message
+     * Returns a formatted string, using the key to find the full message and 
+     * substituting any parameters.
+     * @param key the message key with which to locate the message of interest
+     * @param o the object(s), if any, to be substituted into the message
+     * @return a String containing the formatted message
      */
     private static String getMessage(String key, Object... o) {
         String msg = getLogger().getResourceBundle().getString(key);
