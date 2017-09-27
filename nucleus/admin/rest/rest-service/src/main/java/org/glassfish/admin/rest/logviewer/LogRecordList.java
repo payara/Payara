@@ -1,15 +1,13 @@
 package org.glassfish.admin.rest.logviewer;
 
-import java.util.AbstractList;
 import java.util.LinkedList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "records")
-public class LogRecordList extends AbstractList<LogRecord> {
+public class LogRecordList {
 
-    @XmlElement(name = "record")
     private final List<LogRecord> records;
     
     public LogRecordList(List<LogRecord> records) {
@@ -19,18 +17,12 @@ public class LogRecordList extends AbstractList<LogRecord> {
     public LogRecordList() {
         this.records = new LinkedList<>();
     }
-
-    @Override
-    public LogRecord get(int i) {
-        return records.get(i);
-    }
-
-    @Override
-    public int size() {
-        return records.size();
+    
+    @XmlElement(name = "record")
+    public List<LogRecord> getRecords() {
+        return records;
     }
     
-    @Override
     public boolean add(LogRecord e) {
         return records.add(e);
     }

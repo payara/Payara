@@ -92,7 +92,7 @@
 	attrs="#{requestScope.attrs}"
 	method="GET"
 	result="#{requestScope.queryResult}");
-    setPageSessionAttribute(key="logFiles" value="#{requestScope.queryResult.data['InstanceLogFileNames']}");
+    setPageSessionAttribute(key="logFiles" value="#{requestScope.queryResult.data['logNames']}");
     if(!$attribute{logFile}) {
 	setAttribute(key="logFile" value="#{pageSession.logFiles[0]}");
     }
