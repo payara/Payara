@@ -65,11 +65,11 @@ public class LogNamesResource {
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List getLogNamesJSON(@QueryParam("instanceName") String instanceName) throws IOException {
-        return getLogNames(instanceName);
+    public List getLogNames(@QueryParam("instanceName") String instanceName) throws IOException {
+        return getInstanceLogFileNames(instanceName);
     }
 
-    private List getLogNames(String instanceName) throws IOException {
+    private List getInstanceLogFileNames(String instanceName) throws IOException {
 
         if (habitat.getService(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.

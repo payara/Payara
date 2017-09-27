@@ -224,9 +224,9 @@ public class LogFilter {
         }
     }
 
-    public Vector getInstanceLogFileNames(String instanceName) {
+    public List getInstanceLogFileNames(String instanceName) {
         Server targetServer = domain.getServerNamed(instanceName);
-        Vector allInstanceFileNames = new Vector();
+        List allInstanceFileNames = new ArrayList();
 
         if (targetServer.isDas()) {
             String logFileDetailsForServer = "";
@@ -238,7 +238,7 @@ public class LogFilter {
                 logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
-                return new Vector();
+                return allInstanceFileNames;
             }
 
             File logsDir = new File(logFileDetailsForServer.substring(0, logFileDetailsForServer.lastIndexOf(File.separator)));
