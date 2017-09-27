@@ -39,49 +39,43 @@
  *
  * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
-
 package org.glassfish.admin.rest.logviewer;
 
-import java.io.StringWriter;
 import java.util.Date;
-import java.util.logging.Level;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObjectBuilder;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import org.glassfish.admin.rest.RestLogging;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * internal REST wrapper for a log record
- * will be used to emit Json easily
+ * internal REST wrapper for a log record will be used to emit Json easily
  *
  * @author ludo
  */
+@XmlRootElement(name = "record")
 public class LogRecord {
 
-    long recordNumber;
-    Date loggedDateTime;
-    String loggedLevel;
-    String productName;
-    String loggerName;
-    String nameValuePairs;
-    String messageID;
-    String message;
-
+    private Long recordNumber;
+    private Long loggedDateTimeInMS;
+    private String loggedLevel;
+    private String productName;
+    private String loggerName;
+    private String nameValuePairs;
+    private String messageID;
+    private String message;
+    
+    public LogRecord() {
+        this.recordNumber = null;
+        this.loggedDateTimeInMS = null;
+        this.loggedLevel = null;
+        this.productName = null;
+        this.loggerName = null;
+        this.nameValuePairs = null;
+        this.messageID = null;
+        this.message = null;
+    }
+    
+    @XmlAttribute
     public String getMessage() {
         return message;
     }
@@ -90,14 +84,16 @@ public class LogRecord {
         this.message = Message;
     }
 
-    public Date getLoggedDateTime() {
-        return loggedDateTime;
+    @XmlAttribute
+    public long getLoggedDateTimeInMS() {
+        return loggedDateTimeInMS;
     }
 
     public void setLoggedDateTime(Date loggedDateTime) {
-        this.loggedDateTime = loggedDateTime;
+        this.loggedDateTimeInMS = loggedDateTime.getTime();
     }
 
+    @XmlAttribute
     public String getLoggedLevel() {
         return loggedLevel;
     }
@@ -106,6 +102,7 @@ public class LogRecord {
         this.loggedLevel = loggedLevel;
     }
 
+    @XmlAttribute
     public String getLoggerName() {
         return loggerName;
     }
@@ -114,6 +111,7 @@ public class LogRecord {
         this.loggerName = loggerName;
     }
 
+    @XmlAttribute
     public String getMessageID() {
         return messageID;
     }
@@ -122,6 +120,7 @@ public class LogRecord {
         this.messageID = messageID;
     }
 
+    @XmlAttribute
     public String getNameValuePairs() {
         return nameValuePairs;
     }
@@ -130,6 +129,7 @@ public class LogRecord {
         this.nameValuePairs = nameValuePairs;
     }
 
+    @XmlAttribute
     public String getProductName() {
         return productName;
     }
@@ -138,72 +138,12 @@ public class LogRecord {
         this.productName = productName;
     }
 
+    @XmlAttribute
     public long getRecordNumber() {
         return recordNumber;
     }
 
     public void setRecordNumber(long recordNumber) {
         this.recordNumber = recordNumber;
-    }
-
-    public String toJson() {
-        JsonObjectBuilder obj = Json.createObjectBuilder();
-        try {
-            obj.add("recordNumber", recordNumber);
-            obj.add("loggedDateTimeInMS", (loggedDateTime != null) ? loggedDateTime.getTime() : null);
-            obj.add("loggedLevel", loggedLevel);
-            obj.add("productName", productName);
-            obj.add("loggerName", loggerName);
-            obj.add("nameValuePairs", nameValuePairs);
-            obj.add("messageID", messageID);
-            obj.add("Message", message); //.replaceAll("\n", Matcher.quoteReplacement("\\\n")).replaceAll("\"", Matcher.quoteReplacement("\\\"")));
-        } catch (JsonException ex) {
-            throw new RuntimeException(ex);
-        }
-        return obj.toString();
-    }
-
-    public String toXML() {
-
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-
-            Document d = db.newDocument();
-
-            Element result = d.createElement("record");
-            result.setAttribute("recordNumber", "" + recordNumber);
-            result.setAttribute("loggedDateTimeInMS", (loggedDateTime != null) ? ("" + loggedDateTime.getTime()) : "");
-            result.setAttribute("loggedLevel", loggedLevel);
-            result.setAttribute("productName", productName);
-            result.setAttribute("loggerName", loggerName);
-            result.setAttribute("nameValuePairs", nameValuePairs);
-            result.setAttribute("messageID", messageID);
-            result.setNodeValue(message);
-            d.appendChild(result);
-            return xmlToString(d);
-
-        } catch (ParserConfigurationException pex) {
-            throw new RuntimeException(pex);
-        }
-    }
-
-    private String xmlToString(Node node) {
-        try {
-            Source source = new DOMSource(node);
-            StringWriter stringWriter = new StringWriter();
-            Result result = new StreamResult(stringWriter);
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-
-            transformer.transform(source, result);
-            return stringWriter.getBuffer().toString();
-        } catch (TransformerConfigurationException e) {
-            //  e.printStackTrace();
-        } catch (TransformerException e) {
-            //  e.printStackTrace();
-        }
-        return null;
     }
 }

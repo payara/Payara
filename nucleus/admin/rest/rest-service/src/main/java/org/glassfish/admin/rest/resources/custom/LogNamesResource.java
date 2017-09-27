@@ -49,6 +49,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.List;
 import java.util.Vector;
 import javax.ws.rs.QueryParam;
 
@@ -63,18 +64,12 @@ public class LogNamesResource {
     protected ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
     @GET
-    @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
-    public String getLogNamesJSON(@QueryParam("instanceName") String instanceName) throws IOException {
-        return getLogNames(instanceName, "json");
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public List getLogNamesJSON(@QueryParam("instanceName") String instanceName) throws IOException {
+        return getLogNames(instanceName);
     }
 
-    @GET
-    @Produces({ MediaType.APPLICATION_XML})
-    public String getLogNamesJXML(@QueryParam("instanceName") String instanceName) throws IOException {
-        return getLogNames(instanceName, "xml");
-    }
-
-    private String getLogNames(String instanceName, String type) throws IOException {
+    private List getLogNames(String instanceName) throws IOException {
 
         if (habitat.getService(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.
@@ -84,44 +79,7 @@ public class LogNamesResource {
 
         LogFilter logFilter = habitat.getService(LogFilter.class);
 
-        return convertQueryResult(logFilter.getInstanceLogFileNames(instanceName),type);
+        return logFilter.getInstanceLogFileNames(instanceName);
 
-    }
-
-    private String quoted(String s) {
-        return "\"" + s + "\"";
-    }
-
-    private String convertQueryResult(Vector v, String type) {
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        if (type.equals("json")) {
-            sb.append("{\"InstanceLogFileNames\": [");
-        } else {
-            sb.append("<InstanceLogFileNames>\n");
-        }
-
-        // extract every record
-        for (int i = 0; i < v.size(); ++i) {
-            String name = (String) v.get(i);
-
-            if (type.equals("json")) {
-                sb.append(sep);
-                sb.append(quoted(name));
-                sep = ",";
-            } else {
-                sb.append("<" + name + "/>");
-
-            }
-
-        }
-        if (type.equals("json")) {
-            sb.append("]}\n");
-        } else {
-            sb.append("\n</InstanceLogFileNames>\n");
-
-        }
-
-        return sb.toString();
     }
 }
