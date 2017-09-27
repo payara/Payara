@@ -7,17 +7,17 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "logNames")
-public class LogNamesList extends AbstractList<String> {
+public class LogNameList extends AbstractList<String> {
     
     @XmlElement(name = "logName")
     private final List<String> logNames;
     
-    public LogNamesList(List<String> logNames) {
+    public LogNameList(List<String> logNames) {
         this.logNames = logNames;
     }
     
-    public LogNamesList() {
-        logNames = new ArrayList<>();
+    public LogNameList() {
+        this.logNames = new ArrayList<>();
     }
 
     @Override
@@ -28,6 +28,11 @@ public class LogNamesList extends AbstractList<String> {
     @Override
     public int size() {
         return logNames.size();
+    }
+    
+    @Override
+    public boolean add(String e) {
+        return logNames.add(e);
     }
 
 }

@@ -64,7 +64,7 @@ import java.util.Properties;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import org.glassfish.admin.rest.logviewer.LogRecord;
-import org.glassfish.admin.rest.logviewer.LogRecords;
+import org.glassfish.admin.rest.logviewer.LogRecordList;
 
 /**
  * REST resource to get Log records
@@ -87,7 +87,7 @@ public class StructuredLogViewerResource {
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public LogRecords getRecords(
+    public LogRecordList getRecords(
             @QueryParam("logFileName") @DefaultValue("${com.sun.aas.instanceRoot}/logs/server.log") String logFileName,
             @QueryParam("startIndex") @DefaultValue("-1") long startIndex,
             @QueryParam("searchForward") @DefaultValue("false") boolean searchForward,
@@ -111,7 +111,7 @@ public class StructuredLogViewerResource {
 
     }
 
-    private LogRecords getWithType(
+    private LogRecordList getWithType(
             String logFileName,
             long startIndex,
             boolean searchForward,
@@ -160,9 +160,9 @@ public class StructuredLogViewerResource {
 
     }
 
-    private LogRecords convertQueryResult(final AttributeList queryResult) {
+    private LogRecordList convertQueryResult(final AttributeList queryResult) {
         
-        LogRecords records = new LogRecords();
+        LogRecordList records = new LogRecordList();
 
 	if (queryResult.size() > 0) {
 	    final AttributeList fieldAttrs = (AttributeList) ((Attribute) queryResult.get(0)).getValue();
@@ -192,7 +192,7 @@ public class StructuredLogViewerResource {
 		rec.setMessageID((String) record.get(fieldIdx++));
 		rec.setMessage((String) record.get(fieldIdx++));
                 
-                records.addRecord(rec);
+                records.add(rec);
 	    }
 	}
 

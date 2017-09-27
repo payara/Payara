@@ -71,12 +71,12 @@ public class LogNamesResource {
             return Response.serverError().entity("instanceName is a required attribute").build();
         }
         
-        LogNamesList returnedNames = getInstanceLogFileNames(instanceName);
+        LogNameList returnedNames = getInstanceLogFileNames(instanceName);
         
         return Response.ok(returnedNames).build();
     }
 
-    private LogNamesList getInstanceLogFileNames(String instanceName) throws IOException {
+    private LogNameList getInstanceLogFileNames(String instanceName) throws IOException {
 
         if (habitat.getService(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.
@@ -88,7 +88,7 @@ public class LogNamesResource {
         
         List<String> logNameList = logFilter.getInstanceLogFileNames(instanceName);
 
-        return new LogNamesList(logNameList);
+        return new LogNameList(logNameList);
 
     }
 }
