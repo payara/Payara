@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.configapi.tests;
 
@@ -62,22 +63,22 @@ public class HttpListenerTest extends ConfigApiTest {
         return "DomainTest";
     }
 
-    NetworkListener listener = null;
+    private NetworkListener listener;
 
     @Before
     public void setup() {
         NetworkListeners service = getHabitat().getService(NetworkListeners.class);
-        assertTrue(service!=null);
+        assertTrue(service != null);
+        
         for (NetworkListener item : service.getNetworkListener()) {
             if ("http-listener-1".equals(item.getName())) {
-                listener= item;
+                listener = item;
                 break;
             }
         }
 
         logger.fine("listener = " + listener);
-        assertTrue(listener!=null);                 
-
+        assertTrue(listener != null);           
     }
     
     @Test
@@ -96,6 +97,7 @@ public class HttpListenerTest extends ConfigApiTest {
                 return null;
             }
         }, listener.findTransport());
+        
         logger.fine("ID outside the transaction is " + listener.getName());
         assertTrue("2".equals(listener.findTransport().getAcceptorThreads()));
     }    
