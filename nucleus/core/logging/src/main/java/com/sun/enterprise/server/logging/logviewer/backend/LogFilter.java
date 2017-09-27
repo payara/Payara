@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -224,9 +223,9 @@ public class LogFilter {
         }
     }
 
-    public List getInstanceLogFileNames(String instanceName) {
+    public List<String> getInstanceLogFileNames(String instanceName) {
         Server targetServer = domain.getServerNamed(instanceName);
-        List allInstanceFileNames = new ArrayList();
+        List<String> allInstanceFileNames = new ArrayList<>();
 
         if (targetServer.isDas()) {
             String logFileDetailsForServer = "";
@@ -257,7 +256,7 @@ public class LogFilter {
                 allInstanceFileNames = new LogFilterForInstance().getInstanceLogFileNames(habitat, targetServer, domain, LOGGER, instanceName, instanceLogFileDetails);
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
-                return new Vector();
+                return new ArrayList<>();
             }
         }
         return allInstanceFileNames;

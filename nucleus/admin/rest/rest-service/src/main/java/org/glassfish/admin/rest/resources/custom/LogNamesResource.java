@@ -50,8 +50,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
-import java.util.Vector;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 /**
  * REST resource to get Log Names
@@ -65,11 +65,18 @@ public class LogNamesResource {
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List getLogNames(@QueryParam("instanceName") String instanceName) throws IOException {
-        return getInstanceLogFileNames(instanceName);
+    public Response getLogNames(@QueryParam("instanceName") String instanceName) throws IOException {
+        
+        if (instanceName == null || instanceName.equals(""))  {
+            return Response.serverError().entity("instanceName is a required attribute").build();
+        }
+        
+        LogNamesList returnedNames = getInstanceLogFileNames(instanceName);
+        
+        return Response.ok(returnedNames).build();
     }
 
-    private List getInstanceLogFileNames(String instanceName) throws IOException {
+    private LogNamesList getInstanceLogFileNames(String instanceName) throws IOException {
 
         if (habitat.getService(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.
@@ -78,8 +85,10 @@ public class LogNamesResource {
         }
 
         LogFilter logFilter = habitat.getService(LogFilter.class);
+        
+        List<String> logNameList = logFilter.getInstanceLogFileNames(instanceName);
 
-        return logFilter.getInstanceLogFileNames(instanceName);
+        return new LogNamesList(logNameList);
 
     }
 }
