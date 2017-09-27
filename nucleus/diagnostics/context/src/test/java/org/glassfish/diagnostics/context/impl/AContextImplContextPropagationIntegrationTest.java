@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.diagnostics.context.impl;
 
@@ -51,7 +52,6 @@ import java.util.List;
 import org.glassfish.contextpropagation.bootstrap.ContextBootstrap;
 import org.glassfish.diagnostics.context.Context;
 import org.glassfish.diagnostics.context.ContextManager;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,9 +61,9 @@ import org.junit.Test;
  *
  * This test explicitly initializes the context propagation module and the ContextManagerImpl under test.
  */
-public class ContextImplContextPropagationIntegrationTest {
+public class AContextImplContextPropagationIntegrationTest {
 
-	private ContextManager mContextManager = null;
+	private ContextManager mContextManager;
 	
 	@Test
 	public void foo() {
@@ -91,16 +91,17 @@ public class ContextImplContextPropagationIntegrationTest {
 	public void testThreadLocalBehaviour() {
 		Context diagnosticsContextStart = mContextManager.getContext();
 
-		assertEquals("The implementation class of diagnosticsContext1 is not as expected.",
-		        diagnosticsContextStart.getClass().getName(), ContextImpl.class.getName());
+		assertEquals(
+	        "The implementation class of diagnosticsContext1 is not as expected.",
+		    diagnosticsContextStart.getClass().getName(), ContextImpl.class.getName());
 
 		for (int i = 0; i < 13; i++) {
 			Context diagnosticsContext = mContextManager.getContext();
 
 			assertSame(
-			        "The diagnostics context instance returned in iteration " + i
-			                + " is not the same instance as fetched at the start of the test.",
-			        diagnosticsContextStart, diagnosticsContext);
+		        "The diagnostics context instance returned in iteration " + i + 
+		        " is not the same instance as fetched at the start of the test.",
+		        diagnosticsContextStart, diagnosticsContext);
 		}
 	}
 
@@ -125,10 +126,12 @@ public class ContextImplContextPropagationIntegrationTest {
 		for (int i = 0; i < 17; i++) {
 			Context diagnosticsContext = mContextManager.getContext();
 
-			Assert.assertEquals("The value associated with key " + propagatingKey + " is not as expected.", propagatingValue,
-			        diagnosticsContext.get(propagatingKey));
-			Assert.assertEquals("The value associated with key " + nonPropagatingKey + " is not as expected.", nonPropagatingValue,
-			        diagnosticsContext.get(nonPropagatingKey));
+			assertEquals(
+		        "The value associated with key " + propagatingKey + " is not as expected.", 
+		        propagatingValue, diagnosticsContext.get(propagatingKey));
+			assertEquals(
+		        "The value associated with key " + nonPropagatingKey + " is not as expected.",
+		        nonPropagatingValue, diagnosticsContext.get(nonPropagatingKey));
 		}
 	}
 
@@ -153,17 +156,20 @@ public class ContextImplContextPropagationIntegrationTest {
 		}
 
 		for (int i = 0; i < 17; i++) {
-			Thread t = new Thread(new Runnable() {
+			Thread thread = new Thread(new Runnable() {
 				public void run() {
 					try {
 						String threadName = currentThread().getName();
 						Context diagnosticsContext = contextManager.getContext();
 
 						assertEquals(
-						        "The value associated with key " + propagatingKey + " on thread " + threadName + " is not as expected.",
-						        propagatingValue, diagnosticsContext.get(propagatingKey));
-						assertNull("The null value should be associated with key " + nonPropagatingKey + " on thread " + threadName,
-						        diagnosticsContext.get(nonPropagatingKey));
+					        "The value associated with key " + propagatingKey + 
+					        " on thread " + threadName + " is not as expected.",
+					        propagatingValue, diagnosticsContext.get(propagatingKey));
+						assertNull(
+					        "The null value should be associated with key " + nonPropagatingKey + 
+					        " on thread " + threadName,
+						    diagnosticsContext.get(nonPropagatingKey));
 					} catch (Throwable e) {
 						synchronized (exceptionList) {
 							exceptionList.add(e);
@@ -172,13 +178,13 @@ public class ContextImplContextPropagationIntegrationTest {
 				}
 			});
 			
-			t.setName("Child_" + i + "_of_parent_'" + currentThread().getName() + "'");
-			t.start();
-			threadList.add(t);
+			thread.setName("Child_" + i + "_of_parent_'" + currentThread().getName() + "'");
+			thread.start();
+			threadList.add(thread);
 		}
 
-		for (Thread t : threadList) {
-			t.join();
+		for (Thread thread : threadList) {
+			thread.join();
 		}
 
 		if (exceptionList.size() > 0) {

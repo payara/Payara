@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.diagnostics.context.impl;
 
 import static java.lang.System.out;
@@ -49,7 +49,7 @@ import org.glassfish.diagnostics.context.ContextManager;
 import org.junit.Test;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
-public class ContextImplIntegrationTest extends HK2Runner {
+public class BContextImplIntegrationTest extends HK2Runner {
 	
 	@Inject
 	private ContextManager mContextManager;

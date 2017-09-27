@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.diagnostics.context.impl;
 
 import static org.glassfish.diagnostics.context.ContextManager.WORK_CONTEXT_KEY;
@@ -77,7 +77,8 @@ public class ContextManagerImplUnitTest {
 			}
 		};
 
-		ContextManagerImpl cmi = new ContextManagerImpl();
+		@SuppressWarnings("unused")
+        ContextManagerImpl cmi = new ContextManagerImpl();
 	}
 
 	/**

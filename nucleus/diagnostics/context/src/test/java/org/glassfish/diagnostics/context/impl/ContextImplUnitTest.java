@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.diagnostics.context.impl;
 
 import static org.glassfish.contextpropagation.PropagationMode.JMS_QUEUE;
@@ -47,13 +47,13 @@ import static org.glassfish.contextpropagation.PropagationMode.ONEWAY;
 import static org.glassfish.contextpropagation.PropagationMode.RMI;
 import static org.glassfish.contextpropagation.PropagationMode.SOAP;
 import static org.glassfish.contextpropagation.PropagationMode.THREAD;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 import java.util.EnumSet;
 
 import org.glassfish.contextpropagation.Location;
 import org.glassfish.contextpropagation.View;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -170,7 +170,9 @@ public class ContextImplUnitTest {
 
 		String value = contextImpl.get(key);
 
-		Assert.assertEquals("Value returned from contextImpl.get(\"" + key + "\") is not the value expected.", expectedValueOfKey1, value);
+		assertEquals(
+	        "Value returned from contextImpl.get(\"" + key + "\") is not the value expected.", 
+	        expectedValueOfKey1, value);
 	}
 
 }
