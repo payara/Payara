@@ -59,48 +59,95 @@
 
 package org.apache.catalina.core;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
-import org.apache.catalina.*;
-import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.InstanceSupport;
-import org.glassfish.jersey.servlet.ServletContainer;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.valve.GlassFishValve;
+import static java.text.MessageFormat.format;
+import static java.util.Collections.list;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.INFO;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.catalina.InstanceEvent.EventType.AFTER_DESTROY_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.AFTER_INIT_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.AFTER_SERVICE_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.BEFORE_DESTROY_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.BEFORE_INIT_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.BEFORE_SERVICE_EVENT;
+import static org.apache.catalina.LogFacade.CANNOT_ALLOCATE_SERVLET_EXCEPTION;
+import static org.apache.catalina.LogFacade.CANNOT_FIND_LOADER_EXCEPTION;
+import static org.apache.catalina.LogFacade.CANNOT_FIND_SERVLET_CLASS_EXCEPTION;
+import static org.apache.catalina.LogFacade.CLASS_IS_NOT_SERVLET_EXCEPTION;
+import static org.apache.catalina.LogFacade.DESTROY_SERVLET_EXCEPTION;
+import static org.apache.catalina.LogFacade.ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION;
+import static org.apache.catalina.LogFacade.ERROR_INSTANTIATE_SERVLET_CLASS_EXCEPTION;
+import static org.apache.catalina.LogFacade.ERROR_LOADING_INFO;
+import static org.apache.catalina.LogFacade.MARK_SERVLET_UNAVAILABLE;
+import static org.apache.catalina.LogFacade.NO_SERVLET_BE_SPECIFIED_EXCEPTION;
+import static org.apache.catalina.LogFacade.PARENT_CONTAINER_MUST_BE_CONTEXT_EXCEPTION;
+import static org.apache.catalina.LogFacade.PRIVILEGED_SERVLET_CANNOT_BE_LOADED_EXCEPTION;
+import static org.apache.catalina.LogFacade.SERVLET_EXECUTION_EXCEPTION;
+import static org.apache.catalina.LogFacade.SERVLET_INIT_EXCEPTION;
+import static org.apache.catalina.LogFacade.SERVLET_UNLOAD_EXCEPTION;
+import static org.apache.catalina.LogFacade.WAITING_INSTANCE_BE_DEALLOCATED;
+import static org.apache.catalina.LogFacade.WRAPPER_CONTAINER_NO_CHILD_EXCEPTION;
+import static org.apache.catalina.core.Constants.JSP_SERVLET_CLASS;
+import static org.apache.catalina.core.Constants.JSP_SERVLET_NAME;
+import static org.apache.catalina.security.SecurityUtil.doAsPrivilege;
+import static org.apache.catalina.security.SecurityUtil.executeUnderSubjectDoAs;
+import static org.apache.catalina.security.SecurityUtil.isPackageProtectionEnabled;
+import static org.glassfish.internal.api.Globals.getDefaultHabitat;
 
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
-import static org.apache.catalina.InstanceEvent.EventType.*;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.SingleThreadModel;
+import javax.servlet.UnavailableException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.InstanceListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Loader;
-import org.apache.catalina.LogFacade;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.web.valve.GlassFishValve;
-// END GlassFish 1343
+
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 
 /**
  * Standard implementation of the <b>Wrapper</b> interface that represents
@@ -111,12 +158,9 @@ import org.glassfish.web.valve.GlassFishValve;
  * @author Remy Maucherat
  * @version $Revision: 1.12.2.1 $ $Date: 2008/04/17 18:37:09 $
  */
-public class StandardWrapper
-        extends ContainerBase
-        implements ServletConfig, Wrapper {
+public class StandardWrapper extends ContainerBase implements ServletConfig, Wrapper {
 
-    private static final String[] DEFAULT_SERVLET_METHODS = new String[] {
-                                                    "GET", "HEAD", "POST" };
+    private static final String[] DEFAULT_SERVLET_METHODS = { "GET", "HEAD", "POST" };
 
     private final RequestTracingService requestTracing;
     private static final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
@@ -125,26 +169,6 @@ public class StandardWrapper
             return false;
         }
     };
-
-    // ----------------------------------------------------------- Constructors
-
-
-    /**
-     * Create a new StandardWrapper component with the default basic Valve.
-     */
-    public StandardWrapper() {
-
-        super();
-        swValve=new StandardWrapperValve();
-        pipeline.setBasic(swValve);
-        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
-
-        // suppress PWC6117 file not found errors
-        java.util.logging.Logger jspLog = java.util.logging.Logger.getLogger("org.apache.jasper.servlet.JspServlet");
-        if(!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
-            jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
-        }
-    }
 
 
     // ----------------------------------------------------- Instance Variables
@@ -156,11 +180,11 @@ public class StandardWrapper
      * If this value equals Long.MAX_VALUE, the unavailability of this
      * servlet is considered permanent.
      */
-    private long available = 0L;
+    private long available;
 
 
     /**
-     * The broadcaster that sends j2ee notifications.
+     * The broadcaster that sends Java EE notifications.
      */
     private NotificationBroadcasterSupport broadcaster = null;
 
@@ -175,7 +199,7 @@ public class StandardWrapper
     /**
      * The debugging detail level for this component.
      */
-    private int debug = 0;
+    private int debug;
 
 
     /**
@@ -188,33 +212,27 @@ public class StandardWrapper
     /**
      * The descriptive information string for this implementation.
      */
-    private static final String info =
-        "org.apache.catalina.core.StandardWrapper/1.0";
-
+    private static final String info = "org.apache.catalina.core.StandardWrapper/1.0";
 
     /**
      * The (single) initialized instance of this servlet.
      */
-    private volatile Servlet instance = null;
-
+    private volatile Servlet instance;
 
     /**
      * Flag that indicates if this instance has been initialized
      */
-    protected volatile boolean instanceInitialized = false;
-    
+    protected volatile boolean instanceInitialized;
 
     /**
      * The support object for our instance listeners.
      */
     private InstanceSupport instanceSupport = new InstanceSupport(this);
 
-
     /**
      * The context-relative URI of the JSP file for this servlet.
      */
-    private String jspFile = null;
-
+    private String jspFile;
 
     /**
      * The load-on-startup order value (negative value means load on
@@ -222,19 +240,16 @@ public class StandardWrapper
      */
     private int loadOnStartup = -1;
 
-
     /**
      * Mappings associated with the wrapper.
      */
     private ArrayList<String> mappings = new ArrayList<String>();
-
 
     /**
      * The initialization parameters for this servlet, keyed by
      * parameter name.
      */
     private Map<String, String> parameters = new HashMap<String, String>();
-
 
     /**
      * The security role references for this servlet, keyed by role name
@@ -243,119 +258,120 @@ public class StandardWrapper
      */
     private HashMap<String, String> references = new HashMap<String, String>();
 
-
     /**
      * The run-as identity for this servlet.
      */
-    private String runAs = null;
-
+    private String runAs;
 
     /**
      * The notification sequence number.
      */
-    private long sequenceNumber = 0;
-
+    private long sequenceNumber;
 
     /**
      * The fully qualified servlet class name for this servlet.
      */
-    private String servletClassName = null;
-
+    private String servletClassName;
 
     /**
      * The class from which this servlet will be instantiated
      */
-    private Class <? extends Servlet> servletClass = null;
-
+    private Class <? extends Servlet> servletClass;
 
     /**
      * Does this servlet implement the SingleThreadModel interface?
      */
-    private volatile boolean singleThreadModel = false;
-
+    private volatile boolean singleThreadModel;
 
     /**
      * Are we unloading our servlet instance at the moment?
      */
-    private boolean unloading = false;
-
+    private boolean unloading;
 
     /**
      * Maximum number of STM instances.
      */
     private int maxInstances = 20;
 
-
     /**
      * Number of instances currently loaded for a STM servlet.
      */
-    private int nInstances = 0;
-
+    private int nInstances;
 
     /**
      * Stack containing the STM instances.
      */
-    private Stack<Servlet> instancePool = null;
-
+    private Stack<Servlet> instancePool;
 
     /**
      * Wait time for servlet unload in ms.
      */
     protected long unloadDelay = 2000;
 
-
     /**
      * True if this StandardWrapper is for the JspServlet
      */
     private boolean isJspServlet;
-
 
     /**
      * The ObjectName of the JSP monitoring mbean
      */
     private ObjectName jspMonitorON;
 
-
     // To support jmx attributes
     private StandardWrapperValve swValve;
-    private long loadTime=0;
-    private int classLoadTime=0;
+    private long loadTime;
+    private int classLoadTime;
 
     private String description;
-
 
     /**
      * Async support
      */
     private boolean isAsyncSupported = false;
-    //private long asyncTimeout;
-
 
     /**
      * Static class array used when the SecurityManager is turned on and 
      * <code>Servlet.init</code> is invoked.
      */
-    private static Class<?>[] classType = new Class[]{ServletConfig.class};
-    
+    private static Class<?>[] classType = { ServletConfig.class };
     
     /**
      * Static class array used when the SecurityManager is turned on and 
      * <code>Servlet.service</code>  is invoked.
      */                                                 
-    private static Class<?>[] classTypeUsedInService = new Class[]{
-                                                         ServletRequest.class,
-                                                         ServletResponse.class};
+    private static Class<?>[] classTypeUsedInService = { ServletRequest.class, ServletResponse.class };
 
     /**
      * File upload (multipart) support 
      */
-    private boolean multipartConfigured = false;
-    private String multipartLocation = null;
+    private boolean multipartConfigured;
+    private String multipartLocation;
     private long multipartMaxFileSize = -1L;
     private long multipartMaxRequestSize = -1L;
     private int multipartFileSizeThreshold = 10240;  // 10K
 
-    private boolean osgi = false;
+    private boolean osgi;
+    
+    
+    // ----------------------------------------------------------- Constructors
+
+
+    /**
+     * Create a new StandardWrapper component with the default basic Valve.
+     */
+    public StandardWrapper() {
+
+        swValve = new StandardWrapperValve();
+        pipeline.setBasic(swValve);
+        requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
+
+        // suppress PWC6117 file not found errors
+        Logger jspLog = Logger.getLogger("org.apache.jasper.servlet.JspServlet");
+        if (!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
+            jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
+        }
+    }
 
 
     // ------------------------------------------------------------- Properties
@@ -369,11 +385,8 @@ public class StandardWrapper
      * the servlet is currently available.
      */
     public long getAvailable() {
-
-        return (this.available);
-
+        return available;
     }
-
 
     /**
      * Set the available date/time for this servlet, in milliseconds since the
@@ -387,14 +400,14 @@ public class StandardWrapper
     public void setAvailable(long available) {
 
         long oldAvailable = this.available;
-        if (available > System.currentTimeMillis())
+        if (available > System.currentTimeMillis()) {
             this.available = available;
-        else
+        } else {
             this.available = 0L;
+        }
+        
         support.firePropertyChange("available", oldAvailable, this.available);
-
     }
-
 
     /**
      * Return the number of active allocations of this servlet, even if they
@@ -402,19 +415,15 @@ public class StandardWrapper
      * not implement <code>SingleThreadModel</code>.
      */
     public int getCountAllocated() {
-
-        return (this.countAllocated.get());
-
+        return countAllocated.get();
     }
-
 
     /**
      * Return the debugging detail level for this component.
      */
     public int getDebug() {
-        return (this.debug);
+        return debug;
     }
-
 
     /**
      * Set the debugging detail level for this component.
@@ -424,15 +433,12 @@ public class StandardWrapper
     public void setDebug(int debug) {
         int oldDebug = this.debug;
         this.debug = debug;
-        support.firePropertyChange("debug", oldDebug,
-                (long) this.debug);
+        support.firePropertyChange("debug", oldDebug, (long) this.debug);
     }
-
 
     public String getEngineName() {
         return ((StandardContext)getParent()).getEngineName();
     }
-
 
     /**
      * Return descriptive information about this Container implementation and
@@ -440,25 +446,22 @@ public class StandardWrapper
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
     public String getInfo() {
-        return (info);
+        return info;
     }
-
 
     /**
      * Return the InstanceSupport object for this Wrapper instance.
      */
     public InstanceSupport getInstanceSupport() {
-        return (this.instanceSupport);
+        return instanceSupport;
     }
-
 
     /**
      * Return the context-relative URI of the JSP file for this servlet.
      */
     public String getJspFile() {
-        return (this.jspFile);
+        return jspFile;
     }
-
 
     /**
      * Set the context-relative URI of the JSP file for this servlet.
@@ -477,7 +480,6 @@ public class StandardWrapper
         isJspServlet = true;
     }
 
-
     /**
      * Return the load-on-startup order value (negative value means
      * load on first call).
@@ -491,11 +493,10 @@ public class StandardWrapper
              * monitoring mbean)
              */
              return Integer.MAX_VALUE;
-        } else {
-            return (this.loadOnStartup);
-        }
+        } 
+            
+        return loadOnStartup;
     }
-
 
     /**
      * Set the load-on-startup order value (negative value means
@@ -504,13 +505,13 @@ public class StandardWrapper
      * @param value New load-on-startup value
      */
     public void setLoadOnStartup(int value) {
-
         int oldLoadOnStartup = this.loadOnStartup;
         this.loadOnStartup = value;
-        support.firePropertyChange("loadOnStartup",
-                                   Integer.valueOf(oldLoadOnStartup),
-                                   Integer.valueOf(this.loadOnStartup));
-
+        
+        support.firePropertyChange(
+                    "loadOnStartup", 
+                    Integer.valueOf(oldLoadOnStartup), 
+                    Integer.valueOf(this.loadOnStartup));
     }
 
 
@@ -531,11 +532,9 @@ public class StandardWrapper
         }
     }
 
-
     public String getLoadOnStartupString() {
         return Integer.toString( getLoadOnStartup());
     }
-
 
     /**
      * Sets the description of this servlet.
@@ -544,7 +543,6 @@ public class StandardWrapper
         this.description = description;
     }
 
-
     /**
      * Gets the description of this servlet.
      */
@@ -552,15 +550,13 @@ public class StandardWrapper
         return description;
     }
 
-
     /**
      * Return maximum number of instances that will be allocated when a single
      * thread model servlet is used.
      */
     public int getMaxInstances() {
-        return (this.maxInstances);
+        return maxInstances;
     }
-
 
     /**
      * Set the maximum number of instances that will be allocated when a single
@@ -571,8 +567,7 @@ public class StandardWrapper
     public void setMaxInstances(int maxInstances) {
         int oldMaxInstances = this.maxInstances;
         this.maxInstances = maxInstances;
-        support.firePropertyChange("maxInstances", oldMaxInstances,
-                                   this.maxInstances);
+        support.firePropertyChange("maxInstances", oldMaxInstances, this.maxInstances);
     }
 
 
@@ -582,26 +577,24 @@ public class StandardWrapper
      * @param container Proposed parent Container
      */
     public void setParent(Container container) {
-        if ((container != null) &&
-            !(container instanceof Context))
-            throw new IllegalArgumentException
-                    (rb.getString(LogFacade.PARENT_CONTAINER_MUST_BE_CONTEXT_EXCEPTION));
-        if (container instanceof StandardContext) {
-            unloadDelay = ((StandardContext)container).getUnloadDelay();
-            notifyContainerListeners =
-                ((StandardContext)container).isNotifyContainerListeners();
+        if (container != null && !(container instanceof Context)) {
+            throw new IllegalArgumentException(createMsg(PARENT_CONTAINER_MUST_BE_CONTEXT_EXCEPTION));
         }
+        
+        if (container instanceof StandardContext) {
+            unloadDelay = ((StandardContext) container).getUnloadDelay();
+            notifyContainerListeners = ((StandardContext) container).isNotifyContainerListeners();
+        }
+        
         super.setParent(container);
     }
-
 
     /**
      * Return the run-as identity for this servlet.
      */
     public String getRunAs() {
-        return (this.runAs);
+        return runAs;
     }
-
 
     /**
      * Set the run-as identity for this servlet.
@@ -614,7 +607,6 @@ public class StandardWrapper
         support.firePropertyChange("runAs", oldRunAs, this.runAs);
     }
 
-
     /**
      * Marks the wrapped servlet as supporting async operations or not.
      *
@@ -624,7 +616,6 @@ public class StandardWrapper
     public void setIsAsyncSupported(boolean isAsyncSupported) {
         this.isAsyncSupported = isAsyncSupported;
     }
-
 
     /**
      * Checks if the wrapped servlet has been annotated or flagged in the
@@ -637,14 +628,12 @@ public class StandardWrapper
         return isAsyncSupported;
     }
 
-
     /**
      * Return the fully qualified servlet class name for this servlet.
      */
     public String getServletClassName() {
-        return this.servletClassName;
+        return servletClassName;
     }
-
 
     /**
      * Set the fully qualified servlet class name for this servlet.
@@ -655,20 +644,21 @@ public class StandardWrapper
         if (className == null) {
             throw new NullPointerException("Null servlet class name");
         }
+        
         if (servletClassName != null) {
             throw new IllegalStateException(
                 "Wrapper already initialized with servlet instance, " +
                 "class, or name");
         }
+        
         servletClassName = className;
         // oldServletClassName is null
-        support.firePropertyChange("servletClassName", null,
-                                   servletClassName);
-        if (Constants.JSP_SERVLET_CLASS.equals(servletClassName)) {
+        support.firePropertyChange("servletClassName", null, servletClassName);
+        
+        if (JSP_SERVLET_CLASS.equals(servletClassName)) {
             isJspServlet = true;
         }
     }
-
 
     /**
      * @return the servlet class, or null if the servlet class has not
@@ -688,20 +678,17 @@ public class StandardWrapper
         if (clazz == null) {
             throw new NullPointerException("Null servlet class");
         }
-        if ((servletClass != null) ||
-                servletClassName != null &&
-                    !servletClassName.equals(clazz.getName())) {
-            throw new IllegalStateException(
-                "Wrapper already initialized with servlet instance, " +
-                "class, or name");
+        
+        if (servletClass != null || servletClassName != null && !servletClassName.equals(clazz.getName())) {
+            throw new IllegalStateException("Wrapper already initialized with servlet instance, " + "class, or name");
         }
+        
         servletClass = clazz;
         servletClassName = clazz.getName();
-        if (Constants.JSP_SERVLET_CLASS.equals(servletClassName)) {
+        if (JSP_SERVLET_CLASS.equals(servletClassName)) {
             isJspServlet = true;
         }
     }
-
 
     /**
      * @return the servlet instance, or null if the servlet has not yet
@@ -710,7 +697,6 @@ public class StandardWrapper
     public Servlet getServlet() {
         return instance;
     }
-
 
     /**
      * Sets the servlet instance for this wrapper.
@@ -721,19 +707,19 @@ public class StandardWrapper
         if (instance == null) {
             throw new NullPointerException("Null servlet instance");
         }
+        
         if (servletClassName != null) {
-            throw new IllegalStateException(
-                "Wrapper already initialized with servlet instance, " +
-                "class, or name");
+            throw new IllegalStateException("Wrapper already initialized with servlet instance, " + "class, or name");
         }
+        
         this.instance = instance;
         servletClass = instance.getClass();
         servletClassName = servletClass.getName();
-        if (Constants.JSP_SERVLET_CLASS.equals(servletClassName)) {
+        
+        if (JSP_SERVLET_CLASS.equals(servletClassName)) {
             isJspServlet = true;
         }
     }
-
 
     /**
      * Set the name of this servlet.  This is an alias for the normal
@@ -747,20 +733,21 @@ public class StandardWrapper
         setName(name);
     }
 
-
     /**
      * Is this servlet currently unavailable?
      */
     public boolean isUnavailable() {
-        if (available == 0L)
-            return (false);
-        else if (available <= System.currentTimeMillis()) {
+        if (available == 0L) {
+            return false;
+        }
+        
+        if (available <= System.currentTimeMillis()) {
             available = 0L;
-            return (false);
-        } else
-            return (true);
+            return false;
+        }
+        
+        return true;
     }
-
 
     /**
      * Gets the names of the methods supported by the underlying servlet.
@@ -776,8 +763,7 @@ public class StandardWrapper
 	
         loadServletClass();
 
-        if (!javax.servlet.http.HttpServlet.class.isAssignableFrom(
-                                                        servletClass)) {
+        if (!HttpServlet.class.isAssignableFrom(servletClass)) {
             return DEFAULT_SERVLET_METHODS;
         }
 
@@ -787,31 +773,27 @@ public class StandardWrapper
 	
         Method[] methods = getAllDeclaredMethods(servletClass);
         for (int i=0; methods != null && i<methods.length; i++) {
-            Method m = methods[i];
-            Class<?> params[] = m.getParameterTypes();
+            Method method = methods[i];
+            Class<?> params[] = method.getParameterTypes();
 
-            if (!(params.length == 2 &&
-                    params[0] == HttpServletRequest.class &&
-                    params[1] == HttpServletResponse.class)) {
+            if (!(params.length == 2 && params[0] == HttpServletRequest.class && params[1] == HttpServletResponse.class)) {
                 continue;
             }
 
-            if (m.getName().equals("doGet")) {
+            if (method.getName().equals("doGet")) {
                 allow.add("GET");
                 allow.add("HEAD");
-            } else if (m.getName().equals("doPost")) {
+            } else if (method.getName().equals("doPost")) {
                 allow.add("POST");
-            } else if (m.getName().equals("doPut")) {
+            } else if (method.getName().equals("doPut")) {
                 allow.add("PUT");
-            } else if (m.getName().equals("doDelete")) {
+            } else if (method.getName().equals("doDelete")) {
                 allow.add("DELETE");
             }
         }
 
-        String[] methodNames = new String[allow.size()];
-        return allow.toArray(methodNames);
+        return allow.toArray(new String[allow.size()]);
     }
-
 
     public boolean isMultipartConfigured() {
         return multipartConfigured;
@@ -825,14 +807,12 @@ public class StandardWrapper
         multipartLocation = location;
     }
 
-
     /**
      * Gets the multipart location
      */
     public String getMultipartLocation(){
         return multipartLocation;
     }
-
 
     /**
      * Sets the multipart max-file-size
@@ -842,14 +822,12 @@ public class StandardWrapper
         multipartMaxFileSize = maxFileSize;
     }
 
-
     /**
      * Gets the multipart max-file-size
      */
     public long getMultipartMaxFileSize() {
         return multipartMaxFileSize;
     }
-
 
     /**
      * Sets the multipart max-request-size
@@ -859,14 +837,12 @@ public class StandardWrapper
         multipartMaxRequestSize = maxRequestSize;
     }
 
-
     /**
      * Gets the multipart max-request-Size
      */
     public long getMultipartMaxRequestSize() {
         return multipartMaxRequestSize;
     }
-
 
     /**
      * Sets the multipart file-size-threshold
@@ -876,7 +852,6 @@ public class StandardWrapper
         multipartFileSizeThreshold = fileSizeThreshold;
     }
 
-
     /**
      * Gets the multipart file-size-threshol
      */
@@ -884,11 +859,9 @@ public class StandardWrapper
         return multipartFileSizeThreshold;
     }
 
-
     protected boolean isOSGi() {
         return osgi;
     }
-
 
     protected void setOSGi(boolean osgi) {
         this.osgi = osgi;
@@ -913,8 +886,7 @@ public class StandardWrapper
          * optimization currently avoids a call to pipeline.getValves(),
          * because it is expensive.
          */
-        throw new UnsupportedOperationException(
-            "Adding valves to wrappers not supported");
+        throw new UnsupportedOperationException("Adding valves to wrappers not supported");
     }
     // END GlassFish 1343
 
@@ -938,7 +910,6 @@ public class StandardWrapper
         return rootCause;
     }
 
-
     /**
      * Refuse to add a child Container, because Wrappers are the lowest level
      * of the Container hierarchy.
@@ -946,10 +917,8 @@ public class StandardWrapper
      * @param child Child container to be added
      */
     public void addChild(Container child) {
-        throw new IllegalStateException
-                (rb.getString(LogFacade.WRAPPER_CONTAINER_NO_CHILD_EXCEPTION));
+        throw new IllegalStateException(createMsg(WRAPPER_CONTAINER_NO_CHILD_EXCEPTION));
     }
-
 
     /**
      * Adds the initialization parameter with the given name and value
@@ -965,7 +934,6 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Sets the init parameter with the given name and value
      * on this servlet.
@@ -979,23 +947,21 @@ public class StandardWrapper
      * @return true if the init parameter with the given name and value
      * was set, false otherwise
      */
-    public boolean setInitParameter(String name, String value, 
-                                    boolean override) {
-        if (null == name || null == value) {
-            throw new IllegalArgumentException(
-                "Null servlet init parameter name or value");
+    public boolean setInitParameter(String name, String value, boolean override) {
+        
+        if (name == null || value == null) {
+            throw new IllegalArgumentException("Null servlet init parameter name or value");
         }
 
         synchronized (parameters) {
             if (override || !parameters.containsKey(name)) {
                 parameters.put(name, value);
                 return true;
-            } else {
-                return false;
-            }
+            } 
+                
+            return false;
         }
     }
-
 
     /**
      * Sets the initialization parameters contained in the given map
@@ -1007,7 +973,7 @@ public class StandardWrapper
      * that are in conflict
      */
     public Set<String> setInitParameters(Map<String, String> initParameters) {
-        if (null == initParameters) {
+        if (initParameters == null) {
             throw new IllegalArgumentException("Null init parameters");
         }
 
@@ -1038,7 +1004,6 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Add a new listener interested in InstanceEvents.
      *
@@ -1047,7 +1012,6 @@ public class StandardWrapper
     public void addInstanceListener(InstanceListener listener) {
         instanceSupport.addInstanceListener(listener);
     }
-
 
     /**
      * Add a mapping associated with the Wrapper.
@@ -1064,13 +1028,11 @@ public class StandardWrapper
         }
     }
 
-
     public Collection<String> getMappings() {
         synchronized (mappings) {
-            return Collections.unmodifiableList(mappings);
+            return unmodifiableList(mappings);
         }
     }
-
 
     /**
      * Add a new security role reference record to the set of records for
@@ -1089,7 +1051,6 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Allocate an initialized instance of this Servlet that is ready to have
      * its <code>service()</code> method called.  If the servlet class does
@@ -1107,8 +1068,7 @@ public class StandardWrapper
 
         // If we are currently unloading this servlet, throw an exception
         if (unloading) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_ALLOCATE_SERVLET_EXCEPTION), getName());
-            throw new ServletException(msg);
+            throw new ServletException(createMsg(CANNOT_ALLOCATE_SERVLET_EXCEPTION, getName()));
         }
 
         // If not SingleThreadedModel, return the same instance every time
@@ -1118,15 +1078,14 @@ public class StandardWrapper
             if (instance == null) {
                 // No instance. Instantiate and initialize
                 try {
-                    if (log.isLoggable(Level.FINEST))
-                        log.log(Level.FINEST, "Allocating non-STM instance");
+                    if (log.isLoggable(FINEST))
+                        log.log(FINEST, "Allocating non-STM instance");
                     instance = loadServlet();
                     initServlet(instance);
                 } catch (ServletException e) {
                     throw e;
                 } catch (Throwable e) {
-                    throw new ServletException
-                            (rb.getString(LogFacade.ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION), e);
+                    throw new ServletException(createMsg(ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION), e);
                 }
             } else if (!instanceInitialized) {
                 /*
@@ -1138,8 +1097,8 @@ public class StandardWrapper
             }
 
             if (!singleThreadModel) {
-                if (log.isLoggable(Level.FINEST))
-                    log.log(Level.FINEST, "Returning non-STM instance");
+                if (log.isLoggable(FINEST))
+                    log.log(FINEST, "Returning non-STM instance");
                 countAllocated.incrementAndGet();
                 return (instance);
             }
@@ -1158,8 +1117,7 @@ public class StandardWrapper
                     } catch (ServletException e) {
                         throw e;
                     } catch (Throwable e) {
-                        throw new ServletException
-                                (rb.getString(LogFacade.ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION), e);
+                        throw new ServletException(createMsg(ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION), e);
                     }
                 } else {
                     try {
@@ -1176,7 +1134,6 @@ public class StandardWrapper
             return instancePool.pop();
         }
     }
-
 
     /**
      * Return this previously allocated servlet to the pool of available
@@ -1203,7 +1160,6 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Return the value for the specified initialization parameter name,
      * if any; otherwise return <code>null</code>.
@@ -1216,18 +1172,15 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Return the names of all defined initialization parameters for this
      * servlet.
      */
     public String[] findInitParameters() {
         synchronized (parameters) {
-            String results[] = new String[parameters.size()];
-            return parameters.keySet().toArray(results);
+            return parameters.keySet().toArray(new String[parameters.size()]);
         }
     }
-
 
     /**
      * Return the mappings associated with this wrapper.
@@ -1237,7 +1190,6 @@ public class StandardWrapper
             return mappings.toArray(new String[mappings.size()]);
         }
     }
-
 
     /**
      * Return the security role link for the specified security role
@@ -1251,18 +1203,15 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Return the set of security role reference names associated with
      * this servlet, if any; otherwise return a zero-length array.
      */
     public String[] findSecurityReferences() {
         synchronized (references) {
-            String results[] = new String[references.size()];
-            return references.keySet().toArray(results);
+            return references.keySet().toArray(new String[references.size()]);
         }
     }
-
 
     /**
      * FIXME: Fooling introspection ...
@@ -1294,7 +1243,6 @@ public class StandardWrapper
         initServlet(instance);
     }
 
-
     /**
      * Creates an instance of the servlet, if there is not already
      * at least one initialized instance.
@@ -1302,7 +1250,7 @@ public class StandardWrapper
     private synchronized Servlet loadServlet() throws ServletException {
 
         // Nothing to do if we already have an instance or an instance pool
-        if (!singleThreadModel && (instance != null)) {
+        if (!singleThreadModel && instance != null) {
             return instance;
         }
 
@@ -1313,31 +1261,25 @@ public class StandardWrapper
         // Instantiate the servlet class
         Servlet servlet = null;
         try {
-            servlet = ((StandardContext)getParent()).createServletInstance(
-                servletClass);
+            servlet = ((StandardContext) getParent()).createServletInstance(servletClass);
         } catch (ClassCastException e) {
             unavailable(null);
             // Restore the context ClassLoader
-            String msg = MessageFormat.format(rb.getString(LogFacade.CLASS_IS_NOT_SERVLET_EXCEPTION), servletClass.getName());
-            throw new ServletException(msg, e);
+            throw new ServletException(createMsg(CLASS_IS_NOT_SERVLET_EXCEPTION, servletClass.getName()), e);
         } catch (Throwable e) {
             unavailable(null);
             // Restore the context ClassLoader
-            String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_INSTANTIATE_SERVLET_CLASS_EXCEPTION), servletClass.getName());
-            throw new ServletException(msg, e);
+            throw new ServletException(createMsg(ERROR_INSTANTIATE_SERVLET_CLASS_EXCEPTION, servletClass.getName()), e);
         }
 
-        // Check if loading the servlet in this web application should be
-        // allowed
+        // Check if loading the servlet in this web application should be allowed
         if (!isServletAllowed(servlet)) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.PRIVILEGED_SERVLET_CANNOT_BE_LOADED_EXCEPTION), servletClass.getName());
-            throw new SecurityException(msg);
+            throw new SecurityException(createMsg(PRIVILEGED_SERVLET_CANNOT_BE_LOADED_EXCEPTION, servletClass.getName()));
         }
 
         // Special handling for ContainerServlet instances
-        if ((servlet instanceof ContainerServlet) &&
-              (isContainerProvidedServlet(servletClass.getName()) ||
-                ((Context)getParent()).getPrivileged() )) {
+        if ((servlet instanceof ContainerServlet)
+                && (isContainerProvidedServlet(servletClass.getName()) || ((Context) getParent()).getPrivileged())) {
             ((ContainerServlet) servlet).setWrapper(this);
         }
 
@@ -1359,6 +1301,9 @@ public class StandardWrapper
         return servlet;
     }
 
+    private String createMsg(String key, Object... arguments) {
+        return format(rb.getString(key), arguments);
+    }
 
     /*
      * Loads the servlet class
@@ -1370,17 +1315,15 @@ public class StandardWrapper
 
         // If this "servlet" is really a JSP file, get the right class.
         String actualClass = servletClassName;
-        if ((actualClass == null) && (jspFile != null)) {
-            Wrapper jspWrapper = (Wrapper)
-                ((Context) getParent()).findChild(Constants.JSP_SERVLET_NAME);
+        if (actualClass == null && jspFile != null) {
+            Wrapper jspWrapper = (Wrapper) ((Context) getParent()).findChild(JSP_SERVLET_NAME);
             if (jspWrapper != null) {
                 actualClass = jspWrapper.getServletClassName();
+                
                 // Merge init parameters
-                String paramNames[] = jspWrapper.findInitParameters();
-                for (String paramName : paramNames) {
+                for (String paramName : jspWrapper.findInitParameters()) {
                     if (parameters.get(paramName) == null) {
-                        parameters.put(paramName,
-                                       jspWrapper.findInitParameter(paramName));
+                        parameters.put(paramName, jspWrapper.findInitParameter(paramName));
                     }
                 }
             }
@@ -1389,34 +1332,37 @@ public class StandardWrapper
         // Complain if no servlet class has been specified
         if (actualClass == null) {
             unavailable(null);
-            String msg = MessageFormat.format(rb.getString(LogFacade.NO_SERVLET_BE_SPECIFIED_EXCEPTION), getName());
-            throw new ServletException(msg);
+            throw new ServletException(createMsg(NO_SERVLET_BE_SPECIFIED_EXCEPTION, getName()));
+        }
+        
+        // Current compiler targets default to 1.5, which is a little low for current
+        // environments 
+        if (isJspServlet) {
+            parameters.putIfAbsent("compilerTargetVM", "1.8");
+            parameters.putIfAbsent("compilerSourceVM", "1.8");
         }
 
         // Acquire an instance of the class loader to be used
         Loader loader = getLoader();
         if (loader == null) {
             unavailable(null);
-            String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_FIND_LOADER_EXCEPTION), getName());
-            throw new ServletException(msg);
+            throw new ServletException(createMsg(CANNOT_FIND_LOADER_EXCEPTION, getName()));
         }
 
         ClassLoader classLoader = loader.getClassLoader();
 
         // Special case class loader for a container provided servlet
         //  
-        if (isContainerProvidedServlet(actualClass) && 
-                ! ((Context)getParent()).getPrivileged() ) {
-            // If it is a priviledged context - using its own
-            // class loader will work, since it's a child of the container
-            // loader
+        if (isContainerProvidedServlet(actualClass) && !((Context) getParent()).getPrivileged()) {
+            // If it is a priviledged context - using its own class loader will work, since it's a child of 
+            // the container loader
             classLoader = this.getClass().getClassLoader();
         }
 
         // Load the specified servlet class from the appropriate class loader
-        Class clazz = null;
+        Class<?> clazz = null;
         try {
-            if (SecurityUtil.isPackageProtectionEnabled()){
+            if (isPackageProtectionEnabled()){
                 final ClassLoader fclassLoader = classLoader;
                 final String factualClass = actualClass;
                 try{
@@ -1430,15 +1376,13 @@ public class StandardWrapper
                                 }
                             }
                     });
-                } catch(PrivilegedActionException pax){
+                } catch (PrivilegedActionException pax) {
                     Exception ex = pax.getException();
-                    if (ex instanceof ClassNotFoundException){
-                        throw (ClassNotFoundException)ex;
-                    } else {
-                        String msgErrorLoadingInfo = MessageFormat.format(rb.getString(LogFacade.ERROR_LOADING_INFO),
-                                                          new Object[] {fclassLoader, factualClass});
-                        getServletContext().log(msgErrorLoadingInfo, ex );
+                    if (ex instanceof ClassNotFoundException) {
+                        throw (ClassNotFoundException) ex;
                     }
+                        
+                    getServletContext().log(createMsg(ERROR_LOADING_INFO, fclassLoader, factualClass), ex);
                 }
             } else {
                 if (classLoader != null) {
@@ -1449,17 +1393,15 @@ public class StandardWrapper
             }
         } catch (ClassNotFoundException e) {
             unavailable(null);
-            String msgErrorLoadingInfo = MessageFormat.format(rb.getString(LogFacade.ERROR_LOADING_INFO),
-                    new Object[] {classLoader, actualClass});
-            getServletContext().log(msgErrorLoadingInfo, e );
-            String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_FIND_SERVLET_CLASS_EXCEPTION), actualClass);
-            throw new ServletException(msg, e);
+            
+            getServletContext().log(createMsg(ERROR_LOADING_INFO, classLoader, actualClass), e);
+            
+            throw new ServletException(createMsg(CANNOT_FIND_SERVLET_CLASS_EXCEPTION, actualClass), e);
         }
 
         if (clazz == null) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_FIND_SERVLET_CLASS_EXCEPTION), actualClass);
             unavailable(null);
-            throw new ServletException(msg);
+            throw new ServletException(createMsg(CANNOT_FIND_SERVLET_CLASS_EXCEPTION, actualClass));
         }
 
         servletClass = castToServletClass(clazz);
@@ -1470,11 +1412,11 @@ public class StandardWrapper
         return (Class<? extends Servlet>)clazz;
     }
 
-
     /**
      * Initializes the given servlet instance, by calling its init method.
      */
     private void initServlet(Servlet servlet) throws ServletException {
+        
         if (instanceInitialized && !singleThreadModel) {
             // Servlet has already been initialized
             return;
@@ -1482,14 +1424,12 @@ public class StandardWrapper
 
         try {
             instanceSupport.fireInstanceEvent(BEFORE_INIT_EVENT, servlet);
+            
             // START SJS WS 7.0 6236329
-            //if( System.getSecurityManager() != null) {
-            if ( SecurityUtil.executeUnderSubjectDoAs() ){
-            // END OF SJS WS 7.0 6236329
-                Object[] initType = new Object[1];
-                initType[0] = facade;
-                SecurityUtil.doAsPrivilege("init", servlet, classType,
-                                           initType);
+            if (executeUnderSubjectDoAs()) {
+                // END OF SJS WS 7.0 6236329
+                Object[] initType = { facade };
+                doAsPrivilege("init", servlet, classType, initType);
                 initType = null;
             } else {
                 servlet.init(facade);
@@ -1498,19 +1438,18 @@ public class StandardWrapper
             instanceInitialized = true;
 
             // Invoke jspInit on JSP pages
-            if ((loadOnStartup >= 0) && (jspFile != null)) {
+            if (loadOnStartup >= 0 && jspFile != null) {
                 // Invoking jspInit
                 DummyRequest req = new DummyRequest();
                 req.setServletPath(jspFile);
                 req.setQueryString("jsp_precompile=true");
 
                 // START PWC 4707989
-                String allowedMethods = (String) parameters.get("httpMethods");
-                if (allowedMethods != null
-                        && allowedMethods.length() > 0) {
-                    String[] s = allowedMethods.split(",");
-                    if (s.length > 0) {
-                        req.setMethod(s[0].trim());
+                String allowedMethods = parameters.get("httpMethods");
+                if (allowedMethods != null && allowedMethods.length() > 0) {
+                    String[] allowedMethod = allowedMethods.split(",");
+                    if (allowedMethod.length > 0) {
+                        req.setMethod(allowedMethod[0].trim());
                     }
                 }
                 // END PWC 4707989
@@ -1518,15 +1457,10 @@ public class StandardWrapper
                 DummyResponse res = new DummyResponse();
 
                 // START SJS WS 7.0 6236329
-                //if( System.getSecurityManager() != null) {
-                if ( SecurityUtil.executeUnderSubjectDoAs() ){
-                // END OF SJS WS 7.0 6236329
-                    Object[] serviceType = new Object[2];
-                    serviceType[0] = req;
-                    serviceType[1] = res;                
-                    SecurityUtil.doAsPrivilege("service", servlet,
-                                               classTypeUsedInService,
-                                               serviceType);
+                if (executeUnderSubjectDoAs()) {
+                    // END OF SJS WS 7.0 6236329
+                    Object[] serviceType = {req, res};
+                    doAsPrivilege("service", servlet, classTypeUsedInService, serviceType);
                 } else {
                     servlet.service(req, res);
                 }
@@ -1549,149 +1483,136 @@ public class StandardWrapper
             instanceSupport.fireInstanceEvent(AFTER_INIT_EVENT,servlet, f);
             // If the servlet wanted to be unavailable it would have
             // said so, so do not call unavailable(null).
-            String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_INIT_EXCEPTION), getName());
-            throw new ServletException(msg, f);
+            throw new ServletException(format(rb.getString(SERVLET_INIT_EXCEPTION), getName()), f);
         }
     }
 
 
     // START IASRI 4665318
-    void service(ServletRequest request, ServletResponse response,
-                 Servlet serv)
-             throws IOException, ServletException {
+    void service(ServletRequest request, ServletResponse response, Servlet servlet) throws IOException, ServletException {
 
         InstanceSupport supp = getInstanceSupport();
 
         try {
-            supp.fireInstanceEvent(BEFORE_SERVICE_EVENT,
-                                   serv, request, response);
+            supp.fireInstanceEvent(BEFORE_SERVICE_EVENT, servlet, request, response);
+            
             if (!isAsyncSupported()) {
-                RequestFacadeHelper reqFacHelper =
-                    RequestFacadeHelper.getInstance(request);
+                RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
                 if (reqFacHelper != null) {
                     reqFacHelper.disableAsyncSupport();
                 }
-            } 
-            if ((request instanceof HttpServletRequest) &&
-                (response instanceof HttpServletResponse)) {
+            }
+            
+            if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
                     
                 if ( SecurityUtil.executeUnderSubjectDoAs() ){
                     final ServletRequest req = request;
                     final ServletResponse res = response;
-                    Principal principal = 
-                        ((HttpServletRequest) req).getUserPrincipal();
+                    Principal principal = ((HttpServletRequest) req).getUserPrincipal();
 
                     Object[] serviceType = new Object[2];
                     serviceType[0] = req;
                     serviceType[1] = res;
                     
-                    SecurityUtil.doAsPrivilege("service",
-                                               serv,
-                                               classTypeUsedInService, 
-                                               serviceType,
-                                               principal);                                                   
+                    SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);                                                
                 } else {
                     if (requestTracing.isRequestTracingEnabled()) {
-                        if (serv instanceof ServletContainer) {
-                            RequestEvent requestEvent = constructWebServiceRequestEvent((HttpServletRequest)request);
+                        if (servlet instanceof ServletContainer) {
+                            RequestEvent requestEvent = constructWebServiceRequestEvent((HttpServletRequest) request);
                             requestTracing.traceRequestEvent(requestEvent);
-                        } else if (serv instanceof Servlet) {
-                            requestTracing.traceRequestEvent(constructServletRequestEvent((HttpServletRequest)request, serv));
+                        } else if (servlet instanceof Servlet) {
+                            requestTracing.traceRequestEvent(constructServletRequestEvent((HttpServletRequest) request, servlet));
                         }
                     }
+                    
                     try {
-                        if(isJspServlet) {
+                        if (isJspServlet) {
                             isInSuppressFFNFThread.set(true);
                         }
-                        serv.service((HttpServletRequest) request,
-                                    (HttpServletResponse) response);
+                        
+                        servlet.service((HttpServletRequest) request, (HttpServletResponse) response);
                     }
                     finally {
                         isInSuppressFFNFThread.set(false);
                     }
                 }
             } else {
-                serv.service(request, response);
+                servlet.service(request, response);
             }
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT,
-                                   serv, request, response);
+            
+            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response);
         } catch (IOException e) {
             // Set response status before firing event, see IT 10022
             if (response instanceof HttpServletResponse) {
-                ((HttpServletResponse)response).setStatus(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
             }
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT,
-                                   serv, request, response, e);
+            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
             throw e;
         } catch (ServletException e) {
             // Set response status before firing event, see IT 10022
             if (response instanceof HttpServletResponse) {
-                ((HttpServletResponse)response).setStatus(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
             }
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT,
-                                   serv, request, response, e);
+            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
             throw e;
         } catch (RuntimeException e) {
             // Set response status before firing event, see IT 10022
             if (response instanceof HttpServletResponse) {
-                ((HttpServletResponse)response).setStatus(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
             }
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT,
-                                   serv, request, response, e);
+            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
             throw e;
         } catch (Error e) {
             // Set response status before firing event, see IT 10022
             if (response instanceof HttpServletResponse) {
-                ((HttpServletResponse)response).setStatus(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
             }
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT,
-                                   serv, request, response, e);
+            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
             throw e;
         } catch (Throwable e) {
             // Set response status before firing event, see IT 10022
-            ((HttpServletResponse)response).setStatus(
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            supp.fireInstanceEvent(AFTER_SERVICE_EVENT,
-                                   serv, request, response, e);
-            throw new ServletException(rb.getString(LogFacade.SERVLET_EXECUTION_EXCEPTION), e);
+            ((HttpServletResponse) response).setStatus(SC_INTERNAL_SERVER_ERROR);
+            supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
+            throw new ServletException(rb.getString(SERVLET_EXECUTION_EXCEPTION), e);
         }
 
     }
     // END IASRI 4665318
 
-
     private RequestEvent constructWebServiceRequestEvent(HttpServletRequest httpServletRequest) {
-        RequestEvent requestEvent  = new RequestEvent("RESTWSRequest");
+        RequestEvent requestEvent = new RequestEvent("RESTWSRequest");
         requestEvent.addProperty("URL", httpServletRequest.getRequestURL().toString());
+        
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
-            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            requestEvent.addProperty(headerName,headers.toString());
+            requestEvent.addProperty(
+                headerName, 
+                list(httpServletRequest.getHeaders(headerName)).toString());
         }
-        requestEvent.addProperty("Method",httpServletRequest.getMethod());
+        requestEvent.addProperty("Method", httpServletRequest.getMethod());
+        
         return requestEvent;
     }
     
     private RequestEvent constructServletRequestEvent(HttpServletRequest httpServletRequest, Servlet serv) {
         RequestEvent requestEvent  = new RequestEvent("ServletRequest");
-        requestEvent.addProperty("URL",httpServletRequest.getRequestURL().toString());
+        requestEvent.addProperty("URL", httpServletRequest.getRequestURL().toString());
+        
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
-            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            requestEvent.addProperty(headerName, headers.toString());
+            requestEvent.addProperty(
+                headerName, 
+                list(httpServletRequest.getHeaders(headerName)).toString());
         }
+        
         requestEvent.addProperty("Method",httpServletRequest.getMethod());
         requestEvent.addProperty("QueryString", httpServletRequest.getQueryString());
         requestEvent.addProperty("Class",serv.getClass().getCanonicalName());
+        
         return requestEvent;
     }
-
 
     /**
      * Remove the specified initialization parameter from this servlet.
@@ -1699,7 +1620,6 @@ public class StandardWrapper
      * @param name Name of the initialization parameter to remove
      */
     public void removeInitParameter(String name) {
-
         synchronized (parameters) {
             parameters.remove(name);
         }
@@ -1709,18 +1629,14 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Remove a listener no longer interested in InstanceEvents.
      *
      * @param listener The listener to remove
      */
     public void removeInstanceListener(InstanceListener listener) {
-
         instanceSupport.removeInstanceListener(listener);
-
     }
-
 
     /**
      * Remove a mapping associated with the wrapper.
@@ -1728,7 +1644,6 @@ public class StandardWrapper
      * @param mapping The pattern to remove
      */
     public void removeMapping(String mapping) {
-
         synchronized (mappings) {
             mappings.remove(mapping);
         }
@@ -1738,14 +1653,12 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Remove any security role reference for the specified role name.
      *
      * @param name Security role used within this servlet to be removed
      */
     public void removeSecurityReference(String name) {
-
         synchronized (references) {
             references.remove(name);
         }
@@ -1755,7 +1668,6 @@ public class StandardWrapper
         }
     }
 
-
     /**
      * Return a String representation of this component.
      */
@@ -1763,16 +1675,15 @@ public class StandardWrapper
 
         StringBuilder sb = new StringBuilder();
         if (getParent() != null) {
-            sb.append(getParent().toString());
-            sb.append(".");
+            sb.append(getParent().toString())
+              .append(".");
         }
-        sb.append("StandardWrapper[");
-        sb.append(getName());
-        sb.append("]");
-        return (sb.toString());
-
+        
+        return sb.append("StandardWrapper[")
+                 .append(getName())
+                 .append("]")
+                 .toString();
     }
-
 
     /**
      * Process an UnavailableException, marking this servlet as unavailable
@@ -1782,22 +1693,21 @@ public class StandardWrapper
      *  to mark this servlet as permanently unavailable
      */
     public void unavailable(UnavailableException unavailable) {
-        String msg = MessageFormat.format(rb.getString(LogFacade.MARK_SERVLET_UNAVAILABLE), getName());
-        getServletContext().log(msg);
-        if (unavailable == null)
+        
+        getServletContext().log(createMsg(MARK_SERVLET_UNAVAILABLE, getName()));
+        
+        if (unavailable == null) {
             setAvailable(Long.MAX_VALUE);
-        else if (unavailable.isPermanent())
+        } else if (unavailable.isPermanent()) {
             setAvailable(Long.MAX_VALUE);
-        else {
+        } else {
             int unavailableSeconds = unavailable.getUnavailableSeconds();
             if (unavailableSeconds <= 0)
-                unavailableSeconds = 60;        // Arbitrary default
-            setAvailable(System.currentTimeMillis() +
-                         (unavailableSeconds * 1000L));
+                unavailableSeconds = 60; // Arbitrary default
+            setAvailable(System.currentTimeMillis() + (unavailableSeconds * 1000L));
         }
 
     }
-
 
     /**
      * Unload all initialized instances of this servlet, after calling the
@@ -1812,8 +1722,10 @@ public class StandardWrapper
     public synchronized void unload() throws ServletException {
 
         // Nothing to do if we have never loaded the instance
-        if (!singleThreadModel && (instance == null))
+        if (!singleThreadModel && instance == null) {
             return;
+        }
+        
         unloading = true;
 
         // Loaf a while if the current instance is allocated
@@ -1823,8 +1735,8 @@ public class StandardWrapper
             long delay = unloadDelay / 20;
             while ((nRetries < 21) && (countAllocated.get() > 0)) {
                 if ((nRetries % 10) == 0) {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, LogFacade.WAITING_INSTANCE_BE_DEALLOCATED, new Object[] {countAllocated.toString(),
+                    if (log.isLoggable(FINE)) {
+                        log.log(FINE, WAITING_INSTANCE_BE_DEALLOCATED, new Object[] {countAllocated.toString(),
                                 instance.getClass().getName()});
                     }
                 }
@@ -1837,8 +1749,7 @@ public class StandardWrapper
             }
         }
 
-        ClassLoader oldCtxClassLoader =
-            Thread.currentThread().getContextClassLoader();
+        ClassLoader oldCtxClassLoader = Thread.currentThread().getContextClassLoader();
         ClassLoader classLoader = instance.getClass().getClassLoader();
 
         // Call the servlet destroy() method
@@ -1847,7 +1758,6 @@ public class StandardWrapper
 
             Thread.currentThread().setContextClassLoader(classLoader);
             // START SJS WS 7.0 6236329
-            //if( System.getSecurityManager() != null) {
             if ( SecurityUtil.executeUnderSubjectDoAs() ){
             // END OF SJS WS 7.0 6236329
                 SecurityUtil.doAsPrivilege("destroy", instance);
@@ -1866,8 +1776,7 @@ public class StandardWrapper
                 fireContainerEvent("unload", this);
             }
             unloading = false;
-            String msg = MessageFormat.format(rb.getString(LogFacade.DESTROY_SERVLET_EXCEPTION), getName());
-            throw new ServletException(msg, t);
+            throw new ServletException(createMsg(DESTROY_SERVLET_EXCEPTION, getName()), t);
         } finally {
             // restore the context ClassLoader
             Thread.currentThread().setContextClassLoader(oldCtxClassLoader);
@@ -1881,12 +1790,10 @@ public class StandardWrapper
                 Thread.currentThread().setContextClassLoader(classLoader);
                 while (!instancePool.isEmpty()) {
                     // START SJS WS 7.0 6236329
-                    //if( System.getSecurityManager() != null) {
-                    if ( SecurityUtil.executeUnderSubjectDoAs() ){
-                    // END OF SJS WS 7.0 6236329
-                        SecurityUtil.doAsPrivilege("destroy",
-                                                   instancePool.pop());
-                        SecurityUtil.remove(instance);                           
+                    if (executeUnderSubjectDoAs()) {
+                        // END OF SJS WS 7.0 6236329
+                        SecurityUtil.doAsPrivilege("destroy", instancePool.pop());
+                        SecurityUtil.remove(instance);
                     } else {
                         instancePool.pop().destroy();
                     }
@@ -1898,13 +1805,12 @@ public class StandardWrapper
                 if (notifyContainerListeners) {
                     fireContainerEvent("unload", this);
                 }
-                String msg = MessageFormat.format(rb.getString(LogFacade.DESTROY_SERVLET_EXCEPTION), getName());
-                throw new ServletException(msg, t);
+                throw new ServletException(createMsg(DESTROY_SERVLET_EXCEPTION, getName()), t);
             } finally {
                 // restore the context ClassLoader
-                Thread.currentThread().setContextClassLoader
-                    (oldCtxClassLoader);
+                Thread.currentThread().setContextClassLoader(oldCtxClassLoader);
             }
+            
             instancePool = null;
             nInstances = 0;
         }
@@ -1912,7 +1818,7 @@ public class StandardWrapper
         singleThreadModel = false;
 
         unloading = false;
-   
+
         if (notifyContainerListeners) {
             fireContainerEvent("unload", this);
         }
@@ -1932,13 +1838,11 @@ public class StandardWrapper
         return findInitParameter(name);
     }
 
-
     public Map<String, String> getInitParameters() {
         synchronized (parameters) {
-            return Collections.unmodifiableMap(parameters);
+            return unmodifiableMap(parameters);
         }
     }
-
 
     /**
      * Return the set of initialization parameter names defined for this
@@ -1946,29 +1850,30 @@ public class StandardWrapper
      */
     public Enumeration<String> getInitParameterNames() {
         synchronized (parameters) {
-            return (new Enumerator<String>(parameters.keySet()));
+            return new Enumerator<String>(parameters.keySet());
         }
     }
-
 
     /**
      * Return the servlet context with which this servlet is associated.
      */
     public ServletContext getServletContext() {
-        if (parent == null)
-            return (null);
-        else if (!(parent instanceof Context))
-            return (null);
-        else
-            return (((Context) parent).getServletContext());
+        if (parent == null) {
+            return null;
+        }
+        
+        if (!(parent instanceof Context)) {
+            return null;
+        }
+        
+        return ((Context) parent).getServletContext();
     }
-
 
     /**
      * Return the name of this servlet.
      */
     public String getServletName() {
-        return (getName());
+        return getName();
     }
 
     public long getLoadTime() {
@@ -1983,8 +1888,6 @@ public class StandardWrapper
         return classLoadTime;
     }
 
-    // -------------------------------------------------------- Package Methods
-
 
     // -------------------------------------------------------- Private Methods
 
@@ -1996,11 +1899,8 @@ public class StandardWrapper
      * @param mapperClass Java class name of the default Mapper
      */
     protected void addDefaultMapper(String mapperClass) {
-
         // No need for a default Mapper on a Wrapper
-
     }
-
 
     /**
      * Return <code>true</code> if the specified class name represents a
@@ -2012,18 +1912,17 @@ public class StandardWrapper
     private boolean isContainerProvidedServlet(String classname) {
 
         if (classname.startsWith("org.apache.catalina.")) {
-            return (true);
+            return true;
         }
+        
         try {
-            Class<?> clazz =
-                this.getClass().getClassLoader().loadClass(classname);
+            Class<?> clazz = this.getClass().getClassLoader().loadClass(classname);
             return (ContainerServlet.class.isAssignableFrom(clazz));
         } catch (Throwable t) {
-            return (false);
+            return false;
         }
 
     }
-
 
     /**
      * Return <code>true</code> if loading this servlet is allowed.
@@ -2032,18 +1931,16 @@ public class StandardWrapper
 
         if (servlet instanceof ContainerServlet) {
             if (((Context) getParent()).getPrivileged()
-                || (servlet.getClass().getName().equals
-                    ("org.apache.catalina.servlets.InvokerServlet"))) {
-                return (true);
-            } else {
-                return (false);
-            }
+                    || (servlet.getClass().getName().equals("org.apache.catalina.servlets.InvokerServlet"))) {
+                return true;
+            } 
+            
+            return false;
+            
         }
 
-        return (true);
-
+        return true;
     }
-
 
     /**
      * Log the abbreviated name of this Container for logging messages.
@@ -2051,21 +1948,22 @@ public class StandardWrapper
     protected String logName() {
 
         StringBuilder sb = new StringBuilder("StandardWrapper[");
-        if (getParent() != null)
+        
+        if (getParent() != null) {
             sb.append(getParent().getName());
-        else
+        } else {
             sb.append("null");
-        sb.append(':');
-        sb.append(getName());
-        sb.append(']');
-        return (sb.toString());
-
+        }
+        
+        return sb.append(':')
+                 .append(getName())
+                 .append(']')
+                 .toString();
     }
-
 
     private Method[] getAllDeclaredMethods(Class<?> c) {
 
-        if (c.equals(javax.servlet.http.HttpServlet.class)) {
+        if (c.equals(HttpServlet.class)) {
             return null;
         }
 
@@ -2076,18 +1974,15 @@ public class StandardWrapper
             return parentMethods;
         }
 
-        if ((parentMethods != null) && (parentMethods.length > 0)) {
-            Method[] allMethods =
-                new Method[parentMethods.length + thisMethods.length];
-	    System.arraycopy(parentMethods, 0, allMethods, 0,
-                             parentMethods.length);
-	    System.arraycopy(thisMethods, 0, allMethods, parentMethods.length,
-                             thisMethods.length);
+        if (parentMethods != null && parentMethods.length > 0) {
+            Method[] allMethods = new Method[parentMethods.length + thisMethods.length];
+            System.arraycopy(parentMethods, 0, allMethods, 0, parentMethods.length);
+            System.arraycopy(thisMethods, 0, allMethods, parentMethods.length, thisMethods.length);
 
-	    thisMethods = allMethods;
-	}
+            thisMethods = allMethods;
+        }
 
-	return thisMethods;
+        return thisMethods;
     }
 
 
@@ -2103,7 +1998,7 @@ public class StandardWrapper
     public void start() throws LifecycleException {
     
         // Send j2ee.state.starting notification 
-        if (this.getObjectName() != null) {
+        if (getObjectName() != null) {
             Notification notification = new Notification("j2ee.state.starting", this, sequenceNumber++);
             sendNotification(notification);
         }
@@ -2111,23 +2006,22 @@ public class StandardWrapper
         // Start up this component
         super.start();
 
-        if( oname != null )
-            registerJMX((StandardContext)getParent());
-        
+        if (oname != null) {
+            registerJMX((StandardContext) getParent());
+        }
+
         // Load and initialize an instance of this servlet if requested
         // MOVED TO StandardContext START() METHOD
 
         setAvailable(0L);
         
-        // Send j2ee.state.running notification 
+        // Send j2ee.state.running notification
         if (this.getObjectName() != null) {
-            Notification notification = 
-                new Notification("j2ee.state.running", this, sequenceNumber++);
+            Notification notification = new Notification("j2ee.state.running", this, sequenceNumber++);
             sendNotification(notification);
         }
 
     }
-
 
     /**
      * Stop this component, gracefully shutting down the servlet if it has
@@ -2139,10 +2033,9 @@ public class StandardWrapper
 
         setAvailable(Long.MAX_VALUE);
         
-        // Send j2ee.state.stopping notification 
-        if (this.getObjectName() != null) {
-            Notification notification = 
-                new Notification("j2ee.state.stopping", this, sequenceNumber++);
+        // Send j2ee.state.stopping notification
+        if (getObjectName() != null) {
+            Notification notification = new Notification("j2ee.state.stopping", this, sequenceNumber++);
             sendNotification(notification);
         }
         
@@ -2150,28 +2043,23 @@ public class StandardWrapper
         try {
             unload();
         } catch (ServletException e) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_UNLOAD_EXCEPTION), getName());
-            getServletContext().log(msg, e);
+            getServletContext().log(createMsg(SERVLET_UNLOAD_EXCEPTION, getName()), e);
         }
 
         // Shut down this component
         super.stop();
 
-        // Send j2ee.state.stoppped notification 
+        // Send j2ee.state.stoppped notification
         if (this.getObjectName() != null) {
-            Notification notification = 
-                new Notification("j2ee.state.stopped", this, sequenceNumber++);
+            Notification notification = new Notification("j2ee.state.stopped", this, sequenceNumber++);
             sendNotification(notification);
         }
         
-        if( oname != null ) {
-            
-            // Send j2ee.object.deleted notification 
-            Notification notification = 
-                new Notification("j2ee.object.deleted", this, sequenceNumber++);
+        if (oname != null) {
+            // Send j2ee.object.deleted notification
+            Notification notification = new Notification("j2ee.object.deleted", this, sequenceNumber++);
             sendNotification(notification);
         }
-
     }
 
     protected void registerJMX(StandardContext ctx) {
@@ -2180,63 +2068,65 @@ public class StandardWrapper
         parentName = ("".equals(parentName)) ? "/" : parentName;
 
         String hostName = ctx.getParent().getName();
-        hostName = (hostName==null) ? "DEFAULT" : hostName;
+        hostName = hostName == null ? "DEFAULT" : hostName;
 
         String domain = ctx.getDomain();
 
-        String webMod= "//" + hostName + parentName;
-        String onameStr = domain + ":j2eeType=Servlet,name=" + getName() +
-                          ",WebModule=" + webMod + ",J2EEApplication=" +
-                          ctx.getJ2EEApplication() + ",J2EEServer=" +
-                          ctx.getJ2EEServer();
+        String webMod = "//" + hostName + parentName;
+        String onameStr = 
+            domain + 
+            ":j2eeType=Servlet,name=" + getName() + 
+            ",WebModule=" + webMod + 
+            ",J2EEApplication=" + ctx.getJ2EEApplication() + 
+            ",J2EEServer=" + ctx.getJ2EEServer();
+        
         if (isOSGi()) {
             onameStr += ",osgi=true";
         }
 
         try {
-            oname=new ObjectName(onameStr);
-            controller=oname;
-            
-            // Send j2ee.object.created notification 
+            oname = new ObjectName(onameStr);
+            controller = oname;
+
+            // Send j2ee.object.created notification
             if (this.getObjectName() != null) {
-                Notification notification = new Notification( "j2ee.object.created", this, sequenceNumber++);
+                Notification notification = new Notification("j2ee.object.created", this, sequenceNumber++);
                 sendNotification(notification);
             }
-        } catch( Exception ex ) {
-            if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO,
-                    "Error registering servlet with jmx " + this, ex);
+        } catch (Exception ex) {
+            if (log.isLoggable(INFO)) {
+                log.log(INFO, "Error registering servlet with jmx " + this, ex);
             }
         }
 
         if (isJspServlet) {
             // Register JSP monitoring mbean
-            onameStr = domain + ":type=JspMonitor,name=" + getName()
-                       + ",WebModule=" + webMod
-                       + ",J2EEApplication=" + ctx.getJ2EEApplication()
-                       + ",J2EEServer=" + ctx.getJ2EEServer();
+            onameStr = 
+                domain + 
+                ":type=JspMonitor,name=" + getName() + 
+                ",WebModule=" + webMod + 
+                ",J2EEApplication=" + ctx.getJ2EEApplication() + 
+                ",J2EEServer=" + ctx.getJ2EEServer();
             try {
                 jspMonitorON = new ObjectName(onameStr);
-            } catch( Exception ex ) {
-                if (log.isLoggable(Level.INFO)) {
-                    log.log(Level.INFO,
-                        "Error registering JSP monitoring with jmx " +
-                        instance, ex);
+            } catch (Exception ex) {
+                if (log.isLoggable(INFO)) {
+                    log.log(INFO, "Error registering JSP monitoring with jmx " + instance, ex);
                 }
             }
         }
-
     }
 
     public void sendNotification(Notification notification) {
 
         if (broadcaster == null) {
-            broadcaster = ((StandardEngine)getParent().getParent().getParent()).getService().getBroadcaster();
+            broadcaster = ((StandardEngine) getParent().getParent().getParent()).getService().getBroadcaster();
         }
+        
         if (broadcaster != null) {
             broadcaster.sendNotification(notification);
         }
-        return;
+        
     }
     
 
@@ -2246,31 +2136,32 @@ public class StandardWrapper
     public boolean isEventProvider() {
         return false;
     }
-    
+
     public boolean isStateManageable() {
         return false;
     }
-    
+
     public boolean isStatisticsProvider() {
         return false;
     }
 
-    private static class NotFoundErrorSupressionFilter implements java.util.logging.Filter {
-        private final java.util.logging.Filter oldFilter;
+    private static class NotFoundErrorSupressionFilter implements Filter {
+        private final Filter oldFilter;
 
-        public NotFoundErrorSupressionFilter(java.util.logging.Filter oldFilter) {
+        public NotFoundErrorSupressionFilter(Filter oldFilter) {
             this.oldFilter = oldFilter;
         }
 
         @Override
         public boolean isLoggable(LogRecord record) {
             boolean rv = true;
-            if(isInSuppressFFNFThread.get()) {
+            if (isInSuppressFFNFThread.get()) {
                 rv = !record.getMessage().startsWith("PWC6117: File");
             }
-            if(oldFilter != null) {
+            if (oldFilter != null) {
                 rv &= oldFilter.isLoggable(record);
             }
+            
             return rv;
         }
     }

@@ -154,6 +154,11 @@
             <type>war</type>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>rest-monitoring-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

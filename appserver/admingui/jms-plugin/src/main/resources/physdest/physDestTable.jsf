@@ -39,6 +39,9 @@
     holder.
 
 -->
+
+<!-- Portions Copyright [2017] Payara Foundation and/or its affiliates -->
+
 <sun:table id="configs" title="$resource{i18njms.jmsPhysDestinations.tableTitle}"
             deselectMultipleButton="$boolean{true}"
             deselectMultipleButtonOnClick="setTimeout('admingui.table.toggleButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
@@ -72,7 +75,7 @@
                         attrs="#{requestScope.attrsMap}", method="delete", result="#{requestScope.result}");
                 }
                 setAttribute(key="selectedRows" value="${selectedRows}");
-                gf.redirect(page="#{pageSession.selfPage}");
+                gf.redirect(page="#{request.contextPath}/jms/physdest/serverPhysDest.jsf");
             />
             </sun:button>
             <sun:button id="flushButton" text="$resource{i18njms.jmsPhysDestinations.purge}" disabled="#{true}" primary="#{false}"

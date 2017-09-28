@@ -42,11 +42,9 @@ package com.sun.enterprise.deployment.annotation.introspection;
 
 import com.sun.enterprise.deployment.annotation.factory.SJSASFactory;
 import javax.inject.Inject;
-
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
-
 import java.util.Set;
 
 
@@ -65,6 +63,7 @@ public class DefaultAnnotationScanner implements AnnotationScanner,
     SJSASFactory factory;
     
     private Set<String> annotations=null;
+    private Set<String> annotationsMetaDataComplete=null;
     
     /**
      * Test if the passed constant pool string is a reference to 
@@ -78,11 +77,20 @@ public class DefaultAnnotationScanner implements AnnotationScanner,
     }
     
     public void postConstruct() {
-        annotations = factory.getAnnotations();
+        annotations = factory.getAnnotations(false);
+        annotationsMetaDataComplete = factory.getAnnotations(true);
+    }
+
+    public Set<String> getAnnotations(boolean isMetaDataComplete) {
+        if (!isMetaDataComplete) {
+            return AbstractAnnotationScanner.constantPoolToFQCN(annotations);
+        } else {
+            return AbstractAnnotationScanner.constantPoolToFQCN(annotationsMetaDataComplete);
+        }
     }
 
     @Override
     public Set<String> getAnnotations() {
-        return AbstractAnnotationScanner.constantPoolToFQCN(annotations);
+        return getAnnotations(false);
     }
 }

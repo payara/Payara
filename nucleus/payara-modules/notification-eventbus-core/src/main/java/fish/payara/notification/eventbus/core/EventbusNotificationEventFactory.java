@@ -79,9 +79,7 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
         EventbusNotificationEvent event = initializeEvent(new EventbusNotificationEvent());
         event.setSubject(subject);
         event.setMessage(message);
-        if (environment.isMicro()){
-            setHazelcastAsInstanceName(event);
-        }
+        event.setInstanceName(hazelcast.getUUID());;
 
         return event;
     }
@@ -94,19 +92,8 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
             message = MessageFormat.format(message, parameters);
         }
         event.setMessage(message);
-        if (environment.isMicro()){
-            setHazelcastAsInstanceName(event);
-        }
+        event.setInstanceName(hazelcast.getUUID());
         return event;
-    }
-    
-    /**
-     * If this is a Micro instance, use Hazelcast instance name instead of the payara instance name so we get a unique result
-     * @param e 
-     */
-    private void setHazelcastAsInstanceName(EventbusNotificationEvent e){
-        e.setInstanceName(hazelcast.getUUID());
-        
     }
     
 }

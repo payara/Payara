@@ -165,7 +165,7 @@ public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
      *         {@link String }
      */
     @Attribute (defaultValue="Distributed")
-    String getEJBTimerService();
+    String getEjbTimerService();
 
     /**
      * Sets the value of the EJB Timer type to be used.
@@ -173,7 +173,7 @@ public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
      * @param value allowed object is
      *              {@link String }
      */
-    void setEJBTimerService(String value) throws PropertyVetoException;
+    void setEjbTimerService(String value) throws PropertyVetoException;
     
     /**
     	Properties as per {@link PropertyBag}

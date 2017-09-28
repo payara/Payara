@@ -155,7 +155,17 @@ public class SetLogAttributes implements AdminCommand {
             "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat",
             "com.sun.enterprise.server.logging.GFFileHandler.excludeFields",
             "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
-            "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation"};
+            "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.ansiColor",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.infoColor",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.warnColor",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.severeColor",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.loggerColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.ansiColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.loggerColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.infoColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.warnColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.severeColor"};
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 

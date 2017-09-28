@@ -220,6 +220,22 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
 
     public void addManagedBean(ManagedBeanDescriptor desc) {
         if (!hasManagedBeanByBeanClass(desc.getBeanClassName())) {
+            //check for uniqueness of ManagedBean name, if defined
+            if (desc.isNamed()) {
+                for (ManagedBeanDescriptor managedBeanDescriptor : managedBeans) {
+                    if (managedBeanDescriptor.isNamed() && desc.getName().equals(managedBeanDescriptor.getName())) {
+                        //duplicate ManagedBean found
+                        throw new RuntimeException(localStrings.getLocalString(
+                                "entreprise.deployment.exceptionduplicatemanagedbeandefinition",
+                                "ManagedBean [{0}] cannot have same name [{1}] already used by "
+                                        + "another ManagedBean [{2}]", new Object[]{
+                                        desc.getBeanClassName(),
+                                        managedBeanDescriptor.getName(),
+                                        managedBeanDescriptor.getBeanClassName()
+                                }));
+                    }
+                }
+            }
             managedBeans.add(desc);
             desc.setBundle(this);
         }
@@ -1014,18 +1030,14 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
 
     /**
      * @ return true for following cases:
-     *   1. When the full attribute is true. This attribute only applies to
-     *      ejb module with schema version equal or later than 3.0;
-            web module and schema version equal or later than than 2.5;
-            appclient module and schema version equal or later than 5.0.
-     *   2. When it's been tagged as "full" when processing annotations.
-     *   3. When DD has a version which doesn't allowed annotations.
+     *   1. When it's been tagged as "full" when processing annotations.
+     *   2. When DD has a version which doesn't allowed annotations.
      *   return false otherwise.
      */
     public boolean isFullFlag() {
-        // if the full attribute is true or it's been tagged as full,
+        // if it's been tagged as full,
         // return true
-        if (fullAttribute == true || fullFlag == true) {
+        if (fullFlag == true) {
             return true;
         }
         return isDDWithNoAnnotationAllowed();
