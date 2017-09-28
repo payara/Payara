@@ -74,7 +74,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetConfigOrdinal implements AdminCommand {
 
-    @Param(acceptableValues = "domain,config,server,application,module,cluster", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -115,6 +115,9 @@ public class GetConfigOrdinal implements AdminCommand {
                 }
                 case "cluster": {
                     result = serviceConfig.getClusterOrdinality();
+                    break;
+                }case "jndi": {
+                    result = serviceConfig.getJNDIOrdinality();
                     break;
                 }
             }

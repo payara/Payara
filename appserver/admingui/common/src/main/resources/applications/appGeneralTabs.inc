@@ -57,20 +57,20 @@
         />
     </sun:tab>
 
-    <sun:tab id="resourcesTab" rendered="#{pageSession.appScopedResExists}" immediate="true" text="$resource{i18n.common.Resources}" toolTip="$resource{i18n.common.Resources} Tab">
+    <sun:tab id="resourcesTab" immediate="true" text="$resource{i18n.common.Resources}" toolTip="$resource{i18n.common.Resources} Tab">
         <!command
             setSessionAttribute(key="appGeneralTabs" value="resourcesTab");
             gf.redirect(page="#{request.contextPath}/common/applications/resources/appScopedResources.jsf?appName=#{pageSession.encodedAppName}&listPageLink=/common/applications/applications.jsf");
         />
     </sun:tab>
 
-     <sun:tab id="targetTab" rendered="#{!pageSession.onlyDASExist}" immediate="true" text="$resource{i18n.common.TargetTab}" toolTip="$resource{i18n.common.TargetTab} Tab">
+     <sun:tab id="targetTab" immediate="true" text="$resource{i18n.common.TargetTab}" toolTip="$resource{i18n.common.TargetTab} Tab">
         <!command
             setSessionAttribute(key="appGeneralTabs" value="targetTab");
             gf.redirect(page="#{request.contextPath}/common/applications/targetListing.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
         />
     </sun:tab>
-     <sun:tab id="propertiesTab" rendered="true" immediate="true" text="$resource{i18nc.headings.ApplicationProperties}" toolTip="$resource{i18nc.headings.ApplicationPropertiesTab}">
+     <sun:tab id="propertiesTab" immediate="true" text="$resource{i18nc.headings.ApplicationProperties}" toolTip="$resource{i18nc.headings.ApplicationPropertiesTab}">
         <!command
             setSessionAttribute(key="appGeneralTabs" value="propertiesTab");
             gf.redirect(page="#{request.contextPath}/common/applications/appProperties.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");

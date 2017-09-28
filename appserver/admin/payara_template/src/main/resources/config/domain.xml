@@ -39,7 +39,7 @@
   </security-configurations>
   <system-applications />
   <resources>
-    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin" />
+    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-all" />
     <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" object-type="system-all" />
     <jdbc-connection-pool name="__TimerPool" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource">
       <property value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" name="databaseName" />
@@ -164,29 +164,39 @@
                 <property name="loginErrorPage" value="/loginError.jsf"></property>
             </provider-config>
         </message-security-config>
-	<property value="SHA-256" name="default-digest-algorithm" />
+	    <property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
+      
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
+        <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
+        <jvm-options>--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-modules=java.se.ee</jvm-options>
+        <jvm-options>--illegal-access=permit</jvm-options>
+        
+         <!-- 
+        <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
+        <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
+         -->
+        
+        <jvm-options>-Xmx2g</jvm-options>
+        <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
+        <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
+        <jvm-options>-XX:MaxMetaspaceSize=2g</jvm-options>
+        <jvm-options>-XX:NewRatio=2</jvm-options>
+        <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
-        <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
-        <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
         <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
         <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
         <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
-        <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
-        <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
         <jvm-options>-Djdbc.drivers=org.apache.derby.jdbc.ClientDriver</jvm-options>
         <jvm-options>-DANTLR_USE_DIRECT_CLASS_LOADING=true</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
-        <jvm-options>-XX:NewRatio=2</jvm-options>
-        <jvm-options>-Xmx2g</jvm-options>
-        <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
@@ -229,7 +239,8 @@
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
       <system-property name="org.jboss.weld.probe.allowRemoteAddress" value="127.0.0.1|::1|::1%.+|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:1%.+"/>
     </config>
-     <config name="default-config" dynamic-reconfiguration-enabled="true" >
+    
+    <config name="default-config" dynamic-reconfiguration-enabled="true" >
          <http-service>
              <access-log/>
              <virtual-server id="server" network-listeners="http-listener-1, http-listener-2" >
@@ -338,26 +349,37 @@
       </notification-service-configuration>
       <monitoring-service-configuration></monitoring-service-configuration>
          <diagnostic-service />
+      
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-server</jvm-options>
+        <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
+        <jvm-options>--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-modules=java.se.ee</jvm-options>
+        <jvm-options>--illegal-access=permit</jvm-options>
+        
+        <!-- 
+        <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
+        <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
+         -->
+        
+        <jvm-options>-Xmx2g</jvm-options>
+        <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
+        <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
+        <jvm-options>-XX:MaxMetaspaceSize=2g</jvm-options>
+        <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
+        <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
-        <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
-        <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
         <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
         <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
         <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
-        <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
         <jvm-options>-Djdbc.drivers=org.apache.derby.jdbc.ClientDriver</jvm-options>
         <jvm-options>-DANTLR_USE_DIRECT_CLASS_LOADING=true</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
-        <jvm-options>-XX:NewRatio=2</jvm-options>
-        <jvm-options>-Xmx2g</jvm-options>
-        <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>        
@@ -432,6 +454,7 @@
          <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
      </config>
   </configs>
+  
   <property name="administrative.domain.name" value="%%%DOMAIN_NAME%%%"/>
   <secure-admin special-admin-indicator="%%%SECURE_ADMIN_IDENTIFIER%%%">
       <secure-admin-principal dn="%%%ADMIN_CERT_DN%%%"></secure-admin-principal>

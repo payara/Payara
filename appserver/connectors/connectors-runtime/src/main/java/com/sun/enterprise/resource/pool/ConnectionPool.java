@@ -422,11 +422,12 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
                 if (!blocked) {
                     //add to wait-queue
-                    Object waitMonitor = waitQueue.addToQueue();
+                    Object waitMonitor = new Object();
                     if (poolLifeCycleListener != null) {
                         poolLifeCycleListener.connectionRequestQueued();
                     }
                     synchronized (waitMonitor) {
+                        waitQueue.addToQueue(waitMonitor);
                         try {
                             logFine("Resource Pool: getting on wait queue");
                             waitMonitor.wait(remainingWaitTime);
@@ -450,8 +451,9 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                     }
                 } else {
                     //add to reconfig-wait-queue
-                    Object reconfigWaitMonitor = reconfigWaitQueue.addToQueue();
+                    Object reconfigWaitMonitor = new Object();
                     synchronized (reconfigWaitMonitor) {
+                        reconfigWaitQueue.addToQueue(reconfigWaitMonitor);
                         try {
                             if(reconfigWaitTime > 0){
                                 if(_logger.isLoggable(Level.FINEST)) {

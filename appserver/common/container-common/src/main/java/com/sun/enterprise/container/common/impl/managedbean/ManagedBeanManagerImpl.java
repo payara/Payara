@@ -213,27 +213,16 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         for(BundleDescriptor bundle : app.getBundleDescriptors()) {
-
             if (!bundleEligible(bundle)) {
                 continue;
             }
-
-            boolean validationRequired  = (bundle instanceof EjbBundleDescriptor)
-                    || (bundle instanceof ApplicationClientDescriptor);
 
             boolean isCDIBundle = (jcdiService != null && jcdiService.isJCDIEnabled(bundle));
 
             for(ManagedBeanDescriptor next : bundle.getManagedBeans()) {
 
                 try {
-
-                    // TODO Should move this to regular DOL processing stage
-                    if( validationRequired ) {
-                        next.validate();
-                    }
-
                     Set<String> interceptorClasses = next.getAllInterceptorClasses();
-
 
                     Class targetClass = bundle.getClassLoader().loadClass(next.getBeanClassName());
                     InterceptorInfo interceptorInfo = new InterceptorInfo();

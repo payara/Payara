@@ -368,6 +368,7 @@ public class ListSubComponentsCommand implements AdminCommand {
                 StringBuffer sb = new StringBuffer();    
                 String canonicalName = wcd.getCanonicalName();
                 sb.append("<");
+                 // The component type is limited to JSP or Servlet at this level. JAX-RS resources for example need to be obtained elsewhere.
                 String wcdType = (wcd.isServlet() ? "Servlet" : "JSP");
                 sb.append(wcdType);
                 sb.append(">"); 

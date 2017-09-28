@@ -262,7 +262,7 @@
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.0.0-b004</pfl.version> <!-- 4.0.1-b001 -->
+        <pfl.version>4.0.1-b002</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0-b001</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
@@ -692,7 +692,7 @@
                 </configuration>
             </plugin>
             
-               <plugin>
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>

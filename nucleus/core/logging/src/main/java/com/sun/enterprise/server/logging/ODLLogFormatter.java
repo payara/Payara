@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2017] [Payara Foundation]
 
 package com.sun.enterprise.server.logging;
 
@@ -71,14 +71,14 @@ import java.util.logging.Formatter;
 @Service()
 @ContractsProvided({ODLLogFormatter.class, Formatter.class})
 @PerLookup
-public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
+public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroadcaster {
 
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key 
     private Map<String, ResourceBundle> loggerResourceBundleTable;
 
     private LogManager logManager;
-
+    
     private static boolean LOG_SOURCE_IN_KEY_VALUE = false;
 
     private static boolean RECORD_NUMBER_IN_KEY_VALUE = false;
@@ -186,7 +186,6 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
     private String odlLogFormat(LogRecord record) {
 
         try {
-
             LogEventImpl logEvent = new LogEventImpl();
             
             // creating message from log record using resource bundle and appending parameters
@@ -222,11 +221,17 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
 
             // Adding messageType
             Level logLevel = record.getLevel();
+            if (color()) {
+                recordBuffer.append(getColor(logLevel));
+            }
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            String odlLevel = logLevel.getName();
+            String odlLevel = logLevel.getLocalizedName();
             logEvent.setLevel(odlLevel);
             recordBuffer.append(odlLevel);
             recordBuffer.append(FIELD_END_MARKER);
+            if (color()) {
+                recordBuffer.append(getReset());
+            }
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding message ID
@@ -241,7 +246,13 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             recordBuffer.append(FIELD_BEGIN_MARKER);
             String loggerName = record.getLoggerName();
             loggerName = (loggerName == null) ? "" : loggerName;
+            if (color()) {
+                recordBuffer.append(getLoggerColor());
+            }
             recordBuffer.append(loggerName);
+            if (color()) {
+                recordBuffer.append(getReset());
+            }
             logEvent.setLogger(loggerName);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
