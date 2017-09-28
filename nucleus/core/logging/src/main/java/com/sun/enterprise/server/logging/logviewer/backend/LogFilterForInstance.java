@@ -100,7 +100,7 @@ public class LogFilterForInstance {
             String loggingDir = getLoggingDirectoryForNode(instanceLogFileName, node, sNode, instanceName);
 
             try {
-                List<String> instanceLogFileNames = sftpClient.ls(loggingDir);
+                List instanceLogFileNames = sftpClient.ls(loggingDir);
 
                 for (int i = 0; i < instanceLogFileNames.size(); i++) {
                     SFTPv3DirectoryEntry file = (SFTPv3DirectoryEntry) instanceLogFileNames.get(i);
@@ -212,7 +212,7 @@ public class LogFilterForInstance {
         if (node.getType().equals("SSH")) {
             sshL.init(node, logger);
 
-            List allInstanceLogFileName = getInstanceLogFileNames(habitat, targetServer, domain, logger, instanceName, instanceLogFileDirectory);
+            List<String> allInstanceLogFileName = getInstanceLogFileNames(habitat, targetServer, domain, logger, instanceName, instanceLogFileDirectory);
 
             boolean noFileFound = true;
             String sourceDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
@@ -276,14 +276,14 @@ public class LogFilterForInstance {
         }
     }
 
-    public List getInstanceLogFileNames(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
+    public List<String> getInstanceLogFileNames(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
                                           String instanceName, String instanceLogFileDetails) throws IOException {
 
         // helper method to get all log file names for given instance
         String sNode = targetServer.getNodeRef();
         Node node = domain.getNodes().getNode(sNode);
         List instanceLogFileNames = null;
-        List instanceLogFileNamesAsString = new ArrayList();
+        List<String> instanceLogFileNamesAsString = new ArrayList();
 
         // this code is used when DAS and instances are running on the same machine
         if (node.isLocal()) {
@@ -295,8 +295,7 @@ public class LogFilterForInstance {
             boolean noFileFound = true;
 
             if (allLogFileNames != null) { // This check for,  if directory doesn't present or missing on machine. It happens due to bug 16451
-                for (int i = 0; i < allLogFileNames.length; i++) {
-                    File file = allLogFileNames[i];
+                for (File file: allLogFileNames) {
                     String fileName = file.getName();
                     // code to remove . and .. file which is return
                     if (file.isFile() && !fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
@@ -313,8 +312,7 @@ public class LogFilterForInstance {
                 logsDir = new File(loggingDir);
                 allLogFileNames = logsDir.listFiles();
 
-                for (int i = 0; i < allLogFileNames.length; i++) {
-                    File file = allLogFileNames[i];
+                for (File file: allLogFileNames) {
                     String fileName = file.getName();
                     // code to remove . and .. file which is return
                     if (file.isFile() && !fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
