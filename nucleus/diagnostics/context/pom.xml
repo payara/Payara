@@ -38,15 +38,15 @@
        only if the new code is made subject to such option by the copyright
        holder.
 --> 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<!--"Portions Copyright [2017] [Payara Foundation and/or its affiliates]" -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.glassfish.main.diagnostics</groupId>
         <artifactId>nucleus-diagnostics</artifactId>
         <version>5.0.0.Alpha2-SNAPSHOT</version>
     </parent>
+    
     <artifactId>diagnostics-context</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -90,5 +90,17 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                    <runOrder>alphabetical</runOrder>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
