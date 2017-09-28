@@ -692,7 +692,7 @@
                 </configuration>
             </plugin>
             
-               <plugin>
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
