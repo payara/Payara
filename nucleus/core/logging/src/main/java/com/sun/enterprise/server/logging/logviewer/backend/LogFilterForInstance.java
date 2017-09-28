@@ -100,7 +100,7 @@ public class LogFilterForInstance {
             String loggingDir = getLoggingDirectoryForNode(instanceLogFileName, node, sNode, instanceName);
 
             try {
-                List instanceLogFileNames = sftpClient.ls(loggingDir);
+                List<String> instanceLogFileNames = sftpClient.ls(loggingDir);
 
                 for (int i = 0; i < instanceLogFileNames.size(); i++) {
                     SFTPv3DirectoryEntry file = (SFTPv3DirectoryEntry) instanceLogFileNames.get(i);
