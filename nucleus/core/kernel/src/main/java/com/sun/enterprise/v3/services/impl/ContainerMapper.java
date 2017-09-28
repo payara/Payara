@@ -190,6 +190,9 @@ public class ContainerMapper extends ADBAwareHttpHandler {
                 if (LOGGER.isLoggable(Level.WARNING)) {
                     LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionMapper2, ex2);
                 }
+                if (ex2 instanceof CharConversionException) {
+                    response.sendError(500);
+                }
             }
         }
         finally {

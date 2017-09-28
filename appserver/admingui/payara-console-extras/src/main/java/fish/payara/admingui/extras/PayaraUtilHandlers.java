@@ -41,7 +41,10 @@ package fish.payara.admingui.extras;
 
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
+import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -62,6 +65,21 @@ public class PayaraUtilHandlers {
         Map map = (Map) context.getInputValue("map");
         Object key = context.getInputValue("key");
         map.remove(key);
+    }
+    
+    /**
+     * A handler which converts a string of millseconds since the epoch into a human-friendly datetime format.
+     * The output format is whatever is the default for the locale where the user is.
+     * @param context
+     * @since 4.1.2.174
+     */
+    @Handler(id = "py.prettyDateTimeFormat",
+            input={@HandlerInput(name="milliseconds", type = String.class, required = true)},
+            output=@HandlerOutput(name="prettyString", type=String.class))
+    public static void prettyDateTimeFormat(HandlerContext context){
+        String value = (String) context.getInputValue("milliseconds");
+        String result = DateFormat.getDateTimeInstance().format(new Date(Long.valueOf(value)));
+        context.setOutputValue("prettyString", result);
     }
     
 }

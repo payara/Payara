@@ -199,6 +199,7 @@
         <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
         <!-- End of OSGi bundle configurations -->
         <jvm-options>-XX:NewRatio=2</jvm-options>
+        <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -347,6 +348,7 @@
              -->
              <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
              <!-- End of OSGi bundle configurations -->
+             <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
          </java-config>
          <availability-service/>
          

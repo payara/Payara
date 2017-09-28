@@ -61,9 +61,9 @@ public interface PoolWaitQueue {
     /**
      * resource requesting thread will be added to queue<br>
      * and the object on which it is made to wait is returned
-     * @return Object
+     * @param o Object
      */
-    Object addToQueue();
+    void addToQueue(Object o);
 
     /**
      * removes the specified object (resource request) from the queue
