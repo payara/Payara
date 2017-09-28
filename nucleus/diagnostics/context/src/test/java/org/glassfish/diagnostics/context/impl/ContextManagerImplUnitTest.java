@@ -60,60 +60,61 @@ import mockit.integration.junit4.JMockit;
 @RunWith(JMockit.class)
 public class ContextManagerImplUnitTest {
 
-	/**
-	 * Verify that ContextManagerImpl initialization registers a ContextViewFactory with the ContextMapHelper.
-	 *
-	 * This test assumes only that initialization takes place by the time the first new ContextManagerImpl has been created.
-	 */
-	@Test
-	public void testViewFactoryRegistration() {
-		new MockUp<ContextMapHelper>() {
-			
-			@Mock
-			public void registerContextFactoryForPrefixNamed(String prefixName, ContextViewFactory factory) {
-				assertEquals(prefixName, WORK_CONTEXT_KEY);
-				assertTrue("org.glassfish.diagnostics.context.impl.ContextManagerImpl$DiagnosticContextViewFactory"
-				        .equals(factory.getClass().getName()));
-			}
-		};
+    /**
+     * Verify that ContextManagerImpl initialization registers a ContextViewFactory with the ContextMapHelper.
+     *
+     * This test assumes only that initialization takes place by the time the first new ContextManagerImpl has been created.
+     */
+    @Test
+    public void testViewFactoryRegistration() {
+        new MockUp<ContextMapHelper>() {
+            
+            @Mock
+            public void registerContextFactoryForPrefixNamed(String prefixName, ContextViewFactory factory) {
+                assertEquals(prefixName, WORK_CONTEXT_KEY);
+                assertTrue("org.glassfish.diagnostics.context.impl.ContextManagerImpl$DiagnosticContextViewFactory"
+                        .equals(factory.getClass().getName()));
+            }
+        };
 
-		@SuppressWarnings("unused")
+        // Initialization takes place by the time the first new ContextManagerImpl has been created.
+        @SuppressWarnings("unused")
         ContextManagerImpl cmi = new ContextManagerImpl();
-	}
+    }
 
-	/**
-	 * Verify the expected delegation to ContextMap by ContextManagerImpl on invocation of getContext.
-	 */
-	//@Test
-	public void testGetContextUseOfContextMap_new(@Mocked final ContextMap mockedContextMap) throws Exception {
-		new Expectations() {
+    /**
+     * Verify the expected delegation to ContextMap by ContextManagerImpl on invocation of getContext.
+     */
+    //@Test
+    public void testGetContextUseOfContextMap_new(@Mocked final ContextMap mockedContextMap) throws Exception {
+        new Expectations() {
 
-			// We expect ContextManagerImpl to call getScopeAwareContextMap, but
-			// we also need that method to return a ContextMap instance so
-			// we tell the mocking framework to return an instance.
-			ContextMapHelper expectationsRefContextMapHelper;
-			{
-				expectationsRefContextMapHelper.getScopeAwareContextMap();
-				returns(mockedContextMap, null);
-			}
+            // We expect ContextManagerImpl to call getScopeAwareContextMap, but
+            // we also need that method to return a ContextMap instance so
+            // we tell the mocking framework to return an instance.
+            ContextMapHelper expectationsRefContextMapHelper;
+            {
+                expectationsRefContextMapHelper.getScopeAwareContextMap();
+                returns(mockedContextMap, null);
+            }
 
-			// We expect ContextManagerImpl to then go ahead and use the
-			// ContextMap - in particular to call get (from which we deliberately
-			// return null) and the createViewCapable (from which we return null
-			// which is in practice an exceptional condition (which will result
-			// in a WARNING log message) but does fine for this test.
-			ContextMap expectationsRefContextMap = mockedContextMap;
-			{
-				expectationsRefContextMap.get(WORK_CONTEXT_KEY);
-				returns(null, null);
-				
-				expectationsRefContextMap.createViewCapable(WORK_CONTEXT_KEY);
-				returns(null, null);
-			}
-		};
+            // We expect ContextManagerImpl to then go ahead and use the
+            // ContextMap - in particular to call get (from which we deliberately
+            // return null) and the createViewCapable (from which we return null
+            // which is in practice an exceptional condition (which will result
+            // in a WARNING log message) but does fine for this test.
+            ContextMap expectationsRefContextMap = mockedContextMap;
+            {
+                expectationsRefContextMap.get(WORK_CONTEXT_KEY);
+                returns(null, null);
+                
+                expectationsRefContextMap.createViewCapable(WORK_CONTEXT_KEY);
+                returns(null, null);
+            }
+        };
 
-		ContextManagerImpl cmi = new ContextManagerImpl();
-		Context ci = cmi.getContext();
-	}
+        ContextManagerImpl cmi = new ContextManagerImpl();
+        Context ci = cmi.getContext();
+    }
 
 }

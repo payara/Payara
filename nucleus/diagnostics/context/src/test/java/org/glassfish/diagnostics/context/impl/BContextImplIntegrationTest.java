@@ -50,15 +50,15 @@ import org.junit.Test;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
 public class BContextImplIntegrationTest extends HK2Runner {
-	
-	@Inject
-	private ContextManager mContextManager;
+    
+    @Inject
+    private ContextManager mContextManager;
 
-	@Test
-	public void testInjectionOccurred() {
-		assertNotNull("mContextManager should have been injected, but it is still null.", mContextManager);
-		
-		out.println("mContextManager instance of " + mContextManager.getClass().getName());
-	}
+    @Test
+    public void testInjectionOccurred() {
+        assertNotNull("mContextManager should have been injected, but it is still null.", mContextManager);
+        
+        out.println("mContextManager instance of " + mContextManager.getClass().getName());
+    }
 
 }
