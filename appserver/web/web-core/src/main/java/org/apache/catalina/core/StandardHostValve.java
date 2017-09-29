@@ -56,6 +56,8 @@
  * limitations under the License.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.apache.catalina.core;
 
 import org.apache.catalina.*;
