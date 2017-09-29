@@ -360,15 +360,37 @@ final class StandardHostValve
                     File file2 = new File(errorPage.getLocation());
                     if (!file2.exists()) {
                         boolean fileExists = false;
-                        for (String mapping : ((StandardHost) getContainer())
+                        String errorPagePath = errorPage.getLocation();
+                        for (String servletMapping : ((StandardHost) getContainer())
                                 .findDeployedApp(context.getPath()).findServletMappings()) {
-                                fileExists = checkMappings(mapping, errorPage);
+                            if (servletMapping != null
+                                    && !servletMapping.isEmpty()
+                                    && servletMapping.startsWith("*.")
+                                    && servletMapping.length() > 2) {
+                                if (errorPagePath.contains(".") && servletMapping.substring(1)
+                                        .equals(errorPagePath.substring(errorPagePath.lastIndexOf(".")))) {
+                                fileExists = true;
+                                }
+                            } else if (servletMapping.startsWith("/") || servletMapping.equals(errorPagePath)) {
+                                fileExists = true;
+                            }
                         }
                         if (!fileExists) {
                             for (FilterMap mapping : ((StandardHost) getContainer())
                                     .findDeployedApp(context.getPath()).findFilterMaps()) {
                                 if (mapping.getDispatcherTypes().contains(DispatcherType.ERROR)) {
-                                    fileExists = checkMappings(mapping.getURLPattern(), errorPage);
+                                    String filterMapPath = mapping.getURLPattern();
+                                    if (filterMapPath != null
+                                            && !filterMapPath.isEmpty() 
+                                            && filterMapPath.startsWith("*.")
+                                            && filterMapPath.length() > 2) {
+                                        if (errorPagePath.contains(".") && filterMapPath.substring(1)
+                                                .equals(errorPagePath.substring(errorPagePath.lastIndexOf(".")))) {
+                                            fileExists = true;
+                                        }
+                                    } else if (filterMapPath.startsWith("/") || filterMapPath.equals(errorPagePath)) {
+                                        fileExists = true;
+                                    }
                                 }
                             }
                             if (!fileExists) {
@@ -717,26 +739,5 @@ final class StandardHostValve
             if(str != null)
                 ((ServletResponse) response).setContentType(str);
         }
-    }
-
-    private boolean checkMappings(String mapping, ErrorPage errorPage) {
-        String errorPagePath = errorPage.getLocation();
-        
-        /* We shouldn't need a path - we need an endpoint
-        if (mapping.startsWith("/") && mapping.endsWith("/*")) {
-            fileExists = false;
-        }
-        */
-        
-        if (mapping.startsWith("*.")) {
-            if (mapping.substring(1)
-                    .equals(errorPagePath.substring(errorPagePath.lastIndexOf(".")))) {
-                return true;
-            }
-        } else if (mapping.startsWith("/") || mapping.equals(errorPagePath)) {
-            return true;
-        }
-        
-        return false;
     }
 }
