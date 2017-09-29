@@ -362,7 +362,6 @@
       <monitoring-service-configuration></monitoring-service-configuration>
          <diagnostic-service />
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
-        <jvm-options>-server</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
