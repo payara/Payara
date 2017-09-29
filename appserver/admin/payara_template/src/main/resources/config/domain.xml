@@ -184,7 +184,6 @@
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
         <jvm-options>-XX:MaxMetaspaceSize=2g</jvm-options>
-        <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
@@ -367,7 +366,6 @@
         <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
         <jvm-options>-XX:MaxMetaspaceSize=2g</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
-        <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
