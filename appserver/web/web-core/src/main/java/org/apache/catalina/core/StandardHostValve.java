@@ -360,20 +360,13 @@ final class StandardHostValve
                         boolean fileExists = false;
                         for (String mapping : ((StandardHost) getContainer())
                                 .findDeployedApp(context.getPath()).findServletMappings()) {
-                            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + mapping);
-                            Path errorPagePath = Paths.get(errorPage.getLocation());
-                            if (matcher.matches(errorPagePath)) {
-                                fileExists = true;
-                            }
+                                fileExists = checkMappings(mapping, errorPage);
                         }
                         if (!fileExists) {
-                            fileExists = false;
                             for (FilterMap mapping : ((StandardHost) getContainer())
                                     .findDeployedApp(context.getPath()).findFilterMaps()) {
-                                PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + mapping.getURLPattern());
-                                Path errorPagePath = Paths.get(errorPage.getLocation());
-                                if (matcher.matches(errorPagePath)) {
-                                    fileExists = true;
+                                if (mapping.getDispatcherTypes().contains(DispatcherType.ERROR)) {
+                                    fileExists = checkMappings(mapping.getURLPattern(), errorPage);
                                 }
                             }
                             if (!fileExists) {
@@ -724,4 +717,24 @@ final class StandardHostValve
         }
     }
 
+    private boolean checkMappings(String mapping, ErrorPage errorPage) {
+        String errorPagePath = errorPage.getLocation();
+        
+        /* We shouldn't need a path - we need an endpoint
+        if (mapping.startsWith("/") && mapping.endsWith("/*")) {
+            fileExists = false;
+        }
+        */
+        
+        if (mapping.startsWith("*.")) {
+            if (mapping.substring(1)
+                    .equals(errorPagePath.substring(errorPagePath.lastIndexOf(".")))) {
+                return true;
+            }
+        } else if (mapping.startsWith("/") || mapping.equals(errorPagePath)) {
+            return true;
+        }
+        
+        return false;
+    }
 }
