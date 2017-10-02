@@ -134,6 +134,7 @@
                                 <Export-Package>
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.micro.cdi,
+                                    fish.payara.cluster,
                                     fish.payara.nucleus.requesttracing.api,
                                     fish.payara.notification.eventbus
                                 </Export-Package>

@@ -37,22 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.RemoveException;
-
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IAtomicLong;
+import com.hazelcast.core.ILock;
+import com.hazelcast.core.IMap;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
 import com.sun.ejb.EjbInvocation;
@@ -66,9 +58,25 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
+import fish.payara.cluster.DistributedLockType;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.NoSuchEJBException;
+import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.RemoveException;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.startup.SingletonLifeCycleManager;
+import org.glassfish.internal.api.Globals;
 
 
 public abstract class AbstractSingletonContainer
@@ -178,7 +186,7 @@ public abstract class AbstractSingletonContainer
         // in the context impl since that is shared across many
         // concurrent invocations.  Instead, set the resource
         // handler on the invocation to provide a different
-        // resource List for each Singleton invocation. 
+        // resource List for each Singleton invocation.
         inv.setResourceHandler(SimpleEjbResourceHandlerImpl.getResourceHandler(transactionManager));
     }
 
@@ -190,7 +198,7 @@ public abstract class AbstractSingletonContainer
         if ( isRemote ) {
             if( hasRemoteBusinessView ) {
 
-                theRemoteBusinessObjectImpl = 
+                theRemoteBusinessObjectImpl =
                     instantiateRemoteBusinessObjectImpl();
 
                 for(RemoteBusinessIntfInfo next :
@@ -208,7 +216,7 @@ public abstract class AbstractSingletonContainer
         if ( isLocal ) {
 
             if( hasLocalBusinessView ) {
-                theEJBLocalBusinessObjectImpl = 
+                theEJBLocalBusinessObjectImpl =
                     instantiateEJBLocalBusinessObjectImpl();
             }
             if (hasOptionalLocalBusinessView) {
@@ -227,7 +235,7 @@ public abstract class AbstractSingletonContainer
 
     private int getTxAttrForLifecycleCallback(
              Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors) throws Exception {
-        return getTxAttrForLifecycleCallback(lifecycleCallbackDescriptors, 
+        return getTxAttrForLifecycleCallback(lifecycleCallbackDescriptors,
                 Container.TX_REQUIRES_NEW, Container.TX_NOT_SUPPORTED);
     }
 
@@ -257,7 +265,7 @@ public abstract class AbstractSingletonContainer
         return theRemoteBusinessObjectImpl;
     }
 
-	
+
     /**
      *
      */
@@ -272,7 +280,7 @@ public abstract class AbstractSingletonContainer
      */
     public EJBLocalObjectImpl createEJBLocalObjectImpl()
         throws CreateException
-    {	
+    {
         throw new CreateException("EJB 2.x Local view not supported on Singletons");
     }
 
@@ -281,7 +289,7 @@ public abstract class AbstractSingletonContainer
      */
     public EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(boolean localBeanView)
         throws CreateException
-    {	
+    {
         // No access checks needed because this is called as a result
         // of an internal creation, not a user-visible create method.
         return (localBeanView)
@@ -302,7 +310,7 @@ public abstract class AbstractSingletonContainer
      * Force destroy the EJB should be a no-op for singletons.
      * After Initialization completes successfully, runtime exceptions
      * during invocations on the Singleton do not result in the instance
-     * being destroyed. 
+     * being destroyed.
      */
     protected void forceDestroyBean(EJBContextImpl sc) {
     }
@@ -314,7 +322,7 @@ public abstract class AbstractSingletonContainer
     protected EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         return null;
     }
-    
+
     EJBObjectImpl getEJBRemoteBusinessObjectImpl(byte[] instanceKey) {
         return theRemoteBusinessObjectImpl;
     }
@@ -405,25 +413,92 @@ public abstract class AbstractSingletonContainer
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
 	return new SingletonContextImpl(instance, this);
     }
-    
+
+    private HazelcastInstance getHazelcastInstance() {
+        HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+        if(!hzCore.isEnabled()) {
+            throw new IllegalStateException("getDistributedSingletonMap() - Hazelcast is Disabled");
+        }
+        return hzCore.getInstance();
+    }
+
+    private String getClusteredSessionHazelcastKey() {
+        return "Payara/" + componentId + "/" + getClusteredSessionKey();
+    }
+
+    protected ILock getDistributedLock() {
+        return getHazelcastInstance().getLock(getClusteredSessionHazelcastKey() + "/lock");
+    }
+
+    protected boolean isDistributedLockEnabled() {
+        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+        DistributedLockType distLockType = sessDesc.isClustered()?
+                    sessDesc.getClusteredLockType() : DistributedLockType.LOCK_NONE;
+        return isClusteredEnabled() && distLockType != DistributedLockType.LOCK_NONE;
+    }
+
+    protected IMap<String, Object> getClusteredSingletonMap() {
+        return getHazelcastInstance().getMap("Payara/" + componentId);
+    }
+
+    protected String getClusteredSessionKey() {
+        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+        return sessDesc.getClusteredKeyValue().isEmpty()? sessDesc.getName() : sessDesc.getClusteredKeyValue();
+    }
+
+    protected boolean isClusteredEnabled() {
+        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+        HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+        return sessDesc.isClustered() && hzCore.isEnabled();
+    }
+
+    private IAtomicLong getClusteredUsageCount() {
+        return getHazelcastInstance().getAtomicLong(getClusteredSessionHazelcastKey() + "/count");
+    }
+
     private SingletonContextImpl createSingletonEJB()
         throws CreateException
-    { 
+    {
         EjbInvocation ejbInv = null;
         SingletonContextImpl context;
+        Object ejb;
 
         // Track whether initialization got as far as preInvokeTx.
         // Needed for adequate error handling in the face of an initialization
         // exception.
         boolean initGotToPreInvokeTx = false;
+        boolean doPostConstruct = true;
 
         try {
-
-            // a dummy invocation will be created by the BaseContainer to support
-            // possible AroundConstruct interceptors
-            context = (SingletonContextImpl) createEjbInstanceAndContext();
-
-            Object ejb = context.getEJB();
+            String sessionKey = getClusteredSessionKey();
+            EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+            if(isClusteredEnabled()) {
+                IMap<String, Object> singletonMap = getClusteredSingletonMap();
+                if(!singletonMap.containsKey(sessionKey)) {
+                    context = (SingletonContextImpl) createEjbInstanceAndContext();
+                    ejb = singletonMap.putIfAbsent(sessionKey, context.getEJB());
+                    if((ejb != null) && (ejb != context.getEJB()) && sessDesc.dontCallPostConstructOnAttach()) {
+                        doPostConstruct = false;
+                    }
+                }
+                else {
+                    context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessionKey));
+                    ejb = context.getEJB();
+                    if(sessDesc.dontCallPostConstructOnAttach()) {
+                        doPostConstruct = false;
+                    }
+                }
+                getClusteredUsageCount().incrementAndGet();
+            }
+            else {
+                if(sessDesc.isClustered() && !Globals.getDefaultHabitat().getService(HazelcastCore.class).isEnabled()) {
+                    _logger.log(Level.WARNING, "Clustered Singleton {0} not available - Hazelcast is Disabled", sessionKey);
+                }
+                // a dummy invocation will be created by the BaseContainer to support
+                // possible AroundConstruct interceptors
+                context = (SingletonContextImpl) createEjbInstanceAndContext();
+                ejb = context.getEJB();
+            }
 
             // this allows JNDI lookups from setSessionContext, ejbCreate
             ejbInv = createEjbInvocation(ejb, context);
@@ -445,7 +520,7 @@ public abstract class AbstractSingletonContainer
 
             }
             if ( isLocal ) {
-                
+
                 if( hasLocalBusinessView ) {
                     context.setEJBLocalBusinessObjectImpl
                         (theEJBLocalBusinessObjectImpl);
@@ -465,8 +540,9 @@ public abstract class AbstractSingletonContainer
 
             context.setInstanceKey(singletonInstanceKey);
 
-            intercept(CallbackType.POST_CONSTRUCT, context);
-
+            if(doPostConstruct) {
+                intercept(CallbackType.POST_CONSTRUCT, context);
+            }
 
         } catch ( Throwable th ) {
             if (ejbInv != null) {
@@ -510,7 +586,7 @@ public abstract class AbstractSingletonContainer
     protected void doTimerInvocationInit(EjbInvocation inv, Object primaryKey)
             throws Exception {
         if( isRemote ) {
-            
+
             // @@@ Revisit setting ejbObject in invocation.
             // What about if bean doesn't expose a remote or local view?
             // How is inv.ejbObject used in timer invocation ?
@@ -518,7 +594,7 @@ public abstract class AbstractSingletonContainer
             //TODO inv.ejbObject = theEJBObjectImpl;
             inv.isLocal = false;
         } else {
-            // inv.ejbObject = 
+            // inv.ejbObject =
             inv.isLocal = true;
         }
     }
@@ -533,7 +609,7 @@ public abstract class AbstractSingletonContainer
 
                 // Allowed any time after dependency injection
                 utMethodsAllowed = (sc.getInstanceKey() != null);
-            } 
+            }
         }
         return utMethodsAllowed;
     }
@@ -543,7 +619,7 @@ public abstract class AbstractSingletonContainer
     * Check if the given EJBObject/LocalObject has been removed.
     * @exception NoSuchObjectLocalException if the object has been removed.
     */
-    protected void checkExists(EJBLocalRemoteObject ejbObj) 
+    protected void checkExists(EJBLocalRemoteObject ejbObj)
     {
         // Doesn't apply to Singletons
     }
@@ -565,8 +641,8 @@ public abstract class AbstractSingletonContainer
     // default
     public boolean passivateEJB(ComponentContext context) {
         return false;
-    }   
-    
+    }
+
     // default
     public void activateEJB(Object ctx, Object instanceKey) {}
 
@@ -594,7 +670,7 @@ public abstract class AbstractSingletonContainer
 
             /*TODO
             if( isWebServiceEndpoint && (webServiceEndpoint != null) ) {
-                String endpointAddress = 
+                String endpointAddress =
                     webServiceEndpoint.getEndpointAddressUri();
                 WebServiceEjbEndpointRegistry.getRegistry().
                     unregisterEjbWebServiceEndpoint(endpointAddress);
@@ -610,9 +686,9 @@ public abstract class AbstractSingletonContainer
             */
 
 
-           
+
             if ( hasRemoteBusinessView ) {
-                for(RemoteBusinessIntfInfo next : 
+                for(RemoteBusinessIntfInfo next :
                         remoteBusinessIntfInfo.values()) {
                     next.referenceFactory.destroyReference
                         (theRemoteBusinessObjectImpl.getStub
@@ -628,7 +704,7 @@ public abstract class AbstractSingletonContainer
             _logger.log(Level.FINE, "Exception during Singleton shutdown", t);
 
         } finally {
-          
+
             singletonCtxFactory = null;
             Utility.setContextClassLoader(originalCCL);
         }
@@ -656,13 +732,26 @@ public abstract class AbstractSingletonContainer
             // in progress. So it is ok to destroy the EJB.
 
             // Only need to cleanup and destroy bean (andd call @PreDestroy)
-            // if it successfully completed initialization. 
+            // if it successfully completed initialization.
             if ( singletonCtx != null )  {
 
                 Object sb = singletonCtx.getEJB();
 
                 // Called from pool implementation to reduce the pool size.
                 // So we need to call @PreDestroy and mark context as destroyed
+                boolean doPreDestroy = true;
+
+                if (isClusteredEnabled()) {
+                    EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
+                    IAtomicLong count = getClusteredUsageCount();
+                    if(count.decrementAndGet() <= 0) {
+                        getClusteredSingletonMap().delete(getClusteredSessionKey());
+                        count.destroy();
+                    }
+                    else if(sessDesc.dontCallPreDestroyOnDetach()){
+                        doPreDestroy = false;
+                    }
+                }
 
                 singletonCtx.setState(EJBContextImpl.BeanState.DESTROYED);
                 EjbInvocation ejbInv = null;
@@ -678,13 +767,15 @@ public abstract class AbstractSingletonContainer
                     ejbInv.invocationInfo = preDestroyInvInfo;
                     preInvokeTx(ejbInv);
 
-                    intercept(CallbackType.PRE_DESTROY, singletonCtx);
+                    if(doPreDestroy) {
+                        intercept(CallbackType.PRE_DESTROY, singletonCtx);
+                    }
 
                 } catch ( Throwable t ) {
                     if( ejbInv != null ) {
                         ejbInv.exception = t;
                     }
-                    _logger.log(Level.FINE, "ejbRemove exception", t);                    
+                    _logger.log(Level.FINE, "ejbRemove exception", t);
                 } finally {
                     singletonCtx.setInEjbRemove(false);
                     if( ejbInv != null ) {

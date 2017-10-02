@@ -105,6 +105,7 @@ import org.glassfish.embeddable.CommandResult;
 public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
+    private static final String USER_PROPS_FILE = "MICRO-INF/deploy/payaramicro.properties";
     private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
     private static PayaraMicroImpl instance;
 
@@ -177,6 +178,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      */
     public static void main(String args[]) throws Exception {
 
+        // configure boot system properties
+        setBootProperties();
         PayaraMicroImpl main = getInstance();
         main.scanArgs(args);
         if (main.getUberJar() != null) {
@@ -1055,8 +1058,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } catch (MalformedURLException ex) {
             // will never happen as it is a constant
         }
-        setBootProperties();
-        setArgumentsFromSystemProperties();
         addShutdownHook();
     }
 
@@ -1069,6 +1070,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             LOGGER.log(Level.SEVERE, ex.getMessage());
             System.exit(-1);
         }
+        
+        processUserProperties(options);
+        setArgumentsFromSystemProperties();
 
         for (RUNTIME_OPTION option : options.getOptions()) {
             List<String> values = options.getOption(option);
@@ -1203,11 +1207,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case copytouberjar:
                         copyDirectory = new File(value);
                         break;
-                    case systemproperties: {
-                        File propertiesFile = new File(value);
-                        setSystemProperties(propertiesFile);
-                    }
-                    break;
                     case disablephonehome:
                         disablePhoneHome = true;
                         break;
@@ -1321,27 +1320,56 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     }
 
-    private void setSystemProperties(File propertiesFile) throws IllegalArgumentException {
+    /**
+     * Process the user system properties in precendence
+     * 1st loads the properties from the uber jar location
+     * then loads each command line system properties file which will override
+     * uber jar properties
+     * 
+     * @param options
+     * @throws IllegalArgumentException 
+     */
+    private void processUserProperties(RuntimeOptions options) throws IllegalArgumentException {
         userSystemProperties = new Properties();
-        try (FileReader reader = new FileReader(propertiesFile)) {
-            userSystemProperties.load(reader);
-            Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
-            while (names.hasMoreElements()) {
-                String name = names.nextElement();
-                System.setProperty(name, userSystemProperties.getProperty(name));
+        // load all from the uber jar first
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(USER_PROPS_FILE)) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                for (Map.Entry<?, ?> entry : props.entrySet()) {
+                    userSystemProperties.setProperty((String)entry.getKey(), (String)entry.getValue());
+                }
             }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE,
-                    "{0} is not a valid properties file",
-                    propertiesFile.getAbsolutePath());
-            throw new IllegalArgumentException(e);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "", ex);
         }
-        if (!propertiesFile.isFile() && !propertiesFile.canRead()) {
-            LOGGER.log(Level.SEVERE,
-                    "{0} is not a valid properties file",
-                    propertiesFile.getAbsolutePath());
-            throw new IllegalArgumentException();
-
+        
+        // process each command line system properties option
+        List<String> propertiesoption = options.getOption(RUNTIME_OPTION.systemproperties);
+        if (propertiesoption != null && !propertiesoption.isEmpty()) {
+            // process the system properties
+            for (String string : propertiesoption) {
+                File propertiesFile = new File(string);
+                Properties tempProperties = new Properties();
+                try (FileReader reader = new FileReader(propertiesFile)) {
+                    tempProperties.load(reader);
+                    Enumeration<String> names = (Enumeration<String>) tempProperties.propertyNames();
+                    while (names.hasMoreElements()) {
+                        String name = names.nextElement();
+                        userSystemProperties.setProperty(name, tempProperties.getProperty(name));
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE,
+                            "{0} is not a valid properties file",
+                            propertiesFile.getAbsolutePath());
+                    throw new IllegalArgumentException(e);
+                }            
+            }
+        }
+        
+        // now set them
+        for (String stringPropertyName : userSystemProperties.stringPropertyNames()) {
+            System.setProperty(stringPropertyName, userSystemProperties.getProperty(stringPropertyName));
         }
     }
 
@@ -1920,19 +1948,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private void setArgumentsFromSystemProperties() {
 
-        // load all from the resource
-        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("MICRO-INF/deploy/payaramicro.properties")) {
-            if (is != null) {
-                Properties props = new Properties();
-                props.load(is);
-                for (Map.Entry<?, ?> entry : props.entrySet()) {
-                    System.setProperty((String) entry.getKey(), (String) entry.getValue());
-                }
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "", ex);
-        }
-
         // Set the domain.xml
         String alternateDomainXMLStr = getProperty("payaramicro.domainConfig");
         if (alternateDomainXMLStr != null && !alternateDomainXMLStr.isEmpty()) {
@@ -1989,7 +2004,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void packageUberJar() {
-
+        
         UberJarCreator creator = new UberJarCreator(uberJar);
         if (rootDir != null) {
             creator.setDomainDir(rootDir);
@@ -2254,9 +2269,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
     }
 
-    private void setBootProperties() {
+    private static void setBootProperties() {
         Properties bootProperties = new Properties();
 
+        // First Read from embedded boot preoprties
         try (InputStream is = PayaraMicroImpl.class
                 .getResourceAsStream(BOOT_PROPS_FILE)) {
             if (is != null) {

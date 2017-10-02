@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.api;
 
@@ -54,6 +54,7 @@ import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.internal.api.ORBLocator;
 
+import java.util.Objects;
 import java.util.Properties;
 import java.rmi.Remote;
 import java.nio.channels.SelectableChannel;
@@ -86,11 +87,9 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
     private static final Logger _logger =
         LogDomains.getLogger(GlassFishORBHelper.class, LogDomains.CORBA_LOGGER, false);
 
-    private volatile ORB orb = null ;
+    private volatile ORB orb;
 
-    private ProtocolManager protocolManager = null ;
-
-    private ORBLazyServiceInitializer lazyServiceInitializer;
+    private ProtocolManager protocolManager;
 
     private SelectableChannelDelegate selectableChannelDelegate;
 
@@ -109,16 +108,21 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
 
     public void postConstruct() {
         orbFactory = services.getService(GlassFishORBFactory.class);
+        if (orbFactory == null) {
+            _logger.log(Level.FINE, "GlassFishORBFactory service not found.");
+        } else {
+            _logger.log(Level.INFO, "GlassFishORBFactory service initialized.");
+        }
     }
 
 
     public void onShutdown() {
-        _logger.log(Level.FINE, ("ORB Shutdown started"));
+        _logger.log(Level.FINE, "ORB Shutdown started");
         orb.destroy();
     }
 
-    public synchronized void setORB( ORB orb ) {
-        this.orb = orb ;
+    public synchronized void setORB(ORB orb) {
+        this.orb = orb;
 
         if (orb != null) {
             EventListener glassfishEventListener = new org.glassfish.api.event.EventListener() {
@@ -160,7 +164,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                         // ProtocolManager won't be available.  Any callbacks that
                         // result from the protocol manager initialization itself
                         // cannot depend on having access to the protocol manager.
-                        orb = orbFactory.createORB(props);
+                        orb = getORBFactory().createORB(props);
 
                         if (isServer) {
                             if (protocolManager == null) {
@@ -185,7 +189,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                                 protocolManager.initializeRemoteNaming(remoteSerialProvider);
                             }
                         }
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         orb = null;
                         protocolManager = null;
                         throw new RuntimeException("Orb initialization erorr", e);
@@ -235,41 +239,43 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
         }
     }
 
+    private GlassFishORBFactory getORBFactory() {
+        return Objects.requireNonNull(orbFactory, "GlassFishORBFactory is not initialized!");
+    }
+
     public boolean isORBInitialized() {
-	return (orb != null);
+        return (orb != null);
     }
 
     public int getOTSPolicyType() {
-        return orbFactory.getOTSPolicyType();
+        return getORBFactory().getOTSPolicyType();
     }
 
     public int getCSIv2PolicyType() {
-        return orbFactory.getCSIv2PolicyType();
+        return getORBFactory().getCSIv2PolicyType();
     }
 
     public Properties getCSIv2Props() {
-        return orbFactory.getCSIv2Props();
+        return getORBFactory().getCSIv2Props();
     }
 
     public void setCSIv2Prop(String name, String value) {
-        orbFactory.setCSIv2Prop(name, value);
+        getORBFactory().setCSIv2Prop(name, value);
     }
 
     public int getORBInitialPort() {
-        return orbFactory.getORBInitialPort();
+        return getORBFactory().getORBInitialPort();
     }
 
     public String getORBHost(ORB orb) {
-        return orbFactory.getORBHost(orb);
+        return getORBFactory().getORBHost(orb);
     }
 
     public int getORBPort(ORB orb) {
-        return orbFactory.getORBPort(orb);
+        return getORBFactory().getORBPort(orb);
     }
 
     public boolean isEjbCall(ServerRequestInfo sri) {
-        return orbFactory.isEjbCall(sri);
+        return getORBFactory().isEjbCall(sri);
     }
-
-
 }
