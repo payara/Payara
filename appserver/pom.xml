@@ -699,11 +699,6 @@
                 <artifactId>javax.security.auth.message-api</artifactId>
                 <version>${javax.security.auth.message-api.version}</version>
             </dependency>
-                   <dependency>
-                <groupId>javax.security.enterprise</groupId>
-                <artifactId>javax.security.enterprise-api</artifactId>
-                <version>${javax.security.enterprise-api.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>javax.security.enterprise</artifactId>
