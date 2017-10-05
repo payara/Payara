@@ -37,42 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension;
+package fish.payara.micro.cdi.extension.cluster.annotations;
 
-import fish.payara.micro.cdi.extension.cluster.ClusteredAnnotationProcessor;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.inject.Scope;
 
 /**
- * A CDI Extension for integrating with Payara Micro
+ * Internal scope for Clustered Singleton bean
  *
- * @author steve
+ * @author lprimak
  */
-public class PayaraMicroCDIExtension implements Extension {
+@Scope
+@Retention(RetentionPolicy.RUNTIME)
+@Target({METHOD, FIELD, TYPE})
+public @interface ClusterScoped {
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-
-        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
-        bbd.addAnnotatedType(at, PayaraMicroProducer.class.getName());
-        
-        AnnotatedType<ClusteredCDIEventBusImpl> at3 = bm.createAnnotatedType(ClusteredCDIEventBusImpl.class);
-        bbd.addAnnotatedType(at3, ClusteredCDIEventBusImpl.class.getName());
-
-        clusteredAnnotationProcessor.beforeBeanDiscovery(bbd, bm);
-    }
-
-    public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-        clusteredAnnotationProcessor.afterBeanDiscovery(event, manager);
-    }
-
-    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat) {
-         clusteredAnnotationProcessor.processAnnotatedType(pat);
-     }
-
-    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
 }

@@ -37,42 +37,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension;
+package fish.payara.micro.cdi.extension.cluster;
 
-import fish.payara.micro.cdi.extension.cluster.ClusteredAnnotationProcessor;
-import javax.enterprise.event.Observes;
+import fish.payara.cluster.Clustered;
+import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
+import java.io.Serializable;
+import javax.ejb.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import lombok.extern.java.Log;
 
 /**
- * A CDI Extension for integrating with Payara Micro
+ * Entry point for @Clustered annotation processing
+ * for clustered @ApplicationScoped beans
  *
- * @author steve
+ * @author lprimak
  */
-public class PayaraMicroCDIExtension implements Extension {
+@Log
+public class ClusteredAnnotationProcessor {
+    public void beforeBeanDiscovery(BeforeBeanDiscovery bbd, BeanManager bm) {
+        bbd.addScope(ClusterScoped.class, true, true);
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-
-        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
-        bbd.addAnnotatedType(at, PayaraMicroProducer.class.getName());
-        
-        AnnotatedType<ClusteredCDIEventBusImpl> at3 = bm.createAnnotatedType(ClusteredCDIEventBusImpl.class);
-        bbd.addAnnotatedType(at3, ClusteredCDIEventBusImpl.class.getName());
-
-        clusteredAnnotationProcessor.beforeBeanDiscovery(bbd, bm);
     }
 
-    public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-        clusteredAnnotationProcessor.afterBeanDiscovery(event, manager);
+    public void afterBeanDiscovery(AfterBeanDiscovery event, BeanManager manager) {
+        event.addContext(new ClusterScopeContext(manager));
     }
 
-    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat) {
-         clusteredAnnotationProcessor.processAnnotatedType(pat);
-     }
+    public <X> void processAnnotatedType(ProcessAnnotatedType<X> pat) {
+        Clustered clusteredAnnotation = pat.getAnnotatedType().getAnnotation(Clustered.class);
+        // +++ TODO see below TODO
+        if(clusteredAnnotation != null && !pat.getAnnotatedType().isAnnotationPresent(Singleton.class)) {
+            validate(pat.getAnnotatedType());
+            pat.setAnnotatedType(new ClusteredAnnotatedType<X>(pat.getAnnotatedType()));
+        }
+    }
 
-    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
+    private <X> void validate(AnnotatedType<X> annotatedType) {
+        // +++ TODO remove isAnnotationPresent(Singleton) because it could be specified in a descriotor
+        if (annotatedType.isAnnotationPresent(ApplicationScoped.class) || annotatedType.isAnnotationPresent(Singleton.class)) { }
+        else {
+            throw new IllegalArgumentException("Only @ApplicationScoped beans can be @Clustered: " + annotatedType.toString());
+        }
+        if (!Serializable.class.isAssignableFrom(annotatedType.getJavaClass())) {
+            throw new IllegalStateException(String.format("Clustered @ApplicationScoped %s must be Serializable", annotatedType.toString()));
+        }
+    }
 }

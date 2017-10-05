@@ -37,42 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension;
+package fish.payara.micro.cdi.extension.cluster;
 
-import fish.payara.micro.cdi.extension.cluster.ClusteredAnnotationProcessor;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
+import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
+import java.lang.annotation.Annotation;
+import java.util.Set;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.util.AnnotationLiteral;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 
 /**
- * A CDI Extension for integrating with Payara Micro
- *
- * @author steve
+ * Adds @ClusteredScoped annotation to the @Clusteded beans
+ * 
+ * @author lprimak
  */
-public class PayaraMicroCDIExtension implements Extension {
-
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-
-        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
-        bbd.addAnnotatedType(at, PayaraMicroProducer.class.getName());
-        
-        AnnotatedType<ClusteredCDIEventBusImpl> at3 = bm.createAnnotatedType(ClusteredCDIEventBusImpl.class);
-        bbd.addAnnotatedType(at3, ClusteredCDIEventBusImpl.class.getName());
-
-        clusteredAnnotationProcessor.beforeBeanDiscovery(bbd, bm);
+@RequiredArgsConstructor
+@SuppressWarnings("unchecked")
+class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
+    @Override
+    public Set<Annotation> getAnnotations() {
+        return FluentIterable.from(Iterables.filter(wrapped.getAnnotations(), Predicates.not(appScopedFilter)))
+        .append(clusteredScopedLiteral).toSet();
     }
 
-    public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-        clusteredAnnotationProcessor.afterBeanDiscovery(event, manager);
+    interface Exclusions {
+        Set<Annotation> getAnnotations();
     }
 
-    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat) {
-         clusteredAnnotationProcessor.processAnnotatedType(pat);
-     }
+    @SuppressWarnings("serial")
+    private static class ClusteredAnnotationLiteral extends AnnotationLiteral<ClusterScoped> implements ClusterScoped {};
+    private static class ApplicationScopedFilter implements Predicate<Annotation> {
+        @Override
+        public boolean apply(Annotation input) {
+            return input.annotationType().equals(ApplicationScoped.class);
+        }
+    };
 
-    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
+    private static final ApplicationScopedFilter appScopedFilter = new ApplicationScopedFilter();
+    private static final ClusteredAnnotationLiteral clusteredScopedLiteral = new ClusteredAnnotationLiteral();
+    private @Delegate(types = {AnnotatedType.class, Annotated.class}, excludes = Exclusions.class) final AnnotatedType<TT> wrapped;
 }
