@@ -423,7 +423,7 @@ public abstract class AbstractSingletonContainer
     }
 
     private String getClusteredSessionHazelcastKey() {
-        return "Payara/" + componentId + "/" + getClusteredSessionKey();
+        return "Payara/ejb/singleton/" + componentId + "/" + getClusteredSessionKey();
     }
 
     protected ILock getDistributedLock() {
@@ -438,7 +438,7 @@ public abstract class AbstractSingletonContainer
     }
 
     protected IMap<String, Object> getClusteredSingletonMap() {
-        return getHazelcastInstance().getMap("Payara/" + componentId);
+        return getHazelcastInstance().getMap("Payara/ejb/singleton/" + componentId);
     }
 
     protected String getClusteredSessionKey() {
