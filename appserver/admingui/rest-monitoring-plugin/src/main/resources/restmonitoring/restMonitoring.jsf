@@ -96,7 +96,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     <sun:checkbox id="isEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isEnabled}" selectedValue="true"/>
                 </sun:property>
             <sun:property id="applicationNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.ApplicationName}" helpText="$resource{i18nrest.monitoring.rest.ApplicationNameHelp}">
-                    <sun:textField id="name" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['name']}"/>
+                    <sun:textField id="applicationName" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['applicationname']}"/>
                 </sun:property>
                 <sun:property id="contextRootProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.ContextRoot}" helpText="$resource{i18nrest.monitoring.rest.ContextRootHelp}">
                     <sun:textField id="contextroot" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['contextroot']}"/>
