@@ -80,7 +80,7 @@ public class BootCommands {
             String commandStr = br.readLine();
             while (commandStr != null) {
                 // # is a comment
-                if (!commandStr.startsWith("#")) {
+                if (!commandStr.startsWith("#") && commandStr.trim().length() > 0) {
                     String command[] = commandStr.split(" ");
                     if (command.length > 1) {
                         commands.add(new BootCommand(command[0],Arrays.copyOfRange(command, 1, command.length)));
