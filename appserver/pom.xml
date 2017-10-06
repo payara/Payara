@@ -139,7 +139,7 @@
         <jms-api.version>2.0.1</jms-api.version>
         
         <!-- 5.1.1-b02.payara-p1 -->
-        <mq.version>5.1.1-b06</mq.version>
+        <mq.version>5.1.1.final-payara-p1</mq.version>
         
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
@@ -698,6 +698,11 @@
                 <groupId>javax.security.auth.message</groupId>
                 <artifactId>javax.security.auth.message-api</artifactId>
                 <version>${javax.security.auth.message-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>javax.security.enterprise</artifactId>
+                <version>${javax.security.enterprise.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>

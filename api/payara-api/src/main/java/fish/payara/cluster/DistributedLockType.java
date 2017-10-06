@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,15 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cmd.options;
+package fish.payara.cluster;
 
 /**
+ * Specifies the type of distributed locking to be performed
  *
- * @author steve
+ * @author lprimak
  */
-public class FileValidator extends FileSystemItemValidator {
-
-    public FileValidator(boolean exists, boolean readable, boolean writable) {
-        super(exists, readable, writable, true, false);
-    }
+public enum DistributedLockType {
+    /**
+     * Inherits the distributed locking behavior of the annotated class to the extent possible,
+     * for example, @javax.ejb.Singleton classes are locked by default, so distributed locking
+     * would be performed on those
+     */
+    INHERIT,
+    /**
+     * No distributed locking is performed
+     */
+    LOCK_NONE,
+    /**
+     * DIstributed locking is performed on this object
+     */
+    LOCK
 }
