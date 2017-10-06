@@ -77,8 +77,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                             onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                         <!command
-                            mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.isEnabled}");
-                            mapPut(map="#{pageSession.valueMap}" key="securityenabled" value="#{pageSession.isSecure}");
+                            mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                            mapPut(map="#{pageSession.valueMap}" key="securityenabled" value="#{pageSession.securityEnabled}");
                             prepareSuccessfulMsg();
                             gf.updateEntity(endpoint="#{pageSession.REST_MONITORING_CONFIG_URL}/set-rest-monitoring-configuration" 
                                     attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
@@ -93,7 +93,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #include "/common/shared/configNameSection.inc"
             <sun:propertySheetSection id="propertSectionTextField">
                 <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.Enabled}" helpText="$resource{i18nrest.monitoring.rest.EnabledHelp}">
-                    <sun:checkbox id="isEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isEnabled}" selectedValue="true"/>
+                    <sun:checkbox id="isEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
                 </sun:property>
             <sun:property id="applicationNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.ApplicationName}" helpText="$resource{i18nrest.monitoring.rest.ApplicationNameHelp}">
                     <sun:textField id="applicationName" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['applicationname']}"/>
@@ -102,7 +102,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     <sun:textField id="contextroot" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['contextroot']}"/>
                 </sun:property>
                 <sun:property id="isSecureProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.SecurityEnabled}" helpText="$resource{i18nrest.monitoring.rest.SecurityEnabledHelp}">
-                    <sun:checkbox id="isSecure" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isSecure}" selectedValue="true"/>
+                    <sun:checkbox id="isSecure" label="$resource{i18n.common.Enabled}" selected="#{pageSession.securityEnabled}" selectedValue="true"/>
                 </sun:property>                  
                 "<br /><br />
             </sun:propertySheetSection>
