@@ -414,7 +414,8 @@ public class PayaraRestApiHandlers
                 @HandlerInput(name="notifiers", type=String[].class, required=true),
                 @HandlerInput(name="dynamic", type=Boolean.class, required=true),
                 @HandlerInput(name="quiet", type=boolean.class, defaultValue="false"),
-                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true")
+                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true"),
+                @HandlerInput(name="target", type=String.class, required=true)
             })
     public static void updateNotifiers(HandlerContext handlerCtx) {
         String[] notifiers = (String[]) handlerCtx.getInputValue("notifiers");
@@ -423,6 +424,7 @@ public class PayaraRestApiHandlers
         Boolean dynamic = (Boolean) handlerCtx.getInputValue("dynamic");
         Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
         Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
+        String target = (String) handlerCtx.getInputValue("target");
         List<String> enabledNotifiers = Arrays.asList(enabled);
 
         boolean forRequestTracing = false;
@@ -454,6 +456,7 @@ public class PayaraRestApiHandlers
             }
             //PAYARA-1616 go silent, bootstrap will take place after iteration.
             attrs.put("dynamic", "false");
+            attrs.put("target", target);
             RestUtil.restRequest(restEndpoint, attrs, "post", handlerCtx, quiet, throwException);
         }
         // PAYARA-1616
