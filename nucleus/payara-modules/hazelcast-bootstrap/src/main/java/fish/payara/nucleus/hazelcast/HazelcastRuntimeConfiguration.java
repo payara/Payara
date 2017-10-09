@@ -65,12 +65,12 @@ public interface HazelcastRuntimeConfiguration
     public void setStartPort(String value);
 
     @Attribute(defaultValue = "")
-    String getDASHost();
-    public void setDASHost(String value);
+    String getDasHost();
+    public void setDasHost(String value);
     
     @Attribute(defaultValue = "4900")
-    String getDASPort();
-    public void setDASPort(String value);
+    String getDasPort();
+    public void setDasPort(String value);
     
     @Attribute(defaultValue = "224.2.2.3")
     String getMulticastGroup();
@@ -81,8 +81,8 @@ public interface HazelcastRuntimeConfiguration
     public void setMulticastPort(String value);
     
     @Attribute(defaultValue = "127.0.0.1:5900")
-    String getTcpIPMembers();
-    public void setTcpIPMembers(String value);
+    String getTcpipMembers();
+    public void setTcpipMembers(String value);
     
     // valid discovery modes
     // domain

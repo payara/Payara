@@ -1740,39 +1740,63 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } else {
 
             if (hzPort > Integer.MIN_VALUE) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-port=" + hzPort));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-port=" + hzPort));
             }
 
             if (hzStartPort > Integer.MIN_VALUE) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.start-port=" + hzStartPort));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.start-port=" + hzStartPort));
             }
 
             if (hzMulticastGroup != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-group=" + hzMulticastGroup));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-group=" + hzMulticastGroup));
             }
 
             if (alternateHZConfigFile != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile.getName()));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile.getName()));
             }
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.lite=" + liteMember));
+            preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.lite=" + liteMember));
 
             if (hzClusterName != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
             }
 
             if (hzClusterPassword != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword));
             }
 
             if (instanceName != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.member-name=" + instanceName));
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.generate-names=false"));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.member-name=" + instanceName));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.generate-names=false"));
             }
 
             if (instanceGroup != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.member-group=" + instanceGroup));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.member-group=" + instanceGroup));
             }
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
+            preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
+            
+            if (joinmode != null) {
+                if (joinmode.startsWith("tcpip:")) {
+                    String tcpipmembers = joinmode.substring(6);
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.tcpip-members=" + tcpipmembers));
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=tcpip"));
+                } else if (joinmode.startsWith("multicast:")) {
+                    String hostPort[] = joinmode.split(":");
+                    if (hostPort.length == 3) {
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-group=" + hostPort[1]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-port=" + hostPort[2]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
+                    }
+                }  else if (joinmode.startsWith("domain:")) {
+                    String hostPort[] = joinmode.split(":");
+                    if (hostPort.length == 3) {
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-host=" + hostPort[1]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-port=" + hostPort[2]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=domain"));
+                    }
+                }
+            } else {
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
+            }
         }
     }
 
