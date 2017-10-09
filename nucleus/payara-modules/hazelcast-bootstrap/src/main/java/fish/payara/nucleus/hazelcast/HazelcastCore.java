@@ -365,7 +365,8 @@ public class HazelcastCore implements EventListener {
         if (discoveryMode.startsWith("tcpip")) {
             TcpIpConfig tConfig = config.getNetworkConfig().getJoin().getTcpIpConfig();
             tConfig.setEnabled(true);
-            tConfig.addMember(configuration.getTcpIPMembers());
+            tConfig.addMember(configuration.getTcpipMembers());
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
         } else if (discoveryMode.startsWith("multicast")) {
             // build networking
             MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
@@ -380,7 +381,7 @@ public class HazelcastCore implements EventListener {
         }
         int port = Integer.valueOf(configuration.getStartPort());
         if (env.isDas()) {
-            port = Integer.valueOf(configuration.getDASPort());
+            port = Integer.valueOf(configuration.getDasPort());
         }
         config.getNetworkConfig().setPort(port);
     }
