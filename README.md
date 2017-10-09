@@ -72,7 +72,7 @@ Payara Server is currently tested on the following platforms:
 |CentOS 7               |✓              |               |               |       |
 |OpenSUSE 42.2          |✓              |               |               |       |
 |AIX 7.3 TL3            |               |               |               |✓       |
-|MacOS(OSX) 10.12.5     |✓              |               |               |       |
+|macOS      10.12.5     |✓              |               |               |       |
 
 GlassFish is a trademark of Oracle Corporation.  
 Payara is a trademark of Payara Foundation.
