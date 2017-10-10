@@ -41,16 +41,43 @@ holder.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <groupId>fish.payara.microprofile</groupId>
+        <artifactId>microprofile</artifactId>
+        <version>4.1.2.174-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.microprofile</groupId>
-    <artifactId>microprofile</artifactId>
-    <description>Parent POM for all Microprofile related modules</description>
-    <packaging>pom</packaging>
-    <modules>
-        <module>config</module>
-        <module>fault-tolerance</module>
-    </modules>
+    <groupId>fish.payara.microprofile.fault-tolerance</groupId>
+    <artifactId>microprofile-fault-tolerance</artifactId>
+    <name>Microprofile - Fault Tolerance</name>
+    <description>Implementation of MicroProfile Fault Tolerance API</description>
+    <packaging>glassfish-jar</packaging>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+            <artifactId>microprofile-fault-tolerance-api</artifactId>
+            <version>${microprofile-fault-tolerance.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+        </dependency>
+    </dependencies>
 </project>
