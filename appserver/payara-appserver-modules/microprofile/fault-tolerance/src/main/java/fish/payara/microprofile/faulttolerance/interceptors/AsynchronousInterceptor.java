@@ -52,6 +52,7 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
+import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -65,6 +66,11 @@ public class AsynchronousInterceptor implements Serializable {
     
     @AroundInvoke
     public Object submitMethod(final InvocationContext invocationContext) throws Exception {
+        if (invocationContext.getMethod().getReturnType() != Future.class) {
+            throw new FaultToleranceDefinitionException("Method annotated with " + Asynchronous.class.getCanonicalName() 
+                    + " does not return a Future.");
+        }
+        
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         ManagedExecutorService managedExecutorService = faultToleranceService.getManagedExecutorService();

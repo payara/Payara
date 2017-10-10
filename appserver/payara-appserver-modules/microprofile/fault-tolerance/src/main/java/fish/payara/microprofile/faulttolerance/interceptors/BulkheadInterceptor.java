@@ -88,7 +88,7 @@ public class BulkheadInterceptor implements Serializable {
                     bulkheadExecutionSemaphore.release();
                     bulkheadExecutionQueueSemaphore.release();
                 } else {
-                    throw new BulkheadException();
+                    throw new BulkheadException("No free work or queue permits.");
                 }
             } else {
                 // Proceed the invocation and wait for the response
@@ -107,13 +107,13 @@ public class BulkheadInterceptor implements Serializable {
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
             } else {
-                throw new BulkheadException();
+                throw new BulkheadException("No free work permits.");
             }
         }
 
         // Check we actually have a value to return
         if (proceededInvocationContext == null) {
-            throw new BulkheadException();
+            throw new BulkheadException("Bulkhead invocation context returned with a value of null.");
         }
         
         return proceededInvocationContext;
