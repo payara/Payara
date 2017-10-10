@@ -84,12 +84,12 @@ public class URLPattern extends Object implements Comparable {
     }
 
     // Note that the EMPTY_STRING is a legitimate URL_PATTERN, so only check for null
-    public URLPattern(String p) {
-        if (p == null) {
+    public URLPattern(String urlPattern) {
+        if (urlPattern == null) {
             this.pattern = DEFAULT_PATTERN;
             this.patternType = PT_DEFAULT;
         } else {
-            this.pattern = p;
+            this.pattern = urlPattern;
         }
     }
 
@@ -109,12 +109,12 @@ public class URLPattern extends Object implements Comparable {
     }
 
     @Override
-    public int compareTo(Object o) {
-        if (!(o instanceof URLPattern)) {
+    public int compareTo(Object object) {
+        if (!(object instanceof URLPattern)) {
             throw new ClassCastException("Argument must be URLPattern");
         }
 
-        URLPattern p = (URLPattern) o;
+        URLPattern urlPattern = (URLPattern) object;
 
         int refPatternType = this.patternType();
 
@@ -122,16 +122,16 @@ public class URLPattern extends Object implements Comparable {
 	 * patterns. Also shorter length patterns precede longer length patterns. This is important for the 
          * URLPatternList canonicalization done by URLPatternSpec.setURLPatternArray
          */
-        int result = refPatternType - p.patternType();
+        int result = refPatternType - urlPattern.patternType();
 
         if (result == 0) {
             if (refPatternType == PT_PREFIX || refPatternType == PT_EXACT) {
-                result = this.getPatternDepth() - p.getPatternDepth();
+                result = this.getPatternDepth() - urlPattern.getPatternDepth();
                 if (result == 0) {
-                    result = this.pattern.compareTo(p.pattern);
+                    result = this.pattern.compareTo(urlPattern.pattern);
                 }
             } else {
-                result = this.pattern.compareTo(p.pattern);
+                result = this.pattern.compareTo(urlPattern.pattern);
             }
         }
         return result > 0 ? 1 : (result < 0 ? -1 : 0);
@@ -154,43 +154,44 @@ public class URLPattern extends Object implements Comparable {
      * <li> the reference pattern is the special default pattern, "/", which matches all argument patterns.
      * </ul>
      *
-     * @param p URLPattern to determine if implied by (matched by) this URLPattern to
+     * @param urlPattern URLPattern whose path will be compared to this URLPattern
      * @return Whether the given URLPattern matches the present URLPattern.
      */
-    public boolean implies(URLPattern p) {
+    public boolean implies(URLPattern urlPattern) {
 
         // Normalize the argument
-        if (p == null) {
-            p = new URLPattern(null);
+        if (urlPattern == null) {
+            urlPattern = new URLPattern(null);
         }
 
-        String path = p.pattern;
-        String pattern = this.pattern;
+        String path = urlPattern.pattern;
+        String currentPattern = this.pattern;
 
         // First check for exact match
-        if (pattern.equals(path)) {
+        if (currentPattern.equals(path)) {
             return true;
         }
 
         // Check for path prefix matching
-        if (pattern.startsWith("/") && pattern.endsWith("/*")) {
-            pattern = pattern.substring(0, pattern.length() - 2);
-            int length = pattern.length();
+        if (currentPattern.startsWith("/") && currentPattern.endsWith("/*")) {
+            currentPattern = currentPattern.substring(0, currentPattern.length() - 2);
+            int length = currentPattern.length();
             if (length == 0) {
-                return (true); // "/*" is the same as the DEFAULT_PATTERN
+                return true; // "/*" is the same as the DEFAULT_PATTERN
             }
-            return path.startsWith(pattern) && (path.length() == length || path.substring(length).startsWith("/"));
+            return path.startsWith(currentPattern) 
+                    && (path.length() == length || path.substring(length).startsWith("/"));
         }
 
         // Check for suffix matching
-        if (pattern.startsWith("*.")) {
+        if (currentPattern.startsWith("*.")) {
             int slash = path.lastIndexOf('/');
             int period = path.lastIndexOf('.');
-            return slash >= 0 && period > slash && path.endsWith(pattern.substring(1));
+            return slash >= 0 && period > slash && path.endsWith(currentPattern.substring(1));
         }
 
         // Finally, check for universal mapping
-        return pattern.equals(DEFAULT_PATTERN);
+        return currentPattern.equals(DEFAULT_PATTERN);
     }
 
     public int getPatternDepth() {
@@ -217,16 +218,16 @@ public class URLPattern extends Object implements Comparable {
      */
     public static boolean match(String originalPattern, String newPattern) {
         URLPattern original = new URLPattern(originalPattern);
-        URLPattern comparee = new URLPattern(newPattern);
-        return original.implies(comparee);
+        URLPattern comparedPattern = new URLPattern(newPattern);
+        return original.implies(comparedPattern);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof URLPattern)) {
+    public boolean equals(Object object) {
+        if (!(object instanceof URLPattern)) {
             return false;
         }
-        return this.pattern.equals(((URLPattern) obj).pattern);
+        return this.pattern.equals(((URLPattern) object).pattern);
     }
 
     @Override
