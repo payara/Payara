@@ -40,9 +40,14 @@
 package fish.payara.microprofile.faulttolerance.interceptors;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.io.Serializable;
 import java.util.concurrent.Semaphore;
 import javax.annotation.Priority;
+import javax.enterprise.inject.Intercepted;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -60,12 +65,21 @@ import org.glassfish.internal.api.Globals;
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class BulkheadInterceptor implements Serializable {
     
+    @Inject
+    private BeanManager beanManager;
+    
+    @Inject
+    @Intercepted
+    private Bean<?> interceptedBean;
+    
     @AroundInvoke
     public Object bulkhead(InvocationContext invocationContext) throws Exception {
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         
-        Bulkhead bulkhead = invocationContext.getMethod().getAnnotation(Bulkhead.class);
+        Bulkhead bulkhead = FaultToleranceCdiUtils.getAnnotation(beanManager, interceptedBean.getBeanClass(), 
+                Bulkhead.class, invocationContext);
+
         Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(bulkhead);
         
         Object proceededInvocationContext = null;
@@ -82,7 +96,17 @@ public class BulkheadInterceptor implements Serializable {
                     bulkheadExecutionSemaphore.acquire();
                     
                     // Proceed the invocation and wait for the response
-                    proceededInvocationContext = invocationContext.proceed();
+                    try {
+                        proceededInvocationContext = invocationContext.proceed();
+                    } catch (Exception ex) {
+                        // Generic catch, as we need to release the semaphore permits
+                        bulkheadExecutionSemaphore.release();
+                        bulkheadExecutionQueueSemaphore.release();
+                        
+                        // Let the exception propagate further up - we just want to release the semaphores
+                        throw ex;
+                    }
+                    
                     
                     // Release both permits
                     bulkheadExecutionSemaphore.release();
@@ -92,28 +116,38 @@ public class BulkheadInterceptor implements Serializable {
                 }
             } else {
                 // Proceed the invocation and wait for the response
-                proceededInvocationContext = invocationContext.proceed();
+                    try {
+                        proceededInvocationContext = invocationContext.proceed();
+                    } catch (Exception ex) {
+                        // Generic catch, as we need to release the semaphore permits
+                        bulkheadExecutionSemaphore.release();
+                        
+                        // Let the exception propagate further up - we just want to release the semaphores
+                        throw ex;
+                    }
                     
-                // Release both permits
+                // Release the permit
                 bulkheadExecutionSemaphore.release();
-                bulkheadExecutionQueueSemaphore.release();
             }
         } else {
             // Try to get an execution permit
             if (bulkheadExecutionSemaphore.tryAcquire()) {
                 // Proceed the invocation and wait for the response
-                proceededInvocationContext = invocationContext.proceed();
+                try {
+                    proceededInvocationContext = invocationContext.proceed();
+                } catch (Exception ex) {
+                    // Generic catch, as we need to release the semaphore permits
+                    bulkheadExecutionSemaphore.release();
+
+                    // Let the exception propagate further up - we just want to release the semaphores
+                    throw ex;
+                }
                 
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
             } else {
                 throw new BulkheadException("No free work permits.");
             }
-        }
-
-        // Check we actually have a value to return
-        if (proceededInvocationContext == null) {
-            throw new BulkheadException("Bulkhead invocation context returned with a value of null.");
         }
         
         return proceededInvocationContext;

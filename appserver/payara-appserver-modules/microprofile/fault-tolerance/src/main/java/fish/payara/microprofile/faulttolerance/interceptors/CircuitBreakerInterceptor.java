@@ -39,11 +39,22 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors;
 
+import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
+import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.enterprise.inject.Intercepted;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException;
+import org.glassfish.internal.api.Globals;
 
 /**
  *
@@ -53,10 +64,103 @@ import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 @CircuitBreaker
 public class CircuitBreakerInterceptor implements Serializable {
     
+    @Inject
+    private BeanManager beanManager;
+    
+    @Inject
+    @Intercepted
+    private Bean<?> interceptedBean;
+    
     @AroundInvoke
     public Object circuitBreak(InvocationContext invocationContext) throws Exception {
-        CircuitBreaker circuitBreaker = invocationContext.getMethod().getAnnotation(CircuitBreaker.class);
+        Object proceededInvocationContext = null;
         
-        return invocationContext.proceed();
+        FaultToleranceService faultToleranceService = 
+                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+        
+        CircuitBreaker circuitBreaker = FaultToleranceCdiUtils.getAnnotation(beanManager, interceptedBean.getBeanClass(), 
+                CircuitBreaker.class, invocationContext);
+        
+        CircuitBreakerState circuitBreakerState = faultToleranceService.getCircuitBreakerState(circuitBreaker);
+        
+        switch (circuitBreakerState.getCircuitState()) {
+            case OPEN:
+                // If open, immediately throw an error
+                throw new CircuitBreakerOpenException("CircuitBreaker for method " 
+                        + invocationContext.getMethod().getName() + "is in state OPEN.");
+            case CLOSED:
+                // If closed, attempt to proceed the invocation context
+                try {
+                    proceededInvocationContext = invocationContext.proceed();
+                } catch (Exception ex) {
+                    // Generic catch, as we want to register that the method failed somehow
+                    // Add a failure result to the queue
+                    circuitBreakerState.recordClosedResult(Boolean.FALSE);
+                    
+                    // Calculate the failure threshold
+                    long failureThreshold = 
+                            Math.round(circuitBreaker.requestVolumeThreshold() * circuitBreaker.failureRatio());
+
+                    // If we're over the failure threshold, open the circuit
+                    if (circuitBreakerState.isOverFailureThreshold(failureThreshold)) {
+                        circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
+                        
+                        // Kick off a thread that will half-open the circuit after the specified delay
+                        scheduleHalfOpen(circuitBreaker.delay(), circuitBreakerState);
+                    }
+                    
+                    // Finally, propagate the error upwards
+                    throw ex;
+                }
+                
+                // If everything is bon, just add a success value
+                circuitBreakerState.recordClosedResult(Boolean.TRUE);
+                break;
+            case HALF_OPEN:
+                // If half-open, attempt to proceed the invocation context
+                try {
+                    proceededInvocationContext = invocationContext.proceed();
+                } catch (Exception ex) {
+                    // Generic catch, as we want to register that something has gone wrong
+                    // Open the circuit again, and reset the half-open result counter
+                    circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
+                    circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
+                    scheduleHalfOpen(circuitBreaker.delay(), circuitBreakerState);
+                    throw ex;
+                }
+                
+                // If the invocation context hasn't thrown an error, record a success
+                circuitBreakerState.incrementHalfOpenSuccessfulResultCounter();
+                
+                // If we've hit the success threshold, close the circuit
+                if (circuitBreakerState.getHalfOpenSuccessFulResultCounter() == circuitBreaker.successThreshold()) {
+                    circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.CLOSED);
+                    
+                    // Reset the counter for when we next need to use it
+                    circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
+
+                    // We want to keep the rolling results, so fill the queue with success values
+                    for (int i = 0; i < circuitBreaker.requestVolumeThreshold(); i++) {
+                        circuitBreakerState.recordClosedResult(Boolean.TRUE);
+                    }
+                }
+                    
+                break;
+        }
+        
+        return proceededInvocationContext;
+    }
+    
+    private void scheduleHalfOpen(long delay, CircuitBreakerState circuitBreakerState) {
+        Runnable halfOpen = () -> {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CircuitBreakerInterceptor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.HALF_OPEN);
+        };
+        
+        new Thread(halfOpen).start();
     }
 }

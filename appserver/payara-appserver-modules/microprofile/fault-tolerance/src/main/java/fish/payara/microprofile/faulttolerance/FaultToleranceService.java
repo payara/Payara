@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.CircuitState;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -49,6 +51,7 @@ import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -74,10 +77,12 @@ public class FaultToleranceService {
     
     private final Map<Bulkhead, Semaphore> bulkheadExecutionSemaphores;
     private final Map<Bulkhead, Semaphore> bulkheadExecutionQueueSemaphores;
+    private final Map<CircuitBreaker, CircuitBreakerState> circuitBreakers;
     
     public FaultToleranceService() {
         bulkheadExecutionSemaphores = new ConcurrentHashMap();
         bulkheadExecutionQueueSemaphores = new ConcurrentHashMap();
+        circuitBreakers = new ConcurrentHashMap();
     }
     
     @PostConstruct
@@ -136,11 +141,20 @@ public class FaultToleranceService {
         return bulkheadExecutionQueueSemaphore;
     }
     
-//    public Semaphore getCircuitBreaker(CircuitBreaker circuitBreaker) {
-//        
-//    }
-//    
-//    private Semaphore createCircuitBreaker(CircuitBreaker circuitBreaker) {
-//        
-//    }
+    public CircuitBreakerState getCircuitBreakerState(CircuitBreaker circuitBreaker) {
+        CircuitBreakerState circuitBreakerState = circuitBreakers.get(circuitBreaker);
+        
+        if (circuitBreakerState == null) {
+            circuitBreakerState = registerCircuitBreaker(circuitBreaker);
+        }
+        
+        return circuitBreakerState;
+    }
+    
+    private CircuitBreakerState registerCircuitBreaker(CircuitBreaker circuitBreaker) {
+        CircuitBreakerState circuitBreakerState = 
+                new CircuitBreakerState(circuitBreaker.requestVolumeThreshold());
+        circuitBreakers.put(circuitBreaker, circuitBreakerState);
+        return circuitBreakerState;
+    }
 }

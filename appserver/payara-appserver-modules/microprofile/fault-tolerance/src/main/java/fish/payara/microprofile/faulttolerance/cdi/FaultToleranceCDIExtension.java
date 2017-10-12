@@ -37,10 +37,11 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.faulttolerance;
+package fish.payara.microprofile.faulttolerance.cdi;
 
 import fish.payara.microprofile.faulttolerance.interceptors.AsynchronousInterceptor;
 import fish.payara.microprofile.faulttolerance.interceptors.BulkheadInterceptor;
+import fish.payara.microprofile.faulttolerance.interceptors.CircuitBreakerInterceptor;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
@@ -48,6 +49,7 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 
 /**
  *
@@ -60,8 +62,13 @@ public class FaultToleranceCDIExtension implements Extension {
         beforeBeanDiscovery.addAnnotatedType(bulkhead, BulkheadInterceptor.class.getName());
         
         beforeBeanDiscovery.addInterceptorBinding(Asynchronous.class);
-        AnnotatedType<AsynchronousInterceptor> asynchronous 
-                = beanManager.createAnnotatedType(AsynchronousInterceptor.class);
+        AnnotatedType<AsynchronousInterceptor> asynchronous = 
+                beanManager.createAnnotatedType(AsynchronousInterceptor.class);
         beforeBeanDiscovery.addAnnotatedType(asynchronous, AsynchronousInterceptor.class.getName());
+        
+        beforeBeanDiscovery.addInterceptorBinding(CircuitBreaker.class);
+        AnnotatedType<CircuitBreakerInterceptor> circuitBreaker = 
+                beanManager.createAnnotatedType(CircuitBreakerInterceptor.class);
+        beforeBeanDiscovery.addAnnotatedType(circuitBreaker, CircuitBreakerInterceptor.class.getName());
     }
 }
