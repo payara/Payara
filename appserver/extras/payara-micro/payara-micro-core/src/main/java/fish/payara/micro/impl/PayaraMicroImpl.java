@@ -224,7 +224,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         return instance;
     }
-    private String joinmode;
+    private String clustermode;
 
     /**
      * Gets the cluster group
@@ -1307,8 +1307,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case postdeploycommandfile:
                         postDeployFileName = value;
                         break;
-                    case joinmode:
-                        joinmode = value;
+                    case clustermode:
+                        clustermode = value;
                         break;
                     default:
                         break;
@@ -1774,20 +1774,20 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
             preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
             
-            if (joinmode != null) {
-                if (joinmode.startsWith("tcpip:")) {
-                    String tcpipmembers = joinmode.substring(6);
+            if (clustermode != null) {
+                if (clustermode.startsWith("tcpip:")) {
+                    String tcpipmembers = clustermode.substring(6);
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.tcpip-members=" + tcpipmembers));
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=tcpip"));
-                } else if (joinmode.startsWith("multicast:")) {
-                    String hostPort[] = joinmode.split(":");
+                } else if (clustermode.startsWith("multicast:")) {
+                    String hostPort[] = clustermode.split(":");
                     if (hostPort.length == 3) {
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-group=" + hostPort[1]));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-port=" + hostPort[2]));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
                     }
-                }  else if (joinmode.startsWith("domain:")) {
-                    String hostPort[] = joinmode.split(":");
+                }  else if (clustermode.startsWith("domain:")) {
+                    String hostPort[] = clustermode.split(":");
                     if (hostPort.length == 3) {
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-host=" + hostPort[1]));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-port=" + hostPort[2]));

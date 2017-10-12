@@ -91,7 +91,7 @@ public enum RUNTIME_OPTION {
     postdeploycommandfile(true, new FileValidator(true,true,false)),
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
-    joinmode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
+    clustermode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
     help(false);
 
     private RUNTIME_OPTION(boolean value) {
