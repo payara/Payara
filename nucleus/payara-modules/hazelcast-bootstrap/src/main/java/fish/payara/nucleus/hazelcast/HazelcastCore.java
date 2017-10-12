@@ -42,8 +42,6 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
-import com.hazelcast.config.GlobalSerializerConfig;
-import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
@@ -380,7 +378,7 @@ public class HazelcastCore implements EventListener {
             config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            
         }
         int port = Integer.valueOf(configuration.getStartPort());
-        if (env.isDas()) {
+        if (env.isDas() && !env.isMicro()) {
             port = Integer.valueOf(configuration.getDasPort());
         }
         config.getNetworkConfig().setPort(port);
