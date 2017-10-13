@@ -263,12 +263,14 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
 
-            if (archiveHandler.getArchiveType().equals("ejb")
-                    && (archive.exists(EJB_JAR_XML)
-                    || archive.exists(SUN_EJB_JAR_XML)
-                    || archive.exists(GF_EJB_JAR_XML))) {
+            if (!forceName) {
+                if (archiveHandler.getArchiveType().equals("ejb")
+                        && (archive.exists(EJB_JAR_XML)
+                        || archive.exists(SUN_EJB_JAR_XML)
+                        || archive.exists(GF_EJB_JAR_XML))) {
 
-                name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
+                    name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
+                }
             }
 
             if (name == null) {
