@@ -46,7 +46,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  * @author Andrew Pielage
  */
-public class CircuitBreakerState {
+public class CircuitBreakerState {  
+        
+    public enum CircuitState {
+        OPEN, CLOSED, HALF_OPEN
+    }
     
     private final BlockingQueue<Boolean> closedResultsQueue;
     private volatile int halfOpenSuccessfulResultsCounter;
@@ -57,9 +61,18 @@ public class CircuitBreakerState {
         halfOpenSuccessfulResultsCounter = 0;
     }
     
+    public CircuitState getCircuitState() {
+        return circuitState;
+    }
+    
+    public void setCircuitState(CircuitState circuitState) {
+        this.circuitState = circuitState;
+    }
+    
     public void recordClosedResult(Boolean result) {
-        if (!closedResultsQueue.add(result)) {
+        if (!closedResultsQueue.offer(result)) {
             closedResultsQueue.poll();
+            closedResultsQueue.offer(result);
         }
     }
     
@@ -73,14 +86,6 @@ public class CircuitBreakerState {
     
     public int getHalfOpenSuccessFulResultCounter() {
         return halfOpenSuccessfulResultsCounter;
-    }
-    
-    public CircuitState getCircuitState() {
-        return circuitState;
-    }
-    
-    public void setCircuitState(CircuitState circuitState) {
-        this.circuitState = circuitState;
     }
     
     public Boolean isOverFailureThreshold(long failureThreshold) {
@@ -101,9 +106,5 @@ public class CircuitBreakerState {
         }
         
         return over;
-    }
-    
-    public enum CircuitState {
-        OPEN, CLOSED, HALF_OPEN
     }
 }

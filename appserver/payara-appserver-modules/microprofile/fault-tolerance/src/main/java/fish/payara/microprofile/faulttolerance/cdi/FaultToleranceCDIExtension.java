@@ -56,6 +56,7 @@ import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
  * @author Andrew Pielage
  */
 public class FaultToleranceCDIExtension implements Extension {
+    
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
         beforeBeanDiscovery.addInterceptorBinding(Bulkhead.class);
         AnnotatedType<BulkheadInterceptor> bulkhead = beanManager.createAnnotatedType(BulkheadInterceptor.class);

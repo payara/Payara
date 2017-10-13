@@ -45,6 +45,7 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Priority;
 import javax.enterprise.inject.Intercepted;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -62,6 +63,7 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor
 @CircuitBreaker
+@Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class CircuitBreakerInterceptor implements Serializable {
     
     @Inject

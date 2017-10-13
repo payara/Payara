@@ -60,43 +60,51 @@ public class FaultToleranceCdiUtils {
             Class<A> annotationClass, InvocationContext invocationContext) {
         A annotation = null;
         
-        if (annotatedClass.isAnnotationPresent(annotationClass)) {
-            annotation = annotatedClass.getAnnotation(annotationClass);
+        // Try to get the annotation from the method, otherwise attempt to get it from the class
+        if (invocationContext.getMethod().isAnnotationPresent(annotationClass)) {
+            annotation = invocationContext.getMethod().getAnnotation(annotationClass);
         } else {
-            Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
-            
-            while (!annotations.isEmpty()) {
-                Annotation a = annotations.remove();
+            if (annotatedClass.isAnnotationPresent(annotationClass)) {
+                annotation = annotatedClass.getAnnotation(annotationClass);
+            } else {
+                // Account for Stereotypes
+                Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
 
-                if (a.annotationType().equals(annotationClass)) {
-                    annotation = annotationClass.cast(a);
-                    break;
-                }
+                while (!annotations.isEmpty()) {
+                    Annotation a = annotations.remove();
 
-                if (beanManager.isStereotype(a.annotationType())) {
-                    annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
+                    if (a.annotationType().equals(annotationClass)) {
+                        annotation = annotationClass.cast(a);
+                        break;
+                    }
+
+                    if (beanManager.isStereotype(a.annotationType())) {
+                        annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
+                    }
                 }
             }
         }
         
-        // If we haven't found the annotation yet, try to get it from the CDI bindings
-        if (annotation == null) {
-            Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get(CDI_BINDINGS_CLASS);
+        // ************ WELD 3 ONLY ************
+//        // If we still haven't found the annotation yet, try to get it from the CDI bindings
+//        if (annotation == null) {
+//            Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get(CDI_BINDINGS_CLASS);
+//        
+//            if (bindings != null) {
+//                for (Annotation binding : bindings) {
+//                    if (binding.annotationType().equals(annotationClass)) {
+//                        annotation = annotationClass.cast(binding);
+//
+//                        if (annotation != null) {
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }    
+        // ************ END OF WELD 3 ONLY ************
         
-            if (bindings != null) {
-                for (Annotation binding : bindings) {
-                    if (binding.annotationType().equals(annotationClass)) {
-                        annotation = annotationClass.cast(binding);
-
-                        if (annotation != null) {
-                            break;
-                        }
-                    }
-                }
-            }
-        }    
-        
-        // If we still can't find it, give up and throw an exception
+        // If we still can't find the annotation, give up and throw an exception
         if (annotation == null) {
             throw new IllegalStateException("Annotation of type \"" + annotationClass.getCanonicalName() 
                     + "\" not found on " + annotatedClass.getCanonicalName());
