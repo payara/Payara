@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.0.0.Alpha2-SNAPSHOT</version>
+        <version>5.0.0.Alpha2</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
         
@@ -61,7 +61,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-        <tag>payara-server-5.0.0.Alpha2-SNAPSHOT</tag>
+        <tag>payara-server-5.0.0.Alpha2</tag>
     </scm>
     
     

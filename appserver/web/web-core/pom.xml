@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.web</groupId>
     	    <artifactId>web</artifactId>
-        <version>5.0.0.Alpha2-SNAPSHOT</version>
+        <version>5.0.0.Alpha2</version>
     </parent>
     
     <artifactId>web-core</artifactId>
