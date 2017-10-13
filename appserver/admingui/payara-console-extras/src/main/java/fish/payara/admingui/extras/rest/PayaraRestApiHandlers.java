@@ -52,15 +52,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
+import static org.glassfish.weld.WeldDeployer.DEV_MODE_PROPERTY;
 
 /**
  * A class containing Payara specific handler methods for the REST API
  * @author Andrew Pielage
  */
-public class PayaraRestApiHandlers
-{
-    
-    private static final String DEV_MODE_PROPERTY = "org.jboss.weld.development";
+public class PayaraRestApiHandlers {
     
     /**
      * Gets information about the instances current registered to the Hazelcast cluster.
