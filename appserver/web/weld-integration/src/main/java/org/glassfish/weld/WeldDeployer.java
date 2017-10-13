@@ -657,6 +657,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 ContextParameter param = cpEnumeration.nextElement();
                 if (DEV_MODE_PROPERTY.equals(param.getName()) && Boolean.valueOf(param.getValue())) {
                     devMode = true;
+                    WeldUtils.setCDIDevMode(context, devMode);
                     break;
                 }
             }
