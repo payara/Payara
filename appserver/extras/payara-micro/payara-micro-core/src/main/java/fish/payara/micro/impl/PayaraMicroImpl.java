@@ -1130,8 +1130,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case addlibs:
                     case addjars:
-                        String separator = OS.isWindows() ? ";" : ":";
-                        List<File> files = UberJarCreator.parseFileList(value, separator);
+                        List<File> files = UberJarCreator.parseFileList(value, File.pathSeparator);
                         if(!files.isEmpty()) {
                             if (libraries == null) {
                                 libraries = new LinkedList<>();
