@@ -78,7 +78,6 @@ import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.server.logging.ODLLogFormatter;
-import com.sun.enterprise.util.OS;
 import fish.payara.micro.PayaraMicroRuntime;
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.loader.OpenURLClassLoader;
