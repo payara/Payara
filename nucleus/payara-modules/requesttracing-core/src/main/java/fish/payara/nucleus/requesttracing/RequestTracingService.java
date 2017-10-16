@@ -257,8 +257,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
         if (!isRequestTracingEnabled()) {
             return null;
         }
-        // Generate a random number between 1 and 100. If the sample chance is greater than the number, then the request is not traced.
-        if (Integer.parseInt(configuration.getSampleChance()) > (new Random(System.currentTimeMillis()).nextInt(100) + 1)) {
+        // Generate a random number between 1 and 100. If the sample chance is less than the random number, then the request is not traced.
+        int randomNumber = new Random(System.currentTimeMillis()).nextInt(100) + 1;
+        if (Integer.parseInt(configuration.getSampleChance()) < randomNumber) {
             return null;
         }
         RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, "StartTrace");
