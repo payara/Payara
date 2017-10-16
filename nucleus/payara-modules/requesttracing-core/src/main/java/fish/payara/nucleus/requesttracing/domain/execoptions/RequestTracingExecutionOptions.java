@@ -47,8 +47,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Configuration class that holds enable/disable value of request tracing, the threshold value with its timeunit that will
- * trigger request tracing mechanism, and a list of notifier configurations.
+ * Configuration class that holds the dynamic configuration of the Request
+ * Tracing service.
  *
  * @author mertcaliskan
  */
@@ -67,9 +67,11 @@ public class RequestTracingExecutionOptions {
     public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
         getNotifierExecutionOptionsList().put(notifierExecutionOptions.getNotifierType(), notifierExecutionOptions);
     }
+
     public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
         getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
     }
+
     public void resetNotifierExecutionOptions() {
         getNotifierExecutionOptionsList().clear();
     }
@@ -144,16 +146,16 @@ public class RequestTracingExecutionOptions {
 
     @Override
     public String toString() {
-        return "RequestTracingExecutionOptions{" +
-                "enabled=" + enabled +
-                ", thresholdValue=" + thresholdValue +
-                ", thresholdUnit=" + thresholdUnit +
-                ", sampleChance=" + sampleChance +
-                ", reservoirSamplingEnabled=" + reservoirSamplingEnabled +
-                ", historicalTraceEnabled=" + historicalTraceEnabled +
-                ", historicalTraceStoreSize=" + historicalTraceStoreSize +
-                ", historicalTraceTimeout=" + historicalTraceTimeout +
-                ", notifierExecutionOptionsList=" + notifierExecutionOptionsList +
-                '}';
+        return "RequestTracingExecutionOptions{"
+                + "enabled=" + enabled
+                + ", thresholdValue=" + thresholdValue
+                + ", thresholdUnit=" + thresholdUnit
+                + ", sampleChance=" + sampleChance
+                + ", reservoirSamplingEnabled=" + reservoirSamplingEnabled
+                + ", historicalTraceEnabled=" + historicalTraceEnabled
+                + ", historicalTraceStoreSize=" + historicalTraceStoreSize
+                + ", historicalTraceTimeout=" + historicalTraceTimeout
+                + ", notifierExecutionOptionsList=" + notifierExecutionOptionsList
+                + '}';
     }
 }

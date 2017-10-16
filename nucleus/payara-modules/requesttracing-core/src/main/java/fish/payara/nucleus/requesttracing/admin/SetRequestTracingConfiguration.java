@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -39,51 +38,64 @@
  */
 package fish.payara.nucleus.requesttracing.admin;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.util.Properties;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-
+import fish.payara.nucleus.notification.TimeUtil;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+
+import javax.inject.Inject;
+import java.beans.PropertyVetoException;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Admin command to set Request Tracing services configuration
+ * Admin command to enable/disable all request tracing services defined in
+ * domain.xml.
  *
- * @author Susan Rai
+ * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "set-requesttracing-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.requesttracing.configuration")
+@I18n("requesttracing.configure")
 @RestEndpoints({
     @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-requesttracing-configuration",
-            description = "Set Request Tracing Services Configuration")
+            description = "Configures the Request Tracing Service")
 })
 public class SetRequestTracingConfiguration implements AdminCommand {
 
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(SetRequestTracingConfiguration.class);
+
+    @Inject
+    ServerEnvironment server;
+
+    @Inject
+    RequestTracingService service;
+
     @Inject
     protected Logger logger;
+
+    @Inject
+    protected Target targetUtil;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -106,13 +118,6 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "thresholdValue", optional = true)
     private String value;
 
-    @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
-    private Boolean notifierDynamic;
-
-    @Deprecated
-    @Param(name = "notifierEnabled", optional = true)
-    private Boolean notifierEnabled;
-
     @Param(name = "historicalTraceEnabled", optional = true)
     private Boolean historicalTraceEnabled;
 
@@ -122,14 +127,8 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "historicalTraceStoreTimeout", optional = true)
     private String historicalTraceStoreTimeout;
 
-    @Inject
-    ServiceLocator serviceLocator;
-
-    CommandRunner.CommandInvocation inv;
-
     @Override
     public void execute(AdminCommandContext context) {
-        final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
@@ -141,67 +140,105 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             return;
         }
 
-        enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
-        enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext);
+        Config config = targetUtil.getConfig(target);
+        final RequestTracingServiceConfiguration requestTracingServiceConfiguration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
+
+        if (requestTracingServiceConfiguration != null) {
+            try {
+                ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
+                    @Override
+                    public Object run(final RequestTracingServiceConfiguration requestTracingServiceConfigurationProxy) throws
+                            PropertyVetoException, TransactionFailure {
+                        if (enabled != null) {
+                            requestTracingServiceConfigurationProxy.enabled(enabled.toString());
+                        }
+                        if (sampleChance != null) {
+                            requestTracingServiceConfigurationProxy.setSampleChance(sampleChance.toString());
+                        }
+                        if (reservoirSamplingEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
+                        }
+                        if (unit != null) {
+                            requestTracingServiceConfigurationProxy.setThresholdUnit(unit);
+                        }
+                        if (value != null) {
+                            requestTracingServiceConfigurationProxy.setThresholdValue(value);
+                        }
+                        if (historicalTraceEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                        }
+                        if (historicalTraceStoreSize != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
+                        if (historicalTraceStoreTimeout != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+                        }
+
+                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        return requestTracingServiceConfigurationProxy;
+                    }
+                }, requestTracingServiceConfiguration);
+            } catch (TransactionFailure ex) {
+                logger.log(Level.WARNING, "Exception during command ", ex);
+                actionReport.setMessage(ex.getCause().getMessage());
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+        }
+
+        if (dynamic) {
+            if (server.isDas()) {
+                if (targetUtil.getConfig(target).isDas()) {
+                    configureDynamically(actionReport);
+                }
+            } else {
+                configureDynamically(actionReport);
+            }
+        }
     }
 
-    private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-
-        inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
-
-        ParameterMap params = new ParameterMap();
-        params.add("enabled", enabled.toString());
-        params.add("target", target);
-        params.add("dynamic", dynamic.toString());
+    private void configureDynamically(ActionReport actionReport) {
+        service.getExecutionOptions().setEnabled(enabled);
         if (sampleChance != null) {
-            params.add("sampleChance", sampleChance.toString());
+            service.getExecutionOptions().setSampleChance(Integer.valueOf(sampleChance));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplechance.success",
+                    "Request Tracing Service Sample Chance is set to {0}.", sampleChance) + "\n");
         }
         if (reservoirSamplingEnabled != null) {
-            params.add("reservoirSamplingEnabled", reservoirSamplingEnabled.toString());
+            service.getExecutionOptions().setReservoirSamplingEnabled(reservoirSamplingEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.reservoirsamplingenabled.success",
+                    "Request Tracing Service Reservoir Sampling Enabled Value is set to {0}.", reservoirSamplingEnabled) + "\n");
         }
-        params.add("thresholdUnit", unit);
-        params.add("thresholdValue", value);
-        
+        if (value != null) {
+            service.getExecutionOptions().setThresholdValue(Long.valueOf(value));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",
+                    "Request Tracing Service Threshold Value is set to {0}.", value) + "\n");
+        }
+        if (unit != null) {
+            service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(unit));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdunit.success",
+                    "Request Tracing Service Threshold Unit is set to {0}.", unit) + "\n");
+        }
+
         if (historicalTraceEnabled != null) {
-            params.add("historicalTraceEnabled", historicalTraceEnabled.toString());
+            service.getExecutionOptions().setHistoricalTraceEnabled(historicalTraceEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.status.success",
+                    "Request Tracing Historical Trace status is set to {0}.", historicalTraceEnabled) + "\n");
         }
-        
+
         if (historicalTraceStoreSize != null) {
-            params.add("historicalTraceStoreSize", historicalTraceStoreSize.toString());
+            service.getExecutionOptions().setHistoricalTraceStoreSize(historicalTraceStoreSize);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.storesize.success",
+                    "Request Tracing Historical Trace Store Size is set to {0}.", historicalTraceStoreSize) + "\n");
         }
 
         if (historicalTraceStoreTimeout != null) {
-            params.add("historicalTraceStoreTimeout", historicalTraceStoreTimeout.toString());
+            service.getExecutionOptions().setHistoricalTraceTimeout(TimeUtil.setStoreTimeLimit(historicalTraceStoreTimeout));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.timeout.success",
+                    "Request Tracing Historical Trace Store Timeout is set to {0}.", historicalTraceStoreTimeout) + "\n");
         }
 
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-    }
-
-    private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-
-        inv = runner.getCommandInvocation("requesttracing-log-notifier-configure", subReport, context.getSubject());
-
-        ParameterMap params = new ParameterMap();
-        params.add("dynamic", notifierDynamic.toString());
-        params.add("target", target);
-        if (notifierEnabled != null) {
-            params.add("enabled", notifierEnabled.toString());
-        }
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
+        service.bootstrapRequestTracingService();
     }
 
     private boolean validate(ActionReport actionReport) {

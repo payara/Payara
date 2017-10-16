@@ -49,7 +49,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 /**
- * Main configuration class that defines whole configuration for request tracing services.
+ * Configuration class that holds the configuration of the Request
+ * Tracing service.
  *
  * @author mertcaliskan
  */
