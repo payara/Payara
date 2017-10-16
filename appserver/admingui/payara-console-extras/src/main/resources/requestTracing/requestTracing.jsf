@@ -55,7 +55,7 @@
         method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "reservoirSamplingEnabled", "notifierEnabled", "dynamic", "notifierDynamic", "historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "reservoirSamplingEnabled", "notifierEnabled", "dynamic", "historicalTraceEnabled"});
         py.getHistoricRequestTracingMessages(parentEndpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
@@ -68,7 +68,6 @@
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
-        setPageSessionAttribute(key="notifierDynamic", value="true");
 
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
         setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
@@ -92,7 +91,6 @@
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="reservoirSamplingEnabled" value="#{pageSession.reservoirSamplingEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
                     value="#{pageSession.historicalTraceEnabled}");
                     prepareSuccessfulMsg();
