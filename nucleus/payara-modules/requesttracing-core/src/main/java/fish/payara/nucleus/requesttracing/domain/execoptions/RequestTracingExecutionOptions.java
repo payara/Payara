@@ -56,6 +56,7 @@ public class RequestTracingExecutionOptions {
 
     private boolean enabled;
     private Integer sampleChance;
+    private boolean applicationsOnlyEnabled;
     private boolean reservoirSamplingEnabled;
     private Long thresholdValue;
     private TimeUnit thresholdUnit;
@@ -90,6 +91,14 @@ public class RequestTracingExecutionOptions {
 
     public void setSampleChance(Integer sampleChance) {
         this.sampleChance = sampleChance;
+    }
+
+    public Boolean getApplicationsOnlyEnabled() {
+        return applicationsOnlyEnabled;
+    }
+
+    public void setApplicationsOnlyEnabled(Boolean applicationsOnlyEnabled) {
+        this.applicationsOnlyEnabled = applicationsOnlyEnabled;
     }
 
     public Boolean getReservoirSamplingEnabled() {

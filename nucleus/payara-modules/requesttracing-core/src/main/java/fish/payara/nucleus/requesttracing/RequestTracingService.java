@@ -171,6 +171,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
         if (configuration != null) {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
             executionOptions.setSampleChance(Integer.valueOf(configuration.getSampleChance()));
+            executionOptions.setApplicationsOnlyEnabled(Boolean.parseBoolean(configuration.getApplicationsOnlyEnabled()));
             executionOptions.setReservoirSamplingEnabled(Boolean.parseBoolean(configuration.getReservoirSamplingEnabled()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
@@ -255,6 +256,10 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     public UUID startTrace() {
         if (!isRequestTracingEnabled()) {
+            return null;
+        }
+        // Check if the trace came from an admin listener. If it did, and 'applications only' is enabled, ignore the trace.
+        if (executionOptions.getApplicationsOnlyEnabled() == true && Thread.currentThread().getName().matches("admin-thread-pool::admin-listener\\([0-9]+\\)")) {
             return null;
         }
         // Generate a random number between 1 and 100. If the sample chance is more than the random number, then the request is traced.

@@ -109,6 +109,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "sampleChance", optional = true)
     private Integer sampleChance;
 
+    @Param(name = "applicationsOnlyEnabled", optional = true)
+    private Boolean applicationsOnlyEnabled;
+
     @Param(name = "reservoirSamplingEnabled", optional = true)
     private Boolean reservoirSamplingEnabled;
 
@@ -155,6 +158,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                         if (sampleChance != null) {
                             requestTracingServiceConfigurationProxy.setSampleChance(sampleChance.toString());
                         }
+                        if (applicationsOnlyEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setApplicationsOnlyEnabled(applicationsOnlyEnabled.toString());
+                        }
                         if (reservoirSamplingEnabled != null) {
                             requestTracingServiceConfigurationProxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
                         }
@@ -200,9 +206,14 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     private void configureDynamically(ActionReport actionReport) {
         service.getExecutionOptions().setEnabled(enabled);
         if (sampleChance != null) {
-            service.getExecutionOptions().setSampleChance(Integer.valueOf(sampleChance));
+            service.getExecutionOptions().setSampleChance(sampleChance);
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplechance.success",
                     "Request Tracing Service Sample Chance is set to {0}.", sampleChance) + "\n");
+        }
+        if (applicationsOnlyEnabled != null) {
+            service.getExecutionOptions().setApplicationsOnlyEnabled(applicationsOnlyEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.applicationsonly.success",
+                    "Request Tracing Applications Only filter is set to {0}.", applicationsOnlyEnabled) + "\n");
         }
         if (reservoirSamplingEnabled != null) {
             service.getExecutionOptions().setReservoirSamplingEnabled(reservoirSamplingEnabled);

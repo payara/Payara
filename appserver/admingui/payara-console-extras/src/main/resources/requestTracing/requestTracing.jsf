@@ -55,16 +55,19 @@
         method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "reservoirSamplingEnabled", "notifierEnabled", "dynamic", "historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "reservoirSamplingEnabled", "applicationsOnlyEnabled", "dynamic", "historicalTraceEnabled"});
         py.getHistoricRequestTracingMessages(parentEndpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
-        setPageSessionAttribute(key="enabledSelected", value="true");
+            setPageSessionAttribute(key="enabledSelected", value="true");
         }
         if (#{pageSession.valueMap['reservoirSamplingEnabled']}=true) {
-        setPageSessionAttribute(key="reservoirSamplingEnabledSelected", value="true");
+            setPageSessionAttribute(key="reservoirSamplingEnabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['applicationsOnlyEnabled']}=true) {
+            setPageSessionAttribute(key="applicationsOnlyEnabledSelected", value="true");
         }
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
-        setPageSessionAttribute(key="historicalTraceEnabled", value="true");
+            setPageSessionAttribute(key="historicalTraceEnabled", value="true");
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
@@ -72,8 +75,8 @@
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
         setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
         if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
-        convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
-        gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
+            convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
+            gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
         }
         py.sortRequestTracingEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.subReports.get(0).extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
         convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
@@ -90,6 +93,7 @@
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="reservoirSamplingEnabled" value="#{pageSession.reservoirSamplingEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="applicationsOnlyEnabled" value="#{pageSession.applicationsOnlyEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
                     value="#{pageSession.historicalTraceEnabled}");
@@ -116,6 +120,9 @@
     <sun:propertySheetSection id="requestTracingFilters">
         <sun:property id="sampleChanceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.sampleChance}"  helpText="$resource{i18nrt.requestTracing.configuration.sampleChanceHelp}">
             <sun:textField id="sampleChance" columns="$int{3}"  styleClass="integer" maxLength="3" text="#{pageSession.valueMap['sampleChance']}" />
+        </sun:property>
+        <sun:property id="applicationsOnlyProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.applicationsOnlyEnabled}"  helpText="$resource{i18nrt.requestTracing.configuration.applicationsOnlyEnabledHelp}">
+            <sun:checkbox id="applicationsOnlyProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.applicationsOnlyEnabledSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
             <sun:dropDown id="thresholdUnit" selected="#{pageSession.valueMap['thresholdUnit']}" labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />

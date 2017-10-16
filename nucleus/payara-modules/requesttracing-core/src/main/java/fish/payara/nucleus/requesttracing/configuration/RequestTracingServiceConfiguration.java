@@ -67,6 +67,10 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     String getSampleChance();
     void setSampleChance(String value) throws PropertyVetoException;
     
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getApplicationsOnlyEnabled();
+    void setApplicationsOnlyEnabled(String value) throws PropertyVetoException;
+    
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getReservoirSamplingEnabled();
     void setReservoirSamplingEnabled(String value) throws PropertyVetoException;

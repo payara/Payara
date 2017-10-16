@@ -116,6 +116,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         
         mainActionReport.appendMessage("Request Tracing Service enabled?: " + configuration.getEnabled() + "\n");
         mainActionReport.appendMessage("Request Tracing Sample Chance: " + configuration.getSampleChance() + "%\n");
+        mainActionReport.appendMessage("Request Tracing Applications Only?: " + configuration.getApplicationsOnlyEnabled() + "\n");
         
         if (Boolean.parseBoolean(configuration.getEnabled())) {
             mainActionReport.appendMessage("Historical Tracing Enabled?: " + configuration.getHistoricalTraceEnabled() 
@@ -142,6 +143,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
         mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
         mainExtraPropsMap.put("sampleChance", configuration.getSampleChance());
+        mainExtraPropsMap.put("applicationsOnlyEnabled", configuration.getApplicationsOnlyEnabled());
         mainExtraPropsMap.put("reservoirSamplingEnabled", configuration.getReservoirSamplingEnabled());
         mainExtraPropsMap.put("thresholdUnit", configuration.getThresholdUnit());
         mainExtraPropsMap.put("thresholdValue", configuration.getThresholdValue());
