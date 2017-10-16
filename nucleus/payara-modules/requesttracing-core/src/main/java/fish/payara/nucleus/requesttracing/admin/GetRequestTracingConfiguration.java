@@ -116,11 +116,13 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         
         mainActionReport.appendMessage("Request Tracing Service enabled?: " + configuration.getEnabled() + "\n");
         mainActionReport.appendMessage("Request Tracing Sample Chance: " + configuration.getSampleChance() + "%\n");
-        mainActionReport.appendMessage("Request Tracing Reservoir Sampling enabled?: " + configuration.getReservoirSamplingEnabled()+ "\n");
         
         if (Boolean.parseBoolean(configuration.getEnabled())) {
             mainActionReport.appendMessage("Historical Tracing Enabled?: " + configuration.getHistoricalTraceEnabled() 
                     + "\n");
+            if (Boolean.parseBoolean(configuration.getHistoricalTraceEnabled())) {
+                mainActionReport.appendMessage("Reservoir Sampling enabled?: " + configuration.getReservoirSamplingEnabled()+ "\n");
+            }
             if (Boolean.parseBoolean(configuration.getHistoricalTraceEnabled())) {
                 mainActionReport.appendMessage("Historical Tracing Store Size: " 
                         + configuration.getHistoricalTraceStoreSize() + "\n");

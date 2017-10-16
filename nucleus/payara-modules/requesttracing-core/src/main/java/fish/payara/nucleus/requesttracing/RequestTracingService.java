@@ -70,6 +70,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -254,6 +255,10 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     public UUID startTrace() {
         if (!isRequestTracingEnabled()) {
+            return null;
+        }
+        // Generate a random number between 1 and 100. If the sample chance is greater than the number, then the request is not traced.
+        if (Integer.parseInt(configuration.getSampleChance()) > (new Random(System.currentTimeMillis()).nextInt(100) + 1)) {
             return null;
         }
         RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, "StartTrace");

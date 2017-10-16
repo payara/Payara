@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Configuration class that holds enable/disable value of request tracing, the threshold value with its timeunit that will
- * trigger request tracing mechainsm, and a list of notifier configurations.
+ * trigger request tracing mechanism, and a list of notifier configurations.
  *
  * @author mertcaliskan
  */
@@ -148,6 +148,8 @@ public class RequestTracingExecutionOptions {
                 "enabled=" + enabled +
                 ", thresholdValue=" + thresholdValue +
                 ", thresholdUnit=" + thresholdUnit +
+                ", sampleChance=" + sampleChance +
+                ", reservoirSamplingEnabled=" + reservoirSamplingEnabled +
                 ", historicalTraceEnabled=" + historicalTraceEnabled +
                 ", historicalTraceStoreSize=" + historicalTraceStoreSize +
                 ", historicalTraceTimeout=" + historicalTraceTimeout +
