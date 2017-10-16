@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 public class RequestTracingExecutionOptions {
 
     private boolean enabled;
+    private Integer sampleChance;
     private Long thresholdValue;
     private TimeUnit thresholdUnit;
     private boolean historicalTraceEnabled;
@@ -78,6 +79,14 @@ public class RequestTracingExecutionOptions {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Integer getSampleChance() {
+        return sampleChance;
+    }
+
+    public void setSampleChance(Integer sampleChance) {
+        this.sampleChance = sampleChance;
     }
 
     public Long getThresholdValue() {

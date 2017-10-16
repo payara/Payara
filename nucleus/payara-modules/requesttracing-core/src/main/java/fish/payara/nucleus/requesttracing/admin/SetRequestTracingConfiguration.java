@@ -94,6 +94,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
+    @Param(name = "sampleChance", optional = true)
+    private Integer sampleChance;
+
     @Param(name = "thresholdUnit", optional = true)
     private String unit;
 
@@ -149,6 +152,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         params.add("enabled", enabled.toString());
         params.add("target", target);
         params.add("dynamic", dynamic.toString());
+        params.add("sampleChance", sampleChance.toString());
         params.add("thresholdUnit", unit);
         params.add("thresholdValue", value);
         

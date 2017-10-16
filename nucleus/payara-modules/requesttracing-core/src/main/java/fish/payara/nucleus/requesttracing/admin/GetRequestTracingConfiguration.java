@@ -137,6 +137,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
         mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
         mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
+        mainExtraPropsMap.put("sampleChance", configuration.getSampleChance());
         mainExtraPropsMap.put("thresholdUnit", configuration.getThresholdUnit());
         mainExtraPropsMap.put("thresholdValue", configuration.getThresholdValue());
         

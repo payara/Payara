@@ -107,6 +107,9 @@ public class RequestTracingConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
+    @Param(name = "sampleChance", optional = true)
+    private Integer sampleChance;
+
     @Param(name = "thresholdUnit", optional = true)
     private String unit;
 
@@ -146,6 +149,9 @@ public class RequestTracingConfigurer implements AdminCommand {
                             PropertyVetoException, TransactionFailure {
                         if (enabled != null) {
                             requestTracingServiceConfigurationProxy.enabled(enabled.toString());
+                        }
+                        if (sampleChance != null) {
+                            requestTracingServiceConfigurationProxy.setSampleChance(sampleChance.toString());
                         }
                         if (unit != null) {
                             requestTracingServiceConfigurationProxy.setThresholdUnit(unit);
@@ -188,6 +194,11 @@ public class RequestTracingConfigurer implements AdminCommand {
 
     private void configureDynamically(ActionReport actionReport) {
         service.getExecutionOptions().setEnabled(enabled);
+        if (sampleChance != null) {
+            service.getExecutionOptions().setSampleChance(Integer.valueOf(sampleChance));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplechance.success",
+                    "Request Tracing Service Sample Chance is set to {0}.", sampleChance) + "\n");
+        }
         if (value != null) {
             service.getExecutionOptions().setThresholdValue(Long.valueOf(value));
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",

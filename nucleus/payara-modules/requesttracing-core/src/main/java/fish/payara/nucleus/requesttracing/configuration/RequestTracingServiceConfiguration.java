@@ -45,6 +45,7 @@ import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 /**
@@ -58,6 +59,12 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
     void enabled(String value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "100", dataType = Integer.class)
+    @Min(value = 0)
+    @Max(value = 100)
+    String getSampleChance();
+    void setSampleChance(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "30", dataType = Long.class)
     @Min(value = 0)

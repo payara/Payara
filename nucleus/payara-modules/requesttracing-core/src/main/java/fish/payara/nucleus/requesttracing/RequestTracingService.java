@@ -169,6 +169,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
     public void bootstrapRequestTracingService() {
         if (configuration != null) {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
+            executionOptions.setSampleChance(Integer.valueOf(configuration.getSampleChance()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
             executionOptions.setHistoricalTraceEnabled(Boolean.parseBoolean(configuration.getHistoricalTraceEnabled()));
