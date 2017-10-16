@@ -110,6 +110,9 @@ public class RequestTracingConfigurer implements AdminCommand {
     @Param(name = "sampleChance", optional = true)
     private Integer sampleChance;
 
+    @Param(name = "reservoirSamplingEnabled", optional = true)
+    private Boolean reservoirSamplingEnabled;
+
     @Param(name = "thresholdUnit", optional = true)
     private String unit;
 
@@ -152,6 +155,9 @@ public class RequestTracingConfigurer implements AdminCommand {
                         }
                         if (sampleChance != null) {
                             requestTracingServiceConfigurationProxy.setSampleChance(sampleChance.toString());
+                        }
+                        if (reservoirSamplingEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
                         }
                         if (unit != null) {
                             requestTracingServiceConfigurationProxy.setThresholdUnit(unit);
@@ -198,6 +204,11 @@ public class RequestTracingConfigurer implements AdminCommand {
             service.getExecutionOptions().setSampleChance(Integer.valueOf(sampleChance));
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplechance.success",
                     "Request Tracing Service Sample Chance is set to {0}.", sampleChance) + "\n");
+        }
+        if (reservoirSamplingEnabled != null) {
+            service.getExecutionOptions().setReservoirSamplingEnabled(reservoirSamplingEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.reservoirsamplingenabled.success",
+                    "Request Tracing Service Reservoir Sampling Enabled Value is set to {0}.", reservoirSamplingEnabled) + "\n");
         }
         if (value != null) {
             service.getExecutionOptions().setThresholdValue(Long.valueOf(value));

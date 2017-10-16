@@ -55,10 +55,13 @@
                 method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "notifierEnabled", "dynamic", "notifierDynamic", "historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "reservoirSamplingEnabled", "notifierEnabled", "dynamic", "notifierDynamic", "historicalTraceEnabled"});
         py.getHistoricRequestTracingMessages(parentEndpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['reservoirSamplingEnabled']}=true) {
+            setPageSessionAttribute(key="reservoirSamplingEnabledSelected", value="true");
         }
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
             setPageSessionAttribute(key="historicalTraceEnabled", value="true");
@@ -87,6 +90,7 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="reservoirSamplingEnabled" value="#{pageSession.reservoirSamplingEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
@@ -111,6 +115,9 @@
         </sun:property>
         <sun:property id="sampleChanceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.sampleChance}"  helpText="$resource{i18nrt.requestTracing.configuration.sampleChanceHelp}">
             <sun:textField id="sampleChance" columns="$int{3}"  styleClass="integer" maxLength="3" text="#{pageSession.valueMap['sampleChance']}" />
+        </sun:property>
+        <sun:property id="reservoirSamplingEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.reservoirSamplingEnabled}"  helpText="$resource{i18nrt.requestTracing.configuration.reservoirSamplingEnabledHelp}">
+            <sun:checkbox id="reservoirSamplingEnabledProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.reservoirSamplingEnabledSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
             <sun:dropDown id="thresholdUnit" selected="#{pageSession.valueMap['thresholdUnit']}" labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />

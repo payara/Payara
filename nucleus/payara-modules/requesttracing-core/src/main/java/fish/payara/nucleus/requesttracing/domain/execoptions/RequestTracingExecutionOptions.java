@@ -56,6 +56,7 @@ public class RequestTracingExecutionOptions {
 
     private boolean enabled;
     private Integer sampleChance;
+    private boolean reservoirSamplingEnabled;
     private Long thresholdValue;
     private TimeUnit thresholdUnit;
     private boolean historicalTraceEnabled;
@@ -87,6 +88,14 @@ public class RequestTracingExecutionOptions {
 
     public void setSampleChance(Integer sampleChance) {
         this.sampleChance = sampleChance;
+    }
+
+    public Boolean getReservoirSamplingEnabled() {
+        return reservoirSamplingEnabled;
+    }
+
+    public void setReservoirSamplingEnabled(Boolean reservoirSamplingEnabled) {
+        this.reservoirSamplingEnabled = reservoirSamplingEnabled;
     }
 
     public Long getThresholdValue() {

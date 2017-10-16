@@ -97,6 +97,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "sampleChance", optional = true)
     private Integer sampleChance;
 
+    @Param(name = "reservoirSamplingEnabled", optional = true)
+    private Boolean reservoirSamplingEnabled;
+
     @Param(name = "thresholdUnit", optional = true)
     private String unit;
 
@@ -152,7 +155,12 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         params.add("enabled", enabled.toString());
         params.add("target", target);
         params.add("dynamic", dynamic.toString());
-        params.add("sampleChance", sampleChance.toString());
+        if (sampleChance != null) {
+            params.add("sampleChance", sampleChance.toString());
+        }
+        if (reservoirSamplingEnabled != null) {
+            params.add("reservoirSamplingEnabled", reservoirSamplingEnabled.toString());
+        }
         params.add("thresholdUnit", unit);
         params.add("thresholdValue", value);
         
