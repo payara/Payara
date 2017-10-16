@@ -53,6 +53,7 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 import org.glassfish.internal.api.Globals;
 
@@ -73,18 +74,36 @@ public class BulkheadInterceptor implements Serializable {
     private Bean<?> interceptedBean;
     
     @AroundInvoke
-    public Object bulkhead(InvocationContext invocationContext) throws Exception {
+    public Object intercept(InvocationContext invocationContext) throws Exception {
+        Object proceededInvocationContext = null;
+        
+        try {
+            proceededInvocationContext = bulkhead(invocationContext);
+        } catch (Exception ex) {
+            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+            
+            if (fallback != null) {
+                FallbackPolicy fallbackInterceptor = new FallbackPolicy(fallback);
+                proceededInvocationContext = fallbackInterceptor.fallback(invocationContext);
+            }
+        }
+        
+        return proceededInvocationContext;
+    }
+    
+    
+    private Object bulkhead(InvocationContext invocationContext) throws Exception {
+        Object proceededInvocationContext = null;
+        
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         
-        Bulkhead bulkhead = FaultToleranceCdiUtils.getAnnotation(beanManager, interceptedBean.getBeanClass(), 
-                Bulkhead.class, invocationContext);
+        Bulkhead bulkhead = FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext);
 
         Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(bulkhead);
         
-        Object proceededInvocationContext = null;
-        
-        if (invocationContext.getMethod().getAnnotation(Asynchronous.class) != null) {
+        // If the Asynchronous annotation is present, use threadpool style, otherwise use semaphore style
+        if (FaultToleranceCdiUtils.getAnnotation(beanManager, Asynchronous.class, invocationContext) != null) {
             Semaphore bulkheadExecutionQueueSemaphore = 
                     faultToleranceService.getBulkheadExecutionQueueSemaphore(bulkhead);
             
@@ -106,7 +125,6 @@ public class BulkheadInterceptor implements Serializable {
                         // Let the exception propagate further up - we just want to release the semaphores
                         throw ex;
                     }
-                    
                     
                     // Release both permits
                     bulkheadExecutionSemaphore.release();

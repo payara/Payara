@@ -40,7 +40,6 @@
 package fish.payara.microprofile.faulttolerance;
 
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
-import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.CircuitState;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;

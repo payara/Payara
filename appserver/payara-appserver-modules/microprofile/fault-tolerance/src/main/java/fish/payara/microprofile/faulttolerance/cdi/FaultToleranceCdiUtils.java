@@ -42,9 +42,7 @@ package fish.payara.microprofile.faulttolerance.cdi;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.Queue;
-import java.util.Set;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.interceptor.InvocationContext;
 
@@ -54,11 +52,12 @@ import javax.interceptor.InvocationContext;
  */
 public class FaultToleranceCdiUtils {
 
-    private static final String CDI_BINDINGS_CLASS = "org.jboss.weld.interceptor.bindings";
+//    private static final String CDI_BINDINGS_CLASS = "org.jboss.weld.interceptor.bindings";
     
-    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<?> annotatedClass,
-            Class<A> annotationClass, InvocationContext invocationContext) {
+    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, 
+            InvocationContext invocationContext) {
         A annotation = null;
+        Class<?> annotatedClass = invocationContext.getMethod().getDeclaringClass();
         
         // Try to get the annotation from the method, otherwise attempt to get it from the class
         if (invocationContext.getMethod().isAnnotationPresent(annotationClass)) {
@@ -103,12 +102,6 @@ public class FaultToleranceCdiUtils {
 //            }
 //        }    
         // ************ END OF WELD 3 ONLY ************
-        
-        // If we still can't find the annotation, give up and throw an exception
-        if (annotation == null) {
-            throw new IllegalStateException("Annotation of type \"" + annotationClass.getCanonicalName() 
-                    + "\" not found on " + annotatedClass.getCanonicalName());
-        }
         
         return annotation;
     }

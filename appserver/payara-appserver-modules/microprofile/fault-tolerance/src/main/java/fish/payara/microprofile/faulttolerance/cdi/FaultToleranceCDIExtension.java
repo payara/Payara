@@ -42,14 +42,26 @@ package fish.payara.microprofile.faulttolerance.cdi;
 import fish.payara.microprofile.faulttolerance.interceptors.AsynchronousInterceptor;
 import fish.payara.microprofile.faulttolerance.interceptors.BulkheadInterceptor;
 import fish.payara.microprofile.faulttolerance.interceptors.CircuitBreakerInterceptor;
+import fish.payara.microprofile.faulttolerance.interceptors.FallbackPolicy;
+import fish.payara.microprofile.faulttolerance.validators.AsynchronousValidator;
+import fish.payara.microprofile.faulttolerance.validators.FallbackValidator;
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.Set;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.WithAnnotations;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 
 /**
  *
@@ -59,17 +71,41 @@ public class FaultToleranceCDIExtension implements Extension {
     
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
         beforeBeanDiscovery.addInterceptorBinding(Bulkhead.class);
-        AnnotatedType<BulkheadInterceptor> bulkhead = beanManager.createAnnotatedType(BulkheadInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(bulkhead, BulkheadInterceptor.class.getName());
+        AnnotatedType<BulkheadInterceptor> bulkheadInterceptor 
+                = beanManager.createAnnotatedType(BulkheadInterceptor.class);
+        beforeBeanDiscovery.addAnnotatedType(bulkheadInterceptor, BulkheadInterceptor.class.getName());
         
         beforeBeanDiscovery.addInterceptorBinding(Asynchronous.class);
-        AnnotatedType<AsynchronousInterceptor> asynchronous = 
+        AnnotatedType<AsynchronousInterceptor> asynchronousInterceptor = 
                 beanManager.createAnnotatedType(AsynchronousInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(asynchronous, AsynchronousInterceptor.class.getName());
+        beforeBeanDiscovery.addAnnotatedType(asynchronousInterceptor, AsynchronousInterceptor.class.getName());
         
         beforeBeanDiscovery.addInterceptorBinding(CircuitBreaker.class);
-        AnnotatedType<CircuitBreakerInterceptor> circuitBreaker = 
+        AnnotatedType<CircuitBreakerInterceptor> circuitBreakerInterceptor = 
                 beanManager.createAnnotatedType(CircuitBreakerInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(circuitBreaker, CircuitBreakerInterceptor.class.getName());
+        beforeBeanDiscovery.addAnnotatedType(circuitBreakerInterceptor, CircuitBreakerInterceptor.class.getName());
+    }
+    
+    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Fallback.class, Timeout.class, 
+            CircuitBreaker.class, Retry.class, Bulkhead.class }) ProcessAnnotatedType<T> processAnnotatedType, 
+            BeanManager beanManager) throws Exception {
+        
+        AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
+        
+        Set<AnnotatedMethod<? super T>> annotatedMethods = annotatedType.getMethods();
+        for (AnnotatedMethod<?> annotatedMethod : annotatedMethods) {
+            validateMethodAnnotations(annotatedMethod);
+        }
+    }
+    
+    private <T> void validateMethodAnnotations(AnnotatedMethod<T> annotatedMethod) throws Exception {
+        for (Annotation annotation : annotatedMethod.getAnnotations()) {
+            Class<? extends Annotation> annotationType = annotation.annotationType();
+            if (annotationType == Asynchronous.class) {
+                AsynchronousValidator.validateAnnotation((Asynchronous) annotation, annotatedMethod);
+            } else if (annotationType == Fallback.class) {
+                FallbackValidator.validateAnnotation((Fallback) annotation, annotatedMethod);
+            }
+        }
     }
 }

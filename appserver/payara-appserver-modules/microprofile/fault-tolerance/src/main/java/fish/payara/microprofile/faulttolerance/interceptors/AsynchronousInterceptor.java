@@ -65,7 +65,7 @@ import org.glassfish.internal.api.Globals;
 public class AsynchronousInterceptor implements Serializable {
     
     @AroundInvoke
-    public Object submitMethod(final InvocationContext invocationContext) throws Exception {
+    public Object intercept(final InvocationContext invocationContext) throws Exception {
         if (invocationContext.getMethod().getReturnType() != Future.class) {
             throw new FaultToleranceDefinitionException("Method annotated with " + Asynchronous.class.getCanonicalName() 
                     + " does not return a Future.");

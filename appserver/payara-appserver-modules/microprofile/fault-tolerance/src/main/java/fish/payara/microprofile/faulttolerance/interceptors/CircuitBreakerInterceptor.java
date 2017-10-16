@@ -54,6 +54,7 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException;
 import org.glassfish.internal.api.Globals;
 
@@ -69,20 +70,31 @@ public class CircuitBreakerInterceptor implements Serializable {
     @Inject
     private BeanManager beanManager;
     
-    @Inject
-    @Intercepted
-    private Bean<?> interceptedBean;
-    
     @AroundInvoke
-    public Object circuitBreak(InvocationContext invocationContext) throws Exception {
+    public Object intercept(InvocationContext invocationContext) throws Exception {
+        Object proceededInvocationContext = null;
+        
+        try {
+            proceededInvocationContext = circuitBreak(invocationContext);
+        } catch (Exception ex) {
+            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+            
+            if (fallback != null) {
+                FallbackPolicy fallbackInterceptor = new FallbackPolicy(fallback);
+                proceededInvocationContext = fallbackInterceptor.fallback(invocationContext);
+            }
+        }
+        
+        return proceededInvocationContext;
+    }
+    
+    private Object circuitBreak(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        
-        CircuitBreaker circuitBreaker = FaultToleranceCdiUtils.getAnnotation(beanManager, interceptedBean.getBeanClass(), 
-                CircuitBreaker.class, invocationContext);
-        
+        CircuitBreaker circuitBreaker = FaultToleranceCdiUtils.getAnnotation(beanManager, CircuitBreaker.class, 
+                invocationContext);
         CircuitBreakerState circuitBreakerState = faultToleranceService.getCircuitBreakerState(circuitBreaker);
         
         switch (circuitBreakerState.getCircuitState()) {
