@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.cmd.options;
 
+import java.io.File;
+
 /**
  * @since 4.1.2.173
  * @author jonathan coustick
@@ -51,7 +53,7 @@ public class SeparatedFilesValidator extends FileSystemItemValidator {
 
     @Override
     public boolean validate(String optionValue) throws ValidationException{
-        String[] files = optionValue.split(":");
+        String[] files = optionValue.split(File.pathSeparator);
         for (String file : files){
             super.validate(file);
         }
