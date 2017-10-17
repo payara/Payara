@@ -134,6 +134,7 @@ public class InvocationManagerImpl implements InvocationManager {
                         invocation.setComponentInvocationType(parrentInvocation.getInvocationType());
                         invocation.setComponentId(parrentInvocation.getComponentId());
                         invocation.setContainer(parrentInvocation.getContainer());
+                        invocation.setJndiEnvironment(parrentInvocation.getJndiEnvironment());
 
                         childInvocationArray.add(invocation);
                     } else if (parrentInvocation.getInvocationType() != EJB_INVOCATION) {
