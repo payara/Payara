@@ -40,13 +40,13 @@
 
 package org.glassfish.api.invocation;
 
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.UN_INITIALIZED;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 @PerLookup
 @Service
@@ -86,17 +86,17 @@ public class ComponentInvocation implements Cloneable {
     public String componentId;
 
     public Object transaction;
-    
+
     /**
-     * True if transaction commit or rollback is
-     * happening for this invocation context
+     * True if transaction commit or rollback is happening for this invocation context
      */
     private boolean transactionCompleting;
 
+    private Object transactionOperationsManager;
+
     /**
-     * security context coming in a call
-     * security context changes on a runas call - on a run as call
-     * the old logged in security context is stored in here.
+     * security context coming in a call security context changes on a runas call - on a run as call the old logged in
+     * security context is stored in here.
      */
     public Object oldSecurityContext;
 
@@ -136,13 +136,49 @@ public class ComponentInvocation implements Cloneable {
     public ComponentInvocationType getInvocationType() {
         return invocationType;
     }
+    
+    public void setInvocationType(ComponentInvocationType invocationType) {
+        this.invocationType = invocationType;
+    }
 
     public void setComponentInvocationType(ComponentInvocationType t) {
         this.invocationType = t;
     }
 
+    public boolean isPreInvokeDone() {
+        return preInvokeDoneStatus;
+    }
+
+    public void setPreInvokeDone(boolean value) {
+        preInvokeDoneStatus = value;
+    }
+
+    public Boolean getAuth() {
+        return auth;
+    }
+    
+    public void setAuth(Boolean auth) {
+        this.auth = auth;
+    }
+
+    public void setAuth(boolean value) {
+        auth = value;
+    }
+    
+    public boolean isPreInvokeDoneStatus() {
+        return preInvokeDoneStatus;
+    }
+
+    public void setPreInvokeDoneStatus(boolean preInvokeDoneStatus) {
+        this.preInvokeDoneStatus = preInvokeDoneStatus;
+    }
+
     public Object getInstance() {
         return instance;
+    }
+    
+    public void setInstance(Object instance) {
+        this.instance = instance;
     }
 
     public String getInstanceName() {
@@ -157,6 +193,18 @@ public class ComponentInvocation implements Cloneable {
         return this.componentId;
     }
     
+    public void setComponentId(String componentId) {
+        this.componentId = componentId;
+    }
+    
+    public Object getJndiEnvironment() {
+        return jndiEnvironment;
+    }
+
+    public void setJndiEnvironment(Object jndiEnvironment) {
+        this.jndiEnvironment = jndiEnvironment;
+    }
+
     public void setJNDIEnvironment(Object val) {
         jndiEnvironment = val;
     }
@@ -167,6 +215,10 @@ public class ComponentInvocation implements Cloneable {
 
     public Object getContainer() {
         return container;
+    }
+    
+    public void setContainer(Object container) {
+        this.container = container;
     }
 
     public Object getContainerContext() {
@@ -180,8 +232,44 @@ public class ComponentInvocation implements Cloneable {
     public void setTransaction(Object t) {
         this.transaction = t;
     }
+    
+    public void setTransactionCompleting(boolean transactionCompleting) {
+        this.transactionCompleting = transactionCompleting;
+    }
+    
+    public Map<Class<?>, Object> getRegistry() {
+        return registry;
+    }
 
-    private Object transactionOperationsManager;
+    public void setRegistry(Map<Class<?>, Object> registry) {
+        this.registry = registry;
+    }
+
+
+    /**
+     * Returns the appName for the current invocation, equivalent to the value bound to java:app/AppName, without the cost
+     * of lookup. For standalone modules, returns the same value as getModuleName(). For invocations that are not on Java EE
+     * components, returns null.
+     */
+    public String getAppName() {
+        return appName;
+    }
+    
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    /**
+     * Returns the moduleName for the current invocation, equivalent to the value bound to java:module/ModuleName, without
+     * the cost of lookup. For invocations that are not on Java EE components, returns null.
+     */
+    public String getModuleName() {
+        return moduleName;
+    }
+    
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
+    }
 
     public void setTransactionOperationsManager(Object transactionOperationsManager) {
         this.transactionOperationsManager = transactionOperationsManager;
@@ -247,7 +335,7 @@ public class ComponentInvocation implements Cloneable {
         if (registry == null) {
             registry = new HashMap<>();
         }
-        
+
         registry.put(key, payLoad);
     }
 
@@ -259,39 +347,6 @@ public class ComponentInvocation implements Cloneable {
         if (registry != null) {
             registry.clear();
         }
-    }
-
-    public boolean isPreInvokeDone() {
-        return preInvokeDoneStatus;
-    }
-
-    public void setPreInvokeDone(boolean value) {
-        preInvokeDoneStatus = value;
-    }
-
-    public Boolean getAuth() {
-        return auth;
-    }
-
-    public void setAuth(boolean value) {
-        auth = value;
-    }
-
-    /**
-     * Returns the appName for the current invocation, equivalent to the value bound to java:app/AppName, without the cost
-     * of lookup. For standalone modules, returns the same value as getModuleName(). For invocations that are not on Java EE
-     * components, returns null.
-     */
-    public String getAppName() {
-        return appName;
-    }
-
-    /**
-     * Returns the moduleName for the current invocation, equivalent to the value bound to java:module/ModuleName, without
-     * the cost of lookup. For invocations that are not on Java EE components, returns null.
-     */
-    public String getModuleName() {
-        return moduleName;
     }
 
     public ComponentInvocation clone() {
@@ -311,4 +366,5 @@ public class ComponentInvocation implements Cloneable {
 
         return newInv;
     }
+   
 }

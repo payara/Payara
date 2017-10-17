@@ -108,11 +108,7 @@ public class InvocationManagerImpl implements InvocationManager {
             protected InvocationArray<ComponentInvocation> initialValue() {
                 return new InvocationArray<>();
             }
-
-            // If this is a thread created by user in servlet's service method
-            // create a new ComponentInvocation with transaction
-            // set to null and instance set to null
-            // so that the resource won't be enlisted or registered
+            
             protected InvocationArray<ComponentInvocation> childValue(InvocationArray<ComponentInvocation> parentValue) {
 
                 // Always creates a new ArrayList
@@ -122,31 +118,34 @@ public class InvocationManagerImpl implements InvocationManager {
                 if (parentInvocationArray.size() > 0 && parentInvocationArray.outsideStartup()) {
 
                     // Get current invocation
-                    ComponentInvocation parentInv = parentInvocationArray.get(parentInvocationArray.size() - 1);
+                    ComponentInvocation parrentInvocation = parentInvocationArray.get(parentInvocationArray.size() - 1);
 
                     // TODO: The following is ugly. The logic of what needs to be in the
                     // new ComponentInvocation should be with the respective container
 
-                    if (parentInv.getInvocationType() == SERVLET_INVOCATION) {
+                    if (parrentInvocation.getInvocationType() == SERVLET_INVOCATION) {
+                        
+                        // If this is a thread created by user in servlet's service method
+                        // create a new ComponentInvocation with transaction
+                        // left to null and instance left to null
+                        // so that the resource won't be enlisted or registered
 
                         ComponentInvocation invocation = new ComponentInvocation();
-                        invocation.componentId = parentInv.getComponentId();
-                        invocation.setComponentInvocationType(parentInv.getInvocationType());
-                        invocation.instance = null;
-                        invocation.container = parentInv.getContainerContext();
-                        invocation.transaction = null;
+                        invocation.setComponentInvocationType(parrentInvocation.getInvocationType());
+                        invocation.setComponentId(parrentInvocation.getComponentId());
+                        invocation.setContainer(parrentInvocation.getContainer());
 
                         childInvocationArray.add(invocation);
-                    } else if (parentInv.getInvocationType() != EJB_INVOCATION) {
+                    } else if (parrentInvocation.getInvocationType() != EJB_INVOCATION) {
 
                         // Push a copy of invocation onto the new result
                         // ArrayList
                         ComponentInvocation cpy = new ComponentInvocation();
-                        cpy.componentId = parentInv.getComponentId();
-                        cpy.setComponentInvocationType(parentInv.getInvocationType());
-                        cpy.instance = parentInv.getInstance();
-                        cpy.container = parentInv.getContainerContext();
-                        cpy.transaction = parentInv.getTransaction();
+                        cpy.componentId = parrentInvocation.getComponentId();
+                        cpy.setComponentInvocationType(parrentInvocation.getInvocationType());
+                        cpy.instance = parrentInvocation.getInstance();
+                        cpy.container = parrentInvocation.getContainerContext();
+                        cpy.transaction = parrentInvocation.getTransaction();
 
                         childInvocationArray.add(cpy);
                     }
