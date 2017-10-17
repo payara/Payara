@@ -99,7 +99,7 @@ public class SetRestMonitoringConfigurationCommand implements AdminCommand {
     String contextRoot;
     
     @Param(optional = true)
-    String name;
+    String applicationName, alias = "applicationname";
     
     @Param(optional = true, alias = "securityenabled")
     Boolean securityEnabled;
@@ -150,8 +150,8 @@ public class SetRestMonitoringConfigurationCommand implements AdminCommand {
                             configProxy.setContextRoot(contextRoot);
                         }
                         
-                        if (name != null) {
-                            configProxy.setApplicationName(name);
+                        if (applicationName != null) {
+                            configProxy.setApplicationName(applicationName);
                         }
                         
                         if (securityEnabled != null) {
