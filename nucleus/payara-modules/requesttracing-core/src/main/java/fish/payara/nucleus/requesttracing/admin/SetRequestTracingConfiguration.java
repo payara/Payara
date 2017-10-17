@@ -106,8 +106,8 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
-    @Param(name = "sampleChance", optional = true)
-    private Integer sampleChance;
+    @Param(name = "sampleRate", optional = true)
+    private String sampleRate;
 
     @Param(name = "applicationsOnlyEnabled", optional = true)
     private Boolean applicationsOnlyEnabled;
@@ -155,8 +155,8 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                         if (enabled != null) {
                             requestTracingServiceConfigurationProxy.enabled(enabled.toString());
                         }
-                        if (sampleChance != null) {
-                            requestTracingServiceConfigurationProxy.setSampleChance(sampleChance.toString());
+                        if (sampleRate != null) {
+                            requestTracingServiceConfigurationProxy.setSampleRate(sampleRate);
                         }
                         if (applicationsOnlyEnabled != null) {
                             requestTracingServiceConfigurationProxy.setApplicationsOnlyEnabled(applicationsOnlyEnabled.toString());
@@ -205,10 +205,10 @@ public class SetRequestTracingConfiguration implements AdminCommand {
 
     private void configureDynamically(ActionReport actionReport) {
         service.getExecutionOptions().setEnabled(enabled);
-        if (sampleChance != null) {
-            service.getExecutionOptions().setSampleChance(sampleChance);
-            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplechance.success",
-                    "Request Tracing Service Sample Chance is set to {0}.", sampleChance) + "\n");
+        if (sampleRate != null) {
+            service.getExecutionOptions().setSampleRate(0.0);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplerate.success",
+                    "Request Tracing Service Sample Chance is set to {0}.", sampleRate) + "\n");
         }
         if (applicationsOnlyEnabled != null) {
             service.getExecutionOptions().setApplicationsOnlyEnabled(applicationsOnlyEnabled);

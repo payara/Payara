@@ -136,9 +136,15 @@ public class RequestTracingService implements EventListener, ConfigListener {
     private ScheduledExecutorService historicCleanerExecutor;
 
     private RequestTracingExecutionOptions executionOptions = new RequestTracingExecutionOptions();
+    
+    /**
+     * private Random variable used with sample rate to determine whether to sample a request
+     */
+    private Random random;
 
     @PostConstruct
     void postConstruct() {
+        random = new Random();
         events.register(this);
         configuration = habitat.getService(RequestTracingServiceConfiguration.class);
         if (configuration != null && configuration.getNotifierList() != null && configuration.getNotifierList().isEmpty()) {
@@ -170,7 +176,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
     public void bootstrapRequestTracingService() {
         if (configuration != null) {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
-            executionOptions.setSampleChance(Integer.valueOf(configuration.getSampleChance()));
+            executionOptions.setSampleRate(Double.valueOf(configuration.getSampleRate()));
             executionOptions.setApplicationsOnlyEnabled(Boolean.parseBoolean(configuration.getApplicationsOnlyEnabled()));
             executionOptions.setReservoirSamplingEnabled(Boolean.parseBoolean(configuration.getReservoirSamplingEnabled()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
@@ -263,9 +269,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
         if (executionOptions.getApplicationsOnlyEnabled() == true && Thread.currentThread().getName().matches("admin-thread-pool::admin-listener\\([0-9]+\\)")) {
             return null;
         }
-        // Generate a random number between 1 and 100. If the sample chance is more than the random number, then the request is traced.
-        int randomNumber = new Random(System.currentTimeMillis()).nextInt(100) + 1;
-        if (executionOptions.getSampleChance() < randomNumber) {
+        // Determine whether to sample the request
+        boolean sampleRequest = random.nextFloat() < executionOptions.getSampleRate();
+        if (!sampleRequest) {
             return null;
         }
         RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, "StartTrace");

@@ -118,17 +118,17 @@
     </sun:propertySheetSection>
 
     <sun:propertySheetSection id="requestTracingFilters">
-        <sun:property id="sampleChanceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.sampleChance}"  helpText="$resource{i18nrt.requestTracing.configuration.sampleChanceHelp}">
-            <sun:textField id="sampleChance" columns="$int{3}"  styleClass="integer" maxLength="3" text="#{pageSession.valueMap['sampleChance']}" />
+        <sun:property id="sampleRateProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.sampleRate}"  helpText="$resource{i18nrt.requestTracing.configuration.sampleRateHelp}">
+            <sun:textField id="sampleRate" columns="$int{3}" maxLength="10" text="#{pageSession.valueMap['sampleRate']}" />
         </sun:property>
         <sun:property id="applicationsOnlyProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.applicationsOnlyEnabled}"  helpText="$resource{i18nrt.requestTracing.configuration.applicationsOnlyEnabledHelp}">
             <sun:checkbox id="applicationsOnlyProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.applicationsOnlyEnabledSelected}" selectedValue="true" />
         </sun:property>
+        <sun:property id="thresholdValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdValue}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdValueHelp}">
+            <sun:textField id="thresholdValue" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['thresholdValue']}" />
+        </sun:property>
         <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
             <sun:dropDown id="thresholdUnit" selected="#{pageSession.valueMap['thresholdUnit']}" labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
-        </sun:property>
-        <sun:property id="thresholdValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdValue}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdValueHelp}">
-            <sun:textField id="thresholdValue" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['thresholdValue']}" />
         </sun:property>
     </sun:propertySheetSection>
 

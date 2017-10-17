@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 public class RequestTracingExecutionOptions {
 
     private boolean enabled;
-    private Integer sampleChance;
+    private double sampleRate;
     private boolean applicationsOnlyEnabled;
     private boolean reservoirSamplingEnabled;
     private Long thresholdValue;
@@ -85,12 +85,12 @@ public class RequestTracingExecutionOptions {
         this.enabled = enabled;
     }
 
-    public Integer getSampleChance() {
-        return sampleChance;
+    public Double getSampleRate() {
+        return sampleRate;
     }
 
-    public void setSampleChance(Integer sampleChance) {
-        this.sampleChance = sampleChance;
+    public void setSampleRate(Double sampleRate) {
+        this.sampleRate = sampleRate;
     }
 
     public Boolean getApplicationsOnlyEnabled() {
@@ -159,7 +159,7 @@ public class RequestTracingExecutionOptions {
                 + "enabled=" + enabled
                 + ", thresholdValue=" + thresholdValue
                 + ", thresholdUnit=" + thresholdUnit
-                + ", sampleChance=" + sampleChance
+                + ", sampleRate=" + sampleRate
                 + ", reservoirSamplingEnabled=" + reservoirSamplingEnabled
                 + ", historicalTraceEnabled=" + historicalTraceEnabled
                 + ", historicalTraceStoreSize=" + historicalTraceStoreSize

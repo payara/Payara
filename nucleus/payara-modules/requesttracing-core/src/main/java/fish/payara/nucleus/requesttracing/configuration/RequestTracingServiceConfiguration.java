@@ -44,9 +44,11 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
+import java.math.BigDecimal;
 import java.util.List;
-import javax.validation.constraints.Max;
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 
 /**
  * Configuration class that holds the configuration of the Request
@@ -61,11 +63,10 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     String getEnabled();
     void enabled(String value) throws PropertyVetoException;
     
-    @Attribute(defaultValue = "100", dataType = Integer.class)
-    @Min(value = 0)
-    @Max(value = 100)
-    String getSampleChance();
-    void setSampleChance(String value) throws PropertyVetoException;
+    @Attribute(defaultValue = "1.0")
+    @Pattern(regexp = "0(\\.\\d+)?|1(\\.0)?", message = "Must be a valid double between 0 and 1")
+    String getSampleRate();
+    void setSampleRate(@Valid String value) throws PropertyVetoException;
     
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getApplicationsOnlyEnabled();
