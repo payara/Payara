@@ -38,8 +38,6 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.notification.domain.BoundedTreeSet;
 import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
