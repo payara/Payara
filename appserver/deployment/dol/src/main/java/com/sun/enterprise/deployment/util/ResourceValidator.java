@@ -85,6 +85,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             comment = "For the method validateJNDIRefs of com.sun.enterprise.deployment.util.ResourceValidator."
     )
     private static final String RESOURCE_REF_JNDI_LOOKUP_FAILED = "AS-DEPLOYMENT-00026";
+    
+    @LogMessageInfo(message = "Skipping resource validation")
+    private static final String SKIP_RESOURCE_VALIDATION = "AS-DEPLOYMENT-00028";
 
     private String target;
 
@@ -115,7 +118,11 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             application = dc.getModuleMetaData(Application.class);
             DeployCommandParameters commandParams = dc.getCommandParameters(DeployCommandParameters.class);
             target = commandParams.target;
-            if (application == null || System.getProperty("deployment.resource.validation", "true").equals("false")) {
+            if (System.getProperty("deployment.resource.validation", "true").equals("false")) {
+                deplLogger.log(Level.INFO, SKIP_RESOURCE_VALIDATION);
+                return;
+            }
+            if (application == null) {
                 return;
             }
             AppResources appResources = new AppResources();
