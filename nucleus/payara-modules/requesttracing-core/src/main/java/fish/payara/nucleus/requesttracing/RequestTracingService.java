@@ -190,7 +190,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
         if (executionOptions != null && executionOptions.isEnabled()) {
             if (executionOptions.isHistoricalTraceEnabled()) {
-                historicRequestTracingEventStore.initialize(executionOptions.getHistoricalTraceStoreSize());
+                historicRequestTracingEventStore.initialize(executionOptions.getHistoricalTraceStoreSize(), executionOptions.getReservoirSamplingEnabled());
 
                 if (executionOptions.getHistoricalTraceTimeout() != null && executionOptions.getHistoricalTraceTimeout() > 0) {
                     // if timeout is bigger than 5 minutes execute the cleaner task in 5 minutes periods,
@@ -292,6 +292,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
         if (elapsedTimeInNanos - thresholdValueInNanos > 0) {
             String traceAsString = requestEventStore.getTraceAsString();
 
+            // Store the trace to the historical event store if it's enabled
             if (executionOptions.isHistoricalTraceEnabled()) {
                 historicRequestTracingEventStore.addTrace(elapsedTime, traceAsString);
             }
