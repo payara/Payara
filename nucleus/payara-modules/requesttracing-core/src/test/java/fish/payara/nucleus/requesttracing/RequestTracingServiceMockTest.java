@@ -103,6 +103,11 @@ public class RequestTracingServiceMockTest {
 }
 
 class RequestTracingServiceMock extends RequestTracingService {
+    
+    @Override
+    public boolean isTraceInProgress() {
+        return true;
+    }
 
     @Override
     public RequestTracingExecutionOptions getExecutionOptions() {

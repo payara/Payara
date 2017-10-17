@@ -276,13 +276,13 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     public void traceRequestEvent(RequestEvent requestEvent) {
-        if (isRequestTracingEnabled()) {
+        if (isRequestTracingEnabled() && isTraceInProgress()) {
             requestEventStore.storeEvent(requestEvent);
         }
     }
 
     public void endTrace() {
-        if (!isRequestTracingEnabled()) {
+        if (!isRequestTracingEnabled() || !isTraceInProgress()) {
             return;
         }
         requestEventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "TraceEnd"));
