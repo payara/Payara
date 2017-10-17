@@ -192,7 +192,8 @@ public class RequestTracingService implements EventListener, ConfigListener {
             if (executionOptions.isHistoricalTraceEnabled()) {
                 historicRequestTracingEventStore.initialize(executionOptions.getHistoricalTraceStoreSize(), executionOptions.getReservoirSamplingEnabled());
 
-                if (executionOptions.getHistoricalTraceTimeout() != null && executionOptions.getHistoricalTraceTimeout() > 0) {
+                // Disable cleanup task if it's null, less than 0, or reservoir sampling is enabled
+                if (executionOptions.getHistoricalTraceTimeout() != null && executionOptions.getHistoricalTraceTimeout() > 0 && !executionOptions.getReservoirSamplingEnabled()) {
                     // if timeout is bigger than 5 minutes execute the cleaner task in 5 minutes periods,
                     // if not use timeout value as period
                     long period = executionOptions.getHistoricalTraceTimeout() > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
