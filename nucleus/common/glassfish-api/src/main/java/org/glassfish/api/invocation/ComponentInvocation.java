@@ -40,61 +40,66 @@
 
 package org.glassfish.api.invocation;
 
-
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+
+import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.UN_INITIALIZED;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @PerLookup
 @Service
-public class ComponentInvocation
-    implements Cloneable {
+public class ComponentInvocation implements Cloneable {
 
     public enum ComponentInvocationType {
-        SERVLET_INVOCATION, EJB_INVOCATION,
-        APP_CLIENT_INVOCATION, UN_INITIALIZED,
+        SERVLET_INVOCATION, 
+        EJB_INVOCATION, 
+        APP_CLIENT_INVOCATION, 
+        UN_INITIALIZED, 
         SERVICE_STARTUP
     }
 
-    private ComponentInvocationType invocationType
-            = ComponentInvocationType.UN_INITIALIZED;
+    private ComponentInvocationType invocationType = UN_INITIALIZED;
 
     private boolean preInvokeDoneStatus;
 
     private Boolean auth;
 
-    // the component instance, type Servlet, Filter or EnterpriseBean
+    /**
+     * The component instance, type Servlet, Filter or EnterpriseBean
+     */
     public Object instance;
-    
-    // the name of this instance
+
+    /**
+     * The name of this instance
+     */
     private String instanceName;
 
-    // ServletContext for servlet, Container for EJB
+    /**
+     * ServletContext for servlet, Container for EJB
+     */
     public Object container;
 
     public Object jndiEnvironment;
-    public void setJNDIEnvironment(Object val) {
-      jndiEnvironment = val;
-    }
-    public Object getJNDIEnvironment() {
-      return jndiEnvironment;
-    }
 
     public String componentId;
 
     public Object transaction;
-
-    // true if transaction commit or rollback is
-    // happening for this invocation context
-    private boolean transactionCompleting = false;
-
-    //  security context coming in a call
-    // security context changes on a runas call - on a run as call
-    // the old logged in security context is stored in here.
-    public Object oldSecurityContext;
     
+    /**
+     * True if transaction commit or rollback is
+     * happening for this invocation context
+     */
+    private boolean transactionCompleting;
+
+    /**
+     * security context coming in a call
+     * security context changes on a runas call - on a run as call
+     * the old logged in security context is stored in here.
+     */
+    public Object oldSecurityContext;
+
     private Object resourceTableKey;
 
     private ResourceHandler resourceHandler;
@@ -102,21 +107,17 @@ public class ComponentInvocation
     /**
      * Registry to be carried with this invocation
      */
-    private Map<Class, Object> registry;
-    
+    private Map<Class<?>, Object> registry;
+
     protected String appName;
-    
+
     protected String moduleName;
 
     public ComponentInvocation() {
-        
+
     }
-    
-    public ComponentInvocation(String componentId,
-            ComponentInvocationType invocationType,
-            Object container,
-            String appName,
-            String moduleName) {
+
+    public ComponentInvocation(String componentId, ComponentInvocationType invocationType, Object container, String appName, String moduleName) {
         this.componentId = componentId;
         this.invocationType = invocationType;
         this.container = container;
@@ -124,11 +125,7 @@ public class ComponentInvocation
         this.moduleName = moduleName;
     }
 
-
-    public ComponentInvocation(String componentId,
-            ComponentInvocationType invocationType,
-            Object instance, Object container,
-            Object transaction) {
+    public ComponentInvocation(String componentId, ComponentInvocationType invocationType, Object instance, Object container, Object transaction) {
         this.componentId = componentId;
         this.invocationType = invocationType;
         this.instance = instance;
@@ -147,17 +144,25 @@ public class ComponentInvocation
     public Object getInstance() {
         return instance;
     }
-    
+
     public String getInstanceName() {
-      return instanceName;
+        return instanceName;
     }
-    
+
     public void setInstanceName(String instanceName) {
-      this.instanceName = instanceName;
+        this.instanceName = instanceName;
     }
 
     public String getComponentId() {
         return this.componentId;
+    }
+    
+    public void setJNDIEnvironment(Object val) {
+        jndiEnvironment = val;
+    }
+
+    public Object getJNDIEnvironment() {
+        return jndiEnvironment;
     }
 
     public Object getContainer() {
@@ -177,6 +182,7 @@ public class ComponentInvocation
     }
 
     private Object transactionOperationsManager;
+
     public void setTransactionOperationsManager(Object transactionOperationsManager) {
         this.transactionOperationsManager = transactionOperationsManager;
     }
@@ -185,18 +191,18 @@ public class ComponentInvocation
         return transactionOperationsManager;
     }
 
-    /** 
+    /**
      * Sets the security context of the call coming in
      */
-    public void setOldSecurityContext (Object sc){
-	this.oldSecurityContext = sc;
+    public void setOldSecurityContext(Object sc) {
+        this.oldSecurityContext = sc;
     }
+
     /**
-     * gets the security context of the call that came in
-     * before a new context for runas is made
+     * Gets the security context of the call that came in before a new context for runas is made
      */
-    public Object getOldSecurityContext (){
-	return oldSecurityContext;
+    public Object getOldSecurityContext() {
+        return oldSecurityContext;
     }
 
     public boolean isTransactionCompleting() {
@@ -227,7 +233,7 @@ public class ComponentInvocation
      * @return Registry associated with this invocation for the given <code>key</code>
      */
     public Object getRegistryFor(Class key) {
-        if(registry == null) {
+        if (registry == null) {
             return null;
         } else {
             return registry.get(key);
@@ -238,16 +244,17 @@ public class ComponentInvocation
      * Associate given <code></code>registry</code> with given <code>key</code> for this invocation
      */
     public void setRegistryFor(Class key, Object payLoad) {
-        if(registry == null) {
-            registry = new HashMap<Class, Object>();
+        if (registry == null) {
+            registry = new HashMap<>();
         }
+        
         registry.put(key, payLoad);
     }
 
-    //In most of the cases we don't want registry entries from being reused in the cloned
-    //  invocation, in which case, this method must be called. I am not sure if async
-    //  ejb invocation must call this (It never did and someone in ejb team must investigate
-    //  if clearRegistry() must be called from EjbAsyncInvocationManager)
+    // In most of the cases we don't want registry entries from being reused in the cloned
+    // invocation, in which case, this method must be called. I am not sure if async
+    // ejb invocation must call this (It never did and someone in ejb team must investigate
+    // if clearRegistry() must be called from EjbAsyncInvocationManager)
     public void clearRegistry() {
         if (registry != null) {
             registry.clear();
@@ -269,21 +276,19 @@ public class ComponentInvocation
     public void setAuth(boolean value) {
         auth = value;
     }
-    
+
     /**
-     * Returns the appName for the current invocation, equivalent to the value
-     * bound to java:app/AppName, without the cost of lookup.  For standalone
-     * modules, returns the same value as getModuleName().  For invocations that
-     * are not on Java EE components, returns null.
+     * Returns the appName for the current invocation, equivalent to the value bound to java:app/AppName, without the cost
+     * of lookup. For standalone modules, returns the same value as getModuleName(). For invocations that are not on Java EE
+     * components, returns null.
      */
     public String getAppName() {
         return appName;
     }
-    
+
     /**
-     * Returns the moduleName for the current invocation, equivalent to the value 
-     * bound to java:module/ModuleName, without the cost of lookup.  For invocations
-     * that are not on Java EE components, returns null.
+     * Returns the moduleName for the current invocation, equivalent to the value bound to java:module/ModuleName, without
+     * the cost of lookup. For invocations that are not on Java EE components, returns null.
      */
     public String getModuleName() {
         return moduleName;
@@ -294,7 +299,7 @@ public class ComponentInvocation
         try {
             newInv = (ComponentInvocation) super.clone();
         } catch (CloneNotSupportedException cnsEx) {
-            //Shouldn't happen as we implement Cloneable
+            // Shouldn't happen as we implement Cloneable
             throw new Error(cnsEx);
         }
 
