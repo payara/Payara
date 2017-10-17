@@ -52,13 +52,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
+import static org.glassfish.weld.WeldDeployer.DEV_MODE_PROPERTY;
 
 /**
  * A class containing Payara specific handler methods for the REST API
  * @author Andrew Pielage
  */
-public class PayaraRestApiHandlers
-{
+public class PayaraRestApiHandlers {
+    
     /**
      * Gets information about the instances current registered to the Hazelcast cluster.
      * @param handlerCtx 
@@ -293,10 +294,11 @@ public class PayaraRestApiHandlers
             List rowList = (List) handlerCtx.getInputValue("rowList");
             for(Object row : rowList) {
                 Map rowMap = (Map) row;
+                boolean enabled = false;
                 String componentName = (String) rowMap.get("name");
                 String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
                 result.put(componentName, false);
-                if(!((String)rowMap.get("sniffers")).contains("weld")){
+                if(!((String)rowMap.get("sniffers")).contains("cdi")){
                     continue;
                 }
                 
@@ -309,9 +311,15 @@ public class PayaraRestApiHandlers
                     if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
                             && Boolean.parseBoolean((String) property.get("value"))) {
                         result.put(componentName, true);
+                        enabled = true;
+                        break;
                     }
                 }
+                if (!enabled) {
+                    result.put(componentName, Boolean.getBoolean(DEV_MODE_PROPERTY));
+                }
             }
+
           }catch(Exception ex){
             GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.isCDIDevMode"), ex.getLocalizedMessage()});
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
