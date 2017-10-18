@@ -74,7 +74,7 @@ import java.util.logging.Logger;
 @Service(name = "set-requesttracing-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("requesttracing.configure")
+@I18n("set-requesttracing-configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
