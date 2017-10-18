@@ -61,7 +61,6 @@ import javax.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -139,10 +138,6 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             actionReport.setExtraProperties(extraProperties);
         }
 
-        if (!validate(actionReport)) {
-            return;
-        }
-
         Config config = targetUtil.getConfig(target);
         final RequestTracingServiceConfiguration requestTracingServiceConfiguration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
 
@@ -185,9 +180,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                     }
                 }, requestTracingServiceConfiguration);
             } catch (TransactionFailure ex) {
-                logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                actionReport.failure(logger, ex.getCause().getMessage());
                 return;
             }
         }
@@ -250,42 +243,5 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         }
 
         service.bootstrapRequestTracingService();
-    }
-
-    private boolean validate(ActionReport actionReport) {
-        boolean result = false;
-        if (value != null) {
-            try {
-                int thresholdValue = Integer.parseInt(value);
-                if (thresholdValue <= 0 || thresholdValue > Short.MAX_VALUE * 2) {
-                    actionReport.failure(logger, "Threshold Value must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
-                    return result;
-                }
-            } catch (NumberFormatException nfe) {
-                actionReport.failure(logger, "Threshold Value is not a valid integer", nfe);
-                return result;
-            }
-
-        }
-
-        if (unit != null) {
-            try {
-                if (!unit.equals("NANOSECONDS")
-                        && !unit.equals("MICROSECONDS")
-                        && !unit.equals("MILLISECONDS")
-                        && !unit.equals("SECONDS")
-                        && !unit.equals("MINUTES")
-                        && !unit.equals("HOURS")
-                        && !unit.equals("DAYS")) {
-                    actionReport.failure(logger, unit + " is an invalid time unit");
-                    return result;
-                }
-            } catch (IllegalArgumentException iaf) {
-                actionReport.failure(logger, unit + " is an invalid time unit", iaf);
-                return result;
-            }
-        }
-
-        return true;
     }
 }

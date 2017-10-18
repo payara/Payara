@@ -84,7 +84,7 @@
 </event>
 
 <sun:form id="propertyForm">
-    #include "/common/shared/alertMsg_1.inc"
+#include "/common/shared/alertMsg_1.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nrt.requestTracing.configurationTitle}" helpText="$resource{i18nrt.requestTracing.configurationTitleHelp}" >
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
@@ -106,7 +106,7 @@
     </facet>
 </sun:title>
 <sun:propertySheet id="propertySheet">
-    #include "/common/shared/configNameSection.inc"
+#include "/common/shared/configNameSection.inc"
 
     <sun:propertySheetSection id="requestTracingGeneral">
         <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.enabledHelp}">
