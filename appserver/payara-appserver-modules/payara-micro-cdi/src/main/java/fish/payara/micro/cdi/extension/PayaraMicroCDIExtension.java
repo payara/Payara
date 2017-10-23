@@ -70,8 +70,8 @@ public class PayaraMicroCDIExtension implements Extension {
         clusteredAnnotationProcessor.afterBeanDiscovery(event, manager);
     }
 
-    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat) {
-         clusteredAnnotationProcessor.processAnnotatedType(pat);
+    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat, BeanManager bm) {
+         clusteredAnnotationProcessor.processAnnotatedType(pat, bm);
      }
 
     private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
