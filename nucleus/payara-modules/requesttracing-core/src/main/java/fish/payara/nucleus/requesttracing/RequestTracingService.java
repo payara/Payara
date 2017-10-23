@@ -270,7 +270,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
             return null;
         }
         // Determine whether to sample the request
-        boolean sampleRequest = random.nextFloat() < executionOptions.getSampleRate();
+        boolean sampleRequest = random.nextDouble() < executionOptions.getSampleRate();
         if (!sampleRequest) {
             return null;
         }

@@ -84,7 +84,7 @@ public class ReservoirBoundedTreeSet<N extends Comparable> extends BoundedTreeSe
 
         // probability of keeping the new item
         double probability = (double) maxSize / counter;
-        boolean keepItem = random.nextFloat() < probability;
+        boolean keepItem = random.nextDouble() < probability;
 
         if (!keepItem) {
             return false;
