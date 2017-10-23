@@ -79,6 +79,12 @@
             <type>jar</type>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.main.ejb</groupId>
+            <artifactId>ejb-container</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.18</version>

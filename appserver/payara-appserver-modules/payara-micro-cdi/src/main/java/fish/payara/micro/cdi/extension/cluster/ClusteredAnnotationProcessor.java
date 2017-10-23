@@ -39,10 +39,10 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import java.io.Serializable;
-import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -50,6 +50,9 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import lombok.extern.java.Log;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.Deployment;
 
 /**
  * Entry point for @Clustered annotation processing
@@ -61,25 +64,28 @@ import lombok.extern.java.Log;
 public class ClusteredAnnotationProcessor {
     public void beforeBeanDiscovery(BeforeBeanDiscovery bbd, BeanManager bm) {
         bbd.addScope(ClusterScoped.class, true, true);
-
+        deployment = Globals.getDefaultHabitat().getService(Deployment.class);
     }
 
     public void afterBeanDiscovery(AfterBeanDiscovery event, BeanManager manager) {
         event.addContext(new ClusterScopeContext(manager));
     }
 
-    public <X> void processAnnotatedType(ProcessAnnotatedType<X> pat) {
+    public <X> void processAnnotatedType(ProcessAnnotatedType<X> pat, BeanManager bm) {
         Clustered clusteredAnnotation = pat.getAnnotatedType().getAnnotation(Clustered.class);
-        // +++ TODO see below TODO
-        if(clusteredAnnotation != null && !pat.getAnnotatedType().isAnnotationPresent(Singleton.class)) {
-            validate(pat.getAnnotatedType());
-            pat.setAnnotatedType(new ClusteredAnnotatedType<X>(pat.getAnnotatedType()));
+        if(clusteredAnnotation != null && !isEJB(pat)) {
+            validate(pat.getAnnotatedType(), bm);
+            pat.setAnnotatedType(new ClusteredAnnotatedType<>(pat.getAnnotatedType()));
         }
     }
 
-    private <X> void validate(AnnotatedType<X> annotatedType) {
-        // +++ TODO remove isAnnotationPresent(Singleton) because it could be specified in a descriotor
-        if (annotatedType.isAnnotationPresent(ApplicationScoped.class) || annotatedType.isAnnotationPresent(Singleton.class)) { }
+    private <X> boolean isEJB(ProcessAnnotatedType<X> pat) {
+        EjbBundleDescriptor bd = deployment.getCurrentDeploymentContext().getModuleMetaData(EjbBundleDescriptorImpl.class);
+        return bd != null && bd.getEjbByClassName(pat.getAnnotatedType().getJavaClass().getName()) != null;
+    }
+
+    private <X> void validate(AnnotatedType<X> annotatedType, BeanManager bm) {
+        if (annotatedType.isAnnotationPresent(ApplicationScoped.class)) { }
         else {
             throw new IllegalArgumentException("Only @ApplicationScoped beans can be @Clustered: " + annotatedType.toString());
         }
@@ -87,4 +93,7 @@ public class ClusteredAnnotationProcessor {
             throw new IllegalStateException(String.format("Clustered @ApplicationScoped %s must be Serializable", annotatedType.toString()));
         }
     }
+
+
+    private Deployment deployment;
 }
