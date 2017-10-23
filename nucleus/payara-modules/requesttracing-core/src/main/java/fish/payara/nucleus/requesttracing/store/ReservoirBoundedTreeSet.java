@@ -52,7 +52,7 @@ import java.util.Random;
 public class ReservoirBoundedTreeSet<N extends Comparable> extends BoundedTreeSet<N> {
 
     private final Random random;
-    private int counter;
+    private long counter;
 
     /**
      * Constructor which accepts a maximum size. This set requires a
@@ -74,7 +74,9 @@ public class ReservoirBoundedTreeSet<N extends Comparable> extends BoundedTreeSe
      * will be if a problem happens in the reservoir sampling algorithm.
      */
     public boolean add(N n) {
-        counter++;
+        if (counter < Long.MAX_VALUE) {
+            counter++;
+        }
         // If the list isn't full, add the item with p = 1
         if (size() < maxSize) {
             return super.add(n);
