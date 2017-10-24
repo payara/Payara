@@ -179,8 +179,13 @@ public class Connector
      * Is generation of X-Powered-By response header enabled/disabled?
      */
     private boolean xpoweredBy;
-    
+
     private boolean serverHeader;
+    
+    /*
+     * Is generation of X-Frame-Options response header enabled/disabled?
+     */
+    private boolean xframeOptions;
 
     /**
      * Descriptive information about this Connector implementation.
@@ -1136,15 +1141,54 @@ public class Connector
         setProperty("xpoweredBy", String.valueOf(xpoweredBy));
     }
     
-     public boolean isServerHeader() {
+    /**
+     * Indicates whether the generation of a Server response header for
+     * servlet-generated responses is enabled or disabled for this Connector.
+     *
+     * @return true if generation of Server response header is enabled,
+     * false otherwise
+     */
+    public boolean isServerHeader() {
         return serverHeader;
     }
 
+     /**
+     * Enables or disables the generation of a Server header (with value
+     * Servlet/2.4) for all servlet-generated responses returned by this
+     * Connector.
+     *
+     * @param serverHeader true if generation of Server response header is
+     * to be enabled, false otherwise
+     */
     public void setServerHeader(boolean serverHeader) {
         this.serverHeader = serverHeader;
         setProperty("serverHeader", String.valueOf(serverHeader));
     }
-
+    
+    /**
+     * Indicates whether the generation of an X-Frame-Options response header for
+     * servlet-generated responses is enabled or disabled for this Connector.
+     *
+     * @return true if generation of X-Frame-Options response header is enabled,
+     * false otherwise
+     */
+    public boolean isXframeOptions(){
+        return xframeOptions;
+    }
+    
+      /**
+     * Enables or disables the generation of an X-Frame-Options header (with value
+     * Servlet/2.4) for all servlet-generated responses returned by this
+     * Connector.
+     *
+     * @param xframeOptions true if generation of X-Frame-Options response header is
+     * to be enabled, false otherwise
+     */
+    public void setXframeOptions(boolean xframeOptions){
+       this.xframeOptions = xframeOptions;
+        setProperty("xframeOptions", String.valueOf(xframeOptions));
+    }
+    
     // BEGIN S1AS 5000999
     /**
      * Sets the default host for this Connector.

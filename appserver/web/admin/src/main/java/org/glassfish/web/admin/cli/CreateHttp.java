@@ -115,6 +115,8 @@ public class CreateHttp implements AdminCommand {
     Boolean xPoweredBy = false;
     @Param(name = "serverHeader", optional = true, defaultValue = "true", alias="serverHeader")
     Boolean serverHeader = false;
+    @Param(name = "xframe", optional = true, defaultValue = "true", alias="xframeOptions")
+    Boolean xFrameOptions = false;
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -174,7 +176,8 @@ public class CreateHttp implements AdminCommand {
                     http.setRequestTimeoutSeconds(requestTimeoutSeconds);
                     http.setTimeoutSeconds(timeoutSeconds);
                     http.setXpoweredBy(xPoweredBy == null ? null : xPoweredBy.toString());
-                    http.setServerHeader(serverHeader == null ? null : xPoweredBy.toString());
+                    http.setServerHeader(serverHeader == null ? null : serverHeader.toString());
+                    http.setXframeOptions(xFrameOptions == null ? null : xFrameOptions.toString());
                     http.setServerName(serverName);
                     param.setHttp(http);
                     return http;

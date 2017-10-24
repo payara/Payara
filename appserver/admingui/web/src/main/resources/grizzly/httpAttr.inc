@@ -192,6 +192,10 @@
             <sun:checkbox id="serverHeaderEnabled" selected="#{pageSession.httpMap['serverHeader']}" selectedValue="true" />
         </sun:property>
 
+        <sun:property id="XframeOptions"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.XframeOptions}" helpText="$resource{i18n_web.http.XframeOptionsHelp}" >
+            <sun:checkbox id="xframeOptionsEnabled" selected="#{pageSession.httpMap['xframeOptions']}" selectedValue="true" />
+        </sun:property>
+
         <sun:property id="encodedSlash"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.EncodedSlash}" helpText="$resource{i18n_web.http.EncodedSlashHelp}" >
             <sun:checkbox id="encodedSlashEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['encodedSlashEnabled']}" selectedValue="true" />
         </sun:property>
