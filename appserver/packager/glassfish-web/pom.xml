@@ -48,7 +48,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.0.0.Alpha2-SNAPSHOT</version>
+        <version>5.0.0.Alpha2</version>
     </parent>
     
     <artifactId>glassfish-web</artifactId>
