@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
@@ -97,6 +97,10 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
                 <module-log-levels />
             </log-service>
+            <monitoring-service-configuration amx="true" enabled="true" log-frequency="30">
+        	<log-notifier></log-notifier>
+        	<eventbus-notifier></eventbus-notifier>
+            </monitoring-service-configuration>
             <security-service activate-default-principal-to-role-mapping="true" jacc="simple">
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
                     <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
