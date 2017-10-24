@@ -37,17 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.cli.optional;
-
-import java.io.File;
-import java.util.HashMap;
-
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandValidationException;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.admin.cli.CLIProcessExecutor;
 import com.sun.enterprise.admin.cli.CLIUtil;
@@ -55,15 +45,22 @@ import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.util.OS;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- *  stop-database command
- *  This command class will invoke DerbyControl to stop
- *  the database.
+ * stop-database command This command class will invoke DBControl to stop the
+ * database.
  *
- *  @author <a href="mailto:jane.young@sun.com">Jane Young</a>
- *  @author Bill Shannon
+ * @author <a href="mailto:jane.young@sun.com">Jane Young</a>
+ * @author Bill Shannon
  */
 @Service(name = "stop-database")
 @PerLookup
@@ -75,76 +72,48 @@ public final class StopDatabaseCommand extends DatabaseCommand {
     private File dbPasswordFile;
     private String dbPassword;
 
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(StopDatabaseCommand.class);
+    private static final LocalStringsImpl strings
+            = new LocalStringsImpl(StopDatabaseCommand.class);
 
     /**
-     * Defines the command to stop the derby database.
-     * Note that when using Darwin (Mac), the property,
-     * "-Dderby.storage.fileSyncTransactionLog=True" is defined.
+     * Defines the command to stop the database.
+     *
+     * @return
      */
     public String[] stopDatabaseCmd() throws Exception {
-        passwords = new HashMap<String, String>();
+        passwords = new HashMap<>();
         String passwordfile = this.getOption(ProgramOptions.PASSWORDFILE);
         if (passwordfile != null) {
             dbPasswordFile = new File(passwordfile);
             dbPasswordFile = SmartFile.sanitize(dbPasswordFile);
         }
         if (dbPasswordFile != null) {
-            passwords =
-                CLIUtil.readPasswordFileOptions(dbPasswordFile.getPath(), true);
+            passwords
+                    = CLIUtil.readPasswordFileOptions(dbPasswordFile.getPath(), true);
             dbPassword = passwords.get(Environment.getPrefix() + "DBPASSWORD");
         }
-        if (dbUser == null && dbPassword == null) {
-            if (OS.isDarwin()) {
-                return new String[]{
-                            sJavaHome + File.separator + "bin" + File.separator + "java",
-                            "-Djava.library.path=" + sInstallRoot + File.separator + "lib",
-                            "-Dderby.storage.fileSyncTransactionLog=True",
-                            "-cp",
-                            sClasspath + File.pathSeparator + sDatabaseClasspath,
-                            "com.sun.enterprise.admin.cli.optional.DerbyControl",
-                            "shutdown",
-                            dbHost, dbPort, "false"
-                        };
-            }
-            return new String[]{
-                        sJavaHome + File.separator + "bin" + File.separator + "java",
-                        "-Djava.library.path=" + sInstallRoot + File.separator + "lib",
-                        "-cp",
-                        sClasspath + File.pathSeparator + sDatabaseClasspath,
-                        "com.sun.enterprise.admin.cli.optional.DerbyControl",
-                        "shutdown",
-                        dbHost, dbPort, "false"
-                    };
-        } else {
-            if (OS.isDarwin()) {
-                return new String[]{
-                            sJavaHome + File.separator + "bin" + File.separator + "java",
-                            "-Djava.library.path=" + sInstallRoot + File.separator + "lib",
-                            "-Dderby.storage.fileSyncTransactionLog=True",
-                            "-cp",
-                            sClasspath + File.pathSeparator + sDatabaseClasspath,
-                            "com.sun.enterprise.admin.cli.optional.DerbyControl",
-                            "shutdown",
-                            dbHost, dbPort, "false", dbUser, dbPassword
-                        };
-            }
-            return new String[]{
-                        sJavaHome + File.separator + "bin" + File.separator + "java",
-                        "-Djava.library.path=" + sInstallRoot + File.separator + "lib",
-                        "-cp",
-                        sClasspath + File.pathSeparator + sDatabaseClasspath,
-                        "com.sun.enterprise.admin.cli.optional.DerbyControl",
-                        "shutdown",
-                        dbHost, dbPort, "false", dbUser, dbPassword
-                    };
+        List<String> cmd = new ArrayList<>();
+        cmd.add(sJavaHome + File.separator + "bin" + File.separator + "java");
+        cmd.add("-Djava.library.path=" + sInstallRoot + File.separator + "lib");
+        cmd.addAll(dbManager.getSystemProperty());
+        cmd.add("-cp");
+        cmd.add(sClasspath + File.pathSeparator + sDatabaseClasspath);
+        cmd.add(dbManager.getDBControl().getName());
+        cmd.add("shutdown");
+        cmd.add(dbHost);
+        cmd.add(dbPort);
+        cmd.add("false");
+        if (dbUser != null && dbPassword != null) {
+            cmd.add(dbUser);
+            cmd.add(dbPassword);
         }
+        return cmd.toArray(new String[cmd.size()]);
     }
 
     /**
-     *  Method that Executes the command
-     *  @throws CommandException
+     * Method that Executes the command
+     *
+     * @throws CommandException
      */
     @Override
     protected int executeCommand()
@@ -156,22 +125,22 @@ public final class StopDatabaseCommand extends DatabaseCommand {
             if (cpe.exitValue() > 0) {
                 // if ping is unsuccesfull then database is not up and running
                 throw new CommandException(
-                    strings.get("StopDatabaseStatus", dbHost, dbPort));
+                        strings.get("StopDatabaseStatus", dbHost, dbPort));
             } else if (cpe.exitValue() < 0) {
                 // Something terribly wrong!
                 throw new CommandException(
-                    strings.get("UnableToStopDatabase", "derby.log"));
+                        strings.get("UnableToStopDatabase", dbManager.getLogFileName()));
             } else {
                 // database is running so go ahead and stop the database
                 cpe.execute("stopDatabaseCmd", stopDatabaseCmd(), true);
                 if (cpe.exitValue() > 0) {
                     throw new CommandException(
-                        strings.get("UnableToStopDatabase", "derby.log"));
+                            strings.get("UnableToStopDatabase", dbManager.getLogFileName()));
                 }
             }
         } catch (Exception e) {
             throw new CommandException(
-                strings.get("UnableToStopDatabase", "derby.log"), e);
+                    strings.get("UnableToStopDatabase", dbManager.getLogFileName()), e);
         }
         return 0;
     }

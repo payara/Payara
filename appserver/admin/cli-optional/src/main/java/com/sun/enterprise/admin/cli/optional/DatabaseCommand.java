@@ -37,34 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.cli.optional;
 
+import com.sun.enterprise.admin.cli.*;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import java.io.File;
-import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.List;
+//import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import com.sun.enterprise.admin.cli.*;
-import static com.sun.enterprise.util.SystemPropertyConstants.*;
-import com.sun.enterprise.util.OS;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+//import org.glassfish.appclient.client.acc.ACCStartupContext;
 
 /**
- *  This is an abstract class to be inherited by
- *  StartDatabaseCommand and StopDatabaseCommand.
- *  This classes prepares the variables that are used to
- *  to invoke DerbyControl.  It also contains a pingDatabase
- *  method that is used by both start/stop database command.
+ * This is an abstract class to be inherited by StartDatabaseCommand and
+ * StopDatabaseCommand. This classes prepares the variables that are used to to
+ * invoke DBControl. It also contains a pingDatabase method that is used by both
+ * start/stop database command.
  *
- * @author <a href="mailto:jane.young@sun.com">Jane Young</a> 
+ * @author <a href="mailto:jane.young@sun.com">Jane Young</a>
  * @author Bill Shannon
  */
 public abstract class DatabaseCommand extends CLICommand {
+
+    protected static final String DB_TYPE_DEFAULT = "derby";
     protected static final String DB_HOST_DEFAULT = "0.0.0.0";
     protected static final String DB_PORT_DEFAULT = "1527";
-    protected final static String DB_USER       = "dbuser";
+    protected final static String DB_USER = "dbuser";
     //protected final static String DB_PASSWORD   = "dbpassword";
-    protected final static String DB_PASSWORDFILE   = "dbpasswordfile";
+    protected final static String DB_PASSWORDFILE = "dbpasswordfile";
+
+    @Param(name = "dbtype", optional = true, defaultValue = DB_TYPE_DEFAULT)
+    protected String dbType;
 
     @Param(name = "dbhost", optional = true, defaultValue = DB_HOST_DEFAULT)
     protected String dbHost;
@@ -76,39 +81,48 @@ public abstract class DatabaseCommand extends CLICommand {
     protected File sJavaHome;
     protected File sInstallRoot;
     protected final ClassPathBuilder sClasspath = new ClassPathBuilder();
-    protected final ClassPathBuilder sDatabaseClasspath =
-                                                new ClassPathBuilder();
+    protected final ClassPathBuilder sDatabaseClasspath = new ClassPathBuilder();
 
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(DatabaseCommand.class);
+    private static final LocalStringsImpl strings
+            = new LocalStringsImpl(DatabaseCommand.class);
+
+    protected DBManager dbManager;
+    
+//    @Inject
+//    private ACCStartupContext startupContext;
 
     /**
      * Prepare variables to invoke start/ping database command.
      */
     protected void prepareProcessExecutor() throws Exception {
         sInstallRoot = new File(getSystemProperty(INSTALL_ROOT_PROPERTY));
-        if (dbHost == null)
+        if (dbType == null) {
+            dbType = DB_TYPE_DEFAULT;
+        }
+        if (dbHost == null) {
             dbHost = DB_HOST_DEFAULT;
-        if (dbPort == null)
+        }
+        if (dbPort == null) {
             dbPort = DB_PORT_DEFAULT;
-        else
+        } else {
             checkIfPortIsValid(dbPort);
+        }
         sJavaHome = new File(getSystemProperty(JAVA_ROOT_PROPERTY));
-        dbLocation = new File(getSystemProperty(DERBY_ROOT_PROPERTY));
-        checkIfDbInstalled(dbLocation);
-        
-	sClasspath.add(new File(sInstallRoot, "lib/asadmin/cli-optional.jar"));
-        sDatabaseClasspath
-                .add(dbLocation,"lib","derby.jar")
-                .add(dbLocation,"lib","derbytools.jar")
-                .add(dbLocation,"lib","derbynet.jar")
-                .add(dbLocation,"lib","derbyclient.jar");
+        dbManager = DBManagerFactory.getDBManager(DBType.valueOf(dbType.toUpperCase()));
+        dbLocation = new File(getSystemProperty(dbManager.getRootProperty()));
+        try {
+            dbManager.checkIfDbInstalled(dbLocation);
+        } catch (CommandException ce) {
+            logger.info(strings.get("DatabaseNotInstalled", dbLocation));
+            throw ce;
+        }
+        sClasspath.add(new File(sInstallRoot, "lib/asadmin/cli-optional.jar"));
+        dbManager.buildDatabaseClasspath(dbLocation, sDatabaseClasspath);
     }
 
-
     /**
-     * Check if database port is valid.
-     * Derby does not check this so need to add code to check the port number.
+     * Check if database port is valid. DB does not check this so need to add
+     * code to check the port number.
      */
     private void checkIfPortIsValid(final String port)
             throws CommandValidationException {
@@ -116,61 +130,37 @@ public abstract class DatabaseCommand extends CLICommand {
             Integer.parseInt(port);
         } catch (NumberFormatException e) {
             throw new CommandValidationException(
-                                strings.get("InvalidPortNumber", port));
-        }
-    }
-    
-    /**
-     * Check if database is installed.
-     */
-    private void checkIfDbInstalled(final File dblocation)
-            throws CommandException {
-        if (!dblocation.exists()) {
-            logger.info(strings.get("DatabaseNotInstalled",
-                                                     dblocation));
-            throw new CommandException("dblocation not found: " + dblocation);
-        } else {
-            File derbyJar =
-                new File(new File(dbLocation, "lib"), "derbyclient.jar");
-            if (!derbyJar.exists()) {
-                logger.info(strings.get("DatabaseNotInstalled",
-                                                     dblocation));
-                throw new CommandException(
-                    "derbyclient.jar not found in " + dblocation);
-            }
+                    strings.get("InvalidPortNumber", port));
         }
     }
 
     /**
-     * Defines the command to ping the derby database.
-     * Note that when using Darwin (Mac), the property,
-     * "-Dderby.storage.fileSyncTransactionLog=True" is defined.
-     * See:
-     * http://www.jasonbrome.com/blog/archives/2004/12/05/apache_derby_on_mac_os_x.html
-     * https://issues.apache.org/jira/browse/DERBY-1
+     * Defines the command to ping the database.
+     *
+     * @param bRedirect
+     * @return
      */
     protected String[] pingDatabaseCmd(boolean bRedirect) throws Exception {
-        if (OS.isDarwin()) {
-            return new String[]{getJavaExe().toString(),
-                    "-Djava.library.path=" + sInstallRoot + File.separator +
-                    "lib", "-Dderby.storage.fileSyncTransactionLog=True", "-cp",
-                    sClasspath + File.pathSeparator + sDatabaseClasspath,
-                    "com.sun.enterprise.admin.cli.optional.DerbyControl", "ping",
-                    dbHost, dbPort, Boolean.valueOf(bRedirect).toString()};
-        } else {
-            return new String[]{getJavaExe().toString(),
-                    "-Djava.library.path=" + sInstallRoot + File.separator +
-                    "lib", "-cp",
-                    sClasspath + File.pathSeparator + sDatabaseClasspath,
-                    "com.sun.enterprise.admin.cli.optional.DerbyControl", "ping",
-                    dbHost, dbPort, Boolean.valueOf(bRedirect).toString()};
-        }
+        List<String> cmd = new ArrayList<>();
+        cmd.add(getJavaExe().toString());
+        cmd.add("-Djava.library.path=" + sInstallRoot + File.separator + "lib");
+        cmd.addAll(dbManager.getSystemProperty());
+        cmd.add("-cp");
+        cmd.add(sClasspath + File.pathSeparator + sDatabaseClasspath);
+        cmd.add(dbManager.getDBControl().getName());
+        cmd.add("ping");
+        cmd.add(dbHost);
+        cmd.add(dbPort);
+        cmd.add(Boolean.toString(bRedirect));
+        return cmd.toArray(new String[cmd.size()]);
     }
 
     /**
      * Computes the java executable location from {@link #sJavaHome}.
+     *
+     * @return
      */
     protected final File getJavaExe() {
-        return new File(new File(sJavaHome,"bin"), "java");
+        return new File(new File(sJavaHome, "bin"), "java");
     }
 }
