@@ -150,6 +150,7 @@ public interface ResourceConstants {
 
     public final static String APP_META_DATA_RESOURCES = "app-level-resources-config";
     public final static String APP_SCOPED_RESOURCES_JNDI_NAMES = "app-scoped-resources-jndi-names";
+    public final static String APP_SCOPED_RESOURCES_RA_NAMES = "app-scoped-resources-ra-names";
     public final static String APP_SCOPED_RESOURCES_MAP = "app-scoped-resources-map";
 
 }
