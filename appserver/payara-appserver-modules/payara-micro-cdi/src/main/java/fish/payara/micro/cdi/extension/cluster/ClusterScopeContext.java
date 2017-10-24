@@ -58,6 +58,7 @@ import org.glassfish.internal.deployment.Deployment;
  * @Clustered singleton implementation
  *
  * TODO +++ Clustered singleton locks
+ * TODO +++ interceptor to refresh Hz structures after method calls
  *
  * @author lprimak
  */
