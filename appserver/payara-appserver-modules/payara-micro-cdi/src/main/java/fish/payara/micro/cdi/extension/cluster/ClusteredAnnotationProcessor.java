@@ -68,7 +68,7 @@ public class ClusteredAnnotationProcessor {
     }
 
     public void afterBeanDiscovery(AfterBeanDiscovery event, BeanManager manager) {
-        event.addContext(new ClusterScopeContext(manager));
+        event.addContext(new ClusterScopeContext(manager, deployment));
     }
 
     public <X> void processAnnotatedType(ProcessAnnotatedType<X> pat, BeanManager bm) {
@@ -81,7 +81,7 @@ public class ClusteredAnnotationProcessor {
 
     private <X> boolean isEJB(ProcessAnnotatedType<X> pat) {
         EjbBundleDescriptor bd = deployment.getCurrentDeploymentContext().getModuleMetaData(EjbBundleDescriptorImpl.class);
-        return bd != null && bd.getEjbByClassName(pat.getAnnotatedType().getJavaClass().getName()) != null;
+        return bd != null && bd.getEjbByClassName(pat.getAnnotatedType().getJavaClass().getName()).length > 0;
     }
 
     private <X> void validate(AnnotatedType<X> annotatedType, BeanManager bm) {
