@@ -146,7 +146,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.module.web.servlet.ConversationFilter";
     private static final String WELD_CONVERSATION_FILTER_NAME = "CDI Conversation Filter";
     
-    public static final String DEV_MODE_PROPERTY = "org.jboss.weld.development";
+    
+    private static final String DEV_MODE_PROPERTY = "org.jboss.weld.development";
     
     private static final String PROBE_FILTER_NAME = "weld-probe-filter";
     
@@ -684,7 +685,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 ContextParameter param = cpEnumeration.nextElement();
                 if (DEV_MODE_PROPERTY.equals(param.getName()) && Boolean.valueOf(param.getValue())) {
                     devMode = true;
-                    WeldUtils.setCDIDevMode(context, devMode);
                     break;
                 }
             }

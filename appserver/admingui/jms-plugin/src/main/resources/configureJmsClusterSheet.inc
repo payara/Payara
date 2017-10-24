@@ -130,7 +130,7 @@
 
         <sun:property id="PswdTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" styleClass="__database"
             label="$resource{i18ncs.cluster.jms.dbUserPassword}" helpText="$resource{i18ncs.cluster.jms.dbUserPasswordHelp}" >
-            <sun:passwordField id="NewPassword" name="password" text="#{pageSession.pswdText}" columns="$int{25}"
+            <sun:passwordField id="NewPassword" text="#{pageSession.pswdText}" columns="$int{25}" 
                 maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}" />
         </sun:property>
 

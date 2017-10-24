@@ -65,7 +65,7 @@
         }
         />
         </event>
-            <sun:form id="propertyForm" autoComplete="off">
+            <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"               
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18nc.manageUsers.EditPageTitle}" 
@@ -116,14 +116,14 @@
                             </sun:property>
 
                             <sun:property id="newPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.manageUsers.NewPassword}">
-                                <sun:passwordField id="NewPassword" name="password" columns="$int{25}" text="#{pageSession.password}"  >
+                                <sun:passwordField id="NewPassword" columns="$int{25}" text="#{pageSession.password}"  >
                                     <!afterCreate
                                         getClientId(component="$this{component}" clientId=>$page{ps1});
                                     />
                                 </sun:passwordField>     
                             </sun:property>  
                             <sun:property id="confirmPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.manageUsers.ConfirmNewPassword}">
-                                <sun:passwordField id="ConfirmPassword" name="password" columns="$int{25}" text="#{pageSession.confirmPassword}"  >
+                                <sun:passwordField id="ConfirmPassword" columns="$int{25}" text="#{pageSession.confirmPassword}"  >
                                     <!afterCreate
                                         getClientId(component="$this{component}" clientId=>$page{ps2});
                                     />

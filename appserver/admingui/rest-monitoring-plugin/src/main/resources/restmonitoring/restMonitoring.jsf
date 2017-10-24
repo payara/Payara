@@ -58,13 +58,14 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.restMonitoringConfiguration}");
     mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
 
-    setPageSessionAttribute(key="convertToFalseList", value={"enabled", "securityenabled"});
+    setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "securityenabled"});
     if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
     }
     if (#{pageSession.valueMap['securityenabled']}=true) {
         setPageSessionAttribute(key="securityEnabled", value="true");
     }
+    setPageSessionAttribute(key="dynamic", value="true");
     />
 </event>
     <sun:form id="propertyForm">
@@ -77,8 +78,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                             onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                         <!command
-                            mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                            mapPut(map="#{pageSession.valueMap}" key="securityenabled" value="#{pageSession.securityEnabled}");
+                            mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.isEnabled}");
+                            mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.isDynamic}");
+                            mapPut(map="#{pageSession.valueMap}" key="securityenabled" value="#{pageSession.isSecure}");
                             prepareSuccessfulMsg();
                             gf.updateEntity(endpoint="#{pageSession.REST_MONITORING_CONFIG_URL}/set-rest-monitoring-configuration" 
                                     attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
@@ -93,16 +95,19 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #include "/common/shared/configNameSection.inc"
             <sun:propertySheetSection id="propertSectionTextField">
                 <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.Enabled}" helpText="$resource{i18nrest.monitoring.rest.EnabledHelp}">
-                    <sun:checkbox id="isEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
+                    <sun:checkbox id="isEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isEnabled}" selectedValue="true"/>
                 </sun:property>
-            <sun:property id="applicationNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.ApplicationName}" helpText="$resource{i18nrest.monitoring.rest.ApplicationNameHelp}">
-                    <sun:textField id="applicationName" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['applicationname']}"/>
+                <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.Dynamic}" helpText="$resource{i18nrest.monitoring.rest.DynamicHelp}">
+                    <sun:checkbox id="isDynamic" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isDynamic}" selectedValue="true"/>
+                </sun:property>
+                <sun:property id="applicationNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.ApplicationName}" helpText="$resource{i18nrest.monitoring.rest.ApplicationNameHelp}">
+                    <sun:textField id="name" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['name']}"/>
                 </sun:property>
                 <sun:property id="contextRootProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.ContextRoot}" helpText="$resource{i18nrest.monitoring.rest.ContextRootHelp}">
                     <sun:textField id="contextroot" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['contextroot']}"/>
                 </sun:property>
                 <sun:property id="isSecureProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrest.monitoring.rest.SecurityEnabled}" helpText="$resource{i18nrest.monitoring.rest.SecurityEnabledHelp}">
-                    <sun:checkbox id="isSecure" label="$resource{i18n.common.Enabled}" selected="#{pageSession.securityEnabled}" selectedValue="true"/>
+                    <sun:checkbox id="isSecure" label="$resource{i18n.common.Enabled}" selected="#{pageSession.isSecure}" selectedValue="true"/>
                 </sun:property>                  
                 "<br /><br />
             </sun:propertySheetSection>

@@ -103,8 +103,7 @@
                                       method="post");
                     }                    
                     setAttribute(key="selectedRows" value="${selectedRows}");
-                    prepareAlertMsg(summary="$resource{i18n.msg.enableResourceOnTargetsSuccessful}", type="success");
-                    gf.redirect(page="#{pageSession.targetPage}&generalPage=#{pageSession.generalPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                    gf.redirect(page="#{pageSession.targetPage}&generalPage=#{pageSession.generalPage}");
                 />
             </sun:button>
             <sun:button id="button3" text="$resource{i18n.button.Disable}" disabled="#{true}" primary="#{false}" >
@@ -118,8 +117,7 @@
                                       method="post");
                     }
                     setAttribute(key="selectedRows" value="${selectedRows}");
-                    prepareAlertMsg(summary="$resource{i18n.msg.disableResourceOnTargetsSuccessful}", type="success");
-                    gf.redirect(page="#{pageSession.targetPage}&generalPage=#{pageSession.generalPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                    gf.redirect(page="#{pageSession.targetPage}&generalPage=#{pageSession.generalPage}");
                 />
             </sun:button>
          </sun:panelGroup>

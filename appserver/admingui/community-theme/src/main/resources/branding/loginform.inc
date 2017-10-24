@@ -52,7 +52,7 @@ background-repeat:no-repeat;background-position:left top; width: 720px; margin: 
             />
         </sun:image>
 <f:verbatim>
-        <form method="POST" class="form" name="loginform" action="j_security_check" autocomplete="off">
+        <form method="POST" class="form" name="loginform" action="j_security_check">
         <table role="presentation">
         <tr>
             <td><label for="Login.username" style="font-weight: bold;">$resource{i18n.common.username}</label></td>
@@ -60,7 +60,7 @@ background-repeat:no-repeat;background-position:left top; width: 720px; margin: 
         </tr>
         <tr>
             <td><label for="Login.password" style="font-weight: bold;">$resource{i18n.common.password}</label>
-            <td><input type="password" name="j_password" id="Login.password" tabindex="2" autocomplete="new-password">
+            <td><input type="password" name="j_password" id="Login.password" tabindex="2">
         <tr>
             <td colspan="2" align="center">
                 <input type="submit" class="Btn1"

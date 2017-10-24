@@ -218,10 +218,10 @@ public class StatefulContainerFactory extends BaseContainerFactory
             throws Exception {
         if (availabilityService != null) {
             this.HAEnabled = Boolean.valueOf(availabilityService.getAvailabilityEnabled());
-            _logger.log(Level.FINE, SFSB_BUILDER_TOP_LEVEL_AVAILABILITY_SERVICE_ENABLED, this.HAEnabled);
+            _logger.log(Level.INFO, SFSB_BUILDER_TOP_LEVEL_AVAILABILITY_SERVICE_ENABLED, this.HAEnabled);
             if ((this.HAEnabled) && (ejbAvailability != null)) {
                 this.HAEnabled = Boolean.valueOf(ejbAvailability.getAvailabilityEnabled());
-                _logger.log(Level.FINE, SFSB_BUILDER_EJB_AVAILABILITY_SERVICE_ENABLED, this.HAEnabled);
+                _logger.log(Level.INFO, SFSB_BUILDER_EJB_AVAILABILITY_SERVICE_ENABLED, this.HAEnabled);
             }
 
             boolean appLevelHAEnabled = false;
@@ -235,7 +235,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
                         }
                     }
                     
-                    _logger.log(Level.FINE, SFSB_BUILDER_GLOBAL_AND_APP_AVAILABILITY_ENABLED,
+                    _logger.log(Level.INFO, SFSB_BUILDER_GLOBAL_AND_APP_AVAILABILITY_ENABLED,
                             new Object[] {this.HAEnabled, appLevelHAEnabled});
                 }
             } catch (Exception ex) {
@@ -244,7 +244,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
             }
 
             HAEnabled = HAEnabled && appLevelHAEnabled;
-            _logger.log(Level.FINE, SFSB_BUILDER_RESOLVED_AVAILABILITY_ENABLED, this.HAEnabled);
+            _logger.log(Level.INFO, SFSB_BUILDER_RESOLVED_AVAILABILITY_ENABLED, this.HAEnabled);
         }
 
         EjbSessionDescriptor sessionDescriptor = (EjbSessionDescriptor)ejbDescriptor;
@@ -310,7 +310,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
         BackingStoreConfiguration<Serializable, SimpleMetadata> conf = new BackingStoreConfiguration<Serializable, SimpleMetadata>();
         String storeName = ejbDescriptor.getName() + "-" + ejbDescriptor.getUniqueId() + "-BackingStore";
 
-        _logger.log(Level.FINE, SFSB_BUILDER_STORE_NAME, storeName);
+        _logger.log(Level.INFO, SFSB_BUILDER_STORE_NAME, storeName);
         
         String subDirName = "";
 

@@ -96,7 +96,7 @@
 
     />
     </event>
-            <sun:form id="propertyForm" autoComplete="off">
+            <sun:form id="propertyForm">
 #include "/jca/connectorConnectionPoolTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
 

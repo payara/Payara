@@ -54,7 +54,7 @@
             setPageSessionAttribute(key="edit" value="#{false}" );
         />
     </event>
-<sun:form id="propertyForm" autoComplete="off">
+<sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
     <sun:title id="propertyContentPage"  title="$resource{i18nc.pswdAliasNew.title}"  helpText="$resource{i18nc.pswdAliasNew.titleHelp}" >
         <!facet pageButtonsTop>

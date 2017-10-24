@@ -61,7 +61,7 @@
             gf.getDefaultValues(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
         />
     </event>
-    <sun:form id="propertyForm" autoComplete="off">
+    <sun:form id="propertyForm">
 #include "/jms/jmsHost.inc"
         <sun:hidden id="helpKey" value="$resource{helpjms.jmsHostNew}" />
     </sun:form>

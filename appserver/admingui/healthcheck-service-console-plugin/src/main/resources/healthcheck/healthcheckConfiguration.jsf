@@ -97,7 +97,7 @@ holder.
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/healthcheck-configure" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                    py.updateNotifiers(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+                    py.updateNotifiers(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
                     />
             </sun:button>
         </sun:panelGroup>

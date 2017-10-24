@@ -80,15 +80,20 @@ Payara Server 5 is currently tested on the following platforms:
 
 |                       |Oracle JDK     |Azul Zulu      |OpenJDK        |IBM J9 |
 |---                    |---            |---            |---            |---    |
-|Windows 7              |✓              |               |               |       |
-|Windows 10             |✓              |               |               |       |
-|Windows Server 2016    |✓              |               |               |       |
-|Ubuntu 16.04, 17.04    |✓              |✓              |✓              |✓      |
-|Debian 8               |✓              |               |               |       |
-|CentOS 7               |✓              |               |               |       |
+|Windows 7              |✓              |✓              |               |       |
+|Windows 8.1            |               |✓              |               |       |
+|Windows 10             |✓              |✓              |               |       |
+|Windows Server 2008    |               |✓              |               |       |
+|Windows Server 2012    |✓              |✓              |               |       |
+|Windows Server 2016    |✓              |✓              |               |       |
+|Ubuntu 14.04, 16.04    |✓              |✓              |✓              |       |
+|Debian 7               |✓              |               |               |       |
+|CentOS 6               |✓              |               |               |       |
+|RHEL                   |               |               |               |       |
 |OpenSUSE 42.2          |✓              |               |               |       |
-|AIX 7.3 TL3            |               |               |               |✓       |
-|macOS      10.12.5     |✓              |               |               |       |
+|SUSE 11.4, 12.2        |✓              |               |               |       |
+|AIX 7.3 TL3            |               |               |               |✓      |
+|MacOS(OSX) 10.10.5     |✓              |               |               |       |
 
 
 GlassFish is a trademark of Oracle Corporation.

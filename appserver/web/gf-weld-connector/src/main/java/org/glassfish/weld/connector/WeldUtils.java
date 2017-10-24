@@ -513,10 +513,6 @@ public class WeldUtils {
         return propValue != null && Boolean.parseBoolean((String) propValue);
     }
     
-    public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
-       context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
-    }
-    
   public static InputStream getBeansXmlInputStream(DeploymentContext context) {
     return getBeansXmlInputStream( context.getSource() );
   }

@@ -113,13 +113,9 @@
                     setAttribute(key="actionValue" value="#{click.selected}")
                     if( ${actionValue}=enable){
                         gf.changeTargetStatus(selectedRows="${selectedRows}"  Enabled="#{true}" forLB="$boolean{false}")
-                        prepareAlertMsg(summary="$resource{i18n.msg.enableOnTargetsSuccessful}", type="success");
-                        gf.redirect(page="#{request.contextPath}/common/applications/targetListing.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                     }
                     if( ${actionValue}=disable){
                         gf.changeTargetStatus(selectedRows="${selectedRows}"  Enabled="#{false}" forLB="$boolean{false}")
-                        prepareAlertMsg(summary="$resource{i18n.msg.disableOnTargetsSuccessful}", type="success");
-                        gf.redirect(page="#{request.contextPath}/common/applications/targetListing.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                     }
                     if( ${actionValue}=lb-enable){
                         gf.changeTargetStatus(selectedRows="${selectedRows}" Enabled="#{true}" forLB="$boolean{true}")

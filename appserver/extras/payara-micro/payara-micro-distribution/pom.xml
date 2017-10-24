@@ -413,13 +413,6 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.jmx.monitoring</groupId>
-            <artifactId>jmx-monitoring</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <optional>true</optional>
-        </dependency>
         <!-- PAYARA-1081 -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>

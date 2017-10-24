@@ -217,7 +217,7 @@
                 <!afterCreate
                     getClientId(component="$this{component}" clientId="#{pageSession.ps1PropId}");
                 />
-                <sun:passwordField id="NewPassword" name="password" text="#{pageSession.pswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
+                <sun:passwordField id="NewPassword" text="#{pageSession.pswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
                  <!afterCreate
                     getClientId(component="$this{component}" clientId="#{pageSession.ps1Id}");
                 />
@@ -264,7 +264,7 @@
                 <!afterCreate
                         getClientId(component="$this{component}" clientId="#{pageSession.setupPswdPropId}");
                 />
-                <sun:passwordField id="setupPswd" name="password" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.node.Keyfile']}" text="#{pageSession.setupPswd}" >
+                <sun:passwordField id="setupPswd" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.node.Keyfile']}" text="#{pageSession.setupPswd}" >
                 <!afterCreate
                         getClientId(component="$this{component}" clientId="#{pageSession.setupPswdId}");
                 />
@@ -339,7 +339,7 @@
                 <!afterCreate
                         getClientId(component="$this{component}" clientId="#{pageSession.winPs1PropId}");
                     />
-                <sun:passwordField id="NewPassword" name="password" text="#{pageSession.winPswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
+                <sun:passwordField id="NewPassword" text="#{pageSession.winPswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
                      <!afterCreate
                         getClientId(component="$this{component}" clientId="#{pageSession.winPs1Id}");
                     />
