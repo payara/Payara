@@ -52,14 +52,14 @@
             </sun:property>
 
             <sun:property id="newPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.pswdAlias.password}"  helpText="$resource{i18nc.pswdAlias.passwordHelp}">
-            <sun:passwordField id="NewPassword"  styleClass="required" required="#{true}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}" text="#{pageSession.valueMap['aliaspassword']}" >
+            <sun:passwordField id="NewPassword"  name="password" styleClass="required" required="#{true}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}" text="#{pageSession.valueMap['aliaspassword']}" >
                  <!afterCreate
                     getClientId(component="$this{component}" clientId="#{pageSession.ps1}");
                 />
             </sun:passwordField>
             </sun:property>
             <sun:property id="confirmPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.pswdAlias.confirmPassword}"  helpText="$resource{i18nc.pswdAlias.confirmPasswordHelp}">>
-                <sun:passwordField id="ConfirmPassword"  styleClass="required" required="#{true}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.ConfirmNewPassword']}" text="#{pageSession.confirmPassword}"   >
+                <sun:passwordField id="ConfirmPassword"  name="password" styleClass="required" required="#{true}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.ConfirmNewPassword']}" text="#{pageSession.confirmPassword}"   >
                     <!afterCreate
                         getClientId(component="$this{component}" clientId="#{pageSession.ps2}");
                     />

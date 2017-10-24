@@ -85,6 +85,17 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             comment = "For the method validateJNDIRefs of com.sun.enterprise.deployment.util.ResourceValidator."
     )
     private static final String RESOURCE_REF_JNDI_LOOKUP_FAILED = "AS-DEPLOYMENT-00026";
+    
+    @LogMessageInfo(message = "Skipping resource validation")
+    private static final String SKIP_RESOURCE_VALIDATION = "AS-DEPLOYMENT-00028";
+
+    @LogMessageInfo(
+            message = "Resource Adapter not present: RA Name: {0}, Type: {1}.",
+            level = "SEVERE",
+            cause = "Resource apapter specified is invalid.",
+            action = "Configure the required resource adapter."
+    )
+    private static final String RESOURCE_REF_INVALID_RA = "AS-DEPLOYMENT-00027";
 
     private String target;
 
@@ -115,7 +126,11 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             application = dc.getModuleMetaData(Application.class);
             DeployCommandParameters commandParams = dc.getCommandParameters(DeployCommandParameters.class);
             target = commandParams.target;
-            if (application == null || System.getProperty("deployment.resource.validation", "true").equals("false")) {
+            if (System.getProperty("deployment.resource.validation", "true").equals("false")) {
+                deplLogger.log(Level.INFO, SKIP_RESOURCE_VALIDATION);
+                return;
+            }
+            if (application == null) {
                 return;
             }
             AppResources appResources = new AppResources();
@@ -530,15 +545,21 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
 
     /**
      * Store the resource definitions in our namespace. CFD and AODD are not
-     * valid in an AppClient.
+     * valid in an AppClient. O/w need to validate the ra-name in them.
      */
     private void parseResources(ResourceDescriptor resourceDescriptor, JndiNameEnvironment env, AppResources appResources) {
-        if (env instanceof ApplicationClientDescriptor) {
-            if (resourceDescriptor.getResourceType().equals(JavaEEResourceType.CFD) || resourceDescriptor.getResourceType().equals(JavaEEResourceType.AODD)) {
+        JavaEEResourceType type = resourceDescriptor.getResourceType();
+        if (type.equals(JavaEEResourceType.CFD) || type.equals(JavaEEResourceType.AODD)) {
+            if (env instanceof ApplicationClientDescriptor) {
                 return;
             }
+            // No need to type check as CFD and AODD extend from AbstractConnectorResourceDescriptor
+            AbstractConnectorResourceDescriptor acrd = (AbstractConnectorResourceDescriptor) resourceDescriptor;
+            appResources.store(new AppResource(resourceDescriptor.getName(), acrd.getResourceAdapter(), type.toString(), env, true));
+        } else {
+            // nothing to validate here. store the definitions in our namespace.
+            storeInNamespace(resourceDescriptor.getName(), env, appResources);
         }
-        storeInNamespace(resourceDescriptor.getName(), env, appResources);
     }
 
     /**
@@ -701,10 +722,92 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      */
     private void validateResources(AppResources appResources) {
         for (AppResource resource : appResources.myResources) {
-            if (resource.validate) {
+            if (!resource.validate) {
+                continue;
+            }
+            if (resource.getType().equals("CFD") || resource.getType().equals("AODD")) {
+                validateRAName(resource);
+            } else {
                 validateJNDIRefs(resource, appResources.myNamespace);
             }
         }
+        // Validate the ra-names of app scoped resources
+        // RA-name and the type of this resource are stored
+        List<Map.Entry<String, String>> raNames = 
+                (List<Map.Entry<String, String>>) dc.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_RA_NAMES);
+        if (raNames == null) {
+            return;
+        }
+        for (Map.Entry<String, String> entry : raNames) {
+            validateRAName(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * Validate the resource adapter names of @CFD, @AODD.
+     */
+    private void validateRAName(AppResource resource) {
+        validateRAName(resource.getJndiName(), resource.getType());
+    }
+
+    /**
+     * Strategy to validate the resource adapter name:
+     *
+     * 1) In case of stand-alone RA, look in the domain.xml and for default
+     * system RA's 2) In case of embedded RA, compare it with names of RAR
+     * descriptors
+     *
+     * In case of null ra name, we fail the deployment.
+     */
+    private void validateRAName(String raname, String type) {
+        // No ra-name specified
+        if (raname == null || raname.length() == 0) {
+            deplLogger.log(Level.SEVERE, RESOURCE_REF_INVALID_RA,
+                    new Object[]{null, type});
+            throw new DeploymentException(localStrings.getLocalString("enterprise.deployment.util.ra.validation",
+                    "Resource Adapter not present: RA Name: {0}, Type: {1}.",
+                    null, type));
+        }
+        int poundIndex = raname.indexOf("#");
+
+        // Pound not present: check for app named raname in domain.xml, check for system ra's
+        if (poundIndex < 0) {
+            if (domain.getApplications().getApplication(raname) != null) {
+                return;
+            }
+            // System RA's - Copied from ConnectorConstants.java
+            if (raname.equals("jmsra") || raname.equals("__ds_jdbc_ra") || raname.equals("jaxr-ra")
+                    || raname.equals("__cp_jdbc_ra") || raname.equals("__xa_jdbc_ra") || raname.equals("__dm_jdbc_ra")) {
+                return;
+            }
+            if (isEmbedded(raname)) {
+                return;
+            }
+        } // Embedded RA
+        // In case the app name does not match, we fail the deployment
+        else if (raname.substring(0, poundIndex).equals(application.getAppName())) {
+            raname = raname.substring(poundIndex + 1);
+            if (isEmbedded(raname)) {
+                return;
+            }
+        }
+        deplLogger.log(Level.SEVERE, RESOURCE_REF_INVALID_RA,
+                new Object[]{raname, type});
+        throw new DeploymentException(localStrings.getLocalString(
+                "enterprise.deployment.util.ra.validation",
+                "Resource Adapter not present: RA Name: {0}, Type: {1}.",
+                raname, type));
+    }
+
+    private boolean isEmbedded(String raname) {
+        String ranameWithRAR = raname + ".rar";
+        // check for rar named this
+        for (BundleDescriptor bd : application.getBundleDescriptors(ConnectorDescriptor.class)) {
+            if (raname.equals(bd.getModuleName()) || ranameWithRAR.equals(bd.getModuleName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

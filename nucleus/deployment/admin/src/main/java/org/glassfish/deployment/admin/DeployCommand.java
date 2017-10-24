@@ -169,6 +169,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private ActionReport report;
     private DeploymentTracing timing;
     private transient DeployCommandSupplementalInfo suppInfo;
+    private static final String EJB_JAR_XML = "META-INF/ejb-jar.xml";
+    private static final String SUN_EJB_JAR_XML = "META-INF/sun-ejb-jar.xml";
+    private static final String GF_EJB_JAR_XML = "META-INF/glassfish-ejb-jar.xml";
 
     public DeployCommand() {
         origin = Origin.deploy;
@@ -260,6 +263,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 tracing.addMark(DeploymentTracing.Mark.INITIAL_CONTEXT_CREATED);
             }
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
+
+            if (!forceName) {
+                if (archiveHandler.getArchiveType().equals("ejb")
+                        && (archive.exists(EJB_JAR_XML)
+                        || archive.exists(SUN_EJB_JAR_XML)
+                        || archive.exists(GF_EJB_JAR_XML))) {
+
+                    name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
+                }
+            }
+
             if (name == null) {
                 name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
             } else {
@@ -343,7 +357,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     public void execute(AdminCommandContext context) {
         long timeTakenToDeploy = 0;
         long deploymentTimeMillis = 0;
-        
+
         try {
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
             Collection<Interceptor> interceptors = habitat.getAllServices(Interceptor.class);
@@ -424,7 +438,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             // create the parent class loader
             deploymentContext
                     = deployment.getBuilder(logger, this, report).
-                    source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
+                            source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
             if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.CONTEXT_CREATED);
                 deploymentContext.addModuleMetaData(tracing);
@@ -520,7 +534,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     // Set the application deploy time
                     timeTakenToDeploy = timing.elapsed();
                     deploymentContext.getTransientAppMetaData("application", Application.class).setDeploymentTime(Long.toString(timeTakenToDeploy));
-                    
+
                     deploymentTimeMillis = System.currentTimeMillis();
                     deploymentContext.getTransientAppMetaData("application", Application.class).setTimeDeployed(Long.toString(deploymentTimeMillis));
                     // register application information in domain.xml
