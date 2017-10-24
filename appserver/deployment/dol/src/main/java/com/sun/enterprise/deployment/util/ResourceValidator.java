@@ -72,7 +72,7 @@ import org.glassfish.internal.api.PostStartupRunLevel;
  * Created by Krishna Deepak on 6/9/17.
  */
 @Service
-@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_VALIDATING)
+@RunLevel(value = PostStartupRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_VALIDATING)
 public class ResourceValidator implements EventListener, ResourceValidatorVisitor {
 
     public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
@@ -1066,11 +1066,12 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             appNamespace.addAll(appLevelResources);
             for (Map.Entry<String, List<String>> entry : resources.entrySet()) {
                 if (!entry.getKey().equals(appName)) {
-                    List<String> jndiNames = moduleNamespaces.get(entry.getKey());
+                    String moduleName = getActualModuleName(entry.getKey());
+                    List<String> jndiNames = moduleNamespaces.get(moduleName);
                     if (jndiNames == null) {
                         jndiNames = new ArrayList<>();
                         jndiNames.addAll(entry.getValue());
-                        moduleNamespaces.put(entry.getKey(), jndiNames);
+                        moduleNamespaces.put(moduleName, jndiNames);
                     } else {
                         jndiNames.addAll(entry.getValue());
                     }
@@ -1094,7 +1095,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                     jndiNames.add(jndiName);
                 }
             } else if (jndiName.startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX)) {
-                String moduleName = DOLUtils.getModuleName(env);
+                String moduleName = getActualModuleName(DOLUtils.getModuleName(env));
                 List<String> jndiNames = moduleNamespaces.get(moduleName);
                 if (jndiNames == null) {
                     jndiNames = new ArrayList<>();
@@ -1128,7 +1129,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                 List jndiNames = componentNamespaces.get(componentId);
                 return jndiNames != null && jndiNames.contains(jndiName);
             } else if (jndiName.startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX)) {
-                String moduleName = DOLUtils.getModuleName(env);
+                String moduleName = getActualModuleName(DOLUtils.getModuleName(env));
                 List jndiNames = moduleNamespaces.get(moduleName);
                 return jndiNames != null && jndiNames.contains(jndiName);
             } else if (jndiName.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)) {
@@ -1138,6 +1139,18 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             } else {
                 return nonPortableJndiNames.contains(jndiName);
             }
+        }
+       
+        /**
+         * Remove suffix from the module name.
+         */
+        private String getActualModuleName(String moduleName) {
+            if (moduleName != null) {
+                if (moduleName.endsWith(".jar") || moduleName.endsWith(".war") || moduleName.endsWith(".rar")) {
+                    moduleName = moduleName.substring(0, moduleName.length() - 4);
+                }
+            }
+            return moduleName;
         }
     }
 
