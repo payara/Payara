@@ -72,7 +72,7 @@ import org.glassfish.internal.api.PostStartupRunLevel;
  * Created by Krishna Deepak on 6/9/17.
  */
 @Service
-@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_VALIDATING)
+@RunLevel(value = PostStartupRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_VALIDATING)
 public class ResourceValidator implements EventListener, ResourceValidatorVisitor {
 
     public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
@@ -1042,9 +1042,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
          * Remove suffix from the module name.
          */
         private String getActualModuleName(String moduleName) {
-            if(moduleName != null){
-                if(moduleName.endsWith(".jar") || moduleName.endsWith(".war") || moduleName.endsWith(".rar")){
-                    moduleName = moduleName.substring(0, moduleName.length()-4);
+            if (moduleName != null) {
+                if (moduleName.endsWith(".jar") || moduleName.endsWith(".war") || moduleName.endsWith(".rar")) {
+                    moduleName = moduleName.substring(0, moduleName.length() - 4);
                 }
             }
             return moduleName;
