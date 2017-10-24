@@ -41,9 +41,7 @@
 
 package com.sun.ejb.containers;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IAtomicLong;
-import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
@@ -53,12 +51,12 @@ import com.sun.ejb.containers.util.pool.ObjectFactory;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.SingletonBeanStatsProvider;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
+import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
-import fish.payara.cluster.DistributedLockType;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
@@ -124,6 +122,8 @@ public abstract class AbstractSingletonContainer
 
     private InvocationInfo postConstructInvInfo;
     private InvocationInfo preDestroyInvInfo;
+
+    protected final ClusteredSingletonLookup clusteredLookup = new ClusteredSingletonLookupImpl(ejbDescriptor, componentId);
 
     /**
      * This constructor is called from the JarManager when a Jar is deployed.
@@ -414,48 +414,6 @@ public abstract class AbstractSingletonContainer
 	return new SingletonContextImpl(instance, this);
     }
 
-    private HazelcastInstance getHazelcastInstance() {
-        HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
-        if(!hzCore.isEnabled()) {
-            throw new IllegalStateException("getDistributedSingletonMap() - Hazelcast is Disabled");
-        }
-        return hzCore.getInstance();
-    }
-
-    private String getClusteredSessionHazelcastKey() {
-        return "Payara/ejb/singleton/" + componentId + "/" + getClusteredSessionKey();
-    }
-
-    protected ILock getDistributedLock() {
-        return getHazelcastInstance().getLock(getClusteredSessionHazelcastKey() + "/lock");
-    }
-
-    protected boolean isDistributedLockEnabled() {
-        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
-        DistributedLockType distLockType = sessDesc.isClustered()?
-                    sessDesc.getClusteredLockType() : DistributedLockType.LOCK_NONE;
-        return isClusteredEnabled() && distLockType != DistributedLockType.LOCK_NONE;
-    }
-
-    protected IMap<String, Object> getClusteredSingletonMap() {
-        return getHazelcastInstance().getMap("Payara/ejb/singleton/" + componentId);
-    }
-
-    protected String getClusteredSessionKey() {
-        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
-        return sessDesc.getClusteredKeyValue().isEmpty()? sessDesc.getName() : sessDesc.getClusteredKeyValue();
-    }
-
-    protected boolean isClusteredEnabled() {
-        EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
-        HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
-        return sessDesc.isClustered() && hzCore.isEnabled();
-    }
-
-    private IAtomicLong getClusteredUsageCount() {
-        return getHazelcastInstance().getAtomicLong(getClusteredSessionHazelcastKey() + "/count");
-    }
-
     private SingletonContextImpl createSingletonEJB()
         throws CreateException
     {
@@ -470,10 +428,10 @@ public abstract class AbstractSingletonContainer
         boolean doPostConstruct = true;
 
         try {
-            String sessionKey = getClusteredSessionKey();
+            String sessionKey = clusteredLookup.getClusteredSessionKey();
             EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
-            if(isClusteredEnabled()) {
-                IMap<String, Object> singletonMap = getClusteredSingletonMap();
+            if(clusteredLookup.isClusteredEnabled()) {
+                IMap<String, Object> singletonMap = clusteredLookup.getClusteredSingletonMap();
                 if(!singletonMap.containsKey(sessionKey)) {
                     context = (SingletonContextImpl) createEjbInstanceAndContext();
                     ejb = singletonMap.putIfAbsent(sessionKey, context.getEJB());
@@ -488,7 +446,7 @@ public abstract class AbstractSingletonContainer
                         doPostConstruct = false;
                     }
                 }
-                getClusteredUsageCount().incrementAndGet();
+                clusteredLookup.getClusteredUsageCount().incrementAndGet();
             }
             else {
                 if(sessDesc.isClustered() && !Globals.getDefaultHabitat().getService(HazelcastCore.class).isEnabled()) {
@@ -741,11 +699,11 @@ public abstract class AbstractSingletonContainer
                 // So we need to call @PreDestroy and mark context as destroyed
                 boolean doPreDestroy = true;
 
-                if (isClusteredEnabled()) {
+                if (clusteredLookup.isClusteredEnabled()) {
                     EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
-                    IAtomicLong count = getClusteredUsageCount();
+                    IAtomicLong count = clusteredLookup.getClusteredUsageCount();
                     if(count.decrementAndGet() <= 0) {
-                        getClusteredSingletonMap().delete(getClusteredSessionKey());
+                        clusteredLookup.getClusteredSingletonMap().delete(clusteredLookup.getClusteredSessionKey());
                         count.destroy();
                     }
                     else if(sessDesc.dontCallPreDestroyOnDetach()){
