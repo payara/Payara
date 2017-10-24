@@ -128,7 +128,7 @@
         setPageSessionAttribute(key="titleHelp" value="$resource{i18ncs.node.EditPageTitleHelp}");
         />
     </event>
-            <sun:form id="propertyForm" autoComplete="off">
+            <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
 #include "/cluster/node/nodeAttr.inc"
 

@@ -140,8 +140,8 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
             if (classes.exists()) {
                 addScanDirectory(classes);   
             }
+            scanXmlDefinedClassesIfNecessary(webBundleDesc);
         }
-        scanXmlDefinedClassesIfNecessary(webBundleDesc);
         calculateResults(webBundleDesc);
     }
 

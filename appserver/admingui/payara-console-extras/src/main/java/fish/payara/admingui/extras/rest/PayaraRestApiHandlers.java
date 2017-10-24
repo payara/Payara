@@ -52,14 +52,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
-import static org.glassfish.weld.WeldDeployer.DEV_MODE_PROPERTY;
 
 /**
  * A class containing Payara specific handler methods for the REST API
  * @author Andrew Pielage
  */
-public class PayaraRestApiHandlers {
-    
+public class PayaraRestApiHandlers
+{
     /**
      * Gets information about the instances current registered to the Hazelcast cluster.
      * @param handlerCtx 
@@ -294,11 +293,10 @@ public class PayaraRestApiHandlers {
             List rowList = (List) handlerCtx.getInputValue("rowList");
             for(Object row : rowList) {
                 Map rowMap = (Map) row;
-                boolean enabled = false;
                 String componentName = (String) rowMap.get("name");
                 String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
                 result.put(componentName, false);
-                if(!((String)rowMap.get("sniffers")).contains("cdi")){
+                if(!((String)rowMap.get("sniffers")).contains("weld")){
                     continue;
                 }
                 
@@ -311,15 +309,9 @@ public class PayaraRestApiHandlers {
                     if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
                             && Boolean.parseBoolean((String) property.get("value"))) {
                         result.put(componentName, true);
-                        enabled = true;
-                        break;
                     }
                 }
-                if (!enabled) {
-                    result.put(componentName, Boolean.getBoolean(DEV_MODE_PROPERTY));
-                }
             }
-
           }catch(Exception ex){
             GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.isCDIDevMode"), ex.getLocalizedMessage()});
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
@@ -422,8 +414,7 @@ public class PayaraRestApiHandlers {
                 @HandlerInput(name="notifiers", type=String[].class, required=true),
                 @HandlerInput(name="dynamic", type=Boolean.class, required=true),
                 @HandlerInput(name="quiet", type=boolean.class, defaultValue="false"),
-                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true"),
-                @HandlerInput(name="target", type=String.class, required=true)
+                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true")
             })
     public static void updateNotifiers(HandlerContext handlerCtx) {
         String[] notifiers = (String[]) handlerCtx.getInputValue("notifiers");
@@ -432,7 +423,6 @@ public class PayaraRestApiHandlers {
         Boolean dynamic = (Boolean) handlerCtx.getInputValue("dynamic");
         Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
         Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
-        String target = (String) handlerCtx.getInputValue("target");
         List<String> enabledNotifiers = Arrays.asList(enabled);
 
         boolean forRequestTracing = false;
@@ -464,7 +454,6 @@ public class PayaraRestApiHandlers {
             }
             //PAYARA-1616 go silent, bootstrap will take place after iteration.
             attrs.put("dynamic", "false");
-            attrs.put("target", target);
             RestUtil.restRequest(restEndpoint, attrs, "post", handlerCtx, quiet, throwException);
         }
         // PAYARA-1616

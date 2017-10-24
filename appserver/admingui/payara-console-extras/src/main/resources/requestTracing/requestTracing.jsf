@@ -93,7 +93,7 @@
                             value="#{pageSession.historicalTraceEnabled}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                    py.updateNotifiers(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+                    py.updateNotifiers(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
                     />
             </sun:button>
         </sun:panelGroup>

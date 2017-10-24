@@ -78,10 +78,9 @@ public class BootCommands {
             BufferedReader br = new BufferedReader(new InputStreamReader(scriptStream));
 
             String commandStr = br.readLine();
-            while (commandStr != null) {                
-                commandStr.trim();
+            while (commandStr != null) {
                 // # is a comment
-                if (commandStr.length() > 0 && !commandStr.startsWith("#")) {
+                if (!commandStr.startsWith("#")) {
                     String command[] = commandStr.split(" ");
                     if (command.length > 1) {
                         commands.add(new BootCommand(command[0],Arrays.copyOfRange(command, 1, command.length)));

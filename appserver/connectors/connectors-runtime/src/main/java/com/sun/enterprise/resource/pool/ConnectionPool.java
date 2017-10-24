@@ -727,7 +727,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                     boolean isValid = isConnectionValid(h, alloc);
                     if (h.hasConnectionErrorOccurred() || !isValid) {
                         if (failAllConnections) {
-                             result = createSingleResourceAndAdjustPool(alloc, spec);
+                            createSingleResourceAndAdjustPool(alloc, spec);
                             //no need to match since the resource is created with the allocator of caller.
                             break;
                         } else {
@@ -881,6 +881,10 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         }
 
         ResourceHandle result = getNewResource(alloc);
+        if (result != null) {
+            alloc.fillInResourceObjects(result);
+            result.getResourceState().setBusy(true);
+        }
 
         return result;
     }
@@ -1244,7 +1248,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     }
 
     private ResourceHandle getNewResource(ResourceAllocator alloc) throws PoolingException {
-        addResource(alloc);
+        ds.addResource(alloc, 1);
         return ds.getResource();
     }
 
