@@ -40,6 +40,7 @@
 package fish.payara.micro.cdi.extension.cluster;
 
 import com.hazelcast.core.IMap;
+import com.sun.enterprise.deployment.Application;
 import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
@@ -51,6 +52,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.Deployment;
 
 /**
  * @Clustered singleton implementation
@@ -60,9 +62,11 @@ import org.glassfish.internal.api.Globals;
  * @author lprimak
  */
 class ClusterScopeContext implements Context {
-    public ClusterScopeContext(BeanManager bm) {
+    public ClusterScopeContext(BeanManager bm, Deployment deployment) {
         this.bm = bm;
         hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+        Application app = deployment.getCurrentDeploymentContext().getModuleMetaData(Application.class);
+        moduleName = app.getApplication() != null? app.getModuleName() : app.getAppName();
     }
 
 
@@ -104,7 +108,7 @@ class ClusterScopeContext implements Context {
     }
 
     private IMap<String, Object> getClusteredSingletonMap() {
-        String singletonMapName = "Payara/cdi/singleton/" + "mySingletonMapName"; // +++ TODO finish this
+        String singletonMapName = "Payara/cdi/singleton/" + moduleName;
         return hzCore.getInstance().getMap(singletonMapName);
     }
 
@@ -114,4 +118,5 @@ class ClusterScopeContext implements Context {
 
     private final BeanManager bm;
     private final HazelcastCore hzCore;
+    private final String moduleName;
 }
