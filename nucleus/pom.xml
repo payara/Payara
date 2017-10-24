@@ -54,7 +54,7 @@
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.0.0.Alpha2-SNAPSHOT</version>
+    <version>5.0.0.Alpha3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.0.0.Alpha2-SNAPSHOT</tag>
+        <tag>payara-server-5.0.0.Alpha3-SNAPSHOT</tag>
     </scm>
     
     <issueManagement>
@@ -206,7 +206,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <build.id>${build.number}</build.id> <!-- on Hudson and RE, this gets replaced by real build ID -->
+        <build.id>101</build.id> <!-- on Hudson and RE, this gets replaced by real build ID -->
         <jdk.version>1.8.0</jdk.version>
         <javase.version>1.8</javase.version>
         <javadoc.skip>false</javadoc.skip>
@@ -248,7 +248,7 @@
         <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
 
         <!-- 4.1.1-b001  -->
-        <glassfish-corba.version>4.0.1.payara-p6</glassfish-corba.version>
+        <glassfish-corba.version>4.0.1.payara-p10</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <saaj-api.version>1.4.0</saaj-api.version>
         

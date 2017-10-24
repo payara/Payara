@@ -63,7 +63,7 @@
             gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
         />
     </event>
-    <sun:form id="propertyForm">
+    <sun:form id="propertyForm" autoComplete="off">
 #include "/jms/jmsHost.inc"
         <sun:hidden id="helpKey" value="$resource{helpjms.jmsHostEdit}" />
     </sun:form>

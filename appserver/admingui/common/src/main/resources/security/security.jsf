@@ -62,7 +62,7 @@
         setPageSessionAttribute(key="convertToFalseList" value={"auditEnabled","activateDefaultPrincipalToRoleMapping"})
         />
     </event>
-            <sun:form id="propertyForm">
+            <sun:form id="propertyForm" autoComplete="off">
 #include "/common/shared/alertMsg.inc"
 
     <sun:title id="propertyContentPage" title="$resource{i18nc.security.Security}" helpText="$resource{i18nc.security.SecurityPageHelp}">
