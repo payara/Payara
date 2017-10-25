@@ -49,9 +49,10 @@
     <event>
     <!beforeCreate
         getRequestValue(key="configName" value=>$page{configName} );
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/web/configuration/httpListeners.jsf");
         setPageSessionAttribute(key="childType" value="network-listener");
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getDefaultValues(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
@@ -59,7 +60,7 @@
         setPageSessionAttribute(key="convertToFalseList" value={"Enabled"});
         setPageSessionAttribute(key="edit" value="#{false}" );
 
-        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/transports/transport" result="#{pageSession.transportList}");
+        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/transports/transport" result="#{pageSession.transportList}");
         mapPut(map="#{pageSession.valueMap}" key="transport" value="#{pageSession.transportList[0]}");
         mapPut(map="#{pageSession.valueMap}" key="threadpool" value="http-thread-pool")
         mapPut(map="#{pageSession.valueMap}" key="jkEnabled" value="false")
@@ -77,9 +78,9 @@
             <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.OK}"
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                     <!command
-                    setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols/protocol");
+                    setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols/protocol");
                     urlencode(value="#{pageSession.valueMap['name']}" result="#{requestScope.encodedListenerNameToCheck}");
-                    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener/#{requestScope.encodedListenerNameToCheck}", exists="#{requestScope.exist}");
+                    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners/network-listener/#{requestScope.encodedListenerNameToCheck}", exists="#{requestScope.exist}");
                     if (#{requestScope.exist}){
                         gf.handleError(detail="$resource{i18n_web.grizzly.networkListener.alreadyExist, #{requestScope.encodedListenerNameToCheck}}");
                     }
