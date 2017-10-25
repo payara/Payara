@@ -158,7 +158,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.notification.page.text}" />
                 </sun:hyperlink>
                 <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.notification.page.text.suffix}" />
-            </sun:property>
+            </sun:property>      
+        </sun:propertySheetSection>
+        <sun:propertySheetSection>     
             <sun:property>
                 <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.documentation.text.prefix}" />
                 <sun:hyperlink
@@ -168,9 +170,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                 </sun:hyperlink>
                 <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.documentation.text.suffix}" />
             </sun:property>
-        </sun:propertySheetSection>
-        <sun:propertySheetSection>     
-        
         </sun:propertySheetSection>
     </sun:propertySheet>
 #include "/common/shared/propertyDescTable.inc"
