@@ -56,7 +56,6 @@ import org.glassfish.internal.deployment.Deployment;
 /**
  * @Clustered singleton implementation
  *
- * TODO +++ Clustered singleton locks
  * TODO +++ add postconstruct calls upon attachment
  *
  * @author lprimak
@@ -65,7 +64,7 @@ class ClusterScopeContext implements Context {
     public ClusterScopeContext(BeanManager bm, Deployment deployment) {
         this.bm = bm;
         Application app = deployment.getCurrentDeploymentContext().getModuleMetaData(Application.class);
-        clusteredLookup = new ClusteredSingletonLookupImpl(DOLUtils.getApplicationName(app));
+        clusteredLookup = new ClusteredSingletonLookupImpl(bm, DOLUtils.getApplicationName(app));
     }
 
 
