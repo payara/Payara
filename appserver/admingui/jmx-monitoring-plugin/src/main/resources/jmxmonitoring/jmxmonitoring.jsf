@@ -159,6 +159,15 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                 </sun:hyperlink>
                 <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.notification.page.text.suffix}" />
             </sun:property>
+            <sun:property>
+                <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.documentation.text.prefix}" />
+                <sun:hyperlink
+                    toolTip="$resource{i18njmx.jmxmonitoring.link.to.documentation.hover}"
+                    onClick="var win=window.open('$resource{i18njmx.jmxmonitoring.link.to.documentation}','_blank');if (win) {win.focus();}; return false;">
+                    <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.documentation.text}" />
+                </sun:hyperlink>
+                <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.documentation.text.suffix}" />
+            </sun:property>
         </sun:propertySheetSection>
         <sun:propertySheetSection>     
         
