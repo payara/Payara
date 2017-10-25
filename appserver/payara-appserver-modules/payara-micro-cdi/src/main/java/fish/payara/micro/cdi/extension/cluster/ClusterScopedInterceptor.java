@@ -40,7 +40,8 @@
 package fish.payara.micro.cdi.extension.cluster;
 
 import com.google.common.collect.Iterables;
-import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
+import fish.payara.cluster.Clustered;
+import fish.payara.cluster.DistributedLockType;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
@@ -72,13 +73,31 @@ public class ClusterScopedInterceptor implements Serializable {
     }
 
     @AroundInvoke
-    public Object refresh(InvocationContext invocationContext)
+    public Object lockAndRefresh(InvocationContext invocationContext)
             throws Exception {
+        Class<?> beanClass = invocationContext.getMethod().getDeclaringClass();
+        Clustered clusteredAnnotation = beanClass.getAnnotation(Clustered.class);
         try {
+            lock(beanClass, clusteredAnnotation);
             return invocationContext.proceed();
         }
         finally {
-            refresh(invocationContext.getMethod().getDeclaringClass());
+            refresh(beanClass);
+            unlock(beanClass, clusteredAnnotation);
+        }
+    }
+
+    private void lock(Class<?> beanClass, Clustered clusteredAnnotation) {
+        if(clusteredAnnotation.lock() == DistributedLockType.LOCK) {
+            clusteredLookup.setClusteredSessionKey(beanClass);
+            clusteredLookup.getDistributedLock().lock();
+        }
+    }
+
+    private void unlock(Class<?> beanClass, Clustered clusteredAnnotation) {
+        if(clusteredAnnotation.lock() == DistributedLockType.LOCK) {
+            clusteredLookup.setClusteredSessionKey(beanClass);
+            clusteredLookup.getDistributedLock().unlock();
         }
     }
 
@@ -91,7 +110,7 @@ public class ClusterScopedInterceptor implements Serializable {
 
     private void init() {
         String moduleName = Globals.getDefaultHabitat().getService(InvocationManager.class).getCurrentInvocation().getAppName();
-        clusteredLookup = new ClusteredSingletonLookupImpl(moduleName);
+        clusteredLookup = new ClusteredSingletonLookupImpl(bm, moduleName);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -101,6 +120,6 @@ public class ClusterScopedInterceptor implements Serializable {
 
 
     private final BeanManager bm = CDI.current().getBeanManager();
-    private transient ClusteredSingletonLookup clusteredLookup;
+    private transient ClusteredSingletonLookupImpl clusteredLookup;
     private static final long serialVersionUID = 1L;
 }
