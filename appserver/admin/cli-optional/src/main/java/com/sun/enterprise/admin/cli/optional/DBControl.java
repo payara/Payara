@@ -52,23 +52,23 @@ import org.glassfish.api.admin.CommandException;
  */
 public abstract class DBControl {
 
-    protected final String dbHost;
-    protected final String dbPort;
-    protected final String dbUser;
-    protected final String dbPassword;
-    protected final String dbHome;
-    protected final String dbCommand;
-    protected boolean redirect;
+    private final String dbHost;
+    private final String dbPort;
+    private final String dbUser;
+    private final String dbPassword;
+    private final String dbHome;
+    private final String dbCommand;
+    private boolean redirect;
 
-    public DBControl(final String dc, final String dht, final String dp,
-            final String redirect, final String dhe, final String duser, final String dpwd) {
-        this.dbCommand = dc;
-        this.dbHost = dht;
-        this.dbPort = dp;
+    protected DBControl(final String dbCommand, final String dbHost, final String dbPort,
+            final String redirect, final String dbHome, final String dbUser, final String dbPassword) {
+        this.dbCommand = dbCommand;
+        this.dbHost = dbHost;
+        this.dbPort = dbPort;
         this.redirect = Boolean.parseBoolean(redirect);
-        this.dbHome = dhe;
-        this.dbUser = duser;
-        this.dbPassword = dpwd;
+        this.dbHome = dbHome;
+        this.dbUser = dbUser;
+        this.dbPassword = dbPassword;
 
         if (this.redirect) {
             try {
@@ -81,13 +81,13 @@ public abstract class DBControl {
                     dbLog = createDBLog(this.dbHome);
                 }
 
-                //redirect stdout and stderr to a file
+                // Redirect stdout and stderr to a file
                 PrintStream printStream = new PrintStream(new FileOutputStream(dbLog, true), true);
                 System.setOut(printStream);
                 System.setErr(printStream);
             } catch (Throwable t) {
                 t.printStackTrace();
-                //exit with an error code of 2
+                // Exit with an error code of 2
                 Runtime.getRuntime().exit(2);
             }
         }
@@ -103,31 +103,31 @@ public abstract class DBControl {
      * @throws java.lang.Exception
      */
     private String createDBLog(final String dbHome) throws Exception {
-        //dbHome must exist and  have write permission
+        // dbHome must exist and  have write permission
         final File fDBHome = new File(dbHome);
         String dbLogFilePath;
-        final StringManager lsm = StringManager.getManager(H2Control.class);
+        final StringManager localManager = StringManager.getManager(this.getClass());
         if (fDBHome.isDirectory() && fDBHome.canWrite()) {
             final File fDBLog = new File(dbHome, getLogFileName());
             dbLogFilePath = fDBLog.toString();
-            //if the file exists, check if it is writeable
+            // if the file exists, check if it is writeable
             if (fDBLog.exists() && !fDBLog.canWrite()) {
-                System.out.println(lsm.getString("UnableToAccessDatabaseLog", getLogFileName(), dbLogFilePath));
-                System.out.println(lsm.getString("ContinueStartingDatabase"));
-                //if exist but not able to write then create a temporary 
-                //log file and persist on starting the database
+                System.out.println(localManager.getString("UnableToAccessDatabaseLog", getLogFileName(), dbLogFilePath));
+                System.out.println(localManager.getString("ContinueStartingDatabase"));
+                // if exist but not able to write then create a temporary 
+                // log file and persist on starting the database
                 dbLogFilePath = createTempLogFile();
             } else if (!fDBLog.exists()) {
-                //create log file
+                // Create the log file
                 if (!fDBLog.createNewFile()) {
-                    System.out.println(lsm.getString("UnableToCreateDatabaseLog", getLogFileName(), dbLogFilePath));
+                    System.out.println(localManager.getString("UnableToCreateDatabaseLog", getLogFileName(), dbLogFilePath));
                 }
             }
         } else {
-            System.out.println(lsm.getString("InvalidDBDirectory", dbHome));
-            System.out.println(lsm.getString("ContinueStartingDatabase"));
-            //if directory does not exist then create a temporary log file
-            //and persist on starting the database
+            System.out.println(localManager.getString("InvalidDBDirectory", dbHome));
+            System.out.println(localManager.getString("ContinueStartingDatabase"));
+            // if directory does not exist then create a temporary log file
+            // and persist on starting the database
             dbLogFilePath = createTempLogFile();
         }
         return dbLogFilePath;
@@ -146,11 +146,60 @@ public abstract class DBControl {
             fTemp.deleteOnExit();
             tempFileName = fTemp.toString();
         } catch (IOException ioe) {
-            final StringManager lsm = StringManager.getManager(this.getClass());
-            throw new CommandException(lsm.getString("UnableToAccessDatabaseLog", tempFileName));
+            final StringManager localManager = StringManager.getManager(this.getClass());
+            throw new CommandException(localManager.getString("UnableToAccessDatabaseLog", tempFileName));
         }
         return tempFileName;
     }
 
     abstract String getLogFileName();
+
+    /**
+     * @return the dbHost
+     */
+    public String getDbHost() {
+        return dbHost;
+    }
+
+    /**
+     * @return the dbPort
+     */
+    public String getDbPort() {
+        return dbPort;
+    }
+
+    /**
+     * @return the dbUser
+     */
+    public String getDbUser() {
+        return dbUser;
+    }
+
+    /**
+     * @return the dbPassword
+     */
+    public String getDbPassword() {
+        return dbPassword;
+    }
+
+    /**
+     * @return the dbHome
+     */
+    public String getDbHome() {
+        return dbHome;
+    }
+
+    /**
+     * @return the dbCommand
+     */
+    public String getDbCommand() {
+        return dbCommand;
+    }
+
+    /**
+     * @return the redirect
+     */
+    public boolean isRedirect() {
+        return redirect;
+    }
 }

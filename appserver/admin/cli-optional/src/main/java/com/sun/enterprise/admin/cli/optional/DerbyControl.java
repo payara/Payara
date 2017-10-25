@@ -55,32 +55,32 @@ public final class DerbyControl extends DBControl {
 
     public static final String DB_LOG_FILENAME = "derby.log";
 
-    public DerbyControl(final String dc, final String dht, final String dp,
-            final String redirect, final String dhe, final String duser, final String dpwd) {
-        super(dc, dht, dp, redirect, dhe, duser, dpwd);
+    public DerbyControl(final String dbCommand, final String dbHost, final String dbPort,
+            final String redirect, final String dbHome, final String dbUser, final String dbPassword) {
+        super(dbCommand, dbHost, dbPort, redirect, dbHome, dbUser, dbPassword);
 
-        //do not set derby.system.home if dbHome is empty
-        if (this.dbHome != null && this.dbHome.length() > 0) {
-            System.setProperty("derby.system.home", this.dbHome);
+        // Do not set derby.system.home if dbHome is empty
+        if (getDbHome() != null && getDbHome().length() > 0) {
+            System.setProperty("derby.system.home", getDbHome());
         }
-        //set the property to not overwrite log file
+        // Set the property to not overwrite log file
         System.setProperty("derby.infolog.append", "true");
     }
 
-    public DerbyControl(final String dc, final String dht, final String dp) {
-        this(dc, dht, dp, "true", null, null, null);
+    public DerbyControl(final String dbCommand, final String dbHost, final String dbPort) {
+        this(dbCommand, dbHost, dbPort, "true", null, null, null);
     }
 
-    public DerbyControl(final String dc, final String dht, final String dp, final String redirect) {
-        this(dc, dht, dp, redirect, null, null, null);
+    public DerbyControl(final String dbCommand, final String dbHost, final String dbPort, final String redirect) {
+        this(dbCommand, dbHost, dbPort, redirect, null, null, null);
     }
 
-    public DerbyControl(final String dc, final String dht, final String dp, final String redirect, final String dhe) {
-        this(dc, dht, dp, redirect, dhe, null, null);
+    public DerbyControl(final String dbCommand, final String dbHost, final String dbPort, final String redirect, final String dbHome) {
+        this(dbCommand, dbHost, dbPort, redirect, dbHome, null, null);
     }
 
-    public DerbyControl(final String dc, final String dht, final String dp, final String redirect, final String duser, final String dpassword) {
-        this(dc, dht, dp, redirect, null, duser, dpassword);
+    public DerbyControl(final String dbCommand, final String dbHost, final String dbPort, final String redirect, final String dbUser, final String dbPassword) {
+        this(dbCommand, dbHost, dbPort, redirect, null, dbUser, dbPassword);
     }
 
     /**
@@ -93,10 +93,10 @@ public final class DerbyControl extends DBControl {
             Method networkServerMethod = networkServer.getDeclaredMethod("main",
                     new Class[]{String[].class});
             Object[] paramObj;
-            if (dbUser == null && dbPassword == null) {
-                paramObj = new Object[]{new String[]{dbCommand, "-h", dbHost, "-p", dbPort}};
+            if (getDbUser() == null && getDbPassword() == null) {
+                paramObj = new Object[]{new String[]{getDbCommand(), "-h", getDbHost(), "-p", getDbPort()}};
             } else {
-                paramObj = new Object[]{new String[]{dbCommand, "-h", dbHost, "-p", dbPort, "-user", dbUser, "-password", dbPassword}};
+                paramObj = new Object[]{new String[]{getDbCommand(), "-h", getDbHost(), "-p", getDbPort(), "-user", getDbUser(), "-password", getDbPassword()}};
             }
 
             networkServerMethod.invoke(networkServer, paramObj);

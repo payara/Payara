@@ -56,67 +56,81 @@ public final class H2Control extends DBControl {
 
     public static final String JDBC_DRIVER = "org.h2.Driver";
 
-    public H2Control(final String dc, final String dht, final String dp,
-            final String redirect, final String dhe, final String duser, final String dpwd) {
-        super(dc, dht, dp, redirect, dhe, duser, dpwd);
+    public H2Control(final String dbCommand, final String dbHost, final String dbPort,
+            final String redirect, final String dbHome, final String dbUser, final String dbPassword) {
+        super(dbCommand, dbHost, dbPort, redirect, dbHome, dbUser, dbPassword);
 
-        //do not set h2.system.home if dbHome is empty
-        if (this.dbHome != null && this.dbHome.length() > 0) {
-            System.setProperty("h2.system.home", this.dbHome);
+        // Do not set h2.system.home if dbHome is empty
+        if (getDbHome() != null && getDbHome().length() > 0) {
+            System.setProperty("h2.system.home", getDbHome());
         }
-        //set the property to not overwrite log file
+        // Set the property to not overwrite log file
         System.setProperty("h2.infolog.append", "true");
     }
 
-    public H2Control(final String dc, final String dht, final String dp) {
-        this(dc, dht, dp, "true", null, null, null);
+    public H2Control(final String dbCommand, final String dbHost, final String dbPort) {
+        this(dbCommand, dbHost, dbPort, "true", null, null, null);
     }
 
-    public H2Control(final String dc, final String dht, final String dp, final String redirect) {
-        this(dc, dht, dp, redirect, null, null, null);
+    public H2Control(final String dbCommand, final String dbHost, final String dbPort, final String redirect) {
+        this(dbCommand, dbHost, dbPort, redirect, null, null, null);
     }
 
-    public H2Control(final String dc, final String dht, final String dp, final String redirect, final String dhe) {
-        this(dc, dht, dp, redirect, dhe, null, null);
+    public H2Control(final String dbCommand, final String dbHost, final String dbPort, final String redirect, final String dbHome) {
+        this(dbCommand, dbHost, dbPort, redirect, dbHome, null, null);
     }
 
-    public H2Control(final String dc, final String dht, final String dp, final String redirect, final String duser, final String dpassword) {
-        this(dc, dht, dp, redirect, null, duser, dpassword);
+    public H2Control(final String dbCommand, final String dbHost, final String dbPort, final String redirect, final String dbUser, final String dbPassword) {
+        this(dbCommand, dbHost, dbPort, redirect, null, dbUser, dbPassword);
     }
 
     /**
-     * This methos invokes the H2's NetworkServerControl to start/stop/ping the
+     * This method invokes the H2's org.h2.tools.Server to start/stop/ping the
      * database.
      */
     private void invokeServer() {
         try {
             Class serverClass = Class.forName("org.h2.tools.Server");
-            String password = dbPassword == null ? "" : dbPassword;
-            String url = "tcp://localhost:" + dbPort;
-            if ("start".equals(dbCommand)) {
-                Method createTcpServer = serverClass.getDeclaredMethod("createTcpServer", new Class[]{String[].class});
-                Object[] paramObj = new Object[]{new String[]{"-tcpPort", dbPort, "-tcpPassword", password, "-tcpAllowOthers"}};//
-                Object server = createTcpServer.invoke(serverClass, paramObj);
-                serverClass.getDeclaredMethod("start").invoke(server);
-                System.out.println(serverClass.getDeclaredMethod("getStatus").invoke(server));
-            } else if ("ping".equals(dbCommand)) {
-                Class.forName(JDBC_DRIVER);
-                try {
-                    DriverManager
-                            .getConnection(String.format("jdbc:h2:%s/mem:management_db_%s", url, dbPort), "", password)
-                            .close();
-                } catch (SQLException sqle) {
-                    Runtime.getRuntime().exit(2);
-                }
-            } else if ("sysinfo".equals(dbCommand)) {
-                Method createTcpServer = serverClass.getDeclaredMethod("createTcpServer", new Class[]{String[].class});
-                Object[] paramObj = new Object[]{new String[]{"-tcpPort", dbPort, "-tcpAllowOthers"}};
-                Object server = createTcpServer.invoke(serverClass, paramObj);
-                System.out.println(serverClass.getDeclaredMethod("getURL").invoke(server));
-            } else if ("shutdown".equals(dbCommand)) {
-                Method shutdownTcpServer = serverClass.getDeclaredMethod("shutdownTcpServer", new Class[]{String.class, String.class, boolean.class, boolean.class});
-                Object[] paramObj = new Object[]{url, password, true, true};
-                shutdownTcpServer.invoke(serverClass, paramObj);
+            String password = getDbUser() == null ? "" : getDbUser();
+            String url = "tcp://localhost:" + getDbPort();
+            if (null != getDbCommand()) 
+                switch (getDbCommand()) {
+                    case "start": {
+                        Method createTcpServer = serverClass.getDeclaredMethod("createTcpServer", 
+                                new Class[]{String[].class});
+                        Object[] paramObj = new Object[]{new String[]{"-tcpPort", getDbPort(), "-tcpPassword", password, "-tcpAllowOthers"}};
+                        Object server = createTcpServer.invoke(serverClass, paramObj);
+                        serverClass.getDeclaredMethod("start").invoke(server);
+                        System.out.println(serverClass.getDeclaredMethod("getStatus").invoke(server));
+                        break;
+                    }
+                    case "ping":
+                        Class.forName(JDBC_DRIVER);
+                        try {
+                            DriverManager
+                                    .getConnection(String.format("jdbc:h2:%s/mem:management_db_%s", url, getDbPort()), "", password)
+                                    .close();
+                        } catch (SQLException sqle) {
+                            Runtime.getRuntime().exit(2);
+                        }
+                        break;
+                    case "sysinfo": {
+                        Method createTcpServer = serverClass.getDeclaredMethod("createTcpServer", 
+                                new Class[]{String[].class});
+                        Object[] paramObj = new Object[]{new String[]{"-tcpPort", getDbPort(), "-tcpAllowOthers"}};
+                        Object server = createTcpServer.invoke(serverClass, paramObj);
+                        System.out.println(serverClass.getDeclaredMethod("getURL").invoke(server));
+                        break;
+                    }
+                    case "shutdown": {
+                        Method shutdownTcpServer = serverClass.getDeclaredMethod("shutdownTcpServer", 
+                                new Class[]{String.class, String.class, boolean.class, boolean.class});
+                        Object[] paramObj = new Object[]{url, password, true, true};
+                        shutdownTcpServer.invoke(serverClass, paramObj);
+                        break;
+                    }
+                default:
+                    break;
             }
         } catch (Throwable t) {
             t.printStackTrace();

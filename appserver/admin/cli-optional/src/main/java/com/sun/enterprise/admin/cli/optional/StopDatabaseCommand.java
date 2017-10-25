@@ -111,7 +111,7 @@ public final class StopDatabaseCommand extends DatabaseCommand {
     }
 
     /**
-     * Method that Executes the command
+     * Executes the command
      *
      * @throws CommandException
      */
@@ -131,7 +131,7 @@ public final class StopDatabaseCommand extends DatabaseCommand {
                 throw new CommandException(
                         strings.get("UnableToStopDatabase", dbManager.getLogFileName()));
             } else {
-                // database is running so go ahead and stop the database
+                // Database is running so go ahead and stop the database
                 cpe.execute("stopDatabaseCmd", stopDatabaseCmd(), true);
                 if (cpe.exitValue() > 0) {
                     throw new CommandException(

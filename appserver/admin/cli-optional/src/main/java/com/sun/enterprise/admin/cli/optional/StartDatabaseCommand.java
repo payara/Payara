@@ -77,7 +77,7 @@ public final class StartDatabaseCommand extends DatabaseCommand {
             = new LocalStringsImpl(StartDatabaseCommand.class);
 
     /**
-     * defines the command to start the database
+     * Defines the command to start the database
      *
      * @return
      */
@@ -101,7 +101,7 @@ public final class StartDatabaseCommand extends DatabaseCommand {
     }
 
     /**
-     * defines the command to print out the database sysinfo
+     * Defines the command to print out the database sysinfo
      *
      * @return
      */
@@ -137,7 +137,7 @@ public final class StartDatabaseCommand extends DatabaseCommand {
             return dbHome;
         }
 
-        // check if current directory contains ${dbType}.log
+        // Check if current directory contains ${dbType}.log
         // for now we are going to rely on ${dbType}.log file to ascertain
         // whether the current directory is where databases were created.
         // However, this may not always be right.
@@ -149,7 +149,7 @@ public final class StartDatabaseCommand extends DatabaseCommand {
         if ((new File(currentDir, dbManager.getLogFileName())).exists()) {
             return currentDir;
         }
-        // the default dbhome is <AS_INSTALL>/databases
+        // The default dbhome is <AS_INSTALL>/databases
         final File installPath = GFLauncherUtils.getInstallDir();
 
         if (installPath != null) {
@@ -164,13 +164,13 @@ public final class StartDatabaseCommand extends DatabaseCommand {
                 return dbDir.getAbsolutePath();
             }
         }
-        // hopefully it'll never get here.  if installPath is null then
+        // hopefully it'll never get here. if installPath is null then
         // asenv.conf is incorrect.
         return null;
     }
 
     /**
-     * method that execute the command
+     * Execute the command
      *
      * @throws CommandException
      */
@@ -198,7 +198,7 @@ public final class StartDatabaseCommand extends DatabaseCommand {
                 // Something terribly wrong!
                 throw new CommandException(strings.get("CommandUnSuccessful", name));
             } else {
-                // database already started
+                // Database already started
                 logger.info(strings.get("StartDatabaseStatus", dbHost, dbPort));
             }
         } catch (IllegalThreadStateException ite) {
@@ -215,7 +215,7 @@ public final class StartDatabaseCommand extends DatabaseCommand {
                 }
                 cpePing.execute("pingDatabaseCmd", pingDatabaseCmd(true), true);
                 int counter = 0;
-                //give time for the database to be started
+                // Give time for the database to be started
                 while (cpePing.exitValue() != 0 && counter < 10) {
                     cpePing.execute("pingDatabaseCmd", pingDatabaseCmd(true), true);
                     Thread.sleep(500);

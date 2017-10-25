@@ -45,10 +45,8 @@ import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-//import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-//import org.glassfish.appclient.client.acc.ACCStartupContext;
 
 /**
  * This is an abstract class to be inherited by StartDatabaseCommand and
@@ -88,9 +86,6 @@ public abstract class DatabaseCommand extends CLICommand {
 
     protected DBManager dbManager;
     
-//    @Inject
-//    private ACCStartupContext startupContext;
-
     /**
      * Prepare variables to invoke start/ping database command.
      */

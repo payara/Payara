@@ -48,9 +48,12 @@ public class DBManagerFactory {
     public static DBManager getDBManager(DBType dbType) {
         if (dbType == DBType.H2) {
             return new H2Manager();
-        } else if (dbType == DBType.DERBY) {
+        }
+
+        if (dbType == DBType.DERBY) {
             return new DerbyManager();
         }
+
         return null;
     }
 
