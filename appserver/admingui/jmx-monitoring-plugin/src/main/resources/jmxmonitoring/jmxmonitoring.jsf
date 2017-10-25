@@ -125,9 +125,18 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                                  <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['logfrequencyunit']}" 
                                     labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
                             </sun:property>                        
-                            "<br /><br />
+"<br /><br />
+                        <sun:property>
+            <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.documentation.text.prefix}" />
+            <sun:hyperlink
+                    toolTip="$resource{i18njmx.jmxmonitoring.link.to.documentation.hover}"
+                    onClick="var win=window.open('$resource{i18njmx.jmxmonitoring.link.to.documentation}','_blank');if (win) {win.focus();}; return false;">
+                <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.documentation.text}" />
+            </sun:hyperlink>
+            <sun:staticText text="$resource{i18njmx.jmxmonitoring.link.to.documentation.text.suffix}" />
+        </sun:property>
                         </sun:propertySheetSection>
-                    </sun:propertySheet>    
+                    </sun:propertySheet>
 #include "/common/shared/propertyDescTable.inc"
                 </sun:title>
                 <!--< sun:hidden id="helpKey" value="$resource{helpjmx.jmxService}" /> -->
