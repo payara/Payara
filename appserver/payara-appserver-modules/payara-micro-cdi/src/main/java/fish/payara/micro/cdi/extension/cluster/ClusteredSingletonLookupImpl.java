@@ -39,8 +39,13 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
+import com.google.common.collect.Iterables;
 import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
 import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
+import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
+import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 
 /**
  * implements CDI-based clustered singleton lookups
@@ -48,12 +53,22 @@ import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.S
  * @author lprimak
  */
 public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-    public ClusteredSingletonLookupImpl(String componentId) {
+    public ClusteredSingletonLookupImpl(BeanManager bm, String componentId) {
         super(componentId, CDI);
+        this.bm = bm;
     }
 
     @Override
     public String getClusteredSessionKey() {
-        throw new IllegalStateException("CDI getClusteredSessionKey() invalid call");
+        return sessionKey.get();
     }
+
+    void setClusteredSessionKey(Class<?> beanClass) {
+        Bean<?> bean = Iterables.getOnlyElement(bm.getBeans(beanClass));
+        sessionKey.set(getBeanName(bean, getAnnotation(bean)));
+    }
+
+
+    private final BeanManager bm;
+    private final ThreadLocal<String> sessionKey = new ThreadLocal<>();
 }
