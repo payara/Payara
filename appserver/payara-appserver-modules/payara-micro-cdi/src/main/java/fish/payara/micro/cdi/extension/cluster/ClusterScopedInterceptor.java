@@ -39,78 +39,68 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
+import com.google.common.collect.Iterables;
 import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import fish.payara.cluster.Clustered;
+import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
+import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
-import java.lang.annotation.Annotation;
-import javax.enterprise.context.ApplicationScoped;
+import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercepted;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import javax.annotation.Priority;
 import javax.enterprise.context.spi.Context;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import org.glassfish.internal.deployment.Deployment;
+import javax.enterprise.inject.spi.CDI;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+import lombok.extern.java.Log;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 
 /**
- * @Clustered singleton implementation
- *
- * TODO +++ Clustered singleton locks
- * TODO +++ add postconstruct calls upon attachment
+ * Intercepts every method call to refresh the cluster
  *
  * @author lprimak
  */
-class ClusterScopeContext implements Context {
-    public ClusterScopeContext(BeanManager bm, Deployment deployment) {
-        this.bm = bm;
-        Application app = deployment.getCurrentDeploymentContext().getModuleMetaData(Application.class);
-        clusteredLookup = new ClusteredSingletonLookupImpl(DOLUtils.getApplicationName(app));
+@Interceptor @ClusterScopedIntercepted @Log @Priority(Interceptor.Priority.PLATFORM_AFTER)
+public class ClusterScopedInterceptor implements Serializable {
+    public ClusterScopedInterceptor() {
+        init();
     }
 
-
-    @Override
-    public Class<? extends Annotation> getScope() {
-        return ClusterScoped.class;
-    }
-
-    @Override
-    public <TT> TT get(Contextual<TT> contextual, CreationalContext<TT> creationalContext) {
-        TT rv = get(contextual);
-        if(rv == null) {
-            rv = getFromApplicationScoped(contextual, creationalContext);
-            final Bean<TT> bean = (Bean<TT>) contextual;
-            clusteredLookup.getClusteredSingletonMap().putIfAbsent(getBeanName(bean, getAnnotation(bean)), rv);
+    @AroundInvoke
+    public Object refresh(InvocationContext invocationContext)
+            throws Exception {
+        try {
+            return invocationContext.proceed();
         }
-        return rv;
+        finally {
+            refresh(invocationContext.getMethod().getDeclaringClass());
+        }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <TT> TT get(Contextual<TT> contextual) {
-        final Bean<TT> bean = (Bean<TT>) contextual;
+    private void refresh(Class<?> beanClass) {
+        Bean<?> bean = Iterables.getOnlyElement(bm.getBeans(beanClass));
         String beanName = getBeanName(bean, getAnnotation(bean));
-        return (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
+        Context ctx = bm.getContext(ClusterScoped.class);
+        clusteredLookup.getClusteredSingletonMap().put(beanName, ctx.get(bean));
     }
 
-    @Override
-    public boolean isActive() {
-        return true;
+    private void init() {
+        String moduleName = Globals.getDefaultHabitat().getService(InvocationManager.class).getCurrentInvocation().getAppName();
+        clusteredLookup = new ClusteredSingletonLookupImpl(moduleName);
     }
 
-    private<TT> TT getFromApplicationScoped(Contextual<TT> contextual, CreationalContext<TT> creationalContext) {
-        return bm.getContext(ApplicationScoped.class).get(contextual, creationalContext);
-    }
-    
-    static <TT> String getBeanName(Bean<TT> bean, Clustered annotation) {
-        return annotation.keyName().isEmpty()? bean.getName() : annotation.keyName();
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        init();
     }
 
 
-    static <TT> Clustered getAnnotation(Bean<TT> bean) {
-        return bean.getBeanClass().getAnnotation(Clustered.class);
-    }
-
-    private final BeanManager bm;
-    private final ClusteredSingletonLookup clusteredLookup;
+    private final BeanManager bm = CDI.current().getBeanManager();
+    private transient ClusteredSingletonLookup clusteredLookup;
+    private static final long serialVersionUID = 1L;
 }
