@@ -80,8 +80,18 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
         return hzCore.getInstance();
     }
 
+    @Override
+    public boolean isClusteredEnabled() {
+        return hzCore.isEnabled();
+    }
+
+    @Override
+    public boolean isDistributedLockEnabled() {
+        return isClusteredEnabled();
+    }
+    
     private String makeKeyPrefix() {
-        return String.format("Payara/%s/singleton", singletonType.name().toLowerCase());
+        return String.format("Payara/%s/singleton/", singletonType.name().toLowerCase());
     }
 
     private String makeMapKey() {
@@ -97,7 +107,7 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     }
 
 
-    protected final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+    private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final String componentId;
     private final SingletonType singletonType;
     private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String keyPrefix = makeKeyPrefix();
