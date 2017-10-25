@@ -44,6 +44,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
+import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercepted;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
@@ -64,7 +65,7 @@ class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
     @Override
     public Set<Annotation> getAnnotations() {
         return FluentIterable.from(Iterables.filter(wrapped.getAnnotations(), Predicates.not(appScopedFilter)))
-        .append(clusteredScopedLiteral).toSet();
+        .append(clusteredScopedLiteral).append(clusteredScopedInterceptorLiteral).toSet();
     }
 
     interface Exclusions {
@@ -73,6 +74,8 @@ class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
 
     @SuppressWarnings("serial")
     private static class ClusteredAnnotationLiteral extends AnnotationLiteral<ClusterScoped> implements ClusterScoped {};
+    @SuppressWarnings("serial")
+    private static class ClusteredInterceptorAnnotationLiteral extends AnnotationLiteral<ClusterScopedIntercepted> implements ClusterScopedIntercepted {};
     private static class ApplicationScopedFilter implements Predicate<Annotation> {
         @Override
         public boolean apply(Annotation input) {
@@ -82,5 +85,6 @@ class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
 
     private static final ApplicationScopedFilter appScopedFilter = new ApplicationScopedFilter();
     private static final ClusteredAnnotationLiteral clusteredScopedLiteral = new ClusteredAnnotationLiteral();
+    private static final ClusteredInterceptorAnnotationLiteral clusteredScopedInterceptorLiteral = new ClusteredInterceptorAnnotationLiteral();
     private @Delegate(types = {AnnotatedType.class, Annotated.class}, excludes = Exclusions.class) final AnnotatedType<TT> wrapped;
 }

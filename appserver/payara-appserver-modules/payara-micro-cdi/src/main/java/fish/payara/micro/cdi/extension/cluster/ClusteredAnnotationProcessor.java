@@ -65,6 +65,7 @@ public class ClusteredAnnotationProcessor {
     public void beforeBeanDiscovery(BeforeBeanDiscovery bbd, BeanManager bm) {
         bbd.addScope(ClusterScoped.class, true, true);
         deployment = Globals.getDefaultHabitat().getService(Deployment.class);
+        bbd.addAnnotatedType(bm.createAnnotatedType(ClusterScopedInterceptor.class));
     }
 
     public void afterBeanDiscovery(AfterBeanDiscovery event, BeanManager manager) {
