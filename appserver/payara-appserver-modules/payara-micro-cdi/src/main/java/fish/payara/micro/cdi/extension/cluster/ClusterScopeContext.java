@@ -39,7 +39,7 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
-import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
+import com.google.common.base.Optional;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import fish.payara.cluster.Clustered;
@@ -54,9 +54,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.glassfish.internal.deployment.Deployment;
 
 /**
- * @Clustered singleton implementation
- *
- * TODO +++ add postconstruct calls upon attachment
+ * @Clustered singleton CDI context implementation
  *
  * @author lprimak
  */
@@ -77,9 +75,12 @@ class ClusterScopeContext implements Context {
     public <TT> TT get(Contextual<TT> contextual, CreationalContext<TT> creationalContext) {
         TT rv = get(contextual);
         if(rv == null) {
-            rv = getFromApplicationScoped(contextual, creationalContext);
+            rv = getFromApplicationScoped(contextual, Optional.of(creationalContext));
             final Bean<TT> bean = (Bean<TT>) contextual;
-            clusteredLookup.getClusteredSingletonMap().putIfAbsent(getBeanName(bean, getAnnotation(bean)), rv);
+            if(clusteredLookup.getClusteredSingletonMap().putIfAbsent(getBeanName(bean, getAnnotation(bean)), rv) != null) {
+                bean.destroy(rv, creationalContext);
+                rv = get(contextual);
+            }
         }
         return rv;
     }
@@ -88,8 +89,14 @@ class ClusterScopeContext implements Context {
     @SuppressWarnings("unchecked")
     public <TT> TT get(Contextual<TT> contextual) {
         final Bean<TT> bean = (Bean<TT>) contextual;
-        String beanName = getBeanName(bean, getAnnotation(bean));
-        return (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
+        Clustered clusteredAnnotation = getAnnotation(bean);
+        String beanName = getBeanName(bean, clusteredAnnotation);
+        TT rv = (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
+        if(clusteredAnnotation.callPostConstructOnAttach() && rv != null &&
+                getFromApplicationScoped(contextual, Optional.<CreationalContext<TT>>absent()) == null) {
+            bm.getInjectionTargetFactory(bm.createAnnotatedType((Class<TT>)bean.getBeanClass())).createInjectionTarget(bean).postConstruct(rv);
+        }
+        return rv;
     }
 
     @Override
@@ -97,19 +104,24 @@ class ClusterScopeContext implements Context {
         return true;
     }
 
-    private<TT> TT getFromApplicationScoped(Contextual<TT> contextual, CreationalContext<TT> creationalContext) {
-        return bm.getContext(ApplicationScoped.class).get(contextual, creationalContext);
+    private<TT> TT getFromApplicationScoped(Contextual<TT> contextual, Optional<CreationalContext<TT>> creationalContext) {
+        if(creationalContext.isPresent()) {
+            return bm.getContext(ApplicationScoped.class).get(contextual, creationalContext.get());
+        }
+        else {
+            return bm.getContext(ApplicationScoped.class).get(contextual);
+        }
     }
     
     static <TT> String getBeanName(Bean<TT> bean, Clustered annotation) {
         return annotation.keyName().isEmpty()? bean.getName() : annotation.keyName();
     }
 
-
     static <TT> Clustered getAnnotation(Bean<TT> bean) {
         return bean.getBeanClass().getAnnotation(Clustered.class);
     }
 
+
     private final BeanManager bm;
-    private final ClusteredSingletonLookup clusteredLookup;
+    private final ClusteredSingletonLookupImpl clusteredLookup;
 }

@@ -40,6 +40,7 @@
 package fish.payara.micro.cdi.extension.cluster;
 
 import com.google.common.collect.Iterables;
+import com.hazelcast.core.IAtomicLong;
 import fish.payara.cluster.Clustered;
 import fish.payara.cluster.DistributedLockType;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
@@ -49,6 +50,8 @@ import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercep
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Priority;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.inject.spi.Bean;
@@ -73,8 +76,7 @@ public class ClusterScopedInterceptor implements Serializable {
     }
 
     @AroundInvoke
-    public Object lockAndRefresh(InvocationContext invocationContext)
-            throws Exception {
+    public Object lockAndRefresh(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getMethod().getDeclaringClass();
         Clustered clusteredAnnotation = beanClass.getAnnotation(Clustered.class);
         try {
@@ -85,6 +87,30 @@ public class ClusterScopedInterceptor implements Serializable {
             refresh(beanClass);
             unlock(beanClass, clusteredAnnotation);
         }
+    }
+
+    @PostConstruct
+    Object postConstruct(InvocationContext invocationContext) throws Exception {
+        Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
+        clusteredLookup.setClusteredSessionKey(beanClass);
+        clusteredLookup.getClusteredUsageCount().incrementAndGet();
+        return invocationContext.proceed();
+    }
+
+    @PreDestroy
+    Object preDestroy(InvocationContext invocationContext) throws Exception {
+        Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
+        Clustered clusteredAnnotation = beanClass.getAnnotation(Clustered.class);
+        clusteredLookup.setClusteredSessionKey(beanClass);
+        IAtomicLong count = clusteredLookup.getClusteredUsageCount();
+        if (count.decrementAndGet() <= 0) {
+            clusteredLookup.getClusteredSingletonMap().delete(clusteredLookup.getClusteredSessionKey());
+            count.destroy();
+        } else if (!clusteredAnnotation.callPreDestoyOnDetach()) {
+            return null;
+        }
+
+        return invocationContext.proceed();
     }
 
     private void lock(Class<?> beanClass, Clustered clusteredAnnotation) {
