@@ -56,6 +56,7 @@ public class RequestTracingExecutionOptions {
 
     private boolean enabled;
     private double sampleRate;
+    private boolean sampleRateFirstEnabled;
     private boolean applicationsOnlyEnabled;
     private boolean reservoirSamplingEnabled;
     private Long thresholdValue;
@@ -91,6 +92,14 @@ public class RequestTracingExecutionOptions {
 
     public void setSampleRate(Double sampleRate) {
         this.sampleRate = sampleRate;
+    }
+
+    public boolean getSampleRateFirstEnabled() {
+        return sampleRateFirstEnabled;
+    }
+
+    public void setSampleRateFirstEnabled(Boolean sampleRateFirstEnabled) {
+        this.sampleRateFirstEnabled = sampleRateFirstEnabled;
     }
 
     public Boolean getApplicationsOnlyEnabled() {
@@ -160,6 +169,7 @@ public class RequestTracingExecutionOptions {
                 + ", thresholdValue=" + thresholdValue
                 + ", thresholdUnit=" + thresholdUnit
                 + ", sampleRate=" + sampleRate
+                + ", sampleRateFirstEnabled=" + sampleRateFirstEnabled
                 + ", reservoirSamplingEnabled=" + reservoirSamplingEnabled
                 + ", historicalTraceEnabled=" + historicalTraceEnabled
                 + ", historicalTraceStoreSize=" + historicalTraceStoreSize

@@ -55,7 +55,7 @@
         method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "reservoirSamplingEnabled", "applicationsOnlyEnabled", "dynamic", "historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "sampleRateFirstEnabled", "reservoirSamplingEnabled", "applicationsOnlyEnabled", "dynamic", "historicalTraceEnabled"});
         py.getHistoricRequestTracingMessages(parentEndpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
@@ -68,6 +68,9 @@
         }
         if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
             setPageSessionAttribute(key="historicalTraceEnabled", value="true");
+        }
+        if (#{pageSession.valueMap['sampleRateFirstEnabled']}=true) {
+            setPageSessionAttribute(key="sampleRateFirstEnabledSelected", value="true");
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
@@ -94,6 +97,7 @@
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="reservoirSamplingEnabled" value="#{pageSession.reservoirSamplingEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="applicationsOnlyEnabled" value="#{pageSession.applicationsOnlyEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="sampleRateFirstEnabled" value="#{pageSession.sampleRateFirstEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
                     value="#{pageSession.historicalTraceEnabled}");
@@ -129,6 +133,9 @@
         </sun:property>
         <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
             <sun:dropDown id="thresholdUnit" selected="#{pageSession.valueMap['thresholdUnit']}" labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
+        </sun:property>
+        <sun:property id="sampleRateFirstProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.sampleRateFirstEnabled}"  helpText="$resource{i18nrt.requestTracing.configuration.sampleRateFirstEnabledHelp}">
+            <sun:checkbox id="sampleRateFirstProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.sampleRateFirstEnabledSelected}" selectedValue="true" />
         </sun:property>
     </sun:propertySheetSection>
 

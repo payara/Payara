@@ -39,7 +39,6 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.EventSource;
@@ -49,9 +48,6 @@ import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
 import fish.payara.nucleus.notification.log.LogNotificationEvent;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -59,12 +55,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.concurrent.TimeUnit;
+import org.junit.Before;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.Spy;
 
 /**
  * @author mertcaliskan
@@ -84,11 +81,25 @@ public class RequestTracingServiceMockTest {
     @Mock
     NotifierExecutionOptionsFactoryStore execOptionsFactoryStore;
 
+    @Spy
+    RequestTracingExecutionOptions executionOptions;
 
     @InjectMocks
     RequestTracingServiceMock requestTracingService = new RequestTracingServiceMock();
 
     LogNotificationEventFactoryMock logNotificationEventFactoryMock = new LogNotificationEventFactoryMock();
+    
+    @Before
+    public void configureService() {
+        executionOptions.setEnabled(true);
+        executionOptions.setSampleRate(1.0);
+        executionOptions.setSampleRateFirstEnabled(true);
+        executionOptions.setThresholdValue(1000L);
+        executionOptions.setThresholdUnit(TimeUnit.MILLISECONDS);
+        LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
+        logNotifierExecutionOptions.setEnabled(true);
+        executionOptions.getNotifierExecutionOptionsList().put(NotifierType.LOG, logNotifierExecutionOptions);
+    }
 
     @Test
     public void endingTraceInvokesNotificationServiceSuccessfullyWhenThresholdExceeded() {
@@ -107,19 +118,6 @@ class RequestTracingServiceMock extends RequestTracingService {
     @Override
     public boolean isTraceInProgress() {
         return true;
-    }
-
-    @Override
-    public RequestTracingExecutionOptions getExecutionOptions() {
-        RequestTracingExecutionOptions executionOptions = new RequestTracingExecutionOptions();
-        executionOptions.setEnabled(true);
-        executionOptions.setThresholdValue(1000L);
-        executionOptions.setThresholdUnit(TimeUnit.MILLISECONDS);
-        LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
-        logNotifierExecutionOptions.setEnabled(true);
-        executionOptions.getNotifierExecutionOptionsList().put(NotifierType.LOG, logNotifierExecutionOptions);
-
-        return executionOptions;
     }
 }
 

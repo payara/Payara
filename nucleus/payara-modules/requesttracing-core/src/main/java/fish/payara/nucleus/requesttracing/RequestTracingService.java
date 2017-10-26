@@ -80,7 +80,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Main service class that provides methods used by interceptors for tracing requests.
+ * Main service class that provides methods used by interceptors for tracing
+ * requests.
  *
  * @author mertcaliskan
  */
@@ -136,9 +137,10 @@ public class RequestTracingService implements EventListener, ConfigListener {
     private ScheduledExecutorService historicCleanerExecutor;
 
     private RequestTracingExecutionOptions executionOptions = new RequestTracingExecutionOptions();
-    
+
     /**
-     * private Random variable used with sample rate to determine whether to sample a request
+     * private Random variable used with sample rate to determine whether to
+     * sample a request
      */
     private Random random;
 
@@ -158,8 +160,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                         return configurationProxy;
                     }
                 }, configuration);
-            }
-            catch (TransactionFailure e) {
+            } catch (TransactionFailure e) {
                 logger.log(Level.SEVERE, "Error occurred while setting initial log notifier", e);
             }
         }
@@ -178,6 +179,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
             executionOptions.setSampleRate(Double.valueOf(configuration.getSampleRate()));
             executionOptions.setApplicationsOnlyEnabled(Boolean.parseBoolean(configuration.getApplicationsOnlyEnabled()));
+            executionOptions.setSampleRateFirstEnabled(Boolean.parseBoolean(configuration.getSampleRateFirstEnabled()));
             executionOptions.setReservoirSamplingEnabled(Boolean.parseBoolean(configuration.getReservoirSamplingEnabled()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
@@ -185,7 +187,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
             executionOptions.setHistoricalTraceStoreSize(Integer.parseInt(configuration.getHistoricalTraceStoreSize()));
             executionOptions.setHistoricalTraceTimeout(TimeUtil.setStoreTimeLimit(configuration.getHistoricalTraceStoreTimeout()));
 
-            historicCleanerExecutor = Executors.newScheduledThreadPool(1,  new ThreadFactory() {
+            historicCleanerExecutor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
                 public Thread newThread(Runnable r) {
                     return new Thread(r, "request-tracing-historic-trace-store-cleanup-task");
                 }
@@ -211,8 +213,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
             }
 
             logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
-        }
-        else {
+        } else {
             if (historicCleanerExecutor != null) {
                 historicCleanerExecutor.shutdownNow();
                 historicCleanerExecutor = null;
@@ -247,9 +248,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     /**
-     * Reset the conversation ID
-     * This is especially useful for trace propagation across threads when
-     * the event tracer can receive the conversation ID propagated to it
+     * Reset the conversation ID This is especially useful for trace propagation
+     * across threads when the event tracer can receive the conversation ID
+     * propagated to it
      *
      * @param newID
      */
@@ -269,10 +270,12 @@ public class RequestTracingService implements EventListener, ConfigListener {
         if (executionOptions.getApplicationsOnlyEnabled() == true && Thread.currentThread().getName().matches("admin-thread-pool::admin-listener\\([0-9]+\\)")) {
             return null;
         }
-        // Determine whether to sample the request
-        boolean sampleRequest = random.nextDouble() < executionOptions.getSampleRate();
-        if (!sampleRequest) {
-            return null;
+        // Determine whether to sample the request, if sampleRateFirstEnabled is true
+        if (executionOptions.getSampleRateFirstEnabled()) {
+            boolean sampleRequest = random.nextDouble() < executionOptions.getSampleRate();
+            if (!sampleRequest) {
+                return null;
+            }
         }
         RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, "StartTrace");
         requestEvent.addProperty("Server", server.getName());
@@ -297,6 +300,14 @@ public class RequestTracingService implements EventListener, ConfigListener {
         long elapsedTime = requestEventStore.getElapsedTime();
         long elapsedTimeInNanos = TimeUnit.NANOSECONDS.convert(elapsedTime, TimeUnit.MILLISECONDS);
         if (elapsedTimeInNanos - thresholdValueInNanos > 0) {
+            // Determine whether to sample the request, if sampleRateFirstEnabled is false
+            if (!executionOptions.getSampleRateFirstEnabled()) {
+                boolean sampleRequest = random.nextDouble() < executionOptions.getSampleRate();
+                if (!sampleRequest) {
+                    requestEventStore.flushStore();
+                    return;
+                }
+            }
             String traceAsString = requestEventStore.getTraceAsString();
 
             // Store the trace to the historical event store if it's enabled
@@ -337,8 +348,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
         boolean isCurrentInstanceMatchTarget = false;
         if (env.isInstance()) {
             isCurrentInstanceMatchTarget = true;
-        }
-        else {
+        } else {
             for (PropertyChangeEvent pe : events) {
                 ConfigBeanProxy proxy = (ConfigBeanProxy) pe.getSource();
                 while (proxy != null && !(proxy instanceof Config)) {
@@ -358,7 +368,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 @Override
                 public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
 
-                    if(changedType.equals(RequestTracingServiceConfiguration.class)) {
+                    if (changedType.equals(RequestTracingServiceConfiguration.class)) {
                         configuration = (RequestTracingServiceConfiguration) changedInstance;
                     }
                     return null;
