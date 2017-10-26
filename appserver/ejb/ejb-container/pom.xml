@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>5.0.0.Alpha2-SNAPSHOT</version>
+        <version>5.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-container</artifactId>
@@ -274,6 +274,11 @@
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

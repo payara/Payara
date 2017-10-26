@@ -40,14 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     
     <parent>
         <groupId>org.glassfish.main.external</groupId>
         <artifactId>external</artifactId>
-        <version>5.0.0.Alpha2-SNAPSHOT</version>
+        <version>5.0.0.Alpha3-SNAPSHOT</version>
     </parent>
     
     <artifactId>libpam4j-repackaged</artifactId>
@@ -56,7 +55,7 @@
     <description>libpam4j (Java binding for libpam.so) repackaged as a module</description>
     
     <properties>
-      <libpam4j.version>4.0.0</libpam4j.version>
+      <libpam4j.version>3.1</libpam4j.version>
     </properties>
 
     <build>
@@ -121,10 +120,10 @@
             package them. It is sufficient to package the wrapped jar. 
         -->
         <dependency>
-            <groupId>org.kohsuke</groupId>
-            <artifactId>libpam4j</artifactId>
-            <version>1.8</version>
-            <optional>true</optional>
+	  <groupId>org.jvnet.libpam4j</groupId>
+  	  <artifactId>libpam4j</artifactId>
+	   <version>1.3</version>
+  	  <optional>true</optional>
         </dependency>
     </dependencies>
 

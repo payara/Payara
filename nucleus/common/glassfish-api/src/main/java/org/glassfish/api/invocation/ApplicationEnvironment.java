@@ -40,19 +40,18 @@
 package org.glassfish.api.invocation;
 
 /**
- * Provides information about the currently running environment in
- * scenarios that are not defined by the Java enterprise specifications
+ * Provides information about the currently running environment in scenarios that are not defined by the Java enterprise
+ * specifications
  * 
  * @author jwells
  *
  */
 public interface ApplicationEnvironment {
     /**
-     * Returns the name of the currently running
-     * application
+     * Returns the name of the currently running application
      * 
      * @return The name of the currently running application
      */
-    public String getName();
+    String getName();
 
 }

@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>5.0.0.Alpha2-SNAPSHOT</version>
+        <version>5.0.0.Alpha3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -134,6 +134,7 @@
                                 <Export-Package>
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.micro.cdi,
+                                    fish.payara.cluster,
                                     fish.payara.nucleus.requesttracing.api,
                                     fish.payara.notification.eventbus
                                 </Export-Package>
