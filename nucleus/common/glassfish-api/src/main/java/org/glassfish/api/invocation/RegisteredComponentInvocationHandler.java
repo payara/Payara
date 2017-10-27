@@ -43,16 +43,14 @@ package org.glassfish.api.invocation;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * This class is an alternative to ComponentInvocationHandler.
- * This could be implemented by classes that are to be loaded independently of the
- * web container. 
+ * This class is an alternative to ComponentInvocationHandler. This could be implemented by classes that are to be
+ * loaded independently of the web container.
  *
  */
-
 @Contract
-public interface RegisteredComponentInvocationHandler{
+public interface RegisteredComponentInvocationHandler {
 
-    public ComponentInvocationHandler getComponentInvocationHandler();
-    
-    public void register();
+   ComponentInvocationHandler getComponentInvocationHandler();
+
+   void register();
 }
