@@ -95,6 +95,10 @@ public class HazelcastTimerStore extends EJBTimerService {
     }
 
     public HazelcastTimerStore(HazelcastCore core) throws Exception {
+        
+        if (!core.isEnabled()) {
+            throw new Exception("Hazelcast MUST be enabled when using the HazelcastTimerStore");
+        }
         pkCache = core.getInstance().getMap(EJB_TIMER_CACHE_NAME);
         containerCache = core.getInstance().getMap(EJB_TIMER_CONTAINER_CACHE_NAME);
         applicationCache = core.getInstance().getMap(EJB_TIMER_APPLICAION_CACHE_NAME);

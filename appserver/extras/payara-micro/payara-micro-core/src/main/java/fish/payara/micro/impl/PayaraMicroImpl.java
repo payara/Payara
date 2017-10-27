@@ -987,18 +987,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             
             // boot the server
             preBootCommands.executeCommands(gf.getCommandRunner());
-            gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false");
             gf.start();
             postBootCommands.executeCommands(gf.getCommandRunner());
             this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
-            // load all applications, but do not start them until Hazelcast gets a chance to initialize
             deployAll();
-            if(!noCluster) {
-                gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=true");
-                gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true");
-            }
-
             gf.getCommandRunner().run("initialize-all-applications");
 
             postBootActions();
