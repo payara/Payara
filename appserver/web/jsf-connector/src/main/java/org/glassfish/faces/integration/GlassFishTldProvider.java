@@ -62,11 +62,11 @@ import org.glassfish.web.loader.LogFacade;
 
 /**
  * Implementation of TldProvider for JSF.
- * 
  * @author Shing Wai Chan
  * @author Sahoo
  */
-@Service(name = "jsfTld")
+
+@Service(name="jsfTld")
 @Singleton
 public class GlassFishTldProvider implements TldProvider, PostConstruct {
 
@@ -77,7 +77,8 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
     @Inject
     ModulesRegistry registry;
 
-    private Map<URI, List<String>> tldMap = new HashMap<URI, List<String>>();
+    private Map<URI, List<String>> tldMap =
+        new HashMap<URI, List<String>>();
 
     private Map<URI, List<String>> tldListenerMap = null;
 
@@ -87,24 +88,26 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
     public String getName() {
         return "jsfTld";
     }
-
+ 
     /**
      * Gets a mapping from JAR files to their TLD resources.
      */
     @SuppressWarnings("unchecked")
     public Map<URI, List<String>> getTldMap() {
-        return (Map<URI, List<String>>) ((HashMap) tldMap).clone();
+        return (Map<URI, List<String>>)((HashMap)tldMap).clone();
     }
 
     /**
-     * Gets a mapping from JAR files to their TLD resources that are known to contain listener declarations.
+     * Gets a mapping from JAR files to their TLD resources
+     * that are known to contain listener declarations.
      */
     public synchronized Map<URI, List<String>> getTldListenerMap() {
         if (tldListenerMap == null) {
             tldListenerMap = new HashMap<URI, List<String>>();
             for (URI uri : tldMap.keySet()) {
                 /*
-                 * In the case of JSF, the only TLD that declares any listener is META-INF/jsf_core.tld
+                 * In the case of JSF, the only TLD that declares any
+                 * listener is META-INF/jsf_core.tld 
                  */
                 if (tldMap.get(uri).contains("META-INF/jsf_core.tld")) {
                     tldListenerMap.put(uri, tldMap.get(uri));
@@ -121,7 +124,8 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
 
         Class jsfImplClass = null;
         try {
-            jsfImplClass = getClass().getClassLoader().loadClass("com.sun.faces.spi.InjectionProvider");
+            jsfImplClass = getClass().getClassLoader().loadClass(
+                "com.sun.faces.spi.InjectionProvider");
         } catch (ClassNotFoundException ignored) {
         }
 
@@ -135,13 +139,13 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
         } else {
             ClassLoader classLoader = getClass().getClassLoader();
             if (classLoader instanceof URLClassLoader) {
-                URL[] urls = ((URLClassLoader) classLoader).getURLs();
+                URL[] urls = ((URLClassLoader)classLoader).getURLs();
                 if (urls != null && urls.length > 0) {
                     uris = new URI[urls.length];
                     for (int i = 0; i < urls.length; i++) {
                         try {
                             uris[i] = urls[i].toURI();
-                        } catch (URISyntaxException e) {
+                        } catch(URISyntaxException e) {
                             String msg = rb.getString(LogFacade.TLD_PROVIDER_IGNORE_URL);
                             msg = MessageFormat.format(msg, urls[i]);
                             logger.log(Level.WARNING, msg, e);
@@ -149,15 +153,17 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
                     }
                 }
             } else {
-                logger.log(Level.WARNING, LogFacade.UNABLE_TO_DETERMINE_TLD_RESOURCES,
-                        new Object[] { "JSF", classLoader, GlassFishTldProvider.class.getName() });
+                logger.log(Level.WARNING,
+                    LogFacade.UNABLE_TO_DETERMINE_TLD_RESOURCES,
+                    new Object[] {"JSF", classLoader,
+                        GlassFishTldProvider.class.getName()});
             }
         }
 
         if (uris != null && uris.length > 0) {
             Pattern pattern = Pattern.compile("META-INF/.*\\.tld");
             for (URI uri : uris) {
-                List<String> entries = JarURIPattern.getJarEntries(uri, pattern);
+                List<String> entries =  JarURIPattern.getJarEntries(uri, pattern);
                 if (entries != null && entries.size() > 0) {
                     tldMap.put(uri, entries);
                 }

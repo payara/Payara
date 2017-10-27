@@ -40,16 +40,17 @@
 
 package org.glassfish.api.invocation;
 
-import java.util.List;
 
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * ResourceHandler provides interface to access resources handled by a component.
+ * ResourceHandler provides interface to access resources 
+ * handled by a component.
  */
+
 @Contract
 public interface ResourceHandler {
 
-    public List getResourceList();
+    public java.util.List getResourceList();
 
 }
