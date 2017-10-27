@@ -205,7 +205,7 @@
         <asm.version>5.0.3</asm.version>
         <shoal.version>1.7.0-M1</shoal.version>
         <ha-api.version>3.1.9</ha-api.version>
-        <glassfishbuild.version>3.2.20</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20-p1</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.7</command-security-plugin.version>
