@@ -56,6 +56,13 @@
   <!-- ============ Built In Context Init Parameter Definitions =========== -->
 
 
+  <!-- Init parameter to force the XML validation of JSF configuration  --> 
+  <!-- ressources.                                                      -->
+
+  <context-param>
+      <param-name>com.sun.faces.validateXml</param-name>
+      <param-value>true</param-value>
+  </context-param>
 
   <!-- Init parameter will cause the JSF implementation to bypass      -->
   <!-- processing the web.xml to determine if we should continue       --> 

@@ -41,97 +41,106 @@
 
 package org.glassfish.api.invocation;
 
-import java.util.List;
 
 import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * InvocationManager provides interface to keep track of component context on a per-thread basis
+ * InvocationManager provides interface to keep track of
+ * component context on a per-thread basis
  */
+
 @Contract
 public interface InvocationManager {
 
     /**
-     * To be called by a Container to indicate that the Container is about to invoke a method on a component. The preInvoke
-     * and postInvoke must be called in pairs and well-nested.
+     * To be called by a Container to indicate that the Container is
+     * about to invoke a method on a component.
+     * The preInvoke and postInvoke must be called in pairs and well-nested.
      *
-     * @param inv
-     *            the Invocation object
+     * @param inv the Invocation object
      */
-    <T extends ComponentInvocation> void preInvoke(T inv) throws InvocationException;
+    public <T extends ComponentInvocation> void preInvoke(T inv) throws InvocationException;
 
     /**
-     * To be called by a Container to indicate that the Container has just completed the invocation of a method on a
-     * component. The preInvoke and postInvoke must be called in pairs and well-nested.
+     * To be called by a Container to indicate that the Container has
+     * just completed the invocation of a method on a component.
+     * The preInvoke and postInvoke must be called in pairs and well-nested.
      *
-     * @param inv
-     *            the Invocation object
+     * @param inv the Invocation object
      */
-    <T extends ComponentInvocation> void postInvoke(T inv) throws InvocationException;
+    public <T extends ComponentInvocation> void postInvoke(T inv) throws InvocationException;
 
     /**
      * Returns the current Invocation object associated with the current thread
      */
-    <T extends ComponentInvocation> T getCurrentInvocation();
+    public <T extends ComponentInvocation> T getCurrentInvocation();
 
     /**
-     * Returns the previous Invocation object associated with the current thread. Returns null if there is none. This is
-     * typically used when a component A calls another component B within the same VM. In this case, it might be necessary
-     * to obtain information related to both component A using getPreviousInvocation() and B using getCurrentInvocation()
+     * Returns the previous Invocation object associated with the current
+     * thread.
+     * Returns null if there is none. This is typically used when a component A
+     * calls another component B within the same VM. In this case, it might be
+     * necessary to obtain information related to both component A using
+     * getPreviousInvocation() and B using getCurrentInvocation()
      */
-    <T extends ComponentInvocation> T getPreviousInvocation() throws InvocationException;
+    public <T extends ComponentInvocation> T getPreviousInvocation()
+            throws InvocationException;
 
     /**
      * return true iff no invocations on the stack for this thread
      */
-    boolean isInvocationStackEmpty();
+    public boolean isInvocationStackEmpty();
 
-    List<? extends ComponentInvocation> getAllInvocations();
+    public java.util.List<? extends ComponentInvocation> getAllInvocations();
+    
+    // useful to temp clear the invocation list for example when spawning a new Thread
+    // to prevent potential classloader leaks.
+     java.util.List<? extends ComponentInvocation> popAllInvocations();
+    
+    // useful to temp clear the invocation list for example when spawning a new Thread
+    // to prevent potential classloader leaks.
+    public void putAllInvocations(java.util.List<? extends ComponentInvocation> invocations);
 
+    public void registerComponentInvocationHandler(ComponentInvocationType type, 
+            RegisteredComponentInvocationHandler handler);
+    
+    
     /**
-     * Useful to temp clear the invocation list for example when spawning a new Thread
-     * to prevent potential classloader leaks.
-     */
-    List<? extends ComponentInvocation> popAllInvocations();
-
-    /**
-     * Useful to temp clear the invocation list for example when spawning a new Thread
-     * to prevent potential classloader leaks.
-     */
-    void putAllInvocations(java.util.List<? extends ComponentInvocation> invocations);
-
-    void registerComponentInvocationHandler(ComponentInvocationType type, RegisteredComponentInvocationHandler handler);
-
-    /**
-     * To be called by the infrastructure to indicate that some user code not associated with any Java EE specification may
-     * be called. In particular must be called by the Weld integration layer to indicate the application environment in
-     * which the portable extensions are running
+     * To be called by the infrastructure to indicate that some user code
+     * not associated with any Java EE specification may be called.  In
+     * particular must be called by the Weld integration layer to indicate
+     * the application environment in which the portable extensions are
+     * running
      * <p>
-     * The pushAppEnvironment and popAppEnvironment must be called in pairs and well-nested.
+     * The pushAppEnvironment and popAppEnvironment must be called in pairs
+     * and well-nested.
      *
-     * @param env
-     *            may not be null. Information about the application environment
+     * @param env may not be null.  Information about the application environment
      */
-    void pushAppEnvironment(ApplicationEnvironment env);
-
+    public void pushAppEnvironment(ApplicationEnvironment env);
+    
     /**
      * Gets the current application environment on the current thread
      *
      * @return The current ApplicationEnvironment, or null if there is none
      */
-    ApplicationEnvironment peekAppEnvironment();
-
+    public ApplicationEnvironment peekAppEnvironment();
+    
     /**
-     * To be called by the infrastructure to indicate that some user code not associated with any Java EE specification is
-     * finished being called. In particular must be called by the Weld integration layer to indicate the application
-     * environment in which the portable extensions are running
+     * To be called by the infrastructure to indicate that some user code
+     * not associated with any Java EE specification is finished being called.
+     * In particular must be called by the Weld integration layer to indicate
+     * the application environment in which the portable extensions are
+     * running
      * <p>
-     * The pushAppEnvironment and popAppEnvironment must be called in pairs and well-nested.
+     * The pushAppEnvironment and popAppEnvironment must be called in pairs
+     * and well-nested.
      *
-     * @param env
-     *            may not be null. Information about the application environment
+     * @param env may not be null.  Information about the application environment
      */
-    void popAppEnvironment();
+    public void popAppEnvironment();
+    
+
 
 }
