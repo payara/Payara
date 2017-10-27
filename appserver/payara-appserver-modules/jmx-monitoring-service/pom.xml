@@ -43,7 +43,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.0.0.Alpha3</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.jmx.monitoring</groupId>
     <artifactId>jmx-monitoring</artifactId>

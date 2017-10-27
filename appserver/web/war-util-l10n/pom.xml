@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.web</groupId>
         <artifactId>web</artifactId>
-        <version>5.0.0.Alpha3</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>war-util-l10n</artifactId>

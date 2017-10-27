@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.0.0.Alpha3</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-corba-base</artifactId>
     <name>Nucleus Base CORBA APIs Package</name>
