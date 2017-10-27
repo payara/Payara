@@ -183,11 +183,11 @@ public class RequestTracingService implements EventListener, ConfigListener {
             executionOptions.setAdaptiveSamplingTimeValue(Integer.valueOf(configuration.getAdaptiveSamplingTimeValue()));
             executionOptions.setAdaptiveSamplingTimeUnit(TimeUnit.valueOf(configuration.getAdaptiveSamplingTimeUnit()));
             executionOptions.setApplicationsOnlyEnabled(Boolean.parseBoolean(configuration.getApplicationsOnlyEnabled()));
-            executionOptions.setSampleRateFirstEnabled(Boolean.parseBoolean(configuration.getSampleRateFirstEnabled()));
-            executionOptions.setReservoirSamplingEnabled(Boolean.parseBoolean(configuration.getReservoirSamplingEnabled()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
+            executionOptions.setSampleRateFirstEnabled(Boolean.parseBoolean(configuration.getSampleRateFirstEnabled()));
             executionOptions.setHistoricalTraceEnabled(Boolean.parseBoolean(configuration.getHistoricalTraceEnabled()));
+            executionOptions.setReservoirSamplingEnabled(Boolean.parseBoolean(configuration.getReservoirSamplingEnabled()));
             executionOptions.setHistoricalTraceStoreSize(Integer.parseInt(configuration.getHistoricalTraceStoreSize()));
             executionOptions.setHistoricalTraceTimeout(TimeUtil.setStoreTimeLimit(configuration.getHistoricalTraceStoreTimeout()));
 
@@ -216,7 +216,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
             }
 
-            logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
+            logger.log(Level.INFO, "Payara Request Tracing Service Started with configuration: {0}", executionOptions);
         } else {
             if (historicCleanerExecutor != null) {
                 historicCleanerExecutor.shutdownNow();
@@ -319,7 +319,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 historicRequestTracingEventStore.addTrace(elapsedTime, traceAsString);
             }
 
-            for (NotifierExecutionOptions notifierExecutionOptions : getExecutionOptions().getNotifierExecutionOptionsList().values()) {
+            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {
                     NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
                     String subject = "Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold";
@@ -332,17 +332,17 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     public Long getThresholdValueInNanos() {
-        if (getExecutionOptions() != null) {
-            return TimeUnit.NANOSECONDS.convert(getExecutionOptions().getThresholdValue(),
-                    getExecutionOptions().getThresholdUnit());
+        if (executionOptions != null) {
+            return TimeUnit.NANOSECONDS.convert(executionOptions.getThresholdValue(),
+                    executionOptions.getThresholdUnit());
         }
         return null;
     }
 
     public boolean isRequestTracingEnabled() {
-        return getExecutionOptions() != null && getExecutionOptions().isEnabled();
+        return executionOptions != null && executionOptions.isEnabled();
     }
-
+    
     public RequestTracingExecutionOptions getExecutionOptions() {
         return executionOptions;
     }

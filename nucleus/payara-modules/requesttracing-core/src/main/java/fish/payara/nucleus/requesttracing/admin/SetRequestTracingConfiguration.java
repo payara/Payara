@@ -120,23 +120,23 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "adaptiveSamplingTimeUnit", optional = true)
     private String adaptiveSamplingTimeUnit;
 
-    @Param(name = "sampleRateFirstEnabled", optional = true)
-    private Boolean sampleRateFirstEnabled;
-
     @Param(name = "applicationsOnlyEnabled", optional = true)
     private Boolean applicationsOnlyEnabled;
 
-    @Param(name = "reservoirSamplingEnabled", optional = true)
-    private Boolean reservoirSamplingEnabled;
+    @Param(name = "thresholdValue", optional = true)
+    private String thresholdValue;
 
     @Param(name = "thresholdUnit", optional = true)
-    private String unit;
+    private String thresholdUnit;
 
-    @Param(name = "thresholdValue", optional = true)
-    private String value;
+    @Param(name = "sampleRateFirstEnabled", optional = true)
+    private Boolean sampleRateFirstEnabled;
 
     @Param(name = "historicalTraceEnabled", optional = true)
     private Boolean historicalTraceEnabled;
+
+    @Param(name = "reservoirSamplingEnabled", optional = true)
+    private Boolean reservoirSamplingEnabled;
 
     @Param(name = "historicalTraceStoreSize", optional = true)
     private Integer historicalTraceStoreSize;
@@ -180,23 +180,23 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                         if (adaptiveSamplingTimeUnit != null) {
                             requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeUnit(adaptiveSamplingTimeUnit);
                         }
-                        if (sampleRateFirstEnabled != null) {
-                            requestTracingServiceConfigurationProxy.setSampleRateFirstEnabled(sampleRateFirstEnabled.toString());
-                        }
                         if (applicationsOnlyEnabled != null) {
                             requestTracingServiceConfigurationProxy.setApplicationsOnlyEnabled(applicationsOnlyEnabled.toString());
                         }
-                        if (reservoirSamplingEnabled != null) {
-                            requestTracingServiceConfigurationProxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
+                        if (thresholdValue != null) {
+                            requestTracingServiceConfigurationProxy.setThresholdValue(thresholdValue);
                         }
-                        if (unit != null) {
-                            requestTracingServiceConfigurationProxy.setThresholdUnit(unit);
+                        if (thresholdUnit != null) {
+                            requestTracingServiceConfigurationProxy.setThresholdUnit(thresholdUnit);
                         }
-                        if (value != null) {
-                            requestTracingServiceConfigurationProxy.setThresholdValue(value);
+                        if (sampleRateFirstEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setSampleRateFirstEnabled(sampleRateFirstEnabled.toString());
                         }
                         if (historicalTraceEnabled != null) {
                             requestTracingServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                        }
+                        if (reservoirSamplingEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
                         }
                         if (historicalTraceStoreSize != null) {
                             requestTracingServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
@@ -231,7 +231,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         if (sampleRate != null) {
             service.getExecutionOptions().setSampleRate(Double.parseDouble(sampleRate));
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplerate.success",
-                    "Request Tracing Service Sample Chance is set to {0}.", sampleRate) + "\n");
+                    "Request Tracing Sample Rate Value is set to {0}.", sampleRate) + "\n");
         }
         if (adaptiveSamplingEnabled != null) {
             service.getExecutionOptions().setAdaptiveSamplingEnabled(adaptiveSamplingEnabled);
@@ -253,38 +253,36 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.timeunit.success",
                     "Request Tracing Adaptive Sampling Time Unit is set to {0}.", adaptiveSamplingTimeUnit) + "\n");
         }
-        if (sampleRateFirstEnabled != null) {
-            service.getExecutionOptions().setSampleRateFirstEnabled(sampleRateFirstEnabled);
-            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.sampleratefirst.success",
-                    "Request Tracing Service Sample Rate First Enabled Value is set to {0}.", sampleRateFirstEnabled) + "\n");
-        }
         if (applicationsOnlyEnabled != null) {
             service.getExecutionOptions().setApplicationsOnlyEnabled(applicationsOnlyEnabled);
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.applicationsonly.success",
                     "Request Tracing Service Applications Only filter is set to {0}.", applicationsOnlyEnabled) + "\n");
         }
-        if (reservoirSamplingEnabled != null) {
-            service.getExecutionOptions().setReservoirSamplingEnabled(reservoirSamplingEnabled);
-            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.reservoirsamplingenabled.success",
-                    "Request Tracing Service Reservoir Sampling Enabled Value is set to {0}.", reservoirSamplingEnabled) + "\n");
-        }
-        if (value != null) {
-            service.getExecutionOptions().setThresholdValue(Long.valueOf(value));
+        if (thresholdValue != null) {
+            service.getExecutionOptions().setThresholdValue(Long.valueOf(thresholdValue));
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",
-                    "Request Tracing Service Threshold Value is set to {0}.", value) + "\n");
+                    "Request Tracing Service Threshold Value is set to {0}.", thresholdValue) + "\n");
         }
-        if (unit != null) {
-            service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(unit));
+        if (thresholdUnit != null) {
+            service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(thresholdUnit));
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdunit.success",
-                    "Request Tracing Service Threshold Unit is set to {0}.", unit) + "\n");
+                    "Request Tracing Service Threshold Unit is set to {0}.", thresholdUnit) + "\n");
         }
-
+        if (sampleRateFirstEnabled != null) {
+            service.getExecutionOptions().setSampleRateFirstEnabled(sampleRateFirstEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.sampleratefirst.success",
+                    "Request Tracing Service Sample Rate First Enabled Value is set to {0}.", sampleRateFirstEnabled) + "\n");
+        }
         if (historicalTraceEnabled != null) {
             service.getExecutionOptions().setHistoricalTraceEnabled(historicalTraceEnabled);
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.status.success",
                     "Request Tracing Historical Trace status is set to {0}.", historicalTraceEnabled) + "\n");
         }
-
+        if (reservoirSamplingEnabled != null) {
+            service.getExecutionOptions().setReservoirSamplingEnabled(reservoirSamplingEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.reservoirsampling.enabled.success",
+                    "Request Tracing Service Reservoir Sampling Enabled Value is set to {0}.", reservoirSamplingEnabled) + "\n");
+        }
         if (historicalTraceStoreSize != null) {
             service.getExecutionOptions().setHistoricalTraceStoreSize(historicalTraceStoreSize);
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historicaltrace.storesize.success",

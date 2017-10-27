@@ -142,19 +142,19 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         Map<String, Object> mainExtraPropsMap = new HashMap<>();
         
         mainExtraPropsMap.put("enabled", configuration.getEnabled());
-        mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
-        mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
-        mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
         mainExtraPropsMap.put("sampleRate", configuration.getSampleRate());
-        mainExtraPropsMap.put("sampleRateFirstEnabled", configuration.getSampleRateFirstEnabled());
         mainExtraPropsMap.put("adaptiveSamplingEnabled", configuration.getAdaptiveSamplingEnabled());
         mainExtraPropsMap.put("adaptiveSamplingTargetCount", configuration.getAdaptiveSamplingTargetCount());
         mainExtraPropsMap.put("adaptiveSamplingTimeValue", configuration.getAdaptiveSamplingTimeValue());
         mainExtraPropsMap.put("adaptiveSamplingTimeUnit", configuration.getAdaptiveSamplingTimeUnit());
         mainExtraPropsMap.put("applicationsOnlyEnabled", configuration.getApplicationsOnlyEnabled());
-        mainExtraPropsMap.put("reservoirSamplingEnabled", configuration.getReservoirSamplingEnabled());
-        mainExtraPropsMap.put("thresholdUnit", configuration.getThresholdUnit());
         mainExtraPropsMap.put("thresholdValue", configuration.getThresholdValue());
+        mainExtraPropsMap.put("thresholdUnit", configuration.getThresholdUnit());
+        mainExtraPropsMap.put("sampleRateFirstEnabled", configuration.getSampleRateFirstEnabled());
+        mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
+        mainExtraPropsMap.put("reservoirSamplingEnabled", configuration.getReservoirSamplingEnabled());
+        mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
+        mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
         
         mainExtraProps.put("requestTracingConfiguration", mainExtraPropsMap);
         mainActionReport.setExtraProperties(mainExtraProps);

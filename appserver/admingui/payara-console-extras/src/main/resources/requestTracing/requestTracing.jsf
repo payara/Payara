@@ -133,11 +133,11 @@
         <sun:property id="adaptiveSamplingTargetCountProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTargetCount}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTargetCountHelp}">
             <sun:textField id="adaptiveSamplingTargetCount" columns="$int{3}" maxLength="10" text="#{pageSession.valueMap['adaptiveSamplingTargetCount']}" />
         </sun:property>
-        <sun:property id="adaptiveSamplingTargetTimeValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTargetTimeValue}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTargetTimeValueHelp}">
-            <sun:textField id="adaptiveSamplingTargetTimeValue" columns="$int{3}" maxLength="10" text="#{pageSession.valueMap['adaptiveSamplingTargetTimeValue']}" />
+        <sun:property id="adaptiveSamplingTimeValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTimeValue}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTimeValueHelp}">
+            <sun:textField id="adaptiveSamplingTimeValue" columns="$int{3}" maxLength="10" text="#{pageSession.valueMap['adaptiveSamplingTimeValue']}" />
         </sun:property>
-        <sun:property id="adaptiveSamplingTargetTimeUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTargetTimeUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTargetTimeUnitHelp}">
-            <sun:dropDown id="adaptiveSamplingTargetTimeUnit" selected="#{pageSession.valueMap['adaptiveSamplingTargetTimeUnit']}" labels={"SECONDS", "MINUTES", "HOURS", "DAYS"} />
+        <sun:property id="adaptiveSamplingTimeUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTimeUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTimeUnitHelp}">
+            <sun:dropDown id="adaptiveSamplingTimeUnit" selected="#{pageSession.valueMap['adaptiveSamplingTimeUnit']}" labels={"SECONDS", "MINUTES", "HOURS", "DAYS"} />
         </sun:property>
     </sun:propertySheetSection>
 

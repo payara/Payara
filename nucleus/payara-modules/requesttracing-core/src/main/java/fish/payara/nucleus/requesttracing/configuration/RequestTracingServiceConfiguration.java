@@ -50,8 +50,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 
 /**
- * Configuration class that holds the configuration of the Request
- * Tracing service.
+ * Configuration class that holds the configuration of the Request Tracing
+ * service.
  *
  * @author mertcaliskan
  */
@@ -61,44 +61,36 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
     void enabled(String value) throws PropertyVetoException;
-    
+
     @Attribute(defaultValue = "1.0")
     @Pattern(regexp = "0(\\.\\d+)?|1(\\.0)?", message = "Must be a valid double between 0 and 1")
     String getSampleRate();
     void setSampleRate(String value) throws PropertyVetoException;
-    
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    String getSampleRateFirstEnabled();
-    void setSampleRateFirstEnabled(String value) throws PropertyVetoException;
-    
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    String getApplicationsOnlyEnabled();
-    void setApplicationsOnlyEnabled(String value) throws PropertyVetoException;
-    
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getReservoirSamplingEnabled();
-    void setReservoirSamplingEnabled(String value) throws PropertyVetoException;
-    
+
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getAdaptiveSamplingEnabled();
     void setAdaptiveSamplingEnabled(String value) throws PropertyVetoException;
-    
+
     @Attribute(defaultValue = "6", dataType = Integer.class)
     @Min(value = 1, message = "Adaptive sampling target count must be greater than 0")
     @Max(value = Integer.MAX_VALUE, message = "Adaptive sampling target count must be less than " + Integer.MAX_VALUE)
     public String getAdaptiveSamplingTargetCount();
     public void setAdaptiveSamplingTargetCount(String value) throws PropertyVetoException;
-    
+
     @Attribute(defaultValue = "1", dataType = Integer.class)
     @Min(value = 1, message = "Adaptive sampling time value must be greater than 0")
     @Max(value = Integer.MAX_VALUE, message = "Adaptive sampling time value must be less than " + Integer.MAX_VALUE)
     public String getAdaptiveSamplingTimeValue();
     public void setAdaptiveSamplingTimeValue(String value) throws PropertyVetoException;
-    
+
     @Attribute(defaultValue = "MINUTES")
     @Pattern(regexp = "SECONDS|MINUTES|HOURS|DAYS", message = "Invalid time unit. Value must be one of: SECONDS, MINUTES, HOURS, DAYS.")
     public String getAdaptiveSamplingTimeUnit();
     public void setAdaptiveSamplingTimeUnit(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getApplicationsOnlyEnabled();
+    void setApplicationsOnlyEnabled(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "30", dataType = Integer.class)
     @Min(value = 0, message = "Threshold value must be at least 0")
@@ -111,9 +103,17 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     String getThresholdUnit();
     void setThresholdUnit(String value) throws PropertyVetoException;
 
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getSampleRateFirstEnabled();
+    void setSampleRateFirstEnabled(String value) throws PropertyVetoException;
+
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getHistoricalTraceEnabled();
     void setHistoricalTraceEnabled(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getReservoirSamplingEnabled();
+    void setReservoirSamplingEnabled(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "20", dataType = Integer.class)
     @Min(value = 0, message = "Historical trace store size must be greater than or equal to 0")
@@ -131,6 +131,7 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     <T extends Notifier> T getNotifierByType(Class type);
 
     class Duck {
+
         public static <T extends Notifier> T getNotifierByType(RequestTracingServiceConfiguration config, Class<T> type) {
             for (Notifier notifier : config.getNotifierList()) {
                 try {
@@ -143,4 +144,3 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
         }
     }
 }
-
