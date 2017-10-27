@@ -108,6 +108,18 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "sampleRate", optional = true)
     private String sampleRate;
 
+    @Param(name = "adaptiveSamplingEnabled", optional = true)
+    private Boolean adaptiveSamplingEnabled;
+
+    @Param(name = "adaptiveSamplingTargetCount", optional = true)
+    private String adaptiveSamplingTargetCount;
+
+    @Param(name = "adaptiveSamplingTimeValue", optional = true)
+    private String adaptiveSamplingTimeValue;
+
+    @Param(name = "adaptiveSamplingTimeUnit", optional = true)
+    private String adaptiveSamplingTimeUnit;
+
     @Param(name = "sampleRateFirstEnabled", optional = true)
     private Boolean sampleRateFirstEnabled;
 
@@ -156,6 +168,18 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                         if (sampleRate != null) {
                             requestTracingServiceConfigurationProxy.setSampleRate(sampleRate);
                         }
+                        if (adaptiveSamplingEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingEnabled(adaptiveSamplingEnabled.toString());
+                        }
+                        if (adaptiveSamplingTargetCount != null) {
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTargetCount(adaptiveSamplingTargetCount);
+                        }
+                        if (adaptiveSamplingTimeValue != null) {
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeValue(adaptiveSamplingTimeValue);
+                        }
+                        if (adaptiveSamplingTimeUnit != null) {
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeUnit(adaptiveSamplingTimeUnit);
+                        }
                         if (sampleRateFirstEnabled != null) {
                             requestTracingServiceConfigurationProxy.setSampleRateFirstEnabled(sampleRateFirstEnabled.toString());
                         }
@@ -178,7 +202,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                             requestTracingServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
                         }
                         if (historicalTraceStoreTimeout != null) {
-                            requestTracingServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+                            requestTracingServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout);
                         }
 
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -205,9 +229,29 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     private void configureDynamically(ActionReport actionReport) {
         service.getExecutionOptions().setEnabled(enabled);
         if (sampleRate != null) {
-            service.getExecutionOptions().setSampleRate(0.0);
+            service.getExecutionOptions().setSampleRate(Double.parseDouble(sampleRate));
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplerate.success",
                     "Request Tracing Service Sample Chance is set to {0}.", sampleRate) + "\n");
+        }
+        if (adaptiveSamplingEnabled != null) {
+            service.getExecutionOptions().setAdaptiveSamplingEnabled(adaptiveSamplingEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.enabled.success",
+                    "Request Tracing Adaptive Sampling Enabled Value is set to {0}.", adaptiveSamplingEnabled) + "\n");
+        }
+        if (adaptiveSamplingTargetCount != null) {
+            service.getExecutionOptions().setAdaptiveSamplingTargetCount(Integer.valueOf(adaptiveSamplingTargetCount));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.targetcount.success",
+                    "Request Tracing Adaptive Sampling Target Count is set to {0}.", adaptiveSamplingTargetCount) + "\n");
+        }
+        if (adaptiveSamplingTimeValue != null) {
+            service.getExecutionOptions().setAdaptiveSamplingTimeValue(Integer.valueOf(adaptiveSamplingTimeValue));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.timevalue.success",
+                    "Request Tracing Adaptive Sampling Time Value is set to {0}.", adaptiveSamplingTimeValue) + "\n");
+        }
+        if (adaptiveSamplingTimeUnit != null) {
+            service.getExecutionOptions().setAdaptiveSamplingTimeUnit(TimeUnit.valueOf(adaptiveSamplingTimeUnit));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.timeunit.success",
+                    "Request Tracing Adaptive Sampling Time Unit is set to {0}.", adaptiveSamplingTimeUnit) + "\n");
         }
         if (sampleRateFirstEnabled != null) {
             service.getExecutionOptions().setSampleRateFirstEnabled(sampleRateFirstEnabled);

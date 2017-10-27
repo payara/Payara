@@ -78,9 +78,30 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getReservoirSamplingEnabled();
     void setReservoirSamplingEnabled(String value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getAdaptiveSamplingEnabled();
+    void setAdaptiveSamplingEnabled(String value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "6", dataType = Integer.class)
+    @Min(value = 1, message = "Adaptive sampling target count must be greater than 0")
+    @Max(value = Integer.MAX_VALUE, message = "Adaptive sampling target count must be less than " + Integer.MAX_VALUE)
+    public String getAdaptiveSamplingTargetCount();
+    public void setAdaptiveSamplingTargetCount(String value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "1", dataType = Integer.class)
+    @Min(value = 1, message = "Adaptive sampling time value must be greater than 0")
+    @Max(value = Integer.MAX_VALUE, message = "Adaptive sampling time value must be less than " + Integer.MAX_VALUE)
+    public String getAdaptiveSamplingTimeValue();
+    public void setAdaptiveSamplingTimeValue(String value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "MINUTES")
+    @Pattern(regexp = "SECONDS|MINUTES|HOURS|DAYS", message = "Invalid time unit. Value must be one of: SECONDS, MINUTES, HOURS, DAYS.")
+    public String getAdaptiveSamplingTimeUnit();
+    public void setAdaptiveSamplingTimeUnit(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "30", dataType = Integer.class)
-    @Min(value = 0, message = "Threshold value must be greater than 0")
+    @Min(value = 0, message = "Threshold value must be at least 0")
     @Max(value = Integer.MAX_VALUE, message = "Threshold value must be less than " + Integer.MAX_VALUE)
     String getThresholdValue();
     void setThresholdValue(String value) throws PropertyVetoException;

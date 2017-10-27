@@ -59,6 +59,10 @@ public class RequestTracingExecutionOptions {
     private boolean sampleRateFirstEnabled;
     private boolean applicationsOnlyEnabled;
     private boolean reservoirSamplingEnabled;
+    private boolean adaptiveSamplingEnabled;
+    private Integer adaptiveSamplingTargetCount;
+    private Integer adaptiveSamplingTimeValue;
+    private TimeUnit adaptiveSamplingTimeUnit;
     private Long thresholdValue;
     private TimeUnit thresholdUnit;
     private boolean historicalTraceEnabled;
@@ -116,6 +120,38 @@ public class RequestTracingExecutionOptions {
 
     public void setReservoirSamplingEnabled(Boolean reservoirSamplingEnabled) {
         this.reservoirSamplingEnabled = reservoirSamplingEnabled;
+    }
+    
+    public Boolean getAdaptiveSamplingEnabled() {
+        return adaptiveSamplingEnabled;
+    }
+    
+    public void setAdaptiveSamplingEnabled(Boolean adaptiveSamplingEnabled) {
+        this.adaptiveSamplingEnabled = adaptiveSamplingEnabled;
+    }
+    
+    public Integer getAdaptiveSamplingTargetCount() {
+        return adaptiveSamplingTargetCount;
+    }
+    
+    public void setAdaptiveSamplingTargetCount(Integer adaptiveSamplingTargetCount) {
+        this.adaptiveSamplingTargetCount = adaptiveSamplingTargetCount;
+    }
+    
+    public Integer getAdaptiveSamplingTimeValue() {
+        return adaptiveSamplingTimeValue;
+    }
+    
+    public void setAdaptiveSamplingTimeValue(Integer adaptiveSamplingTimeValue) {
+        this.adaptiveSamplingTimeValue = adaptiveSamplingTimeValue;
+    }
+    
+    public TimeUnit getAdaptiveSamplingTimeUnit() {
+        return adaptiveSamplingTimeUnit;
+    }
+    
+    public void setAdaptiveSamplingTimeUnit(TimeUnit adaptiveSamplingTimeUnit) {
+        this.adaptiveSamplingTimeUnit = adaptiveSamplingTimeUnit;
     }
 
     public Long getThresholdValue() {
