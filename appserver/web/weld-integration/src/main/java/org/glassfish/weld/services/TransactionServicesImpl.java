@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld.services;
@@ -52,6 +54,10 @@ import org.glassfish.hk2.api.ServiceLocator;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.jboss.weld.transaction.spi.TransactionServices;
 
+/**
+ * Implements the services related to transactional behaviour used in JSR-299, if that behaviour is going to be
+ * used.
+ */
 public class TransactionServicesImpl implements TransactionServices {
 
     private JavaEETransactionManager transactionManager = null;
@@ -63,6 +69,7 @@ public class TransactionServicesImpl implements TransactionServices {
         }
     }
 
+    @Override
     public boolean isTransactionActive() {
         try {
             return transactionManager.getStatus() == STATUS_ACTIVE;
@@ -71,6 +78,7 @@ public class TransactionServicesImpl implements TransactionServices {
         }
     }
 
+    @Override
     public void registerSynchronization(Synchronization observer) {
         try {
             transactionManager.registerSynchronization(observer);
@@ -80,6 +88,7 @@ public class TransactionServicesImpl implements TransactionServices {
         }
     }
 
+    @Override
     public UserTransaction getUserTransaction() {
         try {
             InitialContext c = new InitialContext();
@@ -90,6 +99,7 @@ public class TransactionServicesImpl implements TransactionServices {
         }
     }
 
+    @Override
     public void cleanup() {}
 }
 

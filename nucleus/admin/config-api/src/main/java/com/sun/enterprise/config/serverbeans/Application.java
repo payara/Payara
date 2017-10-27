@@ -65,6 +65,11 @@ import org.jvnet.hk2.config.Element;
 import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
 import fish.payara.api.admin.config.ApplicationDeploymentTime;
 
+/**
+ * Interface to hold details of an application
+ * 
+ * @see com.sun.enterprise.deployment.Application
+ */
 @Configured
 @RestRedirects({
     @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "undeploy"),

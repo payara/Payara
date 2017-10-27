@@ -127,6 +127,7 @@ public class JCDIServiceImpl implements JCDIService {
     private Logger logger = Logger.getLogger(JCDIServiceImpl.class.getName());
 
 
+    @Override
     public boolean isCurrentModuleJCDIEnabled() {
 
         BundleDescriptor bundle = null;
@@ -153,6 +154,7 @@ public class JCDIServiceImpl implements JCDIService {
 
     }
 
+    @Override
     public boolean isJCDIEnabled(BundleDescriptor bundle) {
 
         // Get the top-level bundle descriptor from the given bundle.
@@ -163,12 +165,14 @@ public class JCDIServiceImpl implements JCDIService {
 
     }
 
+    @Override
     public boolean isCDIScoped(Class<?> clazz) {
         // Check all the annotations on the specified Class to determine if the class is annotated
         // with a supported CDI scope
         return WeldUtils.hasValidAnnotation(clazz, validScopes, excludedScopes);
     }
 
+    @Override
     public void setELResolver(ServletContext servletContext) throws NamingException {
         InitialContext context = new InitialContext();
         BeanManager beanManager = (BeanManager)
@@ -180,10 +184,12 @@ public class JCDIServiceImpl implements JCDIService {
         }
     }
 
+    @Override
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejb, T instance) {
 	    return _createJCDIInjectionContext(ejb, instance);
     }
 
+    @Override
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejb) {
 	    return _createJCDIInjectionContext(ejb, null);
     }
@@ -262,6 +268,7 @@ public class JCDIServiceImpl implements JCDIService {
 
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx) {
     	JCDIInjectionContextImpl<T> injectionCtxImpl = (JCDIInjectionContextImpl<T>) injectionCtx;
 
@@ -271,6 +278,7 @@ public class JCDIServiceImpl implements JCDIService {
     	// NOTE : PostConstruct is handled by ejb container
     }
 
+    @Override
     public <T>JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle) {
         return createManagedObject(managedClass, bundle, true);
     }
@@ -282,6 +290,7 @@ public class JCDIServiceImpl implements JCDIService {
      * @param bundle  the bundle descriptor
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
     public void injectManagedObject(Object managedObject, BundleDescriptor bundle) {
 
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
@@ -331,6 +340,7 @@ public class JCDIServiceImpl implements JCDIService {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
     public <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle,
                                                     boolean invokePostConstruct) {
 
@@ -460,11 +470,13 @@ public class JCDIServiceImpl implements JCDIService {
         }
 
 
+        @Override
         public T getInstance() {
             return instance;
         }
 
         @SuppressWarnings("unchecked")
+        @Override
         public void cleanup(boolean callPreDestroy) {
 
             if( callPreDestroy ) {

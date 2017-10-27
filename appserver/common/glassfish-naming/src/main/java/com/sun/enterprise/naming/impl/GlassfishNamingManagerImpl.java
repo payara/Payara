@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.impl;
@@ -129,6 +131,8 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
     /**
      * Create the naming manager. Creates a new initial context.
+     * @param ic
+     * @throws javax.naming.NamingException
      */
     public GlassfishNamingManagerImpl(InitialContext ic)
             throws NamingException {
@@ -145,6 +149,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     /**
      * Get the initial naming context.
      */
+    @Override
     public Context getInitialContext() {
         return initialContext;
     }
@@ -155,6 +160,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     }
 
     
+    @Override
     public Remote initializeRemoteNamingSupport(ORB orb) throws NamingException {
         Remote remoteProvider;
         try {
@@ -190,6 +196,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      * @param rebind flag
      * @throws javax.naming.NamingException if there is a naming exception.
      */
+    @Override
     public void publishObject(String name, Object obj, boolean rebind)
             throws NamingException {
         Name nameobj = new CompositeName(name);
@@ -204,6 +211,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      * @param rebind flag
      * @throws javax.naming.NamingException if there is a naming exception.
      */
+    @Override
     public void publishObject(Name name, Object obj, boolean rebind)
             throws NamingException {
         if (rebind) {
@@ -214,6 +222,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     }
 
    
+    @Override
     public void publishCosNamingObject(String name, Object obj, boolean rebind)
             throws NamingException {
 
@@ -243,6 +252,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
     }
 
+    @Override
     public void unpublishObject(String name)
             throws NamingException {
 
@@ -254,8 +264,9 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      * Remove an object from the naming service.
      *
      * @param name Name that the object is bound as.
-     * @throws Exception
+     * @throws NamingException
      */
+    @Override
     public void unpublishCosNamingObject(String name)
             throws NamingException {
         try {
@@ -271,8 +282,9 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      * Remove an object from the naming service.
      *
      * @param name Name that the object is bound as.
-     * @throws Exception
+     * @throws NamingException
      */
+    @Override
     public void unpublishObject(Name name) throws NamingException {
         this.unpublishObject(name.toString());
     }
@@ -402,6 +414,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     /**
      * @inheritDoc
      */
+    @Override
     public Object lookupFromAppNamespace(String appName, String name, Hashtable env) throws NamingException {
         Map namespace = getAppNamespace(appName);
         return lookupFromNamespace(name, namespace, env);
@@ -410,6 +423,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     /**
      * @inheritDoc
      */
+    @Override
     public Object lookupFromModuleNamespace(String appName, String moduleName, String name, Hashtable env) 
             throws NamingException {
         AppModuleKey appModuleKey = new AppModuleKey(appName, moduleName);
@@ -511,7 +525,13 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      * This method enumerates the env properties, ejb and resource references
      * etc for a J2EE component and binds them in the component's java:comp
      * namespace.
+     * @param appName
+     * @param moduleName
+     * @param componentId
+     * @param bindings
+     * @throws javax.naming.NamingException
      */
+    @Override
     public void bindToComponentNamespace(String appName, String moduleName,
                                          String componentId,  boolean treatComponentAsModule,
                                          Collection<? extends JNDIBinding> bindings)
@@ -868,6 +888,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
         }
 
+        @Override
         public boolean equals(Object o) {
             boolean equal = false;
             if( (o != null) && (o instanceof AppModuleKey) ) {
@@ -879,6 +900,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
             return equal;
         }
 
+        @Override
         public int hashCode() {
             return app.hashCode();
         }
@@ -886,6 +908,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
         public String getAppName() { return app; }
         public String getModuleName() { return module; }
 
+        @Override
         public String toString()
             { return "appName = " + app + " , module = " + module; }
     }
@@ -897,6 +920,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
         String componentId;
         boolean treatComponentAsModule;
 
+        @Override
          public String toString()
             { return "appName = " + appName + " , module = " + moduleName +
                     " , componentId = " + componentId

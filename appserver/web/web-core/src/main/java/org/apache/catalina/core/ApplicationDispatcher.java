@@ -445,7 +445,7 @@ public final class ApplicationDispatcher
             wrequest.setPathInfo(hrequest.getPathInfo());
             wrequest.setQueryString(hrequest.getQueryString());
             
-            processRequest(request, response, state);
+            processRequest(wrequest, response, state);
 
         } else {
             // Handle an HTTP path-based forward
@@ -490,7 +490,7 @@ public final class ApplicationDispatcher
                 wrequest.setQueryParams(queryString);
             }
 
-            processRequest(request, response, state);
+            processRequest(wrequest, response, state);
 
         }
 

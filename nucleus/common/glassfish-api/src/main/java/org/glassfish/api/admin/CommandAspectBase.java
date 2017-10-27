@@ -47,6 +47,7 @@ import org.glassfish.api.ActionReport;
  * Empty implementation of CommandAspectImpl.
  * 
  * @author andriy.zhdanov
+ * @param <T>
  */
 public class CommandAspectBase<T extends Annotation> implements CommandAspectImpl<T> {
 

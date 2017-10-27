@@ -91,6 +91,7 @@ public class ResourcesCompositeSniffer extends GenericSniffer {
      *
      * @return list of container names known to the habitat for this sniffer
      */
+    @Override
     public String[] getContainersNames() {
         return containerNames;
     }
@@ -100,6 +101,7 @@ public class ResourcesCompositeSniffer extends GenericSniffer {
      *
      * @return the container name
      */
+    @Override
     public String getModuleType() {
         return ResourceConstants.GF_RESOURCES_MODULE_EAR;
     }
@@ -115,6 +117,7 @@ public class ResourcesCompositeSniffer extends GenericSniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.toString().equals(ModuleType.EAR.toString())) {
             return true;

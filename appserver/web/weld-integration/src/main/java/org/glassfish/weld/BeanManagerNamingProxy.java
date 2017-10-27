@@ -80,6 +80,7 @@ public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
             = "java:comp/BeanManager";
  
 
+    @Override
     public Object handle(String name) throws NamingException {
 
         Object beanManager = null;

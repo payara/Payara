@@ -64,8 +64,11 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- *
+ * Asadmin command to create an instance with Hazelcast enabled.
+ * <p>
+ * By default will also set Hazelcast to be the persistence provider as well.
  * @author jonathan
+ * @since 4.1.2.172
  */
 @Service(name = "create-hazelcast-instance")
 @PerLookup

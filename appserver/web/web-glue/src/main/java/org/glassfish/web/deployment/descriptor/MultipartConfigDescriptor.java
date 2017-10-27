@@ -55,38 +55,47 @@ public class MultipartConfigDescriptor extends Descriptor implements MultipartCo
     private Long maxRequestSize = null;
     private Integer fileSizeThreshold = null;
 
+    @Override
     public String getLocation() {
         return location;
     }
 
+    @Override
     public void setLocation(String location) {
         this.location = location;
     }
 
+    @Override
     public Long getMaxFileSize() {
         return maxFileSize;
     }
 
+    @Override
     public void setMaxFileSize(Long maxFileSize) {
         this.maxFileSize = maxFileSize;
     }
 
+    @Override
     public Long getMaxRequestSize() {
         return maxRequestSize;
     }
 
+    @Override
     public void setMaxRequestSize(Long maxRequestSize) {
         this.maxRequestSize = maxRequestSize;
     }
 
+    @Override
     public Integer getFileSizeThreshold() {
         return fileSizeThreshold;
     }
 
+    @Override
     public void setFileSizeThreshold(Integer fileSizeThreshold) {
         this.fileSizeThreshold = fileSizeThreshold;
     }
 
+    @Override
     public void print(StringBuffer toStringBuffer) {
         if (location != null) {
             toStringBuffer.append("\n multipart location ").append(location);

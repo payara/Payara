@@ -55,6 +55,7 @@ import java.util.NavigableSet;
  * Stores historic request traces with descending elapsed time. Comparator is implemented on {@link HistoricRequestTracingEvent}
  *
  * @author mertcaliskan
+ * @since 4.1.1.171
  */
 @Service
 @Singleton
@@ -73,6 +74,10 @@ public class HistoricRequestTracingEventStore {
 
     private BoundedTreeSet<HistoricRequestTracingEvent> historicStore;
 
+    /**
+     * 
+     * @param storeSize 
+     */
     void initialize(int storeSize) {
         historicStore = new BoundedTreeSet<>(storeSize);
 
@@ -89,10 +94,19 @@ public class HistoricRequestTracingEventStore {
         }
     }
 
+    /**
+     * Adds a new request trace to the store with the given message
+     * @param elapsedTime How long the request took
+     * @param message Information about the trace
+     */
     void addTrace(long elapsedTime, String message) {
         historicStore.add(new HistoricRequestTracingEvent(System.currentTimeMillis(), elapsedTime, message));
     }
 
+    /**
+     * Returns an array of all stored historic request traces
+     * @return An empty array if historic request tracing is not enabled
+     */
     public HistoricRequestTracingEvent[] getTraces() {
         HistoricRequestTracingEvent[] emptyArray = new HistoricRequestTracingEvent[0];
         if (historicStore != null) {
@@ -101,6 +115,11 @@ public class HistoricRequestTracingEventStore {
         return emptyArray;
     }
 
+    /**
+     * Gets all historic request traces up to a specified limit
+     * @param limit
+     * @return 
+     */
     public HistoricRequestTracingEvent[] getTraces(Integer limit) {
         HistoricRequestTracingEvent[] result;
         HistoricRequestTracingEvent[] historicEvents = historicStore.toArray(new HistoricRequestTracingEvent[historicStore.size()]);
@@ -114,6 +133,11 @@ public class HistoricRequestTracingEventStore {
         return result;
     }
 
+    /**
+     * Returns the store with all historic request traces in it
+     * @return
+     * @since 4.1.2.173
+     */
     public NavigableSet<HistoricRequestTracingEvent> getHistoricStore() {
         return historicStore;
     }
