@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.util;
@@ -47,6 +49,9 @@ import org.jvnet.hk2.annotations.Service;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+/**
+ * A factory that is a wrapper for another {@link NamingObjectFactory}
+ */
 @Service
 public class DelegatingNamingObjectFactory
     implements NamingObjectFactory {
@@ -59,17 +64,24 @@ public class DelegatingNamingObjectFactory
 
     private NamingObjectFactory delegate;
 
-
+    /**
+     * Creates a factory that will use another factory to do the work
+     * @param name the name of the object
+     * @param delegate the factory that will do the actual creation/lookup
+     * @param cacheResult whether the object may have been cached
+     */
     public DelegatingNamingObjectFactory(String name, NamingObjectFactory delegate, boolean cacheResult) {
         this.name = name;
         this.delegate = delegate;
         this.cacheResult = cacheResult;
     }
 
+    @Override
     public boolean isCreateResultCacheable() {
         return cacheResult;
     }
 
+    @Override
     public Object create(Context ic)
         throws NamingException {
         Object result = value;

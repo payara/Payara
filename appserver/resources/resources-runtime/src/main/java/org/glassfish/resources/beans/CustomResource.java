@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portioos Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.beans;
@@ -45,7 +47,7 @@ import org.glassfish.resources.api.JavaEEResourceBase;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 /**
- * Resource info for CustomResourcel.
+ * Resource info for a CustomResource.
  * IASRI #4626188
  *
  * @author Sridatta Viswanath
@@ -59,6 +61,7 @@ public class CustomResource extends JavaEEResourceBase {
         super(resourceInfo);
     }
 
+    @Override
     protected JavaEEResource doClone(ResourceInfo resourceInfo) {
         CustomResource clone = new CustomResource(resourceInfo);
         clone.setResType(getResType());
@@ -66,6 +69,7 @@ public class CustomResource extends JavaEEResourceBase {
         return clone;
     }
 
+    @Override
     public int getType() {
         return JavaEEResource.CUSTOM_RESOURCE;
     }
@@ -86,6 +90,7 @@ public class CustomResource extends JavaEEResourceBase {
         factoryClass_ = factoryClass;
     }
 
+    @Override
     public String toString() {
         return "< Custom Resource : " + getResourceInfo() + " , " + getResType() + "... >";
     }

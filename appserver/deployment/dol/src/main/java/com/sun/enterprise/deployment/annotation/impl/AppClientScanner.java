@@ -79,6 +79,7 @@ public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor>
         calculateResults(bundleDesc);
     }
 
+    @Override
     public void process(File archiveFile, ApplicationClientDescriptor bundleDesc, ClassLoader classLoader) throws IOException {
         /*
          * This variant should not be invoked, but we need to have it here to

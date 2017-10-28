@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.api.invocation;
 
@@ -107,6 +107,7 @@ public class InvocationManagerImpl
         }
 
         frames = new InheritableThreadLocal<InvocationArray<ComponentInvocation>>() {
+            @Override
             protected InvocationArray initialValue() {
                 return new InvocationArray();
             }
@@ -115,6 +116,7 @@ public class InvocationManagerImpl
             // create a new ComponentInvocation with transaction
             // set to null and instance set to null
             // so that the resource won't be enlisted or registered
+            @Override
             protected InvocationArray<ComponentInvocation> childValue(InvocationArray<ComponentInvocation> parentValue) {
                 // always creates a new ArrayList
                 InvocationArray<ComponentInvocation> result = new InvocationArray<ComponentInvocation>();
@@ -153,6 +155,7 @@ public class InvocationManagerImpl
         };
     }
 
+    @Override
     public <T extends ComponentInvocation> void preInvoke(T inv)
             throws InvocationException {
 
@@ -200,6 +203,7 @@ public class InvocationManagerImpl
 
     }
 
+    @Override
     public <T extends ComponentInvocation> void postInvoke(T inv)
             throws InvocationException {
 
@@ -262,7 +266,9 @@ public class InvocationManagerImpl
 
     /**
      * return true iff no invocations on the stack for this thread
+     * @return 
      */
+    @Override
     public boolean isInvocationStackEmpty() {
         ArrayList v = frames.get();
         return ((v == null) || (v.size() == 0));
@@ -271,7 +277,10 @@ public class InvocationManagerImpl
     /**
      * return the Invocation object of the component
      * being called
+     * @param <T>
+     * @return 
      */
+    @Override
     public <T extends ComponentInvocation> T getCurrentInvocation() {
         ArrayList v = (ArrayList) frames.get();
         int size = v.size();
@@ -285,7 +294,10 @@ public class InvocationManagerImpl
      * return the Inovcation object of the caller
      * return null if none exist (e.g. caller is from
      * another VM)
+     * @param <T>
+     * @return 
      */
+    @Override
     public <T extends ComponentInvocation> T getPreviousInvocation()
             throws InvocationException {
 
@@ -336,6 +348,7 @@ public class InvocationManagerImpl
         }
     }
 
+    @Override
     public void registerComponentInvocationHandler(ComponentInvocationType type, RegisteredComponentInvocationHandler handler) {
         List<RegisteredComponentInvocationHandler> setRegCompInvHandlers = regCompInvHandlerMap.get(type);
         if (setRegCompInvHandlers == null) {

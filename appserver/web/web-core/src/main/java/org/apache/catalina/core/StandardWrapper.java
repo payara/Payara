@@ -367,7 +367,9 @@ public class StandardWrapper
      * an SC_NOT_FOUND error.  If this date/time is in the future, any request for
      * this servlet will return an SC_SERVICE_UNAVAILABLE error.  If it is zero,
      * the servlet is currently available.
+     * @return 
      */
+    @Override
     public long getAvailable() {
 
         return (this.available);
@@ -384,6 +386,7 @@ public class StandardWrapper
      *
      * @param available The new available date/time
      */
+    @Override
     public void setAvailable(long available) {
 
         long oldAvailable = this.available;
@@ -400,6 +403,7 @@ public class StandardWrapper
      * Return the number of active allocations of this servlet, even if they
      * are all for the same instance (as will be true for servlets that do
      * not implement <code>SingleThreadModel</code>.
+     * @return 
      */
     public int getCountAllocated() {
 
@@ -410,7 +414,9 @@ public class StandardWrapper
 
     /**
      * Return the debugging detail level for this component.
+     * @return 
      */
+    @Override
     public int getDebug() {
         return (this.debug);
     }
@@ -421,6 +427,7 @@ public class StandardWrapper
      *
      * @param debug The new debugging detail level
      */
+    @Override
     public void setDebug(int debug) {
         int oldDebug = this.debug;
         this.debug = debug;
@@ -438,7 +445,9 @@ public class StandardWrapper
      * Return descriptive information about this Container implementation and
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
+     * @return 
      */
+    @Override
     public String getInfo() {
         return (info);
     }
@@ -446,6 +455,7 @@ public class StandardWrapper
 
     /**
      * Return the InstanceSupport object for this Wrapper instance.
+     * @return 
      */
     public InstanceSupport getInstanceSupport() {
         return (this.instanceSupport);
@@ -454,7 +464,9 @@ public class StandardWrapper
 
     /**
      * Return the context-relative URI of the JSP file for this servlet.
+     * @return 
      */
+    @Override
     public String getJspFile() {
         return (this.jspFile);
     }
@@ -465,6 +477,7 @@ public class StandardWrapper
      *
      * @param jspFile JSP file URI
      */
+    @Override
     public void setJspFile(String jspFile) {
 
         String oldJspFile = this.jspFile;
@@ -481,7 +494,9 @@ public class StandardWrapper
     /**
      * Return the load-on-startup order value (negative value means
      * load on first call).
+     * @return 
      */
+    @Override
     public int getLoadOnStartup() {
 
         if (isJspServlet && loadOnStartup < 0) {
@@ -503,6 +518,7 @@ public class StandardWrapper
      *
      * @param value New load-on-startup value
      */
+    @Override
     public void setLoadOnStartup(int value) {
 
         int oldLoadOnStartup = this.loadOnStartup;
@@ -539,7 +555,9 @@ public class StandardWrapper
 
     /**
      * Sets the description of this servlet.
+     * @param description
      */
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
@@ -547,7 +565,9 @@ public class StandardWrapper
 
     /**
      * Gets the description of this servlet.
+     * @return 
      */
+    @Override
     public String getDescription() {
         return description;
     }
@@ -581,6 +601,7 @@ public class StandardWrapper
      *
      * @param container Proposed parent Container
      */
+    @Override
     public void setParent(Container container) {
         if ((container != null) &&
             !(container instanceof Context))
@@ -597,7 +618,9 @@ public class StandardWrapper
 
     /**
      * Return the run-as identity for this servlet.
+     * @return 
      */
+    @Override
     public String getRunAs() {
         return (this.runAs);
     }
@@ -608,6 +631,7 @@ public class StandardWrapper
      *
      * @param runAs New run-as identity value
      */
+    @Override
     public void setRunAs(String runAs) {
         String oldRunAs = this.runAs;
         this.runAs = runAs;
@@ -621,6 +645,7 @@ public class StandardWrapper
      * @param isAsyncSupported true if the wrapped servlet supports async mode,
      * false otherwise
      */
+    @Override
     public void setIsAsyncSupported(boolean isAsyncSupported) {
         this.isAsyncSupported = isAsyncSupported;
     }
@@ -633,6 +658,7 @@ public class StandardWrapper
      * @return true if the wrapped servlet supports async operations, and
      * false otherwise
      */
+    @Override
     public boolean isAsyncSupported() {
         return isAsyncSupported;
     }
@@ -640,7 +666,9 @@ public class StandardWrapper
 
     /**
      * Return the fully qualified servlet class name for this servlet.
+     * @return 
      */
+    @Override
     public String getServletClassName() {
         return this.servletClassName;
     }
@@ -651,6 +679,7 @@ public class StandardWrapper
      *
      * @param className Servlet class name
      */
+    @Override
     public void setServletClassName(String className) {
         if (className == null) {
             throw new NullPointerException("Null servlet class name");
@@ -684,6 +713,7 @@ public class StandardWrapper
      * @param clazz The class object from which this servlet will
      * be instantiated
      */
+    @Override
     public void setServletClass(Class <? extends Servlet> clazz) {
         if (clazz == null) {
             throw new NullPointerException("Null servlet class");
@@ -750,7 +780,9 @@ public class StandardWrapper
 
     /**
      * Is this servlet currently unavailable?
+     * @return 
      */
+    @Override
     public boolean isUnavailable() {
         if (available == 0L)
             return (false);
@@ -771,7 +803,9 @@ public class StandardWrapper
      *
      * @return Array of names of the methods supported by the underlying
      * servlet
+     * @throws javax.servlet.ServletException
      */
+    @Override
     public String[] getServletMethods() throws ServletException {
 	
         loadServletClass();
@@ -819,7 +853,9 @@ public class StandardWrapper
 
     /**
      * Sets the multipart location
+     * @param location
      */
+    @Override
     public void setMultipartLocation(String location) {
         multipartConfigured = true;
         multipartLocation = location;
@@ -828,7 +864,9 @@ public class StandardWrapper
 
     /**
      * Gets the multipart location
+     * @return 
      */
+    @Override
     public String getMultipartLocation(){
         return multipartLocation;
     }
@@ -836,7 +874,9 @@ public class StandardWrapper
 
     /**
      * Sets the multipart max-file-size
+     * @param maxFileSize
      */
+    @Override
     public void setMultipartMaxFileSize(long maxFileSize) {
         multipartConfigured = true;
         multipartMaxFileSize = maxFileSize;
@@ -845,7 +885,9 @@ public class StandardWrapper
 
     /**
      * Gets the multipart max-file-size
+     * @return 
      */
+    @Override
     public long getMultipartMaxFileSize() {
         return multipartMaxFileSize;
     }
@@ -853,7 +895,9 @@ public class StandardWrapper
 
     /**
      * Sets the multipart max-request-size
+     * @param maxRequestSize
      */
+    @Override
     public void setMultipartMaxRequestSize(long maxRequestSize) {
         multipartConfigured = true;
         multipartMaxRequestSize = maxRequestSize;
@@ -862,7 +906,9 @@ public class StandardWrapper
 
     /**
      * Gets the multipart max-request-Size
+     * @return 
      */
+    @Override
     public long getMultipartMaxRequestSize() {
         return multipartMaxRequestSize;
     }
@@ -870,7 +916,9 @@ public class StandardWrapper
 
     /**
      * Sets the multipart file-size-threshold
+     * @param fileSizeThreshold
      */
+    @Override
     public void setMultipartFileSizeThreshold(int fileSizeThreshold) {
         multipartConfigured = true;
         multipartFileSizeThreshold = fileSizeThreshold;
@@ -879,17 +927,25 @@ public class StandardWrapper
 
     /**
      * Gets the multipart file-size-threshol
+     * @return 
      */
+    @Override
     public int getMultipartFileSizeThreshold() {
         return multipartFileSizeThreshold;
     }
 
-
+    /**
+     * Returns whether this is running in an OSGi context
+     * @return 
+     */
     protected boolean isOSGi() {
         return osgi;
     }
 
-
+    /**
+     * Set whether this is being used in an OSGi context
+     * @param osgi 
+     */
     protected void setOSGi(boolean osgi) {
         this.osgi = osgi;
     }
@@ -899,6 +955,7 @@ public class StandardWrapper
 
 
     // START GlassFish 1343
+    @Override
     public synchronized void addValve(GlassFishValve valve) {
         /*
          * This exception should never be thrown in reality, because we never
@@ -945,6 +1002,7 @@ public class StandardWrapper
      *
      * @param child Child container to be added
      */
+    @Override
     public void addChild(Container child) {
         throw new IllegalStateException
                 (rb.getString(LogFacade.WRAPPER_CONTAINER_NO_CHILD_EXCEPTION));
@@ -958,6 +1016,7 @@ public class StandardWrapper
      * @param name the name of the init parameter
      * @param value the value of the init parameter
      */
+    @Override
     public void addInitParameter(String name, String value) {
         setInitParameter(name, value, true);
         if (notifyContainerListeners) {
@@ -1044,16 +1103,18 @@ public class StandardWrapper
      *
      * @param listener The new listener
      */
+    @Override
     public void addInstanceListener(InstanceListener listener) {
         instanceSupport.addInstanceListener(listener);
     }
 
 
     /**
-     * Add a mapping associated with the Wrapper.
+     * Add a mapping associated with the {@link Wrapper}.
      *
      * @param mapping The new wrapper mapping
      */
+    @Override
     public void addMapping(String mapping) {
         synchronized (mappings) {
             mappings.add(mapping);
@@ -1064,7 +1125,10 @@ public class StandardWrapper
         }
     }
 
-
+    /**
+     * Gets all the mapping associated with the {@link Wrapper}.
+     * @return an unmodifiable list
+     */
     public Collection<String> getMappings() {
         synchronized (mappings) {
             return Collections.unmodifiableList(mappings);
@@ -1079,6 +1143,7 @@ public class StandardWrapper
      * @param name Role name used within this servlet
      * @param link Role name used within the web application
      */
+    @Override
     public void addSecurityReference(String name, String link) {
         synchronized (references) {
             references.put(name, link);
@@ -1099,6 +1164,7 @@ public class StandardWrapper
      * that this instance is not allocated again until it is deallocated by a
      * call to <code>deallocate()</code>.
      *
+     * @return 
      * @exception ServletException if the servlet init() method threw
      *  an exception
      * @exception ServletException if a loading error occurs
@@ -1184,9 +1250,9 @@ public class StandardWrapper
      * no action is actually required.
      *
      * @param servlet The servlet to be returned
-     *
      * @exception ServletException if a deallocation error occurs
      */
+    @Override
     public void deallocate(Servlet servlet) throws ServletException {
 
         // If not SingleThreadModel, no action is required
@@ -1209,7 +1275,9 @@ public class StandardWrapper
      * if any; otherwise return <code>null</code>.
      *
      * @param name Name of the requested initialization parameter
+     * @return 
      */
+    @Override
     public String findInitParameter(String name) {
         synchronized (parameters) {
             return parameters.get(name);
@@ -1220,7 +1288,9 @@ public class StandardWrapper
     /**
      * Return the names of all defined initialization parameters for this
      * servlet.
+     * @return 
      */
+    @Override
     public String[] findInitParameters() {
         synchronized (parameters) {
             String results[] = new String[parameters.size()];
@@ -1231,7 +1301,9 @@ public class StandardWrapper
 
     /**
      * Return the mappings associated with this wrapper.
+     * @return 
      */
+    @Override
     public String[] findMappings() {
         synchronized (mappings) {
             return mappings.toArray(new String[mappings.size()]);
@@ -1244,7 +1316,9 @@ public class StandardWrapper
      * reference name, if any; otherwise return <code>null</code>.
      *
      * @param name Security role reference used within this servlet
+     * @return 
      */
+    @Override
     public String findSecurityReference(String name) {
         synchronized (references) {
             return references.get(name);
@@ -1255,7 +1329,9 @@ public class StandardWrapper
     /**
      * Return the set of security role reference names associated with
      * this servlet, if any; otherwise return a zero-length array.
+     * @return 
      */
+    @Override
     public String[] findSecurityReferences() {
         synchronized (references) {
             String results[] = new String[references.size()];
@@ -1266,6 +1342,7 @@ public class StandardWrapper
 
     /**
      * FIXME: Fooling introspection ...
+     * @return 
      */
     public Wrapper findMappingObject() {
         return (Wrapper) getMappingObject();
@@ -1286,9 +1363,9 @@ public class StandardWrapper
      * prevented for classes loaded for web applications.
      *
      * @exception ServletException if the servlet init() method threw
-     *  an exception
-     * @exception ServletException if some other loading problem occurs
+     *  an exception or if some other loading problem occurs
      */
+    @Override
     public synchronized void load() throws ServletException {
         instance = loadServlet();
         initServlet(instance);
@@ -1556,6 +1633,15 @@ public class StandardWrapper
 
 
     // START IASRI 4665318
+    /**
+     * Wrapper for the service method on the actual servlet
+     * @param request The request sent
+     * @param response
+     * @param serv The servlet to process
+     * @throws IOException
+     * @throws ServletException
+     * @see Servlet#service(ServletRequest, ServletResponse) 
+     */
     void service(ServletRequest request, ServletResponse response,
                  Servlet serv)
              throws IOException, ServletException {
@@ -1571,7 +1657,7 @@ public class StandardWrapper
                 if (reqFacHelper != null) {
                     reqFacHelper.disableAsyncSupport();
                 }
-            } 
+            }
             if ((request instanceof HttpServletRequest) &&
                 (response instanceof HttpServletResponse)) {
                     
@@ -1603,8 +1689,7 @@ public class StandardWrapper
                         if(isJspServlet) {
                             isInSuppressFFNFThread.set(true);
                         }
-                        serv.service((HttpServletRequest) request,
-                                    (HttpServletResponse) response);
+                        serv.service((HttpServletRequest) request, (HttpServletResponse) response);
                     }
                     finally {
                         isInSuppressFFNFThread.set(false);
@@ -1698,6 +1783,7 @@ public class StandardWrapper
      *
      * @param name Name of the initialization parameter to remove
      */
+    @Override
     public void removeInitParameter(String name) {
 
         synchronized (parameters) {
@@ -1715,6 +1801,7 @@ public class StandardWrapper
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeInstanceListener(InstanceListener listener) {
 
         instanceSupport.removeInstanceListener(listener);
@@ -1727,6 +1814,7 @@ public class StandardWrapper
      *
      * @param mapping The pattern to remove
      */
+    @Override
     public void removeMapping(String mapping) {
 
         synchronized (mappings) {
@@ -1744,6 +1832,7 @@ public class StandardWrapper
      *
      * @param name Security role used within this servlet to be removed
      */
+    @Override
     public void removeSecurityReference(String name) {
 
         synchronized (references) {
@@ -1759,6 +1848,7 @@ public class StandardWrapper
     /**
      * Return a String representation of this component.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
@@ -1781,6 +1871,7 @@ public class StandardWrapper
      * @param unavailable The exception that occurred, or <code>null</code>
      *  to mark this servlet as permanently unavailable
      */
+    @Override
     public void unavailable(UnavailableException unavailable) {
         String msg = MessageFormat.format(rb.getString(LogFacade.MARK_SERVLET_UNAVAILABLE), getName());
         getServletContext().log(msg);
@@ -1809,6 +1900,7 @@ public class StandardWrapper
      * @exception ServletException if an exception is thrown by the
      *  destroy() method
      */
+    @Override
     public synchronized void unload() throws ServletException {
 
         // Nothing to do if we have never loaded the instance
@@ -1928,6 +2020,7 @@ public class StandardWrapper
      *
      * @param name Name of the initialization parameter to retrieve
      */
+    @Override
     public String getInitParameter(String name) {
         return findInitParameter(name);
     }
@@ -1944,6 +2037,7 @@ public class StandardWrapper
      * Return the set of initialization parameter names defined for this
      * servlet.  If none are defined, an empty Enumeration is returned.
      */
+    @Override
     public Enumeration<String> getInitParameterNames() {
         synchronized (parameters) {
             return (new Enumerator<String>(parameters.keySet()));
@@ -1954,6 +2048,7 @@ public class StandardWrapper
     /**
      * Return the servlet context with which this servlet is associated.
      */
+    @Override
     public ServletContext getServletContext() {
         if (parent == null)
             return (null);
@@ -1967,10 +2062,15 @@ public class StandardWrapper
     /**
      * Return the name of this servlet.
      */
+    @Override
     public String getServletName() {
         return (getName());
     }
 
+    /**
+     * Gets how long it took for the servlet to be loaded.
+     * @return length in milliseconds
+     */
     public long getLoadTime() {
         return loadTime;
     }
@@ -1979,6 +2079,10 @@ public class StandardWrapper
         this.loadTime = loadTime;
     }
 
+    /**
+     * Gets how long it took for the servlet class to be loaded.
+     * @return length in milliseconds
+     */
     public int getClassLoadTime() {
         return classLoadTime;
     }
@@ -2047,7 +2151,9 @@ public class StandardWrapper
 
     /**
      * Log the abbreviated name of this Container for logging messages.
+     * @return <code>StandardWrapper[&lt;parentName | null&gt; : nameOfContainer]</code>
      */
+    @Override
     protected String logName() {
 
         StringBuilder sb = new StringBuilder("StandardWrapper[");
@@ -2100,6 +2206,7 @@ public class StandardWrapper
      *
      * @exception LifecycleException if a fatal error occurs during startup
      */
+    @Override
     public void start() throws LifecycleException {
     
         // Send j2ee.state.starting notification 
@@ -2135,6 +2242,7 @@ public class StandardWrapper
      *
      * @exception LifecycleException if a fatal error occurs during shutdown
      */
+    @Override
     public void stop() throws LifecycleException {
 
         setAvailable(Long.MAX_VALUE);
@@ -2228,6 +2336,14 @@ public class StandardWrapper
 
     }
 
+    /**
+     * Sends a notification to anything listening via JMX.
+     * <p>
+     * This function does not have anything to do with the notification service in Payara.
+     * @param notification
+     * @see javax.management.NotificationBroadcasterSupport
+     * @see fish.payara.nucleus.notification.NotificationService
+     */
     public void sendNotification(Notification notification) {
 
         if (broadcaster == null) {
@@ -2242,15 +2358,17 @@ public class StandardWrapper
 
     // ------------------------------------------------------------- Attributes
         
-        
+    /** @return false */
     public boolean isEventProvider() {
         return false;
     }
     
+    /** @return false */
     public boolean isStateManageable() {
         return false;
     }
     
+    /** @return false */
     public boolean isStatisticsProvider() {
         return false;
     }

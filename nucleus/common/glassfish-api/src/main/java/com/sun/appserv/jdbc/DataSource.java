@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.appserv.jdbc;
@@ -95,7 +97,7 @@ public interface DataSource extends javax.sql.DataSource {
      * Note here that this meethod does not fit in the connector contract
      * per se.
      *
-     * @param user User name for authenticating the connection
+     * @param userName User name for authenticating the connection
      * @param password Password for authenticating the connection
      * @return <code>java.sql.Connection</code>
      * @throws <code>java.sql.SQLException</code> If connection cannot be obtained

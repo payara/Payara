@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.api.admin;
@@ -69,6 +71,7 @@ public interface AdminCommandContext extends ExecutionContext, Serializable {
      * Returns the Logger
      * @return the logger
      */
+    @Override
     public Logger getLogger();
 
     /**
@@ -120,16 +123,19 @@ public interface AdminCommandContext extends ExecutionContext, Serializable {
      * of the command. It is always ready to use but propagated to 
      * the client only if {@code @Progress} annotation is on the command
      * implementation.
+     * @return 
      */
     public ProgressStatus getProgressStatus();
     
     /** Simple event broker for inter command communication mostly
      * from server to client. (Command to caller).
+     * @return 
      */
     public AdminCommandEventBroker getEventBroker();
     
     
     /** Id of current job. Only managed commands has job id.
+     * @return 
      */
     public String getJobId();
 

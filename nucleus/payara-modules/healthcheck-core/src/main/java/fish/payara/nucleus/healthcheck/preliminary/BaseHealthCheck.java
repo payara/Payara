@@ -60,7 +60,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
+ * Base class for all health check services
  * @author mertcaliskan
+ * @since 4.1.1.161
  */
 @Contract
 public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C extends Checker> implements HealthCheckConstants {
@@ -112,10 +114,24 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
                 asTimeUnit(checker.getUnit()));
     }
 
+    /**
+     * Converts a string representing a timeunit to the value
+     * i.e. {@code "MILLISECONDS"} to {@link TimeUnit#MILLISECONDS}
+     * @param unit
+     * @return 
+     */
     protected TimeUnit asTimeUnit(String unit) {
         return TimeUnit.valueOf(unit);
     }
 
+    /**
+     * Determines the level of of the healthcheck based on a time
+     * @param duration length of time taken in milliseconds
+     * @return {@link HealthCheckResultStatus.CRITICAL} if duration > 5 minutes;
+     * {@link HealthCheckResultStatus.WARNING} if duration > 1 minute;
+     * {@link HealthCheckResultStatus.GOOD} if duration > 0;
+     * otherwise {@link HealthCheckResultStatus.CHECK_ERROR}
+     */
     protected HealthCheckResultStatus decideOnStatusWithDuration(long duration) {
         if (duration > FIVE_MIN) {
             return HealthCheckResultStatus.CRITICAL;
@@ -131,6 +147,18 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         }
     }
 
+    /**
+     * Returns the amount in a human-friendly string <p>
+     * i.e. with an input of 1024 the result will be "1 Kb";
+     * for an input of 20000000 the result would be "19 Mb"
+     * <p>
+     * Result is always rounded down number of the largest unit of which there is at least one
+     * of that unit.
+     * <p>
+     * Unit can be Gb, Mb, Kb or bytes.
+     * @param value
+     * @return 
+     */
     protected String prettyPrintBytes(long value) {
         String result;
 
@@ -150,6 +178,11 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         return result;
     }
 
+    /**
+     * Returns a string of tab-separated stack trace elements
+     * @param elements
+     * @return 
+     */
     protected String prettyPrintStackTrace(StackTraceElement[] elements) {
         StringBuilder sb = new StringBuilder();
         for (StackTraceElement traceElement : elements) {
@@ -158,10 +191,19 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         return sb.toString();
     }
 
+    /**
+     * Returns a human-friendly description of the healthcheck
+     * @return 
+     * @since 4.1.2.173
+     */
     public String resolveDescription() {
         return strings.getLocalString(getDescription(), "");
     }
 
+    /**
+     * The key for a human-friendly description of the healthcheck
+     * @return 
+     */
     protected abstract String getDescription();
 
     public O getOptions() {
@@ -176,6 +218,15 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         return checkerType;
     }
 
+    /**
+     * Sends a notification to all notifier enabled with the healthcheck service.
+     * <p>
+     * The subject of the notification will be: 
+     * "Health Check notification with severity level: ${level}
+     * @param level Level of the message to send
+     * @param message A simple message to send
+     * @param parameters An array of extra information to send
+     */
     public void sendNotification(Level level, String message, Object[] parameters) {
         String subject = "Health Check notification with severity level: " + level.getName();
 

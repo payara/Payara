@@ -79,6 +79,7 @@ import java.util.logging.Logger;
 
 /**
  * @author steve
+ * @since 4.1.1.161
  */
 @Service(name = "healthcheck-core")
 @RunLevel(StartupRunLevel.VAL)
@@ -125,6 +126,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private Integer historicalTraceStoreSize;
     private Long historicalTraceStoreTimeout;
 
+    @Override
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_SHUTDOWN) && executor != null) {
             executor.shutdownNow();
@@ -177,15 +179,20 @@ public class HealthCheckService implements EventListener, ConfigListener {
         }
     }
 
+    /**
+     * Starts the healthcheck service. This will also bootstrap any relevant notifiers.
+     */
     public void bootstrapHealthCheck() {
         if (configuration != null) {
             final Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
+                @Override
                 public void uncaughtException(Thread th, Throwable ex) {
                     logger.log(Level.SEVERE, "Uncaught exception in Health Check thread " + ex);
                 }
             };
 
             executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size(),  new ThreadFactory() {
+                @Override
                 public Thread newThread(Runnable r) {
                     Thread thread = new Thread(r, PREFIX + threadNumber.getAndIncrement());
                     thread.setUncaughtExceptionHandler(exceptionHandler);
@@ -194,6 +201,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
             });
 
             historicCleanerExecutor = Executors.newScheduledThreadPool(1,  new ThreadFactory() {
+                @Override
                 public Thread newThread(Runnable r) {
                     return new Thread(r, "health-check-historic-trace-store-cleanup-task");
                 }
@@ -220,6 +228,9 @@ public class HealthCheckService implements EventListener, ConfigListener {
         }
     }
 
+    /**
+     * Starts all notifiers that have been enable with the healthcheck service.
+     */
     public void bootstrapNotifierList() {
         notifierExecutionOptionsList = new ArrayList<>();
         if (configuration.getNotifierList() != null) {
@@ -258,6 +269,11 @@ public class HealthCheckService implements EventListener, ConfigListener {
         return enabled;
     }
     
+    /**
+     * Sets whether the healthcheck service is enabled.
+     * @param enabled If this is true, then the healcheck service will be started.
+     * If it is already enabled then healthcheck will be restarted.
+     */
     public void setEnabled(Boolean enabled) {
         if (this.enabled && !enabled) {
             this.enabled = false;
@@ -271,6 +287,9 @@ public class HealthCheckService implements EventListener, ConfigListener {
         }
     }
     
+    /**
+     * Restartes the healthcheck service and gets the configuration for it
+     */ 
     public void reboot() {
         shutdownHealthCheck();
         if (configuration == null) {
@@ -281,6 +300,9 @@ public class HealthCheckService implements EventListener, ConfigListener {
         }
     }
 
+    /**
+     * Gracefully shuts down the healthcheck service
+     */
     public void shutdownHealthCheck() {
         if (executor != null) {
             executor.shutdownNow();
@@ -296,6 +318,10 @@ public class HealthCheckService implements EventListener, ConfigListener {
         return registeredTasks.get(serviceName).getCheck();
     }
     
+    /**
+     * Gets the current configuration of the healthcheck service
+     * @return 
+     */
     public HealthCheckServiceConfiguration getConfiguration() {
         return configuration;
     }
@@ -304,26 +330,53 @@ public class HealthCheckService implements EventListener, ConfigListener {
         this.configuration = configuration;
     }
 
+    /**
+     * Returns true if historic healthchecks are stored
+     * @return 
+     */
     public boolean isHistoricalTraceEnabled() {
         return historicalTraceEnabled;
     }
 
+    /**
+     * Sets whether historic healthchecks are stored
+     * @param historicalTraceEnabled 
+     */
     public void setHistoricalTraceEnabled(boolean historicalTraceEnabled) {
         this.historicalTraceEnabled = historicalTraceEnabled;
     }
 
+    /**
+     * Gets the number of healthchecks to be stored.
+     * This may be greater than 0 even if {@link isHistoricalTraceEnabled()} returns false
+     * as this can be set independently
+     * @return 
+     */
     public Integer getHistoricalTraceStoreSize() {
         return historicalTraceStoreSize;
     }
 
+    /**
+     * Sets the amount of historic healthchecks to store
+     * @param historicalTraceStoreSize 
+     */
     public void setHistoricalTraceStoreSize(Integer historicalTraceStoreSize) {
         this.historicalTraceStoreSize = historicalTraceStoreSize;
     }
 
+    /**
+     * Sets the length in seconds to keep historic healthchecks, ones older than this will be discarded.
+     * @param historicalTraceStoreTimeout if this is > 500 then 500 will be used as the limit.
+     * @see fish.payara.nucleus.notification.NotificationService
+     */
     public void setHistoricalTraceStoreTimeout(long historicalTraceStoreTimeout) {
         this.historicalTraceStoreTimeout = historicalTraceStoreTimeout;
     }
 
+    /**
+     * Gets a list of all the options of all notifiers configured with the healthcheck service.
+     * @return 
+     */
     public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
         return notifierExecutionOptionsList;
     }

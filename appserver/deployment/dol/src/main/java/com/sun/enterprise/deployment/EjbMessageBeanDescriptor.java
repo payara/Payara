@@ -44,26 +44,68 @@ import java.util.Set;
 
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 
+/**
+ * Interface for Message-Driven Beans
+ * <p>
+ * Some methods are only in the implementation
+ * @see org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor
+ */
 public interface EjbMessageBeanDescriptor extends EjbDescriptor, MessageDestinationReferencer {
 
     String TYPE = "Message-driven";
 
+    /**
+     * 
+     * @return "{@linkplain javax.jms.MessageListener}" if not set
+     */
     String getMessageListenerType();
 
+    /**
+     * Gets the type of the destination set
+     * @return Either "{@linkplain javax.jms.Queue}" or "{@linkplain javax.jms.Topic}"
+     */
     String getDestinationType();
 
     String getDurableSubscriptionName();
 
+    /**
+     * Gets the module id of the resource adapter set with the MDB
+     * @return {@code null} if not set
+     */
     String getResourceAdapterMid();
 
+    /**
+     * Returns the JNDI name of the connection factory used to create the
+     * Message-Driven Bean.
+     * @return
+     */
     String getMdbConnectionFactoryJndiName();
 
+    /**
+     * Returns true if the destination type is of {@linkplain javax.jms.Queue}
+     * @return
+     * @see org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor#hasTopicDest()
+     */
     public boolean hasQueueDest();
 
+    /**
+     * Sets the resource adapter to use with the MDB
+     * @param resourceAdapterMid the module ID of the resource adapter to use
+     */
     void setResourceAdapterMid(String resourceAdapterMid);
 
+    /**
+     * Returns a set of the activation config properties that have been set for the MDB
+     * @return
+     * @see javax.ejb.ActivationConfigProperty
+     */
     Set<EnvironmentProperty> getActivationConfigProperties();
 
+    /**
+     * Gets the value of a specific {@link javax.ejb.ActivationConfigProperty}
+     * @param name the name of the property
+     * @return the actual value of the property
+     */
     String getActivationConfigValue(String name);
 
     Set<EnvironmentProperty> getRuntimeActivationConfigProperties();

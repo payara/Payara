@@ -116,11 +116,15 @@ public class DeployCommandParameters extends OpsParams {
       return dbvendorname;
     }
 
-    //mutually exclusive with dropandcreatetables
+    /**
+     * mutually exclusive with dropandcreatetables
+     */ 
     @Param(optional=true)
     public Boolean createtables;
 
-    //mutually exclusive with createtables
+    /**
+     * mutually exclusive with createtables
+     */
     @Param(optional=true)
     public Boolean dropandcreatetables;
 
@@ -237,10 +241,12 @@ public class DeployCommandParameters extends OpsParams {
       return previousContextRoot;
     }
 
+    @Override
     public String name() {
         return name;
     }
 
+    @Override
     public String libraries() {
         return libraries;
     }

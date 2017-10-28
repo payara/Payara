@@ -95,6 +95,7 @@ public class EjbServicesImpl implements EjbServices {
      * @param ejbDescriptor the ejb to resolve
      * @return a reference to the session object
      */
+    @Override
     public SessionObjectReference resolveEjb(EjbDescriptor<?> ejbDescriptor) {
 
         SessionObjectReference sessionObj = null;
@@ -145,6 +146,7 @@ public class EjbServicesImpl implements EjbServices {
 
     }
 
+    @Override
     public void registerInterceptors(EjbDescriptor<?> ejbDesc, InterceptorBindings interceptorBindings) {
 
         // Work around bug that ejbDesc might be internal 299 descriptor.
@@ -233,8 +235,6 @@ public class EjbServicesImpl implements EjbServices {
             }
             ejbBeanSuperClass = ejbBeanSuperClass.getSuperclass();
         }
-
-        return;
 
     }
 
@@ -362,6 +362,7 @@ public class EjbServicesImpl implements EjbServices {
         return ejbInt;
     }
 
+    @Override
     public void cleanup() {
         //Nothing to do here.
     }

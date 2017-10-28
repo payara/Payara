@@ -132,7 +132,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     private static final String WELD_SHUTDOWN = "weld_shutdown";
 
-    //This constant is used to indicate if bootstrap shutdown has been called or not.
+    /**
+     * This constant is used to indicate if bootstrap shutdown has been called or not.
+     */
     private static final String WELD_BOOTSTRAP_SHUTDOWN = "weld_bootstrap_shutdown";
 
     private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.servlet.ConversationFilter";
@@ -199,6 +201,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return new MetaData(true, null, new Class[] {Application.class});
     }
 
+    @Override
     public void postConstruct() {
         events.register(this);
     }
@@ -209,7 +212,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
      * deployment process is complete.  When all modules have been loaded, a deployment
      * graph is produced defining the accessibility relationships between
      * <code>BeanDeploymentArchive</code>s.
+     * @param event
      */
+    @Override
     public void event(Event event) {
         if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_LOADED) ) {
             ApplicationInfo appInfo = (ApplicationInfo)event.hook();
@@ -443,14 +448,17 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return appToBootstrap.get(app);
     }
 
+    @Override
     protected void generateArtifacts(DeploymentContext dc) throws DeploymentException {
 
     }
 
+    @Override
     protected void cleanArtifacts(DeploymentContext dc) throws DeploymentException {
 
     }
 
+    @Override
     public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
         return null;
     }
@@ -464,6 +472,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
      * for all modules (and <code>BeanDeploymentArchive</code> information has been collected
      * for all <code>Weld</code> modules), a relationship structure is produced defining the
      * accessiblity rules for the <code>BeanDeploymentArchive</code>s.
+     * @param container
+     * @param context
+     * @return 
      */
     @Override
     public WeldApplicationContainer load(WeldContainer container, DeploymentContext context) {

@@ -69,7 +69,9 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.PostStartupRunLevel;
 
 /**
- * Created by Krishna Deepak on 6/9/17.
+ * Checks that resources referenced in an application actually exist
+ * @author Krishna Deepak on 6/9/17.
+ * @since 4.1.2.174
  */
 @Service
 @RunLevel(value = PostStartupRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_VALIDATING)
@@ -134,6 +136,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                 return;
             }
             AppResources appResources = new AppResources();
+            //Puts all resouces found in the application via annotation or xml into appResources
             parseResources(appResources);
             validateResources(appResources);
         }
@@ -546,6 +549,8 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     /**
      * Store the resource definitions in our namespace. CFD and AODD are not
      * valid in an AppClient. O/w need to validate the ra-name in them.
+     * <p>
+     * CFD = Connection Factory Definiton, AODD = AdministeredObjectDefinitionDescriptor
      */
     private void parseResources(ResourceDescriptor resourceDescriptor, JndiNameEnvironment env, AppResources appResources) {
         JavaEEResourceType type = resourceDescriptor.getResourceType();
@@ -986,6 +991,10 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             return lookup != null && lookup.length() > 0;
         }
 
+        /**
+         * 
+         * @return false
+         */
         private void noValidation() {
             validate = false;
         }
