@@ -22,7 +22,7 @@
 <!--  ===================================== Nodes ======================  -->
 <sun:treeNode  id="hazelcast"
     text="$resource{i18nhc.tree.hazelcast}"
-    url="/payaraExtras/hazelcast/hazelcast.jsf?config=${configName}"
+    url="/payaraExtras/hazelcast/hazelcast.jsf"
     imageURL="/resource/images/hazelcast.png"
     >
     <!beforeCreate

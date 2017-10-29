@@ -46,21 +46,13 @@
         parentId="domainTabs"
         content="hazelcast/hazelcastTabsDomain.jsf"
     />
-        
+            
     <integration-point
-        id="clusterHazelcast"
-        type="org.glassfish.admingui:clusterTab"
-        priority="200"
-        parentId="clusterTabs"
-        content="hazelcast/hazelcastTabsCluster.jsf"
-    />
-
-    <integration-point
-        id="standaloneHazelcast"
-        type="org.glassfish.admingui:standaloneInstTab"
-        priority="40"
-        parentId="standaloneInstanceTabs"
-        content="hazelcast/hazelcastTabsStandalone.jsf"
+        id="hazelcast"
+        type="org.glassfish.admingui:navNode"
+        priority="180"
+        parentId="nodes"
+        content="pluginTreeNodeHazelcast.jsf"
     />
     
     <integration-point
@@ -111,23 +103,6 @@
         content="notification/notificationConfigLink.jsf"
     />
 
-        
-    <integration-point
-        id="hazelcast"
-        type="org.glassfish.admingui:navNode"
-        priority="80"
-        parentId="#{configNameId}"
-        content="pluginTreeNodeHazelcast.jsf"
-    />
-
-    <integration-point
-        id="hazelcastLink"
-        type="org.glassfish.admingui:configuration"
-        priority="80"
-        parentId="propSheetSection"
-        content="hazelcast/hazelcastConfigLink.jsf"
-    />
-    
     <integration-point
         id="domainEnvironmentWarning"
         type="org.glassfish.admingui:domainTab"

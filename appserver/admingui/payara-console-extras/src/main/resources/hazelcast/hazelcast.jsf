@@ -28,26 +28,11 @@
 
 <event>
     <!beforeCreate
-        getRequestValue(key="config" value="#{pageSession.configName}");
-        urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
-        getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
-
-        if(#{pageSession.isCluster}=true){
-        setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
-        setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
-        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
-        }
-        if(#{pageSession.isCluster}=false){
-        setPageSessionAttribute(key="isCluster", value="false");
-        setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
-        setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
-        }
 
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");

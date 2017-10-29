@@ -36,7 +36,6 @@
         if(#{pageSession.isCluster}=true){
         setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
         setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
-        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
         }
         if(#{pageSession.isCluster}=false){
         setPageSessionAttribute(key="isCluster", value="false");
@@ -46,7 +45,7 @@
         setSessionAttribute(key="#{pageSession.tabSetName}" value="hazelcastConfig");
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.target}"  method="GET" result="#{requestScope.resp}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedTarget}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
