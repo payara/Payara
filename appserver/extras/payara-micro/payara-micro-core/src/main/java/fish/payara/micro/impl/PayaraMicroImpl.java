@@ -167,7 +167,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String postBootFileName;
     private String postDeployFileName;
     private RuntimeDirectory runtimeDir = null;
-
+    private String clustermode;
+    private String interfaces;
+    
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
@@ -224,7 +226,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         return instance;
     }
-    private String clustermode;
 
     /**
      * Gets the cluster group
@@ -1310,6 +1311,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case clustermode:
                         clustermode = value;
                         break;
+                    case interfaces:
+                        interfaces = value;
+                        break;
                     default:
                         break;
                 }
@@ -1735,7 +1739,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void configureHazelcast() {
         // check hazelcast cluster overrides
         if (noCluster) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false"));
+            preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.enabled=false"));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.ejb-container.ejb-timer-service.ejb-timer-service=Dummy"));
         } else {
 
@@ -1796,6 +1800,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }
             } else {
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
+            }
+            
+            if (interfaces != null) {
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.interface=" + interfaces));                
             }
         }
     }
@@ -2007,6 +2015,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         enableRequestTracing = getBooleanProperty("payaramicro.enableRequestTracing");
         requestTracingThresholdUnit = getProperty("payaramicro.requestTracingThresholdUnit", "SECONDS");
         requestTracingThresholdValue = getLongProperty("payaramicro.requestTracingThresholdValue", 30L);
+        clustermode = getProperty("payaramicro.clusterMode");
+        interfaces = getProperty("payaramicro.interfaces");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2129,6 +2139,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (hzClusterPassword != null) {
             props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
+        }
+        
+        if (clustermode != null) {
+            props.setProperty("payaramicro.clusterMode", clustermode);
+        }
+        
+        if (interfaces != null) {
+            props.setProperty("payaramicro.interfaces", interfaces);
         }
 
         props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));

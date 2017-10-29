@@ -92,6 +92,7 @@ public enum RUNTIME_OPTION {
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
     clustermode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
+    interfaces(true),
     help(false);
 
     private RUNTIME_OPTION(boolean value) {
@@ -111,6 +112,8 @@ public enum RUNTIME_OPTION {
         return value;
     }
     private final Validator validator;
+    
+    // Indicates the runtime option requires a value
     private final boolean value;
 
 }

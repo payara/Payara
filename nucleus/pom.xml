@@ -284,10 +284,8 @@
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>5.0.3</asm.version>
         <shoal.version>1.7.0-M1</shoal.version>
-        <ha-api.version>3.1.9</ha-api.version>
-
-        <hazelcast.version>3.8</hazelcast.version>
-
+        <ha-api.version>3.1.9</ha-api.version>      
+        <hazelcast.version>3.9</hazelcast.version>
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
         <xpp3.version>1.1.4c_7</xpp3.version>
