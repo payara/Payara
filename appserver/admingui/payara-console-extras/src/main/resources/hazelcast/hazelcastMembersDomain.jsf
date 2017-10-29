@@ -30,7 +30,7 @@
     <event>
     <!beforeCreate
         setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=server"  method="GET" 
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" 
                 result="#{requestScope.resp}");
         setPageSessionAttribute(key="hazelcastConfiguration", 
                 value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");

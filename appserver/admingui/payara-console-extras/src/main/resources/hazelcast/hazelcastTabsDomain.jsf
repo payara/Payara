@@ -22,20 +22,20 @@
     />
     <!command
         setSessionAttribute(key="domainTabs" value="hazelcastMembers");
-        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationDomain.jsf?target=server&tabSetName=domainTabs");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationDomain.jsf?tabSetName=domainTabs");
     />
             
     <sun:tab id="hazelcastMembers" immediate="$boolean{true}" text="$resource{i18nhc.hazelcast.membersTab}" toolTip="$resource{i18nhc.hazelcast.membersTabTip}" >
         <!command
         setSessionAttribute(key="domainTabs" value="hazelcastMembers");
-        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastMembersDomain.jsf?target=server&tabSetName=domainTabs");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastMembersDomain.jsf?tabSetName=domainTabs");
         />
     </sun:tab>
 
     <sun:tab id="hazelcastConfig" immediate="$boolean{true}" text="$resource{i18nhc.hazelcast.configuration}" toolTip="$resource{i18nhc.hazelcast.configurationTip}" >
         <!command
         setSessionAttribute(key="domainTabs" value="hazelcastConfig");
-        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationDomain.jsf?target=server&tabSetName=domainTabs");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationDomain.jsf?tabSetName=domainTabs");
         />
     </sun:tab>
 </sun:tab>

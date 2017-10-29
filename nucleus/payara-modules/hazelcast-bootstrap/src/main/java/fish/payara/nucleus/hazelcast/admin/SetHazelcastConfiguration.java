@@ -61,8 +61,6 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
@@ -79,7 +77,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.hazelcast.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
@@ -108,7 +105,22 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Param(name = "startPort", optional = true)
     private String startPort;
+    
+    @Param(name = "dasHost", optional = true)
+    private String dasHost;
+    
+    @Param(name = "dasPort", optional = true)
+    private String dasPort;
 
+    @Param(name = "clusterMode", optional = true)
+    private String clusterMode;   
+ 
+    @Param(name = "tcpIpMembers", optional = true)
+    private String tcpipMembers; 
+    
+    @Param(name = "interfaces", optional = true)
+    private String interfaces; 
+    
     @Param(name = "multicastGroup", shortName = "g", optional = true)
     private String multiCastGroup;
 
@@ -123,6 +135,24 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Param(name = "jndiName", shortName = "j", optional = true)
     private String jndiName;
+
+    @Param(name = "cacheManagerJndiName", optional = true)
+    private String cacheManagerJndiName;
+    
+    @Param(name = "cachingProviderJndiName", optional = true)
+    private String cachingProviderJndiName;
+
+    @Param(name = "executorPoolSize", optional = true)
+    private String executorPoolSize;
+    
+    @Param(name = "executorQueueCapacity", optional = true)
+    private String executorQueueCapacity;
+    
+    @Param(name = "scheduledExecutorPoolSize", optional = true)
+    private String scheduledExecutorPoolSize;
+    
+    @Param(name = "scheduledExecutorQueueCapacity", optional = true)
+    private String scheduledExecutorQueueCapacity;
     
     @Param(name = "licenseKey", shortName = "lk", optional = true)
     private String licenseKey;
@@ -131,7 +161,13 @@ public class SetHazelcastConfiguration implements AdminCommand {
     private Boolean lite;
 
     @Param(name = "hostawareParitioning", optional = true, defaultValue = "false")
-    private Boolean hostawarePartitioning;    
+    private Boolean hostawarePartitioning;   
+    
+    @Param(name = "memberName", optional = true)
+    private String memberName;
+    
+    @Param(name = "memberGroup", optional = true)
+    private String memberGroup;
     
     @Inject
     ServiceLocator serviceLocator;
@@ -192,6 +228,45 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         if (licenseKey != null){
                             hazelcastRuntimeConfigurationProxy.setLicenseKey(licenseKey);
                         }
+                        if (dasHost != null) {
+                            hazelcastRuntimeConfigurationProxy.setDasHost(dasHost);
+                        }
+                        if (dasPort != null) {
+                            hazelcastRuntimeConfigurationProxy.setDasPort(dasPort);
+                        }
+                        if (clusterMode != null) {
+                            hazelcastRuntimeConfigurationProxy.setDiscoveryMode(clusterMode);
+                        }
+                        if (tcpipMembers != null) {
+                            hazelcastRuntimeConfigurationProxy.setTcpipMembers(tcpipMembers);
+                        }
+                        if (interfaces != null) {
+                            hazelcastRuntimeConfigurationProxy.setInterface(interfaces);
+                        }
+                        if (cacheManagerJndiName != null) {
+                            hazelcastRuntimeConfigurationProxy.setCacheManagerJNDIName(cacheManagerJndiName);
+                        }
+                        if (cachingProviderJndiName != null) {
+                            hazelcastRuntimeConfigurationProxy.setCachingProviderJNDIName(cachingProviderJndiName);
+                        }
+                        if (executorPoolSize != null) {
+                            hazelcastRuntimeConfigurationProxy.setExecutorPoolSize(executorPoolSize);
+                        }
+                        if (executorQueueCapacity != null) {
+                            hazelcastRuntimeConfigurationProxy.setExecutorQueueCapacity(executorQueueCapacity);
+                        }
+                        if (scheduledExecutorPoolSize != null) {
+                            hazelcastRuntimeConfigurationProxy.setScheduledExecutorPoolSize(scheduledExecutorPoolSize);
+                        }
+                        if (scheduledExecutorQueueCapacity != null) {
+                            hazelcastRuntimeConfigurationProxy.setScheduledExecutorQueueCapacity(scheduledExecutorQueueCapacity);
+                        } 
+                        if (memberName != null) {
+                            hazelcastRuntimeConfigurationProxy.setMemberName(memberName);
+                        }
+                        if (memberGroup != null) {
+                            hazelcastRuntimeConfigurationProxy.setMemberGroup(memberGroup);
+                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;
                     }
@@ -213,8 +288,19 @@ public class SetHazelcastConfiguration implements AdminCommand {
     }
 
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = context.getActionReport().addSubActionsReport();
+        CommandRunner.CommandInvocation inv;
+        inv = runner.getCommandInvocation("restart-hazelcast", subReport, context.getSubject());
 
-
+        ParameterMap params = new ParameterMap();
+        params.add("target", "domain");
+        inv.parameters(params);
+        inv.execute();
+        // swallow the offline warning as it is not a problem
+        if (subReport.hasWarnings()) {
+            subReport.setMessage("");
+        }
     }
 
     private boolean validate(ActionReport actionReport) {

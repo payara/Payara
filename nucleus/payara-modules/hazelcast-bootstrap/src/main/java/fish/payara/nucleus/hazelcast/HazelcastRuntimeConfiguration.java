@@ -90,7 +90,7 @@ public interface HazelcastRuntimeConfiguration
     // tcpip
     @Attribute(defaultValue = "domain")
     String getDiscoveryMode();
-    public void setDiscoveryMode();
+    public void setDiscoveryMode(String value);
     
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getGenerateNames();
@@ -107,7 +107,7 @@ public interface HazelcastRuntimeConfiguration
     // can be commaseparated value
     @Attribute(defaultValue = "")
     String getInterface();
-    public void setInterface();
+    public void setInterface(String value);
     
     @Attribute(defaultValue = "development")
     String getClusterGroupName();
