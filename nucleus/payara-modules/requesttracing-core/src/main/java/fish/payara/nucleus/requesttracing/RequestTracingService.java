@@ -54,6 +54,7 @@ import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceCon
 import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
+import fish.payara.nucleus.requesttracing.sampling.AdaptiveSampleFilter;
 import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -215,7 +216,12 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
             }
             
-            sampleFilter = new SampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingEnabled());
+            if (executionOptions.getAdaptiveSamplingEnabled()) {
+                sampleFilter = new AdaptiveSampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingTargetCount(),
+                        executionOptions.getAdaptiveSamplingTimeValue(), executionOptions.getAdaptiveSamplingTimeUnit());
+            } else {
+                sampleFilter = new SampleFilter(executionOptions.getSampleRate());
+            }
 
             logger.log(Level.INFO, "Payara Request Tracing Service Started with configuration: {0}", executionOptions);
         } else {
