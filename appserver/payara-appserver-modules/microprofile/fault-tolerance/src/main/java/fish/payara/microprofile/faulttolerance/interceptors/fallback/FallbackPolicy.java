@@ -37,13 +37,11 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.faulttolerance.interceptors;
+package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
-import javax.enterprise.inject.spi.Bean;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
-import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
  *

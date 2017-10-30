@@ -39,21 +39,18 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
-import java.util.concurrent.Future;
 import javax.enterprise.inject.spi.AnnotatedMethod;
-import org.eclipse.microprofile.faulttolerance.Asynchronous;
+import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
  *
  * @author Andrew Pielage
  */
-public class AsynchronousValidator {
-    
-    public static void validateAnnotation(Asynchronous asynchronous, AnnotatedMethod<?> annotatedMethod) {
-        if (annotatedMethod.getJavaMember().getReturnType() == Future.class) {
-            throw new FaultToleranceDefinitionException("Method annotated with " + Asynchronous.class.getCanonicalName() 
-                    + " does not return a Future.");
+public class RetryValidator {
+    public static void validateAnnotation(Retry retry, AnnotatedMethod<?> annotatedMethod) {
+        if (retry.maxRetries() < 1) {
+            throw new FaultToleranceDefinitionException();
         }
     }
 }

@@ -40,6 +40,8 @@
 package fish.payara.microprofile.faulttolerance.interceptors;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
+import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -48,11 +50,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Priority;
 import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
-import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -64,25 +68,27 @@ import org.glassfish.internal.api.Globals;
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class AsynchronousInterceptor implements Serializable {
     
+    @Inject
+    BeanManager beanManager;
+    
     @AroundInvoke
-    public Object intercept(final InvocationContext invocationContext) throws Exception {
-        if (invocationContext.getMethod().getReturnType() != Future.class) {
-            throw new FaultToleranceDefinitionException("Method annotated with " + Asynchronous.class.getCanonicalName() 
-                    + " does not return a Future.");
-        }
-        
-        FaultToleranceService faultToleranceService = 
-                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+    public Object intercept(InvocationContext invocationContext) throws Exception { 
+        FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()
+                .getService(FaultToleranceService.class);
         ManagedExecutorService managedExecutorService = faultToleranceService.getManagedExecutorService();
-        return new FutureDelegator(managedExecutorService.submit( () -> { return invocationContext.proceed(); } ));
+        
+        return new FutureDelegator(managedExecutorService.submit( () -> { return invocationContext.proceed(); } ), 
+                invocationContext);
     }
     
     class FutureDelegator implements Future<Object> {
 
         private final Future<?> future;
+        private final InvocationContext invocationContext;
         
-        public FutureDelegator(Future<?> future) {
+        public FutureDelegator(Future<?> future, InvocationContext invocationContext) {
             this.future = future;
+            this.invocationContext = invocationContext;
         }
         
         @Override
@@ -102,24 +108,48 @@ public class AsynchronousInterceptor implements Serializable {
 
         @Override
         public Object get() throws InterruptedException, ExecutionException {
-            CompletableFuture<?> completableFuture = (CompletableFuture<?>) future.get();
-            
-            if (completableFuture == null) {
-                return null;
-            } else {
-                return completableFuture.get();
+            try {
+                CompletableFuture<?> completableFuture = (CompletableFuture<?>) future.get();
+                
+                if (completableFuture != null) {
+                    return completableFuture.get();
+                }
+            } catch (InterruptedException | ExecutionException ex) {
+                attemptFallback();
             }
+            
+            return null;
         }
 
         @Override
         public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            CompletableFuture<?> completableFuture = (CompletableFuture<?>) future.get(timeout, unit);
-            
-            if (completableFuture == null) {
-                return null;
-            } else {
-                return completableFuture.get();
+            try {
+                CompletableFuture<?> completableFuture = (CompletableFuture<?>) future.get(timeout, unit);
+                
+                if (completableFuture != null) {
+                    return completableFuture.get();
+                }
+            } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+                attemptFallback();
             }
+            
+            return null;
+        }
+        
+        private Object attemptFallback() throws ExecutionException {
+            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+
+            if (fallback != null) {
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback);
+
+                try {
+                    return fallbackPolicy.fallback(invocationContext);
+                } catch (Exception fallbackException) {
+                    throw new ExecutionException(fallbackException);
+                }
+            }
+            
+            return null;
         }
     }
 }

@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors;
 
+import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
