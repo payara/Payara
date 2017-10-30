@@ -434,6 +434,10 @@ public class PayaraRestApiHandlers {
         Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
         String target = (String) handlerCtx.getInputValue("target");
         List<String> enabledNotifiers = Arrays.asList(enabled);
+        
+        if (dynamic == null) {
+            dynamic = false;
+        }
 
         boolean forRequestTracing = false;
         boolean forHealthCheck = false;
