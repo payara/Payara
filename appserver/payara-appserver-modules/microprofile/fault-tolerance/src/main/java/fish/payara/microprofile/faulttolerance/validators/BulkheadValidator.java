@@ -40,53 +40,28 @@
 package fish.payara.microprofile.faulttolerance.validators;
 
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
-import java.lang.reflect.Method;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.faulttolerance.ExecutionContext;
-import org.eclipse.microprofile.faulttolerance.Fallback;
-import org.eclipse.microprofile.faulttolerance.FallbackHandler;
+import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
  *
  * @author Andrew Pielage
  */
-public class FallbackValidator {
-    private static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
-    
-    public static void validateAnnotation(Fallback fallback, AnnotatedMethod<?> annotatedMethod, Config config)
-            throws Exception {
-        String fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(
-                config, Fallback.class.getName(), "fallbackMethod", annotatedMethod.getJavaMember().getName(), 
+public class BulkheadValidator {
+    public static void validateAnnotation(Bulkhead bulkhead, AnnotatedMethod<?> annotatedMethod, Config config) {
+        int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+                config, Bulkhead.class.getName(), "value", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName())
-                .orElse(fallback.fallbackMethod());
-        
-
-        Class<? extends FallbackHandler> fallbackClass = (Class<? extends FallbackHandler>) FaultToleranceCdiUtils
-                .getOverrideValue(config, Fallback.class.getName(), "value", annotatedMethod.getJavaMember().getName(), 
+                .orElse(bulkhead.value());
+        int waitingTaskQueue = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+                config, Bulkhead.class.getName(), "waitingTaskQueue", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName())
-                .orElse(fallback.value());
+                .orElse(bulkhead.waitingTaskQueue());
         
-        if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
-            if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {
-                throw new FaultToleranceDefinitionException();
-            } else {
-                try {
-                    if (annotatedMethod.getJavaMember().getDeclaringClass().getDeclaredMethod(fallbackMethod, 
-                            annotatedMethod.getJavaMember().getParameterTypes()).getReturnType() 
-                            != annotatedMethod.getJavaMember().getReturnType()) {
-                        throw new FaultToleranceDefinitionException();
-                    }
-                } catch (NoSuchMethodException ex) {
-                    throw new FaultToleranceDefinitionException(ex);
-                }
-            }
-        } else if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {
-            if (fallbackClass.getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class).getReturnType() 
-                    != annotatedMethod.getJavaMember().getReturnType()) {
-                throw new FaultToleranceDefinitionException();
-            }
+        if (value < 1 || waitingTaskQueue < 0) {
+            throw new FaultToleranceDefinitionException();
         }
     }
 }

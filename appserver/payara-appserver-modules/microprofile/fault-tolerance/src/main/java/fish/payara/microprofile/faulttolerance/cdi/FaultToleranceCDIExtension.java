@@ -43,12 +43,12 @@ import fish.payara.microprofile.faulttolerance.interceptors.AsynchronousIntercep
 import fish.payara.microprofile.faulttolerance.interceptors.BulkheadInterceptor;
 import fish.payara.microprofile.faulttolerance.interceptors.CircuitBreakerInterceptor;
 import fish.payara.microprofile.faulttolerance.interceptors.RetryInterceptor;
-import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
+import fish.payara.microprofile.faulttolerance.interceptors.TimeoutInterceptor;
 import fish.payara.microprofile.faulttolerance.validators.AsynchronousValidator;
 import fish.payara.microprofile.faulttolerance.validators.FallbackValidator;
 import fish.payara.microprofile.faulttolerance.validators.RetryValidator;
+import fish.payara.microprofile.faulttolerance.validators.TimeoutValidator;
 import java.lang.annotation.Annotation;
-import java.util.HashSet;
 import java.util.Set;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AnnotatedMethod;
@@ -58,6 +58,8 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.WithAnnotations;
+import javax.inject.Inject;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -70,6 +72,9 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
  * @author Andrew Pielage
  */
 public class FaultToleranceCDIExtension implements Extension {
+    
+    @Inject
+    Config config;
     
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
         beforeBeanDiscovery.addInterceptorBinding(Asynchronous.class);
@@ -90,10 +95,14 @@ public class FaultToleranceCDIExtension implements Extension {
         beforeBeanDiscovery.addInterceptorBinding(Retry.class);
         AnnotatedType<RetryInterceptor> retryInterceptor = beanManager.createAnnotatedType(RetryInterceptor.class);
         beforeBeanDiscovery.addAnnotatedType(retryInterceptor, RetryInterceptor.class.getName());
+        
+        beforeBeanDiscovery.addInterceptorBinding(Timeout.class);
+        AnnotatedType<TimeoutInterceptor> timeoutInterceptor = beanManager.createAnnotatedType(TimeoutInterceptor.class);
+        beforeBeanDiscovery.addAnnotatedType(timeoutInterceptor, TimeoutInterceptor.class.getName());
     }
     
-    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Fallback.class, Retry.class }) 
-            ProcessAnnotatedType<T> processAnnotatedType, BeanManager beanManager) throws Exception {
+    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Fallback.class, Retry.class, 
+            Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType, BeanManager beanManager) throws Exception {
         AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
         
         Set<AnnotatedMethod<? super T>> annotatedMethods = annotatedType.getMethods();
@@ -109,9 +118,11 @@ public class FaultToleranceCDIExtension implements Extension {
             if (annotationType == Asynchronous.class) {
                 AsynchronousValidator.validateAnnotation((Asynchronous) annotation, annotatedMethod);
             } else if (annotationType == Fallback.class) {
-                FallbackValidator.validateAnnotation((Fallback) annotation, annotatedMethod);
+                FallbackValidator.validateAnnotation((Fallback) annotation, annotatedMethod, config);
             } else if (annotationType == Retry.class) {
-                RetryValidator.validateAnnotation((Retry) annotation, annotatedMethod);
+                RetryValidator.validateAnnotation((Retry) annotation, annotatedMethod, config);
+            } else if (annotationType == Timeout.class) {
+                TimeoutValidator.validateAnnotation((Timeout) annotation, annotatedMethod, config);
             }
         }
     }

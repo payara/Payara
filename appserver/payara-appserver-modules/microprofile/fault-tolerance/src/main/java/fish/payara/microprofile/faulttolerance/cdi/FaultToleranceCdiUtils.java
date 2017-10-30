@@ -42,17 +42,18 @@ package fish.payara.microprofile.faulttolerance.cdi;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Queue;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.interceptor.InvocationContext;
+import org.eclipse.microprofile.config.Config;
 
 /**
  *
  * @author Andrew Pielage
  */
 public class FaultToleranceCdiUtils {
-
-//    private static final String CDI_BINDINGS_CLASS = "org.jboss.weld.interceptor.bindings";
     
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, 
             InvocationContext invocationContext) {
@@ -83,26 +84,32 @@ public class FaultToleranceCdiUtils {
                 }
             }
         }
-        
-        // ************ WELD 3 ONLY ************
-//        // If we still haven't found the annotation yet, try to get it from the CDI bindings
-//        if (annotation == null) {
-//            Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get(CDI_BINDINGS_CLASS);
-//        
-//            if (bindings != null) {
-//                for (Annotation binding : bindings) {
-//                    if (binding.annotationType().equals(annotationClass)) {
-//                        annotation = annotationClass.cast(binding);
-//
-//                        if (annotation != null) {
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }    
-        // ************ END OF WELD 3 ONLY ************
-        
+
         return annotation;
+    }
+    
+    public static Optional getOverrideValue(Config config, String annotationName, String parameterName, 
+            String annotatedMethodName, String annotatedClassCanonicalName) {
+        Optional value = Optional.empty();
+        
+        // Check if there's a config override for the method
+        if (config != null) {
+            value = config.getOptionalValue(
+                    annotatedClassCanonicalName + "/" + annotatedMethodName + "/" + annotationName + "/" + parameterName, 
+                    Object.class);
+
+            // If there wasn't a config override for the method, check if there's one for the class
+            if (!value.isPresent()) {
+                value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName + "/" + parameterName, 
+                        Object.class);
+
+                // If there wasn't a config override for the class either, check if there's a global one
+                if (!value.isPresent()) {
+                    value = config.getOptionalValue(annotationName + "/" + parameterName, Object.class);
+                }
+            }
+        }
+        
+        return value;
     }
 }

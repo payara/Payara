@@ -43,6 +43,7 @@ import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPol
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import javax.annotation.Priority;
 import javax.enterprise.inject.Intercepted;
@@ -52,6 +53,7 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.Fallback;
@@ -59,7 +61,8 @@ import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Interceptor for the Fault Tolerance Bulkhead Annotation.
+ * 
  * @author Andrew Pielage
  */
 @Interceptor
@@ -71,21 +74,27 @@ public class BulkheadInterceptor implements Serializable {
     private BeanManager beanManager;
     
     @Inject
-    @Intercepted
-    private Bean<?> interceptedBean;
+    Config config;
     
     @AroundInvoke
     public Object intercept(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         
+        // Attempt to proceed the InvocationContext with Bulkhead semantics
         try {
             proceededInvocationContext = bulkhead(invocationContext);
         } catch (Exception ex) {
+            // If an exception was thrown, check if the method is annotated with @Fallback
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
+            // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
             if (fallback != null) {
-                FallbackPolicy fallbackInterceptor = new FallbackPolicy(fallback);
-                proceededInvocationContext = fallbackInterceptor.fallback(invocationContext);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, 
+                        invocationContext.getMethod().getName(), 
+                        invocationContext.getMethod().getDeclaringClass().getCanonicalName());
+                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+            } else {
+                throw ex;
             }
         }
         
@@ -100,13 +109,22 @@ public class BulkheadInterceptor implements Serializable {
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         
         Bulkhead bulkhead = FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext);
-
-        Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(bulkhead);
+        
+        int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+                config, Bulkhead.class.getName(), "value", invocationContext.getMethod().getName(), 
+                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                .orElse(bulkhead.value());
+        int waitingTaskQueue = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+                config, Bulkhead.class.getName(), "waitingTaskQueue", invocationContext.getMethod().getName(), 
+                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                .orElse(bulkhead.waitingTaskQueue());
+        
+        Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(bulkhead, value);
         
         // If the Asynchronous annotation is present, use threadpool style, otherwise use semaphore style
         if (FaultToleranceCdiUtils.getAnnotation(beanManager, Asynchronous.class, invocationContext) != null) {
             Semaphore bulkheadExecutionQueueSemaphore = 
-                    faultToleranceService.getBulkheadExecutionQueueSemaphore(bulkhead);
+                    faultToleranceService.getBulkheadExecutionQueueSemaphore(bulkhead, waitingTaskQueue);
             
             // Check if there are any free permits for concurrent execution
             if (!bulkheadExecutionSemaphore.tryAcquire()) {

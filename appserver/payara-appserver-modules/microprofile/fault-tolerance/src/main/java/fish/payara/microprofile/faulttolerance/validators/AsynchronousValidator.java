@@ -51,9 +51,9 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
 public class AsynchronousValidator {
     
     public static void validateAnnotation(Asynchronous asynchronous, AnnotatedMethod<?> annotatedMethod) {
-        if (annotatedMethod.getJavaMember().getReturnType() == Future.class) {
-            throw new FaultToleranceDefinitionException("Method annotated with " + Asynchronous.class.getCanonicalName() 
-                    + " does not return a Future.");
+        if (annotatedMethod.getJavaMember().getReturnType() != Future.class) {
+            throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
+                    + " annotated with " + Asynchronous.class.getCanonicalName() + " does not return a Future.");
         }
     }
 }

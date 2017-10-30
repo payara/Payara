@@ -39,7 +39,11 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
+import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
+import java.lang.reflect.Method;
 import javax.interceptor.InvocationContext;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 
@@ -51,12 +55,18 @@ public class FallbackPolicy {
     
     private static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
     
-    private Class<? extends FallbackHandler> fallbackClass;
-    private String fallbackMethod;
+    private final Class<? extends FallbackHandler> fallbackClass;
+    private final String fallbackMethod;
     
-    public FallbackPolicy(Fallback fallback) {
-        fallbackClass = fallback.value();
-        fallbackMethod = fallback.fallbackMethod();
+    public FallbackPolicy(Fallback fallback, Config config, String annotatedMethodName, 
+            String annotatedClassCanonicalName) {
+        fallbackClass = (Class<? extends FallbackHandler>) FaultToleranceCdiUtils
+                .getOverrideValue(config, Fallback.class.getName(), "value", 
+                        annotatedMethodName, annotatedClassCanonicalName)
+                .orElse(fallback.value());
+        fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class.getName(), 
+                "fallbackMethod", annotatedMethodName, annotatedClassCanonicalName)
+                .orElse(fallback.fallbackMethod());
     }
     
     public Object fallback(InvocationContext invocationContext) throws Exception {
@@ -67,11 +77,35 @@ public class FallbackPolicy {
                     .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
                     .invoke(invocationContext.getTarget(), invocationContext.getParameters());
         } else {
+            ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(), 
+                    invocationContext.getParameters());
+
             fallbackInvocationContext = fallbackClass
-                    .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, invocationContext.getMethod().getParameterTypes())
-                    .invoke(invocationContext.getTarget(), invocationContext.getParameters());
+                    .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
+                    .invoke(fallbackClass.getConstructor().newInstance(), executionContext);
         }
         
         return fallbackInvocationContext;
+    }
+    
+    private class FaultToleranceExecutionContext implements ExecutionContext {
+
+        private Method method;
+        private Object[] parameters;
+        
+        public FaultToleranceExecutionContext(Method method, Object[] parameters) {
+            this.method = method;
+            this.parameters = parameters;
+        }
+        
+        @Override
+        public Method getMethod() {
+            return method;
+        }
+
+        @Override
+        public Object[] getParameters() {
+            return parameters;
+        }
     }
 }

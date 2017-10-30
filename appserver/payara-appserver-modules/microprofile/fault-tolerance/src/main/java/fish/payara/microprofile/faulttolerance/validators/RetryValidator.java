@@ -39,7 +39,9 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
+import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
@@ -48,8 +50,14 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
  * @author Andrew Pielage
  */
 public class RetryValidator {
-    public static void validateAnnotation(Retry retry, AnnotatedMethod<?> annotatedMethod) {
-        if (retry.maxRetries() < 1) {
+    public static void validateAnnotation(Retry retry, AnnotatedMethod<?> annotatedMethod, Config config) {
+        int maxRetries = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+                config, Retry.class.getName(), "maxRetries", annotatedMethod.getJavaMember().getName(), 
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName())
+                .orElse(retry.maxRetries());
+        
+        
+        if (maxRetries < 1) {
             throw new FaultToleranceDefinitionException();
         }
     }

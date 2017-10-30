@@ -45,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import javax.annotation.PostConstruct;
 import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.InitialContext;
@@ -65,6 +66,8 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "microprofile-fault-tolerance-service")
 @RunLevel(StartupRunLevel.VAL)
 public class FaultToleranceService {
+    
+    public final static String FAULT_TOLERANCE_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
     
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -108,34 +111,57 @@ public class FaultToleranceService {
         return managedExecutorService;
     }
     
-    public Semaphore getBulkheadExecutionSemaphore(Bulkhead bulkhead) {
+    public ManagedScheduledExecutorService getManagedScheduledExecutorService() throws NamingException {
+        String managedScheduledExecutorServiceName = faultToleranceServiceConfiguration.getManagedScheduledExecutorService();
+        InitialContext ctx = new InitialContext();
+        
+        ManagedScheduledExecutorService managedScheduledExecutorService = null;
+        
+        if (managedScheduledExecutorServiceName == null || managedScheduledExecutorServiceName.isEmpty()) {
+            managedScheduledExecutorService = (ManagedScheduledExecutorService) ctx.lookup(
+                    "java:comp/DefaultManagedScheduledExecutorService");
+        } else {
+            try {
+                managedScheduledExecutorService = (ManagedScheduledExecutorService) ctx.lookup(
+                        managedScheduledExecutorServiceName);
+            } catch (NamingException ex) {
+                managedScheduledExecutorService = (ManagedScheduledExecutorService) ctx.lookup(
+                        "java:comp/DefaultManagedScheduledExecutorService");
+            } 
+        }
+        
+        return managedScheduledExecutorService;
+        
+    }
+    
+    public Semaphore getBulkheadExecutionSemaphore(Bulkhead bulkhead, int value) {
         Semaphore bulkheadExecutionSemaphore = bulkheadExecutionSemaphores.get(bulkhead);
         
         if (bulkheadExecutionSemaphore == null) {
-            bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(bulkhead);
+            bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(bulkhead, value);
         }
         
         return bulkheadExecutionSemaphore;
     }
     
-    private Semaphore createBulkheadExecutionSemaphore(Bulkhead bulkhead) {
-        Semaphore bulkheadExecutionSemaphore = new Semaphore(bulkhead.value());
+    private Semaphore createBulkheadExecutionSemaphore(Bulkhead bulkhead, int value) {
+        Semaphore bulkheadExecutionSemaphore = new Semaphore(value);
         bulkheadExecutionSemaphores.put(bulkhead, bulkheadExecutionSemaphore);
         return bulkheadExecutionSemaphore;
     }
     
-    public Semaphore getBulkheadExecutionQueueSemaphore(Bulkhead bulkhead) {
+    public Semaphore getBulkheadExecutionQueueSemaphore(Bulkhead bulkhead, int waitingTaskQueue) {
         Semaphore bulkheadExecutionQueueSemaphore = bulkheadExecutionQueueSemaphores.get(bulkhead);
         
         if (bulkheadExecutionQueueSemaphore == null) {
-            bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(bulkhead);
+            bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(bulkhead, waitingTaskQueue);
         }
         
         return bulkheadExecutionQueueSemaphore;
     }
     
-    private Semaphore createBulkheadExecutionQueueSemaphore(Bulkhead bulkhead) {
-        Semaphore bulkheadExecutionQueueSemaphore = new Semaphore(bulkhead.waitingTaskQueue());
+    private Semaphore createBulkheadExecutionQueueSemaphore(Bulkhead bulkhead, int waitingTaskQueue) {
+        Semaphore bulkheadExecutionQueueSemaphore = new Semaphore(waitingTaskQueue);
         bulkheadExecutionQueueSemaphores.put(bulkhead, bulkheadExecutionQueueSemaphore);
         return bulkheadExecutionQueueSemaphore;
     }

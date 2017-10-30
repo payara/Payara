@@ -61,6 +61,16 @@ holder.
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <dependenciesToScan>
+                        <dependency>org.eclipse.microprofile.fault-tolerance:microprofile-fault-tolerance-tck</dependency>
+                    </dependenciesToScan>
+                </configuration>
+             </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -68,6 +78,11 @@ holder.
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
             <artifactId>microprofile-fault-tolerance-api</artifactId>
             <version>${microprofile-fault-tolerance.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>${microprofile-config.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
@@ -78,6 +93,12 @@ holder.
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+            <artifactId>microprofile-fault-tolerance-tck</artifactId>
+            <version>${microprofile-fault-tolerance.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
