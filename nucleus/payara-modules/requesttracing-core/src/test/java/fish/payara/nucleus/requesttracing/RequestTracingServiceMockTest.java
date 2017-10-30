@@ -48,6 +48,7 @@ import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
 import fish.payara.nucleus.notification.log.LogNotificationEvent;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
+import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -83,6 +84,9 @@ public class RequestTracingServiceMockTest {
 
     @Spy
     RequestTracingExecutionOptions executionOptions;
+    
+    @Spy
+    SampleFilter sampleFilter;
 
     @InjectMocks
     RequestTracingServiceMock requestTracingService = new RequestTracingServiceMock();
@@ -93,9 +97,10 @@ public class RequestTracingServiceMockTest {
     public void configureService() {
         executionOptions.setEnabled(true);
         executionOptions.setSampleRate(1.0);
-        executionOptions.setSampleRateFirstEnabled(true);
+        executionOptions.setSampleRateFirstEnabled(false);
         executionOptions.setThresholdValue(1000L);
         executionOptions.setThresholdUnit(TimeUnit.MILLISECONDS);
+        executionOptions.setHistoricalTraceEnabled(false);
         LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
         logNotifierExecutionOptions.setEnabled(true);
         executionOptions.getNotifierExecutionOptionsList().put(NotifierType.LOG, logNotifierExecutionOptions);

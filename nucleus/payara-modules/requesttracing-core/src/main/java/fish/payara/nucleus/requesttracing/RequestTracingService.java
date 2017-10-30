@@ -54,6 +54,7 @@ import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceCon
 import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
+import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -139,14 +140,12 @@ public class RequestTracingService implements EventListener, ConfigListener {
     private RequestTracingExecutionOptions executionOptions = new RequestTracingExecutionOptions();
 
     /**
-     * private Random variable used with sample rate to determine whether to
-     * sample a request
+     * The filter which determines whether to sample a given request
      */
-    private Random random;
+    private SampleFilter sampleFilter;
 
     @PostConstruct
     void postConstruct() {
-        random = new Random();
         events.register(this);
         configuration = habitat.getService(RequestTracingServiceConfiguration.class);
         if (configuration != null && configuration.getNotifierList() != null && configuration.getNotifierList().isEmpty()) {
@@ -215,6 +214,8 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 }
 
             }
+            
+            sampleFilter = new SampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingEnabled());
 
             logger.log(Level.INFO, "Payara Request Tracing Service Started with configuration: {0}", executionOptions);
         } else {
@@ -276,8 +277,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
         }
         // Determine whether to sample the request, if sampleRateFirstEnabled is true
         if (executionOptions.getSampleRateFirstEnabled()) {
-            boolean sampleRequest = random.nextDouble() < executionOptions.getSampleRate();
-            if (!sampleRequest) {
+            if (!sampleFilter.sample()) {
                 return null;
             }
         }
@@ -306,8 +306,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
         if (elapsedTimeInNanos - thresholdValueInNanos > 0) {
             // Determine whether to sample the request, if sampleRateFirstEnabled is false
             if (!executionOptions.getSampleRateFirstEnabled()) {
-                boolean sampleRequest = random.nextDouble() < executionOptions.getSampleRate();
-                if (!sampleRequest) {
+                if (!sampleFilter.sample()) {
                     requestEventStore.flushStore();
                     return;
                 }
