@@ -83,11 +83,11 @@ public class GetHazelcastConfiguration implements AdminCommand {
         HazelcastRuntimeConfiguration runtimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
         String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member",
-                            "Cluster Name","Cluster Password", "License Key", "Host Aware Paritioning","Das Host","Das Port","Tcpip Members",
+                            "Cluster Name","Cluster Password", "License Key", "Host Aware Paritioning","Das Public Address","DAS Bind Address","Das Port","Tcpip Members",
                             "Cluster Mode", "Member Name", "Member Group", "Interfaces", "Cache Manager JNDI Name", "Caching Provider JNDI Name",
                             "Executor Pool Size", "Executor Queue Capacity", "Scheduled Executor Pool Size", "Scheduled Executor Queue Capacity"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[24];
+        Object values[] = new Object[25];
         values[0] = runtimeConfiguration.getHazelcastConfigurationFile();
         values[1] = runtimeConfiguration.getEnabled();
         values[2] = runtimeConfiguration.getStartPort();
@@ -99,23 +99,24 @@ public class GetHazelcastConfiguration implements AdminCommand {
         values[8] = runtimeConfiguration.getClusterGroupPassword();
         values[9] = runtimeConfiguration.getLicenseKey();
         values[10] = runtimeConfiguration.getHostAwarePartitioning();
-        values[11] = runtimeConfiguration.getDasHost();
-        values[12] = runtimeConfiguration.getDasPort();
-        values[13] = runtimeConfiguration.getTcpipMembers();
-        values[14] = runtimeConfiguration.getDiscoveryMode();
-        values[15] = runtimeConfiguration.getMemberName();
-        values[16] = runtimeConfiguration.getMemberGroup();
-        values[17] = runtimeConfiguration.getInterface();
-        values[18] = runtimeConfiguration.getCacheManagerJNDIName();
-        values[19] = runtimeConfiguration.getCachingProviderJNDIName();
-        values[20] = runtimeConfiguration.getExecutorPoolSize();
-        values[21] = runtimeConfiguration.getExecutorQueueCapacity();
-        values[22] = runtimeConfiguration.getScheduledExecutorPoolSize();
-        values[23] = runtimeConfiguration.getScheduledExecutorQueueCapacity();
+        values[11] = runtimeConfiguration.getDASPublicAddress();
+        values[12] = runtimeConfiguration.getDASBindAddress();
+        values[13] = runtimeConfiguration.getDasPort();
+        values[14] = runtimeConfiguration.getTcpipMembers();
+        values[15] = runtimeConfiguration.getDiscoveryMode();
+        values[16] = runtimeConfiguration.getMemberName();
+        values[17] = runtimeConfiguration.getMemberGroup();
+        values[18] = runtimeConfiguration.getInterface();
+        values[19] = runtimeConfiguration.getCacheManagerJNDIName();
+        values[20] = runtimeConfiguration.getCachingProviderJNDIName();
+        values[21] = runtimeConfiguration.getExecutorPoolSize();
+        values[22] = runtimeConfiguration.getExecutorQueueCapacity();
+        values[23] = runtimeConfiguration.getScheduledExecutorPoolSize();
+        values[24] = runtimeConfiguration.getScheduledExecutorQueueCapacity();
         
         columnFormatter.addRow(values);
         
-        Map<String, Object> map = new HashMap<>(24);
+        Map<String, Object> map = new HashMap<>(25);
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", values[0]);
         map.put("enabled", values[1]);
@@ -128,19 +129,20 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("clusterPassword", values[8]);
         map.put("licenseKey", values[9]);
         map.put("hostAwareParitioning", values[10]);
-        map.put("dasHost", values[11]);
-        map.put("dasPort", values[12]);
-        map.put("tcpipMembers", values[13]);
-        map.put("clusterMode", values[14]);
-        map.put("memberName", values[15]);
-        map.put("memberGroup", values[16]);
-        map.put("interfaces", values[17]);
-        map.put("cacheManagerJndiName", values[18]);
-        map.put("cachingProviderJndiName", values[19]);
-        map.put("executorPoolSize", values[20]);
-        map.put("executorQueueCapacity", values[21]);
-        map.put("scheduledExecutorPoolSize", values[22]);
-        map.put("scheduledExecutorQueueCapacity", values[23]);
+        map.put("dasPublicAddress", values[11]);
+        map.put("dasBindAddress", values[12]);
+        map.put("dasPort", values[13]);
+        map.put("tcpipMembers", values[14]);
+        map.put("clusterMode", values[15]);
+        map.put("memberName", values[16]);
+        map.put("memberGroup", values[17]);
+        map.put("interfaces", values[18]);
+        map.put("cacheManagerJndiName", values[19]);
+        map.put("cachingProviderJndiName", values[20]);
+        map.put("executorPoolSize", values[21]);
+        map.put("executorQueueCapacity", values[22]);
+        map.put("scheduledExecutorPoolSize", values[23]);
+        map.put("scheduledExecutorQueueCapacity", values[24]);
 
         extraProps.put("getHazelcastConfiguration",map);
                 

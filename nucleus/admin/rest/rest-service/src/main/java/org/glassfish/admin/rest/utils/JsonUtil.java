@@ -45,6 +45,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
@@ -140,7 +141,9 @@ public class JsonUtil {
             result = Json.createValue((BigDecimal) object);
         } else if (object.getClass().isEnum()){
             result = Json.createValue(object.toString());
-        } else {
+        } else if (object instanceof InetAddress) {
+            result = Json.createValue(object.toString());
+        }else {
             Class<?> clazz = object.getClass();
             if (clazz.isArray()) {
                 JsonArrayBuilder array = Json.createArrayBuilder();

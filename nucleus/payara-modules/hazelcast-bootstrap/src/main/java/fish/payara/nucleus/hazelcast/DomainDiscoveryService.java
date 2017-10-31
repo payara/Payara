@@ -88,7 +88,10 @@ public class DomainDiscoveryService implements DiscoveryService {
         if (!env.isDas()) {
             try {
                 // first get hold of the DAS host
-                String dasHost = hzConfig.getDasHost();
+                String dasHost = hzConfig.getDASPublicAddress();
+                if (dasHost == null || dasHost.isEmpty()) {
+                    dasHost = hzConfig.getDASBindAddress();
+                }
                 
                 if (dasHost.isEmpty()) {
                     // ok drag it off the properties file
@@ -122,7 +125,7 @@ public class DomainDiscoveryService implements DiscoveryService {
             
         } else if (env.isMicro()) {
             try {
-                nodes.add(new SimpleDiscoveryNode(new Address(hzConfig.getDasHost(), Integer.valueOf(hzConfig.getDasPort()))));
+                nodes.add(new SimpleDiscoveryNode(new Address(hzConfig.getDASPublicAddress(), Integer.valueOf(hzConfig.getDasPort()))));
             } catch (UnknownHostException ex) {
                 Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
             }
