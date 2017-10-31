@@ -65,8 +65,12 @@ public interface HazelcastRuntimeConfiguration
     public void setStartPort(String value);
 
     @Attribute(defaultValue = "")
-    String getDasHost();
-    public void setDasHost(String value);
+    String getDASPublicAddress();
+    public void setDASPublicAddress(String value);
+    
+    @Attribute(defaultValue = "")
+    String getDASBindAddress();
+    public void setDASBindAddress(String value);
     
     @Attribute(defaultValue = "4900")
     String getDasPort();

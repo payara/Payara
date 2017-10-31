@@ -106,8 +106,11 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Param(name = "startPort", optional = true)
     private String startPort;
     
-    @Param(name = "dasHost", optional = true)
-    private String dasHost;
+    @Param(name = "dasPublicAddress", optional = true)
+    private String dasPublicAddress;
+    
+    @Param(name = "dasBindAddress", optional = true)
+    private String dasBindAddress;
     
     @Param(name = "dasPort", optional = true)
     private String dasPort;
@@ -228,8 +231,11 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         if (licenseKey != null){
                             hazelcastRuntimeConfigurationProxy.setLicenseKey(licenseKey);
                         }
-                        if (dasHost != null) {
-                            hazelcastRuntimeConfigurationProxy.setDasHost(dasHost);
+                        if (dasPublicAddress != null) {
+                            hazelcastRuntimeConfigurationProxy.setDASPublicAddress(dasPublicAddress);
+                        }
+                        if (dasBindAddress != null) {
+                            hazelcastRuntimeConfigurationProxy.setDASBindAddress(dasBindAddress);
                         }
                         if (dasPort != null) {
                             hazelcastRuntimeConfigurationProxy.setDasPort(dasPort);

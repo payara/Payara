@@ -1786,7 +1786,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }  else if (clustermode.startsWith("domain:")) {
                     String hostPort[] = clustermode.split(":");
                     if (hostPort.length == 3) {
-                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-host=" + hostPort[1]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-public-address=" + hostPort[1]));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-port=" + hostPort[2]));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=domain"));
                     }

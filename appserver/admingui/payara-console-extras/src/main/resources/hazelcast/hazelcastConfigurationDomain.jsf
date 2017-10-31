@@ -85,8 +85,14 @@
     <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dynamic}"  helpText="$resource{i18nhc.hazelcast.configuration.dynamicHelp}">
         <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
     </sun:property>
-    <sun:property id="configFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.configFile}"  helpText="$resource{i18nhc.hazelcast.configuration.configFileHelp}">
-        <sun:textField id="hazelcastConfigurationFile" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['hazelcastConfigurationFile']}" />
+    <sun:property id="dasBindAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasBindAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.dasBindAddressHelp}">
+        <sun:textField id="dasBindAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['dasBindAddress']}" />
+    </sun:property>
+    <sun:property id="dasPublicAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasPublicAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.dasPublicAddressHelp}">
+        <sun:textField id="dasPublicAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['dasPublicAddress']}" />
+    </sun:property>
+    <sun:property id="dasPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasPort}"  helpText="$resource{i18nhc.hazelcast.configuration.dasPortHelp}">
+        <sun:textField id="dasPort" columns="$int{40}" styleClass="integer" maxLength="30" text="#{pageSession.valueMap['dasPort']}" />
     </sun:property>
     <sun:property id="clusterNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.clusterName}"  helpText="$resource{i18nhc.hazelcast.configuration.clusterNameHelp}">
         <sun:textField id="clusterName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['clusterName']}" />
@@ -114,6 +120,9 @@
     </sun:property>
     <sun:property id="hostawareProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.hostaware}"  helpText="$resource{i18nhc.hazelcast.configuration.hostawareHelp}">
         <sun:checkbox id="hostaware" selected="#{pageSession.valueMap['hostAwareParitioning']}" selectedValue="true" />
+    </sun:property>
+    <sun:property id="configFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.configFile}"  helpText="$resource{i18nhc.hazelcast.configuration.configFileHelp}">
+        <sun:textField id="hazelcastConfigurationFile" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['hazelcastConfigurationFile']}" />
     </sun:property>
 </sun:propertySheetSection>
 

@@ -45,6 +45,7 @@ import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
+import com.hazelcast.config.MemberAddressProviderConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.config.PartitionGroupConfig;
@@ -55,10 +56,12 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import com.hazelcast.spi.MemberAddressProvider;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -351,6 +354,30 @@ public class HazelcastCore implements EventListener {
 
     private void buildNetworkConfiguration(Config config) throws NumberFormatException {
         NetworkConfig nConfig = config.getNetworkConfig();
+        
+        if (env.isDas()) {
+            if (configuration.getDASBindAddress() != null && !configuration.getDASBindAddress().isEmpty()) {
+                MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
+                memberAddressProviderConfig.setEnabled(enabled);
+                memberAddressProviderConfig.setImplementation(new MemberAddressProvider() {
+                    @Override
+                    public InetSocketAddress getBindAddress() {
+                        String port = configuration.getDasPort();
+                        return new InetSocketAddress(configuration.getDASBindAddress(), Integer.parseInt(port));
+                    }
+
+                    @Override
+                    public InetSocketAddress getPublicAddress() {
+                        String host = configuration.getDASPublicAddress();
+                        if (host == null || host.isEmpty()) {
+                            host = configuration.getDASBindAddress();
+                        }
+                        return new InetSocketAddress(host, Integer.parseInt(configuration.getDasPort()));
+                    }
+                });
+            }
+        }
+        
         if (!configuration.getInterface().isEmpty()) {
             // add an interfaces configuration
            String[] interfaceNames = configuration.getInterface().split(",");
