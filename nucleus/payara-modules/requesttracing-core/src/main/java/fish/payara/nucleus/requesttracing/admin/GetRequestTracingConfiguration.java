@@ -114,17 +114,25 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         ActionReport mainActionReport = context.getActionReport();
         RequestTracingServiceConfiguration configuration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
         
-        mainActionReport.appendMessage("Request Tracing Service enabled?: " + configuration.getEnabled() + "\n");
+        writeVariableToActionReport(mainActionReport, "Enabled?", configuration.getEnabled());
+        writeVariableToActionReport(mainActionReport, "Sample Rate", configuration.getSampleRate());
+        writeVariableToActionReport(mainActionReport, "Adaptive Sampling Enabled?", configuration.getAdaptiveSamplingEnabled());
+        if (Boolean.parseBoolean(configuration.getAdaptiveSamplingEnabled())) {
+            writeVariableToActionReport(mainActionReport, "Adaptive Sampling Target Count", configuration.getAdaptiveSamplingTargetCount());
+            writeVariableToActionReport(mainActionReport, "Adaptive Sampling Time Value", configuration.getAdaptiveSamplingTimeValue());
+            writeVariableToActionReport(mainActionReport, "Adaptive Sampling Time Unit", configuration.getAdaptiveSamplingTimeUnit());
+        }
+        writeVariableToActionReport(mainActionReport, "Applications only?", configuration.getApplicationsOnlyEnabled());
         
         if (Boolean.parseBoolean(configuration.getEnabled())) {
-            mainActionReport.appendMessage("Historical Tracing Enabled?: " + configuration.getHistoricalTraceEnabled() 
-                    + "\n");
+            writeVariableToActionReport(mainActionReport, "Historical Tracing Enabled?", configuration.getHistoricalTraceEnabled());
             if (Boolean.parseBoolean(configuration.getHistoricalTraceEnabled())) {
-                mainActionReport.appendMessage("Historical Tracing Store Size: " 
-                        + configuration.getHistoricalTraceStoreSize() + "\n");
+                writeVariableToActionReport(mainActionReport, "Historical Tracing Store Size", configuration.getHistoricalTraceStoreSize());
+                writeVariableToActionReport(mainActionReport, "Reservoir Sampling Enabled?", configuration.getReservoirSamplingEnabled());
             }
             if (!Strings.isNullOrEmpty(configuration.getHistoricalTraceStoreTimeout())) {
-                mainActionReport.appendMessage("Historical Tracing Store Timeout in Seconds: "
+                writeVariableToActionReport(mainActionReport, "Reservoir Sampling Enabled?", configuration.getReservoirSamplingEnabled());
+                mainActionReport.appendMessage("Historical Tracing store timeout in seconds: "
                         + configuration.getHistoricalTraceStoreTimeout() + "\n");
             }
         }
@@ -134,11 +142,19 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         Map<String, Object> mainExtraPropsMap = new HashMap<>();
         
         mainExtraPropsMap.put("enabled", configuration.getEnabled());
+        mainExtraPropsMap.put("sampleRate", configuration.getSampleRate());
+        mainExtraPropsMap.put("adaptiveSamplingEnabled", configuration.getAdaptiveSamplingEnabled());
+        mainExtraPropsMap.put("adaptiveSamplingTargetCount", configuration.getAdaptiveSamplingTargetCount());
+        mainExtraPropsMap.put("adaptiveSamplingTimeValue", configuration.getAdaptiveSamplingTimeValue());
+        mainExtraPropsMap.put("adaptiveSamplingTimeUnit", configuration.getAdaptiveSamplingTimeUnit());
+        mainExtraPropsMap.put("applicationsOnlyEnabled", configuration.getApplicationsOnlyEnabled());
+        mainExtraPropsMap.put("thresholdValue", configuration.getThresholdValue());
+        mainExtraPropsMap.put("thresholdUnit", configuration.getThresholdUnit());
+        mainExtraPropsMap.put("sampleRateFirstEnabled", configuration.getSampleRateFirstEnabled());
         mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
+        mainExtraPropsMap.put("reservoirSamplingEnabled", configuration.getReservoirSamplingEnabled());
         mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
         mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
-        mainExtraPropsMap.put("thresholdUnit", configuration.getThresholdUnit());
-        mainExtraPropsMap.put("thresholdValue", configuration.getThresholdValue());
         
         mainExtraProps.put("requestTracingConfiguration", mainExtraPropsMap);
         mainActionReport.setExtraProperties(mainExtraProps);
@@ -193,6 +209,10 @@ public class GetRequestTracingConfiguration implements AdminCommand {
 
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
+    
+    private void writeVariableToActionReport(ActionReport report, String variableName, String variableValue) {
+        report.appendMessage(String.format("Request Tracing Service %s: %s\n", variableName, variableValue));
+    } 
 
     private Class<Notifier> resolveNotifierClass(Notifier input) {
         ConfigView view = ConfigSupport.getImpl(input);

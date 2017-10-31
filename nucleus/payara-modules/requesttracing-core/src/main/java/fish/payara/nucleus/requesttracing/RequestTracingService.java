@@ -54,6 +54,8 @@ import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceCon
 import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
+import fish.payara.nucleus.requesttracing.sampling.AdaptiveSampleFilter;
+import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -70,6 +72,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -79,7 +82,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Main service class that provides methods used by interceptors for tracing requests.
+ * Main service class that provides methods used by interceptors for tracing
+ * requests.
  *
  * @author mertcaliskan
  */
@@ -136,6 +140,11 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     private RequestTracingExecutionOptions executionOptions = new RequestTracingExecutionOptions();
 
+    /**
+     * The filter which determines whether to sample a given request
+     */
+    private SampleFilter sampleFilter;
+
     @PostConstruct
     void postConstruct() {
         events.register(this);
@@ -151,8 +160,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                         return configurationProxy;
                     }
                 }, configuration);
-            }
-            catch (TransactionFailure e) {
+            } catch (TransactionFailure e) {
                 logger.log(Level.SEVERE, "Error occurred while setting initial log notifier", e);
             }
         }
@@ -169,13 +177,21 @@ public class RequestTracingService implements EventListener, ConfigListener {
     public void bootstrapRequestTracingService() {
         if (configuration != null) {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
+            executionOptions.setSampleRate(Double.valueOf(configuration.getSampleRate()));
+            executionOptions.setAdaptiveSamplingEnabled(Boolean.parseBoolean(configuration.getAdaptiveSamplingEnabled()));
+            executionOptions.setAdaptiveSamplingTargetCount(Integer.valueOf(configuration.getAdaptiveSamplingTargetCount()));
+            executionOptions.setAdaptiveSamplingTimeValue(Integer.valueOf(configuration.getAdaptiveSamplingTimeValue()));
+            executionOptions.setAdaptiveSamplingTimeUnit(TimeUnit.valueOf(configuration.getAdaptiveSamplingTimeUnit()));
+            executionOptions.setApplicationsOnlyEnabled(Boolean.parseBoolean(configuration.getApplicationsOnlyEnabled()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
+            executionOptions.setSampleRateFirstEnabled(Boolean.parseBoolean(configuration.getSampleRateFirstEnabled()));
             executionOptions.setHistoricalTraceEnabled(Boolean.parseBoolean(configuration.getHistoricalTraceEnabled()));
+            executionOptions.setReservoirSamplingEnabled(Boolean.parseBoolean(configuration.getReservoirSamplingEnabled()));
             executionOptions.setHistoricalTraceStoreSize(Integer.parseInt(configuration.getHistoricalTraceStoreSize()));
             executionOptions.setHistoricalTraceTimeout(TimeUtil.setStoreTimeLimit(configuration.getHistoricalTraceStoreTimeout()));
 
-            historicCleanerExecutor = Executors.newScheduledThreadPool(1,  new ThreadFactory() {
+            historicCleanerExecutor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
                 public Thread newThread(Runnable r) {
                     return new Thread(r, "request-tracing-historic-trace-store-cleanup-task");
                 }
@@ -186,9 +202,10 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
         if (executionOptions != null && executionOptions.isEnabled()) {
             if (executionOptions.isHistoricalTraceEnabled()) {
-                historicRequestTracingEventStore.initialize(executionOptions.getHistoricalTraceStoreSize());
+                historicRequestTracingEventStore.initialize(executionOptions.getHistoricalTraceStoreSize(), executionOptions.getReservoirSamplingEnabled());
 
-                if (executionOptions.getHistoricalTraceTimeout() != null && executionOptions.getHistoricalTraceTimeout() > 0) {
+                // Disable cleanup task if it's null, less than 0, or reservoir sampling is enabled
+                if (executionOptions.getHistoricalTraceTimeout() != null && executionOptions.getHistoricalTraceTimeout() > 0 && !executionOptions.getReservoirSamplingEnabled()) {
                     // if timeout is bigger than 5 minutes execute the cleaner task in 5 minutes periods,
                     // if not use timeout value as period
                     long period = executionOptions.getHistoricalTraceTimeout() > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
@@ -198,10 +215,16 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 }
 
             }
+            
+            if (executionOptions.getAdaptiveSamplingEnabled()) {
+                sampleFilter = new AdaptiveSampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingTargetCount(),
+                        executionOptions.getAdaptiveSamplingTimeValue(), executionOptions.getAdaptiveSamplingTimeUnit());
+            } else {
+                sampleFilter = new SampleFilter(executionOptions.getSampleRate());
+            }
 
-            logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
-        }
-        else {
+            logger.log(Level.INFO, "Payara Request Tracing Service Started with configuration: {0}", executionOptions);
+        } else {
             if (historicCleanerExecutor != null) {
                 historicCleanerExecutor.shutdownNow();
                 historicCleanerExecutor = null;
@@ -236,9 +259,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     /**
-     * Reset the conversation ID
-     * This is especially useful for trace propagation across threads when
-     * the event tracer can receive the conversation ID propagated to it
+     * Reset the conversation ID This is especially useful for trace propagation
+     * across threads when the event tracer can receive the conversation ID
+     * propagated to it
      *
      * @param newID
      */
@@ -254,6 +277,16 @@ public class RequestTracingService implements EventListener, ConfigListener {
         if (!isRequestTracingEnabled()) {
             return null;
         }
+        // Check if the trace came from an admin listener. If it did, and 'applications only' is enabled, ignore the trace.
+        if (executionOptions.getApplicationsOnlyEnabled() == true && Thread.currentThread().getName().matches("admin-thread-pool::admin-listener\\([0-9]+\\)")) {
+            return null;
+        }
+        // Determine whether to sample the request, if sampleRateFirstEnabled is true
+        if (executionOptions.getSampleRateFirstEnabled()) {
+            if (!sampleFilter.sample()) {
+                return null;
+            }
+        }
         RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, "StartTrace");
         requestEvent.addProperty("Server", server.getName());
         requestEvent.addProperty("Domain", domain.getName());
@@ -262,13 +295,13 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     public void traceRequestEvent(RequestEvent requestEvent) {
-        if (isRequestTracingEnabled()) {
+        if (isRequestTracingEnabled() && isTraceInProgress()) {
             requestEventStore.storeEvent(requestEvent);
         }
     }
 
     public void endTrace() {
-        if (!isRequestTracingEnabled()) {
+        if (!isRequestTracingEnabled() || !isTraceInProgress()) {
             return;
         }
         requestEventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "TraceEnd"));
@@ -277,13 +310,21 @@ public class RequestTracingService implements EventListener, ConfigListener {
         long elapsedTime = requestEventStore.getElapsedTime();
         long elapsedTimeInNanos = TimeUnit.NANOSECONDS.convert(elapsedTime, TimeUnit.MILLISECONDS);
         if (elapsedTimeInNanos - thresholdValueInNanos > 0) {
+            // Determine whether to sample the request, if sampleRateFirstEnabled is false
+            if (!executionOptions.getSampleRateFirstEnabled()) {
+                if (!sampleFilter.sample()) {
+                    requestEventStore.flushStore();
+                    return;
+                }
+            }
             String traceAsString = requestEventStore.getTraceAsString();
 
+            // Store the trace to the historical event store if it's enabled
             if (executionOptions.isHistoricalTraceEnabled()) {
                 historicRequestTracingEventStore.addTrace(elapsedTime, traceAsString);
             }
 
-            for (NotifierExecutionOptions notifierExecutionOptions : getExecutionOptions().getNotifierExecutionOptionsList().values()) {
+            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {
                     NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
                     String subject = "Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold";
@@ -296,17 +337,17 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     public Long getThresholdValueInNanos() {
-        if (getExecutionOptions() != null) {
-            return TimeUnit.NANOSECONDS.convert(getExecutionOptions().getThresholdValue(),
-                    getExecutionOptions().getThresholdUnit());
+        if (executionOptions != null) {
+            return TimeUnit.NANOSECONDS.convert(executionOptions.getThresholdValue(),
+                    executionOptions.getThresholdUnit());
         }
         return null;
     }
 
     public boolean isRequestTracingEnabled() {
-        return getExecutionOptions() != null && getExecutionOptions().isEnabled();
+        return executionOptions != null && executionOptions.isEnabled();
     }
-
+    
     public RequestTracingExecutionOptions getExecutionOptions() {
         return executionOptions;
     }
@@ -316,8 +357,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
         boolean isCurrentInstanceMatchTarget = false;
         if (env.isInstance()) {
             isCurrentInstanceMatchTarget = true;
-        }
-        else {
+        } else {
             for (PropertyChangeEvent pe : events) {
                 ConfigBeanProxy proxy = (ConfigBeanProxy) pe.getSource();
                 while (proxy != null && !(proxy instanceof Config)) {
@@ -337,7 +377,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 @Override
                 public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
 
-                    if(changedType.equals(RequestTracingServiceConfiguration.class)) {
+                    if (changedType.equals(RequestTracingServiceConfiguration.class)) {
                         configuration = (RequestTracingServiceConfiguration) changedInstance;
                     }
                     return null;

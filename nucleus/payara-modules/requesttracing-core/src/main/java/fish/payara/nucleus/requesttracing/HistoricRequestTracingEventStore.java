@@ -38,11 +38,10 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.notification.domain.BoundedTreeSet;
 import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
+import fish.payara.nucleus.requesttracing.store.ReservoirBoundedTreeSet;
 import fish.payara.nucleus.store.ClusteredStore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
@@ -73,8 +72,12 @@ public class HistoricRequestTracingEventStore {
 
     private BoundedTreeSet<HistoricRequestTracingEvent> historicStore;
 
-    void initialize(int storeSize) {
-        historicStore = new BoundedTreeSet<>(storeSize);
+    void initialize(int storeSize, boolean reservoirSamplingEnabled) {
+        if (reservoirSamplingEnabled) {
+            historicStore = new ReservoirBoundedTreeSet<>(storeSize);
+        } else {
+            historicStore = new BoundedTreeSet<>(storeSize);
+        }
 
         if (hzCore.isEnabled()) {
             String instanceName = serverEnv.getInstanceName();

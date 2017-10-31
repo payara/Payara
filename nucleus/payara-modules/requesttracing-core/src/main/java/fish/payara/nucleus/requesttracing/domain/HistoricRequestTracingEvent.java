@@ -65,15 +65,30 @@ public class HistoricRequestTracingEvent implements Comparable<HistoricRequestTr
         return message;
     }
 
+    /**
+     * Compares the events first on elapsed time, and second occurring time.
+     *
+     * @param e the HistoricRequestTracingEvent to compare
+     * @return the value 0 if e == this; a value less than 0 if e < this; and a value greater than 0 if e
+     * > this
+     */
     @Override
     public int compareTo(HistoricRequestTracingEvent e) {
-        return Long.compare(e.elapsedTime, elapsedTime);
+        int compare = Long.compare(e.elapsedTime, elapsedTime);
+        if (compare == 0) {
+            return Long.compare(e.occurringTime, occurringTime);
+        }
+        return compare;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         HistoricRequestTracingEvent that = (HistoricRequestTracingEvent) o;
 
@@ -89,10 +104,10 @@ public class HistoricRequestTracingEvent implements Comparable<HistoricRequestTr
 
     @Override
     public String toString() {
-        return "HistoricRequestTracingEvent{" +
-                "occurringTime=" + occurringTime +
-                ", elapsedTime=" + elapsedTime +
-                ", message='" + message + '\'' +
-                '}';
+        return "HistoricRequestTracingEvent{"
+                + "occurringTime=" + occurringTime
+                + ", elapsedTime=" + elapsedTime
+                + ", message='" + message + '\''
+                + '}';
     }
 }

@@ -47,37 +47,92 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Configuration class that holds enable/disable value of request tracing, the threshold value with its timeunit that will
- * trigger request tracing mechainsm, and a list of notifier configurations.
+ * Configuration class that holds the dynamic configuration of the Request
+ * Tracing service.
  *
  * @author mertcaliskan
  */
 public class RequestTracingExecutionOptions {
 
-    private boolean enabled;
+    private Boolean enabled;
+    private Double sampleRate;
+    private Boolean adaptiveSamplingEnabled;
+    private Integer adaptiveSamplingTargetCount;
+    private Integer adaptiveSamplingTimeValue;
+    private TimeUnit adaptiveSamplingTimeUnit;
+    private Boolean applicationsOnlyEnabled;
     private Long thresholdValue;
     private TimeUnit thresholdUnit;
-    private boolean historicalTraceEnabled;
+    private Boolean sampleRateFirstEnabled;
+    private Boolean historicalTraceEnabled;
+    private Boolean reservoirSamplingEnabled;
     private Integer historicalTraceStoreSize;
     private Long historicalTraceTimeout;
+
     private Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = new HashMap<NotifierType, NotifierExecutionOptions>();
 
-    public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
-        getNotifierExecutionOptionsList().put(notifierExecutionOptions.getNotifierType(), notifierExecutionOptions);
-    }
-    public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
-        getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
-    }
-    public void resetNotifierExecutionOptions() {
-        getNotifierExecutionOptionsList().clear();
-    }
-
-    public boolean isEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Double getSampleRate() {
+        return sampleRate;
+    }
+
+    public void setSampleRate(Double sampleRate) {
+        this.sampleRate = sampleRate;
+    }
+
+    public Boolean getSampleRateFirstEnabled() {
+        return sampleRateFirstEnabled;
+    }
+
+    public void setSampleRateFirstEnabled(Boolean sampleRateFirstEnabled) {
+        this.sampleRateFirstEnabled = sampleRateFirstEnabled;
+    }
+
+    public Boolean getAdaptiveSamplingEnabled() {
+        return adaptiveSamplingEnabled;
+    }
+
+    public void setAdaptiveSamplingEnabled(Boolean adaptiveSamplingEnabled) {
+        this.adaptiveSamplingEnabled = adaptiveSamplingEnabled;
+    }
+
+    public Integer getAdaptiveSamplingTargetCount() {
+        return adaptiveSamplingTargetCount;
+    }
+
+    public void setAdaptiveSamplingTargetCount(Integer adaptiveSamplingTargetCount) {
+        this.adaptiveSamplingTargetCount = adaptiveSamplingTargetCount;
+    }
+
+    public Integer getAdaptiveSamplingTimeValue() {
+        return adaptiveSamplingTimeValue;
+    }
+
+    public void setAdaptiveSamplingTimeValue(Integer adaptiveSamplingTimeValue) {
+        this.adaptiveSamplingTimeValue = adaptiveSamplingTimeValue;
+    }
+
+    public TimeUnit getAdaptiveSamplingTimeUnit() {
+        return adaptiveSamplingTimeUnit;
+    }
+
+    public void setAdaptiveSamplingTimeUnit(TimeUnit adaptiveSamplingTimeUnit) {
+        this.adaptiveSamplingTimeUnit = adaptiveSamplingTimeUnit;
+    }
+
+    public Boolean getApplicationsOnlyEnabled() {
+        return applicationsOnlyEnabled;
+    }
+
+    public void setApplicationsOnlyEnabled(Boolean applicationsOnlyEnabled) {
+        this.applicationsOnlyEnabled = applicationsOnlyEnabled;
     }
 
     public Long getThresholdValue() {
@@ -96,12 +151,20 @@ public class RequestTracingExecutionOptions {
         this.thresholdUnit = thresholdUnit;
     }
 
-    public boolean isHistoricalTraceEnabled() {
+    public Boolean isHistoricalTraceEnabled() {
         return historicalTraceEnabled;
     }
 
-    public void setHistoricalTraceEnabled(boolean historicalTraceEnabled) {
+    public void setHistoricalTraceEnabled(Boolean historicalTraceEnabled) {
         this.historicalTraceEnabled = historicalTraceEnabled;
+    }
+
+    public Boolean getReservoirSamplingEnabled() {
+        return reservoirSamplingEnabled;
+    }
+
+    public void setReservoirSamplingEnabled(Boolean reservoirSamplingEnabled) {
+        this.reservoirSamplingEnabled = reservoirSamplingEnabled;
     }
 
     public Integer getHistoricalTraceStoreSize() {
@@ -123,17 +186,36 @@ public class RequestTracingExecutionOptions {
     public Map<NotifierType, NotifierExecutionOptions> getNotifierExecutionOptionsList() {
         return notifierExecutionOptionsList;
     }
+    
+    public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
+        getNotifierExecutionOptionsList().put(notifierExecutionOptions.getNotifierType(), notifierExecutionOptions);
+    }
+
+    public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
+        getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
+    }
+
+    public void resetNotifierExecutionOptions() {
+        getNotifierExecutionOptionsList().clear();
+    }
 
     @Override
     public String toString() {
-        return "RequestTracingExecutionOptions{" +
-                "enabled=" + enabled +
-                ", thresholdValue=" + thresholdValue +
-                ", thresholdUnit=" + thresholdUnit +
-                ", historicalTraceEnabled=" + historicalTraceEnabled +
-                ", historicalTraceStoreSize=" + historicalTraceStoreSize +
-                ", historicalTraceTimeout=" + historicalTraceTimeout +
-                ", notifierExecutionOptionsList=" + notifierExecutionOptionsList +
-                '}';
+        return "RequestTracingExecutionOptions{"
+                + "enabled=" + enabled
+                + ", sampleRate=" + sampleRate
+                + ", adaptiveSamplingEnabled=" + adaptiveSamplingEnabled
+                + ", adaptiveSamplingTargetCount=" + adaptiveSamplingTargetCount
+                + ", adaptiveSamplingTimeValue=" + adaptiveSamplingTimeValue
+                + ", adaptiveSamplingTimeUnit=" + adaptiveSamplingTimeUnit
+                + ", applicationsOnlyEnabled=" + applicationsOnlyEnabled
+                + " ,thresholdValue=" + thresholdValue
+                + ", thresholdUnit=" + thresholdUnit
+                + ", sampleRateFirstEnabled=" + sampleRateFirstEnabled
+                + ", historicalTraceEnabled=" + historicalTraceEnabled
+                + ", reservoirSamplingEnabled=" + reservoirSamplingEnabled
+                + " ,historicalTraceStoreSize=" + historicalTraceStoreSize
+                + ", historicalTraceTimeout=" + historicalTraceTimeout
+                + "}";
     }
 }

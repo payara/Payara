@@ -49,23 +49,33 @@
     <!beforeCreate 
         getRequestValue(key="configName" value="#{pageSession.configName}" );
         setSessionAttribute(key="REQUEST_TRACING_CONFIG_URL",
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/request-tracing-service-configuration");
+        value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/request-tracing-service-configuration");
 
         gf.restRequest(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}/get-requesttracing-configuration?target=#{pageSession.configName}"
-                method="GET" result="#{requestScope.resp}");
+        method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "notifierEnabled", "dynamic", "notifierDynamic", "historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "adaptiveSamplingEnabled", "applicationsOnlyEnabled", "sampleRateFirstEnabled", "historicalTraceEnabled", "reservoirSamplingEnabled"});
         py.getHistoricRequestTracingMessages(parentEndpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
-            setPageSessionAttribute(key="historicalTraceEnabled", value="true");
-        }
-
         setPageSessionAttribute(key="dynamic", value="true");
-        setPageSessionAttribute(key="notifierDynamic", value="true");
+        if (#{pageSession.valueMap['adaptiveSamplingEnabled']}=true) {
+            setPageSessionAttribute(key="adaptiveSamplingEnabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['applicationsOnlyEnabled']}=true) {
+            setPageSessionAttribute(key="applicationsOnlyEnabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['sampleRateFirstEnabled']}=true) {
+            setPageSessionAttribute(key="sampleRateFirstEnabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
+            setPageSessionAttribute(key="historicalTraceEnabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['reservoirSamplingEnabled']}=true) {
+            setPageSessionAttribute(key="reservoirSamplingEnabledSelected", value="true");
+        }
 
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
         setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
@@ -77,7 +87,7 @@
         convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
         />
 </event>
-        
+
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nrt.requestTracing.configurationTitle}" helpText="$resource{i18nrt.requestTracing.configurationTitleHelp}" >
@@ -88,9 +98,11 @@
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
-                            value="#{pageSession.historicalTraceEnabled}");
+                    mapPut(map="#{pageSession.valueMap}" key="adaptiveSamplingEnabled" value="#{pageSession.adaptiveSamplingEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="applicationsOnlyEnabled" value="#{pageSession.applicationsOnlyEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="sampleRateFirstEnabled" value="#{pageSession.sampleRateFirstEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" value="#{pageSession.historicalTraceEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="reservoirSamplingEnabled" value="#{pageSession.reservoirSamplingEnabledSelected}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     py.updateNotifiers(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
@@ -101,25 +113,58 @@
 </sun:title>
 <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-  <sun:propertySheetSection id="requestTracing">
-       
+
+    <sun:propertySheetSection id="requestTracingGeneral">
         <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.enabledHelp}">
-            <sun:checkbox id="enabledProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+            <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
         </sun:property>
-      <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
-            <sun:checkbox id="dynamic" label="$resource{i18nrt.requestTracing.configuration.dynamic.label}" selected="#{pageSession.dynamic}" selectedValue="true" />
+        <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
+            <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+    </sun:propertySheetSection>
+
+    <sun:propertySheetSection id="requestTracingSampling" label="$resource{i18nrt.requestTracing.configuration.requestTracingSamplingSection}">
+        <sun:property id="sampleRateProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.sampleRate}"  helpText="$resource{i18nrt.requestTracing.configuration.sampleRateHelp}">
+            <sun:textField id="sampleRate" columns="$int{3}" maxLength="10" text="#{pageSession.valueMap['sampleRate']}" />
+        </sun:property>
+        <sun:property id="adaptiveSamplingEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingEnabled}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingEnabledHelp}">
+            <sun:checkbox id="adaptiveSamplingEnabledProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.adaptiveSamplingEnabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="adaptiveSamplingTargetCountProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTargetCount}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTargetCountHelp}">
+            <sun:textField id="adaptiveSamplingTargetCount" columns="$int{3}" maxLength="10" text="#{pageSession.valueMap['adaptiveSamplingTargetCount']}" />
+        </sun:property>
+        <sun:property id="adaptiveSamplingTimeValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTimeValue}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTimeValueHelp}">
+            <sun:textField id="adaptiveSamplingTimeValue" columns="$int{3}" maxLength="10" text="#{pageSession.valueMap['adaptiveSamplingTimeValue']}" />
+        </sun:property>
+        <sun:property id="adaptiveSamplingTimeUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTimeUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.adaptiveSamplingTimeUnitHelp}">
+            <sun:dropDown id="adaptiveSamplingTimeUnit" selected="#{pageSession.valueMap['adaptiveSamplingTimeUnit']}" labels={"SECONDS", "MINUTES", "HOURS", "DAYS"} />
+        </sun:property>
+    </sun:propertySheetSection>
+
+    <sun:propertySheetSection id="requestTracingFilters" label="$resource{i18nrt.requestTracing.configuration.requestTracingFiltersSection}">
+        <sun:property id="applicationsOnlyProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.applicationsOnlyEnabled}"  helpText="$resource{i18nrt.requestTracing.configuration.applicationsOnlyEnabledHelp}">
+            <sun:checkbox id="applicationsOnlyProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.applicationsOnlyEnabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="thresholdValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdValue}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdValueHelp}">
+            <sun:textField id="thresholdValue" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['thresholdValue']}" />
         </sun:property>
         <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
             <sun:dropDown id="thresholdUnit" selected="#{pageSession.valueMap['thresholdUnit']}" labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
         </sun:property>
-        <sun:property id="thresholdValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdValue}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdValueHelp}">
-            <sun:textField id="thresholdValue" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['thresholdValue']}" />
+        <sun:property id="sampleRateFirstProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.sampleRateFirstEnabled}"  helpText="$resource{i18nrt.requestTracing.configuration.sampleRateFirstEnabledHelp}">
+            <sun:checkbox id="sampleRateFirstProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.sampleRateFirstEnabledSelected}" selectedValue="true" />
         </sun:property>
+    </sun:propertySheetSection>
+
+    <sun:propertySheetSection id="historicalRequestTracing" label="$resource{i18nrt.requestTracing.configuration.requestTracingHistoricTraceConfigSection}">
         <sun:property id="historicalTraceEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nrt.requestTracing.configuration.historicalTraceEnabledLabel}"  
                       helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceEnabledLabelHelpText}">
-            <sun:checkbox id="historicalTraceEnabledBox" selected="#{pageSession.historicalTraceEnabled}" 
+            <sun:checkbox id="historicalTraceEnabledBox" selected="#{pageSession.historicalTraceEnabledSelected}" 
                           selectedValue="true" />
+        </sun:property>
+        <sun:property id="reservoirSamplingEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.reservoirSamplingEnabled}"  helpText="$resource{i18nrt.requestTracing.configuration.reservoirSamplingEnabledHelp}">
+            <sun:checkbox id="reservoirSamplingEnabledProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.reservoirSamplingEnabledSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="historicalTraceStoreSizeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreSizeLabel}"  
@@ -127,22 +172,23 @@
             <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}"  styleClass="integer" maxLength="30" 
                            text="#{pageSession.valueMap['historicalTraceStoreSize']}" />
         </sun:property>
-      <sun:property id="historicalTraceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
-                    label="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreTimeoutLabel}"
-                    helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreTimeoutLabelHelpText}">
-          <sun:textField id="historicalTraceStoreTimeoutField" columns="$int{40}" maxLength="250"
-                         text="#{pageSession.valueMap['historicalTraceStoreTimeout']}"/>
-      </sun:property>
+        <sun:property id="historicalTraceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreTimeoutLabel}"
+                      helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreTimeoutLabelHelpText}">
+            <sun:textField id="historicalTraceStoreTimeoutField" columns="$int{40}" maxLength="250"
+                           text="#{pageSession.valueMap['historicalTraceStoreTimeout']}"/>
+        </sun:property>
     </sun:propertySheetSection>
+
 
     <sun:propertySheetSection id="notifiers">
         <sun:property id="avaliableNotifiers" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
             <sun:addRemove id="notifiersAddRemove"
-                selectAll="$boolean{true}"
-                items="#{pageSession.allNotifiers}"
-                selected="#{pageSession.enabledNotifiersArr}"
-                availableItemsLabel="$resource{i18nrt.requestTracing.configuration.availableNotifiers}"
-                selectedItemsLabel="$resource{i18nrt.requestTracing.configuration.selectedNotifiers}">
+                           selectAll="$boolean{true}"
+                           items="#{pageSession.allNotifiers}"
+                           selected="#{pageSession.enabledNotifiersArr}"
+                           availableItemsLabel="$resource{i18nrt.requestTracing.configuration.availableNotifiers}"
+                           selectedItemsLabel="$resource{i18nrt.requestTracing.configuration.selectedNotifiers}">
             </sun:addRemove>
         </sun:property>
     </sun:propertySheetSection>
@@ -151,7 +197,7 @@
         <sun:property>
             <sun:table id="historicRequestTracingTable" title="$resource{i18nrt.requestTracing.historic.table.name}" >
                 <sun:tableRowGroup id="historicRequestTracingRowGroup" data={"$attribute{historic}"} sourceVar="td"
-                    emptyDataMsg="$resource{i18nrt.requestTracing.historic.table.empty}">
+                                   emptyDataMsg="$resource{i18nrt.requestTracing.historic.table.empty}">
                     <sun:tableColumn header="$resource{i18nrt.requestTracing.historic.table.headings.elapsedTime}" sort="elapsedTime" rowHeader="$boolean{true}" id="col1">
                         <staticText id="elapsedTime" value="#{td.value.elapsedTime}" />
                     </sun:tableColumn>
@@ -165,8 +211,8 @@
         <sun:property>
             <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text.prefix}" />
             <sun:hyperlink
-                    toolTip="$resource{i18nrt.requestTracing.link.to.notification.page.text}"
-                    url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
+                toolTip="$resource{i18nrt.requestTracing.link.to.notification.page.text}"
+                url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
                 <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text}" />
             </sun:hyperlink>
             <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text.suffix}" />

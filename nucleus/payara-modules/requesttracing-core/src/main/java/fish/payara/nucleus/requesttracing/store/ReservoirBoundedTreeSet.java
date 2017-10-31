@@ -1,0 +1,105 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+package fish.payara.nucleus.requesttracing.store;
+
+import fish.payara.nucleus.notification.domain.BoundedTreeSet;
+import java.util.Iterator;
+import java.util.Random;
+
+/**
+ * Set which adds objects according to a reservoir sampling algorithm.
+ * https://en.wikipedia.org/wiki/Reservoir_sampling.
+ *
+ * @param <N> the class of the items to be stored in the set
+ */
+public class ReservoirBoundedTreeSet<N extends Comparable> extends BoundedTreeSet<N> {
+
+    private final Random random;
+    private long counter;
+
+    /**
+     * Constructor which accepts a maximum size. This set requires a
+     *
+     * @param maxSize the maximum size of the set
+     */
+    public ReservoirBoundedTreeSet(int maxSize) {
+        super(maxSize);
+        random = new Random();
+        counter = 0;
+    }
+
+    /**
+     * Performs a reservoir sampling pass in order to add an object to the set.
+     *
+     * @param n The item to add
+     * @return true if the item was added, or false otherwise.
+     * @throws IndexOutOfBoundsException this exception shouldn't be thrown, but
+     * will be if a problem happens in the reservoir sampling algorithm.
+     */
+    public boolean add(N n) {
+        if (counter < Long.MAX_VALUE) {
+            counter++;
+        }
+        // If the list isn't full, add the item with p = 1
+        if (size() < maxSize) {
+            return super.add(n);
+        }
+
+        // probability of keeping the new item
+        double probability = (double) maxSize / counter;
+        boolean keepItem = random.nextDouble() < probability;
+
+        if (!keepItem) {
+            return false;
+        }
+
+        // replace a random item in the list
+        int itemToReplace = random.nextInt(size());
+        for (Iterator<N> iterator = super.iterator(); iterator.hasNext(); itemToReplace--) {
+            N item = iterator.next();
+            if (itemToReplace == 0) {
+                super.remove(item);
+                return super.add(n);
+            }
+        }
+        throw new IndexOutOfBoundsException("Error in adding to " + getClass().getName() + " in Request Tracing historical store. "
+                + "A problem occurred in the reservoir sampling algorithm.");
+    }
+}

@@ -72,7 +72,7 @@ public class HistoricRequestTracingEventStoreTest {
     public void setup() {
         when(hzCore.isEnabled()).thenReturn(false);
 
-        store.initialize(5);
+        store.initialize(5, false);
     }
 
     @Test
