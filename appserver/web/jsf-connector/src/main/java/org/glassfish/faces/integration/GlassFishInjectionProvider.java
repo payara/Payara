@@ -86,6 +86,18 @@ import com.sun.faces.spi.InjectionProviderException;
 import com.sun.faces.spi.ThreadContext;
 import com.sun.faces.util.FacesLogger;
 
+import com.sun.faces.spi.AnnotationScanner;
+import com.sun.faces.spi.DiscoverableInjectionProvider;
+import com.sun.faces.spi.HighAvailabilityEnabler;
+import com.sun.faces.spi.InjectionProviderException;
+import com.sun.faces.util.FacesLogger;
+
+import com.sun.faces.spi.AnnotationScanner;
+import com.sun.faces.spi.DiscoverableInjectionProvider;
+import com.sun.faces.spi.HighAvailabilityEnabler;
+import com.sun.faces.spi.InjectionProviderException;
+import com.sun.faces.util.FacesLogger;
+
 /**
  * <p>
  * This <code>InjectionProvider</code> is specific to the Payara/GlassFish/SJSAS 9.x PE/EE application servers.
@@ -246,6 +258,12 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
     }
     
 
+    public void invokePreDestroy(Object managedBean) throws InjectionProviderException {
+        try {
+            injectionManager.invokeInstancePreDestroy(managedBean);
+        } catch (InjectionException ie) {
+            throw new InjectionProviderException(ie);
+        }
     // --------------------------------------------------------- ThreadContext
     
     @Override
@@ -270,6 +288,7 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
     }
     
 
+    
     // --------------------------------------------------------- Private Methods
 
     /**
