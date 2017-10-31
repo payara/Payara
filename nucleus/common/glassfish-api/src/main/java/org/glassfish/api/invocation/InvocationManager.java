@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.invocation;
 
 import java.util.List;
@@ -88,6 +87,14 @@ public interface InvocationManager {
     boolean isInvocationStackEmpty();
 
     List<? extends ComponentInvocation> getAllInvocations();
+    
+    /**
+     * Installs the given invocation as thread local in the same way as would be done automatically at
+     * thread creation time. This is useful for threads that are re-used between different contexts.
+     * 
+     * @param parentValue the invocation stack from the parent thread
+     */
+    default void setThreadInheritableInvocation(List<? extends ComponentInvocation> parentValue) {}
 
     /**
      * Useful to temp clear the invocation list for example when spawning a new Thread
@@ -99,7 +106,7 @@ public interface InvocationManager {
      * Useful to temp clear the invocation list for example when spawning a new Thread
      * to prevent potential classloader leaks.
      */
-    void putAllInvocations(java.util.List<? extends ComponentInvocation> invocations);
+    void putAllInvocations(List<? extends ComponentInvocation> invocations);
 
     void registerComponentInvocationHandler(ComponentInvocationType type, RegisteredComponentInvocationHandler handler);
 
@@ -133,5 +140,6 @@ public interface InvocationManager {
      *            may not be null. Information about the application environment
      */
     void popAppEnvironment();
+    
 
 }

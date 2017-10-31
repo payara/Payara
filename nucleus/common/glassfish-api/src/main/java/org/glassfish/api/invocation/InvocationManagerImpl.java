@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.invocation;
 
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.EJB_INVOCATION;
@@ -110,51 +109,15 @@ public class InvocationManagerImpl implements InvocationManager {
             }
             
             protected InvocationArray<ComponentInvocation> childValue(InvocationArray<ComponentInvocation> parentValue) {
-
-                // Always creates a new ArrayList
-                InvocationArray<ComponentInvocation> childInvocationArray = new InvocationArray<ComponentInvocation>();
-                InvocationArray<ComponentInvocation> parentInvocationArray = parentValue;
-
-                if (parentInvocationArray.size() > 0 && parentInvocationArray.outsideStartup()) {
-
-                    // Get current invocation
-                    ComponentInvocation parrentInvocation = parentInvocationArray.get(parentInvocationArray.size() - 1);
-
-                    // TODO: The following is ugly. The logic of what needs to be in the
-                    // new ComponentInvocation should be with the respective container
-
-                    if (parrentInvocation.getInvocationType() == SERVLET_INVOCATION) {
-                        
-                        // If this is a thread created by user in servlet's service method
-                        // create a new ComponentInvocation with transaction
-                        // left to null and instance left to null
-                        // so that the resource won't be enlisted or registered
-
-                        ComponentInvocation invocation = new ComponentInvocation();
-                        invocation.setComponentInvocationType(parrentInvocation.getInvocationType());
-                        invocation.setComponentId(parrentInvocation.getComponentId());
-                        invocation.setContainer(parrentInvocation.getContainer());
-                        invocation.setJndiEnvironment(parrentInvocation.getJndiEnvironment());
-
-                        childInvocationArray.add(invocation);
-                    } else if (parrentInvocation.getInvocationType() != EJB_INVOCATION) {
-
-                        // Push a copy of invocation onto the new result
-                        // ArrayList
-                        ComponentInvocation cpy = new ComponentInvocation();
-                        cpy.componentId = parrentInvocation.getComponentId();
-                        cpy.setComponentInvocationType(parrentInvocation.getInvocationType());
-                        cpy.instance = parrentInvocation.getInstance();
-                        cpy.container = parrentInvocation.getContainerContext();
-                        cpy.transaction = parrentInvocation.getTransaction();
-
-                        childInvocationArray.add(cpy);
-                    }
-                }
-
-                return childInvocationArray;
+                return computeChildTheadInvocation(parentValue);
             }
         };
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setThreadInheritableInvocation(List<? extends ComponentInvocation> parentValue) {
+        frames.set(computeChildTheadInvocation((InvocationArray<ComponentInvocation>) parentValue));
     }
 
     public <T extends ComponentInvocation> void preInvoke(T invocation) throws InvocationException {
@@ -261,36 +224,41 @@ public class InvocationManagerImpl implements InvocationManager {
      * return true iff no invocations on the stack for this thread
      */
     public boolean isInvocationStackEmpty() {
-        ArrayList v = frames.get();
-        return ((v == null) || (v.size() == 0));
+        InvocationArray<ComponentInvocation> v = frames.get();
+        return v == null || v.size() == 0;
     }
 
     /**
      * return the Invocation object of the component being called
      */
+    @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getCurrentInvocation() {
-        ArrayList v = (ArrayList) frames.get();
+        InvocationArray<ComponentInvocation> v = frames.get();
         int size = v.size();
         if (size == 0) {
             return null;
         }
+        
         return (T) v.get(size - 1);
     }
 
     /**
      * return the Inovcation object of the caller return null if none exist (e.g. caller is from another VM)
      */
+    @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getPreviousInvocation() throws InvocationException {
 
-        ArrayList v = frames.get();
+        InvocationArray<ComponentInvocation> v = frames.get();
         int i = v.size();
-        if (i < 2)
+        if (i < 2) {
             return null;
+        }
+        
         return (T) v.get(i - 2);
     }
 
     @Override
-    public List getAllInvocations() {
+    public List<? extends ComponentInvocation> getAllInvocations() {
         return frames.get();
     }
 
@@ -302,11 +270,62 @@ public class InvocationManagerImpl implements InvocationManager {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void putAllInvocations(List<? extends ComponentInvocation> invocations) {
         frames.set(new InvocationArray<>((List<ComponentInvocation>) invocations));
     }
+    
+    private InvocationArray<ComponentInvocation> computeChildTheadInvocation(InvocationArray<ComponentInvocation> parentValue) {
+        
+        // Always creates a new ArrayList
+        InvocationArray<ComponentInvocation> childInvocationArray = new InvocationArray<ComponentInvocation>();
+        InvocationArray<ComponentInvocation> parentInvocationArray = parentValue;
 
-    static class InvocationArray<T extends ComponentInvocation> extends java.util.ArrayList<T> {
+        if (parentInvocationArray != null && parentInvocationArray.size() > 0 && parentInvocationArray.outsideStartup()) {
+
+            // Get current invocation
+            ComponentInvocation parrentInvocation = parentInvocationArray.get(parentInvocationArray.size() - 1);
+
+            // TODO: The following is ugly. The logic of what needs to be in the
+            // new ComponentInvocation should be with the respective container
+
+            if (parrentInvocation.getInvocationType() == SERVLET_INVOCATION) {
+                
+                // If this is a thread created by user in servlet's service method
+                // create a new ComponentInvocation with transaction
+                // left to null and instance left to null
+                // so that the resource won't be enlisted or registered
+
+                ComponentInvocation invocation = new ComponentInvocation();
+                invocation.setComponentInvocationType(parrentInvocation.getInvocationType());
+                invocation.setComponentId(parrentInvocation.getComponentId());
+                invocation.setContainer(parrentInvocation.getContainer());
+                invocation.setJndiEnvironment(parrentInvocation.getJndiEnvironment());
+
+                childInvocationArray.add(invocation);
+            } else if (parrentInvocation.getInvocationType() != EJB_INVOCATION) {
+
+                // Push a copy of invocation onto the new result
+                // ArrayList
+                ComponentInvocation cpy = new ComponentInvocation();
+                cpy.componentId = parrentInvocation.getComponentId();
+                cpy.setComponentInvocationType(parrentInvocation.getInvocationType());
+                cpy.instance = parrentInvocation.getInstance();
+                cpy.container = parrentInvocation.getContainerContext();
+                cpy.transaction = parrentInvocation.getTransaction();
+
+                childInvocationArray.add(cpy);
+            }
+        }
+
+        return childInvocationArray;
+    }
+    
+
+    static class InvocationArray<T extends ComponentInvocation> extends ArrayList<T> {
+        
+        private static final long serialVersionUID = 1L;
+        
         private ComponentInvocationType invocationAttribute;
 
         private InvocationArray(List<T> invocations) {
@@ -331,10 +350,12 @@ public class InvocationManagerImpl implements InvocationManager {
 
     public void registerComponentInvocationHandler(ComponentInvocationType type, RegisteredComponentInvocationHandler handler) {
         List<RegisteredComponentInvocationHandler> setRegCompInvHandlers = regCompInvHandlerMap.get(type);
+        
         if (setRegCompInvHandlers == null) {
             setRegCompInvHandlers = new ArrayList<RegisteredComponentInvocationHandler>();
             regCompInvHandlerMap.put(type, setRegCompInvHandlers);
         }
+        
         if (setRegCompInvHandlers.size() == 0) {
             setRegCompInvHandlers.add(handler);
         }

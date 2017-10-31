@@ -83,6 +83,7 @@ import com.sun.faces.spi.AnnotationScanner;
 import com.sun.faces.spi.DiscoverableInjectionProvider;
 import com.sun.faces.spi.HighAvailabilityEnabler;
 import com.sun.faces.spi.InjectionProviderException;
+import com.sun.faces.spi.ThreadContext;
 import com.sun.faces.util.FacesLogger;
 
 /**
@@ -90,7 +91,7 @@ import com.sun.faces.util.FacesLogger;
  * This <code>InjectionProvider</code> is specific to the Payara/GlassFish/SJSAS 9.x PE/EE application servers.
  * </p>
  */
-public class GlassFishInjectionProvider extends DiscoverableInjectionProvider implements AnnotationScanner, HighAvailabilityEnabler {
+public class GlassFishInjectionProvider extends DiscoverableInjectionProvider implements AnnotationScanner, HighAvailabilityEnabler, ThreadContext {
 
     private static final Logger LOGGER = FacesLogger.APPLICATION.getLogger();
     private static final String HABITAT_ATTRIBUTE = "org.glassfish.servlet.habitat";
@@ -243,7 +244,30 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
             throw new InjectionProviderException(ie);
         }
     }
+    
 
+    // --------------------------------------------------------- ThreadContext
+    
+    @Override
+    public Object getParentWebContext() {
+        return invocationManager.getAllInvocations();
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public void propagateWebContextToChild(Object context) {
+        
+        if (!(context instanceof List)) {
+            throw new IllegalArgumentException("Context of incorrect type, was it obtained by calling getParentWebContext()?");
+        }
+        
+        invocationManager.setThreadInheritableInvocation((List<? extends ComponentInvocation>) context);
+    }
+    
+    @Override
+    public void clearChildContext() {
+        invocationManager.popAllInvocations();
+    }
     
 
     // --------------------------------------------------------- Private Methods
