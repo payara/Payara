@@ -87,7 +87,6 @@ public interface InvocationManager {
     boolean isInvocationStackEmpty();
 
     List<? extends ComponentInvocation> getAllInvocations();
-<<<<<<< HEAD
     
     /**
      * Installs the given invocation as thread local in the same way as would be done automatically at
@@ -102,24 +101,12 @@ public interface InvocationManager {
      * to prevent potential classloader leaks.
      */
     List<? extends ComponentInvocation> popAllInvocations();
-=======
->>>>>>> Payara-5
 
     /**
      * Useful to temp clear the invocation list for example when spawning a new Thread
      * to prevent potential classloader leaks.
      */
-<<<<<<< HEAD
     void putAllInvocations(List<? extends ComponentInvocation> invocations);
-=======
-    List<? extends ComponentInvocation> popAllInvocations();
-
-    /**
-     * Useful to temp clear the invocation list for example when spawning a new Thread
-     * to prevent potential classloader leaks.
-     */
-    void putAllInvocations(java.util.List<? extends ComponentInvocation> invocations);
->>>>>>> Payara-5
 
     void registerComponentInvocationHandler(ComponentInvocationType type, RegisteredComponentInvocationHandler handler);
 
@@ -153,9 +140,5 @@ public interface InvocationManager {
      *            may not be null. Information about the application environment
      */
     void popAppEnvironment();
-<<<<<<< HEAD
-    
-=======
->>>>>>> Payara-5
 
 }
