@@ -138,27 +138,27 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String WELD_BOOTSTRAP_SHUTDOWN = "weld_bootstrap_shutdown";
 
     private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.servlet.ConversationFilter";
-    
+
     private static final String WELD_CONVERSATION_FILTER_NAME = "CDI Conversation Filter";
-    
+
     public static final String DEV_MODE_PROPERTY = "org.jboss.weld.development";
-    
+
     private static final String PROBE_FILTER_NAME = "weld-probe-filter";
-    
+
     private static final String PROBE_FILTER_CLASS_NAME = "org.jboss.weld.probe.ProbeFilter";
-    
+
     private static final boolean PROBE_FILTER_ASYNC_SUPPORT = true;
-    
+
     private static final String PROBE_FILTER_URL_PATTERN = "/*";
-    
+
     private static final String PROBE_FILTER_DISPATCHER_TYPE = "REQUEST";
 
     private static final String PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE = ".*payara.*|.*glassfish.*";
 
     private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "javax.servlet.http.*";
-              
+
     private static final String PROBE_ALLOW_REMOTE_ADDRESS = "";
-              
+
     @Inject
     private Events events;
 
@@ -474,7 +474,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
      * accessiblity rules for the <code>BeanDeploymentArchive</code>s.
      * @param container
      * @param context
-     * @return 
+     * @return
      */
     @Override
     public WeldApplicationContainer load(WeldContainer container, DeploymentContext context) {
@@ -503,7 +503,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         EjbServices ejbServices = null;
 
-        Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
+        Set<EjbDescriptor> ejbs = new HashSet<>();
         if( ejbBundle != null ) {
             ejbs.addAll(ejbBundle.getEjbs());
             ejbServices = new EjbServicesImpl(services);
@@ -519,7 +519,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         if(!context.getArchiveHandler().getArchiveType().isEmpty()) {
             archiveName = String.format("%s.%s", BeanDeploymentArchiveImpl.stripApplicationVersion(archiveName), context.getArchiveHandler().getArchiveType());
         }
-        
+
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
         if (deploymentImpl == null) {
             deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory, archiveName);
@@ -586,7 +586,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                             break;
                       }
                 }
-                
+
                 if (developmentMode) {
                     // if development mode enabled then for WAR register ProbeFilter and register ProbeExtension for every deployment
                     ServletFilterDescriptor servletFilter = new ServletFilterDescriptor();
@@ -604,7 +604,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             }
 
             if (developmentMode) {
-             
+
                 externalConfiguration.setProbeEventMonitorExcludeType(PROBE_EVENT_MONITOR_EXCLUDE_TYPE);
                 externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
                 externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
@@ -690,7 +690,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
         return new MetadataImpl<Extension>(probeExtension, "N/A");
     }
-    
+
     private void addWeldListenerToAllWars(DeploymentContext context) {
         // if there's at least 1 ejb jar then add the listener to all wars
         ApplicationHolder applicationHolder = context.getModuleMetaData(ApplicationHolder.class);

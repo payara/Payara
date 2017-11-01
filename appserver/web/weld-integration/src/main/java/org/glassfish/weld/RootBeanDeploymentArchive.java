@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -50,6 +50,7 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -82,9 +83,9 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
                                      DeploymentContext deploymentContext,
                                      String moduleBdaID) {
         super("root_" + (moduleBdaID != null? moduleBdaID : archive.getName()),
-              Collections.<Class<?>>emptyList(),
-              Collections.<URL>emptyList(),
-              Collections.<EjbDescriptor>emptyList(),
+              new ArrayList<Class<?>>(),
+              new ArrayList<URL>(),
+              new ArrayList<EjbDescriptor>(),
               deploymentContext);
         createModuleBda(archive, ejbs, deploymentContext, moduleBdaID);
     }
