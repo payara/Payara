@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,50 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.ejb.containers;
 
-import com.sun.ejb.ComponentContext;
-import com.sun.ejb.EjbInvocation;
-import com.sun.enterprise.security.SecurityManager;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
+import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.EJB;
+import fish.payara.cluster.DistributedLockType;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 
 /**
- * @author Mahesh Kannan
+ * EJB container implementation of clustered singleton lookups
+ *
+ * @author lprimak
  */
-public class BMCSingletonContainer
-        extends AbstractSingletonContainer {
-
-    private AtomicInteger invCount = new AtomicInteger(0);
-
-    public BMCSingletonContainer(EjbDescriptor desc, ClassLoader cl, SecurityManager sm)
-            throws Exception {
-        super(desc, cl, sm);
+public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
+    public ClusteredSingletonLookupImpl(EjbDescriptor ejbDescriptor, String componentId) {
+        super(componentId, EJB);
+        this.ejbDescriptor = (EjbSessionDescriptor)ejbDescriptor;
     }
 
-    protected ComponentContext _getContext(EjbInvocation inv) {
-        checkInit();
-
-        synchronized (invCount) {
-            invCount.incrementAndGet();
-            ((SingletonContextImpl) singletonCtx).setState(EJBContextImpl.BeanState.INVOKING);
-        }
-        
-        //For now return this as we support only BMC
-        return singletonCtx;
+    @Override
+    public boolean isDistributedLockEnabled() {
+        DistributedLockType distLockType = ejbDescriptor.isClustered()?
+                    ejbDescriptor.getClusteredLockType() : DistributedLockType.LOCK_NONE;
+        return super.isDistributedLockEnabled() && distLockType != DistributedLockType.LOCK_NONE;
+    }
+    
+    @Override
+    public String getClusteredSessionKey() {
+        return ejbDescriptor.getClusteredKeyValue().isEmpty()? ejbDescriptor.getName() : ejbDescriptor.getClusteredKeyValue();
     }
 
-    public void releaseContext(EjbInvocation inv) {
-        if(clusteredLookup.isClusteredEnabled()) {
-            clusteredLookup.getClusteredSingletonMap().put(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
-        }
-        synchronized (invCount) {
-            int val = invCount.decrementAndGet();
-            if (val == 0) {
-                ((SingletonContextImpl) singletonCtx).setState(EJBContextImpl.BeanState.READY);
-            }
-        }
+    @Override
+    public boolean isClusteredEnabled() {
+        return ejbDescriptor.isClustered() && super.isClusteredEnabled();
     }
 
+
+    private final EjbSessionDescriptor ejbDescriptor;
 }
