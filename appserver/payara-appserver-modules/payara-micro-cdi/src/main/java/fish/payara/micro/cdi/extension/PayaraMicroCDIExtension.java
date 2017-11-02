@@ -52,7 +52,7 @@ import javax.enterprise.inject.spi.Extension;
  */
 public class PayaraMicroCDIExtension implements Extension {
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
+    void afterBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
 
         AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
         bbd.addAnnotatedType(at, PayaraMicroProducer.class.getName());

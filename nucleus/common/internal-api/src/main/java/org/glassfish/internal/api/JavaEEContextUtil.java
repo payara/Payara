@@ -81,17 +81,23 @@ public interface JavaEEContextUtil {
      * @param componentId
      * @return self for fluent API
      */
-    JavaEEContextUtil setInstanceComponentId(String componentId);
+    JavaEEContextUtil setInstanceComponentId(String appName, String componentId);
 
     /**
      * @return Class Loader that's associated with current invocation
      *         or null if there is no current invocation
      */
     ClassLoader getInvocationClassLoader();
+    
     /**
      * @return component ID for the current invocation (not this instance), not null
      */
     String getInvocationComponentId();
+    
+    /**
+     * @return component ID for the current invocation (not this instance), not null
+     */
+    String getApplicationName();
 
     interface Context extends Closeable {};
     interface Closeable extends AutoCloseable {
