@@ -981,6 +981,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             configureAccessLogging();
             configureHazelcast();
             configurePhoneHome();
+            configureNotificationService();
             configureHealthCheck();
 
             // Add additional libraries
@@ -2272,6 +2273,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
         } catch (IOException ioe) {
             LOGGER.log(Level.WARNING, "Could not load the boot system properties from " + BOOT_PROPS_FILE, ioe);
+        }
+    }
+    
+    private void configureNotificationService() {
+        if (enableHealthCheck || enableRequestTracing) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.notification-service-configuration.enabled=true"));
         }
     }
 
