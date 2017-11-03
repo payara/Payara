@@ -159,9 +159,7 @@ public class CreateHttp implements AdminCommand {
             return;
 
         }
-//        if (!serverHeader) {
-//           System.setProperty("product.name", "");
-//        }
+
         // Add to the <network-config>
         try {
             ConfigSupport.apply(new SingleConfigCode<Protocol>() {

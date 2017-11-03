@@ -453,28 +453,20 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 response.addHeader(Header.XPoweredBy, xPoweredBy);
             }
             
-            // Set response "X-Frame-Options" header
-            if (xFrameOptions != null) {
-                response.addHeader(xFrameOptionsHeader, xFrameOptions);
-            }
-            
             return result;
         }
         
-        // Override to check whether x-Powered By, Server header and x-Frame-Option has been added by something else
+        // Override to check whether x-Powered By has been added by something else
         @Override
         protected void onInitialLineEncoded(HttpHeader httpHeader, FilterChainContext ctx) {
-          
+
             if (xPoweredBy == null && httpHeader.containsHeader(Header.XPoweredBy)) {
                 httpHeader.getHeaders().removeHeader(Header.XPoweredBy);
             }
-            
-            if (serverVersion == null && httpHeader.containsHeader(Header.Server)){
-                httpHeader.getHeaders().removeHeader(Header.Server);
-            }
-            
-            if (xFrameOptions == null && httpHeader.containsHeader(xFrameOptionsHeader)){
-                httpHeader.getHeaders().removeHeader(xFrameOptionsHeader);
+
+            // Set response "X-Frame-Options" header
+            if (!httpHeader.containsHeader(xFrameOptionsHeader) && xFrameOptions != null) {
+                httpHeader.addHeader(xFrameOptionsHeader, xFrameOptions);
             }
         }
     }
