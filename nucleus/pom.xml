@@ -54,7 +54,7 @@
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.0.0.Alpha3-SNAPSHOT</version>
+    <version>5.0.0.Alpha4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.0.0.Alpha3-SNAPSHOT</tag>
+        <tag>payara-server-5.0.0.Alpha4-SNAPSHOT</tag>
     </scm>
     
     <issueManagement>
@@ -172,7 +172,6 @@
            	</releases>
             	<snapshots>
                 	<enabled>true</enabled> <!-- TEMP for HK2 until b45 released -->
-                <updatePolicy>always</updatePolicy>
             	</snapshots>
         </repository>
         
@@ -206,7 +205,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <build.id>101</build.id> <!-- on Hudson and RE, this gets replaced by real build ID -->
+        <build.id>${build.number}</build.id> <!-- on Hudson and RE, this gets replaced by real build ID -->
         <jdk.version>1.8.0</jdk.version>
         <javase.version>1.8</javase.version>
         <javadoc.skip>false</javadoc.skip>

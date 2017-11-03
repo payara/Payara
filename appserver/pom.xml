@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.0.0.Alpha3-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
         
@@ -61,7 +61,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-        <tag>payara-server-5.0.0.Alpha3-SNAPSHOT</tag>
+        <tag>payara-server-5.0.0.Alpha4-SNAPSHOT</tag>
     </scm>
     
     
@@ -84,7 +84,7 @@
         <!-- JSF -->
         <javax.faces-spec.version>2.3</javax.faces-spec.version>
         <javax.faces-api.version>2.3</javax.faces-api.version>
-        <mojarra.version>2.3.2-payara-p1</mojarra.version>
+        <mojarra.version>2.4.0-m01.payara-p2</mojarra.version>
         
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
@@ -187,7 +187,7 @@
         <major_version>5</major_version>
         <minor_version>0</minor_version>
         <update_version>0</update_version>
-        <payara_version>Alpha3-SNAPSHOT</payara_version>
+        <payara_version>Alpha4-SNAPSHOT</payara_version>
         <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
 
