@@ -120,7 +120,7 @@ public class MonitoringService implements EventListener {
     private MonitoringFormatter formatter;
     private boolean enabled;
     private int amxBootDelay = 10;
-    private int monitoringDelay = amxBootDelay + 15;
+    private long monitoringDelay = amxBootDelay + 15;
 
     private List<NotifierExecutionOptions> notifierExecutionOptionsList;
     
@@ -170,10 +170,10 @@ public class MonitoringService implements EventListener {
                 executor.schedule(new AMXBoot(server), amxBootDelay, TimeUnit.SECONDS);
             }
 
-            executor.scheduleAtFixedRate(formatter, monitoringDelay,
-                    TimeUnit.SECONDS.convert(Long.valueOf(configuration.getLogFrequency()),
-                            TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
-                    TimeUnit.SECONDS);
+            executor.scheduleAtFixedRate(formatter, monitoringDelay * 1000,
+                    TimeUnit.MILLISECONDS.convert(Long.valueOf(configuration.getLogFrequency()),
+                    TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
+                    TimeUnit.MILLISECONDS);
             
             bootstrapNotifierList();
         }
