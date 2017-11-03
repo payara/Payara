@@ -172,7 +172,6 @@
            	</releases>
             	<snapshots>
                 	<enabled>true</enabled> <!-- TEMP for HK2 until b45 released -->
-                <updatePolicy>always</updatePolicy>
             	</snapshots>
         </repository>
         
