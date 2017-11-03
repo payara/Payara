@@ -1557,23 +1557,21 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
     }
 
     /**
-     * Registers the OUT parameter in ordinal position
-     * {@code parameterIndex} to the JDBC type {@code sqlType}.
+     * Registers the OUT parameter in ordinal position {@code parameterIndex} to
+     * the JDBC type {@code sqlType}.
      *
-     * @param parameterIndex the first parameter is 1, the second is 2,
-     *        and so on
+     * @param parameterIndex the first parameter is 1, the second is 2, and so
+     * on
      * @param sqlType the JDBC type code defined by {@code SQLType} to use to
-     * register the OUT Parameter.
-     *        If the parameter is of JDBC type {@code JDBCType.NUMERIC}
-     *        or {@code JDBCType.DECIMAL}, the version of
-     *        {@code registerOutParameter} that accepts a scale value
-     *        should be used.
+     * register the OUT Parameter. If the parameter is of JDBC type
+     * {@code JDBCType.NUMERIC} or {@code JDBCType.DECIMAL}, the version of
+     * {@code registerOutParameter} that accepts a scale value should be used.
      *
-     * @exception SQLException if the parameterIndex is not valid;
-     * if a database access error occurs or
-     * this method is called on a closed {@code CallableStatement}
-     * @exception SQLFeatureNotSupportedException if
-     * the JDBC driver does not support the specified sqlType
+     * @exception SQLException if the parameterIndex is not valid; if a database
+     * access error occurs or this method is called on a closed
+     * {@code CallableStatement}
+     * @exception SQLFeatureNotSupportedException if the JDBC driver does not
+     * support the specified sqlType
      */
     @Override
     public void registerOutParameter(int parameterIndex, SQLType sqlType)
@@ -1605,6 +1603,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
             int scale) throws SQLException {
         callableStatement.registerOutParameter(parameterIndex, sqlType, scale);
     }
+    
     /**
      * Registers the designated output parameter.
      * This version of the method {@code  registerOutParameter}
