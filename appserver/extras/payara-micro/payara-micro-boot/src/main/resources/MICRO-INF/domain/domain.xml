@@ -161,7 +161,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
             <request-tracing-service-configuration>
                 <log-notifier enabled="true"></log-notifier>
             </request-tracing-service-configuration>
-            <notification-service-configuration enabled="true">
+            <notification-service-configuration enabled="false">
                 <log-notifier-configuration enabled="true"></log-notifier-configuration>
                 <eventbus-notifier-configuration enabled="false"></eventbus-notifier-configuration>
             </notification-service-configuration>
