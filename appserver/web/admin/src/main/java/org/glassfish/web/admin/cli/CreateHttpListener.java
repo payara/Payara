@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
+
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
