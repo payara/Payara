@@ -84,7 +84,7 @@
         <dependency>
             <groupId>h2db</groupId>
             <artifactId>h2db</artifactId>
-            <version>${h2db.version}</version>
+            <version>1.4.196</version>
 	    <type>zip</type>
         </dependency>
     </dependencies>
