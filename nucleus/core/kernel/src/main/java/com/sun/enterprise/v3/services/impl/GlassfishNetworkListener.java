@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.services.impl;
 
 import com.sun.appserv.server.util.Version;
@@ -88,6 +90,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     private final GrizzlyService grizzlyService;
     private final NetworkListener networkListener;
     private final Logger logger;
+    private static final  String xFrameOptionsHeader = "X-Frame-Options";
 
     private volatile HttpAdapter httpAdapter;
     
@@ -273,6 +276,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 new GlassfishHttpCodecFilter(
                 http == null || Boolean.parseBoolean(http.getXpoweredBy()),
                 http == null || Boolean.parseBoolean(http.getServerHeader()),
+                http == null || Boolean.parseBoolean(http.getXframeOptions()),
                 isChunkedEnabled,
                 headerBufferLengthBytes,
                 defaultResponseType,
@@ -376,10 +380,12 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     private static class GlassfishHttpCodecFilter extends org.glassfish.grizzly.http.HttpServerFilter {
         private final String serverVersion;
         private final String xPoweredBy;
+        private final String xFrameOptions;
         
         public GlassfishHttpCodecFilter(
                 final boolean isXPoweredByEnabled,
                 final boolean isServerInfoEnabled,
+                final boolean isXFrameOptionsEnabled,
                 final boolean chunkingEnabled,
                 final int maxHeadersSize,
                 final String defaultResponseContentType,
@@ -420,6 +426,12 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             } else {
                 xPoweredBy = null;
             }
+
+            if (isXFrameOptionsEnabled) {
+                xFrameOptions = "SAMEORIGIN";
+            } else {
+                xFrameOptions = null;
+            }
         }
         
         @Override
@@ -437,9 +449,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             if (serverVersion != null && !serverVersion.isEmpty()) {
                 response.addHeader(Header.Server, serverVersion);
             }
-
-
-            
+     
             // Set response "X-Powered-By" header
             if (xPoweredBy != null) {
                 response.addHeader(Header.XPoweredBy, xPoweredBy);
@@ -448,12 +458,17 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             return result;
         }
         
-        // override to chec whether x-Powered By has been added by something else
+        // Override to check whether x-Powered By has been added by something else
         @Override
         protected void onInitialLineEncoded(HttpHeader httpHeader, FilterChainContext ctx) {
-          
+
             if (xPoweredBy == null && httpHeader.containsHeader(Header.XPoweredBy)) {
                 httpHeader.getHeaders().removeHeader(Header.XPoweredBy);
+            }
+
+            // Set response "X-Frame-Options" header
+            if (!httpHeader.containsHeader(xFrameOptionsHeader) && xFrameOptions != null) {
+                httpHeader.addHeader(xFrameOptionsHeader, xFrameOptions);
             }
         }
     }
