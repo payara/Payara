@@ -42,7 +42,6 @@ package fish.payara.microprofile.faulttolerance.cdi;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Queue;
 import javax.enterprise.inject.spi.BeanManager;
@@ -88,26 +87,67 @@ public class FaultToleranceCdiUtils {
         return annotation;
     }
     
-    public static Optional getOverrideValue(Config config, String annotationName, String parameterName, 
-            String annotatedMethodName, String annotatedClassCanonicalName) {
+    public static <A extends Annotation> Optional getOverrideValue(Config config, Class<A> annotationClass, 
+            String parameterName, String annotatedMethodName, String annotatedClassCanonicalName, Class parameterType) {
         Optional value = Optional.empty();
+        
+        String annotationName = annotationClass.getSimpleName();
         
         // Check if there's a config override for the method
         if (config != null) {
-            value = config.getOptionalValue(
-                    annotatedClassCanonicalName + "/" + annotatedMethodName + "/" + annotationName + "/" + parameterName, 
-                    Object.class);
-
+            value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotatedMethodName 
+                    + "/" + annotationName + "/" + parameterName, 
+                    parameterType);
+                
             // If there wasn't a config override for the method, check if there's one for the class
             if (!value.isPresent()) {
-                value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName + "/" + parameterName, 
-                        Object.class);
+                value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName 
+                        + "/" + parameterName, 
+                        parameterType);
 
                 // If there wasn't a config override for the class either, check if there's a global one
                 if (!value.isPresent()) {
-                    value = config.getOptionalValue(annotationName + "/" + parameterName, Object.class);
+                    value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
                 }
             }
+        }
+        
+        return value;
+    }
+    
+    public static <A extends Annotation> Optional getOverrideValue(Config config, Class<A> annotationClass, 
+            String parameterName, InvocationContext invocationContext, Class parameterType) {
+        Optional value = Optional.empty();
+        
+        String annotationName = annotationClass.getSimpleName();
+        String annotatedMethodName = invocationContext.getMethod().getName();
+        String annotatedClassCanonicalName = invocationContext.getMethod().getDeclaringClass().getCanonicalName();
+        
+        // Check if there's a config override for the method
+        if (config != null) {
+            value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotatedMethodName 
+                    + "/" + annotationName + "/" + parameterName, 
+                    parameterType);
+            
+            // If there wasn't a config override for the method, check if the method has the annotation
+            if (!value.isPresent()) {
+                // If the method is annotated directly, simply return
+                if (invocationContext.getMethod().getAnnotation(annotationClass) != null) {
+                    return value;
+                }
+                
+                // If there wasn't a config override for the method, check if there's one for the class
+                if (!value.isPresent()) {
+                    value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName 
+                            + "/" + parameterName, 
+                            parameterType);
+
+                    // If there wasn't a config override for the class either, check if there's a global one
+                    if (!value.isPresent()) {
+                        value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
+                    }
+                }
+            } 
         }
         
         return value;

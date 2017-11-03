@@ -45,6 +45,8 @@ import fish.payara.microprofile.faulttolerance.interceptors.CircuitBreakerInterc
 import fish.payara.microprofile.faulttolerance.interceptors.RetryInterceptor;
 import fish.payara.microprofile.faulttolerance.interceptors.TimeoutInterceptor;
 import fish.payara.microprofile.faulttolerance.validators.AsynchronousValidator;
+import fish.payara.microprofile.faulttolerance.validators.BulkheadValidator;
+import fish.payara.microprofile.faulttolerance.validators.CircuitBreakerValidator;
 import fish.payara.microprofile.faulttolerance.validators.FallbackValidator;
 import fish.payara.microprofile.faulttolerance.validators.RetryValidator;
 import fish.payara.microprofile.faulttolerance.validators.TimeoutValidator;
@@ -58,8 +60,8 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.WithAnnotations;
-import javax.inject.Inject;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -72,9 +74,6 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
  * @author Andrew Pielage
  */
 public class FaultToleranceCDIExtension implements Extension {
-    
-    @Inject
-    Config config;
     
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
         beforeBeanDiscovery.addInterceptorBinding(Asynchronous.class);
@@ -101,8 +100,9 @@ public class FaultToleranceCDIExtension implements Extension {
         beforeBeanDiscovery.addAnnotatedType(timeoutInterceptor, TimeoutInterceptor.class.getName());
     }
     
-    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Fallback.class, Retry.class, 
-            Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType, BeanManager beanManager) throws Exception {
+    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
+            Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType, 
+            BeanManager beanManager) throws Exception {
         AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
         
         Set<AnnotatedMethod<? super T>> annotatedMethods = annotatedType.getMethods();
@@ -111,12 +111,18 @@ public class FaultToleranceCDIExtension implements Extension {
         }
     }
     
-    private <T> void validateMethodAnnotations(AnnotatedMethod<T> annotatedMethod) throws Exception {
+    private <T> void validateMethodAnnotations(AnnotatedMethod<T> annotatedMethod) throws Exception {      
+        Config config = ConfigProvider.getConfig();
+        
         for (Annotation annotation : annotatedMethod.getAnnotations()) {
             Class<? extends Annotation> annotationType = annotation.annotationType();
             
             if (annotationType == Asynchronous.class) {
                 AsynchronousValidator.validateAnnotation((Asynchronous) annotation, annotatedMethod);
+            } else if (annotationType == Bulkhead.class) {
+                BulkheadValidator.validateAnnotation((Bulkhead) annotation, annotatedMethod, config);
+            } else if (annotationType == CircuitBreaker.class) {
+                CircuitBreakerValidator.validateAnnotation((CircuitBreaker) annotation, annotatedMethod, config);
             } else if (annotationType == Fallback.class) {
                 FallbackValidator.validateAnnotation((Fallback) annotation, annotatedMethod, config);
             } else if (annotationType == Retry.class) {

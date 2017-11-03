@@ -51,13 +51,15 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
  */
 public class TimeoutValidator {
     public static void validateAnnotation(Timeout timeout, AnnotatedMethod<?> annotatedMethod, Config config) {
-        int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
-                config, Timeout.class.getName(), "value", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName())
+        long value = (Long) FaultToleranceCdiUtils.getOverrideValue(
+                config, Timeout.class, "value", annotatedMethod.getJavaMember().getName(), 
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(timeout.value());
         
-        if (value < 1) {
-            throw new FaultToleranceDefinitionException();
+        if (value < 0) {
+            throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
+                    + " annotated with " + Timeout.class.getCanonicalName() 
+                    + " has a value less than 0: " + value);
         }
     }
 }

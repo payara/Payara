@@ -49,17 +49,18 @@ import java.time.temporal.ChronoUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
-import javax.enterprise.inject.Intercepted;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -68,31 +69,42 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor
 @CircuitBreaker
-@Priority(Interceptor.Priority.PLATFORM_AFTER)
+@Priority(Interceptor.Priority.PLATFORM_AFTER + 10)
 public class CircuitBreakerInterceptor implements Serializable {
     
     @Inject
     private BeanManager beanManager;
     
-    @Inject
-    Config config;
-    
     @AroundInvoke
     public Object intercept(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         
+        FaultToleranceService faultToleranceService = 
+                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        Config config = ConfigProvider.getConfig();
+        
         try {
-            proceededInvocationContext = circuitBreak(invocationContext);
-        } catch (Exception ex) {
-            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
-            
-            if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, 
-                        invocationContext.getMethod().getName(), 
-                        invocationContext.getMethod().getDeclaringClass().getCanonicalName());
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(),
+                    config)) {
+                proceededInvocationContext = circuitBreak(invocationContext);
             } else {
+                proceededInvocationContext = invocationContext.proceed();
+            }
+        } catch (Exception ex) {
+            Retry retry = FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext);
+            
+            if (retry != null) {
                 throw ex;
+            } else {
+                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+
+                if (fallback != null) {
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                } else {
+                    throw ex;
+                }
             }
         }
         
@@ -106,35 +118,38 @@ public class CircuitBreakerInterceptor implements Serializable {
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         CircuitBreaker circuitBreaker = FaultToleranceCdiUtils.getAnnotation(beanManager, CircuitBreaker.class, 
                 invocationContext);
+        Config config = ConfigProvider.getConfig();
         
-        Class<? extends Throwable>[] failOn = (Class<? extends Throwable>[]) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class.getName(), "failOn", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
-                .orElse(circuitBreaker.failOn());
+// ************************* TO DO *********************************
+//        Class<? extends Throwable>[] failOn = (String) FaultToleranceCdiUtils.getOverrideValue(
+//                config, CircuitBreaker.class.getName(), "failOn", invocationContext.getMethod().getName(), 
+//                invocationContext.getMethod().getDeclaringClass().getCanonicalName(), String.class)
+//                .orElse(circuitBreaker.failOn());
+////////////////////////////////////////////////////////////////////
+
         long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class.getName(), "value", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                config, CircuitBreaker.class, "value", invocationContext, Long.class)
                 .orElse(circuitBreaker.delay());
-        ChronoUnit delayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class.getName(), "delayUnit", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
-                .orElse(circuitBreaker.delayUnit());
+        ChronoUnit delayUnit = ChronoUnit.valueOf(((String) FaultToleranceCdiUtils.getOverrideValue(
+                config, CircuitBreaker.class, "delayUnit", invocationContext, String.class)
+                .orElse(circuitBreaker.delayUnit().toString())).toUpperCase());
         int requestVolumeThreshold = (Integer) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class.getName(), "requestVolumeThreshold", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                config, CircuitBreaker.class, "requestVolumeThreshold", invocationContext, Integer.class)
                 .orElse(circuitBreaker.requestVolumeThreshold());
         double failureRatio = (Double) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class.getName(), "failureRatio", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                config, CircuitBreaker.class, "failureRatio", invocationContext, Double.class)
                 .orElse(circuitBreaker.failureRatio());
         int successThreshold = (Integer) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class.getName(), "successThreshold", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                config, CircuitBreaker.class, "successThreshold", invocationContext, Integer.class)
                 .orElse(circuitBreaker.successThreshold());
 
         delay = Duration.of(delay, delayUnit).toMillis();
         
-        CircuitBreakerState circuitBreakerState = faultToleranceService.getCircuitBreakerState(circuitBreaker);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        
+        CircuitBreakerState circuitBreakerState = faultToleranceService.getCircuitBreakerState(
+                invocationManager.getCurrentInvocation().getAppName(), 
+                invocationContext.getMethod(), circuitBreaker);
         
         switch (circuitBreakerState.getCircuitState()) {
             case OPEN:

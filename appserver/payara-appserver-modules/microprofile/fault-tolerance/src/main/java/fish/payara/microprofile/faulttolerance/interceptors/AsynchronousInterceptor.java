@@ -40,11 +40,9 @@
 package fish.payara.microprofile.faulttolerance.interceptors;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FAULT_TOLERANCE_ENABLED_PROPERTY;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import java.io.Serializable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -57,65 +55,73 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
  * Interceptor for the Fault Tolerance Asynchronous Annotation. Also contains the wrapper class for the Future outcome.
- * 
+ *
  * @author Andrew Pielage
  */
 @Interceptor
 @Asynchronous
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class AsynchronousInterceptor implements Serializable {
-    
+
     @Inject
     BeanManager beanManager;
     
-    @Inject
-    Config config;
-    
     @AroundInvoke
-    public Object intercept(InvocationContext invocationContext) throws Exception { 
+    public Object intercept(InvocationContext invocationContext) throws Exception {
+        Object proceededInvocationContext = null;
+        
         // Get the configured ManagedExecutorService from the Fault Tolerance Service
         FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()
                 .getService(FaultToleranceService.class);
         ManagedExecutorService managedExecutorService = faultToleranceService.getManagedExecutorService();
+
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        Config config = ConfigProvider.getConfig();
         
-        // Submit the InvocationContext to the ManagedExecutorService
         try {
-            if (config.getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE)) {
-                return new FutureDelegator(managedExecutorService.submit( () -> { return invocationContext.proceed(); } ), 
-                        invocationContext);
+            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
+            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(), 
+                    config)) {
+                proceededInvocationContext = new FutureDelegator(managedExecutorService.submit(() -> { 
+                    return invocationContext.proceed();
+                }), invocationContext);
             } else {
-                return invocationContext.proceed();
+                proceededInvocationContext = invocationContext.proceed();
             }
         } catch (Exception ex) {
+            // If an exception was thrown, check if the method is annotated with @Fallback
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
+            // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
             if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, 
-                        invocationContext.getMethod().getName(), 
-                        invocationContext.getMethod().getDeclaringClass().getCanonicalName());
-                return fallbackPolicy.fallback(invocationContext);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
             } else {
                 throw ex;
             }
         }
+        
+        return proceededInvocationContext;
     }
-    
+
     class FutureDelegator implements Future<Object> {
 
         private final Future<?> future;
-        private final InvocationContext invocationContext;
-        
+//        private final InvocationContext invocationContext;
+
         public FutureDelegator(Future<?> future, InvocationContext invocationContext) {
             this.future = future;
-            this.invocationContext = invocationContext;
+//            this.invocationContext = invocationContext;
         }
-        
+
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             return future.cancel(mayInterruptIfRunning);
@@ -134,72 +140,68 @@ public class AsynchronousInterceptor implements Serializable {
         @Override
         public Object get() throws InterruptedException, ExecutionException {
             Object proceededInvocation = null;
-            
+
             // Attempt to get the outcome of the InvocationContext
-            try {
-                CompletableFuture<?> completableFuture = (CompletableFuture<?>) future.get();
-                
-                if (completableFuture != null) {
-                    proceededInvocation = completableFuture.get();
-                }
-            } catch (InterruptedException | ExecutionException ex) {
-                // If an exception gets thrown, attempt fallback
-                proceededInvocation = attemptFallback();
-                
-                // If fallback wasn't enabled, propoagate the error upwards
-                if (proceededInvocation == null) {
-                    throw ex;
-                }
-            }
-            
+//            try {
+                proceededInvocation = future.get();
+//            } catch (InterruptedException | ExecutionException ex) {
+//                // If an exception gets thrown, attempt fallback
+//                proceededInvocation = attemptFallback();
+//
+//                // If fallback wasn't enabled, propoagate the error upwards
+//                if (proceededInvocation == null) {
+//                    throw ex;
+//                }
+//            }
+
             return proceededInvocation;
         }
 
         @Override
         public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             Object proceededInvocation = null;
-            
+
             // Attempt to get the outcome of the InvocationContext
-            try {
-                CompletableFuture<?> completableFuture = (CompletableFuture<?>) future.get(timeout, unit);
-                
-                if (completableFuture != null) {
-                    proceededInvocation = completableFuture.get();
-                }
-            } catch (InterruptedException | ExecutionException | TimeoutException ex) {
-                // If an exception gets thrown, attempt fallback
-                proceededInvocation = attemptFallback();
-                
-                // If fallback wasn't enabled, propoagate the error upwards
-                if (proceededInvocation == null) {
-                    throw ex;
-                }
-            }
-            
+//            try {
+                proceededInvocation = future.get(timeout, unit);
+//            } catch (InterruptedException | ExecutionException ex) {
+//                // If an exception gets thrown, attempt fallback
+//                proceededInvocation = attemptFallback();
+//
+//                // If fallback wasn't enabled, propoagate the error upwards
+//                if (proceededInvocation == null) {
+//                    throw ex;
+//                }
+//            }
+
             return proceededInvocation;
         }
-        
-        /**
-         * Check if the method was annotated with the Fallback annotation, and attempt the fallback if so.
-         * @return An Object representing the outcome of the fallback execution, or null if fallback wasn't enabled
-         * @throws ExecutionException 
-         */
-        private Object attemptFallback() throws ExecutionException {
-            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
 
-            if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, 
-                        invocationContext.getMethod().getName(),
-                        invocationContext.getMethod().getDeclaringClass().getCanonicalName());
-
-                try {
-                    return fallbackPolicy.fallback(invocationContext);
-                } catch (Exception fallbackException) {
-                    throw new ExecutionException(fallbackException);
-                }
-            }
-            
-            return null;
-        }
+//        /**
+//         * Check if the method was annotated with the Fallback annotation, and attempt the fallback if so.
+//         *
+//         * @return An Object representing the outcome of the fallback execution, or null if fallback wasn't enabled
+//         * @throws ExecutionException
+//         */
+//        private Object attemptFallback() throws ExecutionException {
+//            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+//            Config config = ConfigProvider.getConfig();
+//            if (fallback != null) {
+//                try {
+//                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config,
+//                            invocationContext.getMethod().getName(),
+//                            invocationContext.getMethod().getDeclaringClass().getCanonicalName());
+//
+//                    try {
+//                        return fallbackPolicy.fallback(invocationContext);
+//                    } catch (Exception fallbackException) {
+//                        throw new ExecutionException(fallbackException);
+//                    }
+//                } catch (ClassNotFoundException ex) {
+//                    throw new ExecutionException(ex);
+//                }
+//            }
+//            return null;
+//        }
     }
 }

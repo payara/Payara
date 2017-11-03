@@ -43,21 +43,21 @@ import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPol
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.io.Serializable;
-import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import javax.annotation.Priority;
-import javax.enterprise.inject.Intercepted;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -67,34 +67,45 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor
 @Bulkhead
-@Priority(Interceptor.Priority.PLATFORM_AFTER)
+@Priority(Interceptor.Priority.PLATFORM_AFTER + 10)
 public class BulkheadInterceptor implements Serializable {
     
     @Inject
     private BeanManager beanManager;
     
-    @Inject
-    Config config;
-    
     @AroundInvoke
     public Object intercept(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         
-        // Attempt to proceed the InvocationContext with Bulkhead semantics
+        FaultToleranceService faultToleranceService = 
+                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        Config config = ConfigProvider.getConfig();
+        
         try {
-            proceededInvocationContext = bulkhead(invocationContext);
-        } catch (Exception ex) {
-            // If an exception was thrown, check if the method is annotated with @Fallback
-            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
-            
-            // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
-            if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, 
-                        invocationContext.getMethod().getName(), 
-                        invocationContext.getMethod().getDeclaringClass().getCanonicalName());
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+            // Attempt to proceed the InvocationContext with Bulkhead semantics if Fault Tolerance is enabled
+            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(),
+                    config)) {
+                proceededInvocationContext = bulkhead(invocationContext);
             } else {
+                proceededInvocationContext = invocationContext.proceed();
+            }
+        } catch (Exception ex) {
+            Retry retry = FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext);
+            
+            if (retry != null) {
                 throw ex;
+            } else {
+                // If an exception was thrown, check if the method is annotated with @Fallback
+                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+
+                // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
+                if (fallback != null) {
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                } else {
+                    throw ex;
+                }
             }
         }
         
@@ -107,47 +118,55 @@ public class BulkheadInterceptor implements Serializable {
         
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        
         Bulkhead bulkhead = FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext);
         
+        Config config = ConfigProvider.getConfig(invocationContext.getTarget().getClass().getClassLoader());
         int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
-                config, Bulkhead.class.getName(), "value", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                config, Bulkhead.class, "value", invocationContext, Integer.class)
                 .orElse(bulkhead.value());
         int waitingTaskQueue = (Integer) FaultToleranceCdiUtils.getOverrideValue(
-                config, Bulkhead.class.getName(), "waitingTaskQueue", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                config, Bulkhead.class, "waitingTaskQueue", invocationContext, Integer.class)
                 .orElse(bulkhead.waitingTaskQueue());
         
-        Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(bulkhead, value);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        invocationManager.getCurrentInvocation().getAppName();
+        
+        Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(
+                invocationManager.getCurrentInvocation().getAppName(),
+                invocationContext.getMethod(), value);
         
         // If the Asynchronous annotation is present, use threadpool style, otherwise use semaphore style
         if (FaultToleranceCdiUtils.getAnnotation(beanManager, Asynchronous.class, invocationContext) != null) {
-            Semaphore bulkheadExecutionQueueSemaphore = 
-                    faultToleranceService.getBulkheadExecutionQueueSemaphore(bulkhead, waitingTaskQueue);
+            Semaphore bulkheadExecutionQueueSemaphore = faultToleranceService.getBulkheadExecutionQueueSemaphore(
+                    invocationManager.getCurrentInvocation().getAppName(),
+                    invocationContext.getMethod(), waitingTaskQueue);
             
             // Check if there are any free permits for concurrent execution
             if (!bulkheadExecutionSemaphore.tryAcquire()) {
                 // If there aren't any free permits, see if there are any free queue permits
                 if (bulkheadExecutionQueueSemaphore.tryAcquire()) {
                     // If there is a free queue permit, queue for an executor permit
-                    bulkheadExecutionSemaphore.acquire();
-                    
-                    // Proceed the invocation and wait for the response
                     try {
-                        proceededInvocationContext = invocationContext.proceed();
-                    } catch (Exception ex) {
-                        // Generic catch, as we need to release the semaphore permits
+                        bulkheadExecutionSemaphore.acquire();
+                        
+                        // Proceed the invocation and wait for the response
+                        try {
+                            proceededInvocationContext = invocationContext.proceed();
+                        } catch (Exception ex) {
+                            // Generic catch, as we need to release the semaphore permits
+                            bulkheadExecutionSemaphore.release();
+                            bulkheadExecutionQueueSemaphore.release();
+
+                            // Let the exception propagate further up - we just want to release the semaphores
+                            throw new BulkheadException(ex);
+                        }
+
+                        // Release both permits
                         bulkheadExecutionSemaphore.release();
                         bulkheadExecutionQueueSemaphore.release();
-                        
-                        // Let the exception propagate further up - we just want to release the semaphores
-                        throw ex;
+                    } catch (InterruptedException ex) {
+                        throw new BulkheadException(ex);
                     }
-                    
-                    // Release both permits
-                    bulkheadExecutionSemaphore.release();
-                    bulkheadExecutionQueueSemaphore.release();
                 } else {
                     throw new BulkheadException("No free work or queue permits.");
                 }
@@ -160,7 +179,7 @@ public class BulkheadInterceptor implements Serializable {
                         bulkheadExecutionSemaphore.release();
                         
                         // Let the exception propagate further up - we just want to release the semaphores
-                        throw ex;
+                        throw new BulkheadException(ex);
                     }
                     
                 // Release the permit
@@ -177,7 +196,7 @@ public class BulkheadInterceptor implements Serializable {
                     bulkheadExecutionSemaphore.release();
 
                     // Let the exception propagate further up - we just want to release the semaphores
-                    throw ex;
+                    throw new BulkheadException(ex);
                 }
                 
                 // Release the permit

@@ -58,14 +58,15 @@ public class FallbackPolicy {
     private final Class<? extends FallbackHandler> fallbackClass;
     private final String fallbackMethod;
     
-    public FallbackPolicy(Fallback fallback, Config config, String annotatedMethodName, 
-            String annotatedClassCanonicalName) {
-        fallbackClass = (Class<? extends FallbackHandler>) FaultToleranceCdiUtils
-                .getOverrideValue(config, Fallback.class.getName(), "value", 
-                        annotatedMethodName, annotatedClassCanonicalName)
-                .orElse(fallback.value());
-        fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class.getName(), 
-                "fallbackMethod", annotatedMethodName, annotatedClassCanonicalName)
+    public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext) 
+            throws ClassNotFoundException {     
+        fallbackClass = (Class<? extends FallbackHandler>) Thread.currentThread().getContextClassLoader().loadClass(
+                (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
+                        invocationContext, String.class)
+                .orElse(fallback.value().getName()));
+        
+        fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, 
+                "fallbackMethod", invocationContext, String.class)
                 .orElse(fallback.fallbackMethod());
     }
     

@@ -50,18 +50,27 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
  * @author Andrew Pielage
  */
 public class BulkheadValidator {
+
     public static void validateAnnotation(Bulkhead bulkhead, AnnotatedMethod<?> annotatedMethod, Config config) {
         int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
-                config, Bulkhead.class.getName(), "value", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName())
+                config, Bulkhead.class, "value", annotatedMethod.getJavaMember().getName(),
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(bulkhead.value());
         int waitingTaskQueue = (Integer) FaultToleranceCdiUtils.getOverrideValue(
-                config, Bulkhead.class.getName(), "waitingTaskQueue", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName())
+                config, Bulkhead.class, "waitingTaskQueue", annotatedMethod.getJavaMember().getName(),
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(bulkhead.waitingTaskQueue());
-        
-        if (value < 1 || waitingTaskQueue < 0) {
-            throw new FaultToleranceDefinitionException();
+
+        if (value < 1) {
+            throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
+                    + " annotated with " + Bulkhead.class.getCanonicalName() 
+                    + " has a value less than 1: " + value);
+        }
+
+        if (waitingTaskQueue < 0) {
+            throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
+                    + " annotated with " + Bulkhead.class.getCanonicalName() 
+                    + " has a waitingTaskQueue value less than 0: " + waitingTaskQueue);
         }
     }
 }

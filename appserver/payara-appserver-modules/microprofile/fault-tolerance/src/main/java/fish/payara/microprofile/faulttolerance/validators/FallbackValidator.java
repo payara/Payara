@@ -40,7 +40,6 @@
 package fish.payara.microprofile.faulttolerance.validators;
 
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
-import java.lang.reflect.Method;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
@@ -58,34 +57,36 @@ public class FallbackValidator {
     public static void validateAnnotation(Fallback fallback, AnnotatedMethod<?> annotatedMethod, Config config)
             throws Exception {
         String fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(
-                config, Fallback.class.getName(), "fallbackMethod", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName())
+                config, Fallback.class, "fallbackMethod", annotatedMethod.getJavaMember().getName(), 
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class)
                 .orElse(fallback.fallbackMethod());
         
 
-        Class<? extends FallbackHandler> fallbackClass = (Class<? extends FallbackHandler>) FaultToleranceCdiUtils
-                .getOverrideValue(config, Fallback.class.getName(), "value", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName())
-                .orElse(fallback.value());
+        Class<? extends FallbackHandler> fallbackClass = (Class<? extends FallbackHandler>) Thread.currentThread()
+                .getContextClassLoader().loadClass((String) FaultToleranceCdiUtils
+                .getOverrideValue(config, Fallback.class, "value", annotatedMethod.getJavaMember().getName(), 
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class)
+                .orElse(fallback.value().getName()));
         
         if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
             if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {
-                throw new FaultToleranceDefinitionException();
+                throw new FaultToleranceDefinitionException("Both a fallback class and method have been set.");
             } else {
                 try {
                     if (annotatedMethod.getJavaMember().getDeclaringClass().getDeclaredMethod(fallbackMethod, 
                             annotatedMethod.getJavaMember().getParameterTypes()).getReturnType() 
                             != annotatedMethod.getJavaMember().getReturnType()) {
-                        throw new FaultToleranceDefinitionException();
+                        throw new FaultToleranceDefinitionException("Return type of fallback method does not match.");
                     }
                 } catch (NoSuchMethodException ex) {
-                    throw new FaultToleranceDefinitionException(ex);
+                    throw new FaultToleranceDefinitionException("Could not find fallback method: " + fallbackMethod, ex);
                 }
             }
         } else if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {
             if (fallbackClass.getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class).getReturnType() 
                     != annotatedMethod.getJavaMember().getReturnType()) {
-                throw new FaultToleranceDefinitionException();
+                throw new FaultToleranceDefinitionException(
+                        "Return type of fallback class handle method does not match.");
             }
         }
     }

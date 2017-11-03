@@ -40,14 +40,13 @@
 package fish.payara.microprofile.faulttolerance.interceptors;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FAULT_TOLERANCE_ENABLED_PROPERTY;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
 import javax.annotation.Priority;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
@@ -57,8 +56,12 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.naming.NamingException;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -67,86 +70,100 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor
 @Timeout
-@Priority(Interceptor.Priority.PLATFORM_AFTER)
+@Priority(Interceptor.Priority.PLATFORM_AFTER + 15)
 public class TimeoutInterceptor {
-    
+
     private Future currentTimeout;
+    private boolean timedOut;
     
     @Inject
     private BeanManager beanManager;
-    
-    @Inject
-    Config config;
-    
+
     @AroundInvoke
     public Object intercept(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         
+        FaultToleranceService faultToleranceService = 
+                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        Config config = ConfigProvider.getConfig();
+        
         try {
-            if (config.getValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class)) {
+            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(),
+                    config)) {
                 proceededInvocationContext = timeout(invocationContext);
             } else {
                 proceededInvocationContext = invocationContext.proceed();
             }
         } catch (Exception ex) {
-            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+            Retry retry = FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext);
             
-            if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config,
-                        invocationContext.getMethod().getName(), 
-                        invocationContext.getMethod().getDeclaringClass().getCanonicalName());
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
-            } else {
+            if (retry != null) {
                 throw ex;
+            } else {
+                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+
+                if (fallback != null) {
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                } else {
+                    throw ex;
+                }
             }
         }
-        
+
         return proceededInvocationContext;
     }
-    
+
     private Object timeout(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
-        
+
         Timeout timeout = FaultToleranceCdiUtils.getAnnotation(beanManager, Timeout.class, invocationContext);
-        
+        Config config = ConfigProvider.getConfig();
         long value = (Long) FaultToleranceCdiUtils.getOverrideValue(
-                config, Timeout.class.getName(), "value", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
+                config, Timeout.class, "value", invocationContext, Long.class)
                 .orElse(timeout.value());
-        ChronoUnit unit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Timeout.class.getName(), "unit", invocationContext.getMethod().getName(), 
-                invocationContext.getMethod().getDeclaringClass().getCanonicalName())
-                .orElse(timeout.unit());
-        
+        ChronoUnit unit = ChronoUnit.valueOf(((String) FaultToleranceCdiUtils.getOverrideValue(
+                config, Timeout.class, "unit", invocationContext, String.class)
+                .orElse(timeout.unit().toString())).toUpperCase());
+
         long timeoutMillis = Duration.of(value, unit).toMillis();
         long timeoutTime = System.currentTimeMillis() + timeoutMillis;
+        timedOut = false;
         
         try {
             startTimeout(timeoutMillis);
             proceededInvocationContext = invocationContext.proceed();
             stopTimeout();
-            
-            if (System.currentTimeMillis() > timeoutTime) {
+
+            if (System.currentTimeMillis() > timeoutTime || timedOut) {
                 throw new TimeoutException();
             }
         } catch (Exception ex) {
+            stopTimeout();
             throw ex;
         }
-        
+
         return proceededInvocationContext;
     }
-    
+
     private void startTimeout(long timeoutMillis) throws NamingException {
-        Runnable timeoutTask = () -> { Thread.currentThread().interrupt(); };
+        final Thread thread = Thread.currentThread();
         
+        Runnable timeoutTask = () -> {
+            thread.interrupt();
+            timedOut = true;
+        };
+
         FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()
                 .getService(FaultToleranceService.class);
         ManagedScheduledExecutorService managedScheduledExecutorService = faultToleranceService.
                 getManagedScheduledExecutorService();
-        
+
         currentTimeout = managedScheduledExecutorService.schedule(timeoutTask, timeoutMillis, TimeUnit.MILLISECONDS);
+        
     }
-    
+
     private void stopTimeout() {
         currentTimeout.cancel(true);
     }

@@ -42,63 +42,64 @@ package fish.payara.microprofile.faulttolerance.validators;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
  *
  * @author Andrew Pielage
  */
-public class RetryValidator {
-    public static void validateAnnotation(Retry retry, AnnotatedMethod<?> annotatedMethod, Config config) {
-        int maxRetries = (Integer) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "maxRetries", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
-                .orElse(retry.maxRetries());
-        
+public class CircuitBreakerValidator {
+    public static void validateAnnotation(CircuitBreaker circuitBreaker, AnnotatedMethod<?> annotatedMethod, 
+            Config config) {
         long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "delay", annotatedMethod.getJavaMember().getName(), 
+                config, CircuitBreaker.class, "delay", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
-                .orElse(retry.delay());
+                .orElse(circuitBreaker.delay());
         
-        long maxDuration = (Long) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "maxDuration", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
-                .orElse(retry.maxDuration());
+        int requestVolumeThreshold = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+                config, CircuitBreaker.class, "requestVolumeThreshold", annotatedMethod.getJavaMember().getName(), 
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
+                .orElse(circuitBreaker.requestVolumeThreshold());
         
-        long jitter = (Long) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "jitter", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
-                .orElse(retry.jitter());
+        double failureRatio = (Double) FaultToleranceCdiUtils.getOverrideValue(
+                config, CircuitBreaker.class, "failureRatio", annotatedMethod.getJavaMember().getName(), 
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Double.class)
+                .orElse(circuitBreaker.failureRatio());
         
-        if (maxRetries < -1) {
-            throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
-                    + " annotated with " + Retry.class.getCanonicalName() 
-                    + " has a maxRetries value less than -1: " + maxRetries);
-        }
+        int successThreshold = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+                config, CircuitBreaker.class, "successThreshold", annotatedMethod.getJavaMember().getName(), 
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
+                .orElse(circuitBreaker.successThreshold());
         
         if (delay < 0) {
             throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
-                    + " annotated with " + Retry.class.getCanonicalName() 
+                    + " annotated with " + CircuitBreaker.class.getCanonicalName() 
                     + " has a delay value less than 0: " + delay);
         }
         
-        if (maxDuration < 0) {
+        if (requestVolumeThreshold < 1) {
             throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
-                    + " annotated with " + Retry.class.getCanonicalName() 
-                    + " has a maxDuration value less than 0: " + maxDuration);
+                    + " annotated with " + CircuitBreaker.class.getCanonicalName() 
+                    + " has a requestVolumeThreshold value less than 1: " + requestVolumeThreshold);
         }
         
-        if (maxDuration <= delay) {
+        if (failureRatio < 0) {
             throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
-                    + " annotated with " + Retry.class.getCanonicalName() 
-                    + " has a maxDuration value less than or equal to the delay value: " + maxDuration);
+                    + " annotated with " + CircuitBreaker.class.getCanonicalName() 
+                    + " has a failureRatio value less than 0: " + failureRatio);
         }
         
-        if (jitter < 0) {
+        if (failureRatio > 1) {
             throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
-                    + " annotated with " + Retry.class.getCanonicalName() 
-                    + " has a jitter value less than 0: " + jitter);
+                    + " annotated with " + CircuitBreaker.class.getCanonicalName() 
+                    + " has a failureRatio value greater than 1: " + failureRatio);
+        }
+        
+        if (successThreshold < 1) {
+            throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
+                    + " annotated with " + CircuitBreaker.class.getCanonicalName() 
+                    + " has a successThreshold value less than 1: " + successThreshold);
         }
     }
 }
