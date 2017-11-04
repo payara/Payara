@@ -119,6 +119,26 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
                 </plugins>
             </build>
         </profile>
+        
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <!-- Soteria / Java EE Security 
+                     Required in Payara 5, but optional for JDK 8+ builds in Payara 4 
+                -->
+                 <dependency>
+                    <groupId>javax.security.enterprise</groupId>
+                    <artifactId>javax.security.enterprise-api</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.soteria</groupId>
+                    <artifactId>javax.security.enterprise</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
     
     <dependencies>
@@ -220,14 +240,6 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
         <dependency>
             <groupId>javax.websocket</groupId>
             <artifactId>javax.websocket-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.security.enterprise</groupId>
-            <artifactId>javax.security.enterprise-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.soteria</groupId>
-            <artifactId>javax.security.enterprise</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
