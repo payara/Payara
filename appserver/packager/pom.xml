@@ -120,6 +120,7 @@
         <module>metro</module>
         <module>glassfish-appclient</module>
         <module>javadb</module>
+        <module>h2db</module>
         <module>jersey</module>
         <module>glassfish-jcdi</module>
         <module>mq</module>
