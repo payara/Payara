@@ -1,15 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
 # and Distribution License("CDDL") (collectively, the "License").  You
 # may not use this file except in compliance with the License.  You can
 # obtain a copy of the License at
-# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-# or packager/legal/LICENSE.txt.  See the License for the specific
+# https://github.com/payara/Payara/blob/master/LICENSE.txt
+# See the License for the specific
 # language governing permissions and limitations under the License.
 #
 # When distributing the software, include this License Header Notice in each
@@ -37,29 +39,18 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
-#Values are added to complete properties file structure.
-Oracle=ORACLE
-Derby=DERBY
-Embedded-Derby=EMBEDDED-DERBY
-JavaDB=JAVADB
-Derby-30=DERBY-30
-Embedded-Derby-30=EMBEDDED-DERBY-30
-JavaDB-30=JAVADB-30
-H2=H2
-DB2=DB2
-MicrosoftSqlServer=MICROSOFTSQLSERVER
-Sybase=SYBASE
-Pointbase=POINTBASE
-Cloudscape=CLOUDSCAPE
-Informix=INFORMIX
-MySql=MYSQL
-Postgresql=POSTGRESQL
-DataDirect-DB2=DATADIRECT-DB2
-DataDirect-Oracle=DATADIRECT-ORACLE
-DataDirect-MySQL=DATADIRECT-MYSQL
-DataDirect-Sybase=DATADIRECT-SYBASE
-DataDirect-Informix=DATADIRECT-INFORMIX
-DataDirect-Microsoft-SQL-Server=DATADIRECT-MICROSOFT-SQL-SERVER
 
+import imp
+
+conf = imp.load_source("pkg_conf", "../pkg_conf.py")
+
+pkg = {
+    "name"          : "h2db",
+    "version"       : conf.h2db_version,
+    "attributes"    : {
+                        "pkg.summary" : "H2 DB",
+                        "info.classification" : "Databases and Tools"
+                      },
+     "dirtrees"     : [ "h2db" ]
+}
