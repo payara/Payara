@@ -82,10 +82,12 @@ public class DataSourceObjectBuilder implements java.io.Serializable {
 
     private static boolean jdbc40;
     private static boolean jdbc41;
+    private static boolean jdbc42;
 
     static {
         jdbc40 = detectJDBC40();
         jdbc41 = detectJDBC41();
+        jdbc42 = detectJDBC42();
     }
 
     private boolean debug = false;
@@ -330,5 +332,25 @@ public class DataSourceObjectBuilder implements java.io.Serializable {
             }
         }
         return jdbc41;
+    }
+    
+   /**
+     * Detect if jdbc api version is 4.2 or not
+     *
+     * @return boolean
+     */
+    private static boolean detectJDBC42() {
+        boolean jdbc42 = false;
+        try {
+            Class.forName("java.sql.JDBCType");
+            jdbc42 = true;
+        } catch (ClassNotFoundException cnfe) {
+            if (_logger.isLoggable(Level.FINEST)) {
+                _logger.log(Level.FINEST,
+                        "could not find JDBCType(enum available in jdbc-42),"
+                        + " jdk supports jdbc-41 or lesser");
+            }
+        }
+        return jdbc42;
     }
 }
