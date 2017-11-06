@@ -39,8 +39,11 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.hazelcast.HazelcastConfigSpecificConfiguration;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +51,7 @@ import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -56,6 +60,7 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -76,9 +81,25 @@ import org.jvnet.hk2.annotations.Service;
 public class GetHazelcastConfiguration implements AdminCommand {
     @Inject
     private Domain domain;
+    
+    @Inject
+    private Target targetUtil;
+
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    String target;
+
 
     @Override
     public void execute(AdminCommandContext context) {
+        
+        Config config = targetUtil.getConfig(target);
+        if (config == null) {
+            context.getActionReport().setMessage("No such config named: " + target);
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+        
+        HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
        
         HazelcastRuntimeConfiguration runtimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
@@ -89,12 +110,12 @@ public class GetHazelcastConfiguration implements AdminCommand {
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         Object values[] = new Object[25];
         values[0] = runtimeConfiguration.getHazelcastConfigurationFile();
-        values[1] = runtimeConfiguration.getEnabled();
+        values[1] = nodeConfiguration.getEnabled();
         values[2] = runtimeConfiguration.getStartPort();
         values[3] = runtimeConfiguration.getMulticastGroup();
         values[4] = runtimeConfiguration.getMulticastPort();
-        values[5] = runtimeConfiguration.getJNDIName();
-        values[6] = runtimeConfiguration.getLite();
+        values[5] = nodeConfiguration.getJNDIName();
+        values[6] = nodeConfiguration.getLite();
         values[7] = runtimeConfiguration.getClusterGroupName();
         values[8] = runtimeConfiguration.getClusterGroupPassword();
         values[9] = runtimeConfiguration.getLicenseKey();
@@ -104,15 +125,15 @@ public class GetHazelcastConfiguration implements AdminCommand {
         values[13] = runtimeConfiguration.getDasPort();
         values[14] = runtimeConfiguration.getTcpipMembers();
         values[15] = runtimeConfiguration.getDiscoveryMode();
-        values[16] = runtimeConfiguration.getMemberName();
-        values[17] = runtimeConfiguration.getMemberGroup();
+        values[16] = nodeConfiguration.getMemberName();
+        values[17] = nodeConfiguration.getMemberGroup();
         values[18] = runtimeConfiguration.getInterface();
-        values[19] = runtimeConfiguration.getCacheManagerJNDIName();
-        values[20] = runtimeConfiguration.getCachingProviderJNDIName();
-        values[21] = runtimeConfiguration.getExecutorPoolSize();
-        values[22] = runtimeConfiguration.getExecutorQueueCapacity();
-        values[23] = runtimeConfiguration.getScheduledExecutorPoolSize();
-        values[24] = runtimeConfiguration.getScheduledExecutorQueueCapacity();
+        values[19] = nodeConfiguration.getCacheManagerJNDIName();
+        values[20] = nodeConfiguration.getCachingProviderJNDIName();
+        values[21] = nodeConfiguration.getExecutorPoolSize();
+        values[22] = nodeConfiguration.getExecutorQueueCapacity();
+        values[23] = nodeConfiguration.getScheduledExecutorPoolSize();
+        values[24] = nodeConfiguration.getScheduledExecutorQueueCapacity();
         
         columnFormatter.addRow(values);
         

@@ -39,7 +39,10 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.hazelcast.HazelcastConfigSpecificConfiguration;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.beans.PropertyVetoException;
@@ -63,6 +66,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -93,6 +97,12 @@ public class SetHazelcastConfiguration implements AdminCommand {
     
     @Inject
     private Domain domain;
+    
+    @Inject
+    private Target targetUtil;
+
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    String target;
     
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
@@ -177,6 +187,16 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
+        
+                
+        Config config = targetUtil.getConfig(target);
+        if (config == null) {
+            context.getActionReport().setMessage("No such config named: " + target);
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+        
+        HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
 
         final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
@@ -193,6 +213,48 @@ public class SetHazelcastConfiguration implements AdminCommand {
         HazelcastRuntimeConfiguration hazelcastRuntimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         if (hazelcastRuntimeConfiguration != null) {
             try {
+                
+                ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
+                    @Override
+                    public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                        if (jndiName != null) {
+                            hazelcastRuntimeConfigurationProxy.setJNDIName(jndiName);
+                        }
+                        if (enabled != null) {
+                            hazelcastRuntimeConfigurationProxy.setEnabled(enabled.toString());
+                        }
+                        if (lite != null) {
+                            hazelcastRuntimeConfigurationProxy.setLite(lite.toString());
+                        }                        if (cacheManagerJndiName != null) {
+                            hazelcastRuntimeConfigurationProxy.setCacheManagerJNDIName(cacheManagerJndiName);
+                        }
+                        if (cachingProviderJndiName != null) {
+                            hazelcastRuntimeConfigurationProxy.setCachingProviderJNDIName(cachingProviderJndiName);
+                        }
+                        if (executorPoolSize != null) {
+                            hazelcastRuntimeConfigurationProxy.setExecutorPoolSize(executorPoolSize);
+                        }
+                        if (executorQueueCapacity != null) {
+                            hazelcastRuntimeConfigurationProxy.setExecutorQueueCapacity(executorQueueCapacity);
+                        }
+                        if (scheduledExecutorPoolSize != null) {
+                            hazelcastRuntimeConfigurationProxy.setScheduledExecutorPoolSize(scheduledExecutorPoolSize);
+                        }
+                        if (scheduledExecutorQueueCapacity != null) {
+                            hazelcastRuntimeConfigurationProxy.setScheduledExecutorQueueCapacity(scheduledExecutorQueueCapacity);
+                        } 
+                        if (memberName != null) {
+                            hazelcastRuntimeConfigurationProxy.setMemberName(memberName);
+                        }
+                        if (memberGroup != null) {
+                            hazelcastRuntimeConfigurationProxy.setMemberGroup(memberGroup);
+                        }
+                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        return null;
+                    }
+                },nodeConfiguration) ;
+                
+                
                 ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
                     @Override
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
@@ -205,17 +267,9 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         if (multicastPort != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastPort(multicastPort);
                         }
-                        if (jndiName != null) {
-                            hazelcastRuntimeConfigurationProxy.setJNDIName(jndiName);
-                        }
-                        if (enabled != null) {
-                            hazelcastRuntimeConfigurationProxy.setEnabled(enabled.toString());
-                        }
+
                         if (configFile != null) {
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
-                        }
-                        if (lite != null) {
-                            hazelcastRuntimeConfigurationProxy.setLite(lite.toString());
                         }
                         
                         if (hostawarePartitioning != null) {
@@ -248,30 +302,6 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         }
                         if (interfaces != null) {
                             hazelcastRuntimeConfigurationProxy.setInterface(interfaces);
-                        }
-                        if (cacheManagerJndiName != null) {
-                            hazelcastRuntimeConfigurationProxy.setCacheManagerJNDIName(cacheManagerJndiName);
-                        }
-                        if (cachingProviderJndiName != null) {
-                            hazelcastRuntimeConfigurationProxy.setCachingProviderJNDIName(cachingProviderJndiName);
-                        }
-                        if (executorPoolSize != null) {
-                            hazelcastRuntimeConfigurationProxy.setExecutorPoolSize(executorPoolSize);
-                        }
-                        if (executorQueueCapacity != null) {
-                            hazelcastRuntimeConfigurationProxy.setExecutorQueueCapacity(executorQueueCapacity);
-                        }
-                        if (scheduledExecutorPoolSize != null) {
-                            hazelcastRuntimeConfigurationProxy.setScheduledExecutorPoolSize(scheduledExecutorPoolSize);
-                        }
-                        if (scheduledExecutorQueueCapacity != null) {
-                            hazelcastRuntimeConfigurationProxy.setScheduledExecutorQueueCapacity(scheduledExecutorQueueCapacity);
-                        } 
-                        if (memberName != null) {
-                            hazelcastRuntimeConfigurationProxy.setMemberName(memberName);
-                        }
-                        if (memberGroup != null) {
-                            hazelcastRuntimeConfigurationProxy.setMemberGroup(memberGroup);
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;
