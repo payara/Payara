@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.transaction.startup;
 
@@ -88,7 +89,7 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
 
     static final String USER_TX_NO_JAVA_COMP = "UserTransaction";
 
-    private static Logger _logger = LogDomains.getLogger(TransactionLifecycleService.class, LogDomains.JTA_LOGGER);
+    private static Logger _logger = LogDomains.getLogger(TransactionLifecycleService.class, LogDomains.JTA_LOGGER, false);
 
     private JavaEETransactionManager tm = null;
 
@@ -100,7 +101,7 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
                 if (event.is(EventTypes.SERVER_READY)) {
                     _logger.fine("TM LIFECYCLE SERVICE - ON READY");
                     onReady();
-                } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {  
+                } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
                     _logger.fine("TM LIFECYCLE SERVICE - ON SHUTDOWN");
                     onShutdown();
                 }
@@ -115,7 +116,7 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
                         ActiveDescriptor<?> descriptor = habitat.getBestDescriptor(
                                 BuilderHelper.createContractFilter("javax.transaction.UserTransaction"));
                         if (descriptor == null) return null;
-                        
+
                         return habitat.getServiceHandle(descriptor).getService();
                     }
                 }, false);

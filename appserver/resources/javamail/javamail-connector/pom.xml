@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011-2015 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2017 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
     <parent>
         <groupId>org.glassfish.main.resources</groupId>
         <artifactId>javamail</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <version>4.1.2.174-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>javamail-connector</artifactId>
@@ -113,6 +113,11 @@
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.xml;
 
@@ -64,6 +65,20 @@ public interface RuntimeTagNames extends TagNames {
     public final static String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
     public final static String GF_APPLICATION_RUNTIME_TAG = "glassfish-application";
     public final static String GF_WEB_RUNTIME_TAG = "glassfish-web-app";
+    
+    public final static String PAYARA_CLASSLOADING_DELEGATE = "classloading-delegate";
+    public final static String PAYARA_ENABLE_IMPLICIT_CDI = "enable-implicit-cdi";
+    public final static String PAYARA_SCANNING_EXCLUDE = "scanning-exclude";
+    public final static String PAYARA_SCANNING_INCLUDE = "scanning-include";
+    public final static String PAYARA_WHITELIST_PACKAGE = "whitelist-package";
+    // The name of the deployment context property used to disable implicit bean discovery for a
+    // particular application deployment.
+    public final static String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
+    public final static String PAYARA_CLUSTERED_BEAN = "clustered-bean";
+    public final static String PAYARA_CLUSTERED_KEY_NAME = "clustered-key-name";
+    public final static String PAYARA_CLUSTERED_LOCK_TYPE = "clustered-lock-type";
+    public final static String PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH = "clustered-attach-postconstruct";
+    public final static String PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH = "clustered-detach-predestroy";
 
     String AS_CONTEXT = "as-context";
     String AUTH_METHOD = "auth-method";
@@ -98,6 +113,7 @@ public interface RuntimeTagNames extends TagNames {
     public static final String EJB_NAME = "ejb-name";
     public static final String EJB20_CMP = "ejb20-cmp";
     public static final String EJBS = "enterprise-beans";
+    public static final String WEBSERVICE_DEFAULT_LOGIN_CONFIG = "webservice-default-login-config";
     public static final String FIELD = "field";
 
     public static final String GROUP = "group";

@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -23,6 +23,7 @@ import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
 import fish.payara.nucleus.eventbus.EventBus;
+import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.exec.ClusterExecutionService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.store.ClusteredStore;
@@ -32,6 +33,8 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -42,9 +45,12 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-cluster")
 @RunLevel(StartupRunLevel.VAL)
-public class PayaraCluster implements MembershipListener {
+public class PayaraCluster implements MembershipListener, EventListener {
 
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
+    
+    @Inject
+    Events events;
 
     @Inject
     private HazelcastCore hzCore;
@@ -122,14 +128,20 @@ public class PayaraCluster implements MembershipListener {
 
     @PostConstruct
     void postConstruct() {
-        if (hzCore.isEnabled()) {
-            myListeners = new HashSet<ClusterListener>(2);
-            logger.info("Payara Cluster Service Enabled");
-            Cluster cluster = hzCore.getInstance().getCluster();
-            localUUID = cluster.getLocalMember().getUuid();
-            cluster.addMembershipListener(this);
-        }
+        events.register(this);
+        myListeners = new HashSet<ClusterListener>(2);
+    }
 
+    @Override
+    public void event(Event event) {
+        if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)){
+            if (hzCore.isEnabled()) {
+                logger.info("Payara Cluster Service Enabled");
+                Cluster cluster = hzCore.getInstance().getCluster();
+                localUUID = cluster.getLocalMember().getUuid();
+                cluster.addMembershipListener(this);
+            }          
+        }
     }
 
 }

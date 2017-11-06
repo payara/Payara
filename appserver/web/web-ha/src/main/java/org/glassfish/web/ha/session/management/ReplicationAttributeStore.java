@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.ha.session.management;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.web.ServerConfigLookup;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.apache.catalina.*;
@@ -303,7 +303,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
             if (classLoader != null) {
 
                 try {
-                    ois = ioUtils.createObjectInputStream(bis, true, classLoader);
+                    ois = ioUtils.createObjectInputStream(bis, true, classLoader, getUniqueId());
                 } catch (Exception ex) {}
 
             }
@@ -405,14 +405,16 @@ public class ReplicationAttributeStore extends ReplicationStore {
         }
     }
     
-    private CompositeMetadata createCompositeMetadata(ModifiedAttributeHASession modAttrSession) {
+    private CompositeMetadata createCompositeMetadata(ModifiedAttributeHASession modAttrSession) throws IOException {
         
         byte[] trunkState = null;
-        if (modAttrSession.isNew()) {
+        if (!modAttrSession.isNew()) {
             try {
                 trunkState = this.getByteArray(modAttrSession);
             } catch(IOException ex) {
-                //no op
+                if(ex instanceof NotSerializableException) {
+                    throw ex;
+                }
             }
         }
         if(_logger.isLoggable(Level.FINE)) {
@@ -552,7 +554,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
             if (classLoader != null) {
 
                 try {
-                    ois = ioUtils.createObjectInputStream(bis, true, classLoader);
+                    ois = ioUtils.createObjectInputStream(bis, true, classLoader, getUniqueId());
                 } catch (Exception ex) {}
 
             }
@@ -679,7 +681,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
             if (classLoader != null) {
 
                 try {
-                    ois = ioUtils.createObjectInputStream(bis, true, classLoader);
+                    ois = ioUtils.createObjectInputStream(bis, true, classLoader, getUniqueId());
                 } catch (Exception ex) {}
 
             }

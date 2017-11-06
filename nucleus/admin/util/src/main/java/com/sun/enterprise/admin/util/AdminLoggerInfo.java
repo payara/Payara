@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.util;
 
 import java.util.logging.Logger;
@@ -87,7 +90,7 @@ public class AdminLoggerInfo {
             message = "unable to create instance state file: {0}, exception: {1}",
             cause = "The instance state file is missing and the system is trying to" + 
                     "recreated it but and exception was raised.",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     final static String mISScannotcreate = LOGMSG_PREFIX + "-00004";
@@ -95,7 +98,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "error while adding new server state to instance state: {0}",
             cause = "An attempt to add a new server to the instance state file failed.", 
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     final static String mISSaddstateerror = LOGMSG_PREFIX + "-00005";
@@ -103,7 +106,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "error while adding failed command to instance state: {0}",
             cause = "An attempt to add a failed command to the instance state file failed.", 
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     final static String mISSaddcmderror = LOGMSG_PREFIX + "-00006";
@@ -111,7 +114,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "error while removing failed commands from instance state: {0}",
             cause = "An attempt to remove a failed command from the instance state file failed.", 
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     final static String mISSremcmderror = LOGMSG_PREFIX + "-00007";
@@ -119,7 +122,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "error while setting instance state: {0}",
             cause = "An attempt to set the state of a server in the instance state file failed.", 
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     final static String mISSsetstateerror = LOGMSG_PREFIX + "-00008";
@@ -127,7 +130,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "error while removing instance: {0}",
             cause = "An attempt to remove a server from the instance state file failed.", 
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     final static String mISSremstateerror = LOGMSG_PREFIX + "-00009";
@@ -143,7 +146,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "An unexpected exception occurred.",
             cause = "An unexpected exception occurred.", 
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     public final static String mUnexpectedException = LOGMSG_PREFIX + "-00011";
@@ -160,7 +163,7 @@ public class AdminLoggerInfo {
             message = "Can not put data to cache under key {0}",
             cause = "While invoking a command on another server, this server is unable"
                 + " to cache the meta data related to the command.", 
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
     public final static String mCantPutToCache = LOGMSG_PREFIX + "-00013";
@@ -170,7 +173,7 @@ public class AdminLoggerInfo {
                 + "which does not match the domain identifier {2} configured for this "
                 + "server's domain; rejecting the request",
             cause = "There is a error in the cluster or network configuration.",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
     public final static String mForeignDomainID = LOGMSG_PREFIX + "-00014";
@@ -178,7 +181,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "Error searching for a default admin user",
             cause = "An unexpected exception occurred wihle searching for the default admin user.",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
     public final static String mAdminUserSearchError = LOGMSG_PREFIX + "-00015";
@@ -186,7 +189,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "Cannot read admin cache file for {0}",
             cause = "An error occured while reading the admin command model cache file.",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
     public final static String mCannotReadCache = LOGMSG_PREFIX + "-00016";
@@ -194,7 +197,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "Cannot write data to cache file for {0}",
             cause = "An error occured while writing the admin command model cache file.",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
     public final static String mCannotWriteCache = LOGMSG_PREFIX + "-00017";
@@ -202,9 +205,30 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "Unexpected exception from command event listener.",
             cause = "An error occured while calling registered listener.",
-            action = "Check the server logs and contact Oracle support",
+            action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
     public final static String mExceptionFromEventListener = LOGMSG_PREFIX + "-00018";
 
+    @LogMessageInfo(
+            message = "Unrecognised HTTPS protocol provided, reverting to default: {0}",
+            cause = "Unrecognised protocol provided by system property fish.payara.clientHttpsProtocol: {1}",
+            action = "Edit the system property to use a supported protocol.",
+            level = "INFO")
+    public final static String unrecognisedHttpsProtocol = LOGMSG_PREFIX + "-00019";
+    
+    @LogMessageInfo(
+            message = "Using default HTTPS protocol: {0}",
+            cause = "No protocol provided.",
+            action = "Use the fish.payara.clientHttpsProtocol system property "
+                    + "to set an alternative protocol to use.",
+            level = "FINE")
+    public final static String usingDefaultHttpsProtocol = LOGMSG_PREFIX + "-00020";
+    
+    @LogMessageInfo(
+            message = "Setting HTTPS protocol to: {0}",
+            cause = "Protocol set using fish.payara.clientHttpsProtocol system property.",
+            level = "FINE"
+            )
+    public final static String settingHttpsProtocol = LOGMSG_PREFIX + "-00021";
 }

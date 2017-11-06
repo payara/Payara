@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.admin;
 
@@ -67,7 +68,7 @@ import java.util.Properties;
  * Create Managed Thread Factory Command
  *
  */
-@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
 @ExecuteOn(RuntimeType.ALL)
 @Service(name="create-managed-thread-factory")
 @PerLookup

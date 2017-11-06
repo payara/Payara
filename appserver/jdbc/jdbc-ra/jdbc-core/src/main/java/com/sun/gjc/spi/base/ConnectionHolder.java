@@ -61,6 +61,7 @@ import java.util.logging.Logger;
  */
 public abstract class ConnectionHolder implements Connection {
 
+    private static final Logger _logger = LogDomains.getLogger(ManagedConnectionImpl.class, LogDomains.RSR_LOGGER);
     protected Connection con;
 
     protected ManagedConnectionImpl mc;
@@ -83,11 +84,7 @@ public abstract class ConnectionHolder implements Connection {
     protected int statementTimeout;
     protected boolean statementTimeoutEnabled;
 
-    protected final static Logger _logger;
 
-    static {
-        _logger = LogDomains.getLogger(ManagedConnectionImpl.class, LogDomains.RSR_LOGGER);
-    }
     private MethodExecutor executor = null;
 
     public static enum ConnectionType {

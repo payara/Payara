@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 /**
  * <BR> <I>$Source: /cvs/glassfish/appserv-core/src/java/com/sun/ejb/containers/util/pool/Pool.java,v $</I>
@@ -59,12 +60,18 @@ package com.sun.ejb.containers.util.pool;
 public interface Pool {
     
     /**
+     * @param canWait
+     * @param param
+     * @return
        @deprecated  
     */
     public Object getObject(boolean canWait, Object param)
         throws PoolException;
     
     /**
+     * @param maxWaitTime
+     * @param param
+     * @return
        @deprecated  
     */
     public Object getObject(long maxWaitTime, Object param)
@@ -72,11 +79,12 @@ public interface Pool {
     
     /**
      * Get an object from the pool within the specified time.
-     * @param The amount of time the calling thread agrees to wait.
-     * @param Some value that might be used while creating the object
+     * The amount of time the calling thread agrees to wait.
+     * Some value that might be used while creating the object
+     * @param param
      * @return an Object or null if an object could not be returned in 
      *   'waitForMillis' millisecond.
-     * @exception Throws PoolException if an object cannot be created
+     * @exception PoolException if an object cannot be created
      */
     public Object getObject(Object param)
         throws PoolException;
@@ -85,6 +93,7 @@ public interface Pool {
      * Return an object back to the pool. An object that is obtained through
      *	getObject() must always be returned back to the pool using either 
      *	returnObject(obj) or through destroyObject(obj).
+     * @param obj
      */
     public void returnObject(Object obj);
     			
@@ -96,7 +105,7 @@ public interface Pool {
      * This method tells that the object should be destroyed and cannot be
      * reused.
      *	
+     * @param obj
      */
     public void destroyObject(Object obj);
-    	
 }

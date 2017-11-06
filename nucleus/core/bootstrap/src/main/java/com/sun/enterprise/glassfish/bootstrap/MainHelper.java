@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,12 +67,26 @@ public class MainHelper {
     /*protected*/
 
     static void checkJdkVersion() {
+        int major = getMajorJdkVersion();
         int minor = getMinorJdkVersion();
-
-        if (minor < 7) {
-            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{ 7, minor});
+        //In case of JDK1 to JDK8 the major version would be 1 always.Starting from
+        //JDK9 the major verion would be the real major version e.g in case
+        // of JDK9 major version is 9.So in that case checking the major version only
+        if (major < 9) {
+          if (minor < 7) {
+            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{7, minor});
             System.exit(1);
+          }
         }
+    }
+
+    private static int getMajorJdkVersion() {
+      String jv = System.getProperty("java.version");
+      String[] split = jv.split("[\\._\\-]+");
+      if (split.length > 0) {
+        return Integer.parseInt(split[0]);
+      }
+      return -1;
     }
 
     private static int getMinorJdkVersion() {
@@ -130,20 +144,20 @@ public class MainHelper {
             String line = lnReader.readLine();
             // most of the asenv.conf values have surrounding "", remove them
             // and on Windows, they start with SET XXX=YYY
-            Pattern p = Pattern.compile("[Ss]?[Ee]?[Tt]? *([^=]*)=\"?([^\"]*)\"?");
+            Pattern p = Pattern.compile("(?i)(set +)?([^=]*)=\"?([^\"]*)\"?");
             while (line != null) {
                 Matcher m = p.matcher(line);
                 if (m.matches()) {
-                    File f = new File(m.group(2));
+                    File f = new File(m.group(3));
                     if (!f.isAbsolute()) {
-                        f = new File(configDir, m.group(2));
+                        f = new File(configDir, m.group(3));
                         if (f.exists()) {
-                            asenvProps.put(m.group(1), f.getAbsolutePath());
+                            asenvProps.put(m.group(2), f.getAbsolutePath());
                         } else {
-                            asenvProps.put(m.group(1), m.group(2));
+                            asenvProps.put(m.group(2), m.group(3));
                         }
                     } else {
-                        asenvProps.put(m.group(1), m.group(2));
+                        asenvProps.put(m.group(2), m.group(3));
                     }
                 }
                 line = lnReader.readLine();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2014, 2016 Payara Foundation. All rights reserved.
  
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -500,5 +500,65 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 		return stepExecution;
 	}
+        
+        @Override
+        public void markJobStarted(long key, Timestamp startTS) {
+            
+                logger.entering(CLASSNAME, "markJobStarted",
+                                    new Object[] {key, startTS});
+                
+                final int retryMax = Integer.getInteger(P_MJS_RETRY_MAX, MJS_RETRY_MAX_DEFAULT);
+                final int retryDelay = Integer.getInteger(P_MJS_RETRY_DELAY, MJS_RETRY_DELAY_DEFAULT);
+                
+                logger.log(Level.FINER,P_MJS_RETRY_MAX + 
+                             " = {0}" + ", " + P_MJS_RETRY_DELAY + " = {1} ms", 
+                            new Object[]{retryMax, retryDelay});
+            
+		Connection conn = null;
+		PreparedStatement statement = null;
 
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement(queryStrings
+					.get(MARK_JOB_STARTED));
+
+			statement.setString(1, BatchStatus.STARTED.name());
+			statement.setTimestamp(2, startTS);
+			statement.setTimestamp(3, startTS);
+			statement.setLong(4, key);
+                        
+                        // Postgres use of Multi Version Concurrency (MVCC) means that
+                        // blocking does not occur (particularly a problem in
+                        // createStepExecution()).
+                        // The below will check that the row has been commited by the 
+                        // initiating thread by retrying the update until at least 1 row 
+                        // is updated.
+                                            
+                        int retryCount = 0; 
+                        while ( (statement.executeUpdate() < 1) && (retryCount++ <= retryMax) ) {
+                                sleep(retryDelay);
+                        }                       
+                        logger.log(Level.FINER, "Marking job as started required {0} retries", retryCount);
+                        
+                        if (retryCount >= retryMax) {
+                            logger.log(Level.WARNING, "Failed to mark job as started after {0} attempts", retryCount);
+                        }
+
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, null, statement);
+		}
+                logger.exiting(CLASSNAME, "markJobStarted");
+        }
+        
+        private static void sleep(int duration){
+
+                try {
+                        Thread.sleep(duration);
+                } catch(InterruptedException ie) {
+                        logger.warning("Thread interrupted");
+                        Thread.currentThread().interrupt();
+                }
+        }
 }

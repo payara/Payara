@@ -37,8 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
 -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 
 <!-- configuration/accessLog.jsf -->
 
@@ -66,7 +66,7 @@
         setPageSessionAttribute(key="has2Objects" value="#{true}" );  //for editPageButtons.inc
         setPageSessionAttribute(key="childType2" value="access-log");
         setPageSessionAttribute(key="selfUrl2", value="#{pageSession.selfUrl}/#{pageSession.childType2}");
-        setPageSessionAttribute(key="convertToFalseList2" value={"rotationEnabled"});
+        setPageSessionAttribute(key="convertToFalseList2" value={"rotationEnabled", "logToConsoleEnabled"});
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl2}.json", valueMap="#{pageSession.valueMap2}");
 
         //set the following for including buttons.inc
@@ -97,6 +97,10 @@
 
         <sun:property id="acLog" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.accessLogging}">
             <sun:checkbox id="accessLoggingEnabled" label="$resource{i18n.common.Enabled}"  selected="#{pageSession.valueMap['accessLoggingEnabled']}" selectedValue="true"/>
+        </sun:property>
+        <sun:property id="logToConsoleProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.LogToConsole}" helpText="$resource{i18n_web.access.LogToConsoleHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap2['logToConsoleEnabled']}" selectedValue="true" >
+           </sun:checkbox>
         </sun:property>
 
         <sun:property id="rotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Rotation}" helpText="$resource{i18n_web.access.RotationHelp}">

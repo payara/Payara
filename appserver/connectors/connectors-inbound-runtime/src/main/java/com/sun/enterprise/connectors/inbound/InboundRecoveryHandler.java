@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.connectors.inbound;
 
@@ -261,7 +262,8 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
 
         if(ResourcesUtil.createInstance().isEnabled(application)){
             ApplicationInfo appInfo = appsRegistry.get(application.getName());
-            if(appInfo != null){
+            // non java-ee apps do not have ejbs, and they dont't have Application entry, leading to NPE            
+            if(appInfo != null && appInfo.isJavaEEApp()){
                 com.sun.enterprise.deployment.Application app =
                         appInfo.getMetaData(com.sun.enterprise.deployment.Application.class);
                 Set<BundleDescriptor> descriptors = app.getBundleDescriptors();

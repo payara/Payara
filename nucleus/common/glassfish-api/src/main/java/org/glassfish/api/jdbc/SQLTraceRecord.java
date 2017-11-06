@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.jdbc;
 
@@ -82,6 +83,11 @@ public class SQLTraceRecord implements Serializable {
      * Time of execution of query.
      */
     private long timeStamp;
+    
+    /**
+     * Execution time
+     */
+    private long executionTime;
     
     /**
      * Parameters of the method that executed the SQL query. Includes information
@@ -198,6 +204,22 @@ public class SQLTraceRecord implements Serializable {
     }
 
     /**
+     * Gets the time taken to execute the SQL
+     * @return  executionTime of the SQL statement
+     */
+    public long getExecutionTime() {
+        return executionTime;
+    }
+
+    /**
+     * Sets the time taken to execute the SQL
+     * @param executionTime the time taken to execute the SQL
+     */
+    public void setExecutionTime(long executionTime) {
+        this.executionTime = executionTime;
+    }
+
+    /**
      * Gets the parameters of the method that executed the SQL query. 
      * Includes information like SQL query, arguments and so on.
      * 
@@ -220,18 +242,16 @@ public class SQLTraceRecord implements Serializable {
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append("ThreadID=" + getThreadID() + " | ");
-        sb.append("ThreadName=" + getThreadName() + " | ");
-        sb.append("TimeStamp=" + getTimeStamp() + " | ");
+        sb.append("PoolName=" + getPoolName() + " | ");
+        sb.append("ExecutionTime=" + getExecutionTime() + "ms | ");
         sb.append("ClassName=" + getClassName() + " | ");
         sb.append("MethodName=" + getMethodName() + " | ");
         if(params != null && params.length > 0) {
             int index = 0;
             for(Object param : params) {
-                sb.append("arg[" + index++ + "]=" + param.toString() + " | ");
+                sb.append("arg[" + index++ + "]=" + ((param == null) ? "<null>" : param.toString()) + " | ");
             }
         }
-        //TODO add poolNames and other fields of this record.
         return sb.toString();
     }
 }

@@ -10,3 +10,5 @@ target/
 *.iml
 .idea
 gfbuild.log
+/nucleus/payara-modules/requesttracing-core/nbproject/
+nb-configuration.xml

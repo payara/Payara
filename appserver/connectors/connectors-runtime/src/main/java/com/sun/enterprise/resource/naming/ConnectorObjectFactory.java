@@ -37,8 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.resource.naming;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.naming.ConfigurationException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.spi.ObjectFactory;
+import javax.resource.spi.ManagedConnectionFactory;
+
+import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
@@ -53,20 +74,6 @@ import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-import org.glassfish.resourcebase.resources.api.ResourceDeployer;
-import org.glassfish.resourcebase.resources.api.ResourceInfo;
-
-import javax.naming.*;
-import javax.naming.spi.ObjectFactory;
-import javax.resource.spi.ManagedConnectionFactory;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * An object factory to handle creation of Connection Factories
@@ -77,13 +84,13 @@ public class ConnectorObjectFactory implements ObjectFactory {
 
     private ConnectorRuntime runtime ;
 
-    private static Logger _logger = LogDomains.getLogger(ConnectorObjectFactory.class, LogDomains.JNDI_LOGGER);
+    private static Logger _logger = LogDomains.getLogger(ConnectorObjectFactory.class, LogDomains.JNDI_LOGGER, false);
     protected final static StringManager localStrings =
             StringManager.getManager(ConnectorRuntime.class);
 
     public ConnectorObjectFactory() {
     }
-    
+
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable env) throws Exception {
 
         Reference ref = (Reference) obj;
@@ -150,7 +157,7 @@ public class ConnectorObjectFactory implements ObjectFactory {
             if(logicalName != null){
                 mgr.setLogicalName(logicalName);
             }
-            
+
             mgr.initialize();
 
             cf = mcf.createConnectionFactory(mgr);

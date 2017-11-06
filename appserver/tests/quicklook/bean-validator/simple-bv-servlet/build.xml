@@ -54,7 +54,7 @@
     <target name="build-deploy" depends="build,deploy" />
    
     <target name="build" depends="compile-tests">
-        <!--<antcall target="build-impl"/>-->
+        <antcall target="build-impl"/>
     </target>
     
     <target name="deploy">
@@ -73,6 +73,43 @@
     <target name="undeploy">
         <antcall target="undeploy-${deploy.platform}-impl"/>
     </target>
+
+
+<target name="build-war" depends="archive-type" if="archive.war">  
+    <echo message="Now creating a war file ${dist.dir}/${app.file.ext}"/>
+    <delete dir="${class.output}"/>
+    <delete dir="${dist.dir}"/>
+    <delete file="${app.file.ext}"/>
+    <mkdir dir="${class.output}"/>
+    <mkdir dir="${dist.dir}"/>
+    <javac   debug="true"
+    source="1.5"
+    target="1.5"
+    classpathref="class.path"
+    srcdir="src/java"
+    failonerror="false"
+    destdir="${class.output}"/>
     
+    <mkdir dir="${class.output}/META-INF"/>
+    <copy file="metadata/persistence.xml" todir="${class.output}/META-INF" failonerror="false"/> 
+    
+    <war destfile="${dist.dir}/${app.file.ext}" webxml="metadata/web.xml">
+        <!--<fileset dir="web/html"/>
+        <fileset dir="web/jsp"/>-->
+        <classes dir="${class.output}">        
+            <include name="**/*.class"/>
+        <!--<include name="**/persistence.xml"/>-->
+        <include name="**/*.properties"/>
+        </classes>
+       <!--<zipfileset dir="src/graphics/images/gifs"
+        prefix="images"/> -->
+        <webinf dir="metadata">                  
+            <include name="**/*.xml"/>                  
+            <exclude name="**/persistence.xml"/>
+        </webinf>        
+    </war>
+     <!--antcall target="update-war-struts"/ -->
+     <!--copy file="${dist.dir}/${app.file.ext}" tofile="./${app.file.ext}"/-->
+</target>
     
 </project>

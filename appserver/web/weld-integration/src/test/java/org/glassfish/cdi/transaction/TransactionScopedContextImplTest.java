@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -182,6 +183,7 @@ public class TransactionScopedContextImplTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testget() throws Exception {
         TransactionSynchronizationRegistry transactionSynchronizationRegistry = mockSupport.createMock(TransactionSynchronizationRegistry.class);
         Contextual<LocalBean> contextual = mockSupport.createMock(Contextual.class);

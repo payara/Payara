@@ -37,17 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
+
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.cdi.transaction;
 
-import org.glassfish.logging.annotation.LoggerInfo;
 
+import com.sun.enterprise.transaction.TransactionManagerHelper;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.transaction.Status;
 import javax.transaction.TransactionalException;
 import java.util.logging.Logger;
+import javax.transaction.TransactionManager;
 
 /**
  * Transactional annotation Interceptor class for Required transaction type,
@@ -69,21 +73,26 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.log(java.util.logging.Level.INFO, CDI_JTA_REQUIRED);
+        _logger.log(java.util.logging.Level.FINE, CDI_JTA_REQUIRED);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(false);
         try {
             boolean isTransactionStarted = false;
             if (getTransactionManager().getTransaction() == null) {
-                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQUIRED);
+                _logger.log(java.util.logging.Level.FINE, CDI_JTA_MBREQUIRED);
                 try {
                     getTransactionManager().begin();
+                    TransactionManager tm = getTransactionManager();
+                    if (tm instanceof TransactionManagerHelper) {
+                       ((TransactionManagerHelper)tm).preInvokeTx(true);
+                    }
+                    
                 } catch (Exception exception) {
                     String messageString =
                             "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                     "encountered exception during begin " +
                                     exception;
-                    _logger.log(java.util.logging.Level.INFO,
+                    _logger.log(java.util.logging.Level.FINE,
                         CDI_JTA_MBREQUIREDBT, exception);
                     throw new TransactionalException(messageString, exception);
                 }
@@ -95,6 +104,10 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
             } finally {
                 if (isTransactionStarted) {
                     try {
+                        TransactionManager tm = getTransactionManager();
+                        if (tm instanceof TransactionManagerHelper) {
+                           ((TransactionManagerHelper)tm).postInvokeTx(false,true);
+                        }
                         // Exception handling for proceed method call above can set TM/TRX as setRollbackOnly
                         if(getTransactionManager().getTransaction().getStatus() == Status.STATUS_MARKED_ROLLBACK) {
                             getTransactionManager().rollback();
@@ -106,7 +119,7 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
                                 "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                         "encountered exception during commit " +
                                         exception;
-                        _logger.log(java.util.logging.Level.INFO,
+                        _logger.log(java.util.logging.Level.FINE,
                                 CDI_JTA_MBREQUIREDCT, exception);
                         throw new TransactionalException(messageString, exception);
                     }

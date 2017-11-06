@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] Payara Foundation and/or affiliates
 -->
 
 <!-- security/realms/realmAttrs.inc -->
@@ -173,9 +174,6 @@
         </sun:property>
         <sun:property id="groupName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.groupName}" helpText="$resource{i18nc.realm.groupNameHelp}" >
             <sun:textField id="groupName" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.groupName']}" text="#{attrMap.groupNameColumn}" required="#{true}" />
-        </sun:property>
-        <sun:property id="pswdEnc" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.pswdEnc}" helpText="$resource{i18nc.realm.pswdEncHelp}" >
-            <sun:textField id="pswdEnc" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.pswdEncAlgorithm']}" text="#{attrMap.pswdEncAlgorithm}"  required="#{true}" />
         </sun:property>
         <sun:property id="asgroup" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.asgroup}" helpText="$resource{i18nc.realm.asgroupHelp}" >
             <sun:textField id="asgroup" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.asgroup']}" text="#{attrMap.jdbcAsGroups}"  />

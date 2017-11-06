@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.container.common.impl.managedbean;
 
@@ -95,7 +96,7 @@ import com.sun.logging.LogDomains;
 public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct, EventListener {
 
      private static final Logger _logger = LogDomains.getLogger(ManagedBeanManagerImpl.class,
-            LogDomains.CORE_LOGGER);
+            LogDomains.CORE_LOGGER, false);
 
     @Inject
     private ComponentEnvManager compEnvManager;
@@ -130,7 +131,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
     }
 
     public void event(Event event) {
-        
+
          if (event.is(Deployment.APPLICATION_LOADED) ) {
              ApplicationInfo info =  Deployment.APPLICATION_LOADED.getHook(event);
 
@@ -139,7 +140,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
              registerAppLevelDependencies(info);
 
          } else if( event.is(Deployment.APPLICATION_UNLOADED) ) {
-             
+
              ApplicationInfo info =  Deployment.APPLICATION_UNLOADED.getHook(event);
              Application app = info.getMetaData(Application.class);
 
@@ -206,40 +207,29 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
         loadManagedBeans(app);
     }
-    
+
     public void loadManagedBeans(Application app) {
 
         JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         for(BundleDescriptor bundle : app.getBundleDescriptors()) {
-
             if (!bundleEligible(bundle)) {
                 continue;
             }
-
-            boolean validationRequired  = (bundle instanceof EjbBundleDescriptor)
-                    || (bundle instanceof ApplicationClientDescriptor);
 
             boolean isCDIBundle = (jcdiService != null && jcdiService.isJCDIEnabled(bundle));
 
             for(ManagedBeanDescriptor next : bundle.getManagedBeans()) {
 
                 try {
-
-                    // TODO Should move this to regular DOL processing stage                                      
-                    if( validationRequired ) {
-                        next.validate();
-                    }
-
                     Set<String> interceptorClasses = next.getAllInterceptorClasses();
-
 
                     Class targetClass = bundle.getClassLoader().loadClass(next.getBeanClassName());
                     InterceptorInfo interceptorInfo = new InterceptorInfo();
                     interceptorInfo.setTargetClass(targetClass);
                     interceptorInfo.setInterceptorClassNames(interceptorClasses);
                     interceptorInfo.setAroundConstructInterceptors
-                            (next.getAroundConstructCallbackInterceptors(targetClass, 
+                            (next.getAroundConstructCallbackInterceptors(targetClass,
                                      getConstructor(targetClass, isCDIBundle)));
                     interceptorInfo.setPostConstructInterceptors
                             (next.getCallbackInterceptors(LifecycleCallbackDescriptor.CallbackType.POST_CONSTRUCT));
@@ -320,7 +310,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
         }
 
-        return managedBean;      
+        return managedBean;
     }
 
     /**
@@ -377,7 +367,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                         _logger.log(Level.FINE, "Managed bean " + next.getBeanClassName() + " PreDestroy", e);
                     }
 
-                }                                 
+                }
 
                 com.sun.enterprise.container.common.spi.util.ComponentEnvManager compEnvManager =
                     habitat.getService(com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class);
@@ -477,7 +467,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         }
 
         T callerObject = null;
-        
+
         if( (jcdiService != null) && jcdiService.isJCDIEnabled(bundleDescriptor)) {
 
             // Have 299 create, inject, and call PostConstruct on managed bean
@@ -691,12 +681,12 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
             ManagedBeanDescriptor desc = bundle.getManagedBeanByBeanClass(
                     managedBeanInstance.getClass().getName());
-            
+
             if( desc == null ) {
                 throw new IllegalStateException("Could not retrieve managed bean descriptor for " +
                     managedBean + " of class " + managedBean.getClass());
             }
-            
+
             InterceptorInvoker invoker = (InterceptorInvoker)
                 desc.getSupportingInfoForBeanInstance(managedBeanInstance);
 
@@ -707,7 +697,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
             }
 
             desc.clearBeanInstanceInfo(managedBeanInstance);
-        }                      
+        }
     }
 
     private BundleDescriptor getBundle() {

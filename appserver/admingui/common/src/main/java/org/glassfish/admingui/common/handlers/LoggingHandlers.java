@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+ 
 /*
  * InstanceHandler.java
  *
@@ -134,9 +136,14 @@ public class LoggingHandlers {
         try{
             StringBuilder sb = new StringBuilder();
             String sep = "";
-            for(Map<String, Object> oneRow : allRows){
-                if ( !GuiUtil.isEmpty((String) oneRow.get("loggerName"))){
-                    sb.append(sep).append(oneRow.get("loggerName")).append("=").append(oneRow.get("level"));
+            for(Map<String, Object> oneRow : allRows) {
+                String loggerName = (String) oneRow.get("loggerName");
+                if ( !GuiUtil.isEmpty(loggerName)){
+                    if (loggerName.contains(":")) {
+                        loggerName = loggerName.replace(":", "\\:");
+                    }
+                    
+                    sb.append(sep).append(loggerName).append("=").append(oneRow.get("level"));
                     sep=":";
                 }
             }
@@ -169,7 +176,10 @@ public class LoggingHandlers {
         StringBuilder sb = new StringBuilder();
         String sep = "";
         for (String logger : oldLoggers) {
-            if (!newLoggers.contains(logger)) {
+            if (!newLoggers.contains(logger)) {  
+                if (logger.contains(":")) {
+                    logger = logger.replace(":", "\\:");
+                }
                 sb.append(sep).append(logger);
                 sep=":";
             }
@@ -198,7 +208,8 @@ public class LoggingHandlers {
                 if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")|| 
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
-                     key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ))
+                     key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ) ||
+                        key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation"))
                         && (e.getValue() == null)) {
                     attrs.put(key, "false");
                 }

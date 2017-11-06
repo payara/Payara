@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,7 +84,7 @@ public class TimeoutValueNode extends DeploymentDescriptorNode<TimeoutValueDescr
     @Override
     public void setElementValue(XMLElement element, String value) {
         if (EjbTagNames.TIMEOUT_VALUE.equals(element.getQName())) {
-            descriptor.setValue(new Long(value));
+            descriptor.setValue(Long.parseLong(value));
         } else if(EjbTagNames.TIMEOUT_UNIT.equals(element.getQName())) {
             descriptor.setUnit(elementToTimeUnit.get(value));
         } else {

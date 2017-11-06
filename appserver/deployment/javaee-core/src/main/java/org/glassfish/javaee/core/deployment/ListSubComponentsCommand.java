@@ -186,7 +186,10 @@ public class ListSubComponentsCommand implements AdminCommand {
         if (appname == null) {
             subComponents = getAppLevelComponents(app, type, subComponentsMap);
         } else {
-            BundleDescriptor bundleDesc = app.getModuleByUri(modulename);
+            // strip the version suffix (delimited by colon), if present
+            int versionSuffix = modulename.indexOf(':');
+            String versionLessModuleName = versionSuffix > 0 ? modulename.substring(0, versionSuffix) : modulename;
+            BundleDescriptor bundleDesc = app.getModuleByUri(versionLessModuleName);
             if (bundleDesc == null) {
                 report.setMessage(localStrings.getLocalString("listsubcomponents.invalidmodulename", "Invalid module name", appname, modulename));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -365,6 +368,7 @@ public class ListSubComponentsCommand implements AdminCommand {
                 StringBuffer sb = new StringBuffer();    
                 String canonicalName = wcd.getCanonicalName();
                 sb.append("<");
+                 // The component type is limited to JSP or Servlet at this level. JAX-RS resources for example need to be obtained elsewhere.
                 String wcdType = (wcd.isServlet() ? "Servlet" : "JSP");
                 sb.append(wcdType);
                 sb.append(">"); 

@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.beans;
@@ -62,6 +64,7 @@ public class ExternalJndiResource extends JavaEEResourceBase {
         super(resourceInfo);
     }
 
+    @Override
     protected JavaEEResource doClone(ResourceInfo resourceInfo) {
         ExternalJndiResource clone = new ExternalJndiResource(resourceInfo);
         clone.setJndiLookupName(getJndiLookupName());
@@ -70,6 +73,7 @@ public class ExternalJndiResource extends JavaEEResourceBase {
         return clone;
     }
 
+    @Override
     public int getType() {
         return JavaEEResource.EXTERNAL_JNDI_RESOURCE;
     }
@@ -107,6 +111,7 @@ public class ExternalJndiResource extends JavaEEResourceBase {
     }
     //END OF IASRI 4660565
 
+    @Override
     public String toString() {
         return "< External Jndi Resource : " + getResourceInfo() + " , " + getJndiLookupName() + "... >";
     }

@@ -168,7 +168,7 @@ public class DeploymentUtils {
     /**
      * Returns the generated artifacts object from the specified deployment
      * context, creating it there if it does not already exist.
-     * @param app
+     * @param dc
      * @return
      */
     public static Artifacts generatedArtifacts(final DeploymentContext dc) {
@@ -383,10 +383,22 @@ public class DeploymentUtils {
         return getManifestLibraries(context.getSource(), manifest);
     }
 
+    /**
+     * Returns the URLs of libraries referenced in the manifest
+     * @param archive
+     * @return
+     * @throws IOException 
+     */
     public static List<URL> getManifestLibraries(ReadableArchive archive) throws IOException {
         return getManifestLibraries(archive, archive.getManifest());
     }
 
+    /**
+     * Returns the URLs of libraries referenced in the manifest
+     * @param archive
+     * @param manifest
+     * @return 
+     */
     private static List<URL> getManifestLibraries(ReadableArchive archive, Manifest manifest) {
         String appRootPath = null;
         ReadableArchive parentArchive = archive.getParentArchive();

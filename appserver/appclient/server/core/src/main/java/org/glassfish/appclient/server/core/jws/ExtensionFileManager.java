@@ -141,20 +141,22 @@ public class ExtensionFileManager implements PostConstruct {
         Vector<File> result = new Vector<File>();
 
         String extDirs = System.getProperty(EXT_DIRS_PROPERTY_NAME);
-        StringTokenizer stkn = new StringTokenizer(extDirs, File.pathSeparator);
+        if(extDirs!=null) {
+            StringTokenizer stkn = new StringTokenizer(extDirs, File.pathSeparator);
 
-        while (stkn.hasMoreTokens()) {
-            String extensionDirPath = stkn.nextToken();
-            final File extDir = new File(extensionDirPath);
+            while (stkn.hasMoreTokens()) {
+                String extensionDirPath = stkn.nextToken();
+                final File extDir = new File(extensionDirPath);
             /*
              * Add the extensions directory only if it falls within the app
              * server directory.  Otherwise we might add
              * Java-provided extensions and serve them to Java Web Start-launched
              * clients, which we do not want.
              */
-            final URI extDirURI = extDir.toURI();
-            if ( ! installRootURI.relativize(extDirURI).equals(extDirURI)) {
-                result.add(extDir);
+                final URI extDirURI = extDir.toURI();
+                if (!installRootURI.relativize(extDirURI).equals(extDirURI)) {
+                    result.add(extDir);
+                }
             }
         }
         return result;

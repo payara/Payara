@@ -1,0 +1,69 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+ -->
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="Hazelcast Configuration"  >
+
+#include "/cluster/shared/instancesExtraButtons.inc"
+#include "/cluster/shared/handlers.inc"
+
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=server"  method="GET" 
+                result="#{requestScope.resp}");
+        setPageSessionAttribute(key="hazelcastConfiguration", 
+                value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
+                
+        if(#{pageSession.hazelcastConfiguration['enabled']}=true){
+            py.getHazelcastClusterMembers(parentEndpoint="#{pageSession.parentUrl}", result="#{requestScope.allInstances}");
+            py.getHazelcastClusterMembers(parentEndpoint="#{pageSession.parentUrl}", type="micro", 
+                    result="#{requestScope.microInstances}");
+            py.getHazelcastClusterMembers(parentEndpoint="#{pageSession.parentUrl}", type="server", 
+                    result="#{requestScope.serverInstances}");
+        }
+    />
+    
+    </event>
+        
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg.inc"
+#include "/common/appServer/domainTabs.inc"
+<sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.membersTitle}"
+           helpText="$resource{i18nhc.hazelcast.domainMembersTitleHelp}" >
+</sun:title>
+
+"<br />
+<h:outputText value="Hazelcast not enabled on the DAS" rendered="#{pageSession.hazelcastConfiguration['enabled'] == false}"
+              style="padding: 10pt"/>
+"<br />
+#include "allInstancesTable.inc"
+"<br />
+#include "serverInstancesTable.inc"
+"<br />
+#include "microInstancesTable.inc"
+"<br />
+
+</sun:form>
+</define>
+</composition>                

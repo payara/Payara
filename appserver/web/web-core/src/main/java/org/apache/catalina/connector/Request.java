@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Portions Copyright [2015] [C2B2 Consulting Limited]
+//Portions Copyright [2016] [Payara Foundation]
 
 package org.apache.catalina.connector;
 
@@ -105,6 +105,7 @@ import javax.servlet.http.WebConnection;
 
 import com.sun.appserv.ProxyHandler;
 import org.apache.catalina.Context;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
 import org.apache.catalina.HttpRequest;
@@ -118,7 +119,6 @@ import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.fileupload.Multipart;
 import org.apache.catalina.security.SecurityUtil;
@@ -143,7 +143,6 @@ import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.grizzly.http.util.MessageBytes;
 import org.glassfish.grizzly.memory.Buffers;
 import org.glassfish.grizzly.utils.Charsets;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
 /**
@@ -157,171 +156,8 @@ import org.glassfish.web.valve.GlassFishValve;
 public class Request
         implements HttpRequest, HttpServletRequest {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "getReader() has already been called for this request",
-            level = "WARNING"
-    )
-    public static final String GETREADER_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00052";
-
-    @LogMessageInfo(
-            message = "getInputStream() has already been called for this request",
-            level = "WARNING"
-    )
-    public static final String GETINPUTSTREAM_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00053";
-
-    @LogMessageInfo(
-            message = "Unable to determine client remote address from proxy (returns null)",
-            level = "WARNING"
-    )
-    public static final String UNABLE_DETERMINE_CLIENT_ADDRESS = "AS-WEB-CORE-00054";
-
-    @LogMessageInfo(
-            message = "Unable to resolve IP address {0} into host name",
-            level = "WARNING"
-    )
-    public static final String UNABLE_RESOLVE_IP_EXCEPTION = "AS-WEB-CORE-00055";
-
-    @LogMessageInfo(
-            message = "Exception thrown by attributes event listener",
-            level = "WARNING"
-    )
-    public static final String ATTRIBUTE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00056";
-
-    @LogMessageInfo(
-            message = "Cannot call setAttribute with a null name",
-            level ="WARNING"
-    )
-    public static final String NULL_ATTRIBUTE_NAME_EXCEPTION = "AS-WEB-CORE-00057";
-
-    @LogMessageInfo(
-            message = "Unable to determine canonical name of file [{0}] specified for use with sendfile",
-            level = "WARNING"
-    )
-    public static final String UNABLE_DETERMINE_CANONICAL_NAME = "AS-WEB-CORE-00058";
-
-    @LogMessageInfo(
-            message = "Unable to set request character encoding to {0} from context {1}, because request parameters have already been read, or ServletRequest.getReader() has already been called",
-            level = "WARNING"
-    )
-    public static final String UNABLE_SET_REQUEST_CHARS = "AS-WEB-CORE-00059";
-
-    @LogMessageInfo(
-            message = "Attempt to re-login while the user identity already exists",
-            level = "SEVERE",
-            cause = "Could not re-login",
-            action = "Verify if user has already login"
-    )
-    public static final String ATTEMPT_RELOGIN_EXCEPTION = "AS-WEB-CORE-00060";
-
-    @LogMessageInfo(
-            message = "changeSessionId has been called without a session",
-            level = "WARNING"
-    )
-    public static final String CHANGE_SESSION_ID_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00061";
-
-    @LogMessageInfo(
-            message = "Cannot create a session after the response has been committed",
-            level = "WARNING"
-    )
-    public static final String CANNOT_CREATE_SESSION_EXCEPTION = "AS-WEB-CORE-00062";
-
-    @LogMessageInfo(
-            message = "Invalid URI encoding; using HTTP default",
-            level = "SEVERE",
-            cause = "Could not set URI converter",
-            action = "Verify URI encoding, using HTTP default"
-    )
-    public static final String INVALID_URI_ENCODING = "AS-WEB-CORE-00063";
-
-    @LogMessageInfo(
-            message = "Invalid URI character encoding; trying ascii",
-            level = "SEVERE",
-            cause = "Could not encode URI character",
-            action = "Verify URI encoding, trying ascii"
-    )
-    public static final String INVALID_URI_CHAR_ENCODING = "AS-WEB-CORE-00064";
-
-    @LogMessageInfo(
-            message = "Request is within the scope of a filter or servlet that does not support asynchronous operations",
-            level = "WARNING"
-    )
-    public static final String REQUEST_WITHIN_SCOPE_OF_FILTER_OR_SERVLET_EXCEPTION = "AS-WEB-CORE-00065";
-
-    @LogMessageInfo(
-            message = "ServletRequest.startAsync called again without any asynchronous dispatch, or called outside the scope of any such dispatch, or called again within the scope of the same dispatch",
-            level = "WARNING"
-    )
-    public static final String START_ASYNC_CALLED_AGAIN_EXCEPTION = "AS-WEB-CORE-00066";
-
-    @LogMessageInfo(
-            message = "Response already closed",
-            level = "WARNING"
-    )
-    public static final String ASYNC_ALREADY_COMPLETE_EXCEPTION = "AS-WEB-CORE-00067";
-
-    @LogMessageInfo(
-            message = "ServletRequest.startAsync called outside the scope of an async dispatch",
-            level = "WARNING"
-    )
-    public static final String START_ASYNC_CALLED_OUTSIDE_SCOPE_EXCEPTION = "AS-WEB-CORE-00068";
-
-    @LogMessageInfo(
-            message = "The request has not been put into asynchronous mode, must call ServletRequest.startAsync first",
-            level = "WARNING"
-    )
-    public static final String REQUEST_NOT_PUT_INTO_ASYNC_MODE_EXCEPTION = "AS-WEB-CORE-00069";
-
-    @LogMessageInfo(
-            message = "Request already released from asynchronous mode",
-            level = "WARNING"
-    )
-    public static final String REQUEST_ALREADY_RELEASED_EXCEPTION = "AS-WEB-CORE-00070";
-
-    @LogMessageInfo(
-            message = "Unable to perform error dispatch",
-            level = "SEVERE",
-            cause = "Could not perform post-request processing as required by this Valve",
-            action = "Verify if I/O exception or servlet exception occur"
-    )
-    public static final String UNABLE_PERFORM_ERROR_DISPATCH = "AS-WEB-CORE-00071";
-
-    @LogMessageInfo(
-            message = "Request.{0} is called without multipart configuration. Either add a @MultipartConfig to the servlet, or a multipart-config element to web.xml",
-            level = "WARNING"
-    )
-    public static final String REQUEST_CALLED_WITHOUT_MULTIPART_CONFIG_EXCEPTION = "AS-WEB-CORE-00072";
-
-    @LogMessageInfo(
-            message = "This should not happen-breaking background lock: sess = {0}",
-            level = "WARNING"
-    )
-    public static final String BREAKING_BACKGROUND_LOCK_EXCEPTION = "AS-WEB-CORE-00073";
-
-    @LogMessageInfo(
-            message = "This is request has already been authenticated",
-            level = "WARNING"
-    )
-    public static final String ALREADY_AUTHENTICATED = "AS-WEB-CORE-00536";
-
-    @LogMessageInfo(
-            message = "No authenticator",
-            level = "WARNING"
-    )
-    public static final String NO_AUTHENTICATOR = "AS-WEB-CORE-00537";
-    
-    @LogMessageInfo(
-            message = "Invalid call to login while pluggable authentication method is configured",
-            level = "WARNING"
-    )
-    public static final String LOGIN_WITH_AUTH_CONFIG = "AS-WEB-CORE-00538";
-    
-    @LogMessageInfo(
-            message = "Internal logout error",
-            level = "WARNING")
-    public static final String INTERNAL_LOGOUT_ERROR = "AS-WEB-CORE-00539";
 
     // ----------------------------------------------------------- Statics
     /**
@@ -734,6 +570,7 @@ public class Request
             return;
         }
 
+        handlerInitialised = false;
         context = null;
         servletContext = null;
         contextPath = null;
@@ -1466,7 +1303,7 @@ public class Request
     public ServletInputStream getInputStream() throws IOException {
 
         if (usingReader) {
-            throw new IllegalStateException(rb.getString(GETREADER_BEEN_CALLED_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.GETREADER_BEEN_CALLED_EXCEPTION));
         }
 
         usingInputStream = true;
@@ -1637,7 +1474,7 @@ public class Request
     public BufferedReader getReader() throws IOException {
 
         if (usingInputStream) {
-            throw new IllegalStateException(rb.getString(GETINPUTSTREAM_BEEN_CALLED_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.GETINPUTSTREAM_BEEN_CALLED_EXCEPTION));
         }
 
         usingReader = true;
@@ -1689,7 +1526,7 @@ public class Request
                 remoteAddr = connector.getProxyHandler().getRemoteAddress(
                         getRequest());
                 if (remoteAddr == null && log.isLoggable(Level.FINEST)) {
-                    log.log(Level.FINEST, UNABLE_DETERMINE_CLIENT_ADDRESS);
+                    log.log(Level.FINEST, LogFacade.UNABLE_DETERMINE_CLIENT_ADDRESS);
                 }
                 return remoteAddr;
             }
@@ -1722,11 +1559,11 @@ public class Request
                     try {
                         remoteHost = InetAddress.getByName(addr).getHostName();
                     } catch (UnknownHostException e) {
-                        String msg = MessageFormat.format(rb.getString(UNABLE_RESOLVE_IP_EXCEPTION), addr);
+                        String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_RESOLVE_IP_EXCEPTION), addr);
                         log.log(Level.WARNING, msg, e);
                     }
                 } else if (log.isLoggable(Level.FINEST)) {
-                    log.log(Level.FINEST, UNABLE_DETERMINE_CLIENT_ADDRESS);
+                    log.log(Level.FINEST, LogFacade.UNABLE_DETERMINE_CLIENT_ADDRESS);
                 }
                 // END SJSAS 6347215
             } else if (socket != null) {
@@ -1950,7 +1787,7 @@ public class Request
             try {
                 listener.attributeRemoved(event);
             } catch (Throwable t) {
-                log(rb.getString(ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
                 // Error valve will pick this exception up and display it to user
                 attributes.put(RequestDispatcher.ERROR_EXCEPTION, t);
             }
@@ -1968,7 +1805,7 @@ public class Request
 
         // Name cannot be null
         if (name == null) {
-            throw new IllegalArgumentException(rb.getString(NULL_ATTRIBUTE_NAME_EXCEPTION));
+            throw new IllegalArgumentException(rb.getString(LogFacade.NULL_ATTRIBUTE_NAME_EXCEPTION));
         }
 
         // Null value is the same as removeAttribute()
@@ -1996,7 +1833,7 @@ public class Request
             try {
                 canonicalPath = new File(value.toString()).getCanonicalPath();
             } catch (IOException e) {
-                String msg = MessageFormat.format(rb.getString(UNABLE_DETERMINE_CANONICAL_NAME), value);
+                String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_DETERMINE_CANONICAL_NAME), value);
                 throw new SecurityException(msg, e);
             }
             // Sendfile is performed in Tomcat's security context so need to
@@ -2050,7 +1887,7 @@ public class Request
                     listener.attributeAdded(event);
                 }
             } catch (Throwable t) {
-                log(rb.getString(ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
                 // Error valve will pick this exception up and display it to user
                 attributes.put(RequestDispatcher.ERROR_EXCEPTION, t);
             }
@@ -2082,7 +1919,7 @@ public class Request
         if (parametersProcessed || usingReader) {
             String contextName =
                 getContext() != null ? getContext().getName() : "UNKNOWN";
-            log.log(Level.WARNING, UNABLE_SET_REQUEST_CHARS, new Object[] {enc, contextName});
+            log.log(Level.WARNING, LogFacade.UNABLE_SET_REQUEST_CHARS, new Object[] {enc, contextName});
             return;
         }
         // END SJSAS 4936855
@@ -2236,17 +2073,17 @@ public class Request
         final Realm realm = context.getRealm();
         if (realm != null && realm.isSecurityExtensionEnabled(getServletContext())) {
             throw new ServletException
-               (rb.getString(LOGIN_WITH_AUTH_CONFIG));
+               (rb.getString(LogFacade.LOGIN_WITH_AUTH_CONFIG));
  	}
         
         if (getAuthType() != null || getRemoteUser() != null ||
                 getUserPrincipal() != null) {
             throw new ServletException(
-                    rb.getString(ALREADY_AUTHENTICATED));
+                    rb.getString(LogFacade.ALREADY_AUTHENTICATED));
         }
 
         if (context.getAuthenticator() == null) {
-            throw new ServletException(rb.getString(NO_AUTHENTICATOR));
+            throw new ServletException(rb.getString(LogFacade.NO_AUTHENTICATOR));
         }
 
         context.getAuthenticator().login(username, password, this);
@@ -2259,7 +2096,7 @@ public class Request
         if (realm == null) {
             if (getUserPrincipal() != null || getAuthType() != null) {
                 throw new ServletException(
-                        rb.getString(INTERNAL_LOGOUT_ERROR));
+                        rb.getString(LogFacade.INTERNAL_LOGOUT_ERROR));
             }
             return;
         }
@@ -3103,11 +2940,11 @@ public class Request
     public String changeSessionId() {
         Manager manager = context.getManager();
         if (manager == null) {
-            throw new IllegalStateException(rb.getString(CHANGE_SESSION_ID_BEEN_CALLED_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.CHANGE_SESSION_ID_BEEN_CALLED_EXCEPTION));
         }
         Session session = getSessionInternal(false);
         if (session == null) {
-            throw new IllegalStateException(rb.getString(CHANGE_SESSION_ID_BEEN_CALLED_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.CHANGE_SESSION_ID_BEEN_CALLED_EXCEPTION));
         }
 
         manager.changeSessionId(session);
@@ -3253,7 +3090,7 @@ public class Request
         if (context != null && response != null &&
                 context.getCookies() &&
                 response.getResponse().isCommitted()) {
-            throw new IllegalStateException(rb.getString(CANNOT_CREATE_SESSION_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_CREATE_SESSION_EXCEPTION));
         }
 
         // START S1AS8PE 4817642
@@ -4183,7 +4020,7 @@ public class Request
                 }
             } catch (IOException e) {
                 // Ignore
-                log.log(Level.SEVERE, INVALID_URI_ENCODING);
+                log.log(Level.SEVERE, LogFacade.INVALID_URI_ENCODING);
                 connector.setURIEncoding(null);
             }
             if (conv != null) {
@@ -4193,7 +4030,7 @@ public class Request
                             cc.getLength());
                     return;
                 } catch (IOException e) {
-                    log.log(Level.SEVERE, INVALID_URI_CHAR_ENCODING);
+                    log.log(Level.SEVERE, LogFacade.INVALID_URI_CHAR_ENCODING);
                     cc.recycle();
                 }
             }
@@ -4264,20 +4101,20 @@ public class Request
         }
 
         if (!isAsyncSupported()) {
-            throw new IllegalStateException(rb.getString(REQUEST_WITHIN_SCOPE_OF_FILTER_OR_SERVLET_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.REQUEST_WITHIN_SCOPE_OF_FILTER_OR_SERVLET_EXCEPTION));
         }
 
         final AsyncContextImpl asyncContextLocal = asyncContext;
 
         if (asyncContextLocal != null) {
             if (isAsyncStarted()) {
-                throw new IllegalStateException(rb.getString(START_ASYNC_CALLED_AGAIN_EXCEPTION));
+                throw new IllegalStateException(rb.getString(LogFacade.START_ASYNC_CALLED_AGAIN_EXCEPTION));
             }
             if (asyncContextLocal.isAsyncComplete()) {
-                throw new IllegalStateException(rb.getString(ASYNC_ALREADY_COMPLETE_EXCEPTION));
+                throw new IllegalStateException(rb.getString(LogFacade.ASYNC_ALREADY_COMPLETE_EXCEPTION));
             }
             if (!asyncContextLocal.isStartAsyncInScope()) {
-                throw new IllegalStateException(rb.getString(START_ASYNC_CALLED_OUTSIDE_SCOPE_EXCEPTION));
+                throw new IllegalStateException(rb.getString(LogFacade.START_ASYNC_CALLED_OUTSIDE_SCOPE_EXCEPTION));
             }
 
             // Reinitialize existing AsyncContext
@@ -4364,7 +4201,7 @@ public class Request
     @Override
     public AsyncContext getAsyncContext() {
         if (!isAsyncStarted()) {
-            throw new IllegalStateException(rb.getString(REQUEST_NOT_PUT_INTO_ASYNC_MODE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.REQUEST_NOT_PUT_INTO_ASYNC_MODE_EXCEPTION));
         }
 
         return asyncContext;
@@ -4479,14 +4316,16 @@ public class Request
                     hostValve.postInvoke(this, response);
                 }
             } catch (Exception e) {
-                log.log(Level.SEVERE, UNABLE_PERFORM_ERROR_DISPATCH, e);
+                log.log(Level.SEVERE, LogFacade.UNABLE_PERFORM_ERROR_DISPATCH, e);
             } finally {
                 /*
                  * If no matching error page was found, or the error page
                  * did not call AsyncContext#complete or any of the
                  * AsyncContext#dispatch methods, call AsyncContext#complete
                  */
-                ac.tryComplete(false);
+                if (!ac.isAsyncComplete()) {
+                    ac.complete();
+                }
             }
         }
     }
@@ -4511,7 +4350,7 @@ public class Request
 
     private void checkMultipartConfiguration(String name) {
         if (! isMultipartConfigured()) {
-            String msg = MessageFormat.format(rb.getString(REQUEST_CALLED_WITHOUT_MULTIPART_CONFIG_EXCEPTION), name);
+            String msg = MessageFormat.format(rb.getString(LogFacade.REQUEST_CALLED_WITHOUT_MULTIPART_CONFIG_EXCEPTION), name);
             throw new IllegalStateException(msg);
         }
     } 
@@ -4631,7 +4470,7 @@ public class Request
                 } else {
                     // Tried to wait and lock maxNumberOfRetries times.
                     // Unlock the background so we can take over.
-                    log.log(Level.WARNING, BREAKING_BACKGROUND_LOCK_EXCEPTION, sess);
+                    log.log(Level.WARNING, LogFacade.BREAKING_BACKGROUND_LOCK_EXCEPTION, sess);
                     if (sess instanceof StandardSession) {
                         ((StandardSession)sess).unlockBackground();
                     }

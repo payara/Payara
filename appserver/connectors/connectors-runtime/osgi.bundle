@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+// Portions Copyright [2016] [Payara Foundation]
 
 -exportcontents: \
                         com.sun.enterprise.connectors;\
@@ -48,6 +49,7 @@
                         com.sun.enterprise.resource.pool;\
                         com.sun.enterprise.resource.pool.waitqueue;\
                         com.sun.enterprise.resource.pool.monitor;\
+                        com.sun.logging.enterprise.resource.resourceadapter;\
                         com.sun.enterprise.resource; version=${project.osgi.version}
 
 # This module uses classes from this pkg using reflection, so

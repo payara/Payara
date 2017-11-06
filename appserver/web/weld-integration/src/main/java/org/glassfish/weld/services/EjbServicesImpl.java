@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consutling Limited]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.weld.services;
 
 import java.lang.reflect.Method;
@@ -94,6 +95,7 @@ public class EjbServicesImpl implements EjbServices {
      * @param ejbDescriptor the ejb to resolve
      * @return a reference to the session object
      */
+    @Override
     public SessionObjectReference resolveEjb(EjbDescriptor<?> ejbDescriptor) {
 
         SessionObjectReference sessionObj = null;
@@ -144,6 +146,7 @@ public class EjbServicesImpl implements EjbServices {
 
     }
 
+    @Override
     public void registerInterceptors(EjbDescriptor<?> ejbDesc, InterceptorBindings interceptorBindings) {
 
         // Work around bug that ejbDesc might be internal 299 descriptor.
@@ -169,6 +172,7 @@ public class EjbServicesImpl implements EjbServices {
                             new Object[]{next.getBeanClass().getName(), glassfishEjbDesc.getEjbClassName()});
                 }
                 EjbInterceptor ejbInt = makeEjbInterceptor(next, glassfishEjbDesc.getEjbBundleDescriptor());
+                ejbInt.setInterceptorClass(next.getBeanClass());
                 glassfishEjbDesc.addInterceptorClass(ejbInt);
             }
         }
@@ -232,8 +236,6 @@ public class EjbServicesImpl implements EjbServices {
             ejbBeanSuperClass = ejbBeanSuperClass.getSuperclass();
         }
 
-        return;
-
     }
 
     // Section 4.2. Inheritance of member-level metadata of CDI spec states:
@@ -244,6 +246,7 @@ public class EjbServicesImpl implements EjbServices {
     //
     // So look at a method on a class.  If the method is overridden (not if it over rides) then we skip it
     // because it will have already been processed to see if it should be intercepted.
+    @SuppressWarnings("unchecked")
     private boolean methodOverridden(Class beanClass, Method methodOfCurrentClass) {
         String methodName = methodOfCurrentClass.getName();
         Class[] methodParams = methodOfCurrentClass.getParameterTypes();
@@ -293,9 +296,11 @@ public class EjbServicesImpl implements EjbServices {
                             ejbInt.addPostActivateDescriptor(lifecycleDesc);
                             break;
                         case AROUND_INVOKE :
+                            lifecycleDesc.setRequiresInvocationContextArgument(true);
                             ejbInt.addAroundInvokeDescriptor(lifecycleDesc);
                             break;
                         case AROUND_TIMEOUT :
+                            lifecycleDesc.setRequiresInvocationContextArgument(true);
                             ejbInt.addAroundTimeoutDescriptor(lifecycleDesc);
                             break;
                         default :
@@ -350,12 +355,14 @@ public class EjbServicesImpl implements EjbServices {
 
         EjbInterceptor ejbInt = new EjbInterceptor();
         ejbInt.setBundleDescriptor(bundle);
+        ejbInt.setInterceptorClass(interceptor.getBeanClass());
         ejbInt.setInterceptorClassName(interceptor.getBeanClass().getName());
         ejbInt.setCDIInterceptor(true);
 
         return ejbInt;
     }
 
+    @Override
     public void cleanup() {
         //Nothing to do here.
     }

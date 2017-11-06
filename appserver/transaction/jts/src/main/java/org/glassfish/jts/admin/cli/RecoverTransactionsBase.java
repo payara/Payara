@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.jts.admin.cli;
 
@@ -57,8 +58,8 @@ public class RecoverTransactionsBase {
     static StringManager localStrings =
             StringManager.getManager(RecoverTransactionsBase.class);
 
-    static Logger _logger = LogDomains.getLogger(RecoverTransactionsBase.class, 
-            LogDomains.TRANSACTION_LOGGER);
+    static Logger _logger = LogDomains.getLogger(RecoverTransactionsBase.class,
+            LogDomains.TRANSACTION_LOGGER, false);
 
     @Inject
     Servers servers;
@@ -69,7 +70,7 @@ public class RecoverTransactionsBase {
     @Param(name = "server_name", primary = true)
     String serverToRecover;
 
-    String validate(String destinationServer, boolean validateAllParams) { 
+    String validate(String destinationServer, boolean validateAllParams) {
         if (_logger.isLoggable(Level.INFO)) {
             _logger.info("==> validating target: " + destinationServer + " ... server: " + serverToRecover);
         }

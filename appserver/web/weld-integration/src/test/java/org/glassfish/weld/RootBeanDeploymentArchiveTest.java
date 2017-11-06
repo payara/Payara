@@ -38,8 +38,11 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.weld;
 
+import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -59,7 +62,6 @@ import org.easymock.EasyMockSupport;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-import org.junit.Ignore;
 
 /**
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
@@ -103,6 +105,7 @@ public class RootBeanDeploymentArchiveTest {
 
         // in BeanDeploymentArchiveImpl.populate
         expect(deploymentContext.getTransientAppMetadata()).andReturn(null).anyTimes();
+        expect(deploymentContext.getModuleMetaData(Application.class)).andReturn(null).anyTimes();
         expect(deploymentContext.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP, WeldBootstrap.class)).andReturn(wb).anyTimes();
         expect(wb.parse(anyObject(URL.class))).andReturn(beansXML).anyTimes();
 

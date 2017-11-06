@@ -37,39 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
-import org.glassfish.hk2.classmodel.reflect.AnnotationType;
-import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import javax.decorator.Decorator;
-import javax.ejb.MessageDriven;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.NormalScope;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
-import javax.enterprise.inject.Stereotype;
-import javax.inject.Scope;
-import javax.inject.Singleton;
-import javax.interceptor.Interceptor;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -83,6 +57,31 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.decorator.Decorator;
+import javax.ejb.MessageDriven;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+import javax.enterprise.context.*;
+import javax.enterprise.inject.Model;
+import javax.enterprise.inject.Stereotype;
+import javax.inject.Scope;
+import javax.inject.Singleton;
+import javax.interceptor.Interceptor;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.AnnotationType;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class WeldUtils {
 
@@ -110,22 +109,27 @@ public class WeldUtils {
     public static final String EXPANDED_RAR_SUFFIX = "_rar";
     public static final String EXPANDED_JAR_SUFFIX = "_jar";
 
+    /**
+     * Bean Deployment Archive type.
+     * <p>
+     * Can be WAR, JAR, RAR or UNKNOWN.
+     */
     public static enum BDAType { WAR, JAR, RAR, UNKNOWN };
-
-    // The name of the deployment context property used to disable implicit bean discovery for a
-    // particular application deployment.
-    public static final String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
 
     protected static final List<String> cdiScopeAnnotations;
     static {
         cdiScopeAnnotations = new ArrayList<String>();
         cdiScopeAnnotations.add(Scope.class.getName());
         cdiScopeAnnotations.add(NormalScope.class.getName());
+        cdiScopeAnnotations.add("javax.faces.view.ViewScoped");
+        cdiScopeAnnotations.add("javax.faces.flow.FlowScoped");
+        cdiScopeAnnotations.add(ConversationScoped.class.getName());
         cdiScopeAnnotations.add(ApplicationScoped.class.getName());
         cdiScopeAnnotations.add(SessionScoped.class.getName());
         cdiScopeAnnotations.add(RequestScoped.class.getName());
         cdiScopeAnnotations.add(Dependent.class.getName());
         cdiScopeAnnotations.add(Singleton.class.getName());
+        cdiScopeAnnotations.add(Model.class.getName());
     }
 
     protected static final List<String> cdiEnablingAnnotations;
@@ -163,8 +167,8 @@ public class WeldUtils {
      *
      * @param context  The deployment context
      * @param archive  The archive in question
-     *
      * @return true, if it is an implicit bean deployment archive; otherwise, false.
+     * @throws java.io.IOException
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
             throws IOException {
@@ -489,15 +493,18 @@ public class WeldUtils {
 
         return result;
     }
-
-
+    
     public static boolean isImplicitBeanDiscoveryEnabled(DeploymentContext context) {
         boolean result = false;
 
         if (isImplicitBeanDiscoveryEnabled()) {
             // If implicit discovery is enabled for the server, then check if it's disabled for the
             // deployment of this application.
-            Object propValue = context.getAppProps().get(IMPLICIT_CDI_ENABLED_PROP);
+            Object propValue = context.getAppProps().get(RuntimeTagNames.IMPLICIT_CDI_ENABLED_PROP);
+            Object appPropValue = context.getAppProps().get(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI);
+            if(appPropValue != null) {
+                propValue = appPropValue;
+            }
 
             // If the property is not set, or it's value is true, then implicit discovery is enabled
             result = (propValue == null || Boolean.parseBoolean((String) propValue));
@@ -506,7 +513,15 @@ public class WeldUtils {
         return result;
     }
 
-
+    public static boolean isCDIDevModeEnabled(DeploymentContext context) {
+        Object propValue = context.getAppProps().get(ServerTags.CDI_DEV_MODE_ENABLED_PROP);
+        return propValue != null && Boolean.parseBoolean((String) propValue);
+    }
+    
+    public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
+       context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
+    }
+    
   public static InputStream getBeansXmlInputStream(DeploymentContext context) {
     return getBeansXmlInputStream( context.getSource() );
   }
@@ -603,6 +618,7 @@ public class WeldUtils {
     private static class LocalDefaultHandler extends DefaultHandler {
         String beanDiscoveryMode = null;
 
+        @Override
         public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
             if ( qName.equals( "beans" ) ) {
                 beanDiscoveryMode = attributes.getValue("bean-discovery-mode");
@@ -625,6 +641,4 @@ public class WeldUtils {
             super();
         }
     }
-
-
 }

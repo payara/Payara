@@ -1,0 +1,15 @@
+CREATE TABLE "EJB__TIMER__TBL" (
+"CREATIONTIMERAW"      BIGINT                 NOT NULL,
+"BLOB"                 BYTEA,
+"TIMERID"              CHARACTER VARYING(255) NOT NULL,
+"CONTAINERID"          BIGINT                 NOT NULL,
+"OWNERID"              CHARACTER VARYING(255),
+"STATE"                INTEGER                NOT NULL,
+"PKHASHCODE"           INTEGER                NOT NULL,
+"INTERVALDURATION"     BIGINT                 NOT NULL,
+"INITIALEXPIRATIONRAW" BIGINT                 NOT NULL,
+"LASTEXPIRATIONRAW"    BIGINT                 NOT NULL,
+"SCHEDULE"             CHARACTER VARYING(255),
+"APPLICATIONID"        BIGINT                 NOT NULL,
+CONSTRAINT "EJB__TIMER__TBL_pkey" PRIMARY KEY ("TIMERID")
+)

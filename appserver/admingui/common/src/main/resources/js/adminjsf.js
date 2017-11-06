@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+/*Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 /*
  * Common utility
  */
@@ -172,8 +173,10 @@ function delayDisableComponent(componentName, type, timeouted) {
     	window.setTimeout("disableComponent('" + componentName + "','" + type + "', true)", 10);
     }
     if (component == null){
+if (!(typeof(console) === 'undefined') && (typeof(console.log) === 'function')) {
         window.console.log('component is NULL' + componentName);
         window.console.debug('component is NULL' + componentName);
+}
     }
 
     component.disabled = true;
@@ -1025,7 +1028,7 @@ admingui.help = {
     },
 
     launchHelp: function(url) {
-        var helpLink = "/common/help/help.jsf";
+        var helpLink = "https://payara.gitbooks.io/payara-server/content/";
         var helpKeys = admingui.util.findNodes(document,
             function(node, name) {
                 if ((typeof(node.id) === "undefined") || (node.id == null)) {
@@ -1043,15 +1046,15 @@ admingui.help = {
                 url:"url"
             },
             function(result) {
-                admingui.help.openHelpWindow(helpLink + "?contextRef=" + "/resource/" + admingui.help.pluginId + result.url);
+                admingui.help.openHelpWindow(helpLink + result.url, "HelpWindow" , "width=1200, height=800,resizable=yes,scrollbars=yes");
             }, 3, false);
         } else {
-            admingui.help.openHelpWindow(helpLink);
+            admingui.help.openHelpWindow(helpLink, "HelpWindow" , "width=1200, height=800,resizable=yes,scrollbars=yes");
         }
     },
 
     openHelpWindow: function (url) {
-        var win = window.open(url, "HelpWindow" , "width=800, height=530, resizable");
+        var win = window.open(url, "HelpWindow" , "width=1200, height=800,resizable=yes,scrollbars=yes");
         if (win) {
             win.focus();
         }
@@ -1857,6 +1860,27 @@ function checkForSelectedValue(fieldId) {
 function reloadHeaderFrame() {
     var mastheadForm = document.getElementById('af');
     admingui.ajax.postAjaxRequest(mastheadForm, { render: 'af' }, 'af', false);
+}
+
+function RgbToHex(string) {
+    
+    var rgb = string.match(/\d+/g);
+    
+    if(rgb == null || rgb.length != 3) {
+        rgb = ["0","0","0"];
+    }
+    
+    // Convert to base 16
+    var rhex = Number(rgb[0]).toString(16);
+    // if it's a single digit then add a 0 to start
+    rhex = (rhex.length == 1)? "0" + rhex : rhex;
+    
+    var ghex = Number(rgb[1]).toString(16);
+    ghex = (ghex.length == 1)? "0" + ghex : ghex;
+    var bhex = Number(rgb[2]).toString(16);
+    bhex = (bhex.length == 1)? "0" + bhex : bhex;
+    
+    return "#" + rhex + ghex + bhex;
 }
 
 admingui.deploy = {
@@ -2741,9 +2765,11 @@ var globalEval = function(src) {
         try {
             window.execScript(src);
         } catch (error) {
+	if (!(typeof(console) === 'undefined') && (typeof(console.log) === 'function')) {
             if (console && console.log) {
                 console.log(error);
             }
+	}	
         }
         return;
     }

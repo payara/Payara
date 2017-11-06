@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2017 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package org.glassfish.appclient.client;
 
+import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.OS;
@@ -309,17 +310,33 @@ public class CLIBootstrap {
          * Add the elements in this order so they appear in the generated
          * java command in the correct positions.
          */
-        elementsInOutputOrder = new CommandLineElement[] {
-            jvmValuedOptions,
-            jvmPropertySettings,
-            otherJVMOptions,
-            extDirs,
-            endorsedDirs,
-            accUnvaluedOptions,
-            accValuedOptions,
-            jvmMainSetting,
-            arguments
+        //In JDK 9 and later ext and endorsed directory removed .
+        int major = JDK.getMajor();
+        if(major >= 9) {
+            elementsInOutputOrder = new CommandLineElement[]{
+                    jvmValuedOptions,
+                    jvmPropertySettings,
+                    otherJVMOptions,
+                    accUnvaluedOptions,
+                    accValuedOptions,
+                    jvmMainSetting,
+                    arguments
             };
+        }
+        else
+        {
+            elementsInOutputOrder = new CommandLineElement[] {
+                    jvmValuedOptions,
+                    jvmPropertySettings,
+                    otherJVMOptions,
+                    extDirs,
+                    endorsedDirs,
+                    accUnvaluedOptions,
+                    accValuedOptions,
+                    jvmMainSetting,
+                    arguments
+            };
+        }
     }
 
     /**

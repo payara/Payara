@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+/*Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+*/
 package com.sun.enterprise.security.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
@@ -240,7 +241,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
     static class ConfigLevelContext extends AbstractContext {
 
         private static final String CLIENT_AUTH_VALUE = "want";
-        private static final String SSL3_ENABLED_VALUE = "true";
+        private static final String SSL3_ENABLED_VALUE = "false";
         private static final String CLASSNAME_VALUE = "com.sun.enterprise.security.ssl.GlassfishSSLImpl";
         
         private final Transaction t;

@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,11 +17,23 @@
  */
 package fish.payara.cdi.jsr107;
 
+import fish.payara.nucleus.hazelcast.HazelcastCore;
+
 /**
  *
  * @author steve
  */
 public class AbstractJSR107Interceptor {
+    
+    HazelcastCore hzCore;
+
+    public AbstractJSR107Interceptor() {
+        hzCore = HazelcastCore.getCore();
+    }
+    
+    protected boolean isEnabled() {
+        return hzCore.isEnabled();
+    }
     
     protected boolean shouldIEvict (Class<? extends Throwable>[] evictFor, Class<? extends Throwable>[] noEvictFor, Throwable exception) {
         return shouldICache(evictFor, noEvictFor, exception, false);

@@ -40,9 +40,25 @@
 
 -->
 
+<!-- Portions Copyright [2016] [Payara Foundation] -->
+
 <!-- common/commonTaskDoc.inc -->
 
-<sun:commonTasksGroup title="$resource{i18n.commonTasks.group.docs}">
+<sun:commonTasksGroup title="$resource{i18n.commonTasks.group.payara.docs}">
+<sun:commonTask
+        text="$resource{i18n.commonTasks.task.payaraWiki}"
+        toolTip="$resource{i18n.commonTasks.task.payaraWiki.toolTip}"
+        onClick="var win=window.open('$resource{i18n.commonTasks.doc.payara.payaraWiki}','_blank');if (win) {win.focus();}; return false;">
+    </sun:commonTask>
+</sun:commonTasksGroup>
+
+<!-- 
+    
+    GlassFish Documentation removed
+
+-->
+
+<!--<sun:commonTasksGroup title="$resource{i18n.commonTasks.group.docs}">
     <sun:commonTask
         text="$resource{i18n.commonTasks.task.docpage}"
         toolTip="$resource{i18n.commonTasks.task.docpage.toolTip}"
@@ -68,4 +84,9 @@
         toolTip="$resource{i18n.commonTasks.task.deployGuide.toolTip}"
         onClick="var win=window.open('$resource{i18n.commonTasks.doc.deployGuide}','_blank');if (win) {win.focus();}; return false;">
     </sun:commonTask>
-</sun:commonTasksGroup>
+    <sun:commonTask
+        text="$resource{i18n.commonTasks.task.payaraWiki}"
+        toolTip="$resource{i18n.commonTasks.task.payaraWiki.toolTip}"
+        onClick="var win=window.open('$resource{i18n.commonTasks.doc.payaraWiki}','_blank');if (win) {win.focus();}; return false;">
+    </sun:commonTask>
+</sun:commonTasksGroup>-->

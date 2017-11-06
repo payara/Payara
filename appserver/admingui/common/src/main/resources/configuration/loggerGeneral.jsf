@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
 
 <!-- common/configuration/loggerGeneral.jsf -->
 
@@ -126,14 +127,14 @@
 
            <sun:property id="consoleFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.ConsoleLogFormat}" helpText="$resource{i18nc.log.ConsoleLogFormatHelp}">
                 <sun:dropDown id="consoleFormat" selected="#{pageSession.logAttributes['java.util.logging.ConsoleHandler.formatter']}"
-                    labels={ "ULF","ODL"}
-                    values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter"} />
+                    labels={ "ULF","ODL","JSON"}
+                    values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter", "fish.payara.enterprise.server.logging.JSONLogFormatter"} />
           </sun:property>
 
         <sun:property id="logfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FileLogFormatHelp}">
           <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.formatter']}"
-                labels={ "ULF","ODL"}
-                values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter"} />
+                labels={ "ULF","ODL","JSON"}
+                values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter", "fish.payara.enterprise.server.logging.JSONLogFormatter"} />
         </sun:property>
 
         <sun:property id="excludeFields"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.excludeFields}" helpText="$resource{i18nc.log.excludeFieldsHelp}">
@@ -175,6 +176,10 @@
 
             <sun:property id="logHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.Handler}" helpText="$resource{i18nc.log.HandlerHelp}">
                 <sun:textField id="LogHandler" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.Handler']}" text="#{pageSession.logAttributes['handlers']}" />
+            </sun:property>
+                
+            <sun:property id="CompressOnRotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.CompressOnRotation}" helpText="$resource{i18nc.log.CompressOnRotationHelp}">
+                <sun:checkbox id="CompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation']}"  selectedValue="true" />
             </sun:property>
 
     </sun:propertySheetSection>

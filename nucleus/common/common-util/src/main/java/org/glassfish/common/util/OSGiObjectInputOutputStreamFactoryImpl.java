@@ -184,6 +184,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
     public Class<?> resolveClass(ObjectInputStream in, final ObjectStreamClass desc)
             throws IOException, ClassNotFoundException
     {
+        try {
         String key = in.readUTF();
 
         if (! NOT_A_BUNDLE_KEY.equals(key)) {
@@ -197,6 +198,9 @@ public class OSGiObjectInputOutputStreamFactoryImpl
                     return loadClassFromBundle(b, cname);
                 }
             }
+        }
+        }catch(IOException e) {
+            logger.fine("Missing Bundle Key continuing...");
         }
 
         return null;
@@ -214,7 +218,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
 
     private Class loadArrayClass(Bundle b, String cname) throws ClassNotFoundException {
         // We are never called with primitive types, so we don't have to check for primitive types.
-        assert(cname.charAt(0) == 'L'); // An array
+        assert(cname.charAt(0) == '['); // An array
         Class component;        // component class
         int dcount;            // dimension
         for (dcount = 1; cname.charAt(dcount) == '['; dcount++){

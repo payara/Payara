@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- * Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2016 Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -14,6 +14,7 @@
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  -->
+<!-- // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
@@ -282,6 +283,14 @@
       <param-value>false</param-value>
     </init-param>
     <init-param>
+        <param-name>reload-interval</param-name>
+        <param-value>-1</param-value>
+    </init-param>
+    <init-param>
+        <param-name>development</param-name>
+        <param-value>false</param-value>
+    </init-param>
+    <init-param>
       <param-name>httpMethods</param-name>
       <param-value>GET,POST,HEAD</param-value>
     </init-param>
@@ -300,7 +309,7 @@
         javax.servlet.jsp.jar
         jspcaching-connector.jar
         web-glue.jar
-        bean-validator.jar
+        hibernate-validator-payara-p1.jar
         javax.ejb.jar
         javax.enterprise.deploy-api.jar
         javax.jms-api.jar
@@ -313,7 +322,7 @@
         javax.transaction-api.jar
         javax.xml.rpc-api.jar
         webservices-osgi.jar
-        weld-osgi-bundle.jar
+        weld-osgi-bundle-glassfish4.jar
         jersey-mvc-jsp.jar
       </param-value>
     </init-param>
@@ -742,6 +751,10 @@
   <mime-mapping>
     <extension>js</extension>
     <mime-type>text/javascript</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>json</extension>
+    <mime-type>application/json</mime-type>
   </mime-mapping>
   <mime-mapping>
     <extension>kar</extension>

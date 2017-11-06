@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- * Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2016 Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>admin</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <version>4.1.2.174-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-domain</artifactId>

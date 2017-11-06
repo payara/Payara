@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,10 +62,9 @@ package org.apache.catalina.session;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Loader;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardServer;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;
 import java.io.BufferedInputStream;
@@ -95,38 +94,8 @@ import java.util.logging.Logger;
 
 public final class FileStore extends StoreBase {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Loading Session {0} from file {1}",
-            level = "FINE"
-    )
-    public static final String LOADING_SESSION = "AS-WEB-CORE-00338";
-
-    @LogMessageInfo(
-            message = "Removing Session {0} at file {1}",
-            level = "FINE"
-    )
-    public static final String REMOVING_SESSION = "AS-WEB-CORE-00339";
-
-    @LogMessageInfo(
-            message = "Saving Session {0} to file {1}",
-            level = "FINE"
-    )
-    public static final String SAVING_SESSION = "AS-WEB-CORE-00340";
-
-    @LogMessageInfo(
-            message = "Unable to delete file [{0}] which is preventing the creation of the session storage location",
-            level = "WARNING"
-    )
-    public static final String UNABLE_DELETE_FILE_EXCEPTION = "AS-WEB-CORE-00341";
-
-    @LogMessageInfo(
-            message = "Unable to create directory [{0}] for the storage of session data",
-            level = "WARNING"
-    )
-    public static final String UNABLE_CREATE_DIR_EXCEPTION = "AS-WEB-CORE-00342";
 
     // ----------------------------------------------------- Constants
 
@@ -334,7 +303,7 @@ public final class FileStore extends StoreBase {
             return (null);
         }
         if (debug >= 1) {
-            String msg = MessageFormat.format(rb.getString(LOADING_SESSION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.LOADING_SESSION_FROM_FILE),
                                               new Object[] {id, file.getAbsolutePath()});
             log(msg);
         }
@@ -414,7 +383,7 @@ public final class FileStore extends StoreBase {
             return;
         }
         if (debug >= 1) {
-            String msg = MessageFormat.format(rb.getString(REMOVING_SESSION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.REMOVING_SESSION_FROM_FILE),
                                               new Object[] {id, file.getAbsolutePath()});
             log(msg);
         }
@@ -445,7 +414,7 @@ public final class FileStore extends StoreBase {
         }
         if (debug >= 1) {
 
-            String msg = MessageFormat.format(rb.getString(SAVING_SESSION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SAVING_SESSION_TO_FILE),
                                               new Object[] {session.getIdInternal(), file.getAbsolutePath()});
             log(msg);
         }
@@ -513,12 +482,12 @@ public final class FileStore extends StoreBase {
         }
         if (!file.exists() || !file.isDirectory()) {
             if (!file.delete() && file.exists()) {
-                String msg = MessageFormat.format(rb.getString(UNABLE_DELETE_FILE_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_DELETE_FILE_EXCEPTION),
                                                   file);
                 throw new IOException(msg);
             }
             if (!file.mkdirs() && !file.isDirectory()) {
-                String msg = MessageFormat.format(rb.getString(UNABLE_CREATE_DIR_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_CREATE_DIR_EXCEPTION),
                                                   file);
                 throw new IOException(msg);
             }

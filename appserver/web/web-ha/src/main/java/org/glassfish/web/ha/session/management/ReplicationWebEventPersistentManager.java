@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,7 @@ import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
 import org.glassfish.ha.store.api.Storeable;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.ha.LogFacade;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
@@ -67,9 +67,6 @@ import org.glassfish.hk2.api.PerLookup;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 /**
@@ -93,11 +90,6 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
     private String clusterName = "";
 
     private String instanceName = "";
-
-    @LogMessageInfo(
-            message = "Could not create backing store",
-            level = "WARNING")
-    public static final String COULD_NOT_CREATE_BACKING_STORE = "AS-WEB-HA-00008";
 
 
     /**
@@ -133,6 +125,13 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
             _logger.fine("ReplicationWebEventPersistentManager created");
         }
     }
+
+    @Override
+    public void add(Session session) {
+        if(!(session instanceof HANonStorableSession)) {
+            super.add(session);
+        }
+    }
     
     /**
     * called from valve; does the save of session
@@ -141,6 +140,9 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
     *   The session to store
     */    
     public void doValveSave(Session session) {
+        if(session instanceof HANonStorableSession) {
+            return;
+        }
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("in doValveSave");
         }
@@ -279,7 +281,7 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
             }
             this.backingStore = factory.createBackingStore(conf);
         } catch (BackingStoreException e) {
-            _logger.log(Level.WARNING, COULD_NOT_CREATE_BACKING_STORE, e);
+            _logger.log(Level.WARNING, LogFacade.COULD_NOT_CREATE_BACKING_STORE, e);
         }
         Object obj = conf.getVendorSpecificSettings().get("key.mapper");
         if (obj != null && obj instanceof GlassFishHAReplicaPredictor) {

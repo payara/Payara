@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -70,15 +70,21 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.jar.JarFile;
 import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -428,7 +434,34 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
                 //remove context from generated
                 deploymentContext.clean();
-
+                
+                
+                // Ensure All cached JarFiles are closed after undeployment to 
+                // free file descriptors
+                try {
+                    
+                    Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
+                    Field fields[] = clazz.getDeclaredFields();
+                    for (Field field : fields) {
+                        if ("fileCache".equals(field.getName())) {
+                            field.setAccessible(true);
+                            HashMap<String,JarFile> files = (HashMap<String,JarFile>) field.get(null);
+                            Set<JarFile> jars = new HashSet<>();
+                            jars.addAll(files.values());
+                            for (JarFile file : jars) {
+                                file.close();
+                            }
+                        } 
+                    }
+                } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }   catch (IOException ex) {            
+                    logger.log(Level.SEVERE, null, ex);
+                }
+                           
+                // perform full GC after cleaning to ensure full clean up
+                System.gc();
+                    
                 //if directory deployment then do not remove the directory
                 if ( (! keepreposdir) && !isDirectoryDeployed && source.exists()) {
                     /*
@@ -436,9 +469,6 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                      * any special handling (such as stale file handling)
                      * known to the archive can run.
                      */
-
-                    // perform full GC before doing this
-                    System.gc();
                     source.delete();
                 }
 

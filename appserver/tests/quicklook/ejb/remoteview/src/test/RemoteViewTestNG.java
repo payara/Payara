@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package test.ejb.remoteview;
 
 
+import java.util.Properties;
 import org.testng.annotations.*;
 import org.testng.Assert;
 import javax.naming.InitialContext;
@@ -55,10 +56,9 @@ public class RemoteViewTestNG {
     public void helloRemote() throws Exception{
         boolean test_result = false;
         try {
-            HelloHome helloHome = (HelloHome) new InitialContext().lookup("java:global/" + appName + "/HelloBean!remoteview.HelloHome");
-            callHome(helloHome);
+            HelloHome helloHome = (HelloHome) new InitialContext(jndiProperties()).lookup("java:global/" + appName + "/HelloBean!remoteview.HelloHome");
 
-            Hello hello = (Hello) new InitialContext().lookup("HH#remoteview.Hello");
+            Hello hello = (Hello) new InitialContext(jndiProperties()).lookup("HH#remoteview.Hello");
             Future<String> future = hello.helloAsync();
             hello.helloAsync();
             hello.helloAsync();
@@ -82,10 +82,10 @@ public class RemoteViewTestNG {
         boolean test_result = false;
         // Fully-qualified portable global
         try{
-            HelloHome helloHome2 = (HelloHome) new InitialContext().lookup("java:global/" + appName + "/HelloBean!remoteview.HelloHome");
+            HelloHome helloHome2 = (HelloHome) new InitialContext(jndiProperties()).lookup("java:global/" + appName + "/HelloBean!remoteview.HelloHome");
             callHome(helloHome2);
 
-            Hello hello2 = (Hello) new InitialContext().lookup("java:global/" + appName + "/HelloBean!remoteview.Hello");
+            Hello hello2 = (Hello) new InitialContext(jndiProperties()).lookup("java:global/" + appName + "/HelloBean!remoteview.Hello");
             callBusHome(hello2);
             test_result = true;
         } catch(Exception e) {
@@ -100,10 +100,10 @@ public class RemoteViewTestNG {
         boolean test_result = false;
         // non-portable global
         try{
-            HelloHome helloHome5 = (HelloHome) new InitialContext().lookup("HH");
+            HelloHome helloHome5 = (HelloHome) new InitialContext(jndiProperties()).lookup("HH");
             callHome(helloHome5);
 
-            Hello hello5 = (Hello) new InitialContext().lookup("HH#remoteview.Hello");
+            Hello hello5 = (Hello) new InitialContext(jndiProperties()).lookup("HH#remoteview.Hello");
             callBusHome(hello5);
             test_result = true;
         } catch(Exception e) {
@@ -120,5 +120,16 @@ public class RemoteViewTestNG {
     private static void callBusHome(Hello h) {
 	String hret = h.hello();
         //System.out.println("Hello.hello() says " + h.hello());
+    }
+    
+    private static Properties jndiProperties() {
+        Properties jndiProps = new Properties();
+        jndiProps.put("java.naming.factory.initial", "com.sun.enterprise.naming.impl.SerialInitContextFactory");
+        jndiProps.put("java.naming.factory.url.pkgs", "com.sun.enterprise.naming");
+        jndiProps.put("java.naming.factory.state", "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl");
+        jndiProps.put("java.naming.provider.url", "iiop://localhost:3700");
+        jndiProps.setProperty("org.omg.CORBA.ORBInitialHost", "127.0.0.1");
+        jndiProps.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+        return jndiProps;
     }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.security.jmac;
 
@@ -72,16 +73,17 @@ import com.sun.logging.LogDomains;
 @RunLevel(StartupRunLevel.VAL)
 public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 
-    private static Logger logger = LogDomains.getLogger(MessageSecurityConfigEventListenerImpl.class,LogDomains.SECURITY_LOGGER);
-    
+    private static Logger logger = LogDomains.getLogger(MessageSecurityConfigEventListenerImpl.class,
+            LogDomains.SECURITY_LOGGER, false);
+
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService service;
-        
+
     /**
     * @param event - Event to be processed.
     * @throws AdminEventListenerException when the listener is unable to
     *         process the event.
-    */    
+    */
     public <T extends ConfigBeanProxy> NotProcessed handleUpdate(T instance) {
 	NotProcessed np = null;
         if (logger.isLoggable(Level.FINE)) {
@@ -92,7 +94,7 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 	if (instance instanceof MessageSecurityConfig) {
 	    GFServerConfigProvider.loadConfigContext(service);
 	} else {
-	    np = new NotProcessed("unimplemented: unknown instance: " 
+	    np = new NotProcessed("unimplemented: unknown instance: "
 		+ instance.getClass().getName());
 	}
 	return np;
@@ -112,7 +114,7 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 	if (instance instanceof MessageSecurityConfig) {
 	    GFServerConfigProvider.loadConfigContext(service);
 	} else {
-	    np = new NotProcessed("unimplemented: unknown instance: " 
+	    np = new NotProcessed("unimplemented: unknown instance: "
 		+ instance.getClass().getName());
 	}
 	return np;
@@ -132,7 +134,7 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 	if (instance instanceof MessageSecurityConfig) {
 	    GFServerConfigProvider.loadConfigContext(service);
 	} else {
-	    np = new NotProcessed("unimplemented: unknown instance: " 
+	    np = new NotProcessed("unimplemented: unknown instance: "
 		+ instance.getClass().getName());
 	}
 	return np;
@@ -143,23 +145,23 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 
 	/**
 	* Notification of a change on a configuration object
-	* @param type type of change : ADD mean the changedInstance was added 
-	* to the parent REMOVE means the changedInstance was removed from 
+	* @param type type of change : ADD mean the changedInstance was added
+	* to the parent REMOVE means the changedInstance was removed from
 	* the parent, CHANGE means the changedInstance has mutated.
 	* @param changedType type of the configuration object
 	* @param changedInstance changed instance.
 	*/
-	public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, 
+	public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type,
 		Class<T> changedType, T changedInstance) {
 	    NotProcessed np = null;
 	    switch (type) {
 		case ADD:
-		    logger.fine("A new " + changedType.getName() + 
+		    logger.fine("A new " + changedType.getName() +
 			    " was added : " + " " + changedInstance);
 		    np = handleCreate(changedInstance);
 		    break;
 		case CHANGE:
-		    logger.fine("A " + changedType.getName() + 
+		    logger.fine("A " + changedType.getName() +
 			    " was changed : " + changedInstance);
 		    np = handleUpdate(changedInstance);
 		    break;

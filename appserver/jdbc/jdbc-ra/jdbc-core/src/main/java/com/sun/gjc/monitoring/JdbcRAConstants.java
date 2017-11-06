@@ -37,12 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.monitoring;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface that contains all the constants used in the jdbc-ra module.
@@ -113,9 +116,9 @@ public interface JdbcRAConstants {
     /**
      * List of valid method names that can be used for sql trace monitoring.
      */
-    public static final List<String> validSqlTracingMethodNames =
-            Collections.unmodifiableList(
-            Arrays.asList(
+    public static final Set<String> validSqlTracingMethodNames =
+            Collections.unmodifiableSet(
+            new HashSet(Arrays.asList(
                 "nativeSQL",
                 "prepareCall",
                 "prepareStatement",
@@ -123,5 +126,5 @@ public interface JdbcRAConstants {
                 "execute",
                 "executeQuery",
                 "executeUpdate"
-            ));
+            )));
 }

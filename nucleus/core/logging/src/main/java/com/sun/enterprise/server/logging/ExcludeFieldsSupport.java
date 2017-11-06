@@ -47,11 +47,11 @@ import java.util.BitSet;
  */
 public class ExcludeFieldsSupport {
     
-    static enum SupplementalAttribute {TID, USERID, ECID, TIME_MILLIS, LEVEL_VALUE};
+    public static enum SupplementalAttribute {TID, USERID, ECID, TIME_MILLIS, LEVEL_VALUE};
 
     private BitSet excludeSuppAttrsBits = new BitSet();
 
-    void setExcludeFields(String excludeFields) {
+    public void setExcludeFields(String excludeFields) {
         excludeSuppAttrsBits.clear();
         if (excludeFields != null) {
             String[] fields = excludeFields.split(",");
@@ -71,7 +71,7 @@ public class ExcludeFieldsSupport {
         } 
     }
     
-    boolean isSet(SupplementalAttribute attr) {
+    public boolean isSet(SupplementalAttribute attr) {
         return excludeSuppAttrsBits.get(attr.ordinal());
     }
 

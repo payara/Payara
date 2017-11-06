@@ -37,24 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
 
-import com.sun.enterprise.deployment.annotation.handlers.*;
-import org.glassfish.apf.*;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.apf.impl.HandlerProcessingResultImpl;
-
-import javax.annotation.sql.DataSourceDefinitions;
-import javax.annotation.sql.DataSourceDefinition;
 import java.lang.annotation.Annotation;
-import java.util.Set;
 import java.util.HashSet;
-import java.util.logging.Level;
+import java.util.Set;
 
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import javax.annotation.sql.DataSourceDefinition;
+import javax.annotation.sql.DataSourceDefinitions;
+
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.jvnet.hk2.annotations.Service;
+
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
@@ -66,10 +69,11 @@ public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DataSourceDefinitionsHandler.class);
-    
+
     public DataSourceDefinitionsHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
         DataSourceDefinitions defns = (DataSourceDefinitions) ainfo.getAnnotation();
@@ -83,7 +87,7 @@ public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
                 if(duplicates.contains(defnName)){
                 String localString = localStrings.getLocalString(
                         "enterprise.deployment.annotation.handlers.datasourcedefinitionsduplicates",
-                        "@DataSourceDefinitions cannot have multiple definitions with same name : '{0}'",
+                        "@DataSourceDefinitions cannot have multiple definitions with same name : ''{0}''",
                         defnName);
                     throw new IllegalStateException(localString);
                     /*
@@ -117,6 +121,7 @@ public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
         return result;
     }
 */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
 import com.sun.appserv.server.util.PreprocessorUtil;
-import com.sun.enterprise.util.CULoggerInfo;
-import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
-import org.glassfish.api.deployment.DeploymentContext;
+import com.sun.enterprise.util.CULoggerInfo;
+import com.sun.enterprise.util.i18n.StringManager;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -60,19 +60,17 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.security.AccessController;
 import java.security.CodeSource;
-import java.security.Permission;
+import java.security.PermissionCollection;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
 import java.security.cert.Certificate;
-import java.security.Permissions;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Attributes;
@@ -82,7 +80,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import java.security.PermissionCollection;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.hk2.api.PreDestroy;
 
@@ -98,7 +95,7 @@ import org.glassfish.hk2.api.PreDestroy;
  * @since  JDK 1.4
  */
 public class ASURLClassLoader
-        extends URLClassLoader
+        extends CurrentBeforeParentClassLoader
         implements JasperAdapter, InstrumentableClassLoader, PreDestroy, DDPermissionsLoader {
 
     /*
@@ -562,11 +559,20 @@ public class ASURLClassLoader
      * (b) changes to contents or length of 'resourcesList' and/or 'notFoundResources' while iterating
      * over them, (c) thread visibility to all of the above.
      */
+    private boolean warnedOnce = false;
     public synchronized Enumeration<URL>
     findResources(String name) throws IOException {
         if( doneCalled ) {
-            _logger.log(Level.WARNING, CULoggerInfo.doneAlreadyCalled,
+            //PAYARA-588
+            if ( warnedOnce ) {
+                  _logger.log(Level.FINE, CULoggerInfo.doneAlreadyCalled,
                         new Object[] { name, doneSnapshot });
+            
+            }else{
+                   _logger.log(Level.WARNING, CULoggerInfo.doneAlreadyCalled,
+                        new Object[] { name, doneSnapshot }); 
+                   warnedOnce = true;
+            }
             // return an empty enumeration instead of null. See issue #13096
             return Collections.enumeration(Collections.EMPTY_LIST);
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 /*
  * ReplicationStore.java
@@ -49,7 +50,6 @@ package org.glassfish.web.ha.session.management;
 
 import com.sun.appserv.util.cache.BaseCache;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.web.ServerConfigLookup;
 import org.apache.catalina.Container;
 import org.apache.catalina.Session;
 import org.apache.catalina.LifecycleException;
@@ -58,11 +58,12 @@ import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.util.SimpleMetadata;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.ha.LogFacade;
 
 import java.io.*;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
+import org.apache.catalina.core.StandardContext;
 
 /**
  *
@@ -70,31 +71,6 @@ import java.util.zip.GZIPInputStream;
  * @author Rajiv Mordani
  */
 public class ReplicationStore extends HAStoreBase {
-
-    @LogMessageInfo(
-            message = "Exception during removing synchronized from backing store",
-            level = "WARNING")
-    public static final String EXCEPTION_REMOVING_SYNCHRONIZED = "AS-WEB-HA-00001";
-
-    @LogMessageInfo(
-            message = "Exception during removing expired session from backing store",
-            level = "WARNING")
-    public static final String EXCEPTION_REMOVING_EXPIRED_SESSION = "AS-WEB-HA-00002";
-
-    @LogMessageInfo(
-            message = "Error creating inputstream",
-            level = "WARNING")
-    public static final String ERROR_CREATING_INPUT_STREAM = "AS-WEB-HA-00003";
-
-    @LogMessageInfo(
-            message = "Exception during deserializing the session",
-            level = "WARNING")
-    public static final String EXCEPTION_DESERIALIZING_SESSION = "AS-WEB-HA-00004";
-
-    @LogMessageInfo(
-            message = "Exception occurred in getSession",
-            level = "WARNING")
-    public static final String EXCEPTION_GET_SESSION = "AS-WEB-HA-00005";
 
     /**
      * Creates a new instance of ReplicationStore
@@ -181,11 +157,6 @@ public class ReplicationStore extends HAStoreBase {
             sb.append("}");
             _logger.finest(sb.toString());
         }
-        BackingStore<String, SimpleMetadata> replicator = getSimpleMetadataBackingStore();
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.fine("ReplicationStore>>doValveSave replicator: " + replicator);
-            _logger.fine("ReplicationStore>>doValveSave version:" + session.getVersion());                       
-        }        
         SimpleMetadata simpleMetadata =
             SimpleMetadataFactory.createSimpleMetadata(session.getVersion(),  //version
                 session.getLastAccessedTime(), //lastaccesstime
@@ -195,6 +166,11 @@ public class ReplicationStore extends HAStoreBase {
             _logger.finest("In doValveSave metadata is " + simpleMetadata);
         }
         try {
+            BackingStore<String, SimpleMetadata> replicator = getSimpleMetadataBackingStore();
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("ReplicationStore>>doValveSave replicator: " + replicator);
+                _logger.fine("ReplicationStore>>doValveSave version:" + session.getVersion());
+            }
             HASession haSess = (HASession)session;
             replicator.save(session.getIdInternal(), //id
                     simpleMetadata, haSess.isPersistent());
@@ -204,9 +180,7 @@ public class ReplicationStore extends HAStoreBase {
             }
 
         } catch (BackingStoreException ex) {
-            IOException ex1 =
-                (IOException) new IOException("Error during save: " + ex.getMessage()).initCause(ex);
-            throw ex1;
+            throw new IOException("Error during save: " + ex.getMessage(), ex);
         }
     }
 
@@ -279,10 +253,6 @@ public class ReplicationStore extends HAStoreBase {
             return;
         }
         byte[] sessionState = this.getByteArray(session, isReplicationCompressionEnabled());
-        BackingStore<String, SimpleMetadata> backingStore = getSimpleMetadataBackingStore();
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.fine("ReplicationStore>>save: backing store : " + backingStore);
-        }
         SimpleMetadata simpleMetadata =
             SimpleMetadataFactory.createSimpleMetadata(session.getVersion(),  //version
                 session.getLastAccessedTime(), //lastaccesstime
@@ -290,12 +260,14 @@ public class ReplicationStore extends HAStoreBase {
                 sessionState); //state
 
         try {
+            BackingStore<String, SimpleMetadata> backingStore = getSimpleMetadataBackingStore();
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("ReplicationStore>>save: backing store : " + backingStore);
+            }
             backingStore.save(session.getIdInternal(), //id
                     simpleMetadata, !((HASession)session).isPersistent());  //TODO: Revist the last param
         } catch (BackingStoreException ex) {
-            IOException ex1 =
-                (IOException) new IOException("Error during save: " + ex.getMessage()).initCause(ex);
-            throw ex1;
+            throw new IOException("Error during save: " + ex.getMessage(), ex);
         }
     }
 
@@ -318,18 +290,19 @@ public class ReplicationStore extends HAStoreBase {
     *
     * @exception IOException if an input/output error occurs
     */
+    @Override
     public void doRemove(String id) throws IOException  {
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>doRemove");
         }
-        BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.fine("ReplicationStore>>doRemove: replicator: " + replicator);                       
-        }        
         try {
+            BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("ReplicationStore>>doRemove: replicator: " + replicator);
+            }
             replicator.remove(id);
         } catch (BackingStoreException ex) {
-            _logger.log(Level.WARNING, EXCEPTION_REMOVING_SYNCHRONIZED, ex);
+            _logger.log(Level.WARNING, LogFacade.EXCEPTION_REMOVING_SYNCHRONIZED, ex);
         }
     }     
     
@@ -346,14 +319,14 @@ public class ReplicationStore extends HAStoreBase {
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>removeSynchronized");                       
         }
-        BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.fine("ReplicationStore>>removeSynchronized: replicator: " + replicator);                       
-        }        
         try {
+            BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("ReplicationStore>>removeSynchronized: replicator: " + replicator);
+            }
             replicator.remove(id);
         } catch (BackingStoreException ex) {
-            _logger.log(Level.WARNING, EXCEPTION_REMOVING_SYNCHRONIZED, ex);
+            _logger.log(Level.WARNING, LogFacade.EXCEPTION_REMOVING_SYNCHRONIZED, ex);
         }
     }
     
@@ -386,7 +359,7 @@ public class ReplicationStore extends HAStoreBase {
             try {
                 result = backingStore.removeExpired(mgr.getMaxInactiveInterval());
             } catch (BackingStoreException ex) {
-                _logger.log(Level.WARNING, EXCEPTION_REMOVING_EXPIRED_SESSION, ex);
+                _logger.log(Level.WARNING, LogFacade.EXCEPTION_REMOVING_EXPIRED_SESSION, ex);
             }
         }
         if(_logger.isLoggable(Level.FINE)) {
@@ -415,6 +388,15 @@ public class ReplicationStore extends HAStoreBase {
         try {
                 return loadFromBackingStore(id, version);
         } catch (BackingStoreException ex) {
+            if (ex.getCause() instanceof IllegalStateException && ex.getCause().getMessage().toUpperCase().startsWith("INIT")) {
+                // if there is a transient error, ignore it
+                _logger.warning("Loading session state: " + ex.getMessage());
+                final HANonStorableSession nss = new HANonStorableSession(manager);
+                nss.setValid(true);
+                nss.setId(id);
+                return nss;
+            }
+
             IOException ex1 =
                     (IOException) new IOException("Error during load: " + ex.getMessage()).initCause(ex);
             throw ex1;
@@ -439,15 +421,23 @@ public class ReplicationStore extends HAStoreBase {
     }
 
 
-    private BackingStore<String, ? extends Storeable> getStoreableBackingStore() {
-        return getStoreableReplicationManager().getBackingStore();
+    private BackingStore<String, ? extends Storeable> getStoreableBackingStore() throws BackingStoreException {
+        BackingStore<String, ? extends Storeable> rv = getStoreableReplicationManager().getBackingStore();
+        if(rv == null) {
+            throw new BackingStoreException("Backing Store is not set");
+        }
+        return rv;
     }
 
     @SuppressWarnings("unchecked")
-    private BackingStore<String, SimpleMetadata> getSimpleMetadataBackingStore() {
+    private BackingStore<String, SimpleMetadata> getSimpleMetadataBackingStore() throws BackingStoreException {
         ReplicationManagerBase<SimpleMetadata> mgr
                 = (ReplicationManagerBase<SimpleMetadata>) this.getManager();
-        return mgr.getBackingStore();
+        BackingStore<String, SimpleMetadata> rv = mgr.getBackingStore();
+        if(rv == null) {
+            throw new BackingStoreException("Backing Store is not set");
+        }
+        return rv;
     }
 
     @SuppressWarnings("unchecked")
@@ -468,11 +458,11 @@ public class ReplicationStore extends HAStoreBase {
         if (!(session instanceof BaseHASession)) {
             return;
         }
-        BackingStore<String, ? extends Storeable> backingStore = getStoreableBackingStore();
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.fine("ReplicationStore>>updateLastAccessTime: replicator: " + backingStore);                       
-        }         
         try {
+            BackingStore<String, ? extends Storeable> backingStore = getStoreableBackingStore();
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("ReplicationStore>>updateLastAccessTime: replicator: " + backingStore);
+            }
             backingStore.updateTimestamp(session.getIdInternal(), ""+session.getVersion(),
                     ((BaseHASession)session).getLastAccessedTimeInternal());
         } catch (BackingStoreException ex) {
@@ -494,11 +484,11 @@ public class ReplicationStore extends HAStoreBase {
     
     public int getSize() throws IOException {
         int result = 0;
-        BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.fine("ReplicationStore>>getSize: replicator: " + replicator);                       
-        }         
         try {
+            BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("ReplicationStore>>getSize: replicator: " + replicator);
+            }
             result = replicator.size();
         } catch (BackingStoreException ex) {
             if (_logger.isLoggable(Level.FINE)) {
@@ -520,6 +510,15 @@ public class ReplicationStore extends HAStoreBase {
         }
     }
 
+    protected long getUniqueId() {
+        long uniqueId = 0L;
+        Container container = this.manager.getContainer();
+        if (container instanceof StandardContext) {
+            StandardContext ctx = (StandardContext) container;
+            uniqueId = ctx.getUniqueId();
+        }
+        return uniqueId;
+    }
 
     public Session getSession(byte[] state,  long version) throws IOException {
         Session _session = null;
@@ -553,9 +552,9 @@ public class ReplicationStore extends HAStoreBase {
 
             if (classLoader != null) {
                 try {
-                    ois = ioUtils.createObjectInputStream(is,true,classLoader);
+                    ois = ioUtils.createObjectInputStream(is, true, classLoader, getUniqueId());
                 } catch (Exception ex) {
-                    _logger.log(Level.WARNING, ERROR_CREATING_INPUT_STREAM, ex);
+                    _logger.log(Level.WARNING, LogFacade.ERROR_CREATING_INPUT_STREAM, ex);
                 }
             }
             
@@ -578,13 +577,13 @@ public class ReplicationStore extends HAStoreBase {
             }
         } catch(ClassNotFoundException e) {
             IOException ex1 = (IOException) new IOException(
-                    _logger.getResourceBundle().getString(EXCEPTION_DESERIALIZING_SESSION) + e.getMessage()).initCause(e);
-            _logger.log(Level.WARNING, EXCEPTION_DESERIALIZING_SESSION, ex1);
+                    _logger.getResourceBundle().getString(LogFacade.EXCEPTION_DESERIALIZING_SESSION) + e.getMessage()).initCause(e);
+            _logger.log(Level.WARNING, LogFacade.EXCEPTION_DESERIALIZING_SESSION, ex1);
             throw ex1;
         }
         catch(IOException e) {
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.log(Level.WARNING, EXCEPTION_GET_SESSION, e);
+                _logger.log(Level.WARNING, LogFacade.EXCEPTION_GET_SESSION, e);
             }
             throw e;
         }

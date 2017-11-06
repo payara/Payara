@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation]
+
 package org.glassfish.cdi.transaction;
 
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -67,7 +69,7 @@ public class TransactionalInterceptorNever extends TransactionalInterceptorBase 
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.log(java.util.logging.Level.INFO, CDI_JTA_NEVER);
+        _logger.log(java.util.logging.Level.FINE, CDI_JTA_NEVER);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(true);
         try {

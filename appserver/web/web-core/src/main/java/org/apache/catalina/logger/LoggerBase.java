@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,12 +63,11 @@ import org.apache.catalina.Container;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.LifecycleSupport;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.ObjectName;
 import javax.servlet.ServletException;
@@ -96,38 +95,8 @@ import java.util.logging.Logger;
 public class LoggerBase
     implements Lifecycle, org.apache.catalina.Logger
  {
-     protected static final Logger log = StandardServer.log;
+     protected static final Logger log = LogFacade.getLogger();
      protected static final ResourceBundle rb = log.getResourceBundle();
-
-     @LogMessageInfo(
-             message = "Unknown container {0}",
-             level = "SEVERE",
-             cause = "Unknown container for implementation of StandardEngine interface",
-             action = "Verify the current container"
-     )
-     public static final String UNKNOWN_CONTAINER_EXCEPTION = "AS-WEB-CORE-00302";
-
-     @LogMessageInfo(
-             message = "Null engine !! {0}",
-             level = "SEVERE",
-             cause = "Could not get engine",
-             action = "Verify current container"
-     )
-     public static final String NULL_ENGINE_EXCEPTION = "AS-WEB-CORE-00303";
-
-     @LogMessageInfo(
-             message = "Unable to create javax.management.ObjectName for Logger",
-             level = "WARNING"
-     )
-     public static final String UNABLE_CREATE_OBJECT_NAME_FOR_LOGGER_EXCEPTION = "AS-WEB-CORE-00304";
-
-     @LogMessageInfo(
-             message = "Can't register logger {0}",
-             level = "SEVERE",
-             cause = "Could not register logger",
-             action = "Verify registration is called after configure()"
-     )
-     public static final String CANNOT_REGISTER_LOGGER_EXCEPTION = "AS-WEB-CORE-00305";
 
     // ----------------------------------------------------- Instance Variables
 
@@ -480,15 +449,15 @@ public class LoggerBase
                 suffix= ",path=" + path + ",host=" + 
                         container.getParent().getName();
             } else {
-                log.log(Level.SEVERE, UNKNOWN_CONTAINER_EXCEPTION);
+                log.log(Level.SEVERE, LogFacade.UNKNOWN_CONTAINER_EXCEPTION);
             }
             if( engine != null ) {
                 oname=new ObjectName(engine.getDomain()+ ":type=Logger" + suffix);
             } else {
-                log.log(Level.SEVERE, NULL_ENGINE_EXCEPTION, container);
+                log.log(Level.SEVERE, LogFacade.NULL_ENGINE_EXCEPTION, container);
             }
         } catch (Throwable e) {
-            log.log(Level.WARNING,UNABLE_CREATE_OBJECT_NAME_FOR_LOGGER_EXCEPTION, e);
+            log.log(Level.WARNING,LogFacade.UNABLE_CREATE_OBJECT_NAME_FOR_LOGGER_EXCEPTION, e);
         }
         return oname;
     }
@@ -543,7 +512,7 @@ public class LoggerBase
                     log.log(Level.FINE, "Registering logger " + oname);
                 }
             } catch( Exception ex ) {
-                String msg = MessageFormat.format(rb.getString(CANNOT_REGISTER_LOGGER_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_REGISTER_LOGGER_EXCEPTION),
                                                   oname);
                 log.log(Level.SEVERE, msg, ex);
             }      
@@ -570,7 +539,7 @@ public class LoggerBase
                     log.log(Level.FINE, "Unregistering logger " + oname);
                 }
             } catch( Exception ex ) {
-                String msg = MessageFormat.format(rb.getString(CANNOT_REGISTER_LOGGER_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_REGISTER_LOGGER_EXCEPTION),
                         oname);
                 log.log(Level.SEVERE, msg, ex);
             }      

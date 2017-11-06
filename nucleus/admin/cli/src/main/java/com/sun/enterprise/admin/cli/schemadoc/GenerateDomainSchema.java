@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016] [Payara Foundation]
 package com.sun.enterprise.admin.cli.schemadoc;
 
 import java.io.File;
@@ -60,10 +60,10 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.external.org.objectweb.asm.ClassReader;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
-import org.objectweb.asm.ClassReader;
 
 import javax.inject.Inject;
 

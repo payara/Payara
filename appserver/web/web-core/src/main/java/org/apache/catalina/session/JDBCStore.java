@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,10 +61,9 @@ package org.apache.catalina.session;
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Loader;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Session;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.CustomObjectInputStream;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.io.*;
 import java.sql.*;
@@ -83,55 +82,7 @@ import java.util.ResourceBundle;
 
 public class JDBCStore extends StoreBase {
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "SQL Error {0}",
-            level = "FINE"
-    )
-    public static final String SQL_ERROR = "AS-WEB-CORE-00343";
-
-    @LogMessageInfo(
-            message = "Loading Session {0} from database {1}",
-            level = "FINE"
-    )
-    public static final String LOADING_SESSION = "AS-WEB-CORE-00344";
-
-    @LogMessageInfo(
-            message = "Removing Session {0} at database {1}",
-            level = "FINE"
-    )
-    public static final String REMOVING_SESSION = "AS-WEB-CORE-00345";
-
-    @LogMessageInfo(
-            message = "Saving Session {0} to database {1}",
-            level = "FINE"
-    )
-    public static final String SAVING_SESSION = "AS-WEB-CORE-00346";
-
-    @LogMessageInfo(
-            message = "The database connection is null or was found to be closed. Trying to re-open it.",
-            level = "FINE"
-    )
-    public static final String DATABASE_CONNECTION_CLOSED = "AS-WEB-CORE-00347";
-
-    @LogMessageInfo(
-            message = "The re-open on the database failed. The database could be down.",
-            level = "FINE"
-    )
-    public static final String RE_OPEN_DATABASE_FAILED = "AS-WEB-CORE-00348";
-
-    @LogMessageInfo(
-            message = "A SQL exception occurred {0}",
-            level = "FINE"
-    )
-    public static final String SQL_EXCEPTION = "AS-WEB-CORE-00349";
-
-    @LogMessageInfo(
-            message = "JDBC driver class not found {0}",
-            level = "FINE"
-    )
-    public static final String JDBC_DRIVER_CLASS_NOT_FOUND = "AS-WEB-CORE-00350";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     /**
      * The descriptive information about this implementation.
@@ -502,7 +453,7 @@ public class JDBCStore extends StoreBase {
                 }
                 keys = tmpkeys.toArray(new String[tmpkeys.size()]);
             } catch(SQLException e) {
-                String msg = MessageFormat.format(rb.getString(SQL_ERROR),
+                String msg = MessageFormat.format(rb.getString(LogFacade.SQL_ERROR),
                                                   e);
                 log(msg);
             } finally {
@@ -553,7 +504,7 @@ public class JDBCStore extends StoreBase {
                     size = rst.getInt(1);
                 }
             } catch(SQLException e) {
-                String msg = MessageFormat.format(rb.getString(SQL_ERROR),
+                String msg = MessageFormat.format(rb.getString(LogFacade.SQL_ERROR),
                                                   e);
                 log(msg);
             } finally {
@@ -624,7 +575,7 @@ public class JDBCStore extends StoreBase {
                     }
 
                     if (debug > 0) {
-                        String msg = MessageFormat.format(rb.getString(LOADING_SESSION),
+                        String msg = MessageFormat.format(rb.getString(LogFacade.LOADING_SESSION_FROM_DATABASE),
                                                           new Object[] {id, sessionTable});
                         log(msg);
                     }
@@ -636,7 +587,7 @@ public class JDBCStore extends StoreBase {
                     log(getStoreName()+": No persisted data object found");
                 }
             } catch(SQLException e) {
-                String msg = MessageFormat.format(rb.getString(SQL_ERROR),
+                String msg = MessageFormat.format(rb.getString(LogFacade.SQL_ERROR),
                                                   e);
                 log(msg);
             } finally {
@@ -691,7 +642,7 @@ public class JDBCStore extends StoreBase {
                 preparedRemoveSql.setString(2, getName());
                 preparedRemoveSql.execute();
             } catch(SQLException e) {
-                String msg = MessageFormat.format(rb.getString(SQL_ERROR),
+                String msg = MessageFormat.format(rb.getString(LogFacade.SQL_ERROR),
                                                   e);
                 log(msg);
             } finally {
@@ -700,7 +651,7 @@ public class JDBCStore extends StoreBase {
         }
 
         if (debug > 0) {
-            String msg = MessageFormat.format(rb.getString(REMOVING_SESSION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.REMOVING_SESSION_FROM_DATABASE),
                                               new Object[] {id, sessionTable});
             log(msg);
         }
@@ -729,7 +680,7 @@ public class JDBCStore extends StoreBase {
                 preparedClearSql.setString(1, getName());
                 preparedClearSql.execute();
             } catch(SQLException e) {
-                String msg = MessageFormat.format(rb.getString(SQL_ERROR),
+                String msg = MessageFormat.format(rb.getString(LogFacade.SQL_ERROR),
                                                   e);
                 log(msg);
             } finally {
@@ -792,7 +743,7 @@ public class JDBCStore extends StoreBase {
                 preparedSaveSql.setLong(6, session.getLastAccessedTime());
                 preparedSaveSql.execute();
             } catch(SQLException e) {
-                String msg = MessageFormat.format(rb.getString(SQL_ERROR),
+                String msg = MessageFormat.format(rb.getString(LogFacade.SQL_ERROR),
                                                   e);
                 log(msg);
             } catch (IOException e) {
@@ -813,7 +764,7 @@ public class JDBCStore extends StoreBase {
         }
 
         if (debug > 0) {
-            String msg = MessageFormat.format(rb.getString(SAVING_SESSION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SAVING_SESSION_TO_DATABASE),
                                               new Object[] {session.getIdInternal(), sessionTable});
             log(msg);
         }
@@ -832,22 +783,22 @@ public class JDBCStore extends StoreBase {
         try {
             if(conn == null || conn.isClosed()) {
                 Class.forName(driverName);
-                String databaseConnClosedMsg = rb.getString(DATABASE_CONNECTION_CLOSED);
+                String databaseConnClosedMsg = rb.getString(LogFacade.DATABASE_CONNECTION_CLOSED);
                 log(databaseConnClosedMsg);
                 conn = DriverManager.getConnection(connString);
                 conn.setAutoCommit(true);
 
                 if(conn == null || conn.isClosed()) {
-                    String openDatabaseFailedMsg = rb.getString(RE_OPEN_DATABASE_FAILED);
+                    String openDatabaseFailedMsg = rb.getString(LogFacade.RE_OPEN_DATABASE_FAILED);
                     log(openDatabaseFailedMsg);
                 }
             }
         } catch (SQLException ex){
-            String msg = MessageFormat.format(rb.getString(SQL_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SQL_EXCEPTION),
                                               ex.toString());
             log(msg);
         } catch (ClassNotFoundException ex) {
-            String msg = MessageFormat.format(rb.getString(JDBC_DRIVER_CLASS_NOT_FOUND),
+            String msg = MessageFormat.format(rb.getString(LogFacade.JDBC_DRIVER_CLASS_NOT_FOUND),
                                               ex.toString());
             log(msg);
         }

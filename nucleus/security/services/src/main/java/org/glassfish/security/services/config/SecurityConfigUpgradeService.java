@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.security.services.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -147,9 +148,9 @@ public class SecurityConfigUpgradeService implements ConfigurationUpgrade, PostC
     private AuthenticationService addAuthenticationService(final SecurityConfigurations sc_w) throws TransactionFailure, PropertyVetoException {
         final AuthenticationService as_w = sc_w.createChild(AuthenticationService.class);
         sc_w.getSecurityServices().add(as_w);
-        as_w.setDefault(true);
+        as_w.setDefault("true");
         as_w.setName(AUTHENTICATION_SERVICE_NAME);
-        as_w.setUsePasswordCredential(true);
+        as_w.setUsePasswordCredential("true");
         return as_w;
     }
 
@@ -201,7 +202,7 @@ public class SecurityConfigUpgradeService implements ConfigurationUpgrade, PostC
     private AuthorizationService addAuthorizationService(final SecurityConfigurations sc_w) throws TransactionFailure, PropertyVetoException {
         final AuthorizationService as_w = sc_w.createChild(AuthorizationService.class);
         sc_w.getSecurityServices().add(as_w);
-        as_w.setDefault(true);
+        as_w.setDefault("true");
         as_w.setName(AUTHORIZATION_SERVICE_NAME);
         return as_w;
     }
@@ -215,7 +216,7 @@ public class SecurityConfigUpgradeService implements ConfigurationUpgrade, PostC
     private void addAuthorizationConfig(SecurityProvider sp_w, String configName, String supportPolicyDeploy) throws TransactionFailure, PropertyVetoException {
         final AuthorizationProviderConfig authorizationProviderConfig = sp_w.createChild(AuthorizationProviderConfig.class);
         authorizationProviderConfig.setName(configName);
-        authorizationProviderConfig.setSupportPolicyDeploy(Boolean.valueOf(supportPolicyDeploy));
+        authorizationProviderConfig.setSupportPolicyDeploy(supportPolicyDeploy);
         authorizationProviderConfig.setProviderClass(SIMPLE_PROVIDER_CLASS_NAME);
         sp_w.getSecurityProviderConfig().add(authorizationProviderConfig);
     }

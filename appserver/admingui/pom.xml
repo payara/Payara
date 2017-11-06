@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
     Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
@@ -40,14 +39,14 @@
     holder.
 
 -->
-<!--"Portions Copyright [2014-2015] [C2B2 Consulting Limited]" -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
+        <version>4.1.2.174-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.admingui</groupId>
@@ -110,7 +109,7 @@
         <module>cluster</module>
         <module>payara-theme</module>
         <module>web</module>
-	<module>gf-admingui-connector</module>
+        <module>gf-admingui-connector</module>
         <module>jts</module>
         <module>jdbc</module>
         <module>jca</module>
@@ -141,6 +140,20 @@
         <module>webui-jsf-suntheme-plugin-l10n</module>
         <module>payara-console-extras</module>
         <module>payara-console-extras-l10n</module>
+        <module>payara-support</module>
+        <module>slack-notifier-console-plugin</module>
+        <module>hipchat-notifier-console-plugin</module>
+        <module>eventbus-notifier-console-plugin</module>
+        <module>cdieventbus-notifier-console-plugin</module>
+    	<module>email-notifier-console-plugin</module>
+        <module>snmp-notifier-console-plugin</module>
+        <module>xmpp-notifier-console-plugin</module>
+        <module>jms-notifier-console-plugin</module>
+        <module>datadog-notifier-console-plugin</module>
+        <module>healthcheck-service-console-plugin</module>
+        <module>newrelic-notifier-console-plugin</module>
+        <module>jmx-monitoring-plugin</module>
+        <module>rest-monitoring-plugin</module>
     </modules>
     <build>
         <plugins>

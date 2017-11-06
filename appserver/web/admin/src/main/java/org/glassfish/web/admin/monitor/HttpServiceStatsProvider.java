@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,12 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.web.admin.monitor;
 
+import org.glassfish.internal.api.Globals;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
+import com.sun.enterprise.v3.services.impl.monitor.stats.ConnectionQueueStatsProvider;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.sun.enterprise.util.StringUtils;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.StringStatistic;
 import org.glassfish.external.statistics.annotations.Reset;
@@ -58,6 +64,7 @@ import org.glassfish.gmbal.ManagedObject;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.web.admin.LogFacade;
 
 /**
  * Provides the monitoring data at the Web container level
@@ -72,7 +79,7 @@ public class HttpServiceStatsProvider implements PostConstruct {
 
     private NetworkConfig networkConfig;
 
-    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final String ERROR_COUNT_DESCRIPTION =
             "Cumulative value of the error count, with error count representing the number of cases where the response code was greater than or equal to 400";
@@ -193,11 +200,26 @@ public class HttpServiceStatsProvider implements PostConstruct {
 
     public HttpServiceStatsProvider(String vsName, String listeners, NetworkConfig networkConfig) {
         this.virtualServerName = vsName;
-        this.networkListeners = listeners == null ? new String[0] : listeners.split(",");
+        List<String> listenerList = StringUtils.parseStringList(listeners, ",");
+        this.networkListeners = listenerList == null ? new String[0] :listenerList.toArray(new String[listenerList.size()]);
         this.networkConfig = networkConfig;
     }
 
     public void postConstruct() {
+    }
+
+    private long getInitialOpenConnections(){
+        long initialCount = 0;
+        GrizzlyMonitoring monitoring = Globals.get(GrizzlyService.class).getMonitoring();
+        if (monitoring != null) {
+            for (String networkListener : networkListeners) {
+                ConnectionQueueStatsProvider connectionQueueStats = monitoring.getConnectionQueueStatsProvider(networkListener);
+                initialCount += connectionQueueStats.getOpenConnectionsCount().getCount();
+            }
+        } else {
+            logger.log(Level.FINER, "Tried to get monitoring service connections before service started");
+        }
+        return initialCount;
     }
 
     @ManagedAttribute(id="maxtime")
@@ -342,14 +364,20 @@ public class HttpServiceStatsProvider implements PostConstruct {
 
     @ProbeListener("glassfish:web:http-service:dataReceivedEvent")
     public void dataReceivedEvent(
-        @ProbeParam("size") int size) {
-        countBytesReceived.increment(size);
+        @ProbeParam("size") int size,
+        @ProbeParam("hostName") String hostName) {
+        if ((hostName != null) && (hostName.equals(virtualServerName))) {
+            countBytesReceived.increment(size);
+        }
     }
 
     @ProbeListener("glassfish:web:http-service:dataSentEvent")
     public void dataSentEvent(
-        @ProbeParam("size") long size) {
-        countBytesTransmitted.increment(size);
+        @ProbeParam("size") long size,
+        @ProbeParam("hostName") String hostName) {
+        if ((hostName != null) && (hostName.equals(virtualServerName))) {
+            countBytesTransmitted.increment(size);
+        }
     }
 
     @ProbeListener("glassfish:web:http-service:requestStartEvent")
@@ -414,7 +442,7 @@ public class HttpServiceStatsProvider implements PostConstruct {
             NetworkListener networkListener = networkConfig.getNetworkListener(listenerName);
             if (networkListener != null) {
                 maxOpenConnections.setCount(
-                        Integer.valueOf(networkListener.findProtocol().getHttp().getMaxConnections()));
+                        Integer.parseInt(networkListener.findProtocol().getHttp().getMaxConnections()));
             }
         }
         if (logger.isLoggable(Level.FINEST)) {
@@ -525,5 +553,8 @@ public class HttpServiceStatsProvider implements PostConstruct {
         this.maxOpenConnections.reset();
         this.method.reset();
         this.uri.reset();
+        
+        //set initial value
+        countOpenConnections.increment(getInitialOpenConnections());
     }
 }

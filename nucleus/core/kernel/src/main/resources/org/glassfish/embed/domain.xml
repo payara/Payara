@@ -191,7 +191,7 @@
       </network-config>
       <thread-pools>
           <thread-pool name="http-thread-pool" max-queue-size="4096"></thread-pool>
-          <thread-pool name="thread-pool-1" max-thread-pool-size="200"/>
+          <thread-pool name="thread-pool-1" max-thread-pool-size="200" min-thread-pool-size="2"/>
       </thread-pools>
     </config> 
   </configs>

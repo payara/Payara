@@ -65,10 +65,11 @@
         setPageSessionAttribute(key="showCancelButton" value="#{true}" );
         setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
         setPageSessionAttribute(key="hasPropertyTable" value="#{false}" );
+        setPageSessionAttribute(key="skipAttrsList", value={"userGroupCommaStr" , "principalCommaStr"});
 
     />
     </event>
-            <sun:form id="propertyForm">
+            <sun:form id="propertyForm" autoComplete="off">
 #include "/jca/connectorConnectionPoolTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
 

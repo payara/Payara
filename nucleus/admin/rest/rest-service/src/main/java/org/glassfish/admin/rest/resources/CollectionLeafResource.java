@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.admin.rest.resources;
 
@@ -142,17 +142,25 @@ public abstract class CollectionLeafResource extends AbstractResource {
 
         String postCommand = getPostCommand();
         Map<String, String> payload = null;
+        Map<String, String> existing = null;
 
         if (isJvmOptions(postCommand)) {
-            deleteExistingOptions();
+            existing = deleteExistingOptions();
             payload = processData(data);
         } else {
             payload = data;
         }
 
-
-        return runCommand(postCommand, payload, "rest.resource.create.message",
+        // Create all JVM options.
+        Response response = runCommand(postCommand, payload, "rest.resource.create.message",
             "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
+        if (response.getStatus() != 200) {
+            // If creating JVM options is error, restore JVM options with exsiting.  
+            payload = processData(existing);
+            runCommand(postCommand, payload, "rest.resource.create.message",
+                "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
+        }
+        return response;
     }
 
     @PUT //create
@@ -364,7 +372,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return (command != null) && (command.contains("jvm-options"));
     }
 
-    protected void deleteExistingOptions() {
+    protected Map<String, String> deleteExistingOptions() {
         Map<String, String> existing = new HashMap<String, String>();
         existing.put("target", target);
         for (String option : getEntity()) {
@@ -381,6 +389,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 "\"{0}\" deleted successfully.",
                 "rest.resource.delete.forbidden",
                 "DELETE on \"{0}\" is forbidden.");
+        return existing;
     }
 
 }

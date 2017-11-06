@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.cdi.transaction;
 
 
@@ -87,7 +89,7 @@ public class TransactionalInterceptorBase implements Serializable {
 
     @LogMessageInfo( message = "About to setRollbackOnly from @Transactional interceptor on " +
                                "transaction: {0}",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_SETROLLBACK = "AS-JTA-00002";
 
     @LogMessageInfo( message = "No ComponentInvocation present for @Transactional annotation " +
@@ -96,72 +98,72 @@ public class TransactionalInterceptorBase implements Serializable {
     public static final String CDI_JTA_NOCOMPONENT = "AS-JTA-00003";
 
     @LogMessageInfo( message = "In MANDATORY TransactionalInterceptor",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_MANDATORY = "AS-JTA-00004";
 
     @LogMessageInfo( message = "In NEVER TransactionalInterceptor",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_NEVER = "AS-JTA-00005";
 
     @LogMessageInfo( message = "In NOT_SUPPORTED TransactionalInterceptor",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_NOTSUPPORTED = "AS-JTA-00006";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                "called inside a transaction context. Suspending transaction...",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_MBNOTSUPPORTED = "AS-JTA-00007";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                "called inside a transaction context.  Suspending transaction failed due to {0}",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_MBNOTSUPPORTEDTX = "AS-JTA-00008";
 
     @LogMessageInfo( message = "In REQUIRED TransactionalInterceptor",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_REQUIRED = "AS-JTA-00009";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                         "called outside a transaction context.  Beginning a transaction...",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_MBREQUIRED = "AS-JTA-00010";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                "encountered exception during begin {0}",
-                     level = "INFO")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQUIREDBT = "AS-JTA-00011";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                "encountered exception during commit {0}",
-                     level = "INFO")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQUIREDCT = "AS-JTA-00012";
 
     @LogMessageInfo( message = "In REQUIRES_NEW TransactionalInterceptor",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_REQNEW = "AS-JTA-00013";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                         "called inside a transaction context.  Suspending before beginning a transaction...",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_MBREQNEW = "AS-JTA-00014";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                "encountered exception during begin {0}",
-                     level = "INFO")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQNEWBT = "AS-JTA-00015";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                "encountered exception during commit {0}",
-                     level = "INFO")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQNEWCT = "AS-JTA-00016";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                      "encountered exception during resume {0}",
-                     level = "INFO")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQNEWRT = "AS-JTA-00017";
 
     @LogMessageInfo( message = "In SUPPORTS TransactionalInterceptor",
-                     level = "INFO")
+                     level = "FINE")
     public static final String CDI_JTA_SUPPORTS = "AS-JTA-00018";
 
     private static TransactionManager testTransactionManager;
@@ -205,6 +207,7 @@ public class TransactionalInterceptorBase implements Serializable {
                 (ctx.getMethod().getAnnotation(PreDestroy.class) != null);
     }
 
+    @SuppressWarnings("unchecked")
     public Object proceed(InvocationContext ctx) throws Exception {
         javax.transaction.Transactional transactionalAnnotation =
                 ctx.getMethod().getAnnotation(javax.transaction.Transactional.class);
@@ -225,7 +228,7 @@ public class TransactionalInterceptorBase implements Serializable {
         try {
             object = ctx.proceed();
         } catch (RuntimeException runtimeException) {
-            _logger.log(java.util.logging.Level.INFO, "Error during transaction processing", runtimeException);
+            _logger.log(java.util.logging.Level.FINE, "Error during transaction processing", runtimeException);
             Class dontRollbackOnClass =
                     getClassInArrayClosestToClassOrNull(dontRollbackOn, runtimeException.getClass());
             if (dontRollbackOnClass == null) { //proceed as default...
@@ -254,7 +257,7 @@ public class TransactionalInterceptorBase implements Serializable {
             markRollbackIfActiveTransaction();
             throw runtimeException;
         } catch (Exception checkedException) {
-            _logger.log(java.util.logging.Level.INFO, "Error during transaction processing", checkedException);
+            _logger.log(java.util.logging.Level.FINE, "Error during transaction processing", checkedException);
             Class rollbackOnClass =
                     getClassInArrayClosestToClassOrNull(rollbackOn, checkedException.getClass());
             if (rollbackOnClass == null) { //proceed as default...
@@ -296,6 +299,7 @@ public class TransactionalInterceptorBase implements Serializable {
      * @param exception actual exception thrown for comparison
      * @return exception in the array that is closest/lowest in hierarchy to the exception or null if non exists
      */
+    @SuppressWarnings("unchecked")
     private Class getClassInArrayClosestToClassOrNull(Class[] exceptionArray, Class exception) {
         if(exceptionArray==null || exception == null) return null;
         Class closestMatch = null;
@@ -313,7 +317,7 @@ public class TransactionalInterceptorBase implements Serializable {
     private void markRollbackIfActiveTransaction() throws SystemException {
         Transaction transaction = getTransactionManager().getTransaction();
         if (transaction != null) {
-          _logger.log(java.util.logging.Level.INFO, CDI_JTA_SETROLLBACK, transaction);
+          _logger.log(java.util.logging.Level.FINE, CDI_JTA_SETROLLBACK, transaction);
             getTransactionManager().setRollbackOnly();
         }
     }
@@ -338,7 +342,7 @@ public class TransactionalInterceptorBase implements Serializable {
         if (currentInvocation == null) {
             //there should always be a currentInvocation and so this would seem a bug
             // but not a fatal one as app should not be relying on this, so log warning only
-            System.out.println("TransactionalInterceptorBase.markThreadAsTransactional currentInvocation==null");
+            _logger.log(java.util.logging.Level.WARNING, "TransactionalInterceptorBase.markThreadAsTransactional currentInvocation==null");
             return;
         }
         currentInvocation.setTransactionOperationsManager(preexistingTransactionOperationsManager);

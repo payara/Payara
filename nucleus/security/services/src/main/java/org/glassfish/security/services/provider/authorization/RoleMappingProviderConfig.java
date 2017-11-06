@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.security.services.provider.authorization;
 
 import java.beans.PropertyVetoException;
@@ -72,9 +73,9 @@ public interface RoleMappingProviderConfig extends SecurityProviderConfig, Prope
 	/**
 	 * Indicates if the provider supports role deployment.
 	 */
-	@Attribute(defaultValue = "true")
-	boolean getSupportRoleDeploy();
-	void setSupportRoleDeploy(boolean value) throws PropertyVetoException;
+	@Attribute(defaultValue = "true", dataType = Boolean.class)
+	String getSupportRoleDeploy();
+	void setSupportRoleDeploy(String value) throws PropertyVetoException;
 
 	/**
 	 * Gets the version of the provider.

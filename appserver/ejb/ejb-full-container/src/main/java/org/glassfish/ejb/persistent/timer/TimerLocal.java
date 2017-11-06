@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.ejb.persistent.timer;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
@@ -68,11 +68,11 @@ public interface TimerLocal {
 
     void cancelTimers(Collection<TimerState> timers);
 
-    TimerState createTimer(String timerId,  
+    TimerState createTimer(String timerId,
                       long containerId, long applicationId, String ownerId,
-                      Object timedObjectPrimaryKey, 
-                      Date initialExpiration, long intervalDuration, 
-                      EJBTimerSchedule schedule, TimerConfig timerConfig) 
+                      Object timedObjectPrimaryKey,
+                      Date initialExpiration, long intervalDuration,
+                      EJBTimerSchedule schedule, TimerConfig timerConfig)
                       throws CreateException;
 
     TimerState findTimer(TimerPrimaryKey timerId);
@@ -81,7 +81,7 @@ public interface TimerLocal {
 
     void remove(Set<TimerPrimaryKey> timerIds);
 
-    // 
+    //
     // Queries returning Timer Ids (TimerPrimaryKey)
     //
 
@@ -94,8 +94,8 @@ public interface TimerLocal {
     Set findActiveTimerIdsOwnedByThisServerByContainer(long containerId);
     Set findCancelledTimerIdsOwnedByThisServerByContainer(long containerId);
 
-    Set findTimerIdsOwnedByThisServer(); 
-    Set findActiveTimerIdsOwnedByThisServer(); 
+    Set findTimerIdsOwnedByThisServer();
+    Set findActiveTimerIdsOwnedByThisServer();
     Set findCancelledTimerIdsOwnedByThisServer();
 
     Set findTimerIdsOwnedBy(String owner);
@@ -109,14 +109,14 @@ public interface TimerLocal {
 
     Set findTimersByContainer(long containerId);
     Set findActiveTimersByContainer(long containerId);
-    Set findCancelledTimersByContainer(long containerId);    
+    Set findCancelledTimersByContainer(long containerId);
 
     Set findTimersOwnedByThisServerByContainer(long containerId);
     Set findActiveTimersOwnedByThisServerByContainer(long containerId);
     Set findCancelledTimersOwnedByThisServerByContainer(long containerId);
 
-    Set findTimersOwnedByThisServer(); 
-    Set findActiveTimersOwnedByThisServer(); 
+    Set findTimersOwnedByThisServer();
+    Set findActiveTimersOwnedByThisServer();
     Set findCancelledTimersOwnedByThisServer();
 
     Set findTimersOwnedBy(String owner);
@@ -131,14 +131,14 @@ public interface TimerLocal {
     int countTimersByApplication(long applicationId);
     int countTimersByContainer(long containerId);
     int countActiveTimersByContainer(long containerId);
-    int countCancelledTimersByContainer(long containerId);    
+    int countCancelledTimersByContainer(long containerId);
 
     int countTimersOwnedByThisServerByContainer(long containerId);
     int countActiveTimersOwnedByThisServerByContainer(long containerId);
     int countCancelledTimersOwnedByThisServerByContainer(long containerId);
 
-    int countTimersOwnedByThisServer(); 
-    int countActiveTimersOwnedByThisServer(); 
+    int countTimersOwnedByThisServer();
+    int countActiveTimersOwnedByThisServer();
     int countCancelledTimersOwnedByThisServer();
 
     int countTimersOwnedBy(String owner);

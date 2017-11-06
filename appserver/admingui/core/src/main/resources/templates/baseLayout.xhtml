@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
+
 <ui:event type="initPage">
     setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings");
     getPluginIdFromViewId(viewId="#{facesContext.viewRoot.viewId}", pluginId="#{pluginId}");
@@ -89,8 +91,8 @@
             <f:verbatim>
             <style type="text/css">
                 .yui-skin-sam .yui-layout .yui-layout-unit-center div.yui-layout-bd {background-color: #FFF;}
-                .yui-layout-unit-top .yui-layout-bd { background-color: #5b87a4; }
-                .yui-skin-sam .yui-layout .yui-layout-unit-top div.yui-layout-bd { background-color: #5b87a4; }
+                .yui-layout-unit-top .yui-layout-bd { background-color: #325764; }
+                .yui-skin-sam .yui-layout .yui-layout-unit-top div.yui-layout-bd { background-color: #325764; }
                 .yui-layout-hd h2 {background-position:center; background-image:url(#{request.contextPath}/theme/com/sun/webui/jsf/suntheme/images/masthead/masthead-background.jpg);}
                 .yui-skin-sam .yui-layout { background-color: #ffffff;}
                 .yui-skin-sam .yui-layout .yui-layout-clip { background-color:#FFFFFF;}
@@ -310,7 +312,7 @@
 
         var layout = new YAHOO.widget.Layout({
            units: [
-               { position : 'top', body : 'gfLayoutTop', height : 115, scroll : false, gutter1 : '5px', resize : false, collapse : false},
+               { position : 'top', body : 'gfLayoutTop', height : 130, scroll : false, gutter1 : '5px', resize : false, collapse : false},
                { position : 'left', body : 'gfLayoutLeft', width : 250, scroll : true, gutter1 : '5px', resize : true, header : '$resource{i18n.peTree}', collapse : true},
                { position : 'center', body : 'gfLayoutCenter', gutter1 : '5px', scroll : true}
            ]

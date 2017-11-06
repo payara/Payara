@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.resources.admin.cli;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -728,6 +728,7 @@ public class ResourcesXMLParser implements EntityResolver
         Node nIsIsolationLevelQuaranteed  = 
              attributes.getNamedItem(IS_ISOLATION_LEVEL_GUARANTEED);
         Node datasourceNode = attributes.getNamedItem(DATASOURCE_CLASS);
+        Node validationclassnameNode = attributes.getNamedItem(VALIDATION_CLASSNAME);
         Node nonTransactionalConnectionsNode = 
                 attributes.getNamedItem(NON_TRANSACTIONAL_CONNECTIONS);
         Node allowNonComponentCallersNode = 
@@ -782,6 +783,11 @@ public class ResourcesXMLParser implements EntityResolver
         if(datasourceNode != null){
             String datasource = datasourceNode.getNodeValue();
             jdbcConnPool.setAttribute(DATASOURCE_CLASS, datasource);
+        }
+        
+        if (validationclassnameNode != null){
+            String validationclassname = validationclassnameNode.getNodeValue();
+            jdbcConnPool.setAttribute(VALIDATION_CLASSNAME, validationclassname);
         }
 
         if (nSteadyPoolSizeNode != null) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.spi.util;
 
@@ -62,7 +63,7 @@ import java.io.*;
 @Contract
 public interface JavaEEIOUtils {
 	
-    public ObjectInputStream createObjectInputStream(InputStream is, boolean resolveObject, ClassLoader loader)
+    public ObjectInputStream createObjectInputStream(InputStream is, boolean resolveObject, ClassLoader loader, long uniqueId)
 	    throws Exception;
 
     public ObjectOutputStream createObjectOutputStream(OutputStream os, boolean replaceObject)
@@ -72,6 +73,8 @@ public interface JavaEEIOUtils {
 	    throws java.io.IOException;
 
     public Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader)
+            throws Exception;
+    public Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader, long uniqueId)
             throws Exception;
     
     public void addGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler);

@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 
 <!-- grizzly/transportAttr.inc -->
 
@@ -103,10 +104,6 @@
 
     <sun:property id="DisplayConfiguration"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.transport.DisplayConfiguration}"  helpText="$resource{i18n_web.transport.DisplayConfigurationHelp}" >
         <sun:checkbox  selected="#{pageSession.valueMap['displayConfiguration']}" selectedValue="true" />
-    </sun:property>
-
-    <sun:property id="EnableSnoop"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.transport.EnableSnoop}"  helpText="$resource{i18n_web.transport.EnableSnoopHelp}" >
-        <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['enableSnoop']}" selectedValue="true" />
     </sun:property>
 
      <sun:property id="TcpNoDelay"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.transport.TcpNoDelay}" helpText="$resource{i18n_web.transport.TcpNoDelayHelp}">

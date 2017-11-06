@@ -37,8 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.batch;
 
+import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -75,7 +78,7 @@ public abstract class AbstractListCommand
     @Param(name = "header", shortName = "h", optional = true)
     protected boolean header;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     protected String target;
 
     protected String[] outputHeaders;

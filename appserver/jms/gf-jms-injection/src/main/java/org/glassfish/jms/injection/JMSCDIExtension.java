@@ -101,7 +101,7 @@ public class JMSCDIExtension implements Extension {
     public <T> void processInjectionTarget(@Observes ProcessInjectionTarget<T> pit) {
     }
 
-    public <T> void processAnnotatedType(@Observes ProcessAnnotatedType<T> pat) {
+    public <T> void processAnnotatedType(@Observes @WithAnnotations(Void.class) ProcessAnnotatedType<T> pat) {
     }
 
     public <T, X> void processProducer(@Observes ProcessProducer<T, X> event) {
@@ -224,3 +224,5 @@ public class JMSCDIExtension implements Extension {
         }
     }
 }
+
+@interface Void {}

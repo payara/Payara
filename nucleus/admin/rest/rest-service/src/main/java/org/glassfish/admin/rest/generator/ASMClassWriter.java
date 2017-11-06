@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.admin.rest.generator;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -52,10 +52,10 @@ import java.util.logging.Level;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.MethodVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.Opcodes;
+import org.glassfish.hk2.external.org.objectweb.asm.Type;
 
 /**
  * @author Ludovic Champenois
@@ -67,7 +67,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
     private final static String CREATE_AND_INITIALIZE = "createAndInitialize";
     private final static String CREATE_AND_INITIALIZE_SIG = "(Ljava/lang/Class;)Ljava/lang/Object;";
 
-    private org.objectweb.asm.ClassWriter cw = new org.objectweb.asm.ClassWriter(0);
+    private org.glassfish.hk2.external.org.objectweb.asm.ClassWriter cw = new org.glassfish.hk2.external.org.objectweb.asm.ClassWriter(0);
     private String className;
     private ServiceLocator habitat;
     private final String generatedPath;

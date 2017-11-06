@@ -37,51 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.util;
 
 import com.sun.logging.LogDomains;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Maintains the Sql Tracing Cache used to store SQL statements used by the
- * applications. This is used by the JDBCRA monitoring to display the most
- * frequently used queries by applications.
+ * Base class for Sql Tracing Caches used to store SQL statements used by applications.
  *
  * @author Shalini M
  */
-public class SQLTraceCache {
+public abstract class SQLTraceCache {
 
-    //List of sql trace objects
-    private final List<SQLTrace> list;
     //Maximum size of the cache.
-    private int numTopQueriesToReport = 10;
-    private long timeToKeepQueries = 60 * 1000;
+    protected int numTopQueriesToReport = 10;
+    protected long timeToKeepQueries = 60000;
+    protected final String poolName;
+    protected ConcurrentSkipListMap<String, SQLTrace> cache;
+    
     private SQLTraceTimerTask sqlTraceTimerTask;
-    private String poolName;
-    private String appName;
-    private String moduleName;
-    private final static Logger _logger = LogDomains.getLogger(SQLTraceCache.class,
+    protected final static Logger _logger = LogDomains.getLogger(SQLTraceCache.class,
             LogDomains.RSR_LOGGER);
-    private static final String LINE_BREAK = "%%%EOL%%%";
+    protected static final String LINE_BREAK = "%%%EOL%%%";
 
-    public SQLTraceCache(String poolName, String appName, String moduleName, int maxSize, long timeToKeepQueries) {
+    public SQLTraceCache(String poolName, int maxSize, long timeToKeepQueries) {
+        this.cache = new ConcurrentSkipListMap<>();
         this.poolName = poolName;
-        this.appName = appName;
-        this.moduleName = moduleName;
         this.numTopQueriesToReport = maxSize;
-        list = new ArrayList<SQLTrace>();
         this.timeToKeepQueries = timeToKeepQueries * 60 * 1000;
     }
 
-    public List<SQLTrace> getSqlTraceList() {
-        return list;
+    public Collection<String> getSqlTraceList() {
+        return cache.keySet();
     }
 
     public String getPoolName() {
@@ -91,9 +87,9 @@ public class SQLTraceCache {
     /**
      * Schedule timer to perform purgeEntries on the cache after the
      * specified timeToKeepQueries delay and period.
+     * @param timer
      */
     public void scheduleTimerTask(Timer timer) {
-
         if(sqlTraceTimerTask != null) {
             sqlTraceTimerTask.cancel();
             sqlTraceTimerTask = null;
@@ -101,7 +97,7 @@ public class SQLTraceCache {
 
         sqlTraceTimerTask = initializeTimerTask();
 
-        if(timer != null) {
+        if(timer != null && timeToKeepQueries > 0) {
 
             timer.scheduleAtFixedRate(sqlTraceTimerTask, timeToKeepQueries, timeToKeepQueries);
         }
@@ -114,7 +110,6 @@ public class SQLTraceCache {
      * Cancel the timer task used to perform a purgeEntries on the cache.
      */
     public synchronized void cancelTimerTask() {
-
         if(_logger.isLoggable(Level.FINEST)) {
             _logger.finest("Cancelling Sql Trace Caching timer task");
         }
@@ -144,28 +139,8 @@ public class SQLTraceCache {
      * If the query is a new one, it is added to the list.
      * 
      * @param cacheObj
-     * @return
      */
-    public void checkAndUpdateCache(SQLTrace cacheObj) {
-        synchronized (list) {
-            if (cacheObj != null) {
-                int index = list.indexOf(cacheObj);
-                if (index != -1) {
-                    //If already found in the cache
-                    //equals is invoked here and hence comparison based on query name is done
-                    //Get the object at the index to update the numExecutions
-                    SQLTrace cache = (SQLTrace) list.get(index);
-                    cache.setNumExecutions(cache.getNumExecutions() + 1);
-                    cache.setLastUsageTime(System.currentTimeMillis());
-                } else {
-                    //First occurrence of the query. query to be added.
-                    cacheObj.setNumExecutions(1);
-                    cacheObj.setLastUsageTime(System.currentTimeMillis());
-                    list.add(cacheObj);
-                }
-            }
-        }
-    }
+    public abstract void checkAndUpdateCache(SQLTrace cacheObj);
 
     /**
      * Entries are removed from the list after sorting
@@ -173,40 +148,15 @@ public class SQLTraceCache {
      * entries are maintained in the list after the purgeEntries.
      */
     public void purgeEntries() {
-        synchronized(list) {
-            Collections.sort(list, Collections.reverseOrder());
-            Iterator i = list.iterator();
-            while (i.hasNext()) {
-                SQLTrace cacheObj = (SQLTrace) i.next();
-                if (list.size() > numTopQueriesToReport) {
-                    if(_logger.isLoggable(Level.FINEST)) {
-                        _logger.finest("removing sql=" + cacheObj.getQueryName());
-                    }
-                    i.remove();
-                } else {
-                    break;
-                }
-            }
-            //sort by most frequently used queries first
-            Collections.sort(list);
+        List<SQLTrace> sqlTraceList = new ArrayList(cache.values());
+        Collections.sort(sqlTraceList, SQLTrace.SQLTraceFrequencyComparator);
+        
+        int elementCount = sqlTraceList.size();        
+        while (elementCount > numTopQueriesToReport) {
+            SQLTrace sqlTrace = sqlTraceList.get(elementCount - 1);
+            cache.remove(sqlTrace.getQueryName());
+            sqlTraceList.remove(sqlTrace);
+            elementCount --;
         }
-    }
-
-    /**
-     * Returns the String representation of the list of traced sql queries
-     * ordered by the number most frequently used, followed by the usage
-     * timestamp. Only the top 'n' queries represented by the numTopQueriesToReport are
-     * chosen for display.
-     *
-     * @return string representation of the list of sql queries sorted
-     */
-    public String getTopQueries() {
-        purgeEntries();
-        StringBuffer sb = new StringBuffer();
-        for(SQLTrace cache : list) {
-            sb.append(LINE_BREAK);
-            sb.append(cache.getQueryName());
-        }
-        return sb.toString();
     }
 }

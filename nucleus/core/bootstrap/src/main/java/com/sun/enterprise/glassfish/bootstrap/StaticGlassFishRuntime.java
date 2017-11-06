@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2015 [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 package com.sun.enterprise.glassfish.bootstrap;
 
 import java.io.File;
@@ -222,6 +222,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
                     "config/keystore.jks",
                     "config/login.conf",
                     "config/logging.properties",
+                    "config/loggingToFile.properties",
                     "config/admin-keyfile",
                     "org/glassfish/web/embed/default-web.xml",
                     "org/glassfish/embed/domain.xml"

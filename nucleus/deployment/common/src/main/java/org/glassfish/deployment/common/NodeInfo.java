@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.deployment.common;
 
-import org.objectweb.asm.*;
+import org.glassfish.hk2.external.org.objectweb.asm.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ import java.io.InputStream;
  * 
  */
 class NodeInfo
-        implements ClassVisitor {
+        extends ClassVisitor {
 
     private int nodeId;
 
@@ -89,6 +89,7 @@ class NodeInfo
     private static final Set<NodeInfo> EMPTY_NODEINFO_SET = new HashSet<NodeInfo>();
 
     NodeInfo(byte[] classData) {
+        super(Opcodes.ASM5);
         ClassReader cr = new ClassReader(classData);
 
         cr.accept(this, ClassReader.SKIP_CODE);
@@ -136,6 +137,7 @@ class NodeInfo
     }
 
     NodeInfo(String className) {
+        super(Opcodes.ASM5);
         this.className = className;
     }
 

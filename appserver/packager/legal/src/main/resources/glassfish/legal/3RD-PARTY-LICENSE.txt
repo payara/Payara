@@ -25,7 +25,7 @@ licensors listed.
 ---------------------------------------------------
 ANT 1.8.2
 cglib 2.2
-Commons fileupload 1.1.1, 1.2.1
+Commons fileupload 1.1.1, 1.2.1, 1.3.1
 Commons IO 1.3.1, 1.4
 Apache Felix OSGI 4.x
 OSGi Core API 4.3
@@ -42,8 +42,8 @@ JType 0.1.0
 IzPack 4.3.3
 ant-contrib 1.0b5
 Commons codec 1.3
-jettison 1.1
-jackson 1.9.2
+jettison 1.3.8
+jackson 2.8.5
 jrebel 3.1.2 SDK
 Velocity 1.4
 
@@ -1461,14 +1461,14 @@ Library, and copy and distribute such modifications or work under the terms of S
 
 you also meet all of these conditions:
 
-•a) The modified work must itself be a software library.
-•b) You must cause the files modified to carry prominent notices stating that you changed the files and the
+ï¿½a) The modified work must itself be a software library.
+ï¿½b) You must cause the files modified to carry prominent notices stating that you changed the files and the
 
 date of any change.
-•c) You must cause the whole of the work to be licensed at no charge to all third parties under the terms of
+ï¿½c) You must cause the whole of the work to be licensed at no charge to all third parties under the terms of
 
 this License.
-•d) If a facility in the modified Library refers to a function or a table of data to be supplied by an
+ï¿½d) If a facility in the modified Library refers to a function or a table of data to be supplied by an
 
 application program that uses the facility, other than as an argument passed when the facility is invoked, then
 
@@ -1589,7 +1589,7 @@ displays copyright notices, you must include the copyright notice for the Librar
 
 reference directing the user to the copy of this License. Also, you must do one of these things:
 
-•a) Accompany the work with the complete corresponding machine-readable source code for the Library including
+ï¿½a) Accompany the work with the complete corresponding machine-readable source code for the Library including
 
 whatever changes were used in the work (which must be distributed under Sections 1 and 2 above); and, if the
 
@@ -1602,15 +1602,15 @@ modified executable containing the modified Library. (It is understood that the 
 of definitions files in the Library will not necessarily be able to recompile the application to use the
 
 modified definitions.)
-•b) Accompany the work with a written offer, valid for at least three years, to give the same user the
+ï¿½b) Accompany the work with a written offer, valid for at least three years, to give the same user the
 
 materials specified in Subsection 6a, above, for a charge no more than the cost of performing this
 
 distribution.
-•c) If distribution of the work is made by offering access to copy from a designated place, offer equivalent
+ï¿½c) If distribution of the work is made by offering access to copy from a designated place, offer equivalent
 
 access to copy the above specified materials from the same place.
-•d) Verify that the user has already received a copy of these materials or that you have already sent this user
+ï¿½d) Verify that the user has already received a copy of these materials or that you have already sent this user
 
 a copy.
 For an executable, the required form of the "work that uses the Library" must include any data and utility
@@ -1637,10 +1637,10 @@ provided that the separate distribution of the work based on the Library and of 
 
 otherwise permitted, and provided that you do these two things:
 
-•a) Accompany the combined library with a copy of the same work based on the Library, uncombined with any other
+ï¿½a) Accompany the combined library with a copy of the same work based on the Library, uncombined with any other
 
 library facilities. This must be distributed under the terms of the Sections above.
-•b) Give prominent notice with the combined library of the fact that part of it is a work based on the Library,
+ï¿½b) Give prominent notice with the combined library of the fact that part of it is a work based on the Library,
 
 and explaining where to find the accompanying uncombined form of the same work.
 8. You may not copy, modify, sublicense, link with, or distribute the Library except as expressly provided
@@ -3303,7 +3303,7 @@ In addition there is a Google group for discussing PLY related issues at
 
 http://groups.google.com/group/ply-hack
 
-– Dave-----------------------------------------------------------------------------------------
+ï¿½ Dave-----------------------------------------------------------------------------------------
 
 PyXML_LICENSE This file collects the licences for the various pieces of software
 included in this package, sorted by the package name in alphabetical

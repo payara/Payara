@@ -36,6 +36,7 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * Portions Copyright [2016] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.ejb.containers.interceptors;
@@ -333,6 +334,10 @@ public class InterceptorManager {
             String className,
             ClassLoader classLoaderToUse) {
 
+        // if interceptor already has the class loaded use its classloader
+        if (interceptor.getInterceptorClass() != null) {
+            classLoaderToUse = interceptor.getInterceptorClass().getClassLoader();
+        }
         for(LifecycleCallbackDescriptor desc : orderedInterceptors) {
             Method method = null;
             try {
@@ -427,8 +432,15 @@ public class InterceptorManager {
             throws Exception {
 
         Set<Class> listOfClasses = new HashSet<Class>();
-        for(String name : ejbDesc.getInterceptorClassNames()) {
-            listOfClasses.add( loader.loadClass(name));
+        for (EjbInterceptor ejbi : ejbDesc.getInterceptorClasses()) {
+            
+            // PAYARA-826 if the interceptor class is available use it
+            Class interceptorClass = ejbi.getInterceptorClass();
+            if (interceptorClass == null) {
+                String className = ejbi.getInterceptorClassName();
+                interceptorClass = loader.loadClass(className);
+            }
+            listOfClasses.add(interceptorClass);
         }
 
         // Add framework interceptors to list, but check for existence of

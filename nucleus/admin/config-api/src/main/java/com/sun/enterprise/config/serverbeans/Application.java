@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.config.serverbeans;
 
 import java.beans.PropertyVetoException;
@@ -62,15 +63,20 @@ import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
+import fish.payara.api.admin.config.ApplicationDeploymentTime;
 
-
+/**
+ * Interface to hold details of an application
+ * 
+ * @see com.sun.enterprise.deployment.Application
+ */
 @Configured
 @RestRedirects({
     @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "undeploy"),
     @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "redeploy")
 })
 @ContextRootCheck(message="{contextroot.duplicate}", payload=Application.class)
-public interface Application extends ApplicationName, PropertyBag {
+public interface Application extends ApplicationName, ApplicationDeploymentTime, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";           
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";
@@ -248,7 +254,7 @@ public interface Application extends ApplicationName, PropertyBag {
      *              {@link String }
      */
     void setDeploymentOrder(String value) throws PropertyVetoException;
-
+    
     @Element
     List<Module> getModule();
 

@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment;
@@ -64,18 +66,34 @@ public class InjectionTarget implements Serializable {
     private transient Field field=null;
     private transient Method method=null;
     
+    /**
+     * Returns true if the field can be injected into
+     * @return 
+     */
     public boolean isFieldInjectable() {
         return fieldName!=null;
     }
 
+    /**
+     * Returns true if method can be injected into
+     * @return 
+     */
     public boolean isMethodInjectable() {
         return methodName!=null;
     }
     
+    /**
+     * Gets the class name that is being injected into
+     * @return 
+     */
     public String getClassName() {
         return className;
     }
     
+    /**
+     * Sets the class name that is being injected into
+     * @param className 
+     */
     public void setClassName(String className) {
         this.className = className;
     }
@@ -87,20 +105,34 @@ public class InjectionTarget implements Serializable {
      * of the injected field.  This value is set on the descriptor
      * during .xml processing and converted into the appropriate 
      * field/method name during validation.
+     * @return 
      */
-
     public String getTargetName() {
         return targetName;
     }
     
+    /**
+     * Sets the name of that is being injected into
+     * @see #setFieldName(String) 
+     * @see #setMethodName(String) 
+     * @param targetName 
+     */
     public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
+    /**
+     * Gets the name of the field that is being injected into
+     * @return 
+     */
     public String getFieldName() {
         return fieldName;
     }
     
+    /**
+     * Sets the name of the field that is being injected into
+     * @param fieldName 
+     */
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
         this.targetName = fieldName;
@@ -109,9 +141,18 @@ public class InjectionTarget implements Serializable {
     /*
      * runtime cached information for faster lookup
      */
+    /**
+     * Gets the field that is being injected into
+     * @return 
+     */
     public Field getField() {
         return field;
     }
+    
+    /**
+     * Sets the field that is being injected into
+     * @param field 
+     */
     public void setField(Field field) {
         this.field = field;
     }
@@ -120,6 +161,7 @@ public class InjectionTarget implements Serializable {
      * Inject method name is the actual java method name of the setter method,
      * not the bean property name.  E.g., for @Resource void setFoo(Bar b)
      * it would be "setFoo", not the property name "foo".
+     * @return 
      */
     public String getMethodName() {
         return methodName;
@@ -128,7 +170,6 @@ public class InjectionTarget implements Serializable {
         this.methodName = methodName;
         // Method name follows java beans setter syntax
         this.targetName = TypeUtil.setterMethodToPropertyName(methodName);
-;
     }
 
     // runtime cached information
@@ -143,10 +184,15 @@ public class InjectionTarget implements Serializable {
         return metadataSource;
     }
 
+    /**
+     * Sets where the information about the injection is coming from
+     * @param metadataSource XML, ANNOTATION or PROGRAMMATIC
+     */
     public void setMetadataSource(MetadataSource metadataSource) {
         this.metadataSource = metadataSource;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof InjectionTarget)) {
             return false;
@@ -165,6 +211,7 @@ public class InjectionTarget implements Serializable {
         }
     }
 
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37*result + (className == null ? 0 : className.hashCode());

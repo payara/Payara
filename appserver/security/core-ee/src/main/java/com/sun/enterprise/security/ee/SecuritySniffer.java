@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.ee;
 
@@ -80,8 +81,7 @@ public class SecuritySniffer extends GenericSniffer {
     };
 
     public SecuritySniffer() {
-        super("security", "WEB-INF/web.xml", null);
-        
+        super("security", null, null);
     }
     
    /**
@@ -92,7 +92,13 @@ public class SecuritySniffer extends GenericSniffer {
      * @return true if this sniffer handles this application type
      */
     public boolean handles(ReadableArchive location) {
-        return (DeploymentUtils.isArchiveOfType(location, DOLUtils.warType(), habitat) || DeploymentUtils.isArchiveOfType(location, DOLUtils.earType(), habitat) || isJar(location));
+        ArchiveType archiveType = location.getExtraData(ArchiveType.class);
+        boolean rv = false;
+        if(archiveType != null) {
+            rv |= archiveType.equals(DOLUtils.warType()) || archiveType.equals(DOLUtils.earType())
+                    || archiveType.equals(DOLUtils.ejbType());
+        }
+        return rv || DeploymentUtils.isArchiveOfType(location, DOLUtils.warType(), habitat) || DeploymentUtils.isArchiveOfType(location, DOLUtils.earType(), habitat) || isJar(location);
     }
 
     /**

@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.node.runtime.gf;
 
+import com.google.common.collect.ImmutableList;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.*;
@@ -79,7 +81,8 @@ import java.util.Set;
  */
 public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorImpl> {
 
-    /** Creates new WebBundleRuntimeNode */
+    /** Creates new WebBundleRuntimeNode
+     * @param descriptor */
     public WebBundleRuntimeNode(WebBundleDescriptorImpl descriptor) {
         super(descriptor);
         //trigger registration in standard node, if it hasn't happened
@@ -97,6 +100,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
     /**
      * Initialize the child handlers
      */
+    @Override
     protected void init() {
         // we do not care about our standard DDS handles
         handlers = null;
@@ -155,6 +159,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
     /** 
      * @return the DOCTYPE that should be written to the XML file
      */
+    @Override
     public String getDocType() {
         return DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID;
     }
@@ -162,6 +167,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return DTDRegistry.SUN_WEBAPP_300_DTD_SYSTEM_ID;
     }
@@ -169,6 +175,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
     /**
      * @return NULL for all runtime nodes.
      */
+    @Override
     public List<String> getSystemIDs() {
         return null;
     }
@@ -338,6 +345,20 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
         } else if (element.getQName().equals(RuntimeTagNames.KEEP_STATE)) {
             descriptor.setKeepState(value);
         } else if (element.getQName().equals(RuntimeTagNames.VERSION_IDENTIFIER)) {
+        } else if(element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_INCLUDE)) {
+            if(descriptor.getApplication() != null) {
+                descriptor.getApplication().addScanningInclusions(ImmutableList.of(value), "WEB-INF/lib");
+            }
+        } else if(element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_EXCLUDE)) {
+            if(descriptor.getApplication() != null) {
+                descriptor.getApplication().addScanningExclusions(ImmutableList.of(value), "WEB-INF/lib");
+            }
+        } else if (element.getQName().equals("container-initializer-enabled")) {
+            descriptor.setServletInitializersEnabled(Boolean.parseBoolean(value));
+        } else if (element.getQName().equals(RuntimeTagNames.PAYARA_WHITELIST_PACKAGE)) {
+            if(descriptor.getApplication() != null) {
+                descriptor.getApplication().addWhitelistPackage(value);
+            }
         } else
             super.setElementValue(element, value);
     }
@@ -360,9 +381,9 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
 	SecurityRoleMapping[] roleMappings = sunWebApp.getSecurityRoleMapping();
 	if (roleMappings!=null && roleMappings.length>0) {
 	    SecurityRoleMappingNode srmn = new SecurityRoleMappingNode();
-	    for (int i=0;i<roleMappings.length;i++) {
-		srmn.writeDescriptor(web, RuntimeTagNames.SECURITY_ROLE_MAPPING, roleMappings[i]);
-	    }
+            for (SecurityRoleMapping roleMapping : roleMappings) {
+                srmn.writeDescriptor(web, RuntimeTagNames.SECURITY_ROLE_MAPPING, roleMapping);
+            }
 	}
 	
         // servlet
@@ -378,8 +399,8 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
         IdempotentUrlPattern[] patterns = sunWebApp.getIdempotentUrlPatterns();
         if (patterns != null && patterns.length > 0) {
             IdempotentUrlPatternNode node = new IdempotentUrlPatternNode();
-            for (int i = 0;i < patterns.length; i++) {
-                node.writeDescriptor(web, RuntimeTagNames.IDEMPOTENT_URL_PATTERN, patterns[i]);
+            for (IdempotentUrlPattern pattern : patterns) {
+                node.writeDescriptor(web, RuntimeTagNames.IDEMPOTENT_URL_PATTERN, pattern);
             }
         }
 
@@ -419,11 +440,9 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
 	// service-ref*
 	if (bundleDescriptor.hasServiceReferenceDescriptors()) {
 	    ServiceRefNode serviceNode = new ServiceRefNode();
-	    for (Iterator serviceItr=bundleDescriptor.getServiceReferenceDescriptors().iterator();
-	    		serviceItr.hasNext();) {
-		ServiceReferenceDescriptor next = (ServiceReferenceDescriptor) serviceItr.next();
-		serviceNode.writeDescriptor(web, WebServicesTagNames.SERVICE_REF, next);
-		}
+            for (ServiceReferenceDescriptor next : bundleDescriptor.getServiceReferenceDescriptors()) {
+                serviceNode.writeDescriptor(web, WebServicesTagNames.SERVICE_REF, next);
+            }
 	}        
 
         // message-destination-ref*

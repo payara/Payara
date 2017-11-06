@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2016 Payara Foundation. All rights reserved.
  
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -32,6 +32,7 @@ public interface JDBCQueryConstants {
 	public final static String SELECT_CHECKPOINTDATA = "SELECT_CHECKPOINTDATA";
 	public final static String INSERT_CHECKPOINTDATA = "INSERT_CHECKPOINTDATA";
 	public final static String UPDATE_CHECKPOINTDATA = "UPDATE_CHECKPOINTDATA";
+	public final static String LOCK_CHECKPOINTDATA = "LOCK_CHECKPOINTDATA";
 	public final static String JOBOPERATOR_GET_JOB_INSTANCE_COUNT = "JOBOPERATOR_GET_JOB_INSTANCE_COUNT";
 	public final static String SELECT_JOBINSTANCEDATA_COUNT = "SELECT_JOBINSTANCEDATA_COUNT";
 	public final static String JOBOPERATOR_GET_JOB_INSTANCE_IDS = "JOBOPERATOR_GET_JOB_INSTANCE_IDS";

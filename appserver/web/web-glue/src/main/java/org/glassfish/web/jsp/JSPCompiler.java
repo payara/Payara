@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,18 +54,19 @@
  * @author byron.nevins@sun.com
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.web.jsp;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.web.InitializationParameter;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.jasper.JspC;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.runtime.JspConfig;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.runtime.WebProperty;
@@ -128,7 +129,7 @@ public final class JSPCompiler {
 		jspc.setOutputDir(outWebDir.getAbsolutePath());
 		jspc.setUriroot(inWebDir.getAbsolutePath());
 		jspc.setCompile(true);
-		logger.log(Level.INFO, START_MESSAGE);
+		logger.log(Level.INFO, LogFacade.START_MESSAGE);
 
 		try {
 			jspc.execute();
@@ -147,11 +148,11 @@ public final class JSPCompiler {
 
             if(files == null || files.length <= 0) {
                 if (!outWebDir.delete()) {
-                    logger.log(Level.FINE, CANNOT_DELETE_FILE, outWebDir);
+                    logger.log(Level.FINE, LogFacade.CANNOT_DELETE_FILE, outWebDir);
                 }
             }
 
-            logger.log(Level.INFO, FINISH_MESSAGE);
+            logger.log(Level.INFO, LogFacade.FINISH_MESSAGE);
 		}
 	}
 
@@ -165,7 +166,7 @@ public final class JSPCompiler {
 	 
         if (!FileUtils.safeIsDirectory(outWebDir)) {
             if (!outWebDir.mkdirs()) {
-                logger.log(Level.FINE, CANNOT_DELETE_FILE, outWebDir);
+                logger.log(Level.FINE, LogFacade.CANNOT_DELETE_FILE, outWebDir);
             }
 		
 			if (!FileUtils.safeIsDirectory(outWebDir)) {
@@ -316,28 +317,21 @@ public final class JSPCompiler {
             } else if ("ignoreJspFragmentErrors".equals(pName)) {
                 jspc.setIgnoreJspFragmentErrors(
                     Boolean.valueOf(pValue).booleanValue());
+            } else if ("compilerSourceVM".equals(pName)) {
+                jspc.setCompilerSourceVM(pValue);
+            } else if ("compilerTargetVM".equals(pName)) {
+                jspc.setCompilerTargetVM(pValue);
+            } else if ("ignoreJspFragmentErrors".equals(pName)) {
+                jspc.setIgnoreJspFragmentErrors(Boolean.valueOf(pValue));
+            } else if ("trimSpaces".equals(pName)) {
+                jspc.setTrimSpaces(Boolean.valueOf(pValue));
             }
         }
 
 
 	////////////////////////////////////////////////////////////////////////////
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Beginning JSP Precompile...",
-            level = "INFO")
-    public static final String START_MESSAGE = "AS-WEB-GLUE-00281";
-
-    @LogMessageInfo(
-            message = "Finished JSP Precompile...",
-            level = "INFO")
-    public static final String FINISH_MESSAGE = "AS-WEB-GLUE-00282";
-
-    @LogMessageInfo(
-            message = "Cannot delete file: {0}",
-            level = "FINE")
-    public static final String CANNOT_DELETE_FILE = "AS-WEB-GLUE-00283";
+    private static final Logger logger = LogFacade.getLogger();
 
 	////////////////////////////////////////////////////////////////////////////
 

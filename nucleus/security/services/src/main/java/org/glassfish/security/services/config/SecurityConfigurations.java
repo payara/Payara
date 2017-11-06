@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.security.services.config;
 
 import com.sun.enterprise.config.serverbeans.DomainExtension;
@@ -110,7 +111,7 @@ public interface SecurityConfigurations extends ConfigBeanProxy, DomainExtension
     	public static <T extends SecurityConfiguration> T getDefaultSecurityServiceByType(SecurityConfigurations services, Class<T> type) {
             for (SecurityConfiguration securityServiceConfiguration : services.getSecurityServices()) {
                 try {
-                    if (securityServiceConfiguration.getDefault()) {
+                    if (Boolean.valueOf(securityServiceConfiguration.getDefault())) {
                         return type.cast(securityServiceConfiguration);
                     }
                 } catch (Exception e) {

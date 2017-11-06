@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.container.common.spi.util;
@@ -54,10 +56,16 @@ import java.util.Collection;
 @Contract
 public interface ComponentEnvManager {
 
-    //Remove once WebContainer sets JndiNameEnvironment on every "new ComponentInvocation()"
+    /** Remove once WebContainer sets JndiNameEnvironment on every "new ComponentInvocation()"
+     * @param componentId
+     * @return 
+     */
     public JndiNameEnvironment getJndiNameEnvironment(String componentId);
 
-    //Remove once WebContainer sets JndiNameEnvironment on every "new ComponentInvocation()"
+    /** Remove once WebContainer sets JndiNameEnvironment on every "new ComponentInvocation()"
+     * 
+     * @return 
+     */
     public JndiNameEnvironment getCurrentJndiNameEnvironment();
 
     public String getComponentEnvId(JndiNameEnvironment env);

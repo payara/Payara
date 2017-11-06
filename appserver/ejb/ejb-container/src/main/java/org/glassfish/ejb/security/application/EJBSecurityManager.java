@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.ejb.security.application;
 
@@ -81,7 +82,6 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Role;
 
 import com.sun.ejb.EjbInvocation;
@@ -139,11 +139,11 @@ public final class EJBSecurityManager
     private String codebase = null;
     private CodeSource codesource = null;
     private String realmName = null;
-    // this stores the role ref permissions. So will not need to spend runtime 
+    // this stores the role ref permissions. So will not need to spend runtime
     // resources generating permissions.
     //private Hashtable cacheRoleToPerm = new Hashtable();
 
-    // we use two protection domain caches until we decide how to 
+    // we use two protection domain caches until we decide how to
     // set the codesource in the protection domain of system apps.
     // PD's in protectionDomainCache have the (privileged) codesource
     // of the EJBSecurityManager class. The PD used in pre-dispatch
@@ -184,7 +184,7 @@ public final class EJBSecurityManager
             runAs = deploymentDescriptor.getRunAsIdentity();
 
             // Note: runAs may be null even when runas==true if this EJB
-            // is an MDB. 
+            // is an MDB.
             if (runAs != null) {
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, deploymentDescriptor.getEjbClassName() +
@@ -327,9 +327,9 @@ public final class EJBSecurityManager
                         this.contextId, this.codesource,
                         EJBMethodPermission.class,
                         this.ejbName);
-        
+
         auditManager = this.ejbSFM.getAuditManager();
-        
+
     }
 
     /**
@@ -345,7 +345,7 @@ public final class EJBSecurityManager
     private static void
     convertEJBRoleReferences(EjbDescriptor eDescriptor, String pcid)
             throws PolicyContextException {
-        
+
         PolicyConfiguration pc =
                 getPolicyFactory().getPolicyConfiguration(pcid, false);
         // pc will always has a value which is provided by implementation
@@ -406,7 +406,7 @@ public final class EJBSecurityManager
                         ") and actions (" + ejbrr.getActions() +
                         ")" + "mapped to role (" + rolename + ")");
             }
-        	
+
         }
     }
 
@@ -415,7 +415,7 @@ public final class EJBSecurityManager
      * and adds them to the corresponding permission cache.
      *
      * @param eDescriptor the ejb descriptor
-     
+
     private void addEJBRoleReferenceToCache(EjbDescriptor eDescriptor) {
 
         String eName = eDescriptor.getName();
@@ -881,7 +881,7 @@ public final class EJBSecurityManager
 
         }
         EJBRoleRefPermission ejbrr = new EJBRoleRefPermission(ejbName, role);
-        
+
         SecurityContext sc;
         if (runAs != null) {
             ComponentInvocation ci = invMgr.getCurrentInvocation();
@@ -968,7 +968,7 @@ public final class EJBSecurityManager
              * avoid leak.
              */
             PermissionCacheFactory.removePermissionCache(uncheckedMethodPermissionCache);
-            uncheckedMethodPermissionCache = null; 
+            uncheckedMethodPermissionCache = null;
             roleMapperFactory.removeAppNameForContext(this.contextId);
 
         } catch (PolicyContextException pce) {
@@ -979,9 +979,9 @@ public final class EJBSecurityManager
         probeProvider.securityManagerDestructionStartedEvent(ejbName);
         ejbSFM.getManager(contextId,ejbName,true);
         probeProvider.securityManagerDestructionEndedEvent(ejbName);
-       
+
         probeProvider.securityManagerDestructionEvent(ejbName);
-       
+
     }
 
     /**
@@ -1177,7 +1177,7 @@ public final class EJBSecurityManager
             PolicyContext.setContextID(null);
             return;
         }
-        
+
         try {
                 AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
                     public Object run() throws Exception {
@@ -1197,6 +1197,6 @@ public final class EJBSecurityManager
                 throw new RuntimeException(cause);
             }
     }
-   
+
 }
 

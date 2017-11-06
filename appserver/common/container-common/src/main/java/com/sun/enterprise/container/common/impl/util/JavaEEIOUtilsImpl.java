@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl.util;
 
-import org.jvnet.hk2.annotations.Contract;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
@@ -60,37 +59,40 @@ import java.util.logging.Logger;
 /**
  * A contract that defines a set of methods to serialize / deserialze Java EE
  * objects (even if they are not directly serializable).
- * 
+ *
  * Some of the objects that are expected to be serialized / de-serialized are a)
  * Local EJB references b) EJB Handles c) JNDI (sub) contexts d) (Non
  * serializable) StatefulSessionBeans
- * 
+ *
  * @author Mahesh Kannan
- * 
+ *
  */
 @Service
 public class JavaEEIOUtilsImpl implements JavaEEIOUtils {
 
-	private static Logger _logger = LogDomains.getLogger(
-			JavaEEIOUtilsImpl.class, LogDomains.JNDI_LOGGER);
+	private static final Logger _logger = LogDomains.getLogger(
+			JavaEEIOUtilsImpl.class, LogDomains.JNDI_LOGGER, false);
 
 	@Inject
 	ServiceLocator habitat;
 
-	private Collection<GlassFishOutputStreamHandler> outputHandlers = new HashSet<GlassFishOutputStreamHandler>();
+	private final Collection<GlassFishOutputStreamHandler> outputHandlers = new HashSet<>();
 
 	private Collection<GlassFishInputStreamHandler> inputHandlers = new HashSet<GlassFishInputStreamHandler>();
 
+        @Override
 	public ObjectInputStream createObjectInputStream(InputStream is,
-			boolean resolveObject, ClassLoader loader) throws Exception {
-		return new GlassFishObjectInputStream(inputHandlers, is, loader, resolveObject);
+			boolean resolveObject, ClassLoader loader, long uniqueId) throws Exception {
+		return new GlassFishObjectInputStream(inputHandlers, is, loader, resolveObject, uniqueId);
 	}
 
+        @Override
 	public ObjectOutputStream createObjectOutputStream(OutputStream os,
 			boolean replaceObject) throws IOException {
 		return new GlassFishObjectOutputStream(outputHandlers, os, replaceObject);
 	}
 
+        @Override
 	public byte[] serializeObject(Object obj, boolean replaceObject)
 			throws java.io.IOException {
 
@@ -106,9 +108,7 @@ public class JavaEEIOUtilsImpl implements JavaEEIOUtils {
 		} catch (java.io.NotSerializableException notSerEx) {
 			throw notSerEx;
 		} catch (Exception th) {
-			IOException ioEx = new IOException(th.toString());
-			ioEx.initCause(th);
-			throw ioEx;
+			throw new IOException(th);
 		} finally {
 			if (oos != null) {
 				try {
@@ -125,15 +125,21 @@ public class JavaEEIOUtilsImpl implements JavaEEIOUtils {
 		return data;
 	}
 
+        @Override
+        public Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader) throws Exception {
+            return deserializeObject(data, resolveObject, appClassLoader, 0L);
+        }
+
+        @Override
 	public Object deserializeObject(byte[] data, boolean resolveObject,
-			ClassLoader appClassLoader) throws Exception {
+			ClassLoader appClassLoader, long uniqueId) throws Exception {
 
 		Object obj = null;
 		ByteArrayInputStream bis = null;
 		ObjectInputStream ois = null;
 		try {
 			bis = new ByteArrayInputStream(data);
-			ois = createObjectInputStream(bis, resolveObject, appClassLoader);
+			ois = createObjectInputStream(bis, resolveObject, appClassLoader, uniqueId);
 			obj = ois.readObject();
 		} catch (Exception ex) {
 			_logger.log(Level.FINE, "Error during deserialization", ex);
@@ -153,23 +159,26 @@ public class JavaEEIOUtilsImpl implements JavaEEIOUtils {
 		return obj;
 	}
 
+        @Override
 	public void addGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler) {
 		outputHandlers.add(handler);
 
 	}
 
+        @Override
 	public void removeGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler) {
 		outputHandlers.remove(handler);
 	}
 
+        @Override
 	public void addGlassFishInputStreamHandler(
 			GlassFishInputStreamHandler handler) {
 		inputHandlers.add(handler);
 	}
 
+        @Override
 	public void removeGlassFishInputStreamHandler(
 			GlassFishInputStreamHandler handler) {
 		inputHandlers.remove(handler);
 	}
-
 }

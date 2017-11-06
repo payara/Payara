@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.config;
@@ -97,6 +99,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setStoreProtocol(String value) throws PropertyVetoException;
 
@@ -115,6 +118,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setStoreProtocolClass(String value) throws PropertyVetoException;
 
@@ -132,6 +136,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setTransportProtocol(String value) throws PropertyVetoException;
 
@@ -150,6 +155,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setTransportProtocolClass(String value) throws PropertyVetoException;
 
@@ -170,6 +176,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setHost(String value) throws PropertyVetoException;
 
@@ -188,9 +195,46 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setUser(String value) throws PropertyVetoException;
 
+    /**
+     * Gets the value of the password property
+     * 
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute
+    public String getPassword();
+    
+    /**
+     * Sets the value of the password property
+     * 
+     * @param value allowed object is
+     *              {@link String }
+     * @throws java.beans.PropertyVetoException
+     */
+    public void setPassword(String value) throws PropertyVetoException;
+    
+    /**
+     * Gets the value of the auth property
+     * 
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(dataType = Boolean.class)
+    public String getAuth();
+    
+    /**
+     * Sets the value of the auth property
+     * 
+     * @param value allowed object is
+     *              {@link String }
+     * @throws java.beans.PropertyVetoException
+     */
+    public void setAuth(String value) throws PropertyVetoException;
+    
     /**
      * Gets the value of the from property.
      *
@@ -206,6 +250,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setFrom(String value) throws PropertyVetoException;
 
@@ -223,6 +268,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setDebug(String value) throws PropertyVetoException;
 
@@ -233,6 +279,7 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *         {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
+    @Override
     public String getEnabled();
 
     /**
@@ -240,7 +287,9 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
+    @Override
     public void setEnabled(String value) throws PropertyVetoException;
 
     /**
@@ -257,18 +306,22 @@ public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, Bi
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setDescription(String value) throws PropertyVetoException;
     
     /**
     	Properties as per {@link PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

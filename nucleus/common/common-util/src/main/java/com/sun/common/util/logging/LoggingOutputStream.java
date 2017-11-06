@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2016] [Payara Foundation] 
 package com.sun.common.util.logging;
 
 import java.io.ByteArrayOutputStream;
@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+//import com.sun.enterprise.server.logging.GFLogRecord;
 
 /**
  * Implementation of a OutputStream that flush the records to a Logger.
@@ -106,13 +107,20 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             logMessage = this.toString();
             super.reset();
         }
-        logMessage = logMessage.trim();
-        if (logMessage.length() == 0 || logMessage.equals(lineSeparator)) {
+        if (logMessage.trim().length() == 0 || logMessage.trim().equals(lineSeparator)) {
             // avoid empty records
             return;
         }
         LogRecord logRecord = new LogRecord(level, logMessage);
-        pendingRecords.offer(logRecord);
+        
+        // JUL LogRecord does not capture thread-name. Create a wrapper to
+        // capture the name of the logging thread so that a formatter can
+        // output correct thread-name if done asynchronously. Note that 
+        // this fix is limited to records published through this handler only.
+        GFLogRecord logRecordWrapper = new GFLogRecord(logRecord);
+        logRecordWrapper.setThreadName(Thread.currentThread().getName());
+        
+        pendingRecords.offer(logRecordWrapper);
     }
 
     private void initializePump() {
@@ -128,6 +136,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
                 }
             }
         };
+        pump.setName("logging output pump");
         pump.setDaemon(true);
         pump.start();        
     }

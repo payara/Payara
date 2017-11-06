@@ -57,6 +57,8 @@
            var ssl2Prop = document.getElementById('#{sheetId}:SSL2Prop:SSL2').checked; \
         } \
         var tlsProp = document.getElementById('#{sheetId}:TLSProp:TLS').checked; \
+	var tls11Prop = document.getElementById('#{sheetId}:TLSProp11:TLS11').checked; \
+	var tls12Prop = document.getElementById('#{sheetId}:TLSProp12:TLS12').checked; \
         if (ssl3Prop || tlsProp || ssl2Prop) {   \
             var result = checkForValue(getTextElement('#{sheetId}:CertNicknameProp:CertNickname'));  \
             if(result != true){ \
@@ -64,7 +66,7 @@
             } \
         } \
         if ((comField != '') || (ephField != '') || (bitField != '') || (eccField != '')){ \
-            if ((!ssl3Prop) && (!tlsProp)) {   \
+            if ((!ssl3Prop) && (!tlsProp)&& (!tls11Prop) &&(!tls12Prop)) {   \
                 return showAlert('$resource{i18n.msg.JS.ssl.errCiphersSelected}'); \
             } \
         } \

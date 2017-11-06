@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.tests.utils;
 
 import java.lang.reflect.Method;
@@ -61,12 +61,13 @@ import static org.junit.Assert.*;
 import java.util.logging.Logger;
 import org.glassfish.hk2.api.Descriptor;
 import org.glassfish.hk2.api.ServiceHandle;
+import org.jvnet.hk2.testing.junit.HK2Runner;
 
 /**
  * Super class for all config-api related tests, give access to a configured habitat
  */
 @Ignore
-public abstract class ConfigApiTest {
+public abstract class ConfigApiTest extends HK2Runner {
 
     public static final Logger logger = Logger.getAnonymousLogger();
     

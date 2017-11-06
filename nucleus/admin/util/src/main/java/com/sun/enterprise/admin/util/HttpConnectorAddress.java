@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.util;
 
 import java.io.IOException;
@@ -45,6 +47,8 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
 import com.sun.enterprise.universal.GFBase64Encoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -68,6 +72,7 @@ public final class HttpConnectorAddress {
 
     private SSLSocketFactory sslSocketFactory;
 
+    private static final Logger logger = AdminLoggerInfo.getLogger();
     
     public HttpConnectorAddress() {
     }
@@ -161,8 +166,49 @@ public final class HttpConnectorAddress {
     private SSLSocketFactory createAdminSSLSocketFactory(String alias, String protocol) {
         try {
             if (protocol == null) {
-                protocol = "TLSv1";
+                
+                /** 
+                 * PAYARA-542
+                 * Check if the system property has been set to determine the
+                 * HTTPS protocol to use, and set the protocol to be used to
+                 * this value if it has. If it hasn't, or an unrecognised 
+                 * protocol is entered, log a message and use TLSv1.2
+                 */
+                if (System.getProperty("fish.payara.clientHttpsProtocol") != null) {
+                    switch (System.getProperty("fish.payara.clientHttpsProtocol")) {
+                        case "TLSv1": protocol = "TLSV1";
+                                        logger.log(Level.FINE, 
+                                                AdminLoggerInfo.settingHttpsProtocol,
+                                                protocol);
+                                        break;
+                        
+                        case "TLSv1.1": protocol = "TLSv1.1";
+                                        logger.log(Level.FINE, 
+                                                AdminLoggerInfo.settingHttpsProtocol,
+                                                protocol);
+                                        break;
+                                        
+                        case "TLSv1.2": protocol = "TLSv1.2";
+                                        logger.log(Level.FINE, 
+                                                AdminLoggerInfo.settingHttpsProtocol,
+                                                protocol);
+                                        break;
+                        
+                        default:        protocol = "TLSv1.2";
+                                        String[] logParams = {protocol, 
+                                                System.getProperty("fish.payara.clientHttpsProtocol")};
+                                        
+                                        logger.log(Level.INFO, 
+                                                AdminLoggerInfo.unrecognisedHttpsProtocol, 
+                                                logParams);
+                                        break;
+                    }
+                } else {
+                    protocol = "TLSv1.2";
+                    logger.log(Level.FINE, AdminLoggerInfo.usingDefaultHttpsProtocol, protocol);
+                }
             }
+            
             SSLContext cntxt = SSLContext.getInstance(protocol);
             /*
              * Pass null for the array of KeyManagers.  That uses the default

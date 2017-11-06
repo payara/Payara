@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016-2017] [Payara Foundation]
 package org.glassfish.deployment.common;
 
-import org.objectweb.asm.*;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -59,6 +58,9 @@ import java.net.URI;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.ClassReader;
+import org.glassfish.hk2.external.org.objectweb.asm.Type;
 import org.glassfish.internal.api.Globals;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -122,6 +124,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
         return found;
     }
 
+    @Override
     public AnnotationVisitor visitAnnotation(String s, boolean b) {
         if (annotations.contains(s)) {
             found = true;
@@ -149,8 +152,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                     } finally {
                         is.close();
                     }
-                } else if (entryName.endsWith(".jar") && 
-                    entryName.indexOf('/') == -1) {
+                } else if (!entryName.contains("/")) {
                     // scan class files inside top level jar
                     try {
                         ReadableArchive jarSubArchive = null;
@@ -161,16 +163,12 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                             while (jarEntries.hasMoreElements()) {
                                 String jarEntryName = jarEntries.nextElement();
                                 if (jarEntryName.endsWith(".class")) {
-                                    InputStream is =
-                                        jarSubArchive.getEntry(jarEntryName);
-                                    try {
+                                    try (InputStream is = jarSubArchive.getEntry(jarEntryName)) {
                                         ClassReader cr = new ClassReader(is);
                                         cr.accept(this, crFlags);
                                         if (found) {
                                             return;
                                         } 
-                                    } finally {
-                                        is.close();
                                     }
                                 }
                             }

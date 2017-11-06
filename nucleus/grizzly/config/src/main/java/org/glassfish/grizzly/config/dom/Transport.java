@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation]
+
 package org.glassfish.grizzly.config.dom;
 
 import org.jvnet.hk2.config.Attribute;
@@ -58,7 +60,6 @@ import java.util.List;
 public interface Transport extends ConfigBeanProxy, PropertyBag {
 
     boolean DISPLAY_CONFIGURATION = false;
-    boolean ENABLE_SNOOP = false;
     boolean TCP_NO_DELAY = true;
     int ACCEPTOR_THREADS = 1;
     int BUFFER_SIZE = 8192;
@@ -142,18 +143,6 @@ public interface Transport extends ConfigBeanProxy, PropertyBag {
     String getDisplayConfiguration();
 
     void setDisplayConfiguration(String bool);
-
-    /**
-     * Dump the requests/response information in server.log. Useful for debugging purpose, but significantly reduce
-     * performance as the request/response bytes are translated to String.
-     *
-     * @deprecated this option is ignored by the runtime.
-     */
-    @Deprecated
-    @Attribute(defaultValue = "" + ENABLE_SNOOP, dataType = Boolean.class)
-    String getEnableSnoop();
-
-    void setEnableSnoop(String bool);
 
     /**
      * Timeout, after which idle key will be cancelled and channel closed

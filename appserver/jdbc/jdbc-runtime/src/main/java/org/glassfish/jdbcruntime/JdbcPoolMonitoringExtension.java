@@ -37,7 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.jdbcruntime;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppProbeProvider;
+import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppStatsProvider;
+import org.glassfish.jdbc.pool.monitor.JdbcConnPoolProbeProvider;
+import org.glassfish.jdbc.pool.monitor.JdbcConnPoolStatsProvider;
+import org.glassfish.jdbc.util.LoggerFactory;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
@@ -48,23 +68,6 @@ import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolAppProbeProvider;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProviderUtil;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolStatsProviderBootstrap;
-import com.sun.logging.LogDomains;
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppProbeProvider;
-import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppStatsProvider;
-import org.glassfish.jdbc.pool.monitor.JdbcConnPoolProbeProvider;
-import org.glassfish.jdbc.pool.monitor.JdbcConnPoolStatsProvider;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author Shalini M
@@ -84,8 +87,7 @@ public class JdbcPoolMonitoringExtension implements ConnectionPoolMonitoringExte
 
     private ConnectorRuntime runtime;
 
-    private final static Logger logger =
-        LogDomains.getLogger(JdbcPoolMonitoringExtension.class, LogDomains.RSR_LOGGER);
+    private final static Logger logger = LoggerFactory.getLogger(JdbcPoolMonitoringExtension.class);
 
     //List of all jdbc pool stats providers that are created and stored.
     private List<JdbcConnPoolStatsProvider> jdbcStatsProviders = null;
@@ -108,6 +110,7 @@ public class JdbcPoolMonitoringExtension implements ConnectionPoolMonitoringExte
      * Finally, add this provider to the list of jdbc providers maintained.
      * @param poolInfo
      */
+    @Override
     public void registerPool(PoolInfo poolInfo) {
         if(poolManager.getPool(poolInfo) != null) {
             getProbeProviderUtil().createJdbcProbeProvider();
@@ -133,6 +136,7 @@ public class JdbcPoolMonitoringExtension implements ConnectionPoolMonitoringExte
      * Remove the pool lifecycle listeners associated with this pool.
      * @param poolInfo
      */
+    @Override
     public void unregisterPool(PoolInfo poolInfo) {
         if(jdbcStatsProviders != null) {
             Iterator i = jdbcStatsProviders.iterator();
@@ -159,6 +163,7 @@ public class JdbcPoolMonitoringExtension implements ConnectionPoolMonitoringExte
      * @param appName
      * @return
      */
+    @Override
     public ConnectionPoolAppProbeProvider registerConnectionPool(
             PoolInfo poolInfo, String appName) {
         ConnectionPoolAppProbeProvider probeAppProvider = null;
@@ -181,6 +186,7 @@ public class JdbcPoolMonitoringExtension implements ConnectionPoolMonitoringExte
     /**
      * Unregister the AppStatsProviders registered for this connection pool.
      */
+    @Override
     public void unRegisterConnectionPool() {
         Iterator jdbcProviders = jdbcPoolAppStatsProviders.iterator();
         while (jdbcProviders.hasNext()) {
@@ -191,6 +197,7 @@ public class JdbcPoolMonitoringExtension implements ConnectionPoolMonitoringExte
         jdbcPoolAppStatsProviders.clear();
     }
 
+    @Override
     public JdbcConnPoolProbeProvider createProbeProvider() {
         return new JdbcConnPoolProbeProvider();
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbc.config;
 
@@ -610,7 +611,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setConnectionCreationRetryIntervalInSeconds(String value) throws PropertyVetoException;
-
+    
     /**
      * Gets the value of the statementTimeoutInSeconds property.
      *
@@ -632,7 +633,28 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setStatementTimeoutInSeconds(String value) throws PropertyVetoException;
+   
+    /**
+     * Gets the value of the sloqSQLLogThreshold property.
+     *
+     * gets the SLow SQL Log Threshold property if a query exceeds this time in seconds
+     * it will be logged as a WARNING
+     * 
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="-1", dataType=String.class)
+    @Min(value=-1)
+    String getSlowQueryThresholdInSeconds();
 
+    /**
+     * Sets the value of the slowQueryThreasholdInSeconds property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setSlowQueryThresholdInSeconds(String value) throws PropertyVetoException;
+    
     /**
      * Gets the value of the lazyConnectionEnlistment property.
      *
@@ -860,8 +882,8 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setMaxConnectionUsageCount(String value) throws PropertyVetoException;
-
-    /**
+    
+        /**
      * Gets the value of the wrapJdbcObjects property.
      *
      * When set to true, application will get wrapped jdbc objects for
@@ -881,6 +903,25 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setWrapJdbcObjects(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the logJDBCCalls property.
+     *
+     * When set to true, application log all JDBC method calls. Defaults to false.
+     * 
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="false", dataType=Boolean.class)
+    String getLogJdbcCalls();
+
+    /**
+     * Sets the value of the LogJdbcCalls property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setLogJdbcCalls(String value) throws PropertyVetoException;
     
     /**
      * Gets the value of the SqlTraceListeners property.
@@ -893,7 +934,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * @return possible object is
      *         {@link String }
      */
-    @Attribute
+    @Attribute (defaultValue = "fish.payara.jdbc.SilentSqlTraceListener")
     String getSqlTraceListeners();
 
     /**

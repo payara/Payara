@@ -37,10 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.jdbcruntime;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.jdbc.deployer.DataSourceDefinitionDeployer;
+import org.glassfish.jdbc.util.JdbcResourcesUtil;
+import org.glassfish.jdbc.util.LoggerFactory;
+import org.glassfish.jdbcruntime.service.JdbcDataSource;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -49,26 +70,8 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.ConnectorRuntimeExtension;
 import com.sun.enterprise.connectors.DeferredResourceConfig;
-import com.sun.enterprise.connectors.util.ClassLoadingUtility;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.Application;
-import com.sun.logging.LogDomains;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.jdbc.config.JdbcResource;
-import org.glassfish.jdbc.deployer.DataSourceDefinitionDeployer;
-import org.glassfish.jdbcruntime.service.JdbcDataSource;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-import org.glassfish.resourcebase.resources.api.ResourceInfo;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Shalini M
@@ -82,8 +85,7 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
     @Inject
     private Provider<DataSourceDefinitionDeployer> dataSourceDefinitionDeployerProvider;
 
-    protected final static Logger logger =
-        LogDomains.getLogger(JdbcRuntimeExtension.class, LogDomains.RSR_LOGGER);
+    protected final static Logger logger = LoggerFactory.getLogger(JdbcRuntimeExtension.class);
 
     protected ConnectorRuntime runtime;
 
@@ -91,6 +93,7 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
         runtime = ConnectorRuntime.getRuntime();
     }
 
+    @Override
     public Collection<Resource> getAllSystemRAResourcesAndPools() {
         List<Resource> resources = new ArrayList<Resource>();
 
@@ -105,15 +108,17 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
                 }
             }
         }
-        
+
         System.out.println("JdbcRuntimeExtension,  getAllSystemRAResourcesAndPools = " + resources);
         return resources;
     }
 
+    @Override
     public void registerDataSourceDefinitions(Application application) {
         dataSourceDefinitionDeployerProvider.get().registerDataSourceDefinitions(application);
     }
 
+    @Override
     public void unRegisterDataSourceDefinitions(Application application) {
         dataSourceDefinitionDeployerProvider.get().unRegisterDataSourceDefinitions(application);
     }
@@ -131,6 +136,7 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
      * @param resourceInfo the jndi name of the resource
      * @return DataSource representing the resource.
      */
+    @Override
     public Object lookupDataSourceInDAS(ResourceInfo resourceInfo) throws ConnectorRuntimeException {
         JdbcDataSource myDS = new JdbcDataSource();
         myDS.setResourceInfo(resourceInfo);
@@ -146,6 +152,7 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
      *                 This resource can either be a pmf resource or a jdbc resource
      * @return poolName of the pool that this resource directly/indirectly points to
      */
+    @Override
     public PoolInfo getPoolNameFromResourceJndiName(ResourceInfo resourceInfo) {
         PoolInfo poolInfo= null;
         JdbcResource jdbcResource = null;
@@ -187,6 +194,7 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
      * @return boolean true if pool is referred in this server instance as well enabled, false
      * otherwise
      */
+    @Override
     public boolean isConnectionPoolReferredInServerInstance(PoolInfo poolInfo) {
 
         Collection<JdbcResource> jdbcResources = ConnectorRuntime.getRuntime().
@@ -214,15 +222,17 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
         return false;
     }
 
+    @Override
     public String getResourceType(ConfigBeanProxy cb) {
         if (cb instanceof JdbcConnectionPool) {
-            return ConnectorConstants.RES_TYPE_JCP;
+            return ResourceConstants.RES_TYPE_JCP;
         } else if (cb instanceof JdbcResource) {
-            return ConnectorConstants.RES_TYPE_JDBC;
+            return ResourceConstants.RES_TYPE_JDBC;
         }
         return null;
     }
 
+    @Override
     public DeferredResourceConfig getDeferredResourceConfig(Object resource,
                                                             Object pool, String resType, String raName)
             throws ConnectorRuntimeException {
@@ -255,65 +265,10 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
      * @param pool - The pool to check
      * @return The name of the JDBC RA that provides this pool's data-source
      */
-
-    private String getRANameofJdbcConnectionPool(JdbcConnectionPool pool) {
-        String dsRAName = ConnectorConstants.JDBCDATASOURCE_RA_NAME;
-
-        Class clz = null;
-
-        if(pool.getDatasourceClassname() != null && !pool.getDatasourceClassname().isEmpty()) {
-            try {
-                clz = ClassLoadingUtility.loadClass(pool.getDatasourceClassname());
-            } catch (ClassNotFoundException cnfe) {
-                Object params[] = new Object[]{dsRAName, pool.getName()};
-                logger.log(Level.WARNING, "using.default.ds", params);
-                return dsRAName;
-            }
-        } else if(pool.getDriverClassname() != null && !pool.getDriverClassname().isEmpty()) {
-            try {
-                clz = ClassLoadingUtility.loadClass(pool.getDriverClassname());
-            } catch (ClassNotFoundException cnfe) {
-                Object params[] = new Object[]{dsRAName, pool.getName()};
-                logger.log(Level.WARNING, "using.default.ds", params);
-                return dsRAName;
-            }
-        }
-
-        if(clz != null){
-            //check if its XA
-            if (ConnectorConstants.JAVAX_SQL_XA_DATASOURCE.equals(pool.getResType())) {
-                if (javax.sql.XADataSource.class.isAssignableFrom(clz)) {
-                    return ConnectorConstants.JDBCXA_RA_NAME;
-                }
-            }
-
-            //check if its CP
-            if (ConnectorConstants.JAVAX_SQL_CONNECTION_POOL_DATASOURCE.equals(pool.getResType())) {
-                if (javax.sql.ConnectionPoolDataSource.class.isAssignableFrom(
-                        clz)) {
-                    return ConnectorConstants.JDBCCONNECTIONPOOLDATASOURCE_RA_NAME;
-                }
-            }
-
-            //check if its DM
-            if(ConnectorConstants.JAVA_SQL_DRIVER.equals(pool.getResType())) {
-                if(java.sql.Driver.class.isAssignableFrom(clz)) {
-                    return ConnectorConstants.JDBCDRIVER_RA_NAME;
-                }
-            }
-
-            //check if its DS
-            if ("javax.sql.DataSource".equals(pool.getResType())) {
-                if (javax.sql.DataSource.class.isAssignableFrom(clz)) {
-                    return dsRAName;
-                }
-            }
-        }
-        Object params[] = new Object[]{dsRAName, pool.getName()};
-        logger.log(Level.WARNING, "using.default.ds", params);
-        //default to __ds
-        return dsRAName;
+    private String getRANameofJdbcConnectionPool(final JdbcConnectionPool pool) {
+        // singleton, in fact the new instance is created only for the first time.
+        final JdbcResourcesUtil resourcesUtil = JdbcResourcesUtil.createInstance();
+        return resourcesUtil.getRANameofJdbcConnectionPool(pool);
     }
-
 }
 

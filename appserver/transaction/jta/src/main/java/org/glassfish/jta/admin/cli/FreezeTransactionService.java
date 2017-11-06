@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.jta.admin.cli;
 
@@ -76,22 +77,22 @@ import org.glassfish.api.admin.RuntimeType;
 @I18n("freeze.transaction.service")
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="freeze-transaction-service", 
+        opType=RestEndpoint.OpType.POST,
+        path="freeze-transaction-service",
         description="Freeze Transaction Service",
         params={
             @RestParam(name="target", value="$parent")
         }),
     @RestEndpoint(configBean=Server.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="freeze-transaction-service", 
+        opType=RestEndpoint.OpType.POST,
+        path="freeze-transaction-service",
         description="Freeze Transaction Service",
         params={
             @RestParam(name="target", value="$parent")
         }),
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="freeze-transaction-service", 
+        opType=RestEndpoint.OpType.POST,
+        path="freeze-transaction-service",
         description="Freeze Transaction Service")
 })
 public class FreezeTransactionService implements AdminCommand {
@@ -100,7 +101,7 @@ public class FreezeTransactionService implements AdminCommand {
             StringManager.getManager(FreezeTransactionService.class);
 
     private static final Logger logger =
-            LogDomains.getLogger(FreezeTransactionService.class, LogDomains.JTA_LOGGER);
+            LogDomains.getLogger(FreezeTransactionService.class, LogDomains.JTA_LOGGER, false);
 
     @Param(optional = true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;

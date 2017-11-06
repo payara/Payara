@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.security.admin.cli;
 
+import javax.inject.Singleton;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -72,7 +73,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Tim Quinn
  */
 @Service
-@RunLevel(StartupRunLevel.VAL)
+@Singleton
 public class SecureAdminStartupCheck extends SecureAdminUpgradeHelper implements PostConstruct {
 
     @Override

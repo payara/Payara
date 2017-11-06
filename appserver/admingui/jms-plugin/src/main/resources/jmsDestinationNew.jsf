@@ -55,14 +55,14 @@
 
             setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jms/jmsDestinationNew.jsf");
             setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/jms/jmsDestinations.jsf");
-            setPageSessionAttribute(key="childType" value="admin-object-resource");
+            setPageSessionAttribute(key="childType" value="create-jms-resource");
             setPageSessionAttribute(key="convertToFalseList" value={"enabled"});
 
             setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
             gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", valueMap="#{pageSession.valueMap}");
             gf.getDefaultValues(endpoint="#{sessionScope.REST_URL}/servers/server/server/resource-ref", valueMap="#{pageSession.valueMap2}");
             mapPut(map="#{pageSession.valueMap}" key="enabled" value="true");
-            mapPut(map="#{pageSession.valueMap}", key="resAdapter", value="jmsra");
+            //mapPut(map="#{pageSession.valueMap}", key="resAdapter", value="jmsra");
 
             //set the following for including buttons.inc
             setPageSessionAttribute(key="edit" value="#{false}" );

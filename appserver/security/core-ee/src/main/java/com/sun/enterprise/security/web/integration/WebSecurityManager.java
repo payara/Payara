@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
 
 package com.sun.enterprise.security.web.integration;
 
@@ -51,7 +52,7 @@ import java.net.URL;
 import javax.servlet.http.HttpServletRequest;
 import javax.security.jacc.*;
 
-import java.util.logging.*; 
+import java.util.logging.*;
 
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
@@ -77,19 +78,19 @@ import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.audit.AuditManager;
 import java.util.List;
-import org.glassfish.api.web.Constants; 
+import org.glassfish.api.web.Constants;
 
 /**
  * The class implements the JSR 115 - JavaTM Authorization Contract for Containers.
  * This class is a companion class of EJBSecurityManager.
  *
- * All the security decisions required to allow access to a resource are defined 
+ * All the security decisions required to allow access to a resource are defined
  * in that class.
  *
  * @author Jean-Francois Arcand
  * @author Harpreet Singh.
  * @todo introduce a new class called AbstractSecurityManager. Move functionality
- * from this class and EJBSecurityManager class and extend this class from 
+ * from this class and EJBSecurityManager class and extend this class from
  * AbstractSecurityManager
  */
 public class WebSecurityManager  {
@@ -102,19 +103,19 @@ public class WebSecurityManager  {
      */
     public static final String CONSTRAINT_URI =
         "org.apache.catalina.CONSTRAINT_URI";
-    
+
     private static final String RESOURCE = "hasResourcePermission";
     private static final String USERDATA = "hasUserDataPermission";
     private static final String ROLEREF = "hasRoleRefPermission";
 
     private static final String DEFAULT_PATTERN = "/";
     private static final String EMPTY_STRING = "";
- 
+
     // The context ID associated with this instance. This is the name
     // of the application
     private  String CONTEXT_ID = null;
     private String CODEBASE = null;
-    
+
     // The JACC policy provider.
     protected Policy policy = Policy.getPolicy();
     protected PolicyConfiguration pc = null;
@@ -122,7 +123,7 @@ public class WebSecurityManager  {
     protected CodeSource codesource = null;
 
     // protection domain cache
-    private Map protectionDomainCache = 
+    private Map protectionDomainCache =
         Collections.synchronizedMap(new WeakHashMap());
 
     private static final WebResourcePermission allResources =
@@ -140,13 +141,13 @@ public class WebSecurityManager  {
     // to determine if the effective policy is grant all
     // WebUserData and WebResource permisions.
     private CachedPermission allResourcesCP = null;
-     
+
     private CachedPermission allConnectionsCP = null;
- 
+
     // unchecked permission cache
-    private PermissionCache uncheckedPermissionCache = null; 
-    
-    private static Set defaultPrincipalSet = 
+    private PermissionCache uncheckedPermissionCache = null;
+
+    private static Set defaultPrincipalSet =
 	SecurityContext.getDefaultSecurityContext().getPrincipalSet();
 
     //private SecurityRoleMapperFactory factory = null;
@@ -157,7 +158,7 @@ public class WebSecurityManager  {
     //ProbeProvider
     private WebSecurityDeployerProbeProvider probeProvider = new WebSecurityDeployerProbeProvider();
     private boolean register = true;
-    
+
     WebSecurityManager(WebBundleDescriptor wbd, ServerContext svc, WebSecurityManagerFactory fact, boolean register) throws PolicyContextException{
         this.register = register;
          this.wbd = wbd;
@@ -169,12 +170,12 @@ public class WebSecurityManager  {
         postConstruct();
         initialise(appname);
     }
-    
+
     // Create a WebSecurityObject
     private WebSecurityManager(WebBundleDescriptor wbd, WebSecurityManagerFactory fact) throws PolicyContextException {
         this(wbd,null, fact);
     }
-    
+
     WebSecurityManager(WebBundleDescriptor wbd, ServerContext svc, WebSecurityManagerFactory fact) throws PolicyContextException {
         this.wbd = wbd;
         this.CONTEXT_ID = getContextID(wbd);
@@ -198,7 +199,7 @@ public class WebSecurityManager  {
     public static String getContextID(WebBundleDescriptor wbd) {
         return SecurityUtil.getContextID(wbd);
    }
-      
+
     private void initialise(String appName) throws PolicyContextException {
         getPolicyFactory();
         CODEBASE = removeSpaces(CONTEXT_ID) ;
@@ -234,13 +235,13 @@ public class WebSecurityManager  {
                             for (String principal : principals) {
                                     wsmf.ADMIN_PRINCIPAL.put(realmName + principal, new PrincipalImpl(principal));
                             }
-                            
+
                         }
                     }
                 }
             }
         }
- 
+
         // will require stuff in hash format for reference later on.
         try{
             java.net.URI uri = null;
@@ -249,10 +250,10 @@ public class WebSecurityManager  {
 		    logger.log(Level.FINE, "[Web-Security] Creating a Codebase URI with = {0}", CODEBASE);
 		uri = new java.net.URI("file:///"+ CODEBASE);
 		if(uri != null){
-		    codesource = new CodeSource(new URL(uri.toString()), 
+		    codesource = new CodeSource(new URL(uri.toString()),
                             (java.security.cert.Certificate[]) null);
 		}
-		
+
             } catch(java.net.URISyntaxException use){
                 // manually create the URL
                 logger.log(Level.FINE, "[Web-Security] Error Creating URI ", use);
@@ -260,9 +261,9 @@ public class WebSecurityManager  {
             }
 
         } catch(java.net.MalformedURLException mue){
-            logger.log(Level.SEVERE, "ejbsm.codesourceerror", mue);
+            logger.log(Level.SEVERE, "[Web-Security] Exception while getting the CodeSource", mue);
             throw new RuntimeException(mue);
-        } 
+        }
 
         if(logger.isLoggable(Level.FINE)){
             logger.log(Level.FINE, "[Web-Security] Context id (id under which  WEB component in application will be created) = {0}", CONTEXT_ID);
@@ -270,7 +271,7 @@ public class WebSecurityManager  {
         }
 
         loadPolicyConfiguration();
- 
+
  	if (uncheckedPermissionCache == null) {
             if (register) {
                 uncheckedPermissionCache =
@@ -286,12 +287,12 @@ public class WebSecurityManager  {
  	} else {
  	    uncheckedPermissionCache.reset();
  	}
- 
+
     }
-    
+
      public void loadPolicyConfiguration() throws PolicyContextException {
-         
-        
+
+
 
 	boolean inService = getPolicyFactory().inService(CONTEXT_ID);
 
@@ -302,7 +303,7 @@ public class WebSecurityManager  {
  	// (i.e. initialise) is called. That is, before constructing
  	// the WebSecurityManager. Note that policy statements are not
  	// removed to allow multiple web modules to be represented by same pc.
- 
+
  	if (!inService) {
 
  	    pc = getPolicyFactory().getPolicyConfiguration(CONTEXT_ID,false);
@@ -314,7 +315,7 @@ public class WebSecurityManager  {
 		throw pce;
 	    }
 	}
-  
+
     }
 
     // this will change too - get the application id name
@@ -330,7 +331,7 @@ public class WebSecurityManager  {
         }
         if (ret == false) {
             ret = checkPermissionWithoutCache(webResPerm, null);
-        } 
+        }
         return ret;
     }
 
@@ -341,7 +342,7 @@ public class WebSecurityManager  {
      * @param principalSet a set containing the principals to check for authorization
      * @return true if granted, false if denied.
      */
-    protected boolean checkPermission(Permission perm, Set principalSet) {   
+    protected boolean checkPermission(Permission perm, Set principalSet) {
         boolean ret = false;
         if (uncheckedPermissionCache != null) {
             ret = uncheckedPermissionCache.checkPermission(perm);
@@ -353,7 +354,7 @@ public class WebSecurityManager  {
                 setPolicyContext(CONTEXT_ID);
             } catch(Throwable t){
                 if (logger.isLoggable(Level.FINE)){
- 	            logger.log(Level.FINE, 
+ 	            logger.log(Level.FINE,
                         "[Web-Security] Web Permission Access Denied.",t);
                 }
  	        ret = false;
@@ -364,31 +365,31 @@ public class WebSecurityManager  {
 
     private boolean checkPermissionWithoutCache(
             Permission perm, Set principalSet) {
-         
+
         try{
- 
+
  	    // NOTE: there is an assumption here, that this setting of the PC will
  	    // remain in affect through the component dispatch, and that the
  	    // component will not call into any other policy contexts.
 	    // even so, could likely reset on failed check.
- 	    
+
  	    setPolicyContext(CONTEXT_ID);
- 
+
  	} catch(Throwable t){
             if (logger.isLoggable(Level.FINE)){
- 	        logger.log(Level.FINE, 
+ 	        logger.log(Level.FINE,
                     "[Web-Security] Web Permission Access Denied.",t);
             }
  	    return false;
  	}
- 
-	ProtectionDomain prdm = 
+
+	ProtectionDomain prdm =
 		(ProtectionDomain)protectionDomainCache.get(principalSet);
-  
+
 	if (prdm == null) {
 
             Principal[] principals = null;
-            principals = (principalSet == null ? null : 
+            principals = (principalSet == null ? null :
                       (Principal []) principalSet.toArray(new Principal[0]));
 
             if(logger.isLoggable(Level.FINE)){
@@ -412,9 +413,9 @@ public class WebSecurityManager  {
             logger.log(Level.FINE, "[Web-Security] Checking Web Permission with Principals : {0}", principalSetToString(principalSet));
             logger.log(Level.FINE, "[Web-Security] Web Permission = {0}", perm.toString());
         }
-  
+
         return policy.implies(prdm, perm);
-    }    
+    }
 
     private PolicyConfigurationFactory getPolicyFactory() throws PolicyContextException {
         if (pcf != null) {
@@ -422,23 +423,23 @@ public class WebSecurityManager  {
         }
         return _getPolicyFactory();
     }
-    
+
     private synchronized PolicyConfigurationFactory _getPolicyFactory()
 	throws PolicyContextException {
     	if (pcf == null) {
             try {
 		pcf = PolicyConfigurationFactory.getPolicyConfigurationFactory();
 	    } catch(ClassNotFoundException cnfe){
-		logger.severe("jaccfactory.notfound");
+		logger.severe("WebSecurityManager - Exception while getting the PolicyFactory");
 		throw new PolicyContextException(cnfe);
 	    } catch(PolicyContextException pce){
-		logger.severe("jaccfactory.notfound");
+		logger.severe("WebSecurityManager - Exception while getting the PolicyFactory");
 		throw pce;
 	    }
 	}
 	return pcf;
     }
-    
+
     private WebResourcePermission createWebResourcePermission(
             HttpServletRequest httpsr) {
         //TODO: V3 String uri = (String)httpsr.getAttribute(Globals.CONSTRAINT_URI);
@@ -448,7 +449,7 @@ public class WebSecurityManager  {
              if (uri != null) {
                 // FIX TO BE CONFIRMED: subtract the context path
                 String contextPath = httpsr.getContextPath();
-                int contextLength = contextPath == null ? 0 : 
+                int contextLength = contextPath == null ? 0 :
                     contextPath.length();
                 if (contextLength > 0) {
                     uri = uri.substring(contextLength);
@@ -471,7 +472,7 @@ public class WebSecurityManager  {
                 uri, httpsr.getMethod());
         return perm;
     }
-    
+
     /**
      * Perform access control based on the <code>HttpServletRequest</code>.
      * Return <code>true</code> if this constraint is satisfied and processing
@@ -491,11 +492,11 @@ public class WebSecurityManager  {
         recordWebInvocation(httpsr, RESOURCE, isGranted);
         return isGranted;
     }
-    
-    
-    /* 
+
+
+    /*
      * Return <code>true</code> if the specified servletName has the specified
-     * security role, within the context of the WebRoleRefPermission; 
+     * security role, within the context of the WebRoleRefPermission;
      * otherwise return
      * <code>false</code>.
      *
@@ -515,48 +516,48 @@ public class WebSecurityManager  {
         return isGranted;
     }
 
-    
+
     /**
      * if uri == null, determine if the connection characteristics of the
-     * request satisfy the applicable policy. 
-     * If the uri is not null, determine if the uri and Http method 
+     * request satisfy the applicable policy.
+     * If the uri is not null, determine if the uri and Http method
      * require a CONFIDENTIAL transport. The uri value does not include
      * the context path, and any colons occurring in the uri must be escaped.
      *
      * @return 1 if access is permitted (as is or without SSL). -1 if the
-     * the access will be permitted after a redirect to SSL. return 0 if 
+     * the access will be permitted after a redirect to SSL. return 0 if
      * access will be denied independent of whether a redirect to SSL is done.
      *
      * Note: this method is not intended to be called if the request is secure.
-     * it checks whether the resource can be accessed over the current 
-     * connection type (which is presumed to be insecure), and if an 
+     * it checks whether the resource can be accessed over the current
+     * connection type (which is presumed to be insecure), and if an
      * insecure connection type is not permitted it checks if the resource can
-     * be accessed via a confidential transport. 
+     * be accessed via a confidential transport.
      *
-     * If the request is secure, the second check is skipped, and the proper 
+     * If the request is secure, the second check is skipped, and the proper
      * result is returned (but that is not the intended use model).
-     */    
+     */
 
     public int hasUserDataPermission(HttpServletRequest httpsr,
 				     String uri, String httpMethod) {
         setSecurityInfo(httpsr);
 	WebUserDataPermission perm;
 	boolean requestIsSecure = httpsr.isSecure();
-	if (uri == null) { 
+	if (uri == null) {
 	    perm = new WebUserDataPermission(httpsr);
 	} else {
 	    perm = new WebUserDataPermission(uri,
-		 httpMethod == null ? null : new String[] { httpMethod }, 
+		 httpMethod == null ? null : new String[] { httpMethod },
 		 requestIsSecure ? "CONFIDENTIAL": null);
 	}
 
         boolean  isGranted = checkPermission(perm, defaultPrincipalSet);
         int result = 0;
-       
+
         if ( isGranted ) {
             result = 1;
         }
- 
+
         if(logger.isLoggable(Level.FINE)){
             logger.log(Level.FINE, "[Web-Security] hasUserDataPermission perm: {0}", perm);
             logger.log(Level.FINE, "[Web-Security] hasUserDataPermission isGranted: {0}", isGranted);
@@ -568,10 +569,10 @@ public class WebSecurityManager  {
 	    if (uri == null) {
 		httpMethod = httpsr.getMethod();
 	    }
- 
+
 	    perm = new WebUserDataPermission
-		(perm.getName(), 
-		 httpMethod == null ? null : new String[] { httpMethod }, 
+		(perm.getName(),
+		 httpMethod == null ? null : new String[] { httpMethod },
 		 "CONFIDENTIAL");
 
              isGranted = checkPermission(perm, defaultPrincipalSet);
@@ -579,10 +580,10 @@ public class WebSecurityManager  {
              if (isGranted)
                 result = -1;
         }
-        
+
         return result;
     }
-    
+
     public void destroy() throws PolicyContextException {
         boolean wasInService = getPolicyFactory().inService(CONTEXT_ID);
         //getPolicyFactory().getPolicyConfiguration(CONTEXT_ID,true);
@@ -625,17 +626,17 @@ public class WebSecurityManager  {
             appServerAuditManager.webInvocation(user, httpsr, type, isGranted);
         }
     }
-    
+
     private static String setPolicyContext(final String ctxID) throws Throwable {
 	String old = PolicyContext.getContextID();
-	if (old != ctxID && 
+	if (old != ctxID &&
 	    (old == null || ctxID == null || !old.equals(ctxID))) {
-  
+
 	    if(logger.isLoggable(Level.FINE)){
 		logger.log(Level.FINE, "[Web-Security] Setting Policy Context ID: old = {0} ctxID = {1}", new Object[]{old, ctxID});
 	    }
-  
-	    try {  
+
+	    try {
 		AppservAccessController.doPrivileged(new PrivilegedExceptionAction(){
 		    public java.lang.Object run() throws Exception{
 			PolicyContext.setContextID(ctxID);
@@ -656,7 +657,7 @@ public class WebSecurityManager  {
 	}
 	return old;
     }
-    
+
     /**
      * This is an private method for transforming principal into a SecurityContext
      * @param principal expected to be a WebPrincipal
@@ -669,9 +670,9 @@ public class WebSecurityManager  {
 		WebPrincipal wp = (WebPrincipal)principal;
 		secContext = wp.getSecurityContext();
 	    }else {
-		secContext = new SecurityContext(principal.getName(),null);
+                secContext = SecurityContext.getCurrent();
 	    }
-        } 
+        }
 	if (secContext == null) {
             secContext = SecurityContext.getDefaultSecurityContext();
         }
@@ -691,7 +692,7 @@ public class WebSecurityManager  {
     private String principalSetToString(Set principalSet) {
  	StringBuilder result = null;
  	if (principalSet != null) {
- 	    Principal[] principals = 
+ 	    Principal[] principals =
  		(Principal []) principalSet.toArray(new Principal[0]);
  	    for (int i =0; i<principals.length; i++) {
  		if (i == 0) {
@@ -703,7 +704,7 @@ public class WebSecurityManager  {
  	}
         return ((result != null) ? result.toString() : null);
     }
-    
+
     /*V3:Commented, replacement code copied from web-container VirtualServer.java
     private String getVirtualServers(String appName) {
         String ret = null;
@@ -717,9 +718,9 @@ public class WebSecurityManager  {
         }
         return ret;
     }*/
-    
+
      /**
-     * Virtual servers are maintained in the reference contained 
+     * Virtual servers are maintained in the reference contained
      * in Server element. First, we need to find the server
      * and then get the virtual server from the correct reference
      *
@@ -735,13 +736,13 @@ public class WebSecurityManager  {
                 return appRef.getVirtualServers();
             }
         }
-        
+
         return ret;
     }
-    
-    
-    
-    
+
+
+
+
     /**
       * returns true to indicate that a policy check was made
       * and there were no constrained resources.

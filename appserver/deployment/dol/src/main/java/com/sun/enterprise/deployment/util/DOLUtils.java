@@ -37,9 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -102,13 +109,15 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
- * Utility class for convenience methods
+ * Utility class for convenience methods for deployment
  *
  * @author  Jerome Dochez
  * @version 
@@ -147,18 +156,28 @@ public class DOLUtils {
     @LogMessageInfo(message = "DOLUtils: converting EJB to web bundle id {0}.", level="FINER")
     private static final String CONVERT_EJB_TO_WEB_ID = "AS-DEPLOYMENT-00017";
     
-    // The system property to control the precedence between GF DD
+    /** The system property to control the precedence between GF DD
     // and WLS DD when they are both present. When this property is 
-    // set to true, GF DD will have higher precedence over WLS DD.
+    // set to true, GF DD will have higher precedence over WLS DD. */
     private static final String GFDD_OVER_WLSDD = "gfdd.over.wlsdd";
 
-    // The system property to control whether we should just ignore 
-    // WLS DD. When this property is set to true, WLS DD will be ignored.
+    /** The system property to control whether we should just ignore 
+    // WLS DD. When this property is set to true, WLS DD will be ignored.*/
     private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     private static final String ID_SEPARATOR = "_";
+    private static final Set<String> SYSTEM_PACKAGES_ =
+            ImmutableSet.of("com.sun", "org.glassfish", "org.apache.jasper", "fish.payara", "com.ibm.jbatch",
+                            "org.hibernate.validator", "org.jboss.weld", "com.ctc.wstx",
+                            "java", "javax");
+    private static final Set<String> SYSTEM_PACKAGES = ImmutableSet.copyOf(Collections2.transform(SYSTEM_PACKAGES_,
+            new Function<String, String>() {
+        @Override
+        public String apply(String input) {
+            return input + ".";
+        }
+    }));
 
-    
     /** no need to creates new DOLUtils */
     private DOLUtils() {
     }
@@ -170,11 +189,25 @@ public class DOLUtils {
         return deplLogger;
     }
 
+    /**
+     * Returns true if both objects are equal to {@code null} or {@code a.equals(b)}
+     * @param a
+     * @param b
+     * @return 
+     * @see Object#equals(Object)
+     */
     public static boolean equals(Object a, Object b) {
         return ((a == null && b == null) ||
                 (a != null && a.equals(b)));
     }
 
+    /**
+     * 
+     * @param bundleDesc
+     * @param archive
+     * @return an empty list if bundleDesc is null
+     * @throws Exception 
+     */
     public static List<URI> getLibraryJarURIs(BundleDescriptor bundleDesc, ReadableArchive archive) throws Exception {
         if (bundleDesc == null) {
             return Collections.emptyList();
@@ -184,6 +217,37 @@ public class DOLUtils {
         return getLibraryJarURIs(app, archive);
     }
 
+    /**
+     * Returns true if entry not excluded from scanning or specifically included in app
+     * @param app
+     * @param entryName
+     * @return 
+     */
+    public static boolean isScanningAllowed(Application app, String entryName) {
+        boolean included = !FluentIterable.from(app.getScanningExclusions()).anyMatch(new MatchingPredicate(entryName));
+        return included |= FluentIterable.from(app.getScanningInclusions()).anyMatch(new MatchingPredicate(entryName));
+    }
+
+    private static class MatchingPredicate implements Predicate<Pattern> {
+        private final String entryName;
+
+        public MatchingPredicate(String entryName) {
+            this.entryName = entryName;
+        }
+
+        @Override
+        public boolean apply(Pattern input) {
+            return input.matcher(entryName).matches();
+        }
+    }
+
+    /**
+     * 
+     * @param app
+     * @param archive
+     * @return an empty list if the archive does not have a parent
+     * @throws Exception 
+     */
     public static List<URI> getLibraryJarURIs(Application app, ReadableArchive archive) throws Exception {
         List<URL> libraryURLs = new ArrayList<URL>();
         List<URI> libraryURIs = new ArrayList<URI>();
@@ -209,8 +273,12 @@ public class DOLUtils {
         return libraryURIs;
     } 
 
-   public static BundleDescriptor getCurrentBundleForContext(
-       DeploymentContext context) {
+    /**
+     * Gets the associated descriptor with the context
+     * @param context
+     * @return null if there is no associated application
+     */
+   public static BundleDescriptor getCurrentBundleForContext( DeploymentContext context) {
        ExtendedDeploymentContext ctx = (ExtendedDeploymentContext)context;
        Application application = context.getModuleMetaData(Application.class);
        if (application == null) return null; // this can happen for non-JavaEE type deployment. e.g., issue 15869
@@ -228,6 +296,13 @@ public class DOLUtils {
        }
    }
 
+   /**
+    * Returns true if there is a resource connection definition of the type with the application
+    * @param habitat
+    * @param type
+    * @param thisApp
+    * @return 
+    */
     public static boolean isRAConnectionFactory(ServiceLocator habitat, 
         String type, Application thisApp) {
         // first check if this is a connection factory defined in a resource
@@ -254,6 +329,12 @@ public class DOLUtils {
         return false; 
     }
 
+    /**
+     * Returns true if there is a resource connection definition of the type with the app
+     * @param type
+     * @param app
+     * @return 
+     */
     private static boolean isRAConnectionFactory(String type, Application app) {
         if (app == null) {
             return false;
@@ -310,21 +391,23 @@ public class DOLUtils {
         return result;
     }
 
-    // returns true if GF DD should have higher precedence over 
-    // WLS DD when both present in the same archive
+    /** returns true if GF DD should have higher precedence over 
+     * WLS DD when both present in the same archive
+     * @return  */
     public static boolean isGFDDOverWLSDD() {
         return Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD));
     }
 
-    // returns true if we should ignore WLS DD in the archive
+    /** returns true if we should ignore WLS DD in the archive
+     * @return  */
     public static boolean isIgnoreWLSDD() {
         return Boolean.valueOf(System.getProperty(IGNORE_WLSDD)); 
     }
 
-    // process the list of the configuration files, and return the sorted
+    /** process the list of the configuration files, and return the sorted
     // configuration file with precedence from high to low
     // this list does not take consideration of what runtime files are 
-    // present in the current archive
+    // present in the current archive */
     private static List<ConfigurationDeploymentDescriptorFile> sortConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ArchiveType archiveType, ReadableArchive archive) {
         ConfigurationDeploymentDescriptorFile wlsConfDD = null;
         ConfigurationDeploymentDescriptorFile gfConfDD = null;
@@ -391,6 +474,10 @@ public class DOLUtils {
         return sortedConfDDFiles;
     }
 
+    /**
+     * If the path does not contain "glassfish-" this method throws an IllegalArgumentException
+     * @param runtimeAltDDPath 
+     */
     public static void validateRuntimeAltDDPath(String runtimeAltDDPath) {
         if (runtimeAltDDPath.indexOf(DescriptorConstants.GF_PREFIX) == -1) { 
             String msg = localStrings.getLocalString(
@@ -399,10 +486,15 @@ public class DOLUtils {
         }
     }
 
-    // process the list of the configuration files, and return the sorted
-    // configuration file with precedence from high to low
-    // this list takes consideration of what runtime files are 
-    // present in the current archive
+    /** process the list of the configuration files, and return the sorted
+    * configuration file with precedence from high to low
+    * this list takes consideration of what runtime files are 
+    * present in the current archive
+     * @param ddFiles
+     * @param archive
+     * @param archiveType
+     * @return 
+     * @throws java.io.IOException */
     public static List<ConfigurationDeploymentDescriptorFile> processConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ReadableArchive archive, ArchiveType archiveType) throws IOException {
         File runtimeAltDDFile = archive.getArchiveMetaData(
             DeploymentProperties.RUNTIME_ALT_DD, File.class);
@@ -420,8 +512,15 @@ public class DOLUtils {
         return processedConfDDFiles;
     }
 
-    // read alternative runtime descriptor if there is an alternative runtime 
-    // DD packaged inside the archive
+    /** read alternative runtime descriptor if there is an alternative runtime 
+    * DD packaged inside the archive
+     * @param appArchive
+     * @param embeddedArchive
+     * @param archivist
+     * @param descriptor
+     * @param altDDPath
+     * @throws java.io.IOException
+     * @throws org.xml.sax.SAXParseException */
     public static void readAlternativeRuntimeDescriptor(ReadableArchive appArchive, ReadableArchive embeddedArchive, Archivist archivist, BundleDescriptor descriptor, String altDDPath) throws IOException, SAXParseException {
         String altRuntimeDDPath = null;
         ConfigurationDeploymentDescriptorFile confDD = null;
@@ -522,7 +621,16 @@ public class DOLUtils {
         }
     }
 
-
+    /**
+     * Sets the class for processing an archive on a subarchive
+     * <p>
+     * If there an exception occurs in this method it will be caught and logged as a warning
+     * @param habitat
+     * @param archive
+     * @param md
+     * @param app
+     * @param subArchivist 
+     */
     public static void setExtensionArchivistForSubArchivist(ServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app, Archivist subArchivist) {
         try {
             Collection<Sniffer> sniffers = getSniffersForModule(habitat, archive, md, app);
@@ -535,7 +643,7 @@ public class DOLUtils {
         }
     }
 
-    // get sniffer list for sub modules of an ear application
+    /** get sniffer list for sub modules of an ear application */
     private static Collection<Sniffer> getSniffersForModule(ServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app) throws Exception {
         ArchiveHandler handler = habitat.getService(ArchiveHandler.class, md.getModuleType().toString());
         SnifferManager snifferManager = habitat.getService(SnifferManager.class);
@@ -628,6 +736,12 @@ public class DOLUtils {
         return allIncompatTypes;
     }
 
+    /**
+     * Gets all classes for handling the XML configuration
+     * @param habitat habitat to search for classes
+     * @param containerType they type of container they must work on
+     * @return 
+     */
     public static List<ConfigurationDeploymentDescriptorFile> getConfigurationDeploymentDescriptorFiles(ServiceLocator habitat, String containerType) {
         List<ConfigurationDeploymentDescriptorFile> confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
         for (ServiceHandle<?> serviceHandle : habitat.getAllServiceHandles(ConfigurationDeploymentDescriptorFileFor.class)) {
@@ -642,10 +756,12 @@ public class DOLUtils {
     }
 
     /**
-     * receives notiification of the value for a particular tag
+     * receives notification of the value for a particular tag
      * 
      * @param element the xml element
      * @param value it's associated value
+     * @param o
+     * @return 
      */
     public static boolean setElementValue(XMLElement element,
                                           String value,
@@ -689,8 +805,9 @@ public class DOLUtils {
         return false;
     }
 
-  /*
+  /**
    * Returns a list of the proprietary schema namespaces
+     * @return 
    */
   public static List<String> getProprietarySchemaNamespaces() {
     ArrayList<String> ns = new ArrayList<String>();
@@ -699,8 +816,9 @@ public class DOLUtils {
     return ns;
   }
 
-  /*
+  /**
    * Returns a list of the proprietary dtd system IDs
+     * @return 
    */
   public static List<String> getProprietaryDTDStart() {
     ArrayList<String> ns = new ArrayList<String>();
@@ -708,6 +826,11 @@ public class DOLUtils {
     return ns;
   }
 
+  /**
+   * 
+   * @param env
+   * @return 
+   */
   public static Application getApplicationFromEnv(JndiNameEnvironment env) {
     Application app = null;
 
@@ -736,6 +859,11 @@ public class DOLUtils {
     return app;
   }
 
+  /**
+   * 
+   * @param env
+   * @return 
+   */
   public static String getApplicationName(JndiNameEnvironment env) {
     String appName = "";
 
@@ -778,6 +906,11 @@ public class DOLUtils {
 
   }
 
+  /**
+   * Returns true if the environment or its parent is a {@link WebBundleDescriptor}, false otherwise
+   * @param env
+   * @return 
+   */
   public static boolean getTreatComponentAsModule(JndiNameEnvironment env) {
 
     boolean treatComponentAsModule = false;
@@ -802,6 +935,8 @@ public class DOLUtils {
 
   /**
    * Generate a unique id name for each J2EE component.
+     * @param env
+     * @return 
    */
   public static String getComponentEnvId(JndiNameEnvironment env) {
     String id = null;
@@ -852,4 +987,20 @@ public class DOLUtils {
 
     return id;
   }
+
+    /**
+     * Supports extreme classloading isolation
+     *
+     * @param application
+     * @param className
+     * @return true if the class is white-listed
+     */
+    public static boolean isWhiteListed(Application application, String className) {
+        for (String packageName : Iterables.concat(application.getWhitelistPackages(), SYSTEM_PACKAGES)) {
+            if (className.startsWith(packageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.security.services.provider.authorization;
 
@@ -76,9 +77,9 @@ public interface AuthorizationProviderConfig extends SecurityProviderConfig, Pro
      * Configuration parameter indicating if the provider support policy deploy or not
      * @return true support policy deploy
      */
-    @Attribute(defaultValue = "true")
-    boolean getSupportPolicyDeploy();
-    void setSupportPolicyDeploy(boolean value) throws PropertyVetoException;
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getSupportPolicyDeploy();
+    void setSupportPolicyDeploy(String value) throws PropertyVetoException;
 
     /**
      * configuration parameter to indicate the version of the provider

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited] 
+// Portions Copyright [2016] [Payara Foundation] 
 //----------------------------------------------------------------------------
 //
 // Module:      RecoveryManager.java
@@ -189,7 +189,11 @@ public class RecoveryManager {
 
         // read the resynch timeout system property
         recoveryResynchTimeout = Integer.getInteger("fish.payara.jts.RecoveryResynchTimeout", recoveryResynchTimeout);
-
+                
+        if (recoveryResynchTimeout < 0){
+            _logger.log(Level.SEVERE,recoveryResynchTimeout+ " is an invalid value for fish.payara.jts.RecoveryResynchTimeout. Using default value of 120 instead." );
+            recoveryResynchTimeout = 120;
+        }
         // Perform recovery/resync if necessary.
 
         if (Configuration.isRecoverable()) {

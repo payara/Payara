@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.loader;
 
 import org.glassfish.deployment.common.ClassDependencyBuilder;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.hk2.classmodel.reflect.*;
 
 import javax.servlet.ServletContainerInitializer;
@@ -71,43 +71,25 @@ import java.util.logging.Logger;
  */
 public class ServletContainerInitializerUtil {
 
-    private static final Logger log = WebappClassLoader.logger;
+    private static final Logger log = LogFacade.getLogger();
 
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Unexpected type of ClassLoader. Expected: java.net.URLClassLoader, got: {0}",
-            level = "WARNING")
-    public static final String WRONG_CLASSLOADER_TYPE = "AS-WEB-UTIL-00034";
-
-    @LogMessageInfo(
-            message = "Unable to load class {0}, reason: {1}",
-            level = "FINE")
-    public static final String CLASS_LOADING_ERROR = "AS-WEB-UTIL-00035";
-
-    @LogMessageInfo(
-            message = "Invalid URLClassLoader path component: [{0}] is neither a JAR file nor a directory",
-            level = "WARNING")
-    public static final String INVALID_URL_CLASS_LOADER_PATH = "AS-WEB-UTIL-00036";
-
-    @LogMessageInfo(
-            message = "Error trying to scan the classes at {0} for annotations in which a ServletContainerInitializer has expressed interest",
-            level = "SEVERE",
-            cause = "An IOException is encountered",
-            action = "Verify if the path is correct")
-    public static final String IO_ERROR = "AS-WEB-UTIL-00037";
 
     /**
      * Given a class loader, check for ServletContainerInitializer
      * implementations in any JAR file in the classpath
      *
+     * @param webFragmentMap
+     * @param absoluteOrderingList
      * @param cl The ClassLoader to be used to find JAR files
+     * @param hasOthers
+     * @param servletInitializersEnabled
      *
      * @return Iterable over all ServletContainerInitializers that were found
      */
     public static Iterable<ServletContainerInitializer> getServletContainerInitializers(
             Map<String, String> webFragmentMap, List<Object> absoluteOrderingList,
-            boolean hasOthers, ClassLoader cl) {
+            boolean hasOthers, ClassLoader cl, boolean servletInitializersEnabled) {
         /*
          * If there is an absoluteOrderingList specified, then make sure that
          * any ServletContainerInitializers included in fragment JARs 
@@ -115,10 +97,25 @@ public class ServletContainerInitializerUtil {
          * For this, we remove any unwanted fragment JARs from the class
          * loader's URL
          */
+
+        if (!servletInitializersEnabled) {
+            try {
+                final URLClassLoader webAppCl = (URLClassLoader) cl;
+                cl = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+                    @Override
+                    public URLClassLoader run() {
+                        return new URLClassLoader(new URL[0], webAppCl.getParent());
+                    }
+                });
+            } finally {
+                /* intentionally left blank */
+            }
+        }
+
         if((absoluteOrderingList != null) && !hasOthers) {
             if(!(cl instanceof URLClassLoader)) {
                 log.log(Level.WARNING,
-                        WRONG_CLASSLOADER_TYPE,
+                        LogFacade.WRONG_CLASSLOADER_TYPE,
                         cl.getClass().getCanonicalName());
                 return null;
             }
@@ -248,7 +245,7 @@ public class ServletContainerInitializerUtil {
             Iterable<ServletContainerInitializer> initializers,
             Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
             Types types,
-            ClassLoader cl) {
+            ClassLoader cl, boolean isStandalone) {
 
         if (interestList == null) {
             return null;
@@ -314,7 +311,7 @@ public class ServletContainerInitializerUtil {
                                         } catch (Throwable t) {
                                             if (log.isLoggable(Level.FINE)) {
                                                 log.log(Level.FINE,
-                                                    CLASS_LOADING_ERROR,
+                                                    LogFacade.CLASS_LOADING_ERROR,
                                                     new Object[] {
                                                         anEntry.getName(),
                                                         t.toString()});
@@ -336,13 +333,13 @@ public class ServletContainerInitializerUtil {
                                         scanDirectory(file, classInfo);
                                     } else {
                                         log.log(Level.WARNING,
-                                            INVALID_URL_CLASS_LOADER_PATH,
+                                            LogFacade.INVALID_URL_CLASS_LOADER_PATH,
                                             path);
                                     }
                                 }
                             }
                         } catch(IOException ioex) {
-                            String msg = rb.getString(IO_ERROR);
+                            String msg = rb.getString(LogFacade.IO_ERROR);
                             msg = MessageFormat.format(msg,
                                 new Object[] { path });
                             log.log(Level.SEVERE, msg, ioex);
@@ -351,9 +348,9 @@ public class ServletContainerInitializerUtil {
                     }
                 }
 
-                initializerList = checkAgainstInterestList(classInfo, interestList, initializerList, cl);
+                initializerList = checkAgainstInterestList(classInfo, interestList, initializerList, cl, isStandalone);
             } else {
-                initializerList = checkAgainstInterestList(types, interestList, initializerList, cl);
+                initializerList = checkAgainstInterestList(types, interestList, initializerList, cl, isStandalone);
             }
         }
 
@@ -420,7 +417,7 @@ public class ServletContainerInitializerUtil {
                     } catch (Throwable t) {
                         if (log.isLoggable(Level.WARNING)) {
                             log.log(Level.WARNING,
-                                CLASS_LOADING_ERROR,
+                                LogFacade.CLASS_LOADING_ERROR,
                                 new Object[] {fileName, t.toString()});
                         }
                         continue;
@@ -443,7 +440,7 @@ public class ServletContainerInitializerUtil {
                                 Types classInfo,
                                 Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
                                 Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
-                                ClassLoader cl) {
+                                ClassLoader cl, boolean isStandalone) {
 
         if (classInfo==null) {
             return initializerList;
@@ -468,9 +465,9 @@ public class ServletContainerInitializerUtil {
                         try {
                             resultSet.add(cl.loadClass(ae.getName()));
                         } catch (Throwable t) {
-                            if (log.isLoggable(Level.WARNING)) {
-                                log.log(Level.WARNING,
-                                    CLASS_LOADING_ERROR,
+                            if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+                                log.log(getStandaloneWarningLevel(isStandalone),
+                                    LogFacade.CLASS_LOADING_ERROR,
                                     new Object[] {ae.getName(), t.toString()});
                             }
                         }     
@@ -487,9 +484,9 @@ public class ServletContainerInitializerUtil {
                     try {
                         resultSet.add(cl.loadClass(classModel.getName()));
                     } catch (Throwable t) {
-                        if (log.isLoggable(Level.WARNING)) {
-                            log.log(Level.WARNING,
-                                CLASS_LOADING_ERROR,
+                        if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+                            log.log(getStandaloneWarningLevel(isStandalone),
+                                LogFacade.CLASS_LOADING_ERROR,
                                 new Object[] {classModel.getName(), t.toString()});
                         }
                     }
@@ -526,7 +523,7 @@ public class ServletContainerInitializerUtil {
                                 ClassDependencyBuilder classInfo,
                                 Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
                                 Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
-                                ClassLoader cl) {
+                                ClassLoader cl, boolean isStandalone) {
         for(Map.Entry<Class<?>, List<Class<? extends ServletContainerInitializer>>> e :
                 interestList.entrySet()) {
 
@@ -542,9 +539,9 @@ public class ServletContainerInitializerUtil {
                     Class aClass = cl.loadClass(className);
                     resultSet.add(aClass);
                 } catch (Throwable t) {
-                    if (log.isLoggable(Level.WARNING)) {
-                        log.log(Level.WARNING,
-                            CLASS_LOADING_ERROR,
+                    if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+                        log.log(getStandaloneWarningLevel(isStandalone),
+                            LogFacade.CLASS_LOADING_ERROR,
                             new Object[] {className, t.toString()});
                     }
                 }
@@ -563,5 +560,10 @@ public class ServletContainerInitializerUtil {
             }
         }
         return initializerList;
+    }
+
+    
+    private static Level getStandaloneWarningLevel(boolean isStandalone) {
+        return isStandalone? Level.WARNING : Level.FINE;
     }
 }

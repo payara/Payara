@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 -->
 
 <!--
@@ -53,7 +54,7 @@
 <!--
 This is the root element of the runtime descriptor document.
 -->
-<!ELEMENT glassfish-application (web*, pass-by-reference?, unique-id?, security-role-mapping*, realm?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, message-destination*, archive-name?, compatibility?, keep-state?, version-identifier?) >
+<!ELEMENT glassfish-application (web*, pass-by-reference?, unique-id?, security-role-mapping*, realm?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, message-destination*, archive-name?, compatibility?, keep-state?, version-identifier?, classloading-delegate?, enable-implicit-cdi?, scanning-exclude*, scanning-include*, whitelist-package*, property*) >
 
 <!ELEMENT web (web-uri, context-root)>
 <!ELEMENT web-uri (#PCDATA)>
@@ -542,3 +543,33 @@ The version-identifier element contains the version information. The value is
  retrieved at deployment.
 -->
 <!ELEMENT version-identifier (#PCDATA)>
+
+<!--
+Payara flag to delegate classloader to parent class or not
+-->
+<!ELEMENT classloading-delegate (#PCDATA)>
+
+<!--
+Payara flag to enable / disable implicit CDI for EAR file
+-->
+<!ELEMENT enable-implicit-cdi (#PCDATA)>
+
+<!--
+Payara flag to include / exclude specific JARs for CDI scanning inside EAR files
+-->
+<!ELEMENT scanning-exclude (#PCDATA)>
+<!ELEMENT scanning-include (#PCDATA)>
+
+<!--
+Payara flag to enable / specify whitelist for extreme ClassLoader isolation
+-->
+<!ELEMENT whitelist-package (#PCDATA)>
+
+<!-- 
+Syntax for supplying properties as name value pairs 
+-->
+<!ELEMENT property (description?)>
+<!ATTLIST property name  CDATA  #REQUIRED
+                   value CDATA  #REQUIRED>
+
+<!ELEMENT description (#PCDATA)>

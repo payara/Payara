@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.amx.impl.j2ee;
 
+import com.sun.appserv.server.util.Version;
 import java.util.Set;
 
 import org.glassfish.admin.amx.j2ee.J2EEServer;
@@ -68,7 +70,7 @@ public class J2EEServerImpl extends J2EELogicalServerImplBase
     }
     /* The vendor information for this server. */
 
-    private static final String serverVendor = "Oracle Corporation";
+    private static final String serverVendor = "Payara Foundation";
 
     public String[] getjavaVMs()
     {
@@ -98,8 +100,7 @@ public class J2EEServerImpl extends J2EELogicalServerImplBase
 
     public String getserverVersion()
     {
-        Issues.getAMXIssues().notDone("How to get the server version");
-        return "Glassfish V3.1";
+        return Version.getFullVersion();
     }
 
     public String getserverVendor()

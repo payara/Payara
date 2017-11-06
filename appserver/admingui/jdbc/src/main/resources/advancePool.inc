@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+Portions Copyright [2016] [Payara Foundation]
 -->
 
 <!-- jdbc/advancePool.inc -->
@@ -67,12 +67,20 @@
 
             </sun:textField>
         </sun:property>
+        <sun:property id="slowSQLProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.slowSQL}" helpText="$resource{i18njdbc.jdbcPool.slowSQLHelp}">
+            <sun:textField id="slowQueryThresholdInSeconds" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.slowSQL']}" text="#{pageSession.valueMap['slowQueryThresholdInSeconds']}" >
+            </sun:textField>
+            <sun:staticText id="vasec" text="$resource{i18n.common.Seconds}"/>
+        </sun:property>
+         <sun:property id="logJDBCCalls"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.logJdbcCalls}" helpText="$resource{i18njdbc.jdbcPool.logJdbcCallsHelp}">
+            <sun:checkbox  selected="#{pageSession.valueMap['logJdbcCalls']}" label="$resource{i18n.common.Enabled}" selectedValue="true" />
+       </sun:property>
         <sun:property id="sqlTLProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.sqlTL}"  helpText="$resource{i18njdbc.jdbcPool.sqlTLHelp}">
             <sun:textField id="sqlTL" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.sqlTL']}" text="#{pageSession.valueMap['sqlTraceListeners']}" >
 
             </sun:textField>
         </sun:property>
-         <sun:property id="p1"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.wrapJdbcObjects}" helpText="$resource{i18njdbc.jdbcPool.wrapJdbcObjectsHelp}">
+        <sun:property id="p1"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.wrapJdbcObjects}" helpText="$resource{i18njdbc.jdbcPool.wrapJdbcObjectsHelp}">
             <sun:checkbox  selected="#{pageSession.valueMap['wrapJdbcObjects']}" label="$resource{i18n.common.Enabled}" selectedValue="true" />
        </sun:property>
        <sun:property id="poolingProp"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.pooling}" helpText="$resource{i18njdbc.jdbcPool.poolingHelp}">

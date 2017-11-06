@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -63,7 +64,6 @@ import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.LifecycleSupport;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;
 import java.beans.PropertyChangeEvent;
@@ -94,64 +94,6 @@ import java.util.logging.Level;
 public class StandardManager
     extends ManagerBase
     implements Lifecycle, PropertyChangeListener {
-
-    @LogMessageInfo(
-            message = "createSession: Too many active sessions",
-            level = "WARNING"
-    )
-    public static final String TOO_MANY_ACTIVE_SESSION_EXCEPTION = "AS-WEB-CORE-00381";
-
-    @LogMessageInfo(
-            message = " Loading persisted sessions from {0}",
-            level = "FINE"
-    )
-    public static final String LOADING_PERSISTED_SESSION = "AS-WEB-CORE-00382";
-
-    @LogMessageInfo(
-            message = "IOException while loading persisted sessions: {0}",
-            level = "SEVERE",
-            cause = "Could not creates an ObjectInputStream",
-            action = "Verify if there are IO exceptions"
-    )
-    public static final String LOADING_PERSISTED_SESSION_IO_EXCEPTION = "AS-WEB-CORE-00383";
-
-    @LogMessageInfo(
-            message = "ClassNotFoundException while loading persisted sessions: {0}",
-            level = "SEVERE",
-            cause = "Could not deserialize and create StandardSession instance ",
-            action = "Verify the class for an object being restored can be found"
-    )
-    public static final String CLASS_NOT_FOUND_EXCEPTION = "AS-WEB-CORE-00384";
-
-    @LogMessageInfo(
-            message = "Saving persisted sessions to {0}",
-            level = "FINE"
-    )
-    public static final String SAVING_PERSISTED_SESSION = "AS-WEB-CORE-00385";
-
-    @LogMessageInfo(
-            message = "IOException while saving persisted sessions: {0}",
-            level = "SEVERE",
-            cause = "Could not creates an ObjectOutputStream instance",
-            action = "Verify if there are any I/O exceptions"
-    )
-    public static final String SAVING_PERSISTED_SESSION_IO_EXCEPTION = "AS-WEB-CORE-00386";
-
-    @LogMessageInfo(
-            message = "Exception loading sessions from persistent storage",
-            level = "SEVERE",
-            cause = "Could not load any currently active sessions",
-            action = "Verify if the serialized class is valid and if there are any I/O exceptions"
-    )
-    public static final String LOADING_SESSIONS_EXCEPTION = "AS-WEB-CORE-00387";
-
-    @LogMessageInfo(
-            message = "Exception unloading sessions to persistent storage",
-            level = "SEVERE",
-            cause = "Could not save any currently active sessions",
-            action = "Verify if there are any I/O exceptions"
-    )
-    public static final String UNLOADING_SESSIONS_EXCEPTION = "AS-WEB-CORE-00388";
 
     // ---------------------------------------------------- Security Classes
     private class PrivilegedDoLoadFromFile
@@ -364,7 +306,7 @@ public class StandardManager
             ((StandardContext)container).sessionRejectedEvent(
                 maxActiveSessions);
             throw new IllegalStateException
-                (rb.getString(TOO_MANY_ACTIVE_SESSION_EXCEPTION));
+                (rb.getString(LogFacade.TOO_MANY_ACTIVE_SESSION_EXCEPTION));
         }
 
         return (super.createSession());
@@ -393,7 +335,7 @@ public class StandardManager
                 (sessions.size() >= maxActiveSessions)) {
             rejectedSessions++;
             throw new IllegalStateException
-                (rb.getString(TOO_MANY_ACTIVE_SESSION_EXCEPTION));
+                (rb.getString(LogFacade.TOO_MANY_ACTIVE_SESSION_EXCEPTION));
         }
 
         return (super.createSession(sessionId));
@@ -473,7 +415,7 @@ public class StandardManager
             return;
         }
         if (log.isLoggable(Level.FINE)) {
-            String msg = MessageFormat.format(rb.getString(LOADING_PERSISTED_SESSION), pathname);
+            String msg = MessageFormat.format(rb.getString(LogFacade.LOADING_PERSISTED_SESSION), pathname);
             log.log(Level.FINE, msg);
         }
         FileInputStream fis = null;
@@ -525,13 +467,9 @@ public class StandardManager
         ObjectInputStream ois = null;
         try {
             BufferedInputStream bis = new BufferedInputStream(is);
-            if (container != null) {
-                ois = ((StandardContext)container).createObjectInputStream(bis);
-            } else {
-                ois = new ObjectInputStream(bis);
-            }
+            ois = createObjectInputStream(bis);
         } catch (IOException ioe) {
-            String msg = MessageFormat.format(rb.getString(LOADING_PERSISTED_SESSION_IO_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.LOADING_PERSISTED_SESSION_IO_EXCEPTION),
                                               ioe);
 
             log.log(Level.SEVERE, msg, ioe);
@@ -560,7 +498,7 @@ public class StandardManager
                     session.activate();
                 }
             } catch (ClassNotFoundException e) {
-                String msg = MessageFormat.format(rb.getString(CLASS_NOT_FOUND_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.CLASS_NOT_FOUND_EXCEPTION),
                                                   e);
                 log.log(Level.SEVERE, msg, e);
                 if (ois != null) {
@@ -573,7 +511,7 @@ public class StandardManager
                 }
                 throw e;
             } catch (IOException e) {
-                String msg = MessageFormat.format(rb.getString(LOADING_PERSISTED_SESSION_IO_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.LOADING_PERSISTED_SESSION_IO_EXCEPTION),
                                                   e);
               log.log(Level.SEVERE, msg, e);
                 if (ois != null) {
@@ -597,7 +535,6 @@ public class StandardManager
             }
         }
     }
-
 
     /**
      * Save any currently active sessions in the appropriate persistence
@@ -673,7 +610,7 @@ public class StandardManager
                 return;
             }
             if(log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, SAVING_PERSISTED_SESSION, pathname);
+                log.log(Level.FINE, LogFacade.SAVING_PERSISTED_SESSION_PATH, pathname);
             }
             FileOutputStream fos = null;
             try {
@@ -715,14 +652,9 @@ public class StandardManager
             throws IOException {
         ObjectOutputStream oos = null;
         try {
-            if (container != null) {
-                oos = ((StandardContext) container).createObjectOutputStream(
-                        new BufferedOutputStream(os));
-            } else {
-                oos = new ObjectOutputStream(new BufferedOutputStream(os));
-            }
+            oos = createObjectOutputStream(os);
         } catch (IOException e) {
-            String msg = MessageFormat.format(rb.getString(SAVING_PERSISTED_SESSION_IO_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SAVING_PERSISTED_SESSION_IO_EXCEPTION),
                                               e);
             log.log(Level.SEVERE, msg, e);
             if (oos != null) {
@@ -762,7 +694,7 @@ public class StandardManager
                     oos.writeObject(session);
                 }
             } catch (IOException e) {
-                String msg = MessageFormat.format(rb.getString(SAVING_PERSISTED_SESSION_IO_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.SAVING_PERSISTED_SESSION_IO_EXCEPTION),
                         e);
                 log.log(Level.SEVERE, msg, e);
                 if (oos != null) {
@@ -878,7 +810,7 @@ public class StandardManager
         // Validate and update our current component state
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, PersistentManagerBase.MANAGER_STARTED_INFO);
+                log.log(Level.INFO, LogFacade.MANAGER_STARTED_INFO);
             }
             return;
         }
@@ -897,7 +829,7 @@ public class StandardManager
             load();
         } catch (Throwable t) {
             log.log(Level.SEVERE,
-                    LOADING_SESSIONS_EXCEPTION, t);
+                    LogFacade.LOADING_SESSIONS_EXCEPTION, t);
         }
 
     }
@@ -933,7 +865,7 @@ public class StandardManager
         // Validate and update our current component state
         if (!started)
             throw new LifecycleException
-                (rb.getString(PersistentManagerBase.MANAGER_NOT_STARTED_INFO));
+                (rb.getString(LogFacade.MANAGER_NOT_STARTED_INFO));
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
@@ -941,7 +873,7 @@ public class StandardManager
         try {
             unload(false, isShutdown);
         } catch (IOException e) {
-            log.log(Level.SEVERE, UNLOADING_SESSIONS_EXCEPTION, e);
+            log.log(Level.SEVERE, LogFacade.LOADING_SESSIONS_EXCEPTION, e);
         }
 
         // Expire all active sessions and notify their listeners
@@ -992,7 +924,7 @@ public class StandardManager
                 setMaxInactiveIntervalSeconds
                     ((Integer) event.getNewValue() *60 );
             } catch (NumberFormatException e) {
-                log.log(Level.SEVERE,PersistentManagerBase.INVALID_SESSION_TIMEOUT_SETTING_EXCEPTION,
+                log.log(Level.SEVERE, LogFacade.INVALID_SESSION_TIMEOUT_SETTING_EXCEPTION,
                         event.getNewValue().toString());
             }
         }

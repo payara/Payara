@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 //----------------------------------------------------------------------------
 //
@@ -71,22 +72,18 @@ import java.net.UnknownHostException;
 import org.omg.CORBA.*;
 import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CosTransactions.*;
-import org.omg.CORBA.Policy.*;
 import org.omg.CosNaming.*;
-import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.PortableServer.*;
 import org.omg.CORBA.LocalObject;
 
 import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
 
-import com.sun.jts.codegen.otsidl.*;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
-import com.sun.jts.utils.LogFormatter;
 
-/**The DefaultTransactionService is our implemention of the
+/**The DefaultTransactionService is our implementation of the
  * com.sun.CosTransactions.TransactionService class.
  * <p>
  * The TransactionService abstract class describes the packaging of a
@@ -117,12 +114,12 @@ public class DefaultTransactionService implements ProxyChecker {
     private static boolean active = false;
     /*
         Logger to log transaction messages
-    */ 
+    */
     static Logger _logger = LogDomains.getLogger(DefaultTransactionService.class, LogDomains.TRANSACTION_LOGGER);
     public static final String JTS_SERVER_ID = "com.sun.jts.persistentServerId"; /* FROZEN */
     public static final String JTS_XA_SERVER_NAME = "com.sun.jts.xa-servername";
 
-   
+
     /**Default constructor.
      *
      * @param
@@ -144,7 +141,7 @@ public class DefaultTransactionService implements ProxyChecker {
     public static boolean isActive() {
         return active;
     }
-    
+
     /**Obtain the implementation of the Current interface provided
      * by the transaction service implementation.
      *
@@ -281,7 +278,7 @@ public class DefaultTransactionService implements ProxyChecker {
             //String serverId = properties.getProperty("com.sun.corba.ee.internal.POA.ORBServerId"/*#Frozen*/);
             String serverId = properties.getProperty(JTS_SERVER_ID);
             if (serverId == null) {
-                serverId = 
+                serverId =
                     properties.getProperty("com.sun.CORBA.POA.ORBServerId"/*#Frozen*/);
             }
             if (serverId != null) {
@@ -312,7 +309,7 @@ public class DefaultTransactionService implements ProxyChecker {
                 recoverable = true;
             } else {
                 long timestamp = System.currentTimeMillis();
-                Configuration.setServerName(getAdjustedServerName(serverName + 
+                Configuration.setServerName(getAdjustedServerName(serverName +
                          ",T" + String.valueOf(timestamp)/*#Frozen*/), false);
                 if (_logger.isLoggable(Level.FINE))
                     _logger.log(Level.FINE,"DTR: Non-Recoverable Server");
@@ -629,7 +626,7 @@ class CoordinatorResourceServantActivator extends LocalObject implements Servant
      *
      * @see
      */
-    public Servant incarnate( byte[] oid, POA adapter ) 
+    public Servant incarnate( byte[] oid, POA adapter )
         throws org.omg.PortableServer.ForwardRequest {
         Servant servant = new CoordinatorResourceImpl(oid);
         return servant;

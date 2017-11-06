@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.api.jdbc;
 
 import java.sql.Connection;
@@ -50,12 +52,14 @@ import java.sql.SQLException;
  * @author Shalini M
  */
 public interface ConnectionValidation {
-  /**
-   * Check for validity of <code>java.sql.Connection</code>
-   *
-   * @param con       <code>java.sql.Connection</code>to be validated
-   * @throws SQLException if the connection is not valid
-   */
-   boolean isConnectionValid(Connection con) throws SQLException;
-
+    
+    /**
+     * Check for validity of <code>java.sql.Connection</code>
+     *
+     * @param con       <code>java.sql.Connection</code>to be validated
+     * @param statementTimeout The statement timeout value
+     * @throws SQLException if the connection is not valid
+     */
+   boolean isConnectionValid(Connection con, int statementTimeout) throws SQLException;
+   
 }

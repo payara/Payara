@@ -37,13 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.node.runtime;
 
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import java.util.List;
 import java.util.Map;
 
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ResourcePropertyDescriptor;
+import com.sun.enterprise.deployment.node.ResourcePropertyNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.node.runtime.common.SecurityRoleMappingNode;
@@ -75,6 +79,10 @@ public class EjbBundleRuntimeNode extends
                 SecurityRoleMappingNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.EJBS),
                 EnterpriseBeansRuntimeNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
+                ResourcePropertyNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.WEBSERVICE_DEFAULT_LOGIN_CONFIG),
+                DefaultWebServiceLoginConfigNode.class);
     }
 
     public EjbBundleRuntimeNode() {
@@ -164,6 +172,12 @@ public class EjbBundleRuntimeNode extends
                             role, descriptor);
                     }
                 }
+            }
+        }
+        else if(newDescriptor instanceof ResourcePropertyDescriptor) {
+            ResourcePropertyDescriptor desc = (ResourcePropertyDescriptor)newDescriptor;
+            if("default-role-mapping".equals(desc.getName())) {
+                descriptor.setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(desc.getValue()));
             }
         }
     }

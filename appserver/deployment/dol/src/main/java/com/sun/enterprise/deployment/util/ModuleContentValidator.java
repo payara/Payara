@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -188,7 +189,7 @@ public class ModuleContentValidator extends ModuleContentLinker implements Compo
                 }
             } else {
                 // let's look in the wsdl directory
-                String fullFileUri = webService.getBundleDescriptor().getWsdlDir() + File.separator + wsdlFileUri;
+                String fullFileUri = webService.getBundleDescriptor().getWsdlDir() + "/" + wsdlFileUri;
                 wsdlFileInputStream = archive_.getEntry(fullFileUri);
 
                 if( wsdlFileInputStream != null ) {        

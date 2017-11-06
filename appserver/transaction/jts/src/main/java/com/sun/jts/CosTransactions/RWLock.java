@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.jts.CosTransactions;
 import java.lang.InterruptedException;
@@ -84,20 +85,18 @@ import com.sun.logging.LogDomains;
  *    }
  * </pre></blockquote><hr>
  * <p>
- * @author Dhiru Pandey 8/7/2000 
+ * @author Dhiru Pandey 8/7/2000
  */
- 
- 
+
+
 public class RWLock {
+
+  private static Logger _logger = LogDomains.getLogger(RWLock.class, LogDomains.TRANSACTION_LOGGER, false);
 
   int currentReaders;
   int pendingReaders;
   int currentWriters;
-  /*
- 	 Logger to log transaction messages
-  */ 
-  static Logger _logger = LogDomains.getLogger(RWLock.class, LogDomains.TRANSACTION_LOGGER);
- 
+
   Queue writerQueue = new Queue();
   /**
    * This method is used to acquire a read lock. If there is already a writer thread
@@ -147,7 +146,7 @@ public class RWLock {
 
   /**
    * isWriteLocked
-   * 
+   *
    * returns true if the RWLock is in a write locked state.
    *
    */
@@ -155,17 +154,17 @@ public class RWLock {
   {
 	  return currentWriters > 0 ;
   }
- 
+
   /**
-   * This method is used to release a read lock. 
+   * This method is used to release a read lock.
    * It also notifies any waiting writer thread
    * that it could now acquire a write lock.
    */
   public synchronized void releaseReadLock() {
-    if (--currentReaders == 0) 
+    if (--currentReaders == 0)
       notifyWriters();
   }
- 
+
   /**
    * This method is used to release a write lock. It also notifies any pending
    * readers that they could now acquire the read lock. If there are no reader
@@ -174,9 +173,9 @@ public class RWLock {
    */
   public synchronized void releaseWriteLock() {
     --currentWriters;
-    if (pendingReaders > 0) 
+    if (pendingReaders > 0)
       notifyReaders();
-    else 
+    else
       notifyWriters();
   }
   private void notifyReaders() {
@@ -184,12 +183,12 @@ public class RWLock {
     pendingReaders = 0;
     notifyAll();
   }
-  
+
   private void notifyWriters() {
     if (writerQueue.size() > 0) {
       Object lock = writerQueue.deQueueFirst();
       ++currentWriters;
-      synchronized(lock) { 
+      synchronized(lock) {
         lock.notify();
       }
     }
@@ -212,6 +211,6 @@ public class RWLock {
   }
 
 }
- 
+
 
 

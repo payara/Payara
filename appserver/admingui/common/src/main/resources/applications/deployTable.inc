@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017] [Payara Foundation] -->
 
 <!-- applications/deployTable.inc -->
 
@@ -75,6 +76,14 @@
     <sun:tableColumn headerText="$resource{i18n.deployTable.colDeploymentOrder}"  sort="deploymentOrder"   id="colorder">
         <staticText id="order" value="#{td.value.deploymentOrder}" />
     </sun:tableColumn>
+
+    <sun:tableColumn headerText="$resource{i18n.deployTable.colDeploymentTime}"  sort="deploymentTime"   id="coltime">
+        <staticText id="time" value="#{td.value.deploymentTime}" />
+    </sun:tableColumn>
+        
+    <sun:tableColumn headerText="$resource{i18n.deployTable.coldeploymentOccuranceTime}"  sort="deploymentOccuranceTime"   id="coltimedep">
+        <staticText id="timedep" value="#{td.value.deploymentOccuranceTime}" />
+    </sun:tableColumn>
         
     <sun:tableColumn rendered="#{!pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colStatus}" sort="enableURL"  id="col2">
         <sun:hyperlink rendered="#{!pageSession.onlyDASExist}" id="targetLink" text="#{td.value.enableURL}" url="#{targetLink}?appName=#{td.value.encodedName}&listPageLink=#{pageSession.listPageLink}" />
@@ -102,7 +111,7 @@
         <sun:hyperlink id="reloadLink" text="$resource{i18n.deployTable.reload}">
             <!command
                 gf.reloadApplication(appName="#{td.value.name}");
-                gf.redirect(page="#{request.contextPath}/#{pageSession.listPageLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                gf.redirect(page="#{pageSession.listPageLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
             />
         </sun:hyperlink>
         

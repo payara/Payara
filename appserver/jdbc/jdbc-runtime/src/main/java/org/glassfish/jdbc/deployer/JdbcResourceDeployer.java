@@ -37,8 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.jdbc.deployer;
+
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.jdbc.util.JdbcResourcesUtil;
+import org.glassfish.jdbc.util.LoggerFactory;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Application;
@@ -47,18 +66,6 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.jdbc.config.JdbcResource;
-import org.glassfish.jdbc.util.JdbcResourcesUtil;
-import org.glassfish.resourcebase.resources.api.*;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -83,11 +90,12 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     private static final StringManager localStrings =
             StringManager.getManager(JdbcResourceDeployer.class);
     // logger for this deployer
-    private static Logger _logger = LogDomains.getLogger(JdbcResourceDeployer.class, LogDomains.RSR_LOGGER);
+    private static Logger _logger = LoggerFactory.getLogger(JdbcResourceDeployer.class);
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)
             throws Exception {
 
@@ -115,6 +123,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deployResource(Object resource) throws Exception {
         JdbcResource jdbcRes = (JdbcResource) resource;
         ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(jdbcRes);
@@ -124,6 +133,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
         if (handles(resource)) {
             if (!postApplicationDeployment) {
@@ -136,6 +146,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         JdbcResource jdbcRes = (JdbcResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(jdbcRes.getJndiName(), applicationName, moduleName);
@@ -145,6 +156,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void undeployResource(Object resource)
             throws Exception {
         JdbcResource jdbcRes = (JdbcResource) resource;
@@ -175,6 +187,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void redeployResource(Object resource)
             throws Exception {
 
@@ -185,6 +198,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof JdbcResource;
     }
@@ -192,6 +206,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
@@ -199,6 +214,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -207,6 +223,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void enableResource(Object resource) throws Exception {
         deployResource(resource);
     }
@@ -214,6 +231,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void disableResource(Object resource) throws Exception {
         undeployResource(resource);
     }
@@ -260,6 +278,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
                                           Resources allResources)
             throws ResourceConflictException {

@@ -36,6 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright Payara Foundation and/or its affiliates
+ *
  */
 
 package com.sun.enterprise.admin.servermgmt.services;
@@ -84,7 +87,7 @@ class Constants {
     static final String TRACE_PREPEND = "TRACE:  ";
     static final String DRYRUN_PREPEND = "DRYRUN:  ";
     static final String README = "PlatformServices.log";
-    static final String SERVICE_NAME_PREFIX = "application/GlassFish/";
+    static final String SERVICE_NAME_PREFIX = "application/Payara/";
     static final String ETC = "/etc";
     static final String INITD = "/etc/init.d";
     static final String REGEXP_PATTERN_BEGIN = "[KS][0-9][0-9]?";

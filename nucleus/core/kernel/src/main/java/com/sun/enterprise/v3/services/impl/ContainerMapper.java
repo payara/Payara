@@ -37,29 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or affiliates]
+
 package com.sun.enterprise.v3.services.impl;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import java.io.CharConversionException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.grizzly.config.ContextRootInfo;
 import org.glassfish.grizzly.config.GrizzlyListener;
-import org.glassfish.grizzly.http.server.AfterServiceListener;
-import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.grizzly.http.server.HttpHandlerChain;
-import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.Note;
-import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.server.*;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.CharChunk;
@@ -67,6 +58,15 @@ import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MimeType;
 import org.glassfish.internal.grizzly.ContextMapper;
 import org.glassfish.kernel.KernelLoggerInfo;
+
+import java.io.CharConversionException;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Container's mapper which maps {@link ByteBuffer} bytes representation to an  {@link HttpHandler}, {@link
@@ -92,7 +92,8 @@ public class ContainerMapper extends ADBAwareHttpHandler {
     private final static Note<DataChunk> DATA_CHUNK =
             Request.<DataChunk>createNote("DataChunk");
     private final ReentrantReadWriteLock mapperLock;
-
+    private RequestTracingService requestTracing;
+    private StuckThreadsStore stuckThreadsStore;
     
     private static final AfterServiceListener afterServiceListener =
             new AfterServiceListenerImpl();
@@ -106,6 +107,9 @@ public class ContainerMapper extends ADBAwareHttpHandler {
         listener = grizzlyListener;
         grizzlyService = service;
         mapperLock = service.obtainMapperLock();
+        requestTracing = grizzlyService.getHabitat().getService(RequestTracingService.class);
+        stuckThreadsStore = grizzlyService.getHabitat().getService(StuckThreadsStore.class);
+
     }
 
     /**
@@ -164,6 +168,15 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             request.addAfterServiceListener(afterServiceListener);
             
             final Callable handler = lookupHandler(request, response);
+            if (stuckThreadsStore != null){
+                stuckThreadsStore.registerThread(Thread.currentThread().getId());
+            }
+            if (requestTracing != null) {
+                requestTracing.startTrace();
+            }
+            if (stuckThreadsStore != null){
+                stuckThreadsStore.registerThread(Thread.currentThread().getId());
+            }
             handler.call();
         } catch (Exception ex) {
             try {
@@ -177,6 +190,17 @@ public class ContainerMapper extends ADBAwareHttpHandler {
                 if (LOGGER.isLoggable(Level.WARNING)) {
                     LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionMapper2, ex2);
                 }
+                if (ex2 instanceof CharConversionException) {
+                    response.sendError(500);
+                }
+            }
+        }
+        finally {
+            if (requestTracing != null) {
+                requestTracing.endTrace();
+            }
+            if (stuckThreadsStore != null){
+                stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
             }
         }
     }

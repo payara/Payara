@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.net.JarURIPattern;
 import org.glassfish.api.web.TldProvider;
 import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.web.loader.WebappClassLoader;
+import org.glassfish.web.loader.LogFacade;
 import org.jvnet.hk2.annotations.Service;
 
 
@@ -73,7 +73,7 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 public class GlassFishTldProvider implements TldProvider, PostConstruct {
 
-    private static final Logger logger = WebappClassLoader.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
 
@@ -128,7 +128,7 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
                         try {
                             uris[i] = urls[i].toURI();
                         } catch(URISyntaxException e) {
-                            String msg = rb.getString(WebappClassLoader.TLD_PROVIDER_IGNORE_URL);
+                            String msg = rb.getString(LogFacade.TLD_PROVIDER_IGNORE_URL);
                             msg = MessageFormat.format(msg, urls[i]);
                             logger.log(Level.WARNING, msg, e);
                         }
@@ -136,7 +136,7 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
                 }
             } else {
                 logger.log(Level.WARNING,
-                    WebappClassLoader.UNABLE_TO_DETERMINE_TLD_RESOURCES,
+                    LogFacade.UNABLE_TO_DETERMINE_TLD_RESOURCES,
                     new Object[] {"JSTL", classLoader,
                         GlassFishTldProvider.class.getName()});
             }

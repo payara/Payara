@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.deployment;
 
@@ -78,6 +79,12 @@ public class DeployCommandParameters extends OpsParams {
     public Boolean isForce() {
         return force;
     }
+    
+    @Param(optional=true, defaultValue="false")
+    public Boolean forceName = false;
+    public Boolean isForceName() {
+        return forceName;
+    }
 
     @Param(name=ParameterNames.PRECOMPILE_JSP, optional=true, defaultValue="false")
     public Boolean precompilejsp = false;
@@ -97,17 +104,27 @@ public class DeployCommandParameters extends OpsParams {
       return retrieve;
     }
 
+    @Param(name = ParameterNames.SKIP_DS_FAILURE, optional = true, defaultValue = "false")
+    public Boolean skipDSFailure = false;
+    public Boolean isSkipDSFailure() {
+        return skipDSFailure;
+    }
+
     @Param(optional=true)
     public String dbvendorname = null;
     public String getDBVendorName() {
       return dbvendorname;
     }
 
-    //mutually exclusive with dropandcreatetables
+    /**
+     * mutually exclusive with dropandcreatetables
+     */ 
     @Param(optional=true)
     public Boolean createtables;
 
-    //mutually exclusive with createtables
+    /**
+     * mutually exclusive with createtables
+     */
     @Param(optional=true)
     public Boolean dropandcreatetables;
 
@@ -224,10 +241,12 @@ public class DeployCommandParameters extends OpsParams {
       return previousContextRoot;
     }
 
+    @Override
     public String name() {
         return name;
     }
 
+    @Override
     public String libraries() {
         return libraries;
     }
@@ -254,6 +273,7 @@ public class DeployCommandParameters extends OpsParams {
         public static final String LOCATION = "location";
         public static final String ENABLED = "enabled";
         public static final String PRECOMPILE_JSP = "precompilejsp";
+        public static final String SKIP_DS_FAILURE = "skipdsfailure";
         public static final String DEPLOYMENT_PLAN = "deploymentplan";
         public static final String DEPLOYMENT_ORDER = "deploymentorder";
         public static final String ALT_DD = "altdd";

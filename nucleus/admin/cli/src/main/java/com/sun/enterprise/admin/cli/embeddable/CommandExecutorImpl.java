@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.embeddable;
 
@@ -122,7 +123,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
         if (globalOptions.size() > 0) {
             String pwfile = globalOptions.getOne(ProgramOptions.PASSWORDFILE);
             if (pwfile != null && pwfile.length() > 0) {
-                Map<String, String> passwords = CLIUtil.readPasswordFileOptions(pwfile, true);
+                Map<String, String> passwords = CLIUtil.readPasswordFileOptions(pwfile, false);
                 for (CommandModel.ParamModel opt : commandModel.getParameters()) {
                     if (opt.getParam().password()) {
                         String pwdname = opt.getName();

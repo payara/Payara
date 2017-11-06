@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -83,6 +84,8 @@ import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.TreeSet;
+import java.util.UUID;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
@@ -661,10 +664,17 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
             }
         );
 
+        Set<Long> uniqueIds = new TreeSet<>();
         for (int i=0; i<descs.length; i++)
         {
             // 2^16 beans max per stand alone module
-            descs[i].setUniqueId( (id | i) );
+            long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 65536);
+            // in case of an id collision, increment until find empty slot
+            while(uniqueIds.contains(uid)) {
+                uid = ++uid % 65536;
+            }
+            uniqueIds.add(uid);
+            descs[i].setUniqueId( (id | uid) );
         }
     }
 
@@ -1172,6 +1182,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         return (getInjectionInfoByClass(clazz, this));
     }
 
+    @Override
     public Boolean getDisableNonportableJndiNames() {
         return disableNonportableJndiNames;
     }

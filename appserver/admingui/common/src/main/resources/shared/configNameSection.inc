@@ -41,7 +41,7 @@
 -->
      <sun:propertySheetSection id="configNameSheet">
         <sun:property id="configName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.ConfigurationName}" >
-            <sun:staticText id="configName" text="#{pageSession.configName}"/>
+            <sun:staticText id="configName" text="#{pageSession.configName}" escape="#{true}"/>
         </sun:property>
     </sun:propertySheetSection>
     "<br/>

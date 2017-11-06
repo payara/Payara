@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.api.admin;
 
@@ -66,6 +68,7 @@ public interface CommandProgress extends ProgressStatus {
     
     /** Unique id of this command
      */
+    @Override
     public String getId();
     
     public String getName();

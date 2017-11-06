@@ -37,19 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2016] [Payara Foundation] 
 package org.glassfish.batch.spi.impl;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.ibm.jbatch.container.servicesmanager.ServiceTypes;
 import com.ibm.jbatch.spi.*;
 import com.sun.enterprise.config.serverbeans.Config;
 
-import fish.payara.jbatch.persistence.rdbms.DB2PersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.JBatchJDBCPersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.MySqlPersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.OraclePersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.PostgresPersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.LazyBootPersistenceManager;
 
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -74,15 +69,12 @@ import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.sql.DataSource;
 
 /**
  * Helper class to get values for Batch Runtime. Follows zero-config rules by
@@ -215,7 +207,11 @@ public class BatchRuntimeHelper
                     String appName = props.getProperty("defaultAppName");
                     if (!Boolean.parseBoolean(props.getProperty("retain-batch-jobs"))) {
                         String tagName = config.getName() + ":" + appName;
+                        ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
                         try {
+                            // set TCCL to ensure loading of the Joboperator
+                            Thread.currentThread().setContextClassLoader(BatchSPIManager.class.getClassLoader());
+                            
                             BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
                             if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null) {
                                 batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
@@ -231,6 +227,8 @@ public class BatchRuntimeHelper
                             }
                         } catch (Exception ex) {
                             logger.log(Level.FINE, "Error while purging jobs", ex);
+                        } finally {
+                            Thread.currentThread().setContextClassLoader(prevCL);
                         }
                     }
                 }
@@ -263,48 +261,8 @@ public class BatchRuntimeHelper
     }
 
     private String determinePersistenceManagerClass() {
-        String result = JBatchJDBCPersistenceManager.class.getName();
-        try {
-            // this is the default
-            String dataSourceName = getDataSourceLookupName();
-            InitialContext ctx = new InitialContext();
-            Object object = ctx.lookup(dataSourceName);
+        String result = LazyBootPersistenceManager.class.getName();
 
-            //check whether the referenced JNDI entry is a DataSource
-            if (object instanceof DataSource) {
-                Connection conn = null;
-                try {
-                    DataSource ds = DataSource.class.cast(object);
-                    conn = ds.getConnection();
-                    String database = conn.getMetaData().getDatabaseProductName();
-                    if (database.contains("Derby")) {
-                        result = JBatchJDBCPersistenceManager.class.getName();
-                    } else if (database.contains("MySQL")) {
-                        result = MySqlPersistenceManager.class.getName();
-                    } else if (database.contains("Oracle")) {
-                        result = OraclePersistenceManager.class.getName();
-                    } else if (database.contains("PostgreSQL")) {
-                        result = PostgresPersistenceManager.class.getName();
-                    } else if (database.contains("DB2")) {
-                        result = DB2PersistenceManager.class.getName();
-                    }
-                } catch (SQLException ex) {
-                    Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to get connecion to determine database type", ex);
-                } finally {
-                    if (conn != null) {
-                        try {
-                            conn.close();
-                        } catch (SQLException ex) {
-                            Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to close connection", ex);
-                        }
-                    }
-                }
-            } else if (object instanceof HazelcastInstance) {
-                result = "fish.payara.jbatch.persistence.hazelcast.HazelcastPersistenceService";
-            }
-        } catch (NamingException ex) {
-            Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.WARNING, "Unable to find JBatch configured DataSource", ex);
-        }
         return result;
     }
 

@@ -307,36 +307,34 @@ public final class AMXProxyTests extends AMXTestBase
         }
     }
     
+    /** test all MBeans generically */
+    @Test(/* GLASSFISH-21214 */enabled=false)
+    public void testAllGenerically()
+    {
+        final Interfaces interfaces = getInterfaces();
+        final List<String> problems = new ArrayList<String>();
 
-    
-//    /** test all MBeans generically */
-//    @Test
-//    public void testAllGenerically()
-//    {
-//        final Interfaces interfaces = getInterfaces();
-//        final List<String> problems = new ArrayList<String>();
-//
-//        for( final AMXProxy amx : getQueryMgr().queryAll() )
-//        {
-//            assert amx != null : "testAllGenerically(): null proxy in query list";
-//            try
-//            {
-//                final List<String> p = _testProxyInterface( amx, interfaces.get(amx.type()) );
-//                problems.addAll(p);
-//            }
-//            catch( final Throwable t )
-//            {
-//                final Throwable rootCause = ExceptionUtil.getRootCause(t);
-//                problems.add( rootCause.getMessage() );
-//            }
-//        }
-//
-//        if ( problems.size() != 0 )
-//        {
-//            System.out.println( "\nPROBLEMS:\n" + CollectionUtil.toString(problems, "\n\n") );
-//            assert false : "" + problems;
-//        }
-//    }
+        for( final AMXProxy amx : getQueryMgr().queryAll() )
+        {
+            assert amx != null : "testAllGenerically(): null proxy in query list";
+            try
+            {
+                final List<String> p = _testProxyInterface( amx, interfaces.get(amx.type()) );
+                problems.addAll(p);
+            }
+            catch( final Throwable t )
+            {
+                final Throwable rootCause = ExceptionUtil.getRootCause(t);
+                problems.add( rootCause.getMessage() );
+            }
+        }
+
+        if ( problems.size() != 0 )
+        {
+            System.out.println( "\nPROBLEMS:\n" + CollectionUtil.toString(problems, "\n\n") );
+            assert false : "" + problems;
+        }
+    }
     
     @Test
     public void testJ2EEDomain() throws ClassNotFoundException

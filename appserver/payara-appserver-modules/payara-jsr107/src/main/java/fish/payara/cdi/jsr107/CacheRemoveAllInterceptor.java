@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,7 +17,7 @@
  */
 package fish.payara.cdi.jsr107;
 
-import fish.payara.cdi.jsr107.impl.PayaraCacheKeyInvocationContext;
+import fish.payara.cdi.jsr107.implementation.PayaraCacheKeyInvocationContext;
 import javax.annotation.Priority;
 import javax.cache.Cache;
 import javax.cache.annotation.CacheRemoveAll;
@@ -38,6 +38,11 @@ public class CacheRemoveAllInterceptor extends AbstractJSR107Interceptor {
     
     @AroundInvoke
     public Object cacheRemoveAll(InvocationContext ctx) throws Throwable {
+        
+        if (!isEnabled()) {
+            return ctx.proceed();
+        }
+        
         CacheRemoveAll annotation = ctx.getMethod().getAnnotation(CacheRemoveAll.class);
         PayaraCacheKeyInvocationContext<CacheRemoveAll> pctx = new PayaraCacheKeyInvocationContext<>(ctx, annotation);
 

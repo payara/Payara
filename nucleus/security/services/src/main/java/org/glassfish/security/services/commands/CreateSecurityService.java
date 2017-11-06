@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.security.services.commands;
 
 import java.beans.PropertyVetoException;
@@ -134,7 +135,7 @@ public class CreateSecurityService implements AdminCommand, AdminCommandSecurity
                 public Object run(SecurityConfigurations param) throws PropertyVetoException, TransactionFailure {
                     SecurityConfiguration svcConfig = param.createChild(clazzServiceType);
                     svcConfig.setName(serviceName);
-                    svcConfig.setDefault(enableDefault);
+                    svcConfig.setDefault(enableDefault.toString());
                     param.getSecurityServices().add(svcConfig);
                     return svcConfig;
                 }
@@ -174,7 +175,7 @@ public class CreateSecurityService implements AdminCommand, AdminCommandSecurity
 		            public Object run(AuthenticationService param) throws PropertyVetoException, TransactionFailure {
 		            	// Look at the use password credential setting
 		            	Boolean usePassCred = Boolean.valueOf(configuration.getProperty("use-password-credential"));
-		            	param.setUsePasswordCredential(usePassCred.booleanValue());
+		            	param.setUsePasswordCredential(usePassCred.toString());
 		            	return param;
 		            }
 		        }, config);

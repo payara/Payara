@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,8 @@ package com.sun.appserv.web.cache;
 
 import com.sun.appserv.util.cache.Cache;
 import com.sun.appserv.web.cache.mapping.CacheMapping;
-import com.sun.enterprise.web.WebContainer;
 import org.apache.catalina.LifecycleException;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 import javax.servlet.ServletContext;
 import java.lang.String;
@@ -65,22 +64,12 @@ public class CacheManager {
     public static final String DEFAULT_CACHE_CLASSNAME = 
         "com.sun.appserv.util.cache.LruCache";
 
-    private static final Logger _logger = WebContainer.logger;
+    private static final Logger _logger = LogFacade.getLogger();
 
     /**
      * The resource bundle containing the localized message strings.
      */
     private static final ResourceBundle _rb = _logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Exception in creating cache",
-            level = "WARNING")
-    private static final String CACHE_MANAGER_EXCEPTION_CREATING_CACHE = "AS-WEB-GLUE-00001";
-
-    @LogMessageInfo(
-            message = "Exception initializing cache-helper {0}; please check your helper class implementation",
-            level = "INFO")
-    private static final String CACHE_MANAGER_EXCEPTION_INITIALIZING_CACHE_HELPER = "AS-WEB-GLUE-00002";
 
     // default max maximum number of entries in the cache
     int maxEntries = DEFAULT_CACHE_MAX_ENTRIES;
@@ -224,8 +213,8 @@ public class CacheManager {
         try {
             defaultCache = createCache(maxEntries, cacheClassName);
         } catch (Exception e) {
-            _logger.log(Level.WARNING, CACHE_MANAGER_EXCEPTION_CREATING_CACHE, e);
-            throw new LifecycleException(_rb.getString(CACHE_MANAGER_EXCEPTION_CREATING_CACHE), e);
+            _logger.log(Level.WARNING, LogFacade.CACHE_MANAGER_EXCEPTION_CREATING_CACHE, e);
+            throw new LifecycleException(_rb.getString(LogFacade.CACHE_MANAGER_EXCEPTION_CREATING_CACHE), e);
         }
 
         // initialize the "default" helper
@@ -246,7 +235,7 @@ public class CacheManager {
                 cacheHelpers.put(name, helper);
 
             } catch (Exception e) {
-                String msg = _rb.getString(CACHE_MANAGER_EXCEPTION_INITIALIZING_CACHE_HELPER);
+                String msg = _rb.getString(LogFacade.CACHE_MANAGER_EXCEPTION_INITIALIZING_CACHE_HELPER);
                 Object[] params = { name };
                 msg = MessageFormat.format(msg, params);
                 throw new LifecycleException(msg, e);

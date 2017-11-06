@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -89,6 +89,12 @@
     <sun:property id="configFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.configFile}"  helpText="$resource{i18nhc.hazelcast.configuration.configFileHelp}">
         <sun:textField id="hazelcastConfigurationFile" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['hazelcastConfigurationFile']}" />
     </sun:property>
+    <sun:property id="clusterNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.clusterName}"  helpText="$resource{i18nhc.hazelcast.configuration.clusterNameHelp}">
+        <sun:textField id="clusterName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['clusterName']}" />
+    </sun:property>
+    <sun:property id="clusterPasswordProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.clusterPassword}"  helpText="$resource{i18nhc.hazelcast.configuration.clusterPasswordHelp}">
+        <sun:passwordField id="clusterName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['clusterPassword']}" />
+    </sun:property>
     <sun:property id="startPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.startPort}"  helpText="$resource{i18nhc.hazelcast.configuration.startPortHelp}">
         <sun:textField id="startPort" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['startPort']}" />
     </sun:property>
@@ -100,6 +106,15 @@
     </sun:property>    
     <sun:property id="jndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.jndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.jndiNameHelp}">
         <sun:textField id="jndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['jndiName']}" />
+    </sun:property>
+    <sun:property id="licenseKeyProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.licenseKey}"  helpText="$resource{i18nhc.hazelcast.configuration.licenseKeyHelp}">
+        <sun:textField id="licenseKey" columns="$int{40}" maxLength="100" text="#{pageSession.valueMap['licenseKey']}" />
+    </sun:property> 
+    <sun:property id="liteProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
+        <sun:checkbox id="lite" selected="#{pageSession.valueMap['lite']}" selectedValue="true" />
+    </sun:property>
+    <sun:property id="hostawareProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.hostaware}"  helpText="$resource{i18nhc.hazelcast.configuration.hostawareHelp}">
+        <sun:checkbox id="hostaware" selected="#{pageSession.valueMap['hostAwareParitioning']}" selectedValue="true" />
     </sun:property>
 </sun:propertySheetSection>
 

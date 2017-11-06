@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+
 
 <sun:propertySheet id="propertySheet">
     <!-- Text Field section -->
@@ -59,7 +61,7 @@
                 <sun:checkbox id="osgi"  label=" "  disabled="#{true}"  selected="#{requestScope.osgiType}"  />
                 <!beforeCreate
                     setAttribute(key="osgiType" value="#{false}");
-                    if ("#{pageSession.valueMap['type']"){
+                    if ("#{pageSession.valueMap['type']}"){
                            setAttribute(key="osgiType" value="#{true}");
                     }
                 />
@@ -91,6 +93,10 @@
             <sun:checkbox id="implicitCdi" disabled="true" label="$resource{i18n.common.Enabled}" selected="#{pageSession.implicitCdiEnabled}" selectedValue="true" />
         </sun:property>
 
+        <sun:property id="cdiDevModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.cdiDevMode}" helpText="$resource{i18n.deploy.cdiDevModeHelp}">
+            <sun:checkbox id="cdiDevMode" label="$resource{i18n.common.Enabled}" selected="#{pageSession.cdiDevModeEnabled}" selectedValue="true" />
+        </sun:property>
+
         <sun:property id="availability" rendered="#{pageSession.finalShowAvail}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
             <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['availabilityEnabled']}" selectedValue="true" />
         </sun:property>
@@ -109,10 +115,20 @@
         <sun:property id="deploymentOrderProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOrder}" helpText="$resource{i18n.deploy.deploymentOrderHelp}">
             <sun:textField id="deploymentOrder" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.deploymentOrder']}" text="#{pageSession.valueMap['deploymentOrder']}" />
         </sun:property>
+            
+        <sun:property id="deploymentTimeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentTime}" helpText="$resource{i18n.deploy.deploymentTimeHelp}">
+            <sun:staticText id="deploymentOrder" text="#{pageSession.valueMap['deploymentTime']}" />
+        </sun:property>
+                
+        <sun:property id="deploymentOccuranceTime" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOccuranceTime}" helpText="$resource{i18n.deploy.deploymentOccuranceTimeHelp}">
+            <sun:staticText id="deploymentOccured" text="#{pageSession.valueMap['deploymentOccured']}" />
+            <!beforeCreate
+                py.prettyDateTimeFormat(milliseconds="#{pageSession.valueMap['timeDeployed']}" prettyString="#{pageSession.valueMap['deploymentOccured']}");
+            />
+        </sun:property>
 
         <sun:property id="librariesProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Libraries}">
             <sun:staticText id="libraries" text="#{pageSession.valueMap['libraries']}"/>
-            
         </sun:property>
             
         <sun:property id="descProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">
@@ -122,12 +138,16 @@
         <!beforeCreate
             setPageSessionAttribute(key="javaWebStartEnabled" value="true");
             setPageSessionAttribute(key="implicitCdiEnabled" value="true");
+            setPageSessionAttribute(key="cdiDevModeEnabled" value="false");
             foreach (var="oneProp" list="#{pageSession.tableList}") {
                 if (#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}){
                     setPageSessionAttribute(key="javaWebStartEnabled" value="#{requestScope.oneProp.value}");
                 }
                 if (#{requestScope.oneProp.name}=implicitCdiEnabled){
                     setPageSessionAttribute(key="implicitCdiEnabled" value="#{requestScope.oneProp.value}");
+                }
+                if (#{requestScope.oneProp.name}=cdiDevModeEnabled){
+                    setPageSessionAttribute(key="cdiDevModeEnabled" value="#{requestScope.oneProp.value}");
                 }
             }
         />

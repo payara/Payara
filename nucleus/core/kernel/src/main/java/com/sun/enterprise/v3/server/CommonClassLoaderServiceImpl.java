@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
+import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
@@ -47,7 +49,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -90,7 +91,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
     /**
      * The common classloader.
      */
-    private ClassLoader commonClassLoader;
+    private CurrentBeforeParentClassLoader commonClassLoader;
 
     @Inject
     APIClassLoaderServiceImpl acls;
@@ -104,6 +105,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
 
     private static final String SERVER_EXCLUDED_ATTR_NAME = "GlassFish-ServerExcluded";
 
+    @Override
     public void postConstruct() {
         APIClassLoader = acls.getAPIClassLoader();
         assert (APIClassLoader != null);
@@ -163,8 +165,9 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         if (!urls.isEmpty()) {
             // Skip creation of an unnecessary classloader in the hierarchy,
             // when all it would have done was to delegate up.
-            commonClassLoader = new URLClassLoader(
+            commonClassLoader = new CurrentBeforeParentClassLoader(
                     urls.toArray(new URL[urls.size()]), APIClassLoader);
+            commonClassLoader.enableCurrentBeforeParent();
         } else {
             logger.logp(Level.FINE, "CommonClassLoaderManager",
                     "Skipping creation of CommonClassLoader " +
@@ -214,6 +217,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         }
 
         return Arrays.asList(derbyLib.listFiles(new FilenameFilter(){
+            @Override
             public boolean accept(File dir, String name) {
                 // Include only files having .jar extn and exclude all localisation jars, because they are
                 // already mentioned in the Class-Path header of the main jars
@@ -225,6 +229,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
     private static class JarFileFilter implements FilenameFilter {
         private final String JAR_EXT = ".jar"; // NOI18N
 
+        @Override
         public boolean accept(File dir, String name) {
             return name.endsWith(JAR_EXT);
         }

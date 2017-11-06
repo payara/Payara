@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <version>4.1.2.174-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -71,6 +71,10 @@
             <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
         </dependency>
     </dependencies>
 </project>

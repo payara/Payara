@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.security.services.config;
 
 import org.jvnet.hk2.config.Attribute;
@@ -69,9 +70,9 @@ public interface SecurityConfiguration extends ConfigBeanProxy {
     /**
      * Determine if this is the default instance.
      */
-    @Attribute(defaultValue = "false")
-    boolean getDefault();
-    void setDefault(boolean defaultValue) throws PropertyVetoException;
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getDefault();
+    void setDefault(String defaultValue) throws PropertyVetoException;
 
     /**
      * Gets the list of the security provider plugins used by the security service.

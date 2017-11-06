@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.deployment.admin;
 
@@ -81,8 +82,10 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.v3.server.ApplicationLoaderService;
 import java.io.FileOutputStream;
 import java.util.Collection;
+import javax.inject.Provider;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;
@@ -129,6 +132,10 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
 
     @Inject
     private Domain domain;
+    
+    @Inject		
+    @Named("ApplicationLoaderService")		
+    private Provider<ApplicationLoaderService> startupProvider;    
     
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
@@ -185,6 +192,9 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
                 report.failure(logger,localStrings.getLocalString("deploy.unknownarchivetype","Archive type of {0} was not recognized",path.getName()));
                 return;
             }
+            // wait until all applications are loaded as we may have dependency on these, or the previous app is still
+            // starting
+            startupProvider.get();
 
             // clean up any left over repository files
             if ( ! keepreposdir.booleanValue()) {
@@ -208,7 +218,7 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
             } else {
                 t = deployment.prepareAppConfigChanges(deploymentContext);
             }
-
+            
             ApplicationInfo appInfo;
             appInfo = deployment.deploy(deploymentContext);
 

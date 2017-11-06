@@ -37,57 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.webservices.connector.annotation.handlers;
 
 
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
-import javax.xml.ws.WebServiceRef;
-import javax.jws.HandlerChain;
-
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.WebServiceHandler;
+import com.sun.enterprise.deployment.WebServiceHandlerChain;
+import com.sun.enterprise.deployment.annotation.context.HandlerContext;
+import com.sun.enterprise.deployment.annotation.context.ResourceContainerContextImpl;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
+import com.sun.enterprise.deployment.types.HandlerChainContainer;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.annotation.Annotation;
-
 import java.net.URL;
-import java.util.List;
-import java.util.Iterator;
 import java.util.ArrayList;
-import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
-
-import org.glassfish.apf.*;
-import org.glassfish.apf.impl.HandlerProcessingResultImpl;
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContextImpl;
-
-import com.sun.enterprise.deployment.WebServiceHandlerChain;
-import com.sun.enterprise.deployment.WebServiceHandler;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import org.glassfish.deployment.common.Descriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-
-import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import com.sun.enterprise.deployment.types.HandlerChainContainer;
-import com.sun.enterprise.deployment.annotation.context.HandlerContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import java.util.logging.Logger;
-
+import javax.jws.HandlerChain;
+import javax.jws.WebService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.ws.WebServiceProvider;
+import javax.xml.ws.WebServiceRef;
+import org.glassfish.apf.*;
+import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.webservices.connector.LogUtils;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.jvnet.hk2.annotations.Service;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * This handler takes care of the javax.jws.HandlerChain
@@ -203,6 +197,12 @@ public class HandlerChainHandler extends AbstractHandler {
         }
 
         if (!clientSideHandlerChain && (containers==null || containers.length==0)) {
+            for(Annotation ann : annElem.getAnnotations()) {
+                if(ann.annotationType().getPackage().getName().startsWith("javax.ejb")) {
+                    // let EJB handlers handle this processing
+                    return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.UNPROCESSED); 
+                }
+            }
             // could not find my web service...
             throw new AnnotationProcessorException(
                     localStrings.getLocalString(

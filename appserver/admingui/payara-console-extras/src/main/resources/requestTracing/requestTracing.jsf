@@ -1,0 +1,178 @@
+<!--
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://github.com/payara/Payara/blob/master/LICENSE.txt
+    See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at glassfish/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    The Payara Foundation designates this particular file as subject to the "Classpath"
+    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nrt" bundle="fish.payara.admingui.extras.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="Request Tracing Configuration"  >
+<!define name="content">
+<event>
+    <!beforeCreate 
+        getRequestValue(key="configName" value="#{pageSession.configName}" );
+        setSessionAttribute(key="REQUEST_TRACING_CONFIG_URL",
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/request-tracing-service-configuration");
+
+        gf.restRequest(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}/get-requesttracing-configuration?target=#{pageSession.configName}"
+                method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.requestTracingConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "notifierEnabled", "dynamic", "notifierDynamic", "historicalTraceEnabled"});
+        py.getHistoricRequestTracingMessages(parentEndpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}", result="#{requestScope.historic}");
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
+            setPageSessionAttribute(key="historicalTraceEnabled", value="true");
+        }
+
+        setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="notifierDynamic", value="true");
+
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
+        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
+        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
+            convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
+            gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
+        }
+        py.sortRequestTracingEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.subReports.get(0).extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
+        convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
+        />
+</event>
+        
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18nrt.requestTracing.configurationTitle}" helpText="$resource{i18nrt.requestTracing.configurationTitleHelp}" >
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
+                            value="#{pageSession.historicalTraceEnabled}");
+                    prepareSuccessfulMsg();
+                    gf.updateEntity(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    py.updateNotifiers(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+                    />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+<sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+  <sun:propertySheetSection id="requestTracing">
+       
+        <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.enabledHelp}">
+            <sun:checkbox id="enabledProp" label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+        </sun:property>
+      <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
+            <sun:checkbox id="dynamic" label="$resource{i18nrt.requestTracing.configuration.dynamic.label}" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
+            <sun:dropDown id="thresholdUnit" selected="#{pageSession.valueMap['thresholdUnit']}" labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
+        </sun:property>
+        <sun:property id="thresholdValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdValue}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdValueHelp}">
+            <sun:textField id="thresholdValue" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['thresholdValue']}" />
+        </sun:property>
+        <sun:property id="historicalTraceEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nrt.requestTracing.configuration.historicalTraceEnabledLabel}"  
+                      helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceEnabledLabelHelpText}">
+            <sun:checkbox id="historicalTraceEnabledBox" selected="#{pageSession.historicalTraceEnabled}" 
+                          selectedValue="true" />
+        </sun:property>
+        <sun:property id="historicalTraceStoreSizeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreSizeLabel}"  
+                      helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreSizeLabelHelpText}">
+            <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}"  styleClass="integer" maxLength="30" 
+                           text="#{pageSession.valueMap['historicalTraceStoreSize']}" />
+        </sun:property>
+      <sun:property id="historicalTraceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                    label="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreTimeoutLabel}"
+                    helpText="$resource{i18nrt.requestTracing.configuration.historicalTraceStoreTimeoutLabelHelpText}">
+          <sun:textField id="historicalTraceStoreTimeoutField" columns="$int{40}" maxLength="250"
+                         text="#{pageSession.valueMap['historicalTraceStoreTimeout']}"/>
+      </sun:property>
+    </sun:propertySheetSection>
+
+    <sun:propertySheetSection id="notifiers">
+        <sun:property id="avaliableNotifiers" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
+            <sun:addRemove id="notifiersAddRemove"
+                selectAll="$boolean{true}"
+                items="#{pageSession.allNotifiers}"
+                selected="#{pageSession.enabledNotifiersArr}"
+                availableItemsLabel="$resource{i18nrt.requestTracing.configuration.availableNotifiers}"
+                selectedItemsLabel="$resource{i18nrt.requestTracing.configuration.selectedNotifiers}">
+            </sun:addRemove>
+        </sun:property>
+    </sun:propertySheetSection>
+
+    <sun:propertySheetSection id="historic">
+        <sun:property>
+            <sun:table id="historicRequestTracingTable" title="$resource{i18nrt.requestTracing.historic.table.name}" >
+                <sun:tableRowGroup id="historicRequestTracingRowGroup" data={"$attribute{historic}"} sourceVar="td"
+                    emptyDataMsg="$resource{i18nrt.requestTracing.historic.table.empty}">
+                    <sun:tableColumn header="$resource{i18nrt.requestTracing.historic.table.headings.elapsedTime}" sort="elapsedTime" rowHeader="$boolean{true}" id="col1">
+                        <staticText id="elapsedTime" value="#{td.value.elapsedTime}" />
+                    </sun:tableColumn>
+                    <sun:tableColumn header="$resource{i18nrt.requestTracing.historic.table.headings.message}" sort="message" rowHeader="$boolean{true}" id="col2">
+                        <staticText id="message" value="#{td.value.message}" />
+                    </sun:tableColumn>
+                </sun:tableRowGroup>
+            </sun:table>
+        </sun:property>
+
+        <sun:property>
+            <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text.prefix}" />
+            <sun:hyperlink
+                    toolTip="$resource{i18nrt.requestTracing.link.to.notification.page.text}"
+                    url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
+                <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text}" />
+            </sun:hyperlink>
+            <sun:staticText text="$resource{i18nrt.requestTracing.link.to.notification.page.text.suffix}" />
+        </sun:property>
+    </sun:propertySheetSection>
+</sun:propertySheet>
+</sun:form>
+</define>
+</composition>

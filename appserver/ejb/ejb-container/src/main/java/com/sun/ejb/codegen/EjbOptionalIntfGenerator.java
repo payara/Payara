@@ -37,15 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016] [Payara Foundation]
 package com.sun.ejb.codegen;
 
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.commons.Method;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -61,6 +58,9 @@ import java.security.ProtectionDomain;
 import java.security.Permission;
 
 import com.sun.enterprise.deployment.util.TypeUtil;
+import org.glassfish.hk2.external.org.objectweb.asm.*;
+import org.glassfish.hk2.external.org.objectweb.asm.commons.GeneratorAdapter;
+import org.glassfish.hk2.external.org.objectweb.asm.commons.Method;
 
 public class EjbOptionalIntfGenerator
     implements Opcodes {

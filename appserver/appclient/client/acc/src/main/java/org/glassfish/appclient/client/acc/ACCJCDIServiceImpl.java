@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.appclient.client.acc;
 
 import com.sun.enterprise.container.common.spi.InterceptorInvoker;
@@ -187,8 +189,8 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
 
     @Override
-    public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle) {
-
+    public <T> T createInterceptorInstance(Class<T> interceptorClass, EjbDescriptor ejbDesc) {
+        
         T interceptorInstance = null;
 
         WeldContainer wc = getWeldContainer();

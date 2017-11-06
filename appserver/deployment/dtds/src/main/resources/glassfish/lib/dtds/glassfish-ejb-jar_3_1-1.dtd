@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 
 <!--
@@ -53,7 +54,7 @@
 <!--
 This is the root element of the ejb module descriptor document.
 -->
-<!ELEMENT glassfish-ejb-jar (security-role-mapping*, enterprise-beans, compatibility?, disable-nonportable-jndi-names?, keep-state?, version-identifier?) >
+<!ELEMENT glassfish-ejb-jar (security-role-mapping*, enterprise-beans, compatibility?, disable-nonportable-jndi-names?, keep-state?, version-identifier?, property*) >
 
 <!-- 
 System unique object id. Automatically generated and updated at deployment/redeployment 
@@ -64,7 +65,7 @@ System unique object id. Automatically generated and updated at deployment/redep
 This is the root element describing all the runtime of an ejb-jar in the application.
 -->
 <!ELEMENT enterprise-beans (name?, unique-id?, ejb*, pm-descriptors?, cmp-resource?,
-	message-destination*, webservice-description*, property*)>
+	message-destination*, webservice-description*, property*, webservice-default-login-config?)>
 
 <!--
 This is the element describing runtime bindings for a single ejb.
@@ -90,7 +91,7 @@ Additional properties applicable to a message-driven bean:
 
 <!ELEMENT ejb (ejb-name, jndi-name?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, pass-by-reference?, 
                cmp?, principal?, mdb-connection-factory?, jms-durable-subscription-name?, 
-               jms-max-messages-load?, ior-security-config?, is-read-only-bean?, 
+               jms-max-messages-load?, ior-security-config?, is-read-only-bean?, clustered-bean?, clustered-key-name?, clustered-lock-type?, clustered-attach-postconstruct?, clustered-detach-predestroy?,
                refresh-period-in-seconds?, commit-option?, cmt-timeout-in-seconds?, use-thread-pool-id?, gen-classes?, 
                bean-pool?, bean-cache?, mdb-resource-adapter?, webservice-endpoint*, flush-at-end-of-method?, checkpointed-methods?, checkpoint-at-end-of-method?, per-request-load-balancing?)>
 
@@ -110,6 +111,38 @@ Used in ejb, method
 The text in this element is a true/false flag for read only beans.
 -->
 <!ELEMENT is-read-only-bean (#PCDATA)>
+
+<!--
+The text in this element is a true/false flag for Payara clustered singleton beans.
+-->
+<!ELEMENT clustered-bean (#PCDATA)>
+
+<!--
+The text in this element is a key name for Payara clustered singleton bean object.
+-->
+<!ELEMENT clustered-key-name (#PCDATA)>
+
+<!--
+The text in this element is a lock type for Payara clustered singleton bean.
+It can be one of inherit, none, and lock
+-->
+<!ELEMENT clustered-lock-type (#PCDATA)>
+
+<!--
+The text in this element is a true/false flag for Payara clustered singleton beans
+whether to call @PostConstruct methods when attaching bean to the cluster when
+this bean already exists on another node. (not really created)
+Default is true
+-->
+<!ELEMENT clustered-attach-postconstruct (#PCDATA)>
+
+<!--
+The text in this element is a true/false flag for Payara clustered singleton beans
+whether to call @PreDestroy methods when detaching bean from the cluster and
+this bean also exists on another node. (not really destroyed)
+Default is true
+-->
+<!ELEMENT clustered-detach-predestroy (#PCDATA)>
 
 <!--
 This element contains a true/false flag that controls the per-request load balancing
@@ -1184,3 +1217,18 @@ The version-identifier element contains the version information. The value is
  retrieved at deployment.
 -->
 <!ELEMENT version-identifier (#PCDATA)>
+
+<!-- 
+Syntax for supplying properties as name value pairs 
+-->
+<!ELEMENT property (description?)>
+<!ATTLIST property name  CDATA  #REQUIRED
+                   value CDATA  #REQUIRED>
+
+<!ELEMENT description (#PCDATA)>
+
+<!--
+Optional Default authentication configuration for an EJB web service endpoint.
+The individual bean's configuration takes precedence, but this is the default
+-->
+<!ELEMENT webservice-default-login-config ( auth-method, realm? )>

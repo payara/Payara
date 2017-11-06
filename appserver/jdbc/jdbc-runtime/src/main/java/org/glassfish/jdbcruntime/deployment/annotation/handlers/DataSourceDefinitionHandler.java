@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
@@ -71,6 +72,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     public DataSourceDefinitionHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
         DataSourceDefinition dataSourceDefnAn =
@@ -210,6 +212,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         Class<? extends Annotation> [] annotations = getEjbAndWebAnnotationTypes();
         List<Class <? extends Annotation>> annotationsList = new ArrayList<Class <? extends Annotation>>();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,7 @@ import org.jvnet.hk2.annotations.Service;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jms.resources")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN})
+@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN,CommandTarget.CLUSTERED_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 

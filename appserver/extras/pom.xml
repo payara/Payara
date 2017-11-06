@@ -43,20 +43,24 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
+        <version>4.1.2.174-SNAPSHOT</version>
     </parent>
-    <groupId>org.glassfish.main.extras</groupId>
+    
+    <groupId>fish.payara.extras</groupId>
     <artifactId>extras</artifactId>
     <packaging>pom</packaging>
+    
     <name>GlassFish Extras modules</name>  
+    
     <modules>
-        <!--module>grizzly-container</module-->
         <!--module>embedded-shell</module-->
         <module>javaee</module>
         <module>appserv-rt</module>
+        <module>payara-micro</module>
     </modules>
 
     <profiles>
@@ -70,6 +74,21 @@
                 </property>
             </activation>
             <modules>
+                <module>embedded</module>
+            </modules>
+        </profile>
+        
+        <!-- Profile to build Embedded and Micro distributions, and the Arquillian Containers -->
+        <profile>
+            <id>BuildExtras</id>
+            <activation>
+                <property>
+                    <name>BuildExtras</name>
+                </property>
+            </activation>
+            <modules>
+                <module>arquillian-containers</module>
+                <module>payara-micro</module>
                 <module>embedded</module>
             </modules>
         </profile>

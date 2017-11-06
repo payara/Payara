@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.flashlight.impl.client;
 
 /**
@@ -48,13 +48,12 @@ package org.glassfish.flashlight.impl.client;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.commons.Method;
+import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.ClassWriter;
+import org.glassfish.hk2.external.org.objectweb.asm.Opcodes;
+import org.glassfish.hk2.external.org.objectweb.asm.Type;
+import org.glassfish.hk2.external.org.objectweb.asm.commons.GeneratorAdapter;
+import org.glassfish.hk2.external.org.objectweb.asm.commons.Method;
 
 import java.io.File;
 import java.io.FileOutputStream;

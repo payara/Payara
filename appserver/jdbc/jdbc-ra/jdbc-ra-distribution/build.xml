@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 -->
 
 <project name="JDBCRA bundler" default="build">
@@ -68,7 +68,7 @@
         </jar>
 
         <jar jarfile="${component.lib.home}/__ds_jdbc_ra.jar" update="true" basedir="${component.classes.dir}"
-		includes="${pkg.dir}/**/*, com/sun/gjc/util/**/*, com/sun/gjc/monitoring/**/*, com/sun/gjc/common/**/*, **/LocalStrings.properties">
+		includes="${pkg.dir}/**/*, fish/payara/jdbc/**/*, com/sun/gjc/util/**/*, com/sun/gjc/monitoring/**/*, com/sun/gjc/common/**/*, **/LocalStrings.properties">
             <exclude name="com/sun/gjc/spi/XAManagedConnectionFactory.class"/>
             <exclude name="com/sun/gjc/spi/CPManagedConnectionFactory.class"/>
             <exclude name="com/sun/gjc/spi/DMManagedConnectionFactory.class"/>
@@ -95,7 +95,7 @@
 
 
         <jar jarfile="${component.lib.home}/__cp_jdbc_ra.jar" update="true" basedir="${component.classes.dir}"
-		includes="${pkg.dir}/**/*, com/sun/gjc/util/**/*, com/sun/gjc/monitoring/**/*, com/sun/gjc/common/**/*, **/LocalStrings.properties">
+		includes="${pkg.dir}/**/*, fish/payara/jdbc/**/*, com/sun/gjc/util/**/*, com/sun/gjc/monitoring/**/*, com/sun/gjc/common/**/*, **/LocalStrings.properties">
             <exclude name="com/sun/gjc/spi/XAManagedConnectionFactory.class"/>
             <exclude name="com/sun/gjc/spi/DSManagedConnectionFactory.class"/>
             <exclude name="com/sun/gjc/spi/DMManagedConnectionFactory.class"/>
@@ -124,7 +124,7 @@
 
 
         <jar jarfile="${component.lib.home}/__xa_jdbc_ra.jar" update="true" basedir="${component.classes.dir}"
-		includes="${pkg.dir}/**/*, com/sun/gjc/util/**/*, com/sun/gjc/monitoring/**/*, com/sun/gjc/common/**/*, **/LocalStrings.properties">
+		includes="${pkg.dir}/**/*, fish/payara/jdbc/**/*, com/sun/gjc/util/**/*, com/sun/gjc/monitoring/**/*, com/sun/gjc/common/**/*, **/LocalStrings.properties">
             <exclude name="com/sun/gjc/spi/CPManagedConnectionFactory.class"/>
             <exclude name="com/sun/gjc/spi/DSManagedConnectionFactory.class"/>
             <exclude name="com/sun/gjc/spi/DMManagedConnectionFactory.class"/>
@@ -151,7 +151,7 @@
         </jar>
 
         <jar jarfile="${component.lib.home}/__dm_jdbc_ra.jar" update="true" basedir="${component.classes.dir}"
-		includes="${pkg.dir}/**/*, com/sun/gjc/util/**/*, com/sun/gjc/monitoring/**/*, com/sun/gjc/common/**/*, **/LocalStrings.properties">
+		includes="${pkg.dir}/**/*, fish/payara/jdbc/**/*, com/sun/gjc/util/**/*, com/sun/gjc/monitoring/**/*, com/sun/gjc/common/**/*, **/LocalStrings.properties">
             <exclude name="com/sun/gjc/spi/DSManagedConnectionFactory.class"/>
             <exclude name="com/sun/gjc/spi/CPManagedConnectionFactory.class"/>
             <exclude name="com/sun/gjc/spi/XAManagedConnectionFactory.class"/>

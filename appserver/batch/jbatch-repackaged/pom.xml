@@ -3,7 +3,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -21,10 +21,11 @@
     <parent>
         <groupId>org.glassfish.main.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <version>4.1.2.174-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <groupId>fish.payara.appserver</groupId>
     <artifactId>payara-jbatch</artifactId>
     <packaging>jar</packaging>
     <name>IBM JBatch Combined</name>
@@ -69,6 +70,7 @@
                             com.ibm.jbatch.spi.services,
                             com.ibm.jbatch.container.services,
                             com.ibm.jbatch.container.servicesmanager,
+                            com.ibm.jbatch.container.cdi,
                             com.ibm.jbatch.container.context.impl,
                             com.ibm.jbatch.container.impl,
                             com.ibm.jbatch.container.jobinstance,
@@ -101,6 +103,7 @@
                             javax.sql,
                             javax.transaction;version="1.1.0";resolution:=optional,
                             javax.transaction.cdi;version="[4.0,5)";resolution:=optional,
+                            javax.xml,
                             javax.xml.bind,
                             javax.xml.bind.annotation,
                             javax.xml.bind.annotation.adapters,

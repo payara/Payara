@@ -38,18 +38,13 @@
  * holder.
  */
 
-/*
- * AppServerAuditManager.java
- *
- * Created on July 28, 2003, 1:56 PM
- */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.security.ee.audit;
 import java.util.logging.Logger;
 
 
 import com.sun.appserv.security.AuditModule;
-import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.audit.BaseAuditManager;
 import com.sun.enterprise.security.BaseAuditModule;
 import com.sun.logging.LogDomains;
@@ -69,7 +64,7 @@ import org.glassfish.hk2.api.Rank;
  * This class delegates the nucleus-based work of handling server start-up and
  * shutdown and user authentication to its superclass, adding only the work
  * specific to EE auditing here.
- * 
+ *
  * @author  Harpreet Singh
  * @author  Shing Wai Chan
  * @author  tjquinn
@@ -77,29 +72,29 @@ import org.glassfish.hk2.api.Rank;
 @Service
 @Singleton
 @Rank(20) // so the app server prefers this impl to the non-EE one in nucleus
-public final class AppServerAuditManager extends BaseAuditManager<AuditModule> 
+public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
         {
-    
-    private static final String AUDIT_MGR_WS_INVOCATION_KEY = 
+
+    private static final String AUDIT_MGR_WS_INVOCATION_KEY =
         "auditmgr.webServiceInvocation";
-    private static final String AUDIT_MGR_EJB_AS_WS_INVOCATION_KEY = 
+    private static final String AUDIT_MGR_EJB_AS_WS_INVOCATION_KEY =
         "auditmgr.ejbAsWebServiceInvocation";
-    
-    private static final Logger _logger = 
-             LogDomains.getLogger(AppServerAuditManager.class, LogDomains.SECURITY_LOGGER);
+
+    private static final Logger _logger =
+             LogDomains.getLogger(AppServerAuditManager.class, LogDomains.SECURITY_LOGGER, false);
 
     private static final LocalStringManagerImpl _localStrings =
 	new LocalStringManagerImpl(AppServerAuditManager.class);
 
     private List<AuditModule> myAuditModules;
-    
+
     private synchronized List<AuditModule> myAuditModules() {
         if (myAuditModules == null) {
             myAuditModules = instances(AuditModule.class);
         }
         return myAuditModules;
     }
-    
+
     @Override
     public BaseAuditModule addAuditModule(String name, String classname, Properties props) throws Exception {
         final BaseAuditModule am = super.addAuditModule(name, classname, props);
@@ -117,7 +112,7 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
         }
         return am;
     }
-    
+
     /**
      * logs the web authorization call for all loaded modules
      * @see com.sun.appserv.security.AuditModule.webInvocation
@@ -130,7 +125,7 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
                     am.webInvocation(user, req, type, success);
                 } catch (Exception ex) {
                     final String name = moduleName(am);
-                    final String msg = 
+                    final String msg =
                         _localStrings.getLocalString(
                             "auditmgr.webinvocation",
                             " Audit Module {0} threw the following exception during web invocation :",
@@ -145,7 +140,7 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
      * logs the ejb authorization call for all ejb modules
      * @see com.sun.appserv.security.AuditModule.ejbInvocation
      */
-    public void ejbInvocation(final String user, final String ejb, final String method, 
+    public void ejbInvocation(final String user, final String ejb, final String method,
             final boolean success){
         if (auditOn) {
             for (AuditModule am : myAuditModules()) {
@@ -153,7 +148,7 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
                     am.ejbInvocation(user, ejb, method, success);
                 } catch (Exception ex) {
                     final String name = moduleName(am);
-                    final String msg = 
+                    final String msg =
                         _localStrings.getLocalString(
                             "auditmgr.ejbinvocation",
                             " Audit Module {0} threw the following exception during ejb invocation :",
@@ -163,13 +158,13 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
             }
         }
     }
-    
+
     /**
-     * This method is called for the web service calls with MLS set 
-     * and the endpoints deployed as servlets  
+     * This method is called for the web service calls with MLS set
+     * and the endpoints deployed as servlets
      * @see com.sun.appserv.security.AuditModule.webServiceInvocation
      */
-    public void webServiceInvocation(final String uri, final String endpoint, 
+    public void webServiceInvocation(final String uri, final String endpoint,
                                      final boolean validRequest){
         if (auditOn) {
             for (AuditModule am : myAuditModules()) {
@@ -177,7 +172,7 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
                     am.webServiceInvocation(uri, endpoint, validRequest);
                 } catch (Exception ex) {
                     final String name = moduleName(am);
-                    final String msg = 
+                    final String msg =
                         _localStrings.getLocalString(
                             AUDIT_MGR_WS_INVOCATION_KEY,
                             " Audit Module {0} threw the following exception during web service invocation :",
@@ -189,8 +184,8 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
     }
 
     /**
-     * This method is called for the web service calls with MLS set 
-     * and the endpoints deployed as servlets  
+     * This method is called for the web service calls with MLS set
+     * and the endpoints deployed as servlets
      * @see com.sun.appserv.security.AuditModule.webServiceInvocation
      */
     public void ejbAsWebServiceInvocation(final String endpoint, final boolean validRequest){
@@ -200,7 +195,7 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
                     am.ejbAsWebServiceInvocation(endpoint, validRequest);
                 } catch (Exception ex) {
                     final String name = moduleName(am);
-                    final String msg = 
+                    final String msg =
                         _localStrings.getLocalString(
                             AUDIT_MGR_EJB_AS_WS_INVOCATION_KEY,
                             " Audit Module {0} threw the following exception during ejb as web service invocation :",

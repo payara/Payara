@@ -50,6 +50,7 @@
 <!define name="content">
 <event>
     <!beforeCreate
+        setSessionAttribute(key="monitoringConfigTab" value="monitoringGeneralTab");
         getRequestValue(key="configName" value=>$page{configName} default="server-config");
         urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="monitoring-service");
@@ -65,6 +66,7 @@
 
             <sun:form id="form1">
 #include "/common/shared/alertMsg.inc"
+#include "/common/monitor/monitoringConfigTabs.inc"
 <sun:title id="title" title="$resource{common.monitoring.Title}"  helpText="$resource{common.monitoring.PageHelp}">
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">

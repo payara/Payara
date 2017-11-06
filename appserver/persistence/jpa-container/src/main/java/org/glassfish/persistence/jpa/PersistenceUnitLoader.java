@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.persistence.jpa;
 
@@ -81,7 +82,7 @@ public class PersistenceUnitLoader {
 
     private static Logger logger = LogDomains.getLogger(PersistenceUnitLoader.class, LogDomains.PERSISTENCE_LOGGER);
 
-    private static final StringManager localStrings = StringManager.getManager(PersistenceUnitLoader.class);    
+    private static final StringManager localStrings = StringManager.getManager(PersistenceUnitLoader.class);
 
     private static Map<String, String> integrationProperties;
 
@@ -103,8 +104,15 @@ public class PersistenceUnitLoader {
        // This should be removed once version of EclipseLink which fixes the issue is integrated.
        // set the system property required by EclipseLink before we load it.
        setSystemPropertyToEnableDoPrivilegedInEclipseLink();
-
+       
+        //NOTE If we are going to create datasources we must switch to the final classloader otherwise 
+        // the datasource will have the wrong classloader associated with the classes.
+        // This is to fix PAYARA-547
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(providerContainerContractInfo.getClassLoader());
+ 
        emf = loadPU(puToInstatntiate);
+       Thread.currentThread().setContextClassLoader(cl);
    }
 
     /**
@@ -400,7 +408,7 @@ public class PersistenceUnitLoader {
 
         final String ECLIPSELINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY = "eclipselink.target-server"; // NOI18N
         props.put(ECLIPSELINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY,
-                System.getProperty(ECLIPSELINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY, "SunAS9")); // NOI18N
+                System.getProperty(ECLIPSELINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY, "Glassfish")); // NOI18N
 
         // TopLink specific properties:
         // See https://glassfish.dev.java.net/issues/show_bug.cgi?id=249

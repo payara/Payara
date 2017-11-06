@@ -45,6 +45,7 @@
                         org.glassfish.api.admin; \
                         org.glassfish.api.admin.cli; \
                         org.glassfish.api.admin.config; \
+                        fish.payara.api.admin.config; \
                         org.glassfish.api.admin.progress; \
                         org.glassfish.api.admingui; \
                         org.glassfish.api.amx; \

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package com.sun.appserv.web.cache.mapping;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -50,19 +49,16 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+import org.glassfish.web.LogFacade;
+
 public class Field {
 
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger _logger = LogFacade.getLogger();
 
     /**
      * The resource bundle containing the localized message strings.
      */
     private static final ResourceBundle _rb = _logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Incorrect scope value [{0}] for web application cache field name [{1}]",
-            level = "WARNING")
-    public static final String CACHE_MAPPING_INCORRECT_SCOPE = "AS-WEB-GLUE-00016";
 
     // field name and scope 
     protected String name; 
@@ -117,7 +113,7 @@ public class Field {
         else if ("session.id".equals(value))
             scope = Constants.SCOPE_SESSION_ID;
         else  {
-            String msg = _rb.getString(CACHE_MAPPING_INCORRECT_SCOPE);
+            String msg = _rb.getString(LogFacade.CACHE_MAPPING_INCORRECT_SCOPE);
             Object[] params = { value, name };
             msg = MessageFormat.format(msg, params);
 

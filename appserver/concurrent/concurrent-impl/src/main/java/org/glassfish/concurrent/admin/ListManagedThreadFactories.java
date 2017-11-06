@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.admin;
 
@@ -64,7 +65,7 @@ import org.glassfish.concurrent.runtime.deployer.DefaultManagedThreadFactory;
  * List Managed Thread Factory Resources command
  * 
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
+@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
 @ExecuteOn(value={RuntimeType.DAS})
 @Service(name="list-managed-thread-factories")
 @PerLookup

@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
@@ -59,7 +61,8 @@
         setPageSessionAttribute(key="selfUrl" value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}");
         setPageSessionAttribute(key="appRefUrl" value="#{sessionScope.REST_URL}/servers/server/server/application-ref/#{pageSession.encodedAppName}");
         gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
-        gf.appScopedResourcesExist(appName="#{pageSession.appName}" appScopedResExists="#{pageSession.appScopedResExists}");
+        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/module" result="#{pageSession.moduleList}");
+        gf.appScopedResourcesExist(appName="#{pageSession.appName}" moduleList="#{pageSession.moduleList}" appScopedResExists="#{pageSession.appScopedResExists}");
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
         if (#{pageSession.onlyDASExist}){
 
@@ -161,6 +164,23 @@
                     mapPut(map="#{requestScope.cdimap}" key="name" value="implicitCdiEnabled")
                     mapPut(map="#{requestScope.cdimap}" key="value" value="#{pageSession.implicitCdiEnabled}")
                     listAdd(list="#{pageSession.tableList}" value="#{requestScope.cdimap}");
+                }
+
+                if(!#{pageSession.cdiDevModeEnabled}){
+                    //will be null if checkbox is unchecked.
+                    setPageSessionAttribute(key="cdiDevModeEnabled" value="false");
+                }
+                foreach (var="oneProp" list="#{pageSession.tableList}") {
+                    if (#{requestScope.oneProp.name}=cdiDevModeEnabled){
+                        setAttribute(key="foundCdiDevMode" value="true");
+                        mapPut(map="#{requestScope.oneProp}" key="value" value="#{pageSession.cdiDevModeEnabled}")
+                    }
+                }
+                if (!#{requestScope.foundCdiDevMode}){
+                    createMap(result="#{requestScope.cdidevmap}");
+                    mapPut(map="#{requestScope.cdidevmap}" key="name" value="cdiDevModeEnabled")
+                    mapPut(map="#{requestScope.cdidevmap}" key="value" value="#{pageSession.cdiDevModeEnabled}")
+                    listAdd(list="#{pageSession.tableList}" value="#{requestScope.cdidevmap}");
                 }
 
                 javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");

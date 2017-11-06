@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2016] [Payara Foundation]
 package org.apache.catalina.servlets;
 
 import java.io.BufferedOutputStream;
@@ -1117,7 +1117,7 @@ public final class CGIServlet extends HttpServlet {
              */
             int contentLength = req.getContentLength();
             String sContentLength = (contentLength <= 0 ? "" :
-                                     (Integer.valueOf(contentLength)).toString());
+                                     (Integer.toString(contentLength)));
             envp.put("CONTENT_LENGTH", sContentLength);
 
 
@@ -1130,7 +1130,8 @@ public final class CGIServlet extends HttpServlet {
                 //REMIND: change character set
                 //REMIND: I forgot what the previous REMIND means
                 if ("AUTHORIZATION".equalsIgnoreCase(header) ||
-                    "PROXY_AUTHORIZATION".equalsIgnoreCase(header)) {
+                    "PROXY_AUTHORIZATION".equalsIgnoreCase(header) ||
+                    "PROXY".equalsIgnoreCase(header)) {
                     //NOOP per CGI specification section 11.2
                 } else {
                     envp.put("HTTP_" + header.replace('-', '_'),

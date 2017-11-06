@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.io;
 
@@ -128,8 +129,10 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
             spf.setNamespaceAware(true);
             
 	    // turn validation on for deployment descriptor XML files
-            spf.setValidating(validating);    
-
+            spf.setValidating(validating);
+            if(!validating) {
+                spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            }
 	    // this feature is needed for backward compat with old DDs 
 	    // constructed by J2EE1.2 which used Java encoding names
 	    // such as ISO8859_1 etc.

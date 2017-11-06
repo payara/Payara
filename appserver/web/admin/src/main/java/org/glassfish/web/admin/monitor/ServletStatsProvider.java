@@ -52,6 +52,7 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
+import org.glassfish.web.admin.LogFacade;
 
 /**
  * Provides the monitoring data at the Web container level
@@ -63,7 +64,7 @@ import org.glassfish.gmbal.ManagedObject;
 @Description("Web Container Servlet Statistics")
 public class ServletStatsProvider {
 
-    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final String ACTIVE_SERVLETS_LOADED_DESCRIPTION =
         "Number of Servlets loaded";

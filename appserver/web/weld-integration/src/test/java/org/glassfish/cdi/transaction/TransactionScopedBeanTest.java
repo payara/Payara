@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Test;
 
 import javax.enterprise.context.spi.Contextual;
@@ -55,12 +57,14 @@ import org.easymock.EasyMockSupport;
 public class TransactionScopedBeanTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testAllMethods() {
         LocalBean localBean = new LocalBean();
         EasyMockSupport mockSupport = new EasyMockSupport();
         Contextual<LocalBean> contextual = (Contextual<LocalBean>) mockSupport.createMock(Contextual.class);
         CreationalContext<LocalBean> creationalContext = (CreationalContext<LocalBean>) mockSupport.createMock(CreationalContext.class);
         TransactionScopedContextImpl transactionScopedContext = mockSupport.createMock(TransactionScopedContextImpl.class);
+        transactionScopedContext.beansPerTransaction = new ConcurrentHashMap<>();
 
         // test getContextualInstance
         TransactionScopedBean<LocalBean> transactionScopedBean = getTransactionScopedBean(mockSupport,

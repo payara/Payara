@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.web.ha.authenticator;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
@@ -47,6 +48,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
+import org.glassfish.web.ha.LogFacade;
 import org.glassfish.web.ha.session.management.HAStoreBase;
 
 import java.io.*;
@@ -58,7 +60,7 @@ import java.util.logging.Logger;
  * @author Shing Wai Chan
  */
 public class HASingleSignOnEntry extends SingleSignOnEntry {
-    private static final Logger logger = HAStoreBase._logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     protected long maxIdleTime;
 
@@ -182,7 +184,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
       try {
           bais = new ByteArrayInputStream(m.getPrincipalBytes());
           bis = new BufferedInputStream(bais);
-          ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader());
+          ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader(), 0L);
           return (Principal) ois.readObject();
       } catch (Exception ex) {
           throw new IllegalStateException("Could not parse principal from HA-SSO Metadata", ex);

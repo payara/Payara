@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] 
 
 /*
  * GuiUtil.java
@@ -196,6 +198,34 @@ public class GuiUtil {
             sessionMap.put("secureAdminEnabled", "false");
         }
 
+        Map asadminRecorderEnabled = 
+                RestUtil.restRequest(sessionMap.get("REST_URL") 
+                        + "/asadmin-recorder-enabled", null, "GET", null, 
+                        false);
+        sessionMap.put("showEnableAsadminRecorderButton", !(boolean)((Map) 
+                ((Map) asadminRecorderEnabled.get("data"))
+                        .get("extraProperties")).get("asadminRecorderEnabled"));
+        sessionMap.put("showDisableAsadminRecorderButton", (boolean)((Map) 
+                ((Map) asadminRecorderEnabled.get("data"))
+                        .get("extraProperties")).get("asadminRecorderEnabled"));  
+
+        Map environmentWarningConfiguration = 
+                RestUtil.restRequest(sessionMap.get("REST_URL") 
+                        + "/get-environment-warning-configuration", null, "GET", null, 
+                        false);
+        sessionMap.put("environmentWarningBarEnabled", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("enabled"));   
+        sessionMap.put("environmentWarningBarMessage", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("message"));   
+        sessionMap.put("environmentWarningBarBackgroundColour", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("backgroundColour"));   
+        sessionMap.put("environmentWarningBarTextColour", ((Map) ((Map) 
+                ((Map) environmentWarningConfiguration.get("data"))
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("textColour"));       
+       
         sessionMap.put("reqMsg", GuiUtil.getMessage("msg.JS.enterValue"));
         sessionMap.put("reqMsgSelect", GuiUtil.getMessage("msg.JS.selectValue"));
         sessionMap.put("reqInt", GuiUtil.getMessage("msg.JS.enterIntegerValue"));
@@ -213,7 +243,7 @@ public class GuiUtil {
             Map result = RestUtil.restRequest(GuiUtil.getSessionValue("REST_URL")+"/configs/config/server-config/admin-service/das-config", null, "GET", null, false);
             String timeOut = (String)((Map)((Map)((Map)result.get("data")).get("extraProperties")).get("entity")).get("adminSessionTimeoutInMinutes");
             if ((timeOut != null) && (!timeOut.equals(""))) {
-                int time = new Integer(timeOut).intValue();
+                int time = Integer.parseInt(timeOut);
                 if (time == 0) {
                     ((HttpServletRequest) request).getSession().setMaxInactiveInterval(-1);
                 } else {

@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.weld;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -48,6 +50,7 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -79,10 +82,10 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
                                      Collection<EjbDescriptor> ejbs,
                                      DeploymentContext deploymentContext,
                                      String moduleBdaID) {
-        super("root_" + archive.getName(),
-              Collections.<Class<?>>emptyList(),
-              Collections.<URL>emptyList(),
-              Collections.<EjbDescriptor>emptyList(),
+        super("root_" + (moduleBdaID != null? moduleBdaID : archive.getName()),
+              new ArrayList<Class<?>>(),
+              new ArrayList<URL>(),
+              new ArrayList<EjbDescriptor>(),
               deploymentContext);
         createModuleBda(archive, ejbs, deploymentContext, moduleBdaID);
     }
@@ -91,7 +94,7 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
                                  Collection<EjbDescriptor> ejbs,
                                  DeploymentContext deploymentContext,
                                  String bdaId) {
-        moduleBda = new BeanDeploymentArchiveImpl( archive, ejbs, deploymentContext, bdaId );
+        moduleBda = new BeanDeploymentArchiveImpl(archive, ejbs, deploymentContext, bdaId);
 
         // set the bda visibility for the root
         Collection<BeanDeploymentArchive> bdas = moduleBda.getBeanDeploymentArchives();

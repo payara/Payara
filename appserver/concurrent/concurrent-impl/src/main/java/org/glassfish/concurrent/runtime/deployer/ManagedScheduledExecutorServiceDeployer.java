@@ -38,12 +38,15 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]]
+
 package org.glassfish.concurrent.runtime.deployer;
 
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
+import fish.payara.concurrent.monitoring.ManagedScheduledExecutorServiceStatsProvider;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
@@ -75,28 +78,31 @@ public class ManagedScheduledExecutorServiceDeployer implements ResourceDeployer
 
     @Inject
     ConcurrentRuntime concurrentRuntime;
+    
+    // Monitoring provider
+    private ManagedScheduledExecutorServiceStatsProvider managedScheduledExecutorServiceProbeListener;
 
     // logger for this deployer
     private static Logger _logger = LogFacade.getLogger();
 
     @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        ManagedScheduledExecutorService ManagedScheduledExecutorServiceRes = (ManagedScheduledExecutorService) resource;
+        ManagedScheduledExecutorService managedScheduledExecutorServiceRes = (ManagedScheduledExecutorService) resource;
 
-        if (ManagedScheduledExecutorServiceRes == null) {
+        if (managedScheduledExecutorServiceRes == null) {
             _logger.log(Level.WARNING, LogFacade.DEPLOY_ERROR_NULL_CONFIG, "ManagedScheduledExecutorService");
             return;
         }
 
-        String jndiName = ManagedScheduledExecutorServiceRes.getJndiName();
+        String jndiName = managedScheduledExecutorServiceRes.getJndiName();
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "ManagedScheduledExecutorServiceDeployer.deployResource() : jndi-name ["+jndiName+"]");
         }
 
 
-        ResourceInfo resourceInfo = new ResourceInfo(ManagedScheduledExecutorServiceRes.getJndiName(), applicationName, moduleName);
-        ManagedScheduledExecutorServiceConfig config = new ManagedScheduledExecutorServiceConfig(ManagedScheduledExecutorServiceRes);
+        ResourceInfo resourceInfo = new ResourceInfo(managedScheduledExecutorServiceRes.getJndiName(), applicationName, moduleName);
+        ManagedScheduledExecutorServiceConfig config = new ManagedScheduledExecutorServiceConfig(managedScheduledExecutorServiceRes);
 
         javax.naming.Reference ref= new  javax.naming.Reference(
                 javax.enterprise.concurrent.ManagedScheduledExecutorService.class.getName(),
@@ -113,6 +119,8 @@ public class ManagedScheduledExecutorServiceDeployer implements ResourceDeployer
         } catch (NamingException ex) {
             LogHelper.log(_logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex, "ManagedScheduledExecutorService", jndiName);
         }
+        
+        registerMonitorableComponent(managedScheduledExecutorServiceRes);
     }
 
     @Override
@@ -184,5 +192,24 @@ public class ManagedScheduledExecutorServiceDeployer implements ResourceDeployer
     @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource, Resources allResources) throws ResourceConflictException {
         // do nothing
+    }
+    
+    /**
+     * Registers a ManagedScheduledExecutorService for monitoring.
+     * @param managedScheduledExecutorService The ManagedScheduledExecutorService to register for monitoring.
+     */
+    private void registerMonitorableComponent(ManagedScheduledExecutorService managedScheduledExecutorService) {
+        managedScheduledExecutorServiceProbeListener = 
+                new ManagedScheduledExecutorServiceStatsProvider(managedScheduledExecutorService);
+        
+        managedScheduledExecutorServiceProbeListener.register();
+    }
+    
+    /**
+     * Unregisters a ManagedScheduledExecutorService defined by the 
+     * managedScheduledExecutorServiceProbeListener from the monitoring tree.
+     */
+    private void unregisterMonitableComponent() {
+        managedScheduledExecutorServiceProbeListener.unregister();
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.apache.catalina.core;
@@ -47,30 +49,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
+import org.apache.catalina.LogFacade;
+
+/**
+ * Implementation through which a servlet can be configured
+ */
 public class ServletRegistrationImpl implements ServletRegistration {
 
 
     protected StandardWrapper wrapper;
     protected StandardContext ctx;
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "Unable to configure {0} for servlet {1} of servlet context {2}, because this servlet context has already been initialized",
-        level = "WARNING"
-    )
-    public static final String SERVLET_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00127";
-
-    @LogMessageInfo(
-        message = "Unable to configure mapping for servlet {0} of servlet context {1}, because URL patterns are null or empty",
-        level = "WARNING"
-    )
-    public static final String SERVLET_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION = "AS-WEB-CORE-00128";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     /**
      * Constructor
+     * @param wrapper
+     * @param ctx
      */
     public ServletRegistrationImpl(StandardWrapper wrapper,
                                       StandardContext ctx) {
@@ -78,6 +74,7 @@ public class ServletRegistrationImpl implements ServletRegistration {
         this.ctx = ctx;
     }
 
+    @Override
     public String getName() {
         return wrapper.getName();
     }
@@ -86,21 +83,31 @@ public class ServletRegistrationImpl implements ServletRegistration {
         return ctx;
     }
 
+    /**
+     * Returns the wrapper containing the servlet definition
+     * @return 
+     */
     public StandardWrapper getWrapper() {
         return wrapper;
     }
 
+    @Override
     public String getClassName() {
         return wrapper.getServletClassName();
     }
 
+    /**
+     * Return the context-relative URI of the JSP file for this servlet.
+     * @return null if this is not a JSP Servlet
+     */
     public String getJspFile() {
         return wrapper.getJspFile();
     }
 
+    @Override
     public boolean setInitParameter(String name, String value) {
         if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(SERVLET_REGISTRATION_ALREADY_INIT),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_REGISTRATION_ALREADY_INIT),
                                               new Object[] {"init parameter", wrapper.getName(),
                                                             ctx.getName()});
             throw new IllegalStateException(msg);
@@ -108,28 +115,32 @@ public class ServletRegistrationImpl implements ServletRegistration {
         return wrapper.setInitParameter(name, value, false);
     }
 
+    @Override
     public String getInitParameter(String name) {
         return wrapper.getInitParameter(name);
     }
 
+    @Override
     public Set<String> setInitParameters(Map<String, String> initParameters) {
         return wrapper.setInitParameters(initParameters);
     }
 
+    @Override
     public Map<String, String> getInitParameters() {
         return wrapper.getInitParameters();
     }
 
+    @Override
     public Set<String> addMapping(String... urlPatterns) {
         if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(SERVLET_REGISTRATION_ALREADY_INIT),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_REGISTRATION_ALREADY_INIT),
                                               new Object[] {"mapping", wrapper.getName(),
                                                             ctx.getName()});
             throw new IllegalStateException(msg);
         }
 
         if (urlPatterns == null || urlPatterns.length == 0) {
-            String msg = MessageFormat.format(rb.getString(SERVLET_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION),
                                               new Object[] {wrapper.getName(), ctx.getName()});
             throw new IllegalArgumentException(msg);
         }
@@ -137,10 +148,12 @@ public class ServletRegistrationImpl implements ServletRegistration {
         return ctx.addServletMapping(wrapper.getName(), urlPatterns);
     }
 
+    @Override
     public Collection<String> getMappings() {
         return wrapper.getMappings();
     }
 
+    @Override
     public String getRunAsRole() {
         return wrapper.getRunAs();
     }

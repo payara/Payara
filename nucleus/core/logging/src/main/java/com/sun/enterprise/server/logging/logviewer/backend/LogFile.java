@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.logviewer.backend;
 
@@ -55,10 +56,13 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import com.sun.enterprise.server.logging.LogFacade;
+import com.sun.enterprise.server.logging.LogFormatHelper;
 import com.sun.enterprise.server.logging.parser.LogParser;
 import com.sun.enterprise.server.logging.parser.LogParserFactory;
 import com.sun.enterprise.server.logging.parser.LogParserListener;
 import com.sun.enterprise.server.logging.parser.ParsedLogRecord;
+import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 
 /**
@@ -243,9 +247,13 @@ public class LogFile implements java.io.Serializable {
      * the specified filePosition.
      */
     protected BufferedReader getLogFileReader(long fromFilePosition) {
-        FileInputStream file = null;
+        InputStream file = null;
         try {
-            file = new FileInputStream(getLogFileName());
+            if (LogFormatHelper.isCompressedFile(getLogFileName())) {
+                file = new GZIPInputStream(new FileInputStream(getLogFileName()));
+            } else {
+                file = new FileInputStream(getLogFileName());
+            }
             long bytesToSkip = fromFilePosition-1;
             if (bytesToSkip > 0) {
                 long bytesSkipped = file.skip(bytesToSkip);

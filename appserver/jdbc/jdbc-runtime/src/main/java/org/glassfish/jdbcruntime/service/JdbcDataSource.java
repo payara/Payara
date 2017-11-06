@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.jdbcruntime.service;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
@@ -82,36 +83,45 @@ public class JdbcDataSource implements DataSource {
         }
     }
 
+    @Override
     public Connection getConnection() throws SQLException {
         return ConnectorRuntime.getRuntime().getConnection(resourceInfo);
     }
 
+    @Override
     public Connection getConnection(String username, String password) throws SQLException {
         return ConnectorRuntime.getRuntime().getConnection(resourceInfo, username, password);
     }
 
+    @Override
     public PrintWriter getLogWriter() throws SQLException {
         return logWriter;
     }
 
+    @Override
     public void setLogWriter(PrintWriter out) throws SQLException {
        this.logWriter = out;
     }
 
+    @Override
     public void setLoginTimeout(int seconds) throws SQLException {
        loginTimeout = seconds;
     }
 
+    @Override
     public int getLoginTimeout() throws SQLException {
         return loginTimeout;
     }
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException{
        throw new SQLException("Not supported operation");
     }
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException{
        throw new SQLException("Not supported operation");
     }
 
+    @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         throw new SQLFeatureNotSupportedException("Not supported operation");
     }

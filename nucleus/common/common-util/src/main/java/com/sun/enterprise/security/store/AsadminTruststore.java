@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security.store;
 
+import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.io.File;
@@ -53,6 +54,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.Certificate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -68,6 +71,7 @@ public class AsadminTruststore {
     private KeyStore _keyStore = null;
     private File _keyFile = null;        
     private char[] _password = null;
+    private static final Logger _logger = CULoggerInfo.getLogger();
       
     public static File getAsadminTruststore()
     {
@@ -137,7 +141,13 @@ public class AsadminTruststore {
         NoSuchAlgorithmException, CertificateException
     {
         _keyStore.setCertificateEntry(alias, cert);
-        writeStore();
+        
+        // PAYARA-496 Check if the keystore exists, and can be written to
+        if (!_keyFile.exists() || _keyFile.canWrite()) {
+            writeStore();            
+        } else {
+            _logger.log(Level.INFO, CULoggerInfo.exceptionWritingToAsadminTruststore, _keyFile.getAbsolutePath());
+        }
     }
     
     public void writeStore() throws KeyStoreException, IOException, 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.enterprise.iiop.impl;
 
 import com.sun.corba.ee.impl.javax.rmi.CORBA.StubDelegateImpl;
@@ -90,7 +90,7 @@ import org.jvnet.hk2.config.types.Property;
 
 public final class GlassFishORBManager {
     static final Logger logger = LogDomains.getLogger(
-        GlassFishORBManager.class, LogDomains.CORBA_LOGGER);
+        GlassFishORBManager.class, LogDomains.CORBA_LOGGER, false);
 
     private static void fineLog( String fmt, Object... args ) {
         if (logger.isLoggable(Level.FINE)) {
@@ -352,7 +352,7 @@ public final class GlassFishORBManager {
                 public java.lang.Object run() {
                     if (System.getProperty(OMG_ORB_CLASS_PROPERTY) == null) {
                         // set ORB based on JVM vendor
-                        if (System.getProperty("java.vendor").equals(
+                        if (System.getProperty("java.vendor").contains(
                             "Sun Microsystems Inc.")) {
                             System.setProperty(OMG_ORB_CLASS_PROPERTY,
                                 ORB_SE_CLASS);
@@ -585,9 +585,10 @@ public final class GlassFishORBManager {
             orb = ORBFactory.create() ;
             prevCL = Utility.getClassLoader();
             try {
+              if (processType != processType.Other && !prevCL.getClass().getName().contains("OSGi")) {
                 Utility.setContextClassLoader(prevCL.getParent());
-            
-                ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
+               }
+               ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
             } finally {
                 Utility.setContextClassLoader(prevCL);
             }
@@ -597,7 +598,7 @@ public final class GlassFishORBManager {
                 org.omg.CORBA.Object obj =
                         orb.resolve_initial_references("RootPOA");
             } catch (org.omg.CORBA.ORBPackage.InvalidName in) {
-                logger.log(Level.SEVERE, "enterprise.orb_reference_exception", in);
+                logger.log(Level.SEVERE, "Problem resolving RootPOA ORB reference", in);
             }
 
             if (processType.isServer()) {
@@ -633,7 +634,7 @@ public final class GlassFishORBManager {
             // Invoke this for its side-effects: ignore returned IOR.
             orb.getFVDCodeBaseIOR();
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "enterprise_util.excep_in_createorb", ex);
+            logger.log(Level.SEVERE, "UTIL6009:Unexpected Exception in createORB.", ex);
             throw new RuntimeException(ex);
         } finally {
             if (logger.isLoggable(Level.FINE)) {
@@ -745,7 +746,7 @@ public final class GlassFishORBManager {
        
         fineLog( "Setting orb initial port to {0}", initialPort);
 
-        orbInitialPort = new Integer(initialPort).intValue();
+        orbInitialPort = Integer.parseInt(initialPort);
 
         return initialPort;
     }
@@ -826,7 +827,7 @@ public final class GlassFishORBManager {
             } catch (NumberFormatException nfe) {
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.log(Level.WARNING,
-                        "enterprise_util.excep_orbmgr_numfmt", nfe);
+                        "UTIL6031:Number Format Exception, Using default value(s).", nfe);
                 }
 
                 maxConnections = DEFAULT_MAX_CONNECTIONS;
@@ -855,7 +856,7 @@ public final class GlassFishORBManager {
             } catch (NumberFormatException nfe) {
                 // Print stack trace and use default values
                 logger.log(Level.WARNING,
-                    "enterprise_util.excep_in_reading_fragment_size", nfe);
+                    "UTIL6035: Exception converting to integer", nfe);
                 logger.log(Level.INFO,
                     "Setting ORB Message Fragment size to Default " +
                     SUN_GIOP_DEFAULT_FRAGMENT_SIZE);

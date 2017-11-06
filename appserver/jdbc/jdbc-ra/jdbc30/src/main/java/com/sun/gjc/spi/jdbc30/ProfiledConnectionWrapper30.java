@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2015 C2B2 Consulting Limited
+// Portions Copyright 2016 Payara Foundation
 package com.sun.gjc.spi.jdbc30;
 
 import com.sun.gjc.spi.ManagedConnectionImpl;
@@ -455,9 +455,11 @@ public class ProfiledConnectionWrapper30 extends ConnectionHolder30 implements C
                 record.setThreadName(Thread.currentThread().getName());
                 record.setThreadID(Thread.currentThread().getId());
                 record.setTimeStamp(System.currentTimeMillis());
-                sqlTraceDelegator.sqlTrace(record);
                 try {
-                    return method.invoke(actualObject, args);
+                    long startTime = System.currentTimeMillis();
+                    Object methodResult =  method.invoke(actualObject, args);
+                    record.setExecutionTime(System.currentTimeMillis() - startTime);
+                    return methodResult;
                 } catch (InvocationTargetException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {
@@ -465,7 +467,9 @@ public class ProfiledConnectionWrapper30 extends ConnectionHolder30 implements C
                     } else {
                         throw ex;
                     }
-                }
+                } finally {
+                    sqlTraceDelegator.sqlTrace(record);
+                }  
             }
         };
         result = (T) Proxy.newProxyInstance(actualObject.getClass().getClassLoader(), ifaces, ih);

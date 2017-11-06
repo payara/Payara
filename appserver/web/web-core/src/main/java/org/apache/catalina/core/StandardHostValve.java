@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,8 @@
  * limitations under the License.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.apache.catalina.core;
 
 import org.apache.catalina.*;
@@ -63,7 +65,6 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.ResponseUtil;
 import org.apache.catalina.valves.ValveBase;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
 
@@ -75,6 +76,8 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
+import org.apache.catalina.deploy.FilterMap;
+import org.apache.catalina.util.URLPattern;
 // END SJSAS 6374691
 
 /**
@@ -92,29 +95,11 @@ import java.util.ResourceBundle;
 final class StandardHostValve
     extends ValveBase {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
 
     private static final ClassLoader standardHostValveClassLoader =
         StandardHostValve.class.getClassLoader();
-
-    @LogMessageInfo(
-        message = "Remote Client Aborted Request, IOException: {0}",
-        level = "FINE"
-    )
-    public static final String REMOTE_CLIENT_ABORTED_EXCEPTION = "AS-WEB-CORE-00229";
-
-    @LogMessageInfo(
-        message = "The error-page {0} or {1} does not exist",
-        level = "WARNING"
-    )
-    public static final String ERROR_PAGE_NOT_EXIST = "AS-WEB-CORE-00230";
-
-    @LogMessageInfo(
-        message = "No Context configured to process this request",
-        level = "WARNING"
-    )
-    public static final String NO_CONTEXT_TO_PROCESS = "AS-WEB-CORE-00231";
 
 
     // ----------------------------------------------------- Instance Variables
@@ -292,7 +277,7 @@ final class StandardHostValve
         // If this is an aborted request from a client just log it and return
         if (realError instanceof ClientAbortException ) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, REMOTE_CLIENT_ABORTED_EXCEPTION, realError.getCause().getMessage());
+                log.log(Level.FINE, LogFacade.REMOTE_CLIENT_ABORTED_EXCEPTION, realError.getCause().getMessage());
             }
             return;
         }
@@ -349,12 +334,12 @@ final class StandardHostValve
      * @param response The response being generated
      */
     protected void status(Request request, Response response) {
-
+        
         // Handle a custom error page for this status code
         Context context = request.getContext();
         if (context == null)
             return;
-
+        
         /*
          * Only look for error pages when isError() is set.
          * isError() is set when response.sendError() is invoked.
@@ -371,29 +356,46 @@ final class StandardHostValve
                 if (!file.exists()) {
                     File file2 = new File(errorPage.getLocation());
                     if (!file2.exists()) {
-                        log.log(Level.WARNING, ERROR_PAGE_NOT_EXIST,
-                                new Object[]{file.getAbsolutePath(), file2.getAbsolutePath()});
+                        boolean fileExists = false;
+                        for (String servletMapping : ((StandardHost) getContainer()).findDeployedApp(context.getPath())
+                                .findServletMappings()) {
+                            if (URLPattern.match(servletMapping, errorPage.getLocation())) {
+                                fileExists = true;
+                                break;
+                            }
+                        }
+                        if (!fileExists) {
+                            for (FilterMap mapping : ((StandardHost) getContainer()).findDeployedApp(context.getPath())
+                                    .findFilterMaps()) {
+                                if (mapping.getDispatcherTypes().contains(DispatcherType.ERROR)
+                                        && URLPattern.match(mapping.getURLPattern(), errorPage.getLocation())) {
+                                        fileExists = true;
+                                        break;
+                                }
+                            }
+                            if (!fileExists) {
+                                log.log(Level.WARNING, LogFacade.ERROR_PAGE_NOT_EXIST,
+                                    new Object[]{file.getAbsolutePath(), file2.getAbsolutePath()});
+                            }
+                        }
                     }
                 }
             }
             setErrorPageContentType(response, errorPage.getLocation(), context);
             dispatchToErrorPage(request, response, errorPage, null, null, statusCode);
-        } else if (statusCode >= 400 && statusCode < 600 &&
-                context.getDefaultErrorPage() != null) {
-            dispatchToErrorPage(request, response,
-                context.getDefaultErrorPage(), null, null, statusCode);
+        } else if (statusCode >= 400 && statusCode < 600 && context.getDefaultErrorPage() != null) {
+            dispatchToErrorPage(request, response, context.getDefaultErrorPage(), null, null, statusCode);
         }
         // START SJSAS 6324911
         else {
-            errorPage = ((StandardHost) getContainer()).findErrorPage(
-                                                        statusCode);
+            errorPage = ((StandardHost) getContainer()).findErrorPage(statusCode);
             if (errorPage != null) {
                 if (errorPage.getLocation() != null) {
                     File file = new File(context.getDocBase(), errorPage.getLocation());
                     if (!file.exists()) { 
                         File file2 = new File(errorPage.getLocation());
                         if (!file2.exists()) {
-                            log.log(Level.WARNING, ERROR_PAGE_NOT_EXIST,
+                            log.log(Level.WARNING, LogFacade.ERROR_PAGE_NOT_EXIST,
                                     new Object[]{file.getAbsolutePath(), file2.getAbsolutePath()});
                         }
                     }
@@ -633,7 +635,7 @@ final class StandardHostValve
             // BEGIN S1AS 4878272
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setDetailMessage(rb.getString(NO_CONTEXT_TO_PROCESS));
+            response.setDetailMessage(rb.getString(LogFacade.NO_CONTEXT_TO_PROCESS));
             // END S1AS 4878272
             return null;
         }
@@ -715,5 +717,4 @@ final class StandardHostValve
                 ((ServletResponse) response).setContentType(str);
         }
     }
-
 }

@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2016-2017] [Payara Foundation Ltd and/or its affiliates]
 package org.glassfish.api.admin;
 
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -55,7 +56,8 @@ import java.io.File;
  */
 @Contract
 public interface ServerEnvironment {
-    public enum Status {
+
+    enum Status {
         starting, started, stopping, stopped
     };
     /** folder where the compiled JSP pages reside */
@@ -67,56 +69,58 @@ public interface ServerEnvironment {
      * @deprecated  As of GlassFish 3.1 replaced with {@link #getInstanceRoot() }
      */
     @Deprecated
-    public File getDomainRoot();
+    File getDomainRoot();
 
-    public File getInstanceRoot();
+    String getDomainName();
+
+    File getInstanceRoot();
 
     /**
      * return the startup context used to initialize this runtime
      */
-    public StartupContext getStartupContext();
+    StartupContext getStartupContext();
 
     /**
      *
      */
-    public File getConfigDirPath();
+    File getConfigDirPath();
 
     /**
      * Gets the directory for hosting user-provided jar files.
      * Normally {@code ROOT/lib}
      */
-    public File getLibPath();
+    File getLibPath();
 
     /**
      * Gets the directory to store deployed applications
      * Normally {@code ROOT/applications}
      */
-    public File getApplicationRepositoryPath();
+    File getApplicationRepositoryPath();
 
     /**
      * Gets the directory to store generated stuff.
      * Normally {@code ROOT/generated}
      */
-    public File getApplicationStubPath();
+    File getApplicationStubPath();
 
     /**
      * Returns the path for compiled JSP Pages from an application
      * that is deployed on this instance. By default all such compiled JSPs
      * should lie in the same folder.
      */
-    public File getApplicationCompileJspPath();
+    File getApplicationCompileJspPath();
 
-    public File getApplicationGeneratedXMLPath();
+    File getApplicationGeneratedXMLPath();
 
-    public File getApplicationEJBStubPath();
+    File getApplicationEJBStubPath();
 
-    public File getApplicationPolicyFilePath();
+    File getApplicationPolicyFilePath();
 
     /**
      * Gets the directory to store external alternate deployment descriptor
      * Normally {@code ROOT/generated/altdd}
      */
-    public File getApplicationAltDDPath();
+    File getApplicationAltDDPath();
 
     /** A JCEKS keystore which is locked with a fixed-key. This is the "security-by-obfuscation"
      *  carried over from V2.
@@ -147,7 +151,7 @@ public interface ServerEnvironment {
      *
      * @return the instance process type
      */
-    public RuntimeType getRuntimeType();
+    RuntimeType getRuntimeType();
 
     /**
      * Every server has a name that can be found in the server element in domain.xml
@@ -158,4 +162,6 @@ public interface ServerEnvironment {
     boolean isInstance();
 
     boolean isDas();
+    
+    boolean isMicro();
 }

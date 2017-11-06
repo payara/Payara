@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.base.io;
 
@@ -63,7 +64,6 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.api.naming.GlassfishNamingManager;
 
 import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
-import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 
 /**
@@ -127,13 +127,13 @@ public class EJBObjectOutputStreamHandler
     }
 
     private Serializable getRemoteBusinessObjectFactory
-        (RemoteBusinessWrapperBase remoteBusinessWrapper) 
+        (RemoteBusinessWrapperBase remoteBusinessWrapper)
         throws IOException {
         // Create a serializable object with the remote delegate and
         // the name of the client wrapper class.
-        org.omg.CORBA.Object target = (org.omg.CORBA.Object) 
+        org.omg.CORBA.Object target = (org.omg.CORBA.Object)
             remoteBusinessWrapper.getStub();
-        return getSerializableEJBReference(target, 
+        return getSerializableEJBReference(target,
 					   getProtocolManager(),
                       remoteBusinessWrapper.getBusinessInterfaceName());
     }
@@ -191,7 +191,7 @@ final class SerializableJNDIContext
     implements SerializableObjectFactory
 {
     private String name;
-    
+
     SerializableJNDIContext(Context ctx)
         throws IOException
     {
@@ -211,7 +211,7 @@ final class SerializableJNDIContext
         }
     }
 
-    public Object createObject()
+    public Object createObject(long appUniquId)
         throws IOException
     {
         try {
@@ -235,19 +235,18 @@ abstract class AbstractSerializableS1ASEJBReference
     protected long containerId;
     protected String debugStr;	//used for loggin purpose only
 
-    
+
     protected static Logger _ejbLogger =
        LogDomains.getLogger(AbstractSerializableS1ASEJBReference.class, LogDomains.EJB_LOGGER);
 
     AbstractSerializableS1ASEJBReference(long containerId) {
 	this.containerId = containerId;
 	BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
-    
+
 	//container can be null if the app has been undeployed
 	//  after this was serialized
 	if (container == null) {
-	    _ejbLogger.log(Level.WARNING, "ejb.base.io.EJBOutputStream.null_container: "
-		+ containerId);
+	    _ejbLogger.log(Level.WARNING, "ejb.base.io.EJBOutputStream.null_container", containerId);
 	    debugStr = "" + containerId;
 	} else {
 	    debugStr = container.toString();
@@ -261,7 +260,7 @@ abstract class AbstractSerializableS1ASEJBReference
         Thread currentThread = Thread.currentThread();
         ClassLoader contextClassLoader =
             currentThread.getContextClassLoader();
-        
+
         java.rmi.Remote returnReference = reference;
 
         if( reference.getClass().getClassLoader() !=
@@ -275,7 +274,7 @@ abstract class AbstractSerializableS1ASEJBReference
                 GlassFishORBHelper orbHelper = EjbContainerUtilImpl.getInstance().getORBHelper();
                 ProtocolManager protocolMgr = orbHelper.getProtocolManager();
 
-               protocolMgr.connectObject(returnReference); 
+               protocolMgr.connectObject(returnReference);
 
             } catch(IOException ioe) {
                 throw ioe;
@@ -293,25 +292,25 @@ abstract class AbstractSerializableS1ASEJBReference
 final class SerializableS1ASEJBHomeReference
     extends AbstractSerializableS1ASEJBReference
 {
-    
+
     SerializableS1ASEJBHomeReference(long containerId) {
 	super(containerId);
     }
 
-    public Object createObject()
+    @Override
+    public Object createObject(long appUniqueId)
         throws IOException
     {
 	    Object result = null;
-	    BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
+	    BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, appUniqueId);
 	    //container can be null if the app has been undeployed
 	    //  after this was serialized
 	    if (container == null) {
-	        _ejbLogger.log(Level.WARNING, "ejb.base.io.EJBOutputStream.null_container "
-		    + debugStr);
+	        _ejbLogger.log(Level.WARNING, "ejb.base.io.EJBOutputStream.null_container", debugStr);
 	        result = null;
 	    } else {
             // Note that we can assume it's a RemoteHome stub because an
-            // application never sees a reference to the internal 
+            // application never sees a reference to the internal
             // Home for the Remote Business view.
 	        result = AbstractSerializableS1ASEJBReference.
                 doRemoteRefClassLoaderConversion(container.getEJBHomeStub());
@@ -345,27 +344,27 @@ final class SerializableS1ASEJBObjectReference
         System.arraycopy(objKey, EJBObjectOutputStreamHandler.INSTANCEKEY_OFFSET,
                 instanceKey, 0, keySize);
     }
-    
+
     void setSFSBClientVersion(Object key, long val) {
         this.sfsbKey = key;
         this.sfsbClientVersion = val;
     }
-    
+
     boolean isHAEnabled() {
         return haEnabled;
     }
-    
-    public Object createObject()
+
+    @Override
+    public Object createObject(long appUniqueId)
         throws IOException
     {
         Object result = null;
-        BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
+        BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, appUniqueId);
         //container can be null if the app has been undeployed
         //  after this was serialized
         if (container == null) {
             _ejbLogger.log(Level.WARNING,
-                               "ejb.base.io.EJBOutputStream.null_container: "
-                               + debugStr);
+                               "ejb.base.io.EJBOutputStream.null_container", debugStr);
             result = null;
         } else {
                 try {
@@ -410,8 +409,6 @@ final class SerializableS1ASEJBObjectReference
                 }
         }
 
-	    return result;
+        return result;
     }
 }
-
-

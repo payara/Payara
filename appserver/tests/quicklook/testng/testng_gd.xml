@@ -43,10 +43,10 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
  
 <suite name="QuickLookTests" verbose="2" >
-  <parameter name="admin.url" value="http://localhost:5048/__asadmin"/>
+  <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
   <parameter name="admin.user" value="admin"/>
   <parameter name="admin.password" value=""/>
-  <parameter name="admin.console.url" value="http://localhost:5048/"/>
+  <parameter name="admin.console.url" value="http://localhost:4848/"/>
   <parameter name="resources.xml.relative.path" value="admin/resources/resources.xml"/>
   
   <test name="admincli_tests">
@@ -59,7 +59,7 @@
 <!-- AMX -->
   <parameter name="amx.debug" value="true"/>
 <!-- AMX: port of the JMX RMI -->
-  <parameter name="amx.rmiport" value="5086"/>
+  <parameter name="amx.rmiport" value="8686"/>
 
 <!-- AMX -->
   <test name="amx_tests">
@@ -106,11 +106,11 @@
        <class name="test.jpa.jpainjectemf.JpaInjectEMFTestNG" />
     </classes>
   </test>
-  <!--<test name="jpa_validation">
+  <test name="jpa_validation">
     <classes>
        <class name="test.jpa.jpavalidation.JpaValidationTestNG" />
     </classes>
-  </test>-->
+  </test>
   <test name="security_hello_jsp">
     <classes>
        <class name="test.security.hellojsp.HelloSecurityTestNG" />
@@ -126,11 +126,11 @@
        <class name="test.security.appperms.ApppermsTestNG" />
     </classes>
   </test>
-  <!--<test name="ejb_remoteview">
+  <test name="ejb_remoteview">
     <classes>
         <class name="test.ejb.remoteview.RemoteViewTestNG"/>
     </classes>
-  </test>-->
+  </test>
   <test name="ejb_singleton_ear_redeploy">
     <classes>
 	<class name="test.ejb.singleton.SingletonTestNG" />
@@ -163,18 +163,19 @@
     </classes>
   </test>
   -->
-  <!--<test name="bv_servlet_simple">
+  <test name="bv_servlet_simple">
     <classes>
         <class name="test.bv.servlet.simple.SimpleBVServletTestNG" />
     </classes>
-  </test>-->
-  <!--<test name="weld_tests">
+  </test>
+  
+  <test name="weld_tests">
     <classes>
-        <class name="test.web.numberguess.NumberGuessTestNG" />
-        <class name="test.weld.osgi.OsgiWeldTestNG" />
-	<class name="test.web.extensions.ExtensionsTestNG" />
+        <!--<class name="test.web.numberguess.NumberGuessTestNG" />
+        <class name="test.weld.osgi.OsgiWeldTestNG" />-->
+	 <class name="test.web.extensions.ExtensionsTestNG" />
     </classes>
-  </test>-->
+  </test>
   <test name="asadmin_tests">
     <classes>
       <class name="test.admin.JvmOptionTests"/>
@@ -188,32 +189,32 @@
         <class name="test.osgi.hello.HelloOSGITestNG" />
     </classes>
   </test>
-  <!--<test name="wsit_jaxb_tests">
+  <test name="wsit_jaxb_tests">
     <classes>
       <class name="jaxbosgi.JaxbOsgiTestNG"/>
     </classes>
-  </test>-->
-  <!--<test name="wsit_jaxws_tests">
+  </test>
+  <!--test name="wsit_jaxws_tests">
     <classes>
       <class name="jaxwsfromwsdl.client.JaxwsFromWsdlTestNG"/>
       <class name="fromjava.client.CheckTesterUITestNG"/>
     </classes>
-  </test> -->
-  <!--<test name="cluster_setup">
+  </test>-->
+  <test name="cluster_setup">
     <classes>
         <class name="test.clustersetup.ClusterSetupTest"/>
     </classes>
-  </test>-->
+  </test>
   <!--<test name="cluster_helloworld">
     <classes>
         <class name="test.hellocluster.ClusterHelloworldTest"/>
     </classes>
   </test>-->
-  <!--<test name="cluster_teardown">
+  <test name="cluster_teardown">
     <classes>
         <class name="test.clusterteardown.ClusterTeardownTest"/>
     </classes>
-  </test>-->
+  </test>
   <test name="jms_injection_jmsContext">
     <classes>
 	    <class name="test.jms.injection.ClientTestNG"/>

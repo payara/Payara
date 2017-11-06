@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -60,13 +61,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.ejb.EJBUtils;
-import com.sun.ejb.Container;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.logging.LogDomains;
 
 /**
- * TimerState represents the state of a persistent EJB Timer.  
+ * TimerState represents the state of a persistent EJB Timer.
  * It is part of the EJB container and is implemented as an Entity.
  *
  * @author Marina Vatkina
@@ -212,7 +212,7 @@ public class TimerState {
     @Column(name="SCHEDULE")
     private String schedule;
 
-    @Lob 
+    @Lob
     @Basic(fetch=FetchType.LAZY)
     @Column(name="BLOB")
     private Blob blob;
@@ -319,7 +319,7 @@ public class TimerState {
     }
 
     //
-    // These data members contain derived state for 
+    // These data members contain derived state for
     // some immutable fields.
     //
 
@@ -345,13 +345,13 @@ public class TimerState {
 
     @Transient
     private EJBTimerSchedule timerSchedule_;
-    
+
     TimerState () {
     }
 
     TimerState (String timerId, long containerId, long applicationId,
-             String ownerId, Object timedObjectPrimaryKey, 
-             Date initialExpiration, long intervalDuration, 
+             String ownerId, Object timedObjectPrimaryKey,
+             Date initialExpiration, long intervalDuration,
              EJBTimerSchedule schedule, Serializable info) throws IOException {
 
         this.timerId = timerId;
@@ -385,7 +385,7 @@ public class TimerState {
 
     String stateToString() {
         return EJBTimerService.timerStateToString(state);
-    }   
+    }
 
     private void loadBlob(ClassLoader cl) {
         try {
@@ -402,9 +402,9 @@ public class TimerState {
     @PostLoad
     void load() {
 
-        lastExpiration_ = (lastExpirationRaw > 0) ? 
+        lastExpiration_ = (lastExpirationRaw > 0) ?
             new Date(lastExpirationRaw) : null;
-        
+
         // Populate derived state of immutable persistent fields.
         creationTime_ = new Date(creationTimeRaw);
         initialExpiration_ = new Date(initialExpirationRaw);
@@ -414,7 +414,7 @@ public class TimerState {
 
         // Lazily deserialize Blob state.  This makes the
         // Timer bootstrapping code easier, since some of the Timer
-        // state must be loaded from the database before the 
+        // state must be loaded from the database before the
         // container and application classloader are known.
         timedObjectPrimaryKey_ = null;
         info_       = null;
@@ -437,7 +437,7 @@ public class TimerState {
             loadBlob(EJBTimerService.getEJBTimerService().getTimerClassLoader(getContainerId()));
         }
         return timedObjectPrimaryKey_;
-    }   
+    }
 
     Date getCreationTime() {
         return creationTime_;
@@ -469,7 +469,7 @@ public class TimerState {
     /**
      * Many DBs have a limitation that at most one field per DB
      * can hold binary data.  As a workaround, store both EJBLocalObject
-     * and "info" as a single Serializable blob.  This is necessary 
+     * and "info" as a single Serializable blob.  This is necessary
      * since primary key of EJBLocalObject could be a compound object.
      * This class also isolates the portion of Timer data that is
      * associated with the TimedObject itself.  During deserialization,
@@ -495,7 +495,7 @@ public class TimerState {
             throws IOException {
             if( primaryKey != null ) {
                 primaryKeyBytes_ = EJBUtils.serializeObject(primaryKey);
-            } 
+            }
             if( info != null ) {
                 infoBytes_ = EJBUtils.serializeObject(info);
             }
@@ -506,12 +506,12 @@ public class TimerState {
             primaryKeyBytes_ = primaryKeyBytes;
             infoBytes_ = infoBytes;
         }
-        
-        Object getTimedObjectPrimaryKey(ClassLoader cl) 
+
+        Object getTimedObjectPrimaryKey(ClassLoader cl)
             throws Exception {
             Object pKey = null;
             if( primaryKeyBytes_ != null) {
-                pKey = EJBUtils.deserializeObject(primaryKeyBytes_, cl);
+                pKey = EJBUtils.deserializeObject(primaryKeyBytes_, cl, 0L);
                 if( logger.isLoggable(Level.FINER) ) {
                     logger.log(Level.FINER, "Deserialized blob : " + pKey);
                 }
@@ -522,7 +522,7 @@ public class TimerState {
         Serializable getInfo(ClassLoader cl) throws Exception {
             Serializable info = null;
             if( infoBytes_ != null) {
-                info = (Serializable)EJBUtils.deserializeObject(infoBytes_, cl);
+                info = (Serializable)EJBUtils.deserializeObject(infoBytes_, cl, 0L);
                 if( logger.isLoggable(Level.FINER) ) {
                     logger.log(Level.FINER, "Deserialized blob : " + info);
                 }

@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016] [Payara Foundation] 
 -->
 
 <!-- restart-2.jsf -->
@@ -68,7 +69,7 @@
 </sun:head>
 
 
-<sun:body id="body3" focus="loginform.j_username" onLoad="triggerRestart();">
+<sun:body id="body3" focus="loginform.j_username" style="background-color: #4A5C6A;" onLoad="triggerRestart();">
     <sun:form id="form">
     <sun:button id="restartInstance" visible="false">
         <!command
@@ -82,17 +83,18 @@
       <td><img src="/resource/images/dot.gif" width="728" height="1" alt="" /></td>
       <td width="50%"><img src="/resource/images/dot.gif" width="1" height="1" alt="" /></td>
     </tr>
-    <tr class="LogTopBnd" style="background-image: url(/resource/images/gradlogtop.jpg); background-repeat: repeat-x; background-position: left top;">
+    <tr class="LogTopBnd">
       <td><img src="/resource/images/dot.gif" width="1" height="30" alt="" /></td>
       <td nowrap="nowrap" valign="middle"></td>
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td class="LogMidBnd" style="background-image: url(/resource/images/gradlogsides.jpg);background-repeat:repeat-x;background-position:left top;">&nbsp;</td>
+      <td class="LogMidBnd">&nbsp;</td>
       <td class="LogCntTd" style="background-image: url(/resource/images/backimage.jpg);background-repeat:no-repeat;background-position:left top;" height="435" align="center" valign="middle">
+      <!--<td class="LogCntTd" style="background-repeat:no-repeat;background-position:left top;" height="435" align="center" valign="middle">-->
         <table border="0" background="/resource/images/dot.gif" cellpadding="0" cellspacing="0" width="100%" title="">
           <tr>
-            <td width="260"><img src="/resource/images/dot.gif" width="260" height="245" alt="" /></td>
+            <td width="150"><img src="/resource/images/dot.gif" width="150" height="245" alt="" /></td>
             <td width="415" bgcolor="#FFFFFF" valign="top" align="left">&nbsp;
 
               <table border="0" cellspacing="0" cellpadding="0">
@@ -139,10 +141,9 @@
           </tr>
         </table>
       </td>
-      <td class="LogMidBnd"
-          style="background-image: url(/resource/images/gradlogsides.jpg);background-repeat:repeat-x;background-position:left top;">&nbsp;</td>
+      <td class="LogMidBnd">&nbsp;</td>
     </tr>
-    <tr class="LogBotBnd" style="background-image: url(/resource/images/gradlogbot.jpg);background-repeat:repeat-x;background-position:left top;">
+    <tr class="LogBotBnd">
       <td>&nbsp;</td>
       <td><div class="logCpy"><span class="logTxtCpy">
 </f:verbatim>

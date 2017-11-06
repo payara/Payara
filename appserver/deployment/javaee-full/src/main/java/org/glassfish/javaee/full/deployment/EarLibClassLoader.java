@@ -37,11 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.full.deployment;
 
-import java.net.URL;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.sun.enterprise.loader.ASURLClassLoader;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.Iterator;
 
 /**
  * Classloader that is responsible to load the ear libraries (lib/*.jar etc)
@@ -49,13 +57,40 @@ import com.sun.enterprise.loader.ASURLClassLoader;
  */
 public class EarLibClassLoader extends ASURLClassLoader
 {
-
     public EarLibClassLoader(URL[] urls, ClassLoader classLoader) {
         super(classLoader); 
-
+        enableCurrentBeforeParent();
         for (URL url : urls) {
-            addURL(url);
+            super.addURL(url);
         }
+    }
+
+    /**
+     * The below loads services from META-INF from the libraries,
+     * so we want to take these from the EAR libraries,
+     * this does similar to what WebappClassLoader does
+     * 
+     * @param name
+     * @return set of resources URLSs
+     * @throws IOException 
+     */
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        Enumeration<URL> localResources = super.getResources(name);
+        Enumeration<URL> parentResources = getParent().getResources(name);
+        
+        Enumeration<URL> combinedResources = Iterators.asEnumeration(Iterators.concat(
+                Lists.transform(currentBeforeParentEnabled?
+                        ImmutableList.of(localResources, parentResources) :
+                        ImmutableList.of(parentResources, localResources),
+                        new Function<Enumeration<URL>, Iterator<URL>>() {
+                    @Override
+                    public Iterator<URL> apply(Enumeration<URL> enumeration) {
+                        return Iterators.forEnumeration(enumeration);
+                    }
+                }).iterator()
+        ));
+        return combinedResources;
     }
 
     @Override

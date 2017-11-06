@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2016] [Payara Foundation]
 
 -exportcontents: \
                         com.sun.enterprise.security.acl; \
@@ -49,7 +50,7 @@
                         com.sun.enterprise.security.jmac; \
                         com.sun.enterprise.security.jmac.callback; \
                         com.sun.enterprise.security.jmac.config; \
- 			com.sun.enterprise.security.auth.realm.pam; \
+                        com.sun.enterprise.security.auth.realm.pam; \
                         com.sun.enterprise.security.authorize; \
                         com.sun.enterprise.security.provider; \
                         com.sun.enterprise.security.auth.digest.impl; \

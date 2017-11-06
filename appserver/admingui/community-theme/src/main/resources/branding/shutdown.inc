@@ -37,12 +37,13 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+   
+    Portions Copyright [2016] [Payara Foundation] 
 -->
 
 <f:verbatim>
-<div style="height: 435px;background-image: url(#{request.contextPath}/resource/community-theme/images/login-backimage-open.png);
-    background-repeat:no-repeat;background-position:left top; width: 720px; margin: auto;">
+<div style="height: 435px;background: #ffffff url(#{request.contextPath}/resource/community-theme/images/login-backimage-open.png);
+    background-repeat:no-repeat;background-position:left top; width: 720px; margin: auto; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;">
     <div style="width: 460px; padding-top: 60px; margin-left: auto">
 </f:verbatim>
         <sun:image url="#{request.contextPath}/resource/community-theme/images/login-product_name_open.png" alt="$resource{theme.productName}" height="42" width="329" >

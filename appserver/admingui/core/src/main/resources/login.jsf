@@ -37,7 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    
+    Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
 -->
 
 <ui:event type="initPage">
@@ -85,9 +86,9 @@
 <f:verbatim>
 </head>
 
-<body id="body3" class="LogBdy" focus="loginform.j_username" style="background-color: #FFFFFF;">
-    <div id="header"class="LogTopBnd" style="background: url('#{themeImages.LOGIN_GRADIENT_TOP}') repeat-x; height: 30px;"></div>
-    <div class="middle" style="background-image: url(#{themeImages.LOGIN_GRADIENT_SIDES});background-repeat:repeat-x;background-position:left top; background-color: #D4DCE1;">
+<body id="body3" class="LogBdy" focus="loginform.j_username" style="background-color: #4A5C6A;">
+    <div id="header"class="LogTopBnd" style="height: 30px;"></div>
+    <div class="middle">
         <div class="plugincontent" style="width1: 1px; visibility: #{byPassLogin ? 'hidden' : 'visible'};">
 </f:verbatim>
             <event>
@@ -108,8 +109,8 @@
         </div>
     </div>
     <div class="footer"
-        style="background-image: url(#{themeImages.LOGIN_GRADIENT_BOTTOM});background-repeat:repeat-x;background-position:left top; color: #FFFFFF; background-color: #4A5C68">
-        <div id="copyright" style="width: 720px; margin-left: auto; margin-right: auto; padding: 5px;">
+        style="color: #fff;">
+        <div id="copyright" style="width: 720px; margin-left: auto; margin-right: auto; padding: 5px; text-align: center">
             <span>$resource{i18n.copyright.shortMessage}</span>
         </div>
     </div>

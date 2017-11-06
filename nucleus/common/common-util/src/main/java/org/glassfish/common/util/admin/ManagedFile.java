@@ -213,7 +213,7 @@ public class ManagedFile {
             fc = raf.getChannel();
             final FileLock fl = get(fc, shared);
             if (maxHoldingTime != -1) {
-                timer = new Timer();
+                timer = new Timer("RefCounter Lock Timer",true);
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {

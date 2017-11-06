@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation]
+
 package org.glassfish.grizzly.config.dom;
 
 import org.jvnet.hk2.config.Attribute;
@@ -57,32 +59,32 @@ public interface Http2 extends ConfigBeanProxy, PropertyBag {
      * Enables HTTP2 support.
      */
     @Attribute(defaultValue = "" + ENABLED, dataType = Boolean.class)
-    boolean getEnabled();
+    String getEnabled();
 
-    void setEnabled(boolean enabled);
+    void setEnabled(String enabled);
     
     /**
      * Configures the number of concurrent streams allowed per HTTP2 connection.
      * The default is 100.
      */
     @Attribute(defaultValue = "" + MAX_CONCURRENT_STREAMS, dataType = Integer.class)
-    int getMaxConcurrentStreams();
+    String getMaxConcurrentStreams();
 
-    void setMaxConcurrentStreams(int maxConcurrentStreams);
+    void setMaxConcurrentStreams(String maxConcurrentStreams);
 
     /**
      * Configures the initial window size in bytes.  The default is 64K - 1.
      */
     @Attribute(defaultValue = "" + INITIAL_WINDOW_SIZE_IN_BYTES, dataType = Integer.class)
-    int getInitialWindowSizeInBytes();
+    String getInitialWindowSizeInBytes();
 
-    void setInitialWindowSizeInBytes(int initialWindowSizeInBytes);
+    void setInitialWindowSizeInBytes(String initialWindowSizeInBytes);
 
     /**
      * Configures the maximum size of the HTTP2 frame payload to be accepted.  The default is 2^24 - 1.
      */
     @Attribute(defaultValue = "" + MAX_FRAME_PAYLOAD_SIZE_IN_BYTES, dataType = Integer.class)
-    int getMaxFramePayloadSizeInBytes();
+    String getMaxFramePayloadSizeInBytes();
 
-    void setMaxFramePayloadSizeInBytes(int maxFramePayloadSizeInBytes);
+    void setMaxFramePayloadSizeInBytes(String maxFramePayloadSizeInBytes);
 }

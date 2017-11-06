@@ -37,8 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016] [Payara Foundation]
 package com.sun.ejb.codegen;
+
+import org.glassfish.hk2.external.org.objectweb.asm.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -47,12 +49,6 @@ import java.security.AccessController;
 import java.security.Permission;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
-
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 public class AsmSerializableBeanGenerator
     implements Opcodes {

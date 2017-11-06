@@ -37,8 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.jdbcruntime.service;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.sql.DatabaseMetaData;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.logging.Level;
+
+import javax.inject.Singleton;
+import javax.naming.NamingException;
+import javax.resource.ResourceException;
+import javax.resource.spi.ManagedConnection;
+import javax.resource.spi.ManagedConnectionFactory;
+
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
@@ -49,20 +70,6 @@ import com.sun.enterprise.connectors.service.ConnectorConnectionPoolAdminService
 import com.sun.enterprise.connectors.service.ConnectorService;
 import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
 import com.sun.enterprise.connectors.util.DriverLoader;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Singleton;
-import javax.naming.NamingException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.DatabaseMetaData;
-import java.util.*;
-import java.util.logging.Level;
 
 /**
  * Jdbc admin service performs Jdbc related operations for administration.
@@ -106,11 +113,11 @@ public class JdbcAdminServiceImpl extends ConnectorService {
     }
 
     /**
-     * Get Validation class names list for the classname that the jdbc 
+     * Get Validation class names list for the classname that the jdbc
      * connection pool refers to. This is used for custom connection validation.
      * @param className
      * @return all validation class names.
-     */        
+     */
     public Set<String> getValidationClassNames(String className) {
         SortedSet classNames = new TreeSet();
         if(className == null) {
@@ -211,7 +218,7 @@ public class JdbcAdminServiceImpl extends ConnectorService {
     }
 
     /**
-     * Get Validation table names list for the database that the jdbc 
+     * Get Validation table names list for the database that the jdbc
      * connection pool refers to. This is used for connection validation.
      * @param poolInfo
      * @return all validation table names.
@@ -255,7 +262,7 @@ public class JdbcAdminServiceImpl extends ConnectorService {
      * @return
      * @throws javax.naming.NamingException if poolName lookup fails
      */
-    private String getDefaultDatabaseName(PoolInfo poolInfo, ManagedConnectionFactory mcf) 
+    private String getDefaultDatabaseName(PoolInfo poolInfo, ManagedConnectionFactory mcf)
             throws NamingException {
         // All this to get the default user name and principal
         String databaseName = null;
@@ -272,30 +279,30 @@ public class JdbcAdminServiceImpl extends ConnectorService {
         databaseName = ccPoolAdmService.getPropertyValue("DATABASENAME", connectorConnectionPool);
 
         // To avoid using "" as the default databasename, try to get
-        // the databasename from MCF. 
+        // the databasename from MCF.
         if (databaseName == null || databaseName.trim().equals("")) {
             databaseName = ConnectionPoolObjectsUtils.getValueFromMCF("DatabaseName", poolInfo, mcf);
         }
         return databaseName;
-    }    
+    }
 
     /**
-     * Get Validation table names list for the catalog that the jdbc 
+     * Get Validation table names list for the catalog that the jdbc
      * connection pool refers to. This is used for connection validation.
      * @param con
      * @param catalog database name used.
-     * @return 
+     * @return
      * @throws javax.resource.ResourceException
      */
-    public static Set<String> getValidationTableNames(java.sql.Connection con, String catalog) 
+    public static Set<String> getValidationTableNames(java.sql.Connection con, String catalog)
             throws ResourceException {
 
-        
+
         SortedSet<String> tableNames = new TreeSet();
         if(catalog.trim().equals("")) {
             catalog = null;
         }
-        
+
         if (con != null) {
             java.sql.ResultSet rs = null;
             try {
@@ -322,7 +329,7 @@ public class JdbcAdminServiceImpl extends ConnectorService {
             }
         } else {
             throw new ResourceException("The connection is not valid as "
-                    + "the connection is null");            
+                    + "the connection is null");
         }
         return tableNames;
     }
@@ -344,7 +351,7 @@ public class JdbcAdminServiceImpl extends ConnectorService {
         } catch (Exception sqle) {
             _logger.log(Level.INFO, "pool.exc_is_pingable", tableName);
             return false;
-            
+
         } finally {
             try {
                 if (rs != null) {

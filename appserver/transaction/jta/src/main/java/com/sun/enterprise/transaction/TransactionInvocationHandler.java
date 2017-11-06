@@ -37,13 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.transaction;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -53,21 +50,17 @@ import org.glassfish.api.invocation.InvocationException;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
 @Service
 public class TransactionInvocationHandler implements ComponentInvocationHandler {
-
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionInvocationHandler.class, LogDomains.JTA_LOGGER);
 
     @Inject private ServiceLocator habitat;
 
     private JavaEETransactionManager tm;
 
     /**
-     * Dynamically init the reference. This avoids circular dependencies 
+     * Dynamically init the reference. This avoids circular dependencies
      * on injection: JavaEETransactionManager injects InvocationManager, which in
      * turn injects all ComponentInvocationHandler impls, i.e. instance of this class.
      * PostConstruct has a similar problem.

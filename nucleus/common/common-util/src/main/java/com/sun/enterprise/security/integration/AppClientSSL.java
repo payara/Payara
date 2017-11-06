@@ -46,6 +46,8 @@ package com.sun.enterprise.security.integration;
  */
 public class AppClientSSL {
     private boolean tlsEnabled = true;
+    private boolean tlsEnabled11 = true;
+    private boolean tlsEnabled12 = true;
     private boolean tlsRollbackEnabled = true;
     private String ssl3TlsCiphers;
     private boolean ssl3Enabled = true;
@@ -174,6 +176,14 @@ public class AppClientSSL {
         return this.tlsEnabled;
     }
 
+    public boolean getTls11Enabled() {
+        return this.tlsEnabled11;
+    }
+
+    public boolean getTls12Enabled() {
+        return this.tlsEnabled12;
+    }
+
     /**
      * Sets the value of the tlsEnabled property.
      *
@@ -186,6 +196,22 @@ public class AppClientSSL {
     
     public void setTlsEnabled(boolean value) {
         this.tlsEnabled = value;
+    }
+
+    public void setTlsEnabled11(String value) {
+        this.tlsEnabled11 = Boolean.parseBoolean(value);
+    }
+    
+    public void setTlsEnabled11(boolean value) {
+        this.tlsEnabled11 = value;
+    }
+
+    public void setTlsEnabled12(String value) {
+        this.tlsEnabled12 = Boolean.parseBoolean(value);
+    }
+    
+    public void setTlsEnabled12(boolean value) {
+        this.tlsEnabled12 = value;
     }
 
     /**

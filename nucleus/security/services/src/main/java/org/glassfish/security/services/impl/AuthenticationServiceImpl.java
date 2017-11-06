@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.security.services.impl;
 
 import java.io.IOException;
@@ -141,7 +142,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
         name = config.getName();
 
         // Determine if handling Realm password credential
-        usePasswordCredential = config.getUsePasswordCredential();
+        usePasswordCredential = Boolean.valueOf(config.getUsePasswordCredential());
 
         // Build JAAS Configuration based on the individual LoginModuleConfig settings
         List<SecurityProvider> providers = config.getSecurityProviders();

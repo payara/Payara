@@ -37,7 +37,7 @@ REM  and therefore, elected the GPL Version 2 license, then the option applies
 REM  only if the new code is made subject to such option by the copyright
 REM  holder.
 REM
-
+REM  Portions Copyright [2016] Payara Foundation and/or its affiliates
 REM
 REM                       * * *    N O T E     * * *
 REM
@@ -45,19 +45,23 @@ REM  Although the lines in this file are formatted as environment
 REM  variable assignments, this file is NOT typically invoked as a script
 REM  from another script to define these variables.  Rather, this file is read
 REM  and processed by a server as it starts up.  That scanning code resolves 
-REM  the relative paths against the GlassFish installation directory.
+REM  the relative paths against the Payara installation directory.
 REM
-REM  Yet, this file is also where users of earlier versions have sometimes added
-REM  a definition of AS_JAVA to control which version of Java GlassFish
-REM  should use.  As a result, in order to run a user-specified version of Java,
-REM  the asadmin and appclient scripts do indeed invoke this file as a
-REM  script - but ONLY to define AS_JAVA.  Any calling script should not
-REM  rely on the other settings because the relative paths will be resolved
-REM  against the current directory when the calling script is run, not the
-REM  installation directory of GlassFish, and such resolution will not work
-REM  correctly unless the script happens to be run from the GlassFish installation
-REM  directory.
-REM
+REM Yet, this file is also where users of earlier versions have sometimes added 
+REM a definition of AS_JAVA to control which version of Java Payara should use.
+REM As a result, in order to run a user-specified version of Java, the asadmin 
+REM and appclient scripts do indeed invoke this file as a script - but ONLY to
+REM define AS_JAVA.  Any calling script should not rely on the other settings 
+REM because the relative paths will be resolved against the current directory 
+REM when the calling script is run, not the installation directory of Payara, 
+REM and such resolution will not work correctly unless the script happens to be 
+REM run from the Payara installation directory.
+REM 
+REM In cases where user variables need to be set, however, any set in this file 
+REM will be picked up. Any path must be absolute if the variable is expected to
+REM be used other than by a full Payara installation which expects the directory
+REM structure to be as configured by default below.
+REM Portions Copyright [2017] [Payara Foundation and/or its affiliates.]
 
 set AS_IMQ_LIB=..\..\mq\lib
 set AS_IMQ_BIN=..\..\mq\bin
@@ -66,3 +70,4 @@ set AS_INSTALL=..
 set AS_DEF_DOMAINS_PATH=..\domains
 set AS_DEF_NODES_PATH=..\nodes
 set AS_DERBY_INSTALL=..\..\javadb
+set AS_H2_INSTALL=..\..\h2db

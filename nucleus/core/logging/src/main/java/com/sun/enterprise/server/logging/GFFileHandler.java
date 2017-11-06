@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
+import com.sun.common.util.logging.GFLogRecord;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -87,6 +89,9 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
+import fish.payara.enterprise.server.logging.JSONLogFormatter;
+import java.io.FileInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
@@ -111,7 +116,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     ServerContext serverContext;
 
     @Inject
-    ServerEnvironmentImpl env;
+    protected ServerEnvironmentImpl env;
 
     @Inject @Optional
     Agent agent;
@@ -123,9 +128,11 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     // written out to the stream
     private MeteredStream meter;
 
-    private static final String LOGS_DIR = "logs";
+    protected static final String LOGS_DIR = "logs";
     private static final String LOG_FILE_NAME = "server.log";
-    
+
+    private static final String GZIP_EXTENSION = ".gz";
+
     private String absoluteServerLogName = null;
 
     private File absoluteFile = null;
@@ -168,6 +175,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private Thread pump;
 
     boolean dayBasedFileRotation = false;
+    boolean compressLogs = false;
 
     private String RECORD_BEGIN_MARKER = "[#|";
     private String RECORD_END_MARKER = "|#]";
@@ -188,13 +196,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         LogManager manager = LogManager.getLogManager();
         String cname = getClass().getName();
 
-        logFileProperty = manager.getProperty(cname + ".file");
-        if(logFileProperty==null || logFileProperty.trim().equals("")) {
-            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator +
-                    LOG_FILE_NAME;
-        }
-
-        String filename = TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
+        String filename = evaluateFileName();
 
         File serverLog = new File(filename);
         absoluteServerLogName = filename;
@@ -379,6 +381,32 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         if (flushFrequency <= 0)
             flushFrequency = 1;
 
+        propValue = manager.getProperty(cname + ".maxHistoryFiles");
+        try {
+            if (propValue != null) {
+                maxHistoryFiles = Integer.parseInt(propValue);
+            }
+        } catch (NumberFormatException e) {
+            lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+            lr.setParameters(new Object[]{propValue, "maxHistoryFiles"});
+            lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+            lr.setThreadID((int) Thread.currentThread().getId());
+            lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+            EarlyLogHandler.earlyMessages.add(lr);
+        }
+
+        if (maxHistoryFiles < 0)
+            maxHistoryFiles = 10;
+
+        propValue = manager.getProperty(cname + ".compressOnRotation");
+        boolean compressionOnRotation = false;
+        if (propValue != null) {
+            compressionOnRotation = Boolean.parseBoolean(propValue);
+        }
+        if (compressionOnRotation) {
+            compressLogs = true;
+        }
+
         String formatterName = manager.getProperty(cname + ".formatter");
         formatterName = (formatterName == null) ? DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME : formatterName; 
         
@@ -387,7 +415,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         gffileHandlerFormatter = formatterName;
         if (mustRotate) {
             rotate();
-        } else if (gffileHandlerFormatter != null 
+        } else if (gffileHandlerFormatter != null
                 && !gffileHandlerFormatter
                         .equals(currentgffileHandlerFormatter)) {
             rotate();
@@ -400,7 +428,10 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             configureUniformLogFormatter(excludeFields, multiLineMode);
         } else if (ODLLogFormatter.class.getName().equals(formatterName)) {
             configureODLFormatter(excludeFields, multiLineMode);
-        } else {
+        } else if (JSONLogFormatter.class.getName().equals(formatterName)) {
+            configureJSONFormatter(excludeFields,multiLineMode);
+        }
+        else {
             // Custom formatter is configured in logging.properties
             // Check if the user specified formatter is in play else
             // log an error message
@@ -429,24 +460,19 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         lr.setThreadID((int) Thread.currentThread().getId());
         lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         EarlyLogHandler.earlyMessages.add(lr);
-        
-        propValue = manager.getProperty(cname + ".maxHistoryFiles");
-        try {
-            if (propValue != null) {
-                maxHistoryFiles = Integer.parseInt(propValue);
-            }
-        } catch (NumberFormatException e) {
-            lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-            lr.setParameters(new Object[]{propValue, "maxHistoryFiles"});
-            lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-            lr.setThreadID((int) Thread.currentThread().getId());
-            lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-            EarlyLogHandler.earlyMessages.add(lr);
-        }
-        
-        if (maxHistoryFiles < 0)
-            maxHistoryFiles = 10;
+    }
 
+    protected String evaluateFileName() {
+        String cname = getClass().getName();
+        LogManager manager = LogManager.getLogManager();
+
+        logFileProperty = manager.getProperty(cname + ".file");
+        if(logFileProperty==null || logFileProperty.trim().equals("")) {
+            logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator +
+                    LOG_FILE_NAME;
+        }
+
+        return TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
     }
 
     Formatter findFormatterService(String formatterName) {
@@ -477,6 +503,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
         formatterClass.setExcludeFields(excludeFields);
         formatterClass.setMultiLineMode(multiLineMode);
+        formatterClass.noAnsi();
         formatterClass.setLogEventBroadcaster(this);        
     }
 
@@ -497,7 +524,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         formatterClass.setExcludeFields(excludeFields);
         formatterClass.setMultiLineMode(multiLineMode);
         formatterClass.setLogEventBroadcaster(this);
-
+        formatterClass.noAnsi();
         if (formatterClass != null) {
             recordBeginMarker = manager.getProperty(cname + ".logFormatBeginMarker");
             if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
@@ -546,6 +573,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                 }
             }
         };
+        pump.setName("GFFileHandler log pump");
         pump.setDaemon(true);
         pump.start();        
     }
@@ -618,6 +646,21 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
      */
     private synchronized void setLimitForRotation(int rotationLimitInBytes) {
         limitForFileRotation = rotationLimitInBytes;
+    }
+
+    private void configureJSONFormatter(String excludeFields, boolean multiLineMode) {
+        // this loop is used for JSON formatter
+        JSONLogFormatter formatterClass = null;
+        // set the formatter
+        if (agent != null) {
+            formatterClass = new JSONLogFormatter(new AgentFormatterDelegate(agent));
+            setFormatter(formatterClass);
+        } else {
+            formatterClass = new JSONLogFormatter();
+            setFormatter(formatterClass);
+        }
+        formatterClass.setExcludeFields(excludeFields);
+        formatterClass.setLogEventBroadcaster(this);
     }
 
     // NOTE: This private class is copied from java.util.logging.FileHandler
@@ -800,6 +843,20 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                                                 .restartTimer();
                                     }
 
+                                    if (compressLogs) {
+                                        boolean compressed = gzipFile(rotatedFile);
+                                        if (compressed) {
+                                            boolean deleted = rotatedFile.delete();
+                                            if (!deleted) {
+                                                 throw new IOException("Could not delete uncompressed log file: "
+                                                        + rotatedFile.getAbsolutePath());
+                                            }
+                                        } else {
+                                            throw new IOException("Could not compress log file: "
+                                                    + rotatedFile.getAbsolutePath());
+                                        }
+                                    }
+
                                     cleanUpHistoryLogFiles();                                    
                                 }
                             } catch (IOException ix) {
@@ -865,12 +922,25 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         // capture the name of the logging thread so that a formatter can
         // output correct thread-name if done asynchronously. Note that 
         // this fix is limited to records published through this handler only.
-        GFLogRecord recordWrapper = new GFLogRecord(record);
-        recordWrapper.setThreadName(Thread.currentThread().getName());
-
-        try {
+        // ***
+        // PAYARA-406 Check if the LogRecord passed in is already a GFLogRecord,
+        // and just cast the passed record if it is
+        GFLogRecord recordWrapper;
+        if (record.getClass().getSimpleName().equals("GFLogRecord")) {
+            recordWrapper = (GFLogRecord) record;
+            
+            // Check there is actually a set thread name
+            if (recordWrapper.getThreadName() == null) {
+                recordWrapper.setThreadName(Thread.currentThread().getName());
+            }
+        }    
+        else {
+            recordWrapper = new GFLogRecord(record);            
             // set the thread id to be the current thread that is logging the message
-//            record.setThreadID((int)Thread.currentThread().getId());
+            recordWrapper.setThreadName(Thread.currentThread().getName());
+        }
+        
+        try {
             pendingRecords.add(recordWrapper);
         } catch (IllegalStateException e) {
             // queue is full, start waiting.
@@ -913,5 +983,29 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
     }
 
+    private boolean gzipFile(File infile) {
+
+        boolean status = false;
+
+        try (
+            FileInputStream  fis  = new FileInputStream(infile);
+            FileOutputStream fos  = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION);
+            GZIPOutputStream gzos = new GZIPOutputStream(fos);
+        ) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len=fis.read(buffer)) != -1 ) {
+                gzos.write(buffer, 0, len);
+            }
+            gzos.finish();
+
+            status = true;
+
+        } catch (IOException ix) {
+            new ErrorManager().error("Error gzipping log file", ix, ErrorManager.GENERIC_FAILURE);
+        }
+
+        return status;
+    }
 }
 

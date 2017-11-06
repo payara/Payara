@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2017] [Payara Foundation and/or its affiliates.]
 
 -exportcontents: \
                         com.sun.enterprise.deploy.shared; \
@@ -44,7 +45,8 @@
                         org.glassfish.loader.util; \
                         org.glassfish.deployment.common; \
                         org.glassfish.deployment.versioning; \
-                        org.glassfish.deployment.monitor; version=${project.osgi.version} 
+                        org.glassfish.deployment.monitor; \
+                        fish.payara.deployment.util; version=${project.osgi.version} 
                         
 DynamicImport-Package: \
                         org.glassfish.flashlight.provider, \

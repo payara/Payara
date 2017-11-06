@@ -37,11 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
+import com.google.common.collect.ImmutableList;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ResourcePropertyDescriptor;
 import com.sun.enterprise.deployment.node.ApplicationNode;
+import com.sun.enterprise.deployment.node.ResourcePropertyNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.*;
 import com.sun.enterprise.deployment.node.runtime.common.SecurityRoleMappingNode;
@@ -51,14 +56,13 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.List;
+import java.util.Map;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.Role;
 import org.w3c.dom.Node;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * This node handles all runtime-information pertinent to applications
@@ -99,6 +103,8 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
              MessageDestinationRuntimeNode.class);
         registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF),
                                ServiceRefNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
+                               ResourcePropertyNode.class);
     }
         
    /**
@@ -180,6 +186,21 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
 	if (element.getQName().equals(RuntimeTagNames.COMPATIBILITY)) {
 	    descriptor.setCompatibility(value);
 	} else
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_CLASSLOADING_DELEGATE)) {
+	    descriptor.setClassLoadingDelegate(value);
+	} else 
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI)) {
+            // ignore, handled in EarHandler.java
+	} else 
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_EXCLUDE)) {
+            descriptor.addScanningExclusions(ImmutableList.of(value));
+	} else
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_INCLUDE)) {
+            descriptor.addScanningInclusions(ImmutableList.of(value));
+	} else
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_WHITELIST_PACKAGE)) {
+            descriptor.addWhitelistPackage(value);
+	} else
 	if (element.getQName().equals(RuntimeTagNames.WEB_URI)) {
 	    currentWebUri=value;
 	} else 
@@ -230,7 +251,13 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
                     }
                 }
             }
-        } 
+        }
+        else if(newDescriptor instanceof ResourcePropertyDescriptor) {
+            ResourcePropertyDescriptor desc = (ResourcePropertyDescriptor)newDescriptor;
+            if("default-role-mapping".equals(desc.getName())) {
+                descriptor.setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(desc.getValue()));
+            }
+        }
     } 
     
     /**

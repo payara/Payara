@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation]
+
 package org.glassfish.cdi.transaction;
 
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -69,13 +71,13 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.log(java.util.logging.Level.INFO, CDI_JTA_NOTSUPPORTED);
+        _logger.log(java.util.logging.Level.FINE, CDI_JTA_NOTSUPPORTED);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(true);
         try {
             Transaction transaction = null;
             if (getTransactionManager().getTransaction() != null) {
-                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBNOTSUPPORTED);
+                _logger.log(java.util.logging.Level.FINE, CDI_JTA_MBNOTSUPPORTED);
                 try {
                     transaction = getTransactionManager().suspend();
                 } catch (Exception exception) {
@@ -83,7 +85,7 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
                             "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                     "called inside a transaction context.  Suspending transaction failed due to " +
                                     exception;
-                    _logger.log(java.util.logging.Level.INFO, 
+                    _logger.log(java.util.logging.Level.FINE, 
                         CDI_JTA_MBNOTSUPPORTEDTX, exception);
                     throw new TransactionalException(messageString, exception);
                 }

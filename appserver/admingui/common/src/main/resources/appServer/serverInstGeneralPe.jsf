@@ -39,7 +39,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2016] Payara Foundation -->
 <!-- appServer/serverInstGeneralPe.jsf -->
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
@@ -73,7 +73,10 @@
     <sun:form id="propertyForm">
 #include "/common/appServer/serverInstTabs.inc"
         <!-- Page Title -->
-        <sun:title id="propertyContentPage" title="$resource{i18n.instance.GeneralTitle}" >
+        <!-- PAYARA-488 -->
+        <!--<sun:title id="propertyContentPage" title="$resource{i18n.instance.GeneralTitle}" >-->
+        <sun:title id="propertyContentPage" title="$resource{i18n.instance.GeneralTitle}"
+                 helpText="$resource{i18n.instance.PayaraAsServer}" >
                 <sun:button id="stopInstance" text="$resource{i18n.button.Stop}" disabled="#{false}" primary="#{false}"
                 onClick="if ( getConfirm(this, '$resource{i18n.msg.JS.confirmStopInstance}') )
                           { return submitAndDisable(this, '$resource{i18n.button.Processing}', target='_top');}

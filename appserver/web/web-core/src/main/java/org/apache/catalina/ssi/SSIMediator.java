@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Portions Copyright 2014 C2B2 Consulting Limited
+//Portions Copyright 2016 Payara Foundation
 
 package org.apache.catalina.ssi;
 

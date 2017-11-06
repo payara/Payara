@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.services.impl.monitor;
 
 import com.sun.enterprise.v3.services.impl.monitor.probes.ConnectionQueueProbeProvider;
@@ -56,6 +58,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 /**
  * Grizzly monitoring manager, which is responsible for registering, unregistering
@@ -158,8 +161,51 @@ public class GrizzlyMonitoring {
         final ThreadPoolStatsProvider threadPoolStatsProvider =
                 threadPoolStatsProvidersMap.remove(name);
         if (threadPoolStatsProvider != null) {
+            // Unregister it from the global thread pool stats provider
+            threadPoolStatsProvider.unregisterThreadPool(name);
+
             StatsProviderManager.unregister(threadPoolStatsProvider);
+            updateGlobalThreadPoolStatsProvider();
         }
+    }
+    
+    /**
+     * Updates the global thread pool stats provider with the most current
+     * total values.
+     */
+    public void updateGlobalThreadPoolStatsProvider() {
+        final ThreadPoolStatsProvider globalThreadPoolStatsProvider = 
+                threadPoolStatsProvidersMap.get("");
+        
+        // Exit method if global stats provider not registered
+        if (globalThreadPoolStatsProvider == null) {
+            return;
+        }
+        
+        int coreThreadTotal = 0;
+        int maxThreadTotal = 0;    
+        
+        // Calculate the totals for each of the metrics
+        for (Map.Entry<String, ThreadPoolStatsProvider> threadPoolStatsProvider
+                : threadPoolStatsProvidersMap.entrySet()) {
+            if (!threadPoolStatsProvider.getKey().equals("")) {
+                // Get the pool config so we can check the thread pool name
+                ThreadPoolConfig threadPoolConfig = (ThreadPoolConfig) 
+                        threadPoolStatsProvider.getValue().getStatsObject();
+                if (threadPoolConfig != null) {
+                    // Safe to cast from long to int, as the values cannot 
+                    // actually be higher than max int.
+                    coreThreadTotal += (int) (long) threadPoolStatsProvider
+                            .getValue().getCoreThreadsCount().getCount();
+                    maxThreadTotal += (int) (long) threadPoolStatsProvider
+                            .getValue().getMaxThreadsCount().getCount();
+                }
+            }
+        }
+        
+        // Now that we've calculated the global core and max values, set them
+        globalThreadPoolStatsProvider.setCoreThreadsEvent("", coreThreadTotal);
+        globalThreadPoolStatsProvider.setMaxThreadsEvent("", maxThreadTotal);
     }
 
     /**
@@ -268,7 +314,9 @@ public class GrizzlyMonitoring {
         }
 
         StatsProviderManager.register(CONFIG_ELEMENT, PluginPoint.SERVER,
-                subtreePrefix(name) + "/thread-pool", threadPoolStatsProvider);
+                subtreePrefix(name) + "/global-thread-pool-stats", threadPoolStatsProvider);
+        
+        updateGlobalThreadPoolStatsProvider();
     }
 
     /**

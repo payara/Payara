@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 /*
  * HASSOFactory.java
@@ -52,6 +53,7 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.web.SSOFactory;
 import com.sun.enterprise.web.session.PersistenceType;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
+import com.sun.enterprise.web.ServerConfigLookup;
 
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.store.api.BackingStore;
@@ -81,7 +83,10 @@ public class HASSOFactory implements SSOFactory {
    
     @Inject
     private JavaEEIOUtils ioUtils;
-    
+
+    @Inject
+    private ServerConfigLookup serverConfigLookup;
+
     /**
      * Create a SingleSignOn valve
      * HASingleSignOnValve is created is global availability-enabled
@@ -89,9 +94,10 @@ public class HASSOFactory implements SSOFactory {
      */
     @Override
     public GlassFishSingleSignOn createSingleSignOnValve(String virtualServerName) {
-        String persistenceType = PersistenceType.REPLICATED.getType();
+        PersistenceType persistenceType = serverConfigLookup.getPersistenceTypeFromConfig();
+        String persistenceTypeStr = persistenceType != null? persistenceType.getType() : PersistenceType.REPLICATED.getType();
         return new HASingleSignOn(ioUtils,
-                getSsoEntryMetadataBackingStore(persistenceType, STORE_NAME, services));
+                getSsoEntryMetadataBackingStore(persistenceTypeStr, STORE_NAME, services));
     }   
     
     protected static synchronized BackingStore<String, HASingleSignOnEntryMetadata>

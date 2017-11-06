@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.enterprise.iiop.util;
 
@@ -56,8 +57,8 @@ import org.glassfish.internal.api.Globals;
 
 public class S1ASThreadPoolManager implements ThreadPoolManager {
 
-    static Logger _logger = LogDomains.getLogger(S1ASThreadPoolManager.class,
-            LogDomains.UTIL_LOGGER);
+    private static Logger _logger = LogDomains.getLogger(S1ASThreadPoolManager.class,
+            LogDomains.UTIL_LOGGER, false);
 
     private static final int DEFAULT_NUMBER_OF_QUEUES = 0;
     private static final int DEFAULT_MIN_THREAD_COUNT = 10;
@@ -75,7 +76,7 @@ public class S1ASThreadPoolManager implements ThreadPoolManager {
         return s1asThreadPoolMgr;
     }
 
-    
+
     static {
         try {
             _iiopUtils = Globals.getDefaultHabitat().getService(IIOPUtils.class);
@@ -91,7 +92,7 @@ public class S1ASThreadPoolManager implements ThreadPoolManager {
 
 
     }
-    
+
     S1ASThreadPoolManager() {
     }
 
@@ -333,6 +334,6 @@ public class S1ASThreadPoolManager implements ThreadPoolManager {
     public void close() {
         //TODO
     }
-} 
+}
 
 

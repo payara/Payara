@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
@@ -130,6 +126,11 @@ public class TargetUtil {
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
+        }
+        if ((config.isEmpty())) {
+            // Maybe Fix PAYARA-323
+            GuiUtil.getLogger().warning("Detected Broken Session, forcing session reinitialisation");
+            GuiUtil.setSessionValue("_SESSION_INITIALIZED", null);
         }
         return config;
     }

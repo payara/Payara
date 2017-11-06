@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2016-2017] [Payara Foundation]
+
 package com.sun.enterprise.admin.launcher;
 
 import java.io.*;
@@ -56,6 +59,7 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
+import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
 
 /**
  * This is the main Launcher class designed for external and internal usage.
@@ -85,8 +89,9 @@ public abstract class GFLauncher {
     public final void launch() throws GFLauncherException {
         try {
             startTime = System.currentTimeMillis();
-            if (!setupCalledByClients)
+            if (!setupCalledByClients) {
                 setup();
+            }
             internalLaunch();
         }
         catch (GFLauncherException gfe) {
@@ -312,7 +317,7 @@ public abstract class GFLauncher {
     public final boolean needsManualUpgrade() {
         return needsManualUpgrade;
     }
-
+    
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     //////     ALL private and package-private below   ////////////////////////
@@ -350,7 +355,18 @@ public abstract class GFLauncher {
     }
 
     private void setLogFilename(MiniXmlParser parser) throws GFLauncherException {
-        logFilename = parser.getLogFilename();
+        
+        // Check if launching an instance to get appropriate logFilename
+        if (info.isInstance()) 
+        {
+            logFilename = parser.getInstanceLogFilename();
+        }
+        
+        // Assume DAS if not an instance
+        else
+        {
+            logFilename = parser.getLogFilename();
+        }
 
         if (logFilename == null)
             logFilename = DEFAULT_LOGFILE;
@@ -451,7 +467,7 @@ public abstract class GFLauncher {
             // See GLASSFISH-21113
             // remove bsexec as from 10.10.3 bsexec requires sudo
 	    cmds.add("nohup");
-            cmds.addAll(getCommandLine());
+            cmds.addAll(getCommandLine());            
         }
         else {
             cmds = getCommandLine();
@@ -712,6 +728,7 @@ public abstract class GFLauncher {
         all.putAll(envProps);
         all.putAll(asenvProps);
         all.putAll(sysProps);
+        all.put(SystemPropertyConstants.SERVER_NAME, getInfo().getInstanceName());
         all.putAll(sysPropsFromXml);
         all.putAll(jvmOptions.getCombinedMap());
         all.putAll(profiler.getConfig());
@@ -809,6 +826,21 @@ public abstract class GFLauncher {
         jvmOptions = new JvmOptions(rawJvmOptions);
         if (info.isDropInterruptedCommands()) {
             jvmOptions.sysProps.put(SystemPropertyConstants.DROP_INTERRUPTED_COMMANDS, Boolean.TRUE.toString());
+        }
+        
+        // PAYARA-1681 - Add default Payara JVM options if an override isn't in place
+        addDefaultJvmOptions();
+    }
+    
+    private void addDefaultJvmOptions() {
+        if (!jvmOptions.getCombinedMap().containsKey(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY)) {
+            jvmOptions.sysProps.put(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY, 
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
+            
+            // Log that we've made the change
+            GFLauncherLogger.fine(GFLauncherLogger.DEFAULT_JVM_OPTION, 
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY,
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
         }
     }
 
@@ -1035,7 +1067,7 @@ public abstract class GFLauncher {
     private boolean needsManualUpgrade = false;
     private int debugPort = -1;
     private boolean debugSuspend = false;
-
+    
     ///////////////////////////////////////////////////////////////////////////
     private static class ProcessWhacker implements Runnable {
         ProcessWhacker(Process p, String msg) {

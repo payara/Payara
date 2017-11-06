@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.impl;
 
@@ -49,17 +50,14 @@ import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.web.deployment.descriptor.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 
@@ -105,9 +103,9 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
         setParser(parser);
 
         if (AnnotationUtils.getLogger().isLoggable(Level.FINE)) {
-            AnnotationUtils.getLogger().fine("archiveFile is " + archiveFile);
-            AnnotationUtils.getLogger().fine("webBundle is " + webBundleDesc);
-            AnnotationUtils.getLogger().fine("classLoader is " + classLoader);
+            AnnotationUtils.getLogger().log(Level.FINE, "archiveFile is {0}", archiveFile);
+            AnnotationUtils.getLogger().log(Level.FINE, "webBundle is {0}", webBundleDesc);
+            AnnotationUtils.getLogger().log(Level.FINE, "classLoader is {0}", classLoader);
         }
 
         if (!archiveFile.isDirectory()) {
@@ -117,7 +115,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
 
         if (isScanOtherLibraries()) {
             addLibraryJars(webBundleDesc, readableArchive);
-            calculateResults();
+            calculateResults(webBundleDesc);
             return;
         }
 
@@ -142,9 +140,9 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
             if (classes.exists()) {
                 addScanDirectory(classes);   
             }
-            scanXmlDefinedClassesIfNecessary(webBundleDesc);
         }
-        calculateResults();
+        scanXmlDefinedClassesIfNecessary(webBundleDesc);
+        calculateResults(webBundleDesc);
     }
 
     // This is not mandated by the spec. It is for WSIT.
@@ -189,11 +187,15 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
         }
     }
 
+    /**
+     * Returns true if the class is accessible from the classloader
+     * @param className
+     * @param commonCL
+     * @return
+     * @throws IOException 
+     */
     private boolean isScan(String className, ClassLoader commonCL) throws IOException {
-        boolean result = false;
-        //XXX TBD ignore delegate in sun-web.xml in this moment
-        String resourceName = "/" + className.replace(".", "/") + ".class";
-        return (commonCL.getResource(resourceName) != null);
+        return commonCL.getResource(className.replace(".", "/") + ".class") != null;
     }
 }
  

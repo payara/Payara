@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,7 +55,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -82,10 +84,13 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.RestrictTo;
 import org.glassfish.common.util.Constants;
+import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.grizzly.config.dom.Protocol;
+import org.glassfish.grizzly.http.HttpCodecFilter;
+import org.glassfish.grizzly.http.HttpProbe;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.impl.FutureImpl;
@@ -189,6 +194,11 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
      *         <tt>false</tt> if no proxy was associated with the port.
      */
     public boolean removeNetworkProxy(String id) {
+        NetworkProxy proxy = getNetworkProxy(id);
+        return removeNetworkProxy(proxy);
+    }
+
+    private NetworkProxy getNetworkProxy(String id) {
         NetworkProxy proxy = null;
         for (NetworkProxy p : proxies) {
             if (p instanceof GrizzlyProxy) {
@@ -202,7 +212,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             }
         }
 
-        return removeNetworkProxy(proxy);
+        return proxy;
     }
 
     /**
@@ -305,8 +315,32 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         // Restart GrizzlyProxy on the address/port
         // Address/port/id could have been changed - so try to find
         // corresponding proxy both ways
-        if (!removeNetworkProxy(networkListener)) {
-            removeNetworkProxy(networkListener.getName());
+        NetworkProxy proxy = lookupNetworkProxy(networkListener);
+        Map<Class<? extends HttpCodecFilter>, List<HttpProbe>> filterToProbeMapping = new HashMap<>();
+        if (proxy == null) {
+            proxy = getNetworkProxy(networkListener.getName());
+        }
+        if (proxy != null) {
+            if (proxy instanceof GrizzlyProxy) {
+                GrizzlyProxy grizzlyProxy = (GrizzlyProxy)proxy;
+                GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener)grizzlyProxy.getUnderlyingListener();
+                List<HttpCodecFilter> codecFilters = grizzlyListener.getFilters(HttpCodecFilter.class);
+                if (codecFilters != null && !codecFilters.isEmpty()) {
+                    for (HttpCodecFilter codecFilter : codecFilters) {
+                        HttpProbe[] probes = codecFilter.getMonitoringConfig().getProbes();
+                        if (probes != null) {
+                            List<HttpProbe> probesForType = filterToProbeMapping.get(codecFilter.getClass());
+                            if (probesForType == null) {
+                                probesForType = new ArrayList<>(4);
+                                filterToProbeMapping.put(codecFilter.getClass(), probesForType);
+                            }
+                            Collections.addAll(probesForType, probes);
+                        }
+                    }
+                }
+            }
+
+            removeNetworkProxy(proxy);
         }
         final Future future = createNetworkProxy(networkListener);
         if (future == null) {
@@ -320,6 +354,24 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 future.get();
             } else {
                 future.get(timeout, timeUnit);
+            }
+
+            NetworkProxy newNetworkProxy = getNetworkProxy(networkListener.getName());
+            if (newNetworkProxy instanceof GrizzlyProxy) {
+                GrizzlyProxy grizzlyProxy = (GrizzlyProxy)newNetworkProxy;
+                GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener)grizzlyProxy.getUnderlyingListener();
+                if (!filterToProbeMapping.isEmpty()) {
+                    for (Class<? extends HttpCodecFilter> aClass : filterToProbeMapping.keySet()) {
+                        List<? extends HttpCodecFilter> filters = grizzlyListener.getFilters(aClass);
+                        if (filters != null && !filters.isEmpty()) {
+                            if (filters.size() != 1) {
+                                throw new IllegalStateException();
+                            }
+                            final List<HttpProbe> probes = filterToProbeMapping.get(aClass);
+                            filters.get(0).getMonitoringConfig().addProbes(probes.toArray(new HttpProbe[probes.size()]));
+                        }
+                    }
+                }
             }
         } catch (ExecutionException e) {
             throw new IOException(e.getCause());

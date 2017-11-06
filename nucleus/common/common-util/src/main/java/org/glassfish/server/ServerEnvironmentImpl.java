@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.server;
 
@@ -432,7 +432,12 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
      */
     @Override
     public boolean isDas() {
-        return serverType == RuntimeType.DAS;
+        return (serverType == RuntimeType.DAS || isMicro());
+    }
+    
+    @Override
+    public boolean isMicro() {
+        return serverType == RuntimeType.MICRO;
     }
 
     public boolean isDebug() {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -93,6 +94,10 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.ClassWriter;
+import org.glassfish.hk2.external.org.objectweb.asm.FieldVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.MethodVisitor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
@@ -100,10 +105,6 @@ import org.glassfish.jersey.media.sse.EventOutput;
 import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
 
 /**
  * @author jdlee
@@ -894,7 +895,7 @@ public class CompositeUtil {
                     final String paramName = values.getKey();
                     Object paramValue = values.getValue();
                     if (Class.class.isAssignableFrom(paramValue.getClass())) {
-                        paramValue = org.objectweb.asm.Type.getType("L" + getInternalName(paramValue.getClass().getName()) + ";");
+                        paramValue = org.glassfish.hk2.external.org.objectweb.asm.Type.getType("L" + getInternalName(paramValue.getClass().getName()) + ";");
                     }
                     if (paramValue.getClass().isArray() && (Array.getLength(paramValue) == 0)) {
                         continue;
