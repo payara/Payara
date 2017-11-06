@@ -43,6 +43,7 @@
 <!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
+<hazelcast-runtime-configuration></hazelcast-runtime-configuration>
 <security-configurations>
     <authentication-service default="true" name="adminAuth" use-password-credential="true">
       <security-provider name="spcrealm" type="LoginModule" provider-name="adminSpc">
@@ -119,7 +120,6 @@
       <connector-service shutdown-timeout-in-seconds="30">
       </connector-service>
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
-       <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
        <asadmin-recorder-configuration></asadmin-recorder-configuration>
        <request-tracing-service-configuration>
          <log-notifier></log-notifier>
@@ -127,7 +127,8 @@
       <notification-service-configuration enabled="true">
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
-      <monitoring-service-configuration></monitoring-service-configuration>
+    <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
+    <monitoring-service-configuration></monitoring-service-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -378,13 +379,13 @@
              </message-security-config>
          </security-service>
          <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" />
-         <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
          <request-tracing-service-configuration>
              <log-notifier></log-notifier>
          </request-tracing-service-configuration>
       <notification-service-configuration enabled="true">
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
+      <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
       <monitoring-service-configuration></monitoring-service-configuration>
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">

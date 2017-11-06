@@ -51,10 +51,6 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 public interface HazelcastRuntimeConfiguration 
     extends ConfigBeanProxy, DomainExtension {
-
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    String getEnabled();
-    public void setEnabled(String value);
     
     @Attribute(defaultValue = "hazelcast-config.xml")
     String getHazelcastConfigurationFile();
@@ -99,14 +95,6 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getGenerateNames();
     public void setGenerateNames(String value);
-    
-    @Attribute(defaultValue = "payara")
-    String getMemberName();
-    public void setMemberName(String value);
-
-    @Attribute(defaultValue = "MicroShoal")
-    String getMemberGroup();
-    public void setMemberGroup(String value);
 
     // can be commaseparated value
     @Attribute(defaultValue = "")
@@ -120,44 +108,13 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "D3v3l0pm3nt")
     String getClusterGroupPassword();
     public void setClusterGroupPassword(String value);
-    
-    @Attribute(defaultValue = "payara/Hazelcast")
-    String getJNDIName();
-    public void setJNDIName(String value);
-    
-    @Attribute(defaultValue = "payara/CacheManager")
-    String getCacheManagerJNDIName();
-    public void setCacheManagerJNDIName(String value);
-    
-    @Attribute(defaultValue = "payara/CachingProvider")
-    String getCachingProviderJNDIName();
-    public void setCachingProviderJNDIName(String value);
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getHostAwarePartitioning();
     public void setHostAwarePartitioning(String value);
 
-    @Attribute(defaultValue = "4")
-    String getExecutorPoolSize();
-    public void setExecutorPoolSize(String value);
-    
-    @Attribute(defaultValue = "20")
-    String getExecutorQueueCapacity();
-    public void setExecutorQueueCapacity(String value);
-    
-    @Attribute(defaultValue = "4")
-    String getScheduledExecutorPoolSize();
-    public void setScheduledExecutorPoolSize(String value);
-    
-    @Attribute(defaultValue = "20")
-    String getScheduledExecutorQueueCapacity();
-    public void setScheduledExecutorQueueCapacity(String value);
-
     @Attribute(defaultValue = "")
     String getLicenseKey();
     public void setLicenseKey(String value);
-    
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getLite();
-    public void setLite(String value);
+
 }

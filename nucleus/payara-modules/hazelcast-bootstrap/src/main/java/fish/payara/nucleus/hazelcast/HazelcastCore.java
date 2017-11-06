@@ -73,6 +73,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
@@ -121,6 +122,10 @@ public class HazelcastCore implements EventListener {
 
     @Inject
     HazelcastRuntimeConfiguration configuration;
+    
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    HazelcastConfigSpecificConfiguration nodeConfig;
 
     @Inject
     private ClassLoaderHierarchy clh;
@@ -140,7 +145,7 @@ public class HazelcastCore implements EventListener {
     public void postConstruct() {
         theCore = this;
         events.register(this);
-        enabled = Boolean.valueOf(configuration.getEnabled());
+        enabled = Boolean.valueOf(nodeConfig.getEnabled());
     }
     
     /**
@@ -307,7 +312,7 @@ public class HazelcastCore implements EventListener {
                 buildNetworkConfiguration(config);
                
                 config.setLicenseKey(configuration.getLicenseKey());
-                config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
+                config.setLiteMember(Boolean.parseBoolean(nodeConfig.getLite()));
                 
                 
                 // set group config
@@ -325,13 +330,13 @@ public class HazelcastCore implements EventListener {
                 // build the executor config
                 ExecutorConfig executorConfig = config.getExecutorConfig(CLUSTER_EXECUTOR_SERVICE_NAME);
                 executorConfig.setStatisticsEnabled(true);
-                executorConfig.setPoolSize(Integer.valueOf(configuration.getExecutorPoolSize()));
-                executorConfig.setQueueCapacity(Integer.valueOf(configuration.getExecutorQueueCapacity()));
+                executorConfig.setPoolSize(Integer.valueOf(nodeConfig.getExecutorPoolSize()));
+                executorConfig.setQueueCapacity(Integer.valueOf(nodeConfig.getExecutorQueueCapacity()));
                 
                 ScheduledExecutorConfig scheduledExecutorConfig = config.getScheduledExecutorConfig(SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME);
                 scheduledExecutorConfig.setDurability(1);
-                scheduledExecutorConfig.setCapacity(Integer.valueOf(configuration.getScheduledExecutorQueueCapacity()));
-                scheduledExecutorConfig.setPoolSize(Integer.valueOf(configuration.getScheduledExecutorPoolSize()));
+                scheduledExecutorConfig.setCapacity(Integer.valueOf(nodeConfig.getScheduledExecutorQueueCapacity()));
+                scheduledExecutorConfig.setPoolSize(Integer.valueOf(nodeConfig.getScheduledExecutorPoolSize()));
                             
                 config.setProperty("hazelcast.jmx", "true");
             }
@@ -432,8 +437,8 @@ public class HazelcastCore implements EventListener {
             Config config = buildConfiguration();
             theInstance = Hazelcast.newHazelcastInstance(config);
             if (env.isMicro()) {
-                memberName = configuration.getMemberName();
-                memberGroup = configuration.getMemberGroup();
+                memberName = nodeConfig.getMemberName();
+                memberGroup = nodeConfig.getMemberGroup();
                 if (Boolean.valueOf(configuration.getGenerateNames()) || memberName == null) {
                     NameGenerator gen = new NameGenerator();
                     memberName = gen.generateName();
@@ -481,12 +486,12 @@ public class HazelcastCore implements EventListener {
         try {
             InitialContext ctx;
             ctx = new InitialContext();
-            ctx.bind(configuration.getJNDIName(), theInstance);
-            ctx.bind(configuration.getCachingProviderJNDIName(), hazelcastCachingProvider);
-            ctx.bind(configuration.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at {0}", configuration.getJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at {0}", configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at {0}", configuration.getCacheManagerJNDIName());
+            ctx.bind(nodeConfig.getJNDIName(), theInstance);
+            ctx.bind(nodeConfig.getCachingProviderJNDIName(), hazelcastCachingProvider);
+            ctx.bind(nodeConfig.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at {0}", nodeConfig.getJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at {0}", nodeConfig.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at {0}", nodeConfig.getCacheManagerJNDIName());
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -496,12 +501,12 @@ public class HazelcastCore implements EventListener {
         try {
             InitialContext ctx;
             ctx = new InitialContext();
-            ctx.unbind(configuration.getJNDIName());
-            ctx.unbind(configuration.getCacheManagerJNDIName());
-            ctx.unbind(configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Unbound from JNDI at {0}", configuration.getJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Unbound from JNDI at {0}", configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Cache Manager Unbound from JNDI at {0}", configuration.getCacheManagerJNDIName());
+            ctx.unbind(nodeConfig.getJNDIName());
+            ctx.unbind(nodeConfig.getCacheManagerJNDIName());
+            ctx.unbind(nodeConfig.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Unbound from JNDI at {0}", nodeConfig.getJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Unbound from JNDI at {0}", nodeConfig.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Cache Manager Unbound from JNDI at {0}", nodeConfig.getCacheManagerJNDIName());
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }

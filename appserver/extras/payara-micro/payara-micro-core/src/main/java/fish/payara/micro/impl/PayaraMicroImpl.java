@@ -1732,7 +1732,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void configureHazelcast() {
         // check hazelcast cluster overrides
         if (noCluster) {
-            preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.enabled=false"));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.enabled=false"));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.ejb-container.ejb-timer-service.ejb-timer-service=Dummy"));
         } else {
 
@@ -1751,7 +1751,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             if (alternateHZConfigFile != null) {
                 preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile.getName()));
             }
-            preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.lite=" + liteMember));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.lite=" + liteMember));
 
             if (hzClusterName != null) {
                 preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
@@ -1762,12 +1762,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
 
             if (instanceName != null) {
-                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.member-name=" + instanceName));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-name=" + instanceName));
                 preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.generate-names=false"));
             }
 
             if (instanceGroup != null) {
-                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.member-group=" + instanceGroup));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-group=" + instanceGroup));
             }
             preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
             

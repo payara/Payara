@@ -41,7 +41,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
-    <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" generate-names="true"></hazelcast-runtime-configuration>
+    <hazelcast-runtime-configuration multicastGroup="224.2.2.4" multicastPort="2904" generate-names="true"></hazelcast-runtime-configuration>
     <security-configurations>
         <authorization-service default="true" name="authorizationService">
             <security-provider name="simpleAuthorization" type="Simple" provider-name="simpleAuthorizationProvider">
@@ -68,6 +68,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
     </servers>
     <configs>
         <config name="server-config">
+            <hazelcast-config-specific-configuration enabled="true"></hazelcast-config-specific-configuration>
             <health-check-service-configuration enabled="false">
                 <log-notifier enabled="true"/>
                 <eventbus-notifier enabled="false"/>
