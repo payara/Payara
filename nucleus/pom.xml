@@ -247,7 +247,7 @@
         <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
 
         <!-- 4.1.1-b001  -->
-        <glassfish-corba.version>4.0.1.payara-p10</glassfish-corba.version>
+        <glassfish-corba.version>4.1.1.payara-p1</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <saaj-api.version>1.4.0</saaj-api.version>
         
