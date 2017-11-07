@@ -224,7 +224,7 @@
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
         <jersey.version>2.26</jersey.version>
         
-        <!-- Bean Validation -->
+        <!-- Bean Validation --> 
         <javax.validation.version>2.0.0.Final</javax.validation.version>
         <hibernate.validator.version>6.0.3.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.0.3.Final</hibernate.validator-cdi.version>
