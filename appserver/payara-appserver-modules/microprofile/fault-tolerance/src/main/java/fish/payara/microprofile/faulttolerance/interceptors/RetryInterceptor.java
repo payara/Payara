@@ -44,7 +44,6 @@ import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
@@ -150,14 +149,14 @@ public class RetryInterceptor {
             long jitterMillis = Duration.of(jitter, jitterDelayUnit).toMillis();
             long timeoutTime = System.currentTimeMillis() + Duration.of(maxDuration, durationUnit).toMillis();
             
-            Exception retryExeception = ex;
+            Exception retryException = ex;
             
             while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
                 try {
                     proceededInvocationContext = invocationContext.proceed();
                     break;
                 } catch (Exception caughtException) {
-                    retryExeception = caughtException;
+                    retryException = caughtException;
                     
                     if (delayMillis > 0 || jitterMillis > 0) {
                         Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
@@ -168,7 +167,7 @@ public class RetryInterceptor {
             }
             
             if (proceededInvocationContext == null) {
-                throw retryExeception;
+                throw retryException;
             }
         }
         
