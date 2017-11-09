@@ -117,7 +117,7 @@ public abstract class AccessLogFormatter {
      */
     public AccessLogFormatter() {
         tz = TimeZone.getDefault();
-        timeZone = calculateTimeZoneOffset(tz.getRawOffset());
+        timeZone = calculateTimeZoneOffset(tz.getOffset(new Date().getTime()));
         currentDate = new Date(System.currentTimeMillis());
     }
 
