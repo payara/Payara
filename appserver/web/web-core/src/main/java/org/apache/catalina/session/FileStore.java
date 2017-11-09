@@ -418,34 +418,29 @@ public final class FileStore extends StoreBase {
                                               new Object[] {session.getIdInternal(), file.getAbsolutePath()});
             log(msg);
         }
-        FileOutputStream fos = null;
+
         ObjectOutputStream oos = null;
-        try {
-            fos = new FileOutputStream(file.getAbsolutePath());
+        try (FileOutputStream fos = new FileOutputStream(file.getAbsolutePath());
+             BufferedOutputStream bos = new BufferedOutputStream(fos);
+        ){
             Container container = manager.getContainer();
             if (container != null) {
-                oos = ((StandardContext) container).createObjectOutputStream(
-                        new BufferedOutputStream(fos));
+                oos = ((StandardContext) container).createObjectOutputStream(bos);
             } else {
-                oos = new ObjectOutputStream(new BufferedOutputStream(fos)); 
+                oos = new ObjectOutputStream(bos);
             }
+            oos.writeObject(session);
         } catch (IOException e) {
-            if (fos != null) {
+            throw e;
+        } finally {
+            if (oos != null ) {
                 try {
-                    fos.close();
-                } catch (IOException f) {
-                    // Ignore
+                    oos.close();
+                } catch (IOException ioe) {
+                    //ignore
                 }
             }
-            throw e;
         }
-
-        try {
-            oos.writeObject(session);
-        } finally {
-            oos.close();
-        }
-
     }
 
 
