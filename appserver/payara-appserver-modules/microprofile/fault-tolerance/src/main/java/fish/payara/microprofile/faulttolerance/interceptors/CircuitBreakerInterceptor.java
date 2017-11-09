@@ -46,14 +46,18 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Priority;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.naming.NamingException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -69,7 +73,7 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor
 @CircuitBreaker
-@Priority(Interceptor.Priority.PLATFORM_AFTER + 10)
+@Priority(Interceptor.Priority.PLATFORM_AFTER + 15)
 public class CircuitBreakerInterceptor implements Serializable {
     
     @Inject
@@ -100,7 +104,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                 Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
 
                 if (fallback != null) {
-                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
                 } else {
                     throw ex;
@@ -119,20 +123,30 @@ public class CircuitBreakerInterceptor implements Serializable {
         CircuitBreaker circuitBreaker = FaultToleranceCdiUtils.getAnnotation(beanManager, CircuitBreaker.class, 
                 invocationContext);
         Config config = ConfigProvider.getConfig();
-        
-// ************************* TO DO *********************************
-//        Class<? extends Throwable>[] failOn = (String) FaultToleranceCdiUtils.getOverrideValue(
-//                config, CircuitBreaker.class.getName(), "failOn", invocationContext.getMethod().getName(), 
-//                invocationContext.getMethod().getDeclaringClass().getCanonicalName(), String.class)
-//                .orElse(circuitBreaker.failOn());
-////////////////////////////////////////////////////////////////////
 
+        Class<? extends Throwable>[] failOn = circuitBreaker.failOn();
+        try {
+            String failOnString = ((String) FaultToleranceCdiUtils.getOverrideValue(
+                    config, Retry.class, "failOn", invocationContext, String.class).get());
+
+            List<Class> classList = new ArrayList<>();
+
+            for (String className : failOnString.substring(1, failOnString.length() - 1)
+                    .replaceAll(" ", "").split(",")) {
+                classList.add(Class.forName(className));
+            }
+
+            failOn = classList.toArray(failOn);
+        } catch (NoSuchElementException nsee) {
+            // Ignore
+        }
+        
         long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, CircuitBreaker.class, "value", invocationContext, Long.class)
                 .orElse(circuitBreaker.delay());
-        ChronoUnit delayUnit = ChronoUnit.valueOf(((String) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class, "delayUnit", invocationContext, String.class)
-                .orElse(circuitBreaker.delayUnit().toString())).toUpperCase());
+        ChronoUnit delayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
+                config, CircuitBreaker.class, "delayUnit", invocationContext, ChronoUnit.class)
+                .orElse(circuitBreaker.delayUnit());
         int requestVolumeThreshold = (Integer) FaultToleranceCdiUtils.getOverrideValue(
                 config, CircuitBreaker.class, "requestVolumeThreshold", invocationContext, Integer.class)
                 .orElse(circuitBreaker.requestVolumeThreshold());
@@ -143,7 +157,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                 config, CircuitBreaker.class, "successThreshold", invocationContext, Integer.class)
                 .orElse(circuitBreaker.successThreshold());
 
-        delay = Duration.of(delay, delayUnit).toMillis();
+        long delayMillis = Duration.of(delay, delayUnit).toMillis();
         
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
         
@@ -161,19 +175,21 @@ public class CircuitBreakerInterceptor implements Serializable {
                 try {
                     proceededInvocationContext = invocationContext.proceed();
                 } catch (Exception ex) {
-                    // Generic catch, as we want to register that the method failed somehow
-                    // Add a failure result to the queue
-                    circuitBreakerState.recordClosedResult(Boolean.FALSE);
-                    
-                    // Calculate the failure threshold
-                    long failureThreshold = Math.round(requestVolumeThreshold * failureRatio);
+                    // Check if the exception is something that should record a failure
+                    if (shouldFail(failOn, ex)) {
+                        // Add a failure result to the queue
+                        circuitBreakerState.recordClosedResult(Boolean.FALSE);
 
-                    // If we're over the failure threshold, open the circuit
-                    if (circuitBreakerState.isOverFailureThreshold(failureThreshold)) {
-                        circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
-                        
-                        // Kick off a thread that will half-open the circuit after the specified delay
-                        scheduleHalfOpen(delay, circuitBreakerState);
+                        // Calculate the failure threshold
+                        long failureThreshold = Math.round(requestVolumeThreshold * failureRatio);
+
+                        // If we're over the failure threshold, open the circuit
+                        if (circuitBreakerState.isOverFailureThreshold(failureThreshold)) {
+                            circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
+
+                            // Kick off a thread that will half-open the circuit after the specified delay
+                            scheduleHalfOpen(delayMillis, circuitBreakerState);
+                        }
                     }
                     
                     // Finally, propagate the error upwards
@@ -188,11 +204,14 @@ public class CircuitBreakerInterceptor implements Serializable {
                 try {
                     proceededInvocationContext = invocationContext.proceed();
                 } catch (Exception ex) {
-                    // Generic catch, as we want to register that something has gone wrong
-                    // Open the circuit again, and reset the half-open result counter
-                    circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
-                    circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
-                    scheduleHalfOpen(delay, circuitBreakerState);
+                    // Check if the exception is something that should record a failure
+                    if (shouldFail(failOn, ex)) {
+                        // Open the circuit again, and reset the half-open result counter
+                        circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
+                        circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
+                        scheduleHalfOpen(delayMillis, circuitBreakerState);
+                    }
+                    
                     throw ex;
                 }
                 
@@ -218,16 +237,29 @@ public class CircuitBreakerInterceptor implements Serializable {
         return proceededInvocationContext;
     }
     
-    private void scheduleHalfOpen(long delay, CircuitBreakerState circuitBreakerState) {
+    private void scheduleHalfOpen(long delayMillis, CircuitBreakerState circuitBreakerState) throws NamingException {
         Runnable halfOpen = () -> {
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(CircuitBreakerInterceptor.class.getName()).log(Level.SEVERE, null, ex);
-            }
             circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.HALF_OPEN);
         };
+
+        FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()
+                .getService(FaultToleranceService.class);
+        ManagedScheduledExecutorService managedScheduledExecutorService = faultToleranceService.
+                getManagedScheduledExecutorService();
+
+        managedScheduledExecutorService.schedule(halfOpen, delayMillis, TimeUnit.MILLISECONDS);
+    }
+    
+    private boolean shouldFail(Class<? extends Throwable>[] failOn, Exception ex) {
+        boolean shouldFail = false;
         
-        new Thread(halfOpen).start();
+        for (Class<? extends Throwable> failureClass : failOn) {
+            if (ex.getClass() == failureClass) {
+                shouldFail = true;
+                break;
+            }
+        }
+        
+        return shouldFail;
     }
 }

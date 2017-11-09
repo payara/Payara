@@ -70,11 +70,8 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor
 @Timeout
-@Priority(Interceptor.Priority.PLATFORM_AFTER + 15)
+@Priority(Interceptor.Priority.PLATFORM_AFTER + 20)
 public class TimeoutInterceptor {
-
-    private Future currentTimeout;
-    private boolean timedOut;
     
     @Inject
     private BeanManager beanManager;
@@ -104,7 +101,7 @@ public class TimeoutInterceptor {
                 Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
 
                 if (fallback != null) {
-                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
                 } else {
                     throw ex;
@@ -123,36 +120,39 @@ public class TimeoutInterceptor {
         long value = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Timeout.class, "value", invocationContext, Long.class)
                 .orElse(timeout.value());
-        ChronoUnit unit = ChronoUnit.valueOf(((String) FaultToleranceCdiUtils.getOverrideValue(
-                config, Timeout.class, "unit", invocationContext, String.class)
-                .orElse(timeout.unit().toString())).toUpperCase());
+        ChronoUnit unit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
+                config, Timeout.class, "unit", invocationContext, ChronoUnit.class)
+                .orElse(timeout.unit());
 
         long timeoutMillis = Duration.of(value, unit).toMillis();
         long timeoutTime = System.currentTimeMillis() + timeoutMillis;
-        timedOut = false;
+        
+        Future timeoutFuture = null;
+        ThreadLocal<Boolean> timedOut = new ThreadLocal<>();
+        timedOut.set(false);
         
         try {
-            startTimeout(timeoutMillis);
+            timeoutFuture = startTimeout(timeoutMillis, timedOut);
             proceededInvocationContext = invocationContext.proceed();
-            stopTimeout();
+            stopTimeout(timeoutFuture);
 
-            if (System.currentTimeMillis() > timeoutTime || timedOut) {
+            if (System.currentTimeMillis() > timeoutTime || timedOut.get()) {
                 throw new TimeoutException();
             }
         } catch (Exception ex) {
-            stopTimeout();
+            stopTimeout(timeoutFuture);
             throw ex;
         }
 
         return proceededInvocationContext;
     }
 
-    private void startTimeout(long timeoutMillis) throws NamingException {
+    private Future startTimeout(long timeoutMillis, ThreadLocal<Boolean> timedOut) throws NamingException {
         final Thread thread = Thread.currentThread();
         
         Runnable timeoutTask = () -> {
             thread.interrupt();
-            timedOut = true;
+            timedOut.set(true);
         };
 
         FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()
@@ -160,11 +160,12 @@ public class TimeoutInterceptor {
         ManagedScheduledExecutorService managedScheduledExecutorService = faultToleranceService.
                 getManagedScheduledExecutorService();
 
-        currentTimeout = managedScheduledExecutorService.schedule(timeoutTask, timeoutMillis, TimeUnit.MILLISECONDS);
-        
+        return managedScheduledExecutorService.schedule(timeoutTask, timeoutMillis, TimeUnit.MILLISECONDS);
     }
 
-    private void stopTimeout() {
-        currentTimeout.cancel(true);
+    private void stopTimeout(Future timeoutFuture) {
+        if (timeoutFuture != null) {
+            timeoutFuture.cancel(true);
+        }
     }
 }

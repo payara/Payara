@@ -44,6 +44,7 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.io.Serializable;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -101,7 +102,7 @@ public class BulkheadInterceptor implements Serializable {
 
                 // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
                 if (fallback != null) {
-                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
                 } else {
                     throw ex;
@@ -142,12 +143,15 @@ public class BulkheadInterceptor implements Serializable {
                     invocationContext.getMethod(), waitingTaskQueue);
             
             // Check if there are any free permits for concurrent execution
-            if (!bulkheadExecutionSemaphore.tryAcquire()) {
+            if (!bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                 // If there aren't any free permits, see if there are any free queue permits
-                if (bulkheadExecutionQueueSemaphore.tryAcquire()) {
+                if (bulkheadExecutionQueueSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                     // If there is a free queue permit, queue for an executor permit
                     try {
                         bulkheadExecutionSemaphore.acquire();
+                        
+                        // Release the queu permit
+                        bulkheadExecutionQueueSemaphore.release();
                         
                         // Proceed the invocation and wait for the response
                         try {
@@ -158,12 +162,11 @@ public class BulkheadInterceptor implements Serializable {
                             bulkheadExecutionQueueSemaphore.release();
 
                             // Let the exception propagate further up - we just want to release the semaphores
-                            throw new BulkheadException(ex);
+                            throw ex;
                         }
 
-                        // Release both permits
+                        // Release the execution permit
                         bulkheadExecutionSemaphore.release();
-                        bulkheadExecutionQueueSemaphore.release();
                     } catch (InterruptedException ex) {
                         throw new BulkheadException(ex);
                     }
@@ -179,7 +182,7 @@ public class BulkheadInterceptor implements Serializable {
                         bulkheadExecutionSemaphore.release();
                         
                         // Let the exception propagate further up - we just want to release the semaphores
-                        throw new BulkheadException(ex);
+                        throw ex;
                     }
                     
                 // Release the permit
@@ -187,7 +190,7 @@ public class BulkheadInterceptor implements Serializable {
             }
         } else {
             // Try to get an execution permit
-            if (bulkheadExecutionSemaphore.tryAcquire()) {
+            if (bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                 // Proceed the invocation and wait for the response
                 try {
                     proceededInvocationContext = invocationContext.proceed();
@@ -196,7 +199,7 @@ public class BulkheadInterceptor implements Serializable {
                     bulkheadExecutionSemaphore.release();
 
                     // Let the exception propagate further up - we just want to release the semaphores
-                    throw new BulkheadException(ex);
+                    throw ex;
                 }
                 
                 // Release the permit

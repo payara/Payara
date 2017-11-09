@@ -41,11 +41,13 @@ package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.lang.reflect.Method;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
+import javax.enterprise.inject.spi.CDI;
 
 /**
  *
@@ -58,7 +60,9 @@ public class FallbackPolicy {
     private final Class<? extends FallbackHandler> fallbackClass;
     private final String fallbackMethod;
     
-    public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext) 
+    private BeanManager beanManager;
+    
+    public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext, BeanManager beanManager) 
             throws ClassNotFoundException {     
         fallbackClass = (Class<? extends FallbackHandler>) Thread.currentThread().getContextClassLoader().loadClass(
                 (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
@@ -68,6 +72,8 @@ public class FallbackPolicy {
         fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, 
                 "fallbackMethod", invocationContext, String.class)
                 .orElse(fallback.fallbackMethod());
+        
+        this.beanManager = beanManager;
     }
     
     public Object fallback(InvocationContext invocationContext) throws Exception {
@@ -80,10 +86,12 @@ public class FallbackPolicy {
         } else {
             ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(), 
                     invocationContext.getParameters());
-
+            
             fallbackInvocationContext = fallbackClass
                     .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
-                    .invoke(fallbackClass.getConstructor().newInstance(), executionContext);
+                    .invoke(CDI.current().select(fallbackClass).get(), executionContext);
+            
+            // fallbackClass.getConstructor().newInstance()
         }
         
         return fallbackInvocationContext;

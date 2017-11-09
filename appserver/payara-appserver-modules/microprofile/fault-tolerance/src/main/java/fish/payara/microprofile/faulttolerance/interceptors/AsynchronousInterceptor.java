@@ -105,7 +105,7 @@ public class AsynchronousInterceptor implements Serializable {
             
             // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
             if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
             } else {
                 throw ex;

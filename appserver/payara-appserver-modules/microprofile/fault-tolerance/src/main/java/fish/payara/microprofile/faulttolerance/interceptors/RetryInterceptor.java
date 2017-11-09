@@ -44,6 +44,9 @@ import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
@@ -90,7 +93,7 @@ public class RetryInterceptor {
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
             if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
             } else {
                 throw ex;
@@ -108,17 +111,41 @@ public class RetryInterceptor {
             proceededInvocationContext = invocationContext.proceed();
         } catch (Exception ex) {
             Config config = ConfigProvider.getConfig();
-//            Class<? extends Throwable>[] retryOn = (Class<? extends Throwable>[]) FaultToleranceCdiUtils.getOverrideValue(
-//                config, Retry.class.getSimpleName(), "retryOn", invocationContext.getMethod().getName(), 
-//                invocationContext.getMethod().getDeclaringClass().getCanonicalName(), String.class)
-//                .orElse(retry.retryOn());
-//            Class<? extends Throwable>[] abortOn = (Class<? extends Throwable>[]) FaultToleranceCdiUtils.getOverrideValue(
-//                config, Retry.class.getSimpleName(), "abortOn", invocationContext.getMethod().getName(), 
-//                invocationContext.getMethod().getDeclaringClass().getCanonicalName(), String.class)
-//                .orElse(retry.abortOn());
+
             Class<? extends Throwable>[] retryOn = retry.retryOn();
-            Class<? extends Throwable>[] abortOn = retry.abortOn();
+            try {
+                String retryOnString = ((String) FaultToleranceCdiUtils.getOverrideValue(
+                        config, Retry.class, "retryOn", invocationContext, String.class).get());
+                
+                List<Class> classList = new ArrayList<>();
             
+                for (String className : retryOnString.substring(1, retryOnString.length() - 1)
+                        .replaceAll(" ", "").split(",")) {
+                    classList.add(Class.forName(className));
+                }
+                
+                retryOn = classList.toArray(retryOn);
+            } catch (NoSuchElementException nsee) {
+                // Ignore
+            }
+            
+            Class<? extends Throwable>[] abortOn = retry.abortOn();
+            try {
+                String abortOnString = (String) FaultToleranceCdiUtils.getOverrideValue(
+                        config, Retry.class, "abortOn", invocationContext, String.class).get();
+
+                List<Class> classList = new ArrayList<>();
+
+                for (String className : abortOnString.substring(1, abortOnString.length() - 1)
+                        .replaceAll(" ", "").split(",")) {
+                    classList.add(Class.forName(className));
+                }
+                
+                abortOn = classList.toArray(abortOn);
+            } catch (NoSuchElementException nsee) {
+                // Ignore
+            }
+
             if (!shouldRetry(retryOn, abortOn, ex)) {
                 throw ex;
             }
@@ -129,21 +156,21 @@ public class RetryInterceptor {
             long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "delay", invocationContext, Long.class)
                 .orElse(retry.delay());
-            ChronoUnit delayUnit = ChronoUnit.valueOf(((String) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "delayUnit", invocationContext, String.class)
-                .orElse(retry.delayUnit().toString())).toUpperCase());
+            ChronoUnit delayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
+                config, Retry.class, "delayUnit", invocationContext, ChronoUnit.class)
+                .orElse(retry.delayUnit());
             long maxDuration = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "maxDuration", invocationContext, Long.class)
                 .orElse(retry.maxDuration());
-            ChronoUnit durationUnit = ChronoUnit.valueOf(((String) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "durationUnit", invocationContext, String.class)
-                .orElse(retry.durationUnit().toString())).toUpperCase());
+            ChronoUnit durationUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
+                config, Retry.class, "durationUnit", invocationContext, ChronoUnit.class)
+                .orElse(retry.durationUnit());
             long jitter = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "jitter", invocationContext, Long.class)
                 .orElse(retry.jitter());
-            ChronoUnit jitterDelayUnit = ChronoUnit.valueOf(((String) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "jitterDelayUnit", invocationContext, String.class)
-                .orElse(retry.jitterDelayUnit().toString())).toUpperCase());
+            ChronoUnit jitterDelayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
+                config, Retry.class, "jitterDelayUnit", invocationContext, ChronoUnit.class)
+                .orElse(retry.jitterDelayUnit());
             
             long delayMillis = Duration.of(delay, delayUnit).toMillis();
             long jitterMillis = Duration.of(jitter, jitterDelayUnit).toMillis();
@@ -151,18 +178,73 @@ public class RetryInterceptor {
             
             Exception retryException = ex;
             
-            while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
-                try {
-                    proceededInvocationContext = invocationContext.proceed();
-                    break;
-                } catch (Exception caughtException) {
-                    retryException = caughtException;
-                    
-                    if (delayMillis > 0 || jitterMillis > 0) {
-                        Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+            if (maxRetries == -1 && maxDuration > 0) {
+                while (System.currentTimeMillis() < timeoutTime) {
+                    try {
+                        proceededInvocationContext = invocationContext.proceed();
+                        break;
+                    } catch (Exception caughtException) {
+                        retryException = caughtException;
+                        if (!shouldRetry(retryOn, abortOn, caughtException)) {
+                            break;
+                        }
+
+                        if (delayMillis > 0 || jitterMillis > 0) {
+                            Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                        }
                     }
-                    
-                    maxRetries--;
+                }
+            } else if (maxRetries == -1 && maxDuration == 0) {
+                while (true) {
+                    try {
+                        proceededInvocationContext = invocationContext.proceed();
+                        break;
+                    } catch (Exception caughtException) {
+                        retryException = caughtException;
+                        if (!shouldRetry(retryOn, abortOn, caughtException)) {
+                            break;
+                        }
+
+                        if (delayMillis > 0 || jitterMillis > 0) {
+                            Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                        }
+                    }
+                }
+            } else if (maxRetries != -1 && maxDuration > 0) {
+                while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
+                    try {
+                        proceededInvocationContext = invocationContext.proceed();
+                        break;
+                    } catch (Exception caughtException) {
+                        retryException = caughtException;
+                        if (!shouldRetry(retryOn, abortOn, caughtException)) {
+                            break;
+                        }
+
+                        if (delayMillis > 0 || jitterMillis > 0) {
+                            Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                        }
+
+                        maxRetries--;
+                    }
+                }
+            } else {
+                while (maxRetries > 0) {
+                    try {
+                        proceededInvocationContext = invocationContext.proceed();
+                        break;
+                    } catch (Exception caughtException) {
+                        retryException = caughtException;
+                        if (!shouldRetry(retryOn, abortOn, caughtException)) {
+                            break;
+                        }
+
+                        if (delayMillis > 0 || jitterMillis > 0) {
+                            Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                        }
+
+                        maxRetries--;
+                    }
                 }
             }
             

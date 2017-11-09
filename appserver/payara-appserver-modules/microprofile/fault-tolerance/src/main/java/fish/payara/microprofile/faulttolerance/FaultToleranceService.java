@@ -41,6 +41,7 @@ package fish.payara.microprofile.faulttolerance;
 
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -56,6 +57,7 @@ import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -81,20 +83,24 @@ public class FaultToleranceService implements EventListener {
     @Inject
     ServiceLocator habitat;
     
+    @Inject
+    Events events;
+    
     private final Map<String, Boolean> enabledMap;
-    private final Map<String, Map<Method, Semaphore>> bulkheadExecutionSemaphores;
-    private final Map<String, Map<Method, Semaphore>> bulkheadExecutionQueueSemaphores;
-    private final Map<String, Map<Method, CircuitBreakerState>> circuitBreakerStates;
+    private final Map<String, Map<String, Semaphore>> bulkheadExecutionSemaphores;
+    private final Map<String, Map<String, Semaphore>> bulkheadExecutionQueueSemaphores;
+    private final Map<String, Map<String, CircuitBreakerState>> circuitBreakerStates;
     
     public FaultToleranceService() {
-        bulkheadExecutionSemaphores = new ConcurrentHashMap();
-        bulkheadExecutionQueueSemaphores = new ConcurrentHashMap();
-        circuitBreakerStates = new ConcurrentHashMap();
-        enabledMap = new ConcurrentHashMap();
+        enabledMap = new ConcurrentHashMap<>();
+        bulkheadExecutionSemaphores  = new ConcurrentHashMap<>();
+        bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
+        circuitBreakerStates = new ConcurrentHashMap<>();
     }
     
     @PostConstruct
     public void postConstruct() {
+        events.register(this);
         faultToleranceServiceConfiguration = habitat.getService(FaultToleranceServiceConfiguration.class);
     }
     
@@ -103,6 +109,7 @@ public class FaultToleranceService implements EventListener {
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
             deregisterCircuitBreaker(info.getName());
+            deregisterBulkhead(info.getName());
         }
     }
     
@@ -124,7 +131,7 @@ public class FaultToleranceService implements EventListener {
         String managedExecutorServiceName = faultToleranceServiceConfiguration.getManagedExecutorService();
         InitialContext ctx = new InitialContext();
         
-        ManagedExecutorService managedExecutorService = null;
+        ManagedExecutorService managedExecutorService;
         
         if (managedExecutorServiceName == null || managedExecutorServiceName.isEmpty()) {
             managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
@@ -164,17 +171,18 @@ public class FaultToleranceService implements EventListener {
     
     public Semaphore getBulkheadExecutionSemaphore(String applicationName, Method annotatedMethod, int bulkheadValue) {
         Semaphore bulkheadExecutionSemaphore;
+        String fullMethodSignature = getFullMethodSignature(annotatedMethod);
         
-        Map<Method, Semaphore> annotatedMethodSemaphores = bulkheadExecutionSemaphores.get(applicationName);
+        Map<String, Semaphore> annotatedMethodSemaphores = bulkheadExecutionSemaphores.get(applicationName);
         
         if (annotatedMethodSemaphores == null) {
-            bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, annotatedMethod,
+            bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, fullMethodSignature,
                     bulkheadValue);
         } else {
-            bulkheadExecutionSemaphore = annotatedMethodSemaphores.get(annotatedMethod);
+            bulkheadExecutionSemaphore = annotatedMethodSemaphores.get(fullMethodSignature);
         
             if (bulkheadExecutionSemaphore == null) {
-                bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, annotatedMethod,
+                bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, fullMethodSignature,
                         bulkheadValue);
             }
         }
@@ -182,83 +190,104 @@ public class FaultToleranceService implements EventListener {
         return bulkheadExecutionSemaphore;
     }
     
-    private Semaphore createBulkheadExecutionSemaphore(String applicationName, Method annotatedMethod, 
+    private synchronized Semaphore createBulkheadExecutionSemaphore(String applicationName, String fullMethodSignature, 
             int bulkheadValue) {
-        Semaphore bulkheadExecutionSemaphore = new Semaphore(bulkheadValue);
+        if (bulkheadExecutionSemaphores.get(applicationName) == null) {
+            bulkheadExecutionSemaphores.put(applicationName, new ConcurrentHashMap<>());
+        }
         
-        Map annotatedMethodSemaphores = new ConcurrentHashMap();
-        annotatedMethodSemaphores.put(annotatedMethod, bulkheadExecutionSemaphore);
-        
-        bulkheadExecutionSemaphores.put(applicationName, annotatedMethodSemaphores);
-        return bulkheadExecutionSemaphore;
+        if (bulkheadExecutionSemaphores.get(applicationName).get(fullMethodSignature) == null) {
+            bulkheadExecutionSemaphores.get(applicationName).put(fullMethodSignature, new Semaphore(bulkheadValue, true));
+        }
+
+        return bulkheadExecutionSemaphores.get(applicationName).get(fullMethodSignature);
     }
     
     public Semaphore getBulkheadExecutionQueueSemaphore(String applicationName, Method annotatedMethod,
             int bulkheadWaitingTaskQueue) {
         Semaphore bulkheadExecutionQueueSemaphore;
+        String fullMethodSignature = getFullMethodSignature(annotatedMethod);
         
-        Map<Method, Semaphore> annotatedMethodExecutionQueueSemaphores = 
+        Map<String, Semaphore> annotatedMethodExecutionQueueSemaphores = 
                 bulkheadExecutionQueueSemaphores.get(applicationName);
         
         if (annotatedMethodExecutionQueueSemaphores == null) {
-            bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, annotatedMethod,
+            bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, fullMethodSignature,
                     bulkheadWaitingTaskQueue);
         } else {
-            bulkheadExecutionQueueSemaphore = annotatedMethodExecutionQueueSemaphores.get(annotatedMethod);
+            bulkheadExecutionQueueSemaphore = annotatedMethodExecutionQueueSemaphores.get(fullMethodSignature);
         
             if (bulkheadExecutionQueueSemaphore == null) {
                 bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, 
-                        annotatedMethod, bulkheadWaitingTaskQueue);
+                        fullMethodSignature, bulkheadWaitingTaskQueue);
             }
         }
         
         return bulkheadExecutionQueueSemaphore;
     }
     
-    private Semaphore createBulkheadExecutionQueueSemaphore(String applicationName, Method annotatedMethod,
+    private synchronized Semaphore createBulkheadExecutionQueueSemaphore(String applicationName, String fullMethodSignature,
             int bulkheadWaitingTaskQueue) {
-        Semaphore bulkheadExecutionQueueSemaphore = new Semaphore(bulkheadWaitingTaskQueue);
+        if (bulkheadExecutionQueueSemaphores.get(applicationName) == null) {
+            bulkheadExecutionQueueSemaphores.put(applicationName, new ConcurrentHashMap<>());
+        }
         
-        Map annotatedMethodExecutionQueueSemaphores = new ConcurrentHashMap();
-        annotatedMethodExecutionQueueSemaphores.put(annotatedMethod, bulkheadExecutionQueueSemaphore);
-        
-        bulkheadExecutionQueueSemaphores.put(applicationName, annotatedMethodExecutionQueueSemaphores);
-        return bulkheadExecutionQueueSemaphore;
+        if (bulkheadExecutionQueueSemaphores.get(applicationName).get(fullMethodSignature) == null) {
+            bulkheadExecutionQueueSemaphores.get(applicationName)
+                    .put(fullMethodSignature, new Semaphore(bulkheadWaitingTaskQueue, true));
+        }
+
+        return bulkheadExecutionQueueSemaphores.get(applicationName).get(fullMethodSignature);
     }
     
     public CircuitBreakerState getCircuitBreakerState(String applicationName, Method annotatedMethod, 
             CircuitBreaker circuitBreaker) {
         CircuitBreakerState circuitBreakerState;
+        String fullMethodSignature = getFullMethodSignature(annotatedMethod);
         
-        Map<Method, CircuitBreakerState> annotatedMethodCircuitBreakerStates = 
+        Map<String, CircuitBreakerState> annotatedMethodCircuitBreakerStates = 
                 circuitBreakerStates.get(applicationName);
 
         if (annotatedMethodCircuitBreakerStates == null) {
-            circuitBreakerState = registerCircuitBreaker(applicationName, annotatedMethod, circuitBreaker);
+            circuitBreakerState = registerCircuitBreaker(applicationName, fullMethodSignature, circuitBreaker);
         } else {
-            circuitBreakerState = annotatedMethodCircuitBreakerStates.get(annotatedMethod);
+            circuitBreakerState = annotatedMethodCircuitBreakerStates.get(fullMethodSignature);
         
             if (circuitBreakerState == null) {
-                circuitBreakerState = registerCircuitBreaker(applicationName, annotatedMethod, circuitBreaker);
+                circuitBreakerState = registerCircuitBreaker(applicationName, fullMethodSignature, circuitBreaker);
             }
         }
         
         return circuitBreakerState;
     }
     
-    private CircuitBreakerState registerCircuitBreaker(String applicationName, Method annotatedMethod, 
-            CircuitBreaker circuitBreaker) {
-        CircuitBreakerState circuitBreakerState = 
-                new CircuitBreakerState(circuitBreaker.requestVolumeThreshold());
+    private synchronized CircuitBreakerState registerCircuitBreaker(String applicationName, String fullMethodSignature, 
+            CircuitBreaker circuitBreaker) {       
+        if (circuitBreakerStates.get(applicationName) == null) {
+            circuitBreakerStates.put(applicationName, new ConcurrentHashMap<>());
+        }
         
-        Map annotatedMethodCircuitBreakerStates = new ConcurrentHashMap();
-        annotatedMethodCircuitBreakerStates.put(annotatedMethod, circuitBreakerState);
-        
-        circuitBreakerStates.put(applicationName, annotatedMethodCircuitBreakerStates);
-        return circuitBreakerState;
+        if (circuitBreakerStates.get(applicationName).get(fullMethodSignature) == null) {
+            circuitBreakerStates.get(applicationName)
+                    .put(fullMethodSignature, new CircuitBreakerState(circuitBreaker.requestVolumeThreshold()));
+        }
+
+        return circuitBreakerStates.get(applicationName).get(fullMethodSignature);
     }
 
     private void deregisterCircuitBreaker(String applicationName) {
         circuitBreakerStates.remove(applicationName);
+    }
+    
+    private void deregisterBulkhead(String applicationName) {
+        bulkheadExecutionSemaphores.remove(applicationName);
+        bulkheadExecutionQueueSemaphores.remove(applicationName);
+    }
+    
+    private String getFullMethodSignature(Method annotatedMethod) {
+        return annotatedMethod.getDeclaringClass().getCanonicalName() 
+                + "#" + annotatedMethod.getName() 
+                + "(" + Arrays.toString(annotatedMethod.getParameterTypes()) + ")"
+                + ">" + annotatedMethod.getReturnType().getSimpleName();
     }
 }
