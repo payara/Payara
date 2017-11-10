@@ -85,13 +85,20 @@ public class AsynchronousInterceptor implements Serializable {
                 .getService(FaultToleranceService.class);
         ManagedExecutorService managedExecutorService = faultToleranceService.getManagedExecutorService();
 
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        Config config = ConfigProvider.getConfig();
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
+                .getService(InvocationManager.class);
+        
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+        }
+        
         
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
-            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(), 
-                    config)) {
+            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
+                    invocationManager, invocationContext), config)) {
                 Callable callable = () -> {
                         return invocationContext.proceed();
                 };

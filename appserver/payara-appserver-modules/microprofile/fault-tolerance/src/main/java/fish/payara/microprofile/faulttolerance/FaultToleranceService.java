@@ -50,6 +50,7 @@ import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.eclipse.microprofile.config.Config;
@@ -58,6 +59,7 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -108,23 +110,43 @@ public class FaultToleranceService implements EventListener {
     public void event(Event event) {
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
-            deregisterCircuitBreaker(info.getName());
-            deregisterBulkhead(info.getName());
+            deregisterApplication(info.getName());
         }
     }
     
     public Boolean isFaultToleranceEnabled(String applicationName, Config config) {
-        if (enabledMap.containsKey(applicationName)) {
-            return enabledMap.get(applicationName);
-        } else {
+        try {
+            if (enabledMap.containsKey(applicationName)) {
+                return enabledMap.get(applicationName);
+            } else {
+                setFaultToleranceEnabled(applicationName, config);
+                return enabledMap.get(applicationName);
+            }
+        } catch (NullPointerException npe) {
             setFaultToleranceEnabled(applicationName, config);
             return enabledMap.get(applicationName);
         }
+        
     }
     
-    private void setFaultToleranceEnabled(String applicationName, Config config) {
-        enabledMap.put(applicationName, 
-                config.getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE));
+    private synchronized void setFaultToleranceEnabled(String applicationName, Config config) {
+        try {
+            if (!enabledMap.containsKey(applicationName)) {
+                if (config != null) {
+                    enabledMap.put(applicationName, 
+                        config.getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE));
+                } else {
+                    enabledMap.put(applicationName, Boolean.TRUE);
+                }
+            }
+        } catch (NullPointerException npe) {
+            if (config != null) {
+                enabledMap.put(applicationName, 
+                    config.getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE));
+            } else {
+                enabledMap.put(applicationName, Boolean.TRUE);
+            }
+        }
     }
     
     public ManagedExecutorService getManagedExecutorService() throws NamingException {
@@ -282,6 +304,29 @@ public class FaultToleranceService implements EventListener {
     private void deregisterBulkhead(String applicationName) {
         bulkheadExecutionSemaphores.remove(applicationName);
         bulkheadExecutionQueueSemaphores.remove(applicationName);
+    }
+    
+    private void deregisterApplication(String applicationName) {
+        enabledMap.remove(applicationName);
+        deregisterCircuitBreaker(applicationName);
+        deregisterBulkhead(applicationName);
+    }
+    
+    public String getApplicationName(InvocationManager invocationManager, InvocationContext invocationContext) {
+        String appName = invocationManager.getCurrentInvocation().getAppName();
+        if (appName == null) {
+            appName = invocationManager.getCurrentInvocation().getModuleName();
+
+            if (appName == null) {
+                appName = invocationManager.getCurrentInvocation().getComponentId();
+
+                if (appName == null) {
+                    appName = getFullMethodSignature(invocationContext.getMethod());
+                }
+            }
+        }
+        
+        return appName;
     }
     
     private String getFullMethodSignature(Method annotatedMethod) {

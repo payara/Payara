@@ -81,12 +81,19 @@ public class BulkheadInterceptor implements Serializable {
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        Config config = ConfigProvider.getConfig();
+        
+        Config config = null;
         
         try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+        }
+        
+        try {
+            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+            
             // Attempt to proceed the InvocationContext with Bulkhead semantics if Fault Tolerance is enabled
-            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(),
-                    config)) {
+            if (faultToleranceService.isFaultToleranceEnabled(appName, config)) {
                 proceededInvocationContext = bulkhead(invocationContext);
             } else {
                 proceededInvocationContext = invocationContext.proceed();
@@ -121,7 +128,14 @@ public class BulkheadInterceptor implements Serializable {
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         Bulkhead bulkhead = FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext);
         
-        Config config = ConfigProvider.getConfig(invocationContext.getTarget().getClass().getClassLoader());
+        Config config = null;
+        
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (Exception ex) {
+            System.out.println("Oh noes!");
+        }
+
         int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
                 config, Bulkhead.class, "value", invocationContext, Integer.class)
                 .orElse(bulkhead.value());
@@ -129,18 +143,18 @@ public class BulkheadInterceptor implements Serializable {
                 config, Bulkhead.class, "waitingTaskQueue", invocationContext, Integer.class)
                 .orElse(bulkhead.waitingTaskQueue());
         
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        invocationManager.getCurrentInvocation().getAppName();
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
+                .getService(InvocationManager.class);
         
-        Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(
-                invocationManager.getCurrentInvocation().getAppName(),
+        String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+        
+        Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(appName,
                 invocationContext.getMethod(), value);
         
         // If the Asynchronous annotation is present, use threadpool style, otherwise use semaphore style
         if (FaultToleranceCdiUtils.getAnnotation(beanManager, Asynchronous.class, invocationContext) != null) {
             Semaphore bulkheadExecutionQueueSemaphore = faultToleranceService.getBulkheadExecutionQueueSemaphore(
-                    invocationManager.getCurrentInvocation().getAppName(),
-                    invocationContext.getMethod(), waitingTaskQueue);
+                    appName, invocationContext.getMethod(), waitingTaskQueue);
             
             // Check if there are any free permits for concurrent execution
             if (!bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {

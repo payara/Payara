@@ -80,11 +80,16 @@ public class RetryInterceptor {
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        Config config = ConfigProvider.getConfig();
+        
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+        }
         
         try {
-            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(), 
-                    config)) {
+            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
+                    invocationManager, invocationContext), config)) {
                 proceededInvocationContext = retry(invocationContext);
             } else {
                 proceededInvocationContext = invocationContext.proceed();
@@ -110,7 +115,11 @@ public class RetryInterceptor {
         try {
             proceededInvocationContext = invocationContext.proceed();
         } catch (Exception ex) {
-            Config config = ConfigProvider.getConfig();
+            Config config = null;
+            try {
+                config = ConfigProvider.getConfig();
+            } catch (IllegalArgumentException iae) {
+            }
 
             Class<? extends Throwable>[] retryOn = retry.retryOn();
             try {

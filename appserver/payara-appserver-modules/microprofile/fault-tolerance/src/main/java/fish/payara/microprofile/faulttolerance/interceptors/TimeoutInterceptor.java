@@ -83,11 +83,16 @@ public class TimeoutInterceptor {
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        Config config = ConfigProvider.getConfig();
+        
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+        }
         
         try {
-            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(),
-                    config)) {
+            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
+                    invocationManager, invocationContext), config)) {
                 proceededInvocationContext = timeout(invocationContext);
             } else {
                 proceededInvocationContext = invocationContext.proceed();
@@ -116,7 +121,13 @@ public class TimeoutInterceptor {
         Object proceededInvocationContext = null;
 
         Timeout timeout = FaultToleranceCdiUtils.getAnnotation(beanManager, Timeout.class, invocationContext);
-        Config config = ConfigProvider.getConfig();
+        
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+        }
+        
         long value = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Timeout.class, "value", invocationContext, Long.class)
                 .orElse(timeout.value());

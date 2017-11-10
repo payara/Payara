@@ -86,11 +86,16 @@ public class CircuitBreakerInterceptor implements Serializable {
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        Config config = ConfigProvider.getConfig();
+        
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+        }
         
         try {
-            if (faultToleranceService.isFaultToleranceEnabled(invocationManager.getCurrentInvocation().getAppName(),
-                    config)) {
+            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
+                    invocationManager, invocationContext), config)) {
                 proceededInvocationContext = circuitBreak(invocationContext);
             } else {
                 proceededInvocationContext = invocationContext.proceed();
@@ -122,7 +127,12 @@ public class CircuitBreakerInterceptor implements Serializable {
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         CircuitBreaker circuitBreaker = FaultToleranceCdiUtils.getAnnotation(beanManager, CircuitBreaker.class, 
                 invocationContext);
-        Config config = ConfigProvider.getConfig();
+        
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+        }
 
         Class<? extends Throwable>[] failOn = circuitBreaker.failOn();
         try {
@@ -162,7 +172,7 @@ public class CircuitBreakerInterceptor implements Serializable {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
         
         CircuitBreakerState circuitBreakerState = faultToleranceService.getCircuitBreakerState(
-                invocationManager.getCurrentInvocation().getAppName(), 
+                faultToleranceService.getApplicationName(invocationManager, invocationContext), 
                 invocationContext.getMethod(), circuitBreaker);
         
         switch (circuitBreakerState.getCircuitState()) {
