@@ -15,14 +15,6 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  -->
-    <!beforeCreate
-        setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
-        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-    />
-    <!command
-        setSessionAttribute(key="hazelcastTabs" value="hazelcastMembers");
-        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationDomain.jsf?tabSetName=domainTabs");
-    />
 <sun:tabSet id="hazelcastTabs" immediate="true" selected="#{sessionScope.hazelcastTabs}" >            
     <sun:tab id="hazelcastMembers" immediate="$boolean{true}" text="$resource{i18nhc.hazelcast.membersTab}" toolTip="$resource{i18nhc.hazelcast.membersTabTip}" >
         <!command
@@ -34,7 +26,7 @@
     <sun:tab id="hazelcastConfig" immediate="$boolean{true}" text="$resource{i18nhc.hazelcast.configuration}" toolTip="$resource{i18nhc.hazelcast.configurationTip}" >
         <!command
         setSessionAttribute(key="hazelcastTabs" value="hazelcastConfig");
-        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationDomain.jsf?tabSetName=hazelcastTabs");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcast.jsf?tabSetName=hazelcastTabs");
         />
     </sun:tab>
 </sun:tabSet>
