@@ -48,7 +48,7 @@
         
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
-#include "/common/appServer/domainTabs.inc"
+#include "/hazelcast/hazelcastTabs.inc"
 <sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.membersTitle}"
            helpText="$resource{i18nhc.hazelcast.domainMembersTitleHelp}" >
 </sun:title>
