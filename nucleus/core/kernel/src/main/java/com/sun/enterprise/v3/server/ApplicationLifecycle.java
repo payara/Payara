@@ -2255,9 +2255,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     private ExecutorService createExecutorService() {
-        Runtime runtime = Runtime.getRuntime();
-        int nrOfProcessors = runtime.availableProcessors();
-        return Executors.newFixedThreadPool(nrOfProcessors, new ThreadFactory() {
+        return Executors.newCachedThreadPool(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
