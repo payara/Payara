@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016,2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.ejb.containers;
 
 import com.sun.ejb.ComponentContext;
@@ -1774,7 +1775,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                             interceptorClasses[i], 
                             ejbBundle, 
                             context.getJCDIInjectionContext(),
-                            context.getContainer().getEjbDescriptor().getInterceptorClasses());
+                            context.getContainer().getEjbDescriptor().getInterceptorClasses(), 
+                            ejbDescriptor);
             }
 
             interceptorManager.initializeInterceptorInstances(interceptorInstances);
