@@ -48,6 +48,7 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.io.InstanceDirs;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
@@ -99,6 +100,8 @@ public class DomainDiscoveryService implements DiscoveryService {
                     Properties dasProps = new Properties();
                     dasProps.load(new FileInputStream(instance.getDasPropertiesFile()));
                     dasHost = dasProps.getProperty("agent.das.host");
+                    // then do an IP lookup
+                    dasHost = InetAddress.getByName(dasHost).getHostAddress();
                 }
                     
                 if (dasHost.isEmpty() || dasHost.equals("localhost")) {

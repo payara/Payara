@@ -360,28 +360,11 @@ public class HazelcastCore implements EventListener {
     private void buildNetworkConfiguration(Config config) throws NumberFormatException {
         NetworkConfig nConfig = config.getNetworkConfig();
         
-        if (env.isDas()) {
-            if (configuration.getDASBindAddress() != null && !configuration.getDASBindAddress().isEmpty()) {
-                MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
-                memberAddressProviderConfig.setEnabled(enabled);
-                memberAddressProviderConfig.setImplementation(new MemberAddressProvider() {
-                    @Override
-                    public InetSocketAddress getBindAddress() {
-                        String port = configuration.getDasPort();
-                        return new InetSocketAddress(configuration.getDASBindAddress(), Integer.parseInt(port));
-                    }
 
-                    @Override
-                    public InetSocketAddress getPublicAddress() {
-                        String host = configuration.getDASPublicAddress();
-                        if (host == null || host.isEmpty()) {
-                            host = configuration.getDASBindAddress();
-                        }
-                        return new InetSocketAddress(host, Integer.parseInt(configuration.getDasPort()));
-                    }
-                });
-            }
-        }
+        MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
+        memberAddressProviderConfig.setEnabled(enabled);
+        memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
+
         
         if (!configuration.getInterface().isEmpty()) {
             // add an interfaces configuration
