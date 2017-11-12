@@ -39,6 +39,7 @@
         setPageSessionAttribute(key="enabledSelected", value="true");
         }
         setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="clusterMode", value="#{pageSession.valueMap['clusterMode']}");
         />
 </event>
 
@@ -53,6 +54,7 @@
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="true");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="clusterMode" value="#{pageSession.clusterMode}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />

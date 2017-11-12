@@ -28,15 +28,15 @@
 
 <event>
     <!beforeCreate
-
         createMap(result="#{pageSession.attrsMap}")
-        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
+        getRequestValue(key="configName" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="target", value="#{pageSession.configName}");
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.target}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.target}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
-        setSessionAttribute(key="hazelcastTabs" value="hazelcastConfig");
         if (#{pageSession.valueMap['enabled']}=true) {
-        setPageSessionAttribute(key="enabledSelected", value="true");
+           setPageSessionAttribute(key="enabledSelected", value="true");
         }
         setPageSessionAttribute(key="dynamic", value="true");
         />
@@ -50,10 +50,10 @@
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
                         onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
-                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="true");
-                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="lite" value="#{pageSession.lite}");
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration?target=#{pageSession.target}" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
         </sun:panelGroup>
@@ -63,7 +63,7 @@
 #include "/common/shared/configNameSection.inc"
     <sun:propertySheetSection id="main">
         <sun:property id="enabled" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.enabled}"  helpText="$resource{i18nhc.hazelcast.configuration.enabledHelp}">
-            <sun:checkbox id="enabled" selected="#{pageSession.enabled}" selectedValue="true" />
+            <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dynamic}"  helpText="$resource{i18nhc.hazelcast.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
@@ -82,7 +82,7 @@
         <sun:property id="cacheManagerJndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.cacheManagerJndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.cacheManagerJndiNameHelp}">
             <sun:textField id="cacheManagerJndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['cacheManagerJndiName']}" />
         </sun:property>    
-        <sun:property id="cachingProviderJndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.cachingProviderJndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.cachingProvideJndiNameHelp}">
+        <sun:property id="cachingProviderJndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.cachingProviderJndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.cachingProviderJndiNameHelp}">
             <sun:textField id="cachingProviderJndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['cachingProviderJndiName']}" />
         </sun:property>  
     </sun:propertySheetSection>
