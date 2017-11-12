@@ -348,9 +348,8 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         if (executorService != null) {
             return executorService;
         }
-        Runtime runtime = Runtime.getRuntime();
-       int nrOfProcessors = runtime.availableProcessors();
-        executorService = Executors.newFixedThreadPool(nrOfProcessors, new ThreadFactory() {
+
+        executorService = Executors.newCachedThreadPool(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
