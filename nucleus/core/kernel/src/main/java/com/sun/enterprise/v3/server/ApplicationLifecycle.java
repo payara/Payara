@@ -2255,16 +2255,22 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     private ExecutorService createExecutorService() {
-        return Executors.newCachedThreadPool(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("deployment-jar-scanner");
-                t.setContextClassLoader(getClass().getClassLoader());
-                t.setDaemon(true);
-                return t;
-            }
-        });
+        Runtime runtime = Runtime.getRuntime();
+        int nrOfProcessors = runtime.availableProcessors();
+
+        return new ThreadPoolExecutor(0, nrOfProcessors,
+                30L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        Thread t = new Thread(r);
+                        t.setName("deployment-jar-scanner");
+                        t.setContextClassLoader(getClass().getClassLoader());
+                        t.setDaemon(true);
+                        return t;
+                    }
+                });
     }
 
 }

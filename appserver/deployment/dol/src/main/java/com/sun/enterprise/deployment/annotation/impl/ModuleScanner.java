@@ -349,16 +349,23 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
             return executorService;
         }
 
-        executorService = Executors.newCachedThreadPool(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("dol-jar-scanner");
-                t.setDaemon(true);
-                t.setContextClassLoader(getClass().getClassLoader());
-                return t;
-            }
-        });
+        Runtime runtime = Runtime.getRuntime();
+        int nrOfProcessors = runtime.availableProcessors();
+
+        executorService = new ThreadPoolExecutor(0, nrOfProcessors,
+                30L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        Thread t = new Thread(r);
+                        t.setName("dol-jar-scanner");
+                        t.setDaemon(true);
+                        t.setContextClassLoader(getClass().getClassLoader());
+                        return t;
+                    }
+                });
+
         return executorService;
     }
 
