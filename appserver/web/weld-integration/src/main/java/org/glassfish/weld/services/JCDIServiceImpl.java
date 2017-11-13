@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -87,10 +87,14 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.jboss.weld.bean.InterceptorImpl;
+import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.contexts.CreationalContextImpl;
+import org.jboss.weld.interceptor.proxy.InterceptionContext;
+import org.jboss.weld.interceptor.spi.metadata.InterceptorClassMetadata;
+import org.jboss.weld.util.reflection.Reflections;
 
 @Service
 @Rank(10)
@@ -307,16 +311,31 @@ public class JCDIServiceImpl implements JCDIService {
         return null;
     }
 
+    private <T> T getAroundConstructInterceptorInstance(Interceptor interceptor, CreationalContext creationalContext) {
+        T instance = null;
+
+        if (creationalContext instanceof CreationalContextImpl<?>) {
+            CreationalContextImpl<T> weldContext = Reflections.cast(creationalContext);
+            InterceptorImpl<T> interceptorImpl = (InterceptorImpl) interceptor;
+            InterceptorClassMetadata<T> interceptorClassMetadata = interceptorImpl.getInterceptorMetadata();
+            InterceptionContext interceptionContext = weldContext.getAroundConstructInterceptionContext();
+            instance = interceptionContext.getInterceptorInstance(interceptorClassMetadata);
+        }
+
+        return instance;
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
     public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle, JCDIService.JCDIInjectionContext<?> ejbContext,
-            Set<EjbInterceptor> ejbInterceptors) {
-        
+            Set<EjbInterceptor> ejbInterceptors, EjbDescriptor ejbDesc) {
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
 
         // First get BeanDeploymentArchive for this ejb
         BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(topLevelBundleDesc);
         WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
         BeanManager beanManager = bootstrap.getManager(bda);
+        WeldManager weldManager = BeanManagerProxy.unwrap(beanManager);
         
         // first see if there's an Interceptor object defined for the interceptorClass
         // This happens when @Interceptor or @InterceptorBinding is used.
@@ -325,7 +344,10 @@ public class JCDIServiceImpl implements JCDIService {
             // Using the EJB's creationalContext so we don't have to do any cleanup.
             // The cleanup will be handled by weld when it cleans up the ejb.
             CreationalContext creationalContext = ejbContext.getCreationalContext();
-            Object instance = beanManager.getReference(interceptor, interceptorClass, creationalContext);
+            Object instance = getAroundConstructInterceptorInstance(interceptor, creationalContext);
+            if(instance == null){
+                instance = beanManager.getReference(interceptor, interceptorClass, creationalContext);
+            }
             return (T) instance;
         }
 
@@ -346,7 +368,14 @@ public class JCDIServiceImpl implements JCDIService {
 
         // There are other interceptors like SessionBeanInterceptor that are not beans.
         // Cannot use the ejb's creationalContext.
-        CreationalContext cc = beanManager.createCreationalContext(null);
+        CreationalContext<T> cc;
+        org.jboss.weld.ejb.spi.EjbDescriptor ejbWeldDesc = weldManager.getEjbDescriptor(ejbDesc.getName());
+        if (ejbWeldDesc == null) {
+            cc = beanManager.createCreationalContext(null);
+        } else {
+            Bean<T> sessionBean = weldManager.getBean(ejbWeldDesc);
+            cc = beanManager.createCreationalContext(sessionBean);
+        }
 
         AnnotatedType annotatedType = beanManager.createAnnotatedType(interceptorClass);
         InjectionTarget it = ((WeldManager) beanManager).getInjectionTargetFactory(annotatedType).createInterceptorInjectionTarget();
