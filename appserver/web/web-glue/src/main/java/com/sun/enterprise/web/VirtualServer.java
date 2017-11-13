@@ -985,13 +985,12 @@ public class VirtualServer extends StandardHost
          * 'log-file' attribute of this <virtual-server> and 'file'
          * attribute of <log-service> are different (See 6189219).
          */
-        boolean noCustomLog = (logFile == null ||
-            (logServiceFile != null && new File(logFile).equals(
-                    new File(logServiceFile))));
-
-        if ((fileLoggerHandler == null && noCustomLog) ||
-                (fileLoggerHandler != null && logFile != null &&
-                logFile.equals(fileLoggerHandler.getLogFile()))) {
+        boolean customLog = (logFile != null && logServiceFile != null
+                && !new File(logFile).equals(new File(logServiceFile)));
+        
+        if ((fileLoggerHandler == null && !customLog)
+                || (fileLoggerHandler != null && logFile != null
+                && logFile.equals(fileLoggerHandler.getLogFile()))) {
             return;
         }
 
@@ -1002,7 +1001,7 @@ public class VirtualServer extends StandardHost
             _logger.removeHandler(oldHandler);
         }
 
-        if (noCustomLog) {
+        if (!customLog) {
             fileLoggerHandler = null;
             newLogger = _logger;
         } else {
