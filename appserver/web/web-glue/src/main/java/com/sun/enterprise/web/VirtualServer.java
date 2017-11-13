@@ -1006,8 +1006,11 @@ public class VirtualServer extends StandardHost
             fileLoggerHandler = null;
             newLogger = _logger;
         } else {
-            // append the _logger name with "._vs.<virtual-server-id>"
-            String lname = _logger.getName() + "._vs." + getID();
+            // append the _logger name with "._vs.<virtual-server-id>" if it doesn't already have it
+            String lname = _logger.getName();
+            if (!lname.endsWith("._vs." + getID())) {
+                lname = _logger.getName() + "._vs." + getID();
+            }
             newLogger = LogManager.getLogManager().getLogger(lname);
             if (newLogger == null) {
                 newLogger = new Logger(lname, null) {
