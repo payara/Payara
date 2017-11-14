@@ -112,11 +112,11 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Param(name = "logfrequencyunit", optional = true, acceptableValues = "NANOSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS")
     private String logfrequencyunit;
 
-    @Param(name = "addproperty", optional = true)
-    private String addproperty;
+    @Param(name = "addproperty", optional = true, multiple = true)
+    private List<String> propertiesToAdd;
 
-    @Param(name = "delproperty", optional = true)
-    private String delproperty;
+    @Param(name = "delproperty", optional = true, multiple = true)
+    private List<String> propertiesToDelete;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
@@ -222,50 +222,70 @@ public class SetMonitoringConfiguration implements AdminCommand {
     private void updateAttributes(ActionReport actionReport, MonitoringServiceConfiguration monitoringConfig) throws PropertyVetoException, TransactionFailure {
         List<Property> attributes = monitoringConfig.getProperty();
 
-        if (null != delproperty) {
-            for (Property attribute : attributes) {
-                if (attribute.getName().equals(delproperty)) {
-                   attributes.remove(attribute); 
-                   break;
+        if (propertiesToDelete != null && !propertiesToDelete.isEmpty()) {
+            for (String delProperty : propertiesToDelete) {
+                Property property = parseToProperty(delProperty, monitoringConfig.createChild(Property.class));
+                for (Property attribute : attributes) {
+                    if (attribute.getName().equals(property.getName()) && attribute.getValue().equals(property.getValue())) {
+                        attributes.remove(attribute);
+                        break;
+                    }
                 }
             }
         }
 
-        if (null != addproperty) {
-            // Negative lookbehind - find space characters not preceeded by \
-            String[] addpropertytokens = addproperty.split("(?<!\\\\) ");
-            String name = null, value = null, description = null;
-            for (String token : addpropertytokens) {
-                token = token.replaceAll("\\\\", "");
-                String[] param = token.split("=",2);
-                switch (param[0]) {
-                    case "name":
-                        name = param[1];
-                        break;
-                    case "value":
-                        value = param[1];
-                        break;
-                    case "description":
-                        description = param[1];
-                        break;
-                    default:
-                        actionReport.appendMessage(param[0] + " is not a valid property.\n"); 
-                        actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                }
-            }
-
-            if (null != name && null != value) {
-                Property property = monitoringConfig.createChild(Property.class);
-                property.setName(name);
-                property.setValue(value);
-                
-                if (null != description) {
-                    property.setDescription(description);
-                }
-                
+        if (propertiesToAdd != null && !propertiesToAdd.isEmpty()) {
+            for (String addProperty : propertiesToAdd) {
+                Property property = parseToProperty(addProperty, monitoringConfig.createChild(Property.class));
                 attributes.add(property);
             }
-        }         
+        }
+    }
+
+    /**
+     * Produces a {@link org.jvnet.hk2.config.types.Property Property} from a
+     * given string. The string should be in the following format:
+     * 'name=something value=something description=something'.
+     *
+     * @param input the string to be parsed
+     * @param property the property to configure as per the input string.
+     * @return a constructed Property.
+     * @throws PropertyVetoException if a config listener vetoes a property attribute value.
+     */
+    private Property parseToProperty(String input, Property property) throws PropertyVetoException {
+        // Negative lookbehind - find space characters not preceeded by \
+        String[] propertyTokens = input.split("(?<!\\\\) ");
+        String name = null;
+        String value = null;
+        String description = null;
+        for (String token : propertyTokens) {
+            token = token.replaceAll("\\\\", "");
+            String[] param = token.split("=", 2);
+            switch (param[0]) {
+                case "name":
+                    name = param[1];
+                    break;
+                case "value":
+                    value = param[1];
+                    break;
+                case "description":
+                    description = param[1];
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown property attribute: " + param[0]);
+            }
+        }
+
+        if (null != name && null != value) {
+            property.setName(name);
+            property.setValue(value);
+            
+            if (description != null) {
+                property.setDescription(description);
+            }
+            return property;
+        }
+        throw new IllegalArgumentException("Unknown property attributes.");
     }
 
 }
