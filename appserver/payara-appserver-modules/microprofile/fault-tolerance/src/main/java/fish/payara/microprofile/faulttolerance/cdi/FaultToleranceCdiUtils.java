@@ -44,6 +44,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
@@ -54,18 +56,34 @@ import org.eclipse.microprofile.config.Config;
  */
 public class FaultToleranceCdiUtils {
     
+    private static final Logger logger = Logger.getLogger(FaultToleranceCdiUtils.class.getName());
+    
+    /**
+     * Gets the annotation from the method that triggered the interceptor.
+     * @param <A> The annotation type to return
+     * @param beanManager The invoking interceptor's BeanManager
+     * @param annotationClass The class of the annotation to get
+     * @param invocationContext The context of the method invocation
+     * @return The annotation that triggered the interceptor.
+     */
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, 
             InvocationContext invocationContext) {
         A annotation = null;
         Class<?> annotatedClass = invocationContext.getMethod().getDeclaringClass();
         
+        logger.log(Level.FINER, "Attempting to get annotation {0} from {1}", 
+                new String[]{annotationClass.getSimpleName(), invocationContext.getMethod().getName()});
         // Try to get the annotation from the method, otherwise attempt to get it from the class
         if (invocationContext.getMethod().isAnnotationPresent(annotationClass)) {
+            logger.log(Level.FINER, "Annotation was directly present on the method");
             annotation = invocationContext.getMethod().getAnnotation(annotationClass);
         } else {
             if (annotatedClass.isAnnotationPresent(annotationClass)) {
+                logger.log(Level.FINER, "Annotation was directly present on the class");
                 annotation = annotatedClass.getAnnotation(annotationClass);
             } else {
+                logger.log(Level.FINER, "Annotation wasn't directly present on the method or class, "
+                        + "checking stereotypes");
                 // Account for Stereotypes
                 Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
 
@@ -73,6 +91,7 @@ public class FaultToleranceCdiUtils {
                     Annotation a = annotations.remove();
 
                     if (a.annotationType().equals(annotationClass)) {
+                        logger.log(Level.FINER, "Annotation was found in a stereotype");
                         annotation = annotationClass.cast(a);
                         break;
                     }
