@@ -952,7 +952,7 @@ public class VirtualServer extends StandardHost
          */
         boolean customLog = (logFile != null && logServiceFile != null
                 && !new File(logFile).equals(new File(logServiceFile)));
-        
+
         boolean logFileChanged = logFile != null
                 && ((fileLoggerHandler != null && !logFile.equals(fileLoggerHandler.getLogFile()))
                 || fileLoggerHandler == null);
@@ -963,29 +963,26 @@ public class VirtualServer extends StandardHost
         if (!logFileChanged) {
             return;
         }
-        
+
+        // As it is being changed, close the old file handler
+        if (fileLoggerHandler != null) {
+            _logger.removeHandler(fileLoggerHandler);
+            close(fileLoggerHandler);
+            fileLoggerHandler = null;
+        }
+
+        // Store new logger to replace current one
+        Logger newLogger = null;
+
         /*
          * If the file is being changed to the log service file, reset the logger.
          */
         if (!customLog) {
-            for (Handler h: _logger.getHandlers()) {
-                _logger.removeHandler(h);
-            }
-            _logger.setUseParentHandlers(true);
-            fileLoggerHandler = null;
-            return;
-        }
-
-        Logger newLogger = null;
-        FileLoggerHandler oldHandler = fileLoggerHandler;
-        //remove old handler
-        if (oldHandler != null) {
-            _logger.removeHandler(oldHandler);
-        }
-
-        if (!customLog) {
-            fileLoggerHandler = null;
             newLogger = _logger;
+            for (Handler h : _logger.getHandlers()) {
+                newLogger.removeHandler(h);
+            }
+            newLogger.setUseParentHandlers(true);
         } else {
             // append the _logger name with "._vs.<virtual-server-id>" if it doesn't already have it
             String lname = _logger.getName();
@@ -1004,7 +1001,7 @@ public class VirtualServer extends StandardHost
                                 record.setResourceBundle(bundle);
                             }
                         }
-                        record.setThreadID((int)Thread.currentThread().getId());
+                        record.setThreadID((int) Thread.currentThread().getId());
                         super.log(record);
                     }
 
@@ -1018,7 +1015,7 @@ public class VirtualServer extends StandardHost
                     public synchronized void addHandler(Handler handler) {
                         super.addHandler(handler);
                         if (handler instanceof FileLoggerHandler) {
-                            ((FileLoggerHandler)handler).associate();
+                            ((FileLoggerHandler) handler).associate();
                         }
                     }
 
@@ -1039,13 +1036,13 @@ public class VirtualServer extends StandardHost
                             }
                             if (hasHandler) {
                                 super.removeHandler(handler);
-                                ((FileLoggerHandler)handler).disassociate();
+                                ((FileLoggerHandler) handler).disassociate();
                             }
                         }
                     }
                 };
 
-                synchronized(Logger.class) {
+                synchronized (Logger.class) {
                     LogManager.getLogManager().addLogger(newLogger);
                 }
             }
@@ -1073,12 +1070,11 @@ public class VirtualServer extends StandardHost
 
             // create and add new handler
             fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
-            newLogger.addHandler(fileLoggerHandler);            
+            newLogger.addHandler(fileLoggerHandler);
             newLogger.setUseParentHandlers(false);
         }
 
         setLogger(newLogger, logLevel);
-        close(oldHandler);
     }
 
     /**
