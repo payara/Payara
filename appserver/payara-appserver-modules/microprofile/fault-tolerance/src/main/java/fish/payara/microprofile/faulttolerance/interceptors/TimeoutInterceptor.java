@@ -46,6 +46,8 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Priority;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
@@ -73,6 +75,8 @@ import org.glassfish.internal.api.Globals;
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 20)
 public class TimeoutInterceptor {
     
+    private static final Logger logger = Logger.getLogger(TimeoutInterceptor.class.getName());
+    
     @Inject
     private BeanManager beanManager;
 
@@ -88,6 +92,7 @@ public class TimeoutInterceptor {
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
         }
         
         try {
@@ -106,7 +111,7 @@ public class TimeoutInterceptor {
                 Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
 
                 if (fallback != null) {
-                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
                 } else {
                     throw ex;
@@ -126,6 +131,7 @@ public class TimeoutInterceptor {
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
         }
         
         long value = (Long) FaultToleranceCdiUtils.getOverrideValue(

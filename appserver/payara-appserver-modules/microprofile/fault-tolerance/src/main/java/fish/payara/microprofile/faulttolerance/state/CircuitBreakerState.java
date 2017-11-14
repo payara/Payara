@@ -76,6 +76,10 @@ public class CircuitBreakerState {
         }
     }
     
+    public void resetResults() {
+        closedResultsQueue.clear();
+    }
+    
     public void incrementHalfOpenSuccessfulResultCounter() {
         halfOpenSuccessfulResultsCounter++;
     }

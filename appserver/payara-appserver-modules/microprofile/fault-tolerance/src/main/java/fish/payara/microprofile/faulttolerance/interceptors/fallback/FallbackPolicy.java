@@ -41,7 +41,6 @@ package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.lang.reflect.Method;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
@@ -60,9 +59,7 @@ public class FallbackPolicy {
     private final Class<? extends FallbackHandler> fallbackClass;
     private final String fallbackMethod;
     
-    private BeanManager beanManager;
-    
-    public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext, BeanManager beanManager) 
+    public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext) 
             throws ClassNotFoundException {     
         fallbackClass = (Class<? extends FallbackHandler>) Thread.currentThread().getContextClassLoader().loadClass(
                 (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
@@ -72,8 +69,6 @@ public class FallbackPolicy {
         fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, 
                 "fallbackMethod", invocationContext, String.class)
                 .orElse(fallback.fallbackMethod());
-        
-        this.beanManager = beanManager;
     }
     
     public Object fallback(InvocationContext invocationContext) throws Exception {
@@ -90,8 +85,6 @@ public class FallbackPolicy {
             fallbackInvocationContext = fallbackClass
                     .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
                     .invoke(CDI.current().select(fallbackClass).get(), executionContext);
-            
-            // fallbackClass.getConstructor().newInstance()
         }
         
         return fallbackInvocationContext;
@@ -99,8 +92,8 @@ public class FallbackPolicy {
     
     private class FaultToleranceExecutionContext implements ExecutionContext {
 
-        private Method method;
-        private Object[] parameters;
+        private final Method method;
+        private final Object[] parameters;
         
         public FaultToleranceExecutionContext(Method method, Object[] parameters) {
             this.method = method;

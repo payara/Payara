@@ -45,6 +45,8 @@ import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.io.Serializable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -71,6 +73,8 @@ import org.glassfish.internal.api.Globals;
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 10)
 public class BulkheadInterceptor implements Serializable {
     
+    private static final Logger logger = Logger.getLogger(BulkheadInterceptor.class.getName());
+    
     @Inject
     private BeanManager beanManager;
     
@@ -80,13 +84,15 @@ public class BulkheadInterceptor implements Serializable {
         
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
+                .getService(InvocationManager.class);
         
         Config config = null;
         
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
         }
         
         try {
@@ -109,7 +115,7 @@ public class BulkheadInterceptor implements Serializable {
 
                 // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
                 if (fallback != null) {
-                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
                 } else {
                     throw ex;
@@ -132,8 +138,8 @@ public class BulkheadInterceptor implements Serializable {
         
         try {
             config = ConfigProvider.getConfig();
-        } catch (Exception ex) {
-            System.out.println("Oh noes!");
+        } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
         }
 
         int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
@@ -158,19 +164,25 @@ public class BulkheadInterceptor implements Serializable {
             
             // Check if there are any free permits for concurrent execution
             if (!bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
+                logger.log(Level.FINER, "Attempting to acquire bulkhead queue semaphore.");
                 // If there aren't any free permits, see if there are any free queue permits
                 if (bulkheadExecutionQueueSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
+                    logger.log(Level.FINER, "Acquired bulkhead queue semaphore.");
                     // If there is a free queue permit, queue for an executor permit
                     try {
+                        logger.log(Level.FINER, "Attempting to acquire bulkhead execution semaphore.");
                         bulkheadExecutionSemaphore.acquire();
+                        logger.log(Level.FINER, "Acquired bulkhead queue semaphore.");
                         
-                        // Release the queu permit
+                        // Release the queue permit
                         bulkheadExecutionQueueSemaphore.release();
                         
                         // Proceed the invocation and wait for the response
                         try {
                             proceededInvocationContext = invocationContext.proceed();
                         } catch (Exception ex) {
+                            logger.log(Level.FINE, "Exception proceeding Bulkhead context", ex);
+                            
                             // Generic catch, as we need to release the semaphore permits
                             bulkheadExecutionSemaphore.release();
                             bulkheadExecutionQueueSemaphore.release();
@@ -182,6 +194,7 @@ public class BulkheadInterceptor implements Serializable {
                         // Release the execution permit
                         bulkheadExecutionSemaphore.release();
                     } catch (InterruptedException ex) {
+                        logger.log(Level.INFO, "Interrupted acquiring bulkhead semaphore", ex);
                         throw new BulkheadException(ex);
                     }
                 } else {
@@ -192,6 +205,8 @@ public class BulkheadInterceptor implements Serializable {
                     try {
                         proceededInvocationContext = invocationContext.proceed();
                     } catch (Exception ex) {
+                        logger.log(Level.FINE, "Exception proceeding Bulkhead context", ex);
+                        
                         // Generic catch, as we need to release the semaphore permits
                         bulkheadExecutionSemaphore.release();
                         
@@ -209,6 +224,8 @@ public class BulkheadInterceptor implements Serializable {
                 try {
                     proceededInvocationContext = invocationContext.proceed();
                 } catch (Exception ex) {
+                    logger.log(Level.FINE, "Exception proceeding Bulkhead context", ex);
+                    
                     // Generic catch, as we need to release the semaphore permits
                     bulkheadExecutionSemaphore.release();
 

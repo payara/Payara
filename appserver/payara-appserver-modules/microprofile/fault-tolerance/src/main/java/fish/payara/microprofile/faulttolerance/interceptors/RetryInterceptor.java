@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -70,6 +72,8 @@ import org.glassfish.internal.api.Globals;
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 5)
 public class RetryInterceptor {
     
+    private static final Logger logger = Logger.getLogger(RetryInterceptor.class.getName());
+    
     @Inject
     private BeanManager beanManager;
     
@@ -85,6 +89,7 @@ public class RetryInterceptor {
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
         }
         
         try {
@@ -98,7 +103,7 @@ public class RetryInterceptor {
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
             if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
             } else {
                 throw ex;
@@ -119,6 +124,7 @@ public class RetryInterceptor {
             try {
                 config = ConfigProvider.getConfig();
             } catch (IllegalArgumentException iae) {
+                logger.log(Level.INFO, "No config could be found", ex);
             }
 
             Class<? extends Throwable>[] retryOn = retry.retryOn();
@@ -274,6 +280,14 @@ public class RetryInterceptor {
                 if (ex.getClass() == throwable) {
                     shouldRetry = true;
                     break;
+                }  else {
+                    try {
+                        ex.getClass().asSubclass(throwable);
+                        shouldRetry = true;
+                        break;
+                    } catch (ClassCastException cce) {
+                        // Om nom nom
+                    }
                 }
             }
         } else {
@@ -285,6 +299,14 @@ public class RetryInterceptor {
                 if (ex.getClass() == throwable) {
                     shouldRetry = false;
                     break;
+                } else {
+                    try {
+                        ex.getClass().asSubclass(throwable);
+                        shouldRetry = false;
+                        break;
+                    } catch (ClassCastException cce) {
+                        // Om nom nom
+                    }
                 }
             }
         }

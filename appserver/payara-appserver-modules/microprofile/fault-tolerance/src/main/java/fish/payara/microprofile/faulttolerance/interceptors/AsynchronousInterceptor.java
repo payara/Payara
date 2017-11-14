@@ -48,6 +48,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
@@ -73,6 +75,8 @@ import org.glassfish.internal.api.Globals;
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class AsynchronousInterceptor implements Serializable {
 
+    private static final Logger logger = Logger.getLogger(AsynchronousInterceptor.class.getName());
+    
     @Inject
     BeanManager beanManager;
     
@@ -92,6 +96,7 @@ public class AsynchronousInterceptor implements Serializable {
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
         }
         
         
@@ -112,7 +117,7 @@ public class AsynchronousInterceptor implements Serializable {
             
             // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
             if (fallback != null) {
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
             } else {
                 throw ex;

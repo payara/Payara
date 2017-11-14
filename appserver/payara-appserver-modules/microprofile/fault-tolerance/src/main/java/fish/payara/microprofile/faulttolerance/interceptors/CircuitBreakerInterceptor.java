@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
@@ -76,6 +78,8 @@ import org.glassfish.internal.api.Globals;
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 15)
 public class CircuitBreakerInterceptor implements Serializable {
     
+    private static final Logger logger = Logger.getLogger(CircuitBreakerInterceptor.class.getName());
+    
     @Inject
     private BeanManager beanManager;
     
@@ -91,6 +95,7 @@ public class CircuitBreakerInterceptor implements Serializable {
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
         }
         
         try {
@@ -109,7 +114,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                 Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
 
                 if (fallback != null) {
-                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext, beanManager);
+                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
                 } else {
                     throw ex;
@@ -132,6 +137,7 @@ public class CircuitBreakerInterceptor implements Serializable {
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
         }
 
         Class<? extends Throwable>[] failOn = circuitBreaker.failOn();
@@ -236,9 +242,12 @@ public class CircuitBreakerInterceptor implements Serializable {
                     circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
 
                     // We want to keep the rolling results, so fill the queue with success values
-                    for (int i = 0; i < requestVolumeThreshold; i++) {
-                        circuitBreakerState.recordClosedResult(Boolean.TRUE);
-                    }
+//                    for (int i = 0; i < requestVolumeThreshold; i++) {
+//                        circuitBreakerState.recordClosedResult(Boolean.TRUE);
+//                    }
+
+                    // Reset the rolling results window
+                    circuitBreakerState.resetResults();
                 }
                     
                 break;
@@ -263,13 +272,25 @@ public class CircuitBreakerInterceptor implements Serializable {
     private boolean shouldFail(Class<? extends Throwable>[] failOn, Exception ex) {
         boolean shouldFail = false;
         
-        for (Class<? extends Throwable> failureClass : failOn) {
-            if (ex.getClass() == failureClass) {
-                shouldFail = true;
-                break;
+        if (failOn[0] != Throwable.class) {
+            for (Class<? extends Throwable> failureClass : failOn) {
+                if (ex.getClass() == failureClass) {
+                    shouldFail = true;
+                    break;
+                } else {
+                    try {
+                        ex.getClass().asSubclass(failureClass);
+                        shouldFail = true;
+                        break;
+                    } catch (ClassCastException cce) {
+                        // Om nom nom
+                    }
+                }
             }
+        } else {
+            shouldFail = true;
         }
-        
+     
         return shouldFail;
     }
 }
