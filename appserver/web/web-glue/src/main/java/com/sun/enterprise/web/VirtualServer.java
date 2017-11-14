@@ -935,50 +935,15 @@ public class VirtualServer extends StandardHost
         }
     }
 
-
-    /*
+    /**
      * Configures this virtual server with the specified log file.
      *
-     * @param logFile The value of the virtual server's log-file attribute in
-     * the domain.xml
+     * @param logFile the value of the virtual server's log-file attribute in
+     * the domain.xml.
+     * @param logLevel the verbosity of the logger.
+     * @param logServiceFile the file used for the log service.
      */
     synchronized void setLogFile(String logFile, String logLevel, String logServiceFile) {
-
-        /** catalina file logger code
-        String logPrefix = logFile;
-        String logDir = null;
-        String logSuffix = null;
-
-        if (logPrefix == null || logPrefix.equals("")) {
-            return;
-        }
-
-        int index = logPrefix.lastIndexOf(File.separatorChar);
-        if (index != -1) {
-            logDir = logPrefix.substring(0, index);
-            logPrefix = logPrefix.substring(index+1);
-        }
-
-        index = logPrefix.indexOf('.');
-        if (index != -1) {
-            logSuffix = logPrefix.substring(index);
-            logPrefix = logPrefix.substring(0, index);
-        }
-
-        logPrefix += "_";
-
-        FileLogger contextLogger = new FileLogger();
-        if (logDir != null) {
-            contextLogger.setDirectory(logDir);
-        }
-        contextLogger.setPrefix(logPrefix);
-        if (logSuffix != null) {
-            contextLogger.setSuffix(logSuffix);
-        }
-        contextLogger.setTimestamp(true);
-        contextLogger.setLevel(logLevel); 
-         */
-        
 
         /*
          * Configure separate logger for this virtual server only if
@@ -988,9 +953,26 @@ public class VirtualServer extends StandardHost
         boolean customLog = (logFile != null && logServiceFile != null
                 && !new File(logFile).equals(new File(logServiceFile)));
         
-        if ((fileLoggerHandler == null && !customLog)
-                || (fileLoggerHandler != null && logFile != null
-                && logFile.equals(fileLoggerHandler.getLogFile()))) {
+        boolean logFileChanged = logFile != null
+                && ((fileLoggerHandler != null && !logFile.equals(fileLoggerHandler.getLogFile()))
+                || fileLoggerHandler == null);
+
+        /*
+         * Exit early if the log file isn't being changed.
+         */
+        if (!logFileChanged) {
+            return;
+        }
+        
+        /*
+         * If the file is being changed to the log service file, reset the logger.
+         */
+        if (!customLog) {
+            for (Handler h: _logger.getHandlers()) {
+                _logger.removeHandler(h);
+            }
+            _logger.setUseParentHandlers(true);
+            fileLoggerHandler = null;
             return;
         }
 
@@ -1090,7 +1072,7 @@ public class VirtualServer extends StandardHost
             }
 
             // create and add new handler
-            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logServiceFile);
+            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
             newLogger.addHandler(fileLoggerHandler);            
             newLogger.setUseParentHandlers(false);
         }
