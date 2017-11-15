@@ -147,7 +147,8 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         // See issue https://glassfish.dev.java.net/issues/show_bug.cgi?id=13612
         // We no longer add derby jars to launcher class loader, we add them to common class loader instead.
         cpElements.addAll(findDerbyClient());
-        List<URL> urls = new ArrayList<URL>();
+        cpElements.addAll(findH2Client());
+        List<URL> urls = new ArrayList<>();
         StringBuilder cp = new StringBuilder();
         for (File f : cpElements) {
             try {
@@ -224,6 +225,34 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
                 return (name.endsWith(".jar") && !name.startsWith("derbyLocale_"));
             }
         }));
+    }
+
+    private List<File> findH2Client() {
+        final String H2_HOME_PROP = "AS_H2_INSTALL";
+        StartupContext startupContext = env.getStartupContext();
+        Properties arguments = null;
+
+        if (startupContext != null) {
+            arguments = startupContext.getArguments();
+        }
+
+        String h2Home = null;
+
+        if (arguments != null) {
+            h2Home = arguments.getProperty(H2_HOME_PROP,
+                    System.getProperty(H2_HOME_PROP));
+        }	
+        File h2Lib = null;
+        if (h2Home != null) {
+            h2Lib = new File(h2Home, "bin");
+        }
+
+        if (h2Lib==null || !h2Lib.exists()) {
+            logger.info(KernelLoggerInfo.cantFindH2);
+            return Collections.EMPTY_LIST;
+        }
+
+        return Arrays.asList(h2Lib.listFiles((dir, name) -> name.endsWith(".jar")));
     }
 
     private static class JarFileFilter implements FilenameFilter {
