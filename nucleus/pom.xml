@@ -217,17 +217,17 @@
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
         <grizzly.version>2.4.1</grizzly.version>
-        <grizzly.npn.version>1.5</grizzly.npn.version>
+        <grizzly.npn.version>1.7</grizzly.npn.version>
         
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
         <jersey.version>2.26</jersey.version>
         
-        <!-- Bean Validation -->
+        <!-- Bean Validation --> 
         <javax.validation.version>2.0.0.Final</javax.validation.version>
-        <hibernate.validator.version>6.0.2.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.0.2.Final-payara-p1</hibernate.validator-cdi.version>
+        <hibernate.validator.version>6.0.3.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.0.3.Final</hibernate.validator-cdi.version>
         
         <!-- Expression language -->
         <javax.el.version>3.0.1-b04</javax.el.version>
@@ -247,7 +247,7 @@
         <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
 
         <!-- 4.1.1-b001  -->
-        <glassfish-corba.version>4.0.1.payara-p10</glassfish-corba.version>
+        <glassfish-corba.version>4.1.1.payara-p1</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <saaj-api.version>1.4.0</saaj-api.version>
         
