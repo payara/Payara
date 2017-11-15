@@ -160,6 +160,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
             || propertyIsSet(myEnv, LOAD_BALANCING_PROPERTY) ;
         NamingClusterInfo namingClusterInfo = null;
         boolean enableClusterUpdate = true;
+        enableClusterUpdate = Boolean.parseBoolean(System.getProperty(IIOP_CLUSTER_UPDATE_PROPERTY, "true"));
         if(propertyIsSet(myEnv, IIOP_CLUSTER_UPDATE_PROPERTY)) {
             enableClusterUpdate = Boolean.parseBoolean(getEnvSysProperty(myEnv, IIOP_CLUSTER_UPDATE_PROPERTY));
         }
