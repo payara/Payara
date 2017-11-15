@@ -157,9 +157,9 @@ public class Archive {
                 File file = new File(
                         path.getPath() + File.separator + JarFile.MANIFEST_NAME);
                 if (file.exists()) {
-                    InputStream mis = new FileInputStream(file);
-                    manifest = new Manifest(mis);
-                    mis.close();
+                    try (InputStream mis = new FileInputStream(file)) {
+                        manifest = new Manifest(mis);
+                    }
                 }
             } else {
                 JarFile jar = new JarFile(path);

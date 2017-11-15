@@ -47,6 +47,7 @@
 package com.sun.enterprise.tools.verifier.tests.util;
 
 import com.sun.enterprise.tools.verifier.Result;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.StringTokenizer;
@@ -69,9 +70,9 @@ import java.util.jar.Manifest;
   */
 public class BundledOptPkgHasDependencies {
     public static void test(String explodedJarPath, Result result){
-        try{
+        try (FileInputStream fis = new FileInputStream(new File(explodedJarPath+File.separator+JarFile.MANIFEST_NAME))){
             boolean failed=false;
-            Manifest manifest=new Manifest(new FileInputStream(new File(explodedJarPath+File.separator+JarFile.MANIFEST_NAME)));
+            Manifest manifest=new Manifest(fis);
             String depClassPath=manifest.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
             if(depClassPath!=null){
                 for(StringTokenizer st=new StringTokenizer(depClassPath);st.hasMoreTokens();){
