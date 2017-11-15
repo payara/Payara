@@ -49,6 +49,7 @@ import java.io.IOException;
 /**
  *
  * @author lprimak
+ * @since 4.1.2.173
  */
 public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
     @SuppressWarnings("unchecked")

@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
+
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
@@ -104,6 +106,8 @@ public class CreateHttpListener implements AdminCommand {
     Boolean xPoweredBy;
     @Param(name = "serverHeader", optional = true, defaultValue = "true", alias="serverHeader")
     Boolean serverHeader;
+    @Param(name = "xframe", optional = true, defaultValue = "true")
+    Boolean xFrameOptions;
     @Param(name = "acceptorthreads", optional = true)
     String acceptorThreads;
     @Param(name = "redirectport", optional = true)
@@ -351,6 +355,7 @@ public class CreateHttpListener implements AdminCommand {
         command.defaultVirtualServer = defaultVirtualServer;
         command.xPoweredBy = xPoweredBy;
         command.serverHeader = serverHeader;
+        command.xFrameOptions = xFrameOptions; 
         command.serverName = serverName;
         command.target = target;
         command.execute(context);

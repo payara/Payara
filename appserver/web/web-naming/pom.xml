@@ -43,16 +43,16 @@
 <!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.glassfish.main.web</groupId>
-    	   <artifactId>web</artifactId>
+    	  <artifactId>web</artifactId>
         <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>web-naming</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Web Container Naming Utilities</name>
 
     <developers>
@@ -67,11 +67,11 @@
             </roles>
         </developer>
     </developers>
-    
+
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -80,7 +80,7 @@
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-framework</artifactId>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>

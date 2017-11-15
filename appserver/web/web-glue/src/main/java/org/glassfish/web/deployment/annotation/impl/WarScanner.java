@@ -187,6 +187,13 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
         }
     }
 
+    /**
+     * Returns true if the class is accessible from the classloader
+     * @param className
+     * @param commonCL
+     * @return
+     * @throws IOException 
+     */
     private boolean isScan(String className, ClassLoader commonCL) throws IOException {
         return commonCL.getResource(className.replace(".", "/") + ".class") != null;
     }

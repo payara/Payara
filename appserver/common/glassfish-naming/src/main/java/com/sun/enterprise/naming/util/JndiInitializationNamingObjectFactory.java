@@ -60,6 +60,7 @@ import java.io.*;
  * implementations like org.glassfish.resourcebase.resources.api.ResourceProxy and
  * org.glassfish.javaee.services.CommonResourceProxy</p>
  *
+ * @see JndiNamingObjectFactory
  */
 @Service
 public class JndiInitializationNamingObjectFactory implements NamingObjectFactory,
@@ -75,6 +76,12 @@ public class JndiInitializationNamingObjectFactory implements NamingObjectFactor
         //need a no-org constructor since it's serializable.
     }
 
+    /**
+     * 
+     * @param name
+     * @param jndiName
+     * @param cacheResult 
+     */
     public JndiInitializationNamingObjectFactory(String name, String jndiName, boolean cacheResult) {
         this.name = name;
         this.jndiName = jndiName;
@@ -84,9 +91,7 @@ public class JndiInitializationNamingObjectFactory implements NamingObjectFactor
         jndiNamingObjectFactory = new JndiNamingObjectFactory(name, jndiName, cacheResult);
     }
 
-    /**
-     * @inheritDoc
-     */
+    @Override
     public boolean isCreateResultCacheable() {
         return getJndiNamingObjectFactory().isCreateResultCacheable();
     }
@@ -103,9 +108,7 @@ public class JndiInitializationNamingObjectFactory implements NamingObjectFactor
         return jndiNamingObjectFactory;
     }
 
-    /**
-     * @inheritDoc
-     */
+    @Override
     public Object create(Context ic) throws NamingException {
         return  getJndiNamingObjectFactory().create(ic);
     }

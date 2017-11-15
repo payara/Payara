@@ -36,33 +36,85 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.spi;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import java.io.OutputStream;
-
+/**
+ * Interface for methods to create instances of {@link NamingObjectFactory}
+ */
 @Contract
 public interface NamingUtils {
 
+    /**
+     * Creates an instance of {@link com.sun.enterprise.naming.util.SimpleNamingObjectFactory} 
+     * @param name the name of the object. This will be ignored
+     * @param value the object that the create method of the factory will return
+     * @return 
+     */
     public NamingObjectFactory createSimpleNamingObjectFactory(String name, Object value);
 
+    /**
+     * 
+     * @param name
+     * @param jndiName
+     * @param cacheResult
+     * @return 
+     */
     public NamingObjectFactory createLazyInitializationNamingObjectFactory(String name, String jndiName,
             boolean cacheResult);
 
+    /**
+     * Creates an instance of {@link com.sun.enterprise.naming.util.JndiNamingObjectFactory}
+     * @param name the name of the object
+     * @param jndiName the jndi name of the object to create/lookup
+     * @param cacheResult whether the result may have been cached
+     * @return 
+     */
     public NamingObjectFactory createLazyNamingObjectFactory(String name, String jndiName,
         boolean cacheResult);
 
+    /**
+     * Creates an instance of {@link com.sun.enterprise.naming.util.CloningNamingObjectFactory}
+     * that will create copies of the given object.
+     * @param name the name of the object
+     * @param value the object that will be copied when create is called
+     * @return 
+     */
     public NamingObjectFactory createCloningNamingObjectFactory(String name, Object value);
 
+    /**
+     * Creates an instance of {@link com.sun.enterprise.naming.util.CloningNamingObjectFactory}
+     * that will create copies of the object created by the delegate.
+     * @param name the name of the object
+     * @param delegate the {@link NamingObjectFactory} that creates the object that will then be copied
+     * @return 
+     */
     public NamingObjectFactory createCloningNamingObjectFactory(String name,
         NamingObjectFactory delegate);
 
+    /**
+     * Creates an instance of {@link com.sun.enterprise.naming.util.DelegatingNamingObjectFactory}
+     * that will use another {@link com.sun.enterprise.naming.spi.NamingObjectFactory} to do the work
+     * @param name name of object
+     * @param delegate {@link com.sun.enterprise.naming.spi.NamingObjectFactory} to do the work
+     * @param cacheResult whether the result may have been cached
+     * @return 
+     */
     public NamingObjectFactory createDelegatingNamingObjectFactory(String name,
         NamingObjectFactory delegate, boolean cacheResult);
 
+    /**
+     * Makes a new instance of the specified object.
+     * Object cannot implement {@link java.io.Serializable}
+     * @throws RuntimeException
+     * @param obj a non-serializable object
+     * @return 
+     */
     public Object makeCopyOfObject(Object obj);
 
 }

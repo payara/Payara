@@ -150,6 +150,7 @@ public class HK2IntegrationExtension implements Extension {
         config.commit();
     }
 
+    @Override
     public String toString() {
         return "HK2IntegrationExtension(" + locator + "," + System.identityHashCode(this) + ")";
     }

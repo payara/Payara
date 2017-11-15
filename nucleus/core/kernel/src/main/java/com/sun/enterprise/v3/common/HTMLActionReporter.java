@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.v3.common;
@@ -51,7 +53,9 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- *
+ * Class for reporting the result of a command using HTML.
+ * <p>
+ * 
  * @author dochez
  */
 @Service(name = "html")
@@ -104,7 +108,7 @@ public class HTMLActionReporter extends ActionReporter {
     }
     
     private void write(Properties props, PrintWriter writer) {
-        if (props==null || props.size()==0) {
+        if (props==null || props.isEmpty()) {
             return;
         }
         writer.println("<table border=\"1\">");

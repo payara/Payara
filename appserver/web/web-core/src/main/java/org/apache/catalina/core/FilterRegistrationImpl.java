@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.apache.catalina.core;
@@ -52,8 +54,12 @@ import java.util.Map;
 import java.util.Set;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.logging.Logger;
 
+/**
+ * Class for a filter that may then be configured
+ * 
+ * @see DynamicFilterRegistrationImpl
+ */
 public class FilterRegistrationImpl implements FilterRegistration {
 
     protected FilterDef filterDef;
@@ -70,21 +76,28 @@ public class FilterRegistrationImpl implements FilterRegistration {
     }
 
 
+    @Override
     public String getName() {
         return filterDef.getFilterName();
     }
 
 
+    /**
+     * Gets a representation of the filter, as it would be in the  <code>&lt;filter&gt;</code>
+     * @return 
+     */
     public FilterDef getFilterDefinition() {
         return filterDef;
     }
 
 
+    @Override
     public String getClassName() {
         return filterDef.getFilterClassName();
     }
 
 
+    @Override
     public boolean setInitParameter(String name, String value) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.FILTER_REGISTRATION_ALREADY_INIT),
@@ -97,21 +110,25 @@ public class FilterRegistrationImpl implements FilterRegistration {
     }
 
 
+    @Override
     public String getInitParameter(String name) {
         return filterDef.getInitParameter(name);
     }
 
 
+    @Override
     public Set<String> setInitParameters(Map<String, String> initParameters) {
         return filterDef.setInitParameters(initParameters);
     }
 
 
+    @Override
     public Map<String, String> getInitParameters() {
         return filterDef.getInitParameters();
     }
 
 
+    @Override
     public void addMappingForServletNames(
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... servletNames) {
@@ -140,11 +157,13 @@ public class FilterRegistrationImpl implements FilterRegistration {
     }
 
 
+    @Override
     public Collection<String> getServletNameMappings() {
         return ctx.getServletNameFilterMappings(getName());
     }
 
 
+    @Override
     public void addMappingForUrlPatterns(
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... urlPatterns) {
@@ -173,6 +192,7 @@ public class FilterRegistrationImpl implements FilterRegistration {
     }
 
 
+    @Override
     public Collection<String> getUrlPatternMappings() {
         return ctx.getUrlPatternFilterMappings(getName());
     }

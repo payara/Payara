@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundatin and/or affiliates
  */
 
 package com.sun.enterprise.deployment.util;
@@ -53,20 +55,22 @@ import java.util.Iterator;
  * @author  Jerome Dochez
  * @version 
  */
-
 public class DefaultDOLVisitor implements DescriptorVisitor {
 
     /**
      * visits a J2EE descriptor
-     * @param the descriptor
+     * @param descriptor the descriptor
      */
+    @Override
     public void accept(Descriptor descriptor) {
     }
 
     /**
      * get the visitor for its sub descriptor
-     * @param sub descriptor to return visitor for
+     * @param subDescriptor sub descriptor to return visitor for
+     * @return 
      */
+    @Override
     public DescriptorVisitor getSubDescriptorVisitor(Descriptor subDescriptor) {
         return this;
     }
@@ -102,7 +106,7 @@ public class DefaultDOLVisitor implements DescriptorVisitor {
 
     /**
      * visits an ejb reference for the last J2EE component visited
-     * @param the ejb reference
+     * @param ejbRef the ejb reference
      */
     protected void accept(EjbReference ejbRef) {
     }
@@ -117,24 +121,28 @@ public class DefaultDOLVisitor implements DescriptorVisitor {
 
     /**
      * visits an resource reference for the last J2EE component visited
-     * @param the resource reference
+     * @param resRef the resource reference
      */
     protected void accept(ResourceReferenceDescriptor resRef) {
     }
 
     /**
      * visits an resource environment reference for the last J2EE component visited
-     * @param the resource environment reference
+     * @param resourceEnvRef the resource environment reference
      */
     protected void accept(ResourceEnvReferenceDescriptor resourceEnvRef) {
     }
 
+    /**
+     * visits an message destination reference for the last J2EE component visited
+     * @param msgDestReferencer the message destination reference
+     */
     protected void accept(MessageDestinationReferencer msgDestReferencer) {
     }
 
     /**
      * visits an message destination for the last J2EE component visited
-     * @param the message destination
+     * @param msgDest the message destination
      */
     protected void accept(MessageDestinationDescriptor msgDest) {
     }

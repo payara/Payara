@@ -46,10 +46,12 @@ import org.jboss.weld.security.spi.SecurityServices;
 
 public class SecurityServicesImpl implements SecurityServices {
 
+    @Override
     public Principal getPrincipal() {
         return SecurityContext.getCurrent().getCallerPrincipal();
     }
 
+    @Override
     public void cleanup() {}
 }
 

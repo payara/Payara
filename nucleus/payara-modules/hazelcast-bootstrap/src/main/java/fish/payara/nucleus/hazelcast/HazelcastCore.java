@@ -84,8 +84,9 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * The core class for using Hazelcast in Payara
  * @author Steve Millidge (Payara Foundation)
+ * @since 4.1.151
  */
 @Service(name = "hazelcast-core")
 @RunLevel(StartupRunLevel.VAL)
@@ -124,6 +125,10 @@ public class HazelcastCore implements EventListener {
     @Inject @Optional
     private JavaEEContextUtil ctxUtil;
 
+    /**
+     * Returns the version of the object that has been instantiated.
+     * @return null if an instance of {@link HazelcastCore} has not been created
+     */
     public static HazelcastCore getCore() {
         return theCore;
     }
@@ -135,6 +140,13 @@ public class HazelcastCore implements EventListener {
         enabled = Boolean.valueOf(configuration.getEnabled());
     }
     
+    /**
+     * Returns the Hazelcast name of the instance
+     * <p>
+     * Note this is not the same as the name of the instance config or node
+     * @return {@code Payara} by default
+     * @since 4.1.1.171
+     */
     public String getMemberName() {
         if (enabled && !booted) {
             bootstrapHazelcast();
@@ -142,6 +154,11 @@ public class HazelcastCore implements EventListener {
         return memberName;
     }
     
+    /**
+     * Gets the name of the member group that this instance belongs to
+     * @return {@code MicroShoal} by default
+     * @since 4.1.1.171
+     */
     public String getMemberGroup() {
         if (enabled && !booted) {
             bootstrapHazelcast();
@@ -149,6 +166,12 @@ public class HazelcastCore implements EventListener {
         return memberGroup;
     }
     
+    /**
+     * Returns the UUID of the instance.
+     * If Hazelcast is not enabled then a new random one will be returned.
+     * @return a 128-bit immutable universally unique identifier
+     * @since 4.1.1.171
+     */
     public String getUUID() {
         bootstrapHazelcast();
         if (!enabled) {
@@ -157,6 +180,11 @@ public class HazelcastCore implements EventListener {
         return theInstance.getCluster().getLocalMember().getUuid();
     }
     
+    /**
+     * Returns true if this instance is a Hazelcast Lite instance
+     * @return
+     * @since 4.1.1.171
+     */
     public boolean isLite() {
         bootstrapHazelcast();
         if (!enabled) {
@@ -165,16 +193,31 @@ public class HazelcastCore implements EventListener {
         return theInstance.getCluster().getLocalMember().isLiteMember();
     }
 
+    /**
+     * Gets the actual Hazelcast instance.
+     * Hazelcast will be booted by this method if
+     * it hasn't already started.
+     * @return
+     */
     public HazelcastInstance getInstance() {
         bootstrapHazelcast();
         return theInstance;
     }
 
+    /**
+     * Gets the JCache provider used by Hazelcast
+     * @return
+     * @see <a href=http://docs.hazelcast.org/docs/3.8.6/javadoc/com/hazelcast/cache/HazelcastCachingProvider.html">HazelcastCachingProvider</a>
+     */
     public CachingProvider getCachingProvider() {
         bootstrapHazelcast();
         return hazelcastCachingProvider;
     }
 
+    /**
+     * 
+     * @return Whether Hazelcast is currently enabled
+     */
     public boolean isEnabled() {
         return enabled;
     }
@@ -188,6 +231,11 @@ public class HazelcastCore implements EventListener {
         }
     }
 
+    /**
+     * Sets whether Hazelcast should be enabled.
+     * @param enabled If true will start Hazelcast or restart if currently running;
+     * if false will shut down Hazelcast.
+     */
     public void setEnabled(Boolean enabled) {
         if (!this.enabled && !enabled) {
             // do nothing
@@ -315,6 +363,9 @@ public class HazelcastCore implements EventListener {
         }
     }
 
+    /**
+     * Starts Hazelcast if not already enabled
+     */
     private synchronized void bootstrapHazelcast() {
         if (!booted && enabled) {
             Config config = buildConfiguration();
@@ -395,6 +446,10 @@ public class HazelcastCore implements EventListener {
         }
     }
 
+    /**
+     * Gets the port that Hazelcast in running on
+     * @return The default is {@link 54327}
+     */
     public int getPort() {
         return theInstance.getCluster().getLocalMember().getSocketAddress().getPort();
     }

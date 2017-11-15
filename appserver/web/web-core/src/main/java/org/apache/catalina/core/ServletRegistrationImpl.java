@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.apache.catalina.core;
@@ -50,6 +52,9 @@ import java.util.logging.Logger;
 
 import org.apache.catalina.LogFacade;
 
+/**
+ * Implementation through which a servlet can be configured
+ */
 public class ServletRegistrationImpl implements ServletRegistration {
 
 
@@ -60,6 +65,8 @@ public class ServletRegistrationImpl implements ServletRegistration {
 
     /**
      * Constructor
+     * @param wrapper
+     * @param ctx
      */
     public ServletRegistrationImpl(StandardWrapper wrapper,
                                       StandardContext ctx) {
@@ -67,6 +74,7 @@ public class ServletRegistrationImpl implements ServletRegistration {
         this.ctx = ctx;
     }
 
+    @Override
     public String getName() {
         return wrapper.getName();
     }
@@ -75,18 +83,28 @@ public class ServletRegistrationImpl implements ServletRegistration {
         return ctx;
     }
 
+    /**
+     * Returns the wrapper containing the servlet definition
+     * @return 
+     */
     public StandardWrapper getWrapper() {
         return wrapper;
     }
 
+    @Override
     public String getClassName() {
         return wrapper.getServletClassName();
     }
 
+    /**
+     * Return the context-relative URI of the JSP file for this servlet.
+     * @return null if this is not a JSP Servlet
+     */
     public String getJspFile() {
         return wrapper.getJspFile();
     }
 
+    @Override
     public boolean setInitParameter(String name, String value) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_REGISTRATION_ALREADY_INIT),
@@ -97,18 +115,22 @@ public class ServletRegistrationImpl implements ServletRegistration {
         return wrapper.setInitParameter(name, value, false);
     }
 
+    @Override
     public String getInitParameter(String name) {
         return wrapper.getInitParameter(name);
     }
 
+    @Override
     public Set<String> setInitParameters(Map<String, String> initParameters) {
         return wrapper.setInitParameters(initParameters);
     }
 
+    @Override
     public Map<String, String> getInitParameters() {
         return wrapper.getInitParameters();
     }
 
+    @Override
     public Set<String> addMapping(String... urlPatterns) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.SERVLET_REGISTRATION_ALREADY_INIT),
@@ -126,10 +148,12 @@ public class ServletRegistrationImpl implements ServletRegistration {
         return ctx.addServletMapping(wrapper.getName(), urlPatterns);
     }
 
+    @Override
     public Collection<String> getMappings() {
         return wrapper.getMappings();
     }
 
+    @Override
     public String getRunAsRole() {
         return wrapper.getRunAs();
     }

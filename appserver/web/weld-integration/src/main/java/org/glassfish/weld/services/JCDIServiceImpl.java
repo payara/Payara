@@ -128,6 +128,7 @@ public class JCDIServiceImpl implements JCDIService {
     private Logger logger = Logger.getLogger(JCDIServiceImpl.class.getName());
 
 
+    @Override
     public boolean isCurrentModuleJCDIEnabled() {
 
         BundleDescriptor bundle = null;
@@ -154,6 +155,7 @@ public class JCDIServiceImpl implements JCDIService {
 
     }
 
+    @Override
     public boolean isJCDIEnabled(BundleDescriptor bundle) {
 
         // Get the top-level bundle descriptor from the given bundle.
@@ -164,12 +166,14 @@ public class JCDIServiceImpl implements JCDIService {
 
     }
 
+    @Override
     public boolean isCDIScoped(Class<?> clazz) {
         // Check all the annotations on the specified Class to determine if the class is annotated
         // with a supported CDI scope
         return WeldUtils.hasValidAnnotation(clazz, validScopes, excludedScopes);
     }
 
+    @Override
     public void setELResolver(ServletContext servletContext) throws NamingException {
         InitialContext context = new InitialContext();
         BeanManager beanManager = (BeanManager)
@@ -181,10 +185,12 @@ public class JCDIServiceImpl implements JCDIService {
         }
     }
 
+    @Override
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejb, T instance) {
 	    return _createJCDIInjectionContext(ejb, instance);
     }
 
+    @Override
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejb) {
 	    return _createJCDIInjectionContext(ejb, null);
     }
@@ -263,6 +269,7 @@ public class JCDIServiceImpl implements JCDIService {
 
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx) {
     	JCDIInjectionContextImpl<T> injectionCtxImpl = (JCDIInjectionContextImpl<T>) injectionCtx;
 
@@ -272,6 +279,7 @@ public class JCDIServiceImpl implements JCDIService {
     	// NOTE : PostConstruct is handled by ejb container
     }
 
+    @Override
     public <T>JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle) {
         return createManagedObject(managedClass, bundle, true);
     }
@@ -283,6 +291,7 @@ public class JCDIServiceImpl implements JCDIService {
      * @param bundle  the bundle descriptor
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
     public void injectManagedObject(Object managedObject, BundleDescriptor bundle) {
 
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
@@ -297,7 +306,7 @@ public class JCDIServiceImpl implements JCDIService {
         CreationalContext cc = beanManager.createCreationalContext(null);
         it.inject(managedObject, cc);
     }
-    
+
     private Interceptor findEjbInterceptor(Class interceptorClass, Set<EjbInterceptor> ejbInterceptors) {
         for (EjbInterceptor oneInterceptor : ejbInterceptors) {
             Interceptor interceptor = oneInterceptor.getInterceptor();
@@ -307,7 +316,7 @@ public class JCDIServiceImpl implements JCDIService {
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -336,7 +345,7 @@ public class JCDIServiceImpl implements JCDIService {
         WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
         BeanManager beanManager = bootstrap.getManager(bda);
         WeldManager weldManager = BeanManagerProxy.unwrap(beanManager);
-        
+
         // first see if there's an Interceptor object defined for the interceptorClass
         // This happens when @Interceptor or @InterceptorBinding is used.
         Interceptor interceptor = findEjbInterceptor(interceptorClass, ejbInterceptors);
@@ -381,7 +390,7 @@ public class JCDIServiceImpl implements JCDIService {
         InjectionTarget it = ((WeldManager) beanManager).getInjectionTargetFactory(annotatedType).createInterceptorInjectionTarget();
         T interceptorInstance = (T) it.produce(cc);
         it.inject(interceptorInstance, cc);
-        
+
         // Make sure the interceptor's cdi objects get cleaned up when the ejb is cleaned up.
         ejbContext.addDependentContext(new JCDIInjectionContextImpl<>(it, cc, interceptorInstance));
 
@@ -509,7 +518,7 @@ public class JCDIServiceImpl implements JCDIService {
         InjectionTarget it;
         CreationalContext cc;
         T instance;
-        
+
         private List<JCDIInjectionContext> dependentContexts = new ArrayList<>();
 
         JCDIInjectionContextImpl(InjectionTarget it, CreationalContext cc, T i) {
@@ -518,13 +527,15 @@ public class JCDIServiceImpl implements JCDIService {
             this.instance = i;
         }
 
+
+        @Override
         public T getInstance() {
             return instance;
         }
-        
+
         public InjectionTarget<T> getInjectionTarget() {
             return it;
-         }              
+         }
 
         public CreationalContext<T> getCreationalContext() {
             return cc;
@@ -535,6 +546,7 @@ public class JCDIServiceImpl implements JCDIService {
         }
 
         @SuppressWarnings("unchecked")
+        @Override
         public void cleanup(boolean callPreDestroy) {
             for (JCDIInjectionContext context : dependentContexts) {
                 context.cleanup(true);
@@ -547,6 +559,6 @@ public class JCDIServiceImpl implements JCDIService {
             it.dispose(instance);
             cc.release();
         }
-         
+
     }
 }

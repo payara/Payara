@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld.util;
@@ -44,8 +46,19 @@ import org.glassfish.weld.ACLSingletonProvider;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
 import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
 
+/**
+ * Defines util methods for instantiating with weld
+ */
 public class Util {
 
+    /**
+     * Creates and returns a new instance of the specified class using a no-argument constructor
+     * @param <T>
+     * @param className
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @return 
+     */
     public static <T> T newInstance(String className) {
         try {
             return Util.<T>classForName(className).newInstance();
@@ -56,6 +69,12 @@ public class Util {
        }
     }
 
+    /**
+     * Returns the actual class with the specified name
+     * @param <T>
+     * @param name The full name of the class i.e. java.lang.String
+     * @return 
+     */
     public static <T> Class<T> classForName(String name) {
         try {
             if (Thread.currentThread().getContextClassLoader() != null) {
@@ -76,6 +95,11 @@ public class Util {
         }
    }
 
+    /**
+     * Starts the singleton provider for weld.
+     * <p>
+     * This will be {@link ACLSingletonProvider} if there is ear support, otherwise {@link TCCLSingletonProvider}
+     */
     public static void initializeWeldSingletonProvider() {
       boolean earSupport = false;
       try {

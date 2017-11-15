@@ -170,7 +170,12 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
         return "GMS Loader";
     }
 
-    /*
+    /**
+     * Gets the GMSAdapter.
+     * If there is more than one present then this throws an {@link IllegalStateException}.
+     * If there are none then null is returned.
+     * @return
+     * @see #getGMSAdapterByName(String)
      */
     public GMSAdapter getGMSAdapter() {
         synchronized(lock) {
@@ -185,10 +190,19 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
         }
     }
 
+    /**
+     * Returns true if there is at least one {@link GMSAdapter}
+     * @return 
+     */
     public boolean isGmsEnabled() {
         return gmsAdapters.size() > 0;
     }
 
+    /**
+     * Gets the GMSAdapter for a specified cluster
+     * @param clusterName
+     * @return 
+     */
     public GMSAdapter getGMSAdapterByName(String clusterName) {
         synchronized(lock) {
             return habitat.getService(GMSAdapter.class, clusterName);
@@ -220,7 +234,7 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
         return result;
     }
 
-    /*
+    /**
      * initial support for multiple clusters in DAS. a clustered instance can only belong to one cluster.
      */
     private GMSAdapter loadModule(Cluster cluster) {
