@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>4.1.2.174</version>
     </parent>
     <artifactId>minnow-ml</artifactId>
     <name>Glassfish Minnow Multi-Language Featureset</name>

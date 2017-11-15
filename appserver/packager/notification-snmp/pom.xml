@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>4.1.2.174</version>
     </parent>
     <artifactId>notification-snmp</artifactId>
     <name>SNMP Notification Package</name>
