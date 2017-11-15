@@ -67,6 +67,7 @@ import java.net.JarURLConnection;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
@@ -980,11 +981,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             configureAccessLogging();
             configureHazelcast();
             configurePhoneHome();
+            configureNotificationService();
             configureHealthCheck();
 
             // Add additional libraries
             addLibraries();
-            
+
             // boot the server
             preBootCommands.executeCommands(gf.getCommandRunner());
             gf.start();
@@ -1063,7 +1065,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             LOGGER.log(Level.SEVERE, ex.getMessage());
             System.exit(-1);
         }
-        
+
         processUserProperties(options);
         setArgumentsFromSystemProperties();
 
@@ -1128,20 +1130,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case addlibs:
                     case addjars:
-                        String[] alljars = value.split(":");
-                        for (String jarname : alljars) {
-                            File library = new File(jarname);
+                        List<File> files = UberJarCreator.parseFileList(value, File.pathSeparator);
+                        if(!files.isEmpty()) {
                             if (libraries == null) {
                                 libraries = new LinkedList<>();
                             }
-                            if (library.isDirectory()) {
-                                List<File> allFiles = UberJarCreator.fillFiles(library);
-                                for (File lib : allFiles) {
-                                    libraries.add(lib);
-                                }
-                            } else {
-                                libraries.add(library);
-                            }
+                            libraries.addAll(files);
                         }
                         break;
                     case deploy:
@@ -1318,9 +1312,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * 1st loads the properties from the uber jar location
      * then loads each command line system properties file which will override
      * uber jar properties
-     * 
+     *
      * @param options
-     * @throws IllegalArgumentException 
+     * @throws IllegalArgumentException
      */
     private void processUserProperties(RuntimeOptions options) throws IllegalArgumentException {
         userSystemProperties = new Properties();
@@ -1336,7 +1330,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "", ex);
         }
-        
+
         // process each command line system properties option
         List<String> propertiesoption = options.getOption(RUNTIME_OPTION.systemproperties);
         if (propertiesoption != null && !propertiesoption.isEmpty()) {
@@ -1356,10 +1350,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                             "{0} is not a valid properties file",
                             propertiesFile.getAbsolutePath());
                     throw new IllegalArgumentException(e);
-                }            
+                }
             }
         }
-        
+
         // now set them
         for (String stringPropertyName : userSystemProperties.stringPropertyNames()) {
             System.setProperty(stringPropertyName, userSystemProperties.getProperty(stringPropertyName));
@@ -1571,7 +1565,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     formatterClass = (Formatter) Class.forName(formatter).newInstance();
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                     Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, "Specified Formatter class could not be loaded " + formatter, ex);
-                } 
+                }
                 Logger rootLogger = Logger.getLogger("");
                 for (Handler handler : rootLogger.getHandlers()) {
                     handler.setFormatter(formatterClass);
@@ -1997,7 +1991,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void packageUberJar() {
-        
+
         UberJarCreator creator = new UberJarCreator(uberJar);
         if (rootDir != null) {
             creator.setDomainDir(rootDir);
@@ -2024,7 +2018,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 creator.addDeployment(deployment);
             }
         }
-        
+
         if (libraries != null){
             for (File lib : libraries){
                 creator.addLibraryJar(lib);
@@ -2281,6 +2275,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             LOGGER.log(Level.WARNING, "Could not load the boot system properties from " + BOOT_PROPS_FILE, ioe);
         }
     }
+    
+    private void configureNotificationService() {
+        if (enableHealthCheck || enableRequestTracing) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.notification-service-configuration.enabled=true"));
+        }
+    }
 
     private void configureHealthCheck() {
         if (enableHealthCheck) {
@@ -2372,7 +2372,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * Adds libraries to the classlader
      */
     private void addLibraries() {
-        if (libraries != null) {                  
+        if (libraries != null) {
             try {
                 for (File lib : libraries) {
                     addLibrary(lib);
@@ -2382,7 +2382,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
         }
     }
-    
+
     @Override
     public void addLibrary(File lib) {
         OpenURLClassLoader loader = (OpenURLClassLoader) this.getClass().getClassLoader();

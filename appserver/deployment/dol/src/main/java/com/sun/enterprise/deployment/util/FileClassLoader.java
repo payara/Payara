@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.util;
@@ -47,6 +49,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Hashtable;
 
+/**
+ * Classloader to load classes within a file or web archive
+ */
 public class FileClassLoader extends ClassLoader {
     String codebase;
     Hashtable cache = new Hashtable();
@@ -104,8 +109,10 @@ public class FileClassLoader extends ClassLoader {
     }
 
     /**
+     * @return 
      * @exception ClassNotFoundException if class load fails
      */
+    @Override
     public synchronized Class loadClass(String name, boolean resolve) 
 	throws ClassNotFoundException
     {
@@ -130,6 +137,7 @@ public class FileClassLoader extends ClassLoader {
         return c;
     }
 
+    @Override
     public String toString()
     {
 	return "FileClassLoader: Codebase = "+codebase+"\n";

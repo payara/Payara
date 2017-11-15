@@ -54,7 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
 /**
- *
+ * Implementations for high availability utils
  * @author vbkumarjayanti
  */
 @Service
@@ -67,14 +67,19 @@ public class HAUtilImpl implements HAUtil {
     @Inject @Optional
     private GMSAdapterService gmsAdapterService;
 
+    @Override
     public String getClusterName() {
         return (this.gmsAdapterService != null) ?
             gmsAdapterService.getGMSAdapter().getClusterName() : null;
     }
+    
+    @Override
     public String getInstanceName() {
          return (this.gmsAdapterService != null) ?
             gmsAdapterService.getGMSAdapter().getModule().getInstanceName(): null;
     }
+    
+    @Override
     public boolean isHAEnabled() {
          AvailabilityService availabilityService = config.getAvailabilityService();
          if (availabilityService != null && gmsAdapterService != null && gmsAdapterService.isGmsEnabled()) {

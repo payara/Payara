@@ -157,16 +157,23 @@ class AsyncContextImpl implements AsyncContext {
         this.origRequest = origRequest;
         init(servletRequest, servletResponse, isStartAsyncWithZeroArg);
     }
-
+    
     @Override
     public ServletRequest getRequest() {
         return servletRequest;
     }
 
+    /**
+     * Get the originated request
+     * @return the original (unwrapped) request
+     */
     Request getOriginalRequest() {
         return origRequest;
     }
 
+    /**
+     * @return the possibly wrapped response passed to {@link ServletRequest.startAsync}
+     */
     @Override
     public ServletResponse getResponse() {
         return servletResponse;

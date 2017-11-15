@@ -106,7 +106,7 @@ public class JBatchJDBCPersistenceManager implements
 	// derby create table strings
 	protected Map<String, String> createDerbyStrings;
 
-    private RequestTracingService requestTracing;
+        protected RequestTracingService requestTracing;
         
 	/*
 	 * (non-Javadoc)

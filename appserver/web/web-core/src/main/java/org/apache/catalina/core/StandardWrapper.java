@@ -331,19 +331,19 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private boolean isAsyncSupported = false;
 
     /**
-     * Static class array used when the SecurityManager is turned on and 
+     * Static class array used when the SecurityManager is turned on and
      * <code>Servlet.init</code> is invoked.
      */
     private static Class<?>[] classType = { ServletConfig.class };
-    
+
     /**
-     * Static class array used when the SecurityManager is turned on and 
+     * Static class array used when the SecurityManager is turned on and
      * <code>Servlet.service</code>  is invoked.
-     */                                                 
+     */
     private static Class<?>[] classTypeUsedInService = { ServletRequest.class, ServletResponse.class };
 
     /**
-     * File upload (multipart) support 
+     * File upload (multipart) support
      */
     private boolean multipartConfigured;
     private String multipartLocation;
@@ -352,8 +352,8 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private int multipartFileSizeThreshold = 10240;  // 10K
 
     private boolean osgi;
-    
-    
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -383,7 +383,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * an SC_NOT_FOUND error.  If this date/time is in the future, any request for
      * this servlet will return an SC_SERVICE_UNAVAILABLE error.  If it is zero,
      * the servlet is currently available.
+     * @return
      */
+    @Override
     public long getAvailable() {
         return available;
     }
@@ -397,6 +399,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param available The new available date/time
      */
+    @Override
     public void setAvailable(long available) {
 
         long oldAvailable = this.available;
@@ -405,7 +408,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         } else {
             this.available = 0L;
         }
-        
+
         support.firePropertyChange("available", oldAvailable, this.available);
     }
 
@@ -413,6 +416,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * Return the number of active allocations of this servlet, even if they
      * are all for the same instance (as will be true for servlets that do
      * not implement <code>SingleThreadModel</code>.
+     * @return
      */
     public int getCountAllocated() {
         return countAllocated.get();
@@ -420,7 +424,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Return the debugging detail level for this component.
+     * @return
      */
+    @Override
     public int getDebug() {
         return debug;
     }
@@ -430,6 +436,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param debug The new debugging detail level
      */
+    @Override
     public void setDebug(int debug) {
         int oldDebug = this.debug;
         this.debug = debug;
@@ -444,13 +451,16 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * Return descriptive information about this Container implementation and
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
+     * @return
      */
+    @Override
     public String getInfo() {
         return info;
     }
 
     /**
      * Return the InstanceSupport object for this Wrapper instance.
+     * @return
      */
     public InstanceSupport getInstanceSupport() {
         return instanceSupport;
@@ -458,7 +468,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Return the context-relative URI of the JSP file for this servlet.
+     * @return
      */
+    @Override
     public String getJspFile() {
         return jspFile;
     }
@@ -468,6 +480,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param jspFile JSP file URI
      */
+    @Override
     public void setJspFile(String jspFile) {
 
         String oldJspFile = this.jspFile;
@@ -483,7 +496,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     /**
      * Return the load-on-startup order value (negative value means
      * load on first call).
+     * @return
      */
+    @Override
     public int getLoadOnStartup() {
 
         if (isJspServlet && loadOnStartup < 0) {
@@ -493,8 +508,8 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
              * monitoring mbean)
              */
              return Integer.MAX_VALUE;
-        } 
-            
+        }
+
         return loadOnStartup;
     }
 
@@ -504,13 +519,14 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param value New load-on-startup value
      */
+    @Override
     public void setLoadOnStartup(int value) {
         int oldLoadOnStartup = this.loadOnStartup;
         this.loadOnStartup = value;
-        
+
         support.firePropertyChange(
-                    "loadOnStartup", 
-                    Integer.valueOf(oldLoadOnStartup), 
+                    "loadOnStartup",
+                    Integer.valueOf(oldLoadOnStartup),
                     Integer.valueOf(this.loadOnStartup));
     }
 
@@ -538,14 +554,18 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Sets the description of this servlet.
+     * @param description
      */
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
 
     /**
      * Gets the description of this servlet.
+     * @return
      */
+    @Override
     public String getDescription() {
         return description;
     }
@@ -576,22 +596,25 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param container Proposed parent Container
      */
+    @Override
     public void setParent(Container container) {
         if (container != null && !(container instanceof Context)) {
             throw new IllegalArgumentException(createMsg(PARENT_CONTAINER_MUST_BE_CONTEXT_EXCEPTION));
         }
-        
+
         if (container instanceof StandardContext) {
             unloadDelay = ((StandardContext) container).getUnloadDelay();
             notifyContainerListeners = ((StandardContext) container).isNotifyContainerListeners();
         }
-        
+
         super.setParent(container);
     }
 
     /**
      * Return the run-as identity for this servlet.
+     * @return
      */
+    @Override
     public String getRunAs() {
         return runAs;
     }
@@ -601,6 +624,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param runAs New run-as identity value
      */
+    @Override
     public void setRunAs(String runAs) {
         String oldRunAs = this.runAs;
         this.runAs = runAs;
@@ -613,6 +637,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @param isAsyncSupported true if the wrapped servlet supports async mode,
      * false otherwise
      */
+    @Override
     public void setIsAsyncSupported(boolean isAsyncSupported) {
         this.isAsyncSupported = isAsyncSupported;
     }
@@ -624,13 +649,16 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @return true if the wrapped servlet supports async operations, and
      * false otherwise
      */
+    @Override
     public boolean isAsyncSupported() {
         return isAsyncSupported;
     }
 
     /**
      * Return the fully qualified servlet class name for this servlet.
+     * @return
      */
+    @Override
     public String getServletClassName() {
         return servletClassName;
     }
@@ -640,21 +668,22 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param className Servlet class name
      */
+    @Override
     public void setServletClassName(String className) {
         if (className == null) {
             throw new NullPointerException("Null servlet class name");
         }
-        
+
         if (servletClassName != null) {
             throw new IllegalStateException(
                 "Wrapper already initialized with servlet instance, " +
                 "class, or name");
         }
-        
+
         servletClassName = className;
         // oldServletClassName is null
         support.firePropertyChange("servletClassName", null, servletClassName);
-        
+
         if (JSP_SERVLET_CLASS.equals(servletClassName)) {
             isJspServlet = true;
         }
@@ -674,15 +703,16 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @param clazz The class object from which this servlet will
      * be instantiated
      */
+    @Override
     public void setServletClass(Class <? extends Servlet> clazz) {
         if (clazz == null) {
             throw new NullPointerException("Null servlet class");
         }
-        
+
         if (servletClass != null || servletClassName != null && !servletClassName.equals(clazz.getName())) {
             throw new IllegalStateException("Wrapper already initialized with servlet instance, " + "class, or name");
         }
-        
+
         servletClass = clazz;
         servletClassName = clazz.getName();
         if (JSP_SERVLET_CLASS.equals(servletClassName)) {
@@ -707,15 +737,15 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         if (instance == null) {
             throw new NullPointerException("Null servlet instance");
         }
-        
+
         if (servletClassName != null) {
             throw new IllegalStateException("Wrapper already initialized with servlet instance, " + "class, or name");
         }
-        
+
         this.instance = instance;
         servletClass = instance.getClass();
         servletClassName = servletClass.getName();
-        
+
         if (JSP_SERVLET_CLASS.equals(servletClassName)) {
             isJspServlet = true;
         }
@@ -735,17 +765,19 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Is this servlet currently unavailable?
+     * @return
      */
+    @Override
     public boolean isUnavailable() {
         if (available == 0L) {
             return false;
         }
-        
+
         if (available <= System.currentTimeMillis()) {
             available = 0L;
             return false;
         }
-        
+
         return true;
     }
 
@@ -758,9 +790,11 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @return Array of names of the methods supported by the underlying
      * servlet
+     * @throws javax.servlet.ServletException
      */
+    @Override
     public String[] getServletMethods() throws ServletException {
-	
+
         loadServletClass();
 
         if (!HttpServlet.class.isAssignableFrom(servletClass)) {
@@ -770,7 +804,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         HashSet<String> allow = new HashSet<String>();
         allow.add("TRACE");
         allow.add("OPTIONS");
-	
+
         Method[] methods = getAllDeclaredMethods(servletClass);
         for (int i=0; methods != null && i<methods.length; i++) {
             Method method = methods[i];
@@ -801,7 +835,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Sets the multipart location
+     * @param location
      */
+    @Override
     public void setMultipartLocation(String location) {
         multipartConfigured = true;
         multipartLocation = location;
@@ -809,14 +845,18 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Gets the multipart location
+     * @return
      */
+    @Override
     public String getMultipartLocation(){
         return multipartLocation;
     }
 
     /**
      * Sets the multipart max-file-size
+     * @param maxFileSize
      */
+    @Override
     public void setMultipartMaxFileSize(long maxFileSize) {
         multipartConfigured = true;
         multipartMaxFileSize = maxFileSize;
@@ -824,14 +864,18 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Gets the multipart max-file-size
+     * @return
      */
+    @Override
     public long getMultipartMaxFileSize() {
         return multipartMaxFileSize;
     }
 
     /**
      * Sets the multipart max-request-size
+     * @param maxRequestSize
      */
+    @Override
     public void setMultipartMaxRequestSize(long maxRequestSize) {
         multipartConfigured = true;
         multipartMaxRequestSize = maxRequestSize;
@@ -839,14 +883,18 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Gets the multipart max-request-Size
+     * @return
      */
+    @Override
     public long getMultipartMaxRequestSize() {
         return multipartMaxRequestSize;
     }
 
     /**
      * Sets the multipart file-size-threshold
+     * @param fileSizeThreshold
      */
+    @Override
     public void setMultipartFileSizeThreshold(int fileSizeThreshold) {
         multipartConfigured = true;
         multipartFileSizeThreshold = fileSizeThreshold;
@@ -854,15 +902,25 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Gets the multipart file-size-threshol
+     * @return
      */
+    @Override
     public int getMultipartFileSizeThreshold() {
         return multipartFileSizeThreshold;
     }
 
+    /**
+     * Returns whether this is running in an OSGi context
+     * @return
+     */
     protected boolean isOSGi() {
         return osgi;
     }
 
+    /**
+     * Set whether this is being used in an OSGi context
+     * @param osgi
+     */
     protected void setOSGi(boolean osgi) {
         this.osgi = osgi;
     }
@@ -872,10 +930,11 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
 
     // START GlassFish 1343
+    @Override
     public synchronized void addValve(GlassFishValve valve) {
         /*
          * This exception should never be thrown in reality, because we never
-         * add any valves to a StandardWrapper. 
+         * add any valves to a StandardWrapper.
          * This exception is added here as an alert mechanism only, should
          * there ever be a need to add valves to a StandardWrapper in the
          * future.
@@ -893,7 +952,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Extract the root cause from a servlet exception.
-     * 
+     *
      * @param e The servlet exception
      */
     public static Throwable getRootCause(ServletException e) {
@@ -916,6 +975,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param child Child container to be added
      */
+    @Override
     public void addChild(Container child) {
         throw new IllegalStateException(createMsg(WRAPPER_CONTAINER_NO_CHILD_EXCEPTION));
     }
@@ -927,6 +987,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @param name the name of the init parameter
      * @param value the value of the init parameter
      */
+    @Override
     public void addInitParameter(String name, String value) {
         setInitParameter(name, value, true);
         if (notifyContainerListeners) {
@@ -948,7 +1009,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * was set, false otherwise
      */
     public boolean setInitParameter(String name, String value, boolean override) {
-        
+
         if (name == null || value == null) {
             throw new IllegalArgumentException("Null servlet init parameter name or value");
         }
@@ -957,8 +1018,8 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             if (override || !parameters.containsKey(name)) {
                 parameters.put(name, value);
                 return true;
-            } 
-                
+            }
+
             return false;
         }
     }
@@ -986,7 +1047,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                 }
                 if (parameters.containsKey(e.getKey())) {
                     if (conflicts == null) {
-                        conflicts = new HashSet<String>();    
+                        conflicts = new HashSet<String>();
                     }
                     conflicts.add(e.getKey());
                 }
@@ -999,7 +1060,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             for (Map.Entry<String, String> e : initParameters.entrySet()) {
                 setInitParameter(e.getKey(), e.getValue(), true);
             }
-   
+
             return Collections.emptySet();
         }
     }
@@ -1009,15 +1070,17 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param listener The new listener
      */
+    @Override
     public void addInstanceListener(InstanceListener listener) {
         instanceSupport.addInstanceListener(listener);
     }
 
     /**
-     * Add a mapping associated with the Wrapper.
+     * Add a mapping associated with the {@link Wrapper}.
      *
      * @param mapping The new wrapper mapping
      */
+    @Override
     public void addMapping(String mapping) {
         synchronized (mappings) {
             mappings.add(mapping);
@@ -1028,6 +1091,10 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         }
     }
 
+    /**
+     * Gets all the mapping associated with the {@link Wrapper}.
+     * @return an unmodifiable list
+     */
     public Collection<String> getMappings() {
         synchronized (mappings) {
             return unmodifiableList(mappings);
@@ -1041,6 +1108,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @param name Role name used within this servlet
      * @param link Role name used within the web application
      */
+    @Override
     public void addSecurityReference(String name, String link) {
         synchronized (references) {
             references.put(name, link);
@@ -1060,6 +1128,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * that this instance is not allocated again until it is deallocated by a
      * call to <code>deallocate()</code>.
      *
+     * @return
      * @exception ServletException if the servlet init() method threw
      *  an exception
      * @exception ServletException if a loading error occurs
@@ -1141,9 +1210,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * no action is actually required.
      *
      * @param servlet The servlet to be returned
-     *
      * @exception ServletException if a deallocation error occurs
      */
+    @Override
     public void deallocate(Servlet servlet) throws ServletException {
 
         // If not SingleThreadModel, no action is required
@@ -1165,7 +1234,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * if any; otherwise return <code>null</code>.
      *
      * @param name Name of the requested initialization parameter
+     * @return
      */
+    @Override
     public String findInitParameter(String name) {
         synchronized (parameters) {
             return parameters.get(name);
@@ -1175,7 +1246,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     /**
      * Return the names of all defined initialization parameters for this
      * servlet.
+     * @return
      */
+    @Override
     public String[] findInitParameters() {
         synchronized (parameters) {
             return parameters.keySet().toArray(new String[parameters.size()]);
@@ -1184,7 +1257,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Return the mappings associated with this wrapper.
+     * @return
      */
+    @Override
     public String[] findMappings() {
         synchronized (mappings) {
             return mappings.toArray(new String[mappings.size()]);
@@ -1196,7 +1271,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * reference name, if any; otherwise return <code>null</code>.
      *
      * @param name Security role reference used within this servlet
+     * @return
      */
+    @Override
     public String findSecurityReference(String name) {
         synchronized (references) {
             return references.get(name);
@@ -1206,7 +1283,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     /**
      * Return the set of security role reference names associated with
      * this servlet, if any; otherwise return a zero-length array.
+     * @return
      */
+    @Override
     public String[] findSecurityReferences() {
         synchronized (references) {
             return references.keySet().toArray(new String[references.size()]);
@@ -1215,6 +1294,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * FIXME: Fooling introspection ...
+     * @return
      */
     public Wrapper findMappingObject() {
         return (Wrapper) getMappingObject();
@@ -1235,9 +1315,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * prevented for classes loaded for web applications.
      *
      * @exception ServletException if the servlet init() method threw
-     *  an exception
-     * @exception ServletException if some other loading problem occurs
+     *  an exception or if some other loading problem occurs
      */
+    @Override
     public synchronized void load() throws ServletException {
         instance = loadServlet();
         initServlet(instance);
@@ -1319,7 +1399,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             Wrapper jspWrapper = (Wrapper) ((Context) getParent()).findChild(JSP_SERVLET_NAME);
             if (jspWrapper != null) {
                 actualClass = jspWrapper.getServletClassName();
-                
+
                 // Merge init parameters
                 for (String paramName : jspWrapper.findInitParameters()) {
                     if (parameters.get(paramName) == null) {
@@ -1334,9 +1414,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             unavailable(null);
             throw new ServletException(createMsg(NO_SERVLET_BE_SPECIFIED_EXCEPTION, getName()));
         }
-        
+
         // Current compiler targets default to 1.5, which is a little low for current
-        // environments 
+        // environments
         if (isJspServlet) {
             parameters.putIfAbsent("compilerTargetVM", "1.8");
             parameters.putIfAbsent("compilerSourceVM", "1.8");
@@ -1352,9 +1432,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         ClassLoader classLoader = loader.getClassLoader();
 
         // Special case class loader for a container provided servlet
-        //  
+        //
         if (isContainerProvidedServlet(actualClass) && !((Context) getParent()).getPrivileged()) {
-            // If it is a priviledged context - using its own class loader will work, since it's a child of 
+            // If it is a priviledged context - using its own class loader will work, since it's a child of
             // the container loader
             classLoader = this.getClass().getClassLoader();
         }
@@ -1381,7 +1461,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                     if (ex instanceof ClassNotFoundException) {
                         throw (ClassNotFoundException) ex;
                     }
-                        
+
                     getServletContext().log(createMsg(ERROR_LOADING_INFO, fclassLoader, factualClass), ex);
                 }
             } else {
@@ -1393,9 +1473,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             }
         } catch (ClassNotFoundException e) {
             unavailable(null);
-            
+
             getServletContext().log(createMsg(ERROR_LOADING_INFO, classLoader, actualClass), e);
-            
+
             throw new ServletException(createMsg(CANNOT_FIND_SERVLET_CLASS_EXCEPTION, actualClass), e);
         }
 
@@ -1416,7 +1496,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * Initializes the given servlet instance, by calling its init method.
      */
     private void initServlet(Servlet servlet) throws ServletException {
-        
+
         if (instanceInitialized && !singleThreadModel) {
             // Servlet has already been initialized
             return;
@@ -1424,7 +1504,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
         try {
             instanceSupport.fireInstanceEvent(BEFORE_INIT_EVENT, servlet);
-            
+
             // START SJS WS 7.0 6236329
             if (executeUnderSubjectDoAs()) {
                 // END OF SJS WS 7.0 6236329
@@ -1489,22 +1569,31 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
 
     // START IASRI 4665318
+    /**
+     * Wrapper for the service method on the actual servlet
+     * @param request The request sent
+     * @param response
+     * @param servlet The servlet to process
+     * @throws IOException
+     * @throws ServletException
+     * @see Servlet#service(ServletRequest, ServletResponse)
+     */
     void service(ServletRequest request, ServletResponse response, Servlet servlet) throws IOException, ServletException {
 
         InstanceSupport supp = getInstanceSupport();
 
         try {
             supp.fireInstanceEvent(BEFORE_SERVICE_EVENT, servlet, request, response);
-            
+
             if (!isAsyncSupported()) {
                 RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
                 if (reqFacHelper != null) {
                     reqFacHelper.disableAsyncSupport();
                 }
             }
-            
+
             if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-                    
+
                 if ( SecurityUtil.executeUnderSubjectDoAs() ){
                     final ServletRequest req = request;
                     final ServletResponse res = response;
@@ -1513,8 +1602,8 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                     Object[] serviceType = new Object[2];
                     serviceType[0] = req;
                     serviceType[1] = res;
-                    
-                    SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);                                                
+
+                    SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
                 } else {
                     if (requestTracing.isRequestTracingEnabled()) {
                         if (servlet instanceof ServletContainer) {
@@ -1524,12 +1613,12 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                             requestTracing.traceRequestEvent(constructServletRequestEvent((HttpServletRequest) request, servlet));
                         }
                     }
-                    
+
                     try {
                         if (isJspServlet) {
                             isInSuppressFFNFThread.set(true);
                         }
-                        
+
                         servlet.service((HttpServletRequest) request, (HttpServletResponse) response);
                     }
                     finally {
@@ -1539,7 +1628,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             } else {
                 servlet.service(request, response);
             }
-            
+
             supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response);
         } catch (IOException e) {
             // Set response status before firing event, see IT 10022
@@ -1582,35 +1671,35 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private RequestEvent constructWebServiceRequestEvent(HttpServletRequest httpServletRequest) {
         RequestEvent requestEvent = new RequestEvent("RESTWSRequest");
         requestEvent.addProperty("URL", httpServletRequest.getRequestURL().toString());
-        
+
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             requestEvent.addProperty(
-                headerName, 
+                headerName,
                 list(httpServletRequest.getHeaders(headerName)).toString());
         }
         requestEvent.addProperty("Method", httpServletRequest.getMethod());
-        
+
         return requestEvent;
     }
-    
+
     private RequestEvent constructServletRequestEvent(HttpServletRequest httpServletRequest, Servlet serv) {
         RequestEvent requestEvent  = new RequestEvent("ServletRequest");
         requestEvent.addProperty("URL", httpServletRequest.getRequestURL().toString());
-        
+
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             requestEvent.addProperty(
-                headerName, 
+                headerName,
                 list(httpServletRequest.getHeaders(headerName)).toString());
         }
-        
+
         requestEvent.addProperty("Method",httpServletRequest.getMethod());
         requestEvent.addProperty("QueryString", httpServletRequest.getQueryString());
         requestEvent.addProperty("Class",serv.getClass().getCanonicalName());
-        
+
         return requestEvent;
     }
 
@@ -1619,6 +1708,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param name Name of the initialization parameter to remove
      */
+    @Override
     public void removeInitParameter(String name) {
         synchronized (parameters) {
             parameters.remove(name);
@@ -1634,6 +1724,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeInstanceListener(InstanceListener listener) {
         instanceSupport.removeInstanceListener(listener);
     }
@@ -1643,6 +1734,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param mapping The pattern to remove
      */
+    @Override
     public void removeMapping(String mapping) {
         synchronized (mappings) {
             mappings.remove(mapping);
@@ -1658,6 +1750,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param name Security role used within this servlet to be removed
      */
+    @Override
     public void removeSecurityReference(String name) {
         synchronized (references) {
             references.remove(name);
@@ -1671,6 +1764,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     /**
      * Return a String representation of this component.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
@@ -1678,7 +1772,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             sb.append(getParent().toString())
               .append(".");
         }
-        
+
         return sb.append("StandardWrapper[")
                  .append(getName())
                  .append("]")
@@ -1692,10 +1786,11 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @param unavailable The exception that occurred, or <code>null</code>
      *  to mark this servlet as permanently unavailable
      */
+    @Override
     public void unavailable(UnavailableException unavailable) {
-        
+
         getServletContext().log(createMsg(MARK_SERVLET_UNAVAILABLE, getName()));
-        
+
         if (unavailable == null) {
             setAvailable(Long.MAX_VALUE);
         } else if (unavailable.isPermanent()) {
@@ -1719,13 +1814,14 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @exception ServletException if an exception is thrown by the
      *  destroy() method
      */
+    @Override
     public synchronized void unload() throws ServletException {
 
         // Nothing to do if we have never loaded the instance
         if (!singleThreadModel && instance == null) {
             return;
         }
-        
+
         unloading = true;
 
         // Loaf a while if the current instance is allocated
@@ -1761,7 +1857,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             if ( SecurityUtil.executeUnderSubjectDoAs() ){
             // END OF SJS WS 7.0 6236329
                 SecurityUtil.doAsPrivilege("destroy", instance);
-                SecurityUtil.remove(instance);                           
+                SecurityUtil.remove(instance);
             } else {
                 instance.destroy();
             }
@@ -1810,7 +1906,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                 // restore the context ClassLoader
                 Thread.currentThread().setContextClassLoader(oldCtxClassLoader);
             }
-            
+
             instancePool = null;
             nInstances = 0;
         }
@@ -1834,6 +1930,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param name Name of the initialization parameter to retrieve
      */
+    @Override
     public String getInitParameter(String name) {
         return findInitParameter(name);
     }
@@ -1848,6 +1945,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * Return the set of initialization parameter names defined for this
      * servlet.  If none are defined, an empty Enumeration is returned.
      */
+    @Override
     public Enumeration<String> getInitParameterNames() {
         synchronized (parameters) {
             return new Enumerator<String>(parameters.keySet());
@@ -1857,25 +1955,31 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     /**
      * Return the servlet context with which this servlet is associated.
      */
+    @Override
     public ServletContext getServletContext() {
         if (parent == null) {
             return null;
         }
-        
+
         if (!(parent instanceof Context)) {
             return null;
         }
-        
+
         return ((Context) parent).getServletContext();
     }
 
     /**
      * Return the name of this servlet.
      */
+    @Override
     public String getServletName() {
         return getName();
     }
 
+    /**
+     * Gets how long it took for the servlet to be loaded.
+     * @return length in milliseconds
+     */
     public long getLoadTime() {
         return loadTime;
     }
@@ -1884,6 +1988,10 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         this.loadTime = loadTime;
     }
 
+    /**
+     * Gets how long it took for the servlet class to be loaded.
+     * @return length in milliseconds
+     */
     public int getClassLoadTime() {
         return classLoadTime;
     }
@@ -1914,7 +2022,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         if (classname.startsWith("org.apache.catalina.")) {
             return true;
         }
-        
+
         try {
             Class<?> clazz = this.getClass().getClassLoader().loadClass(classname);
             return (ContainerServlet.class.isAssignableFrom(clazz));
@@ -1933,10 +2041,10 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             if (((Context) getParent()).getPrivileged()
                     || (servlet.getClass().getName().equals("org.apache.catalina.servlets.InvokerServlet"))) {
                 return true;
-            } 
-            
+            }
+
             return false;
-            
+
         }
 
         return true;
@@ -1944,17 +2052,19 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     /**
      * Log the abbreviated name of this Container for logging messages.
+     * @return <code>StandardWrapper[&lt;parentName | null&gt; : nameOfContainer]</code>
      */
+    @Override
     protected String logName() {
 
         StringBuilder sb = new StringBuilder("StandardWrapper[");
-        
+
         if (getParent() != null) {
             sb.append(getParent().getName());
         } else {
             sb.append("null");
         }
-        
+
         return sb.append(':')
                  .append(getName())
                  .append(']')
@@ -1995,14 +2105,15 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @exception LifecycleException if a fatal error occurs during startup
      */
+    @Override
     public void start() throws LifecycleException {
-    
-        // Send j2ee.state.starting notification 
+
+        // Send j2ee.state.starting notification
         if (getObjectName() != null) {
             Notification notification = new Notification("j2ee.state.starting", this, sequenceNumber++);
             sendNotification(notification);
         }
-        
+
         // Start up this component
         super.start();
 
@@ -2014,7 +2125,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         // MOVED TO StandardContext START() METHOD
 
         setAvailable(0L);
-        
+
         // Send j2ee.state.running notification
         if (this.getObjectName() != null) {
             Notification notification = new Notification("j2ee.state.running", this, sequenceNumber++);
@@ -2029,16 +2140,17 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @exception LifecycleException if a fatal error occurs during shutdown
      */
+    @Override
     public void stop() throws LifecycleException {
 
         setAvailable(Long.MAX_VALUE);
-        
+
         // Send j2ee.state.stopping notification
         if (getObjectName() != null) {
             Notification notification = new Notification("j2ee.state.stopping", this, sequenceNumber++);
             sendNotification(notification);
         }
-        
+
         // Shut down our servlet instance (if it has been initialized)
         try {
             unload();
@@ -2054,7 +2166,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             Notification notification = new Notification("j2ee.state.stopped", this, sequenceNumber++);
             sendNotification(notification);
         }
-        
+
         if (oname != null) {
             // Send j2ee.object.deleted notification
             Notification notification = new Notification("j2ee.object.deleted", this, sequenceNumber++);
@@ -2073,13 +2185,13 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         String domain = ctx.getDomain();
 
         String webMod = "//" + hostName + parentName;
-        String onameStr = 
-            domain + 
-            ":j2eeType=Servlet,name=" + getName() + 
-            ",WebModule=" + webMod + 
-            ",J2EEApplication=" + ctx.getJ2EEApplication() + 
+        String onameStr =
+            domain +
+            ":j2eeType=Servlet,name=" + getName() +
+            ",WebModule=" + webMod +
+            ",J2EEApplication=" + ctx.getJ2EEApplication() +
             ",J2EEServer=" + ctx.getJ2EEServer();
-        
+
         if (isOSGi()) {
             onameStr += ",osgi=true";
         }
@@ -2101,11 +2213,11 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
         if (isJspServlet) {
             // Register JSP monitoring mbean
-            onameStr = 
-                domain + 
-                ":type=JspMonitor,name=" + getName() + 
-                ",WebModule=" + webMod + 
-                ",J2EEApplication=" + ctx.getJ2EEApplication() + 
+            onameStr =
+                domain +
+                ":type=JspMonitor,name=" + getName() +
+                ",WebModule=" + webMod +
+                ",J2EEApplication=" + ctx.getJ2EEApplication() +
                 ",J2EEServer=" + ctx.getJ2EEServer();
             try {
                 jspMonitorON = new ObjectName(onameStr);
@@ -2117,30 +2229,40 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         }
     }
 
+    /**
+     * Sends a notification to anything listening via JMX.
+     * <p>
+     * This function does not have anything to do with the notification service in Payara.
+     * @param notification
+     * @see javax.management.NotificationBroadcasterSupport
+     * @see fish.payara.nucleus.notification.NotificationService
+     */
     public void sendNotification(Notification notification) {
 
         if (broadcaster == null) {
             broadcaster = ((StandardEngine) getParent().getParent().getParent()).getService().getBroadcaster();
         }
-        
+
         if (broadcaster != null) {
             broadcaster.sendNotification(notification);
         }
-        
+
     }
-    
+
 
     // ------------------------------------------------------------- Attributes
-        
-        
+
+    /** @return false */
     public boolean isEventProvider() {
         return false;
     }
 
+    /** @return false */
     public boolean isStateManageable() {
         return false;
     }
 
+    /** @return false */
     public boolean isStatisticsProvider() {
         return false;
     }
@@ -2161,7 +2283,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             if (oldFilter != null) {
                 rv &= oldFilter.isLoggable(record);
             }
-            
+
             return rv;
         }
     }
