@@ -264,7 +264,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     /**
      * This will include all class in directory to be scanned.
-     * param directory
+     * @param directory
      */
     protected void addScanDirectory(File directory) throws IOException {
         scannedURI.add(directory.toURI());
@@ -273,10 +273,12 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         }
     } 
     
+    @Override
     public ClassLoader getClassLoader() {
         return classLoader;
     }
 
+    @Override
     public Set<Class> getElements() {
         Set<Class> elements = new HashSet<Class>();
         if (getClassLoader() == null) {
@@ -307,6 +309,11 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         return elements;
     }
 
+    /**
+     * 
+     * @param bundleDesc
+     * @param moduleArchive 
+     */
     protected void addLibraryJars(T bundleDesc, 
         ReadableArchive moduleArchive) {
         List<URI> libraryURIs = new ArrayList<URI>(); 
@@ -316,7 +323,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
             }
 
             for (URI uri : libraryURIs) {
-                File libFile = new File(uri);;
+                File libFile = new File(uri);
                 if (libFile.isFile()) {
                     addScanJar(libFile);
                 } else if (libFile.isDirectory()) {

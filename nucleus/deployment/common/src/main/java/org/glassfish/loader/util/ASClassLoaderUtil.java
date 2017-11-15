@@ -70,6 +70,11 @@ import java.util.*;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
+/**
+ * Utils to get information about classes or libraries to load.
+ * 
+ * This class does not actually load the classes itself.
+ */
 public class ASClassLoaderUtil {
 
     public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
@@ -124,6 +129,12 @@ public class ASClassLoaderUtil {
 
     }
 
+    /**
+     * 
+     * @param habitat
+     * @param context
+     * @return 
+     */
     public static String getModuleClassPath (ServiceLocator habitat, 
         DeploymentContext context) {
         DeployCommandParameters params = 
@@ -316,22 +327,18 @@ public class ASClassLoaderUtil {
 
         // adds all the jars
         if (jarDirs != null) {
-            for (int i=0; i<jarDirs.length; i++) {
-                File jarDir =  jarDirs[i];
-
+            for (File jarDir : jarDirs) {
                 if (jarDir.isDirectory() || jarDir.canRead()) {
                     File[] files = jarDir.listFiles();
 
-                    for (int j=0; j<files.length; j++) {
-                        File jar = files[j];
-
+                    for (File jar : files) {
                         if ( FileUtils.isJar(jar) ||
-                            (!ignoreZip && FileUtils.isZip(jar)) ) {
+                                (!ignoreZip && FileUtils.isZip(jar)) ) {
                             list.add(jar.toURI().toURL());
 
                             if (deplLogger.isLoggable(Level.FINE)) {
                                 deplLogger.log(Level.FINE,
-                                               "Adding jar to class path:" + jar.toURL());
+                                        "Adding jar to class path:" + jar.toURL());
                             }
                         }
                     }
@@ -341,6 +348,11 @@ public class ASClassLoaderUtil {
         return list;
     }
   
+    /**
+     * Converts a list of a URLs to an array
+     * @param list
+     * @return  an empty array if list is null
+     */
     public static URL[] convertURLListToArray(List<URL> list) {
         // converts the list to an array
         URL[] urls = new URL[0];
@@ -480,7 +492,8 @@ public class ASClassLoaderUtil {
      * @param appLibDir the Application library directory
      * @param compatibilityProp the version of the release that we need to
      *        maintain backward compatibility 
-     * @return an array of URL
+     * @return an array of URLs
+     * @throws java.io.IOException
      */
     public static URL[] getAppLibDirLibraries(File appRoot, String appLibDir, 
         String compatibilityProp) 
@@ -489,6 +502,14 @@ public class ASClassLoaderUtil {
             getAppLibDirLibrariesAsList(appRoot, appLibDir, compatibilityProp));
     }
 
+    /**
+     * Gets a list of all the libraries packaged in the application library directory
+     * @param appRoot the application root
+     * @param appLibDir the Application library directory
+     * @param compatibilityProp if this is "v2" then Glassfish v2 library locations will also be added
+     * @return a List of the URLs
+     * @throws IOException 
+     */
     public static List<URL> getAppLibDirLibrariesAsList(File appRoot, String appLibDir, String compatibilityProp)
         throws IOException {
         URL[] libDirLibraries = new URL[0];
@@ -500,9 +521,7 @@ public class ASClassLoaderUtil {
         }
 
         List<URL> allLibDirLibraries = new ArrayList<URL>();
-        for (URL url : libDirLibraries) {
-            allLibDirLibraries.add(url);
-        }
+        allLibDirLibraries.addAll(Arrays.asList(libDirLibraries));
 
         // if the compatibility property is set to "v2", we should add all the 
         // jars under the application root to maintain backward compatibility 
@@ -514,9 +533,16 @@ public class ASClassLoaderUtil {
         return allLibDirLibraries;
     }
 
+    /**
+     * Returns all jar files if the directory
+     * @param moduleLibDirectory the directory to search
+     * @return a list of URIs
+     * @throws Exception 
+     */
     public static List<URI> getLibDirectoryJarURIs(File moduleLibDirectory) throws Exception {
         List<URI> libLibraryURIs = new ArrayList<URI>();
         File[] jarFiles = moduleLibDirectory.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 return (pathname.getAbsolutePath().endsWith(".jar"));
             }

@@ -46,9 +46,9 @@
   <parent>
     <groupId>fish.payara.extras.payara-micro</groupId>
     <artifactId>payara-micro-parent</artifactId>
-    <version>4.1.2.174</version>
+    <version>5.0.0.Alpha4-SNAPSHOT</version>
   </parent>
-  
+
   <groupId>fish.payara.extras</groupId>
   <artifactId>payara-micro</artifactId>
   <name>Payara Micro Distribution</name>
@@ -91,7 +91,7 @@
                                 <ant dir="." antfile="build.xml" target="new.create">
                                     <property name="bundlename" value="fish.payara.micro" />
                                     <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
-                                    <property name="install.dir.name" value="${install.dir.name}" />                            
+                                    <property name="install.dir.name" value="${install.dir.name}" />
                                 </ant>
                             </tasks>
                         </configuration>
@@ -216,7 +216,7 @@
             <version>${project.version}</version>
             <type>jar</type>
             <optional>true</optional>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>ejb.security</artifactId>
@@ -379,9 +379,9 @@
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>            
+            <type>jar</type>
             <optional>true</optional>
-        </dependency>    
+        </dependency>
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -469,7 +469,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>jdk8</id>
             <activation>

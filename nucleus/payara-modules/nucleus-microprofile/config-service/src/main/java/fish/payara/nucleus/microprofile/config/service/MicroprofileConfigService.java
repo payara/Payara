@@ -79,6 +79,7 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
 import org.glassfish.resources.config.CustomResource;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -139,6 +140,7 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
     // and for the correct server configuation
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Optional // PAYARA-2255 make optional due to race condition writing a missing entry into domain.xml
     MicroprofileConfigConfiguration configuration;
 
     // Provides ability to register a configuration listener
@@ -426,6 +428,9 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
     }
 
     public MicroprofileConfigConfiguration getConfig() {
+        if (configuration == null) {
+            configuration = context.getConfigBean().getConfig().getExtensionByType(MicroprofileConfigConfiguration.class);
+        }
         return configuration;
     }
 

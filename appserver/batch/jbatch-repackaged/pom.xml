@@ -19,13 +19,13 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.glassfish.main.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>4.1.2.174</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>payara-jbatch</artifactId>
     <groupId>fish.payara.appserver</groupId>
     <packaging>jar</packaging>
@@ -43,7 +43,7 @@
         </developer>
     </developers>
 
-    <build>       
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
@@ -145,11 +145,11 @@
                         <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
                         <Include-Resource>META-INF/services/=${project.build.directory}/dependencies/com.ibm.jbatch.container/META-INF/services</Include-Resource>
                     </instructions>
-                    
+
                     <supportedProjectTypes>
                         <supportedProjectType>jar</supportedProjectType>
                     </supportedProjectTypes>
-                    
+
                     <unpackBundle>true</unpackBundle>
                 </configuration>
                 <executions>
@@ -172,9 +172,9 @@
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.container</artifactId>
-        </dependency>     
+        </dependency>
     </dependencies>
-    
+
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->

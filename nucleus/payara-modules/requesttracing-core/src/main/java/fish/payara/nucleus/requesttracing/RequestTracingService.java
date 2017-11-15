@@ -82,6 +82,7 @@ import java.util.logging.Logger;
  * Main service class that provides methods used by interceptors for tracing requests.
  *
  * @author mertcaliskan
+ * @since 4.1.1.163
  */
 @Service(name = "requesttracing-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -166,6 +167,10 @@ public class RequestTracingService implements EventListener, ConfigListener {
         transactions.addListenerForType(RequestTracingServiceConfiguration.class, this);
     }
 
+    /**
+     * Starts the request tracing service
+     * @since 4.1.1.171
+     */
     public void bootstrapRequestTracingService() {
         if (configuration != null) {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
@@ -176,6 +181,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
             executionOptions.setHistoricalTraceTimeout(TimeUtil.setStoreTimeLimit(configuration.getHistoricalTraceStoreTimeout()));
 
             historicCleanerExecutor = Executors.newScheduledThreadPool(1,  new ThreadFactory() {
+                @Override
                 public Thread newThread(Runnable r) {
                     return new Thread(r, "request-tracing-historic-trace-store-cleanup-task");
                 }
@@ -209,6 +215,11 @@ public class RequestTracingService implements EventListener, ConfigListener {
         }
     }
 
+    /**
+     * Configures notifiers with request tracing and starts any enabled ones.
+     * If no options are set then the log notifier is automatically turned on.
+     * @since 4.1.2.173
+     */
     public void bootstrapNotifierList() {
         executionOptions.resetNotifierExecutionOptions();
         if (configuration.getNotifierList() != null) {
@@ -228,7 +239,6 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Retrieves the current Conversation ID
-     *
      * @return
      */
     public UUID getConversationID() {
@@ -246,10 +256,18 @@ public class RequestTracingService implements EventListener, ConfigListener {
         requestEventStore.setConverstationID(newID);
     }
 
+    /**
+     * Returns true if a trace has started and not yet completed
+     * @return 
+     */
     public boolean isTraceInProgress() {
         return requestEventStore.isTraceInProgress();
     }
 
+    /**
+     * Starts a new request trace
+     * @return a unique identifier for the request trace
+     */
     public UUID startTrace() {
         if (!isRequestTracingEnabled()) {
             return null;
@@ -261,12 +279,19 @@ public class RequestTracingService implements EventListener, ConfigListener {
         return requestEvent.getId();
     }
 
+    /**
+     * Adds a new event to the request trace currently in progress
+     * @param requestEvent 
+     */
     public void traceRequestEvent(RequestEvent requestEvent) {
         if (isRequestTracingEnabled()) {
             requestEventStore.storeEvent(requestEvent);
         }
     }
 
+    /**
+     * 
+     */
     public void endTrace() {
         if (!isRequestTracingEnabled()) {
             return;
@@ -295,6 +320,11 @@ public class RequestTracingService implements EventListener, ConfigListener {
         requestEventStore.flushStore();
     }
 
+    /**
+     * 
+     * @return 
+     * @since 4.1.1.164
+     */
     public Long getThresholdValueInNanos() {
         if (getExecutionOptions() != null) {
             return TimeUnit.NANOSECONDS.convert(getExecutionOptions().getThresholdValue(),

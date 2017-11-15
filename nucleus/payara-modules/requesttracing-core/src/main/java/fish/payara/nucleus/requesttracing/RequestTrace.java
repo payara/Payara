@@ -66,6 +66,10 @@ public class RequestTrace {
     private long elapsedTime;
     private LinkedList<RequestEvent> trace;
     
+    /**
+     * Add a new event to the series being traced
+     * @param requestEvent 
+     */
     void addEvent(RequestEvent requestEvent) {
         // Do not add trace events if completed
         if (completed && requestEvent.getEventType() != EventType.TRACE_START) {
@@ -111,7 +115,8 @@ public class RequestTrace {
     }
     
     /**
-     * 
+     * Gets how long the trace took.
+     * If the trace has not finished then this will be 0.
      * @return Time for trace in milliseconds
      */
     public long getElapsedTime() {
@@ -134,10 +139,19 @@ public class RequestTrace {
     }
     
     // methods for testing
+    /**
+     * Returns true if a trace has started.
+     * This will return true even if the trace has completed.
+     * @return 
+     */
     boolean isStarted() {
         return started;
     }
     
+    /**
+     * Returns a list of all the events that make up the trace.
+     * @return 
+     */
     LinkedList<RequestEvent> getTrace() {
         return trace;
     }
@@ -182,12 +196,22 @@ public class RequestTrace {
         return endTime;
     }
 
+    /**
+     * Sets a unique identifier for the trace.
+     * This identifier will be applied to all events within it.
+     * @param newID 
+     */
     void setConversationID(UUID newID) {
         for (RequestEvent requestEvent : trace) {
             requestEvent.setConversationId(newID);
         }
     }
 
+    /**
+     * Returns a unique identifier for the trace,
+     * which comes from the first event.
+     * @return {@code null} if no trace started
+     */
     UUID getConversationID() {
         UUID result = null;
         RequestEvent re = trace.getFirst();
@@ -197,6 +221,10 @@ public class RequestTrace {
         return result;
     }
 
+    /**
+     * Returns true if a complete trace has finished
+     * @return 
+     */
     boolean isCompleted() {
         return completed;
     }

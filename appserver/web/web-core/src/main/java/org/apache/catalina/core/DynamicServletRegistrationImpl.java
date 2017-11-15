@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.apache.catalina.core;
@@ -52,7 +54,9 @@ import java.text.MessageFormat;
 
 import org.apache.catalina.LogFacade;
 
-
+/**
+ * Implementation through which a servlet can be configured dynamically
+ */
 public class DynamicServletRegistrationImpl
     extends ServletRegistrationImpl
     implements ServletRegistration.Dynamic {
@@ -61,12 +65,15 @@ public class DynamicServletRegistrationImpl
 
     /**
      * Constructor
+     * @param wrapper
+     * @param ctx
      */
     public DynamicServletRegistrationImpl(StandardWrapper wrapper,
             StandardContext ctx) {
         super(wrapper, ctx);
     }
 
+    @Override
     public void setLoadOnStartup(int loadOnStartup) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
@@ -77,6 +84,7 @@ public class DynamicServletRegistrationImpl
         wrapper.setLoadOnStartup(loadOnStartup);
     }
 
+    @Override
     public void setAsyncSupported(boolean isAsyncSupported) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
@@ -87,11 +95,13 @@ public class DynamicServletRegistrationImpl
         wrapper.setIsAsyncSupported(isAsyncSupported);
     }
 
+    @Override
     public Set<String> setServletSecurity(ServletSecurityElement constraint) {
         Set<String> emptySet = Collections.emptySet();
         return Collections.unmodifiableSet(emptySet);
     }
 
+    @Override
     public void setMultipartConfig(MultipartConfigElement mpConfig) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
@@ -106,6 +116,7 @@ public class DynamicServletRegistrationImpl
             mpConfig.getFileSizeThreshold());
     }
 
+    @Override
     public void setRunAsRole(String roleName) {
         if (ctx.isContextInitializedCalled()) {
             String msg = MessageFormat.format(rb.getString(LogFacade.DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT),
@@ -116,10 +127,18 @@ public class DynamicServletRegistrationImpl
         wrapper.setRunAs(roleName);
     }
 
+    /**
+     * Sets the fully qualified class name to be used
+     * @param className 
+     */
     protected void setServletClassName(String className) {
         wrapper.setServletClassName(className);
     }
 
+    /**
+     * Sets the class object from which this servlet will be instantiated.
+     * @param clazz 
+     */
     protected void setServletClass(Class <? extends Servlet> clazz) {
         wrapper.setServletClass(clazz);
     }

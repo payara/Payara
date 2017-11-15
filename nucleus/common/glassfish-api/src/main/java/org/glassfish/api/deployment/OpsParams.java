@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.api.deployment;
@@ -156,6 +158,10 @@ public abstract class OpsParams implements CommandParameters {
      * Type of deployment operation, by default it's deployment
      */
     public Origin origin = Origin.deploy; 
+    /**
+     * Type of deployment operation, by default it's deployment
+     * @return 
+     */
     public Origin getOrigin() {
       return origin;
     }
@@ -164,12 +170,26 @@ public abstract class OpsParams implements CommandParameters {
      * The command associated with this operation, by default it's deploy
      */
     public Command command = Command.deploy;
+    /**
+     * The command associated with this operation, by default it's deploy
+     * @return 
+     */
     public Command getCommand() {
       return command;
     }
 
+    /**
+     * 
+     * @return the name of the application being deployed
+     */
     public abstract String name();
 
+    /**
+     * Libraries that are to used with the application.
+     * <p>
+     * These libraries if local should be under lib/applibs
+     * @return a comma separated list of JAR files
+     */
     public abstract String libraries();
 
     // internal hidden param

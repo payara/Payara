@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.deployment.common;
@@ -62,6 +64,7 @@ public abstract class SimpleDeployer <T extends Container,
      *
      * @parameters type type of metadata that this deployer has declared providing.
      */
+    @Override
     public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
         return null;
     }
@@ -77,6 +80,7 @@ public abstract class SimpleDeployer <T extends Container,
      * @return true if the prepare phase was successful
      *
      */
+    @Override
     public boolean prepare(DeploymentContext dc) {
         try {
             if (! dc.getCommandParameters(OpsParams.class).origin.isArtifactsPresent()) {
@@ -95,6 +99,7 @@ public abstract class SimpleDeployer <T extends Container,
     /**
      * No-op 
      */
+    @Override
     public U load(T container, DeploymentContext context) {
         return null;
     }
@@ -102,6 +107,7 @@ public abstract class SimpleDeployer <T extends Container,
     /**
      * No-op
      */
+    @Override
     public void unload(U appContainer, DeploymentContext context) {
     }
 
@@ -111,6 +117,7 @@ public abstract class SimpleDeployer <T extends Container,
      *
      * @param context deployment context
      */
+    @Override
     public void clean(DeploymentContext context) {
         try {
             if (context.getCommandParameters(
@@ -131,6 +138,7 @@ public abstract class SimpleDeployer <T extends Container,
      *
      * @return the meta data for this Deployer
      */
+    @Override
     public MetaData getMetaData() {
         return new MetaData(false, null, null);
     }

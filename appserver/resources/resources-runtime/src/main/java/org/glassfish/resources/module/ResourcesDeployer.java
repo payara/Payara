@@ -147,10 +147,12 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         applications = applicationsParam;
     }
 
+    @Override
     public void postConstruct() {
         events.register(this);
     }
 
+    @Override
     public void preDestroy(){
         events.unregister(this);
     }
@@ -173,6 +175,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         return application;
     }
 
+    @Override
     public void unload(ResourcesApplication appContainer, DeploymentContext context) {
         //TODO unregistering resources, removing resources configuration.
         debug("Resources-Deployer :unload() called");
@@ -423,6 +426,13 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
+    /**
+     * 
+     * @param dc
+     * @param embedded
+     * @param deployResources
+     * @throws ResourceException 
+     */
     public void createResources(DeploymentContext dc, boolean embedded, boolean deployResources) throws ResourceException {
         String appName = getAppNameFromDeployCmdParams(dc);
         Application app = dc.getTransientAppMetaData(ServerTags.APPLICATION, Application.class);
@@ -692,11 +702,26 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
+    /**
+     * Returns the name of the application that has been deployed
+     * @param dc
+     * @return 
+     */
     private static String getAppNameFromDeployCmdParams(DeploymentContext dc) {
         final DeployCommandParameters commandParams = dc.getCommandParameters(DeployCommandParameters.class);
         return commandParams.name();
     }
 
+    /**
+     * Puts all glassfish-resources.xml files of an archive into a map
+     * <p>
+     * If the archive is an ear all sub archives will be searched as well
+     * @param fileNames Map of all glassfish-resources files.
+     * All found glassfish-resource files will be added to it
+     * @param archive The archive to search for glassfish-resources.xml files
+     * @param actualArchiveName The path of the archive
+     * @throws IOException 
+     */
     public void retrieveAllResourcesXMLs(Map<String, String> fileNames, ReadableArchive archive,
                                          String actualArchiveName) throws IOException {
 
@@ -730,6 +755,12 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
+    /**
+     * Checks if a glassfish-resources.xml exists in the archive, if it does, adds it to the map
+     * @param fileNames Map of all glassfish-resources.xml files
+     * @param archive archive to check
+     * @param actualArchiveName path to archive
+     */
     private void retrieveResourcesXMLFromArchive(Map<String, String> fileNames, ReadableArchive archive,
                                                  String actualArchiveName) {
         if(ResourceUtil.hasResourcesXML(archive, locator)){
@@ -763,7 +794,9 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      * Event listener to listen to </code>application undeploy validation</code> and
      * if <i>preserveResources</i> flag is set, cache the &lt;resources&gt;
      * config for persisting it in domain.xml
+     * @param event
      */
+    @Override
     public void event(Event event) {
         if (event.is(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION)) {
             DeploymentContext dc = (DeploymentContext) event.hook();

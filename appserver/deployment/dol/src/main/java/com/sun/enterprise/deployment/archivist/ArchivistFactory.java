@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.archivist;
@@ -60,9 +62,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This factory class is responsible for creating Archivists
+ * This factory class is responsible for creating {@link Archivists}
  *
- * @author  Jerome Dochez
+ * @author Jerome Dochez
+ * @see org.glassfish.webservices.archivist.WebServicesArchivist
+ * @see org.glassfish.ejb.deployment.archivist.EjbInWarArchivist
+ * @see com.sun.enterprise.deployment.archivist.PersistenceArchivist
  */
 @Service
 @Singleton
@@ -73,6 +78,12 @@ public class ArchivistFactory {
     @Inject
     private ServiceLocator habitat;
 
+    /**
+     * Returns an Archivist of the specified archive type, and sets the classloader for it
+     * @param archiveType
+     * @param cl
+     * @return 
+     */
     public Archivist getArchivist(String archiveType, ClassLoader cl) {
         Archivist result = getArchivist(archiveType);
         if(result != null) {
@@ -81,6 +92,11 @@ public class ArchivistFactory {
         return result;
     }
 
+    /**
+     * Returns an Archivist of the specified archive type
+     * @param archiveType
+     * @return 
+     */
     @SuppressWarnings("unchecked")
     public Archivist getArchivist(String archiveType) {
         ActiveDescriptor<Archivist> best = (ActiveDescriptor<Archivist>)
@@ -90,10 +106,24 @@ public class ArchivistFactory {
         return habitat.getServiceHandle(best).getService();
     }
 
+    /**
+     * Returns an Archivist of the specified archive type 
+     * @param moduleType
+     * @return 
+     */
     public Archivist getArchivist(ArchiveType moduleType) {
         return getArchivist(String.valueOf(moduleType));
     }
 
+    /**
+     * Gets all the classes for processing parts of a specified archive
+     * @param sniffers
+     * @param moduleType
+     * @return 
+     * @see org.glassfish.webservices.archivist.WebServicesArchivist
+     * @see org.glassfish.ejb.deployment.archivist.EjbInWarArchivist
+     * @see com.sun.enterprise.deployment.archivist.PersistenceArchivist
+     */
     @SuppressWarnings("unchecked")
     public List<ExtensionsArchivist> getExtensionsArchivists(Collection<Sniffer> sniffers, ArchiveType moduleType) {
         Set<String> containerTypes = new HashSet<String>();

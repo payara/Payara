@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resourcebase.resources.api;
@@ -68,6 +70,7 @@ public class ResourceInfo implements org.glassfish.resourcebase.resources.api.Ge
     /**
      * @inheritDoc
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -75,6 +78,7 @@ public class ResourceInfo implements org.glassfish.resourcebase.resources.api.Ge
     /**
      * @inheritDoc
      */
+    @Override
     public String getApplicationName() {
         return applicationName;
     }
@@ -82,10 +86,12 @@ public class ResourceInfo implements org.glassfish.resourcebase.resources.api.Ge
     /**
      * @inheritDoc
      */
+    @Override
     public String getModuleName() {
         return moduleName;
     }
 
+    @Override
         public String toString(){
             if(applicationName != null && moduleName != null){
                 return "{ ResourceInfo : (jndiName="+ name +"), (applicationName="+applicationName+"), (moduleName="+moduleName+")}";
@@ -96,6 +102,7 @@ public class ResourceInfo implements org.glassfish.resourcebase.resources.api.Ge
             }
     }
 
+    @Override
     public boolean equals(Object o){
         boolean result = false;
         if(o == this){
@@ -122,6 +129,7 @@ public class ResourceInfo implements org.glassfish.resourcebase.resources.api.Ge
         return result;
     }
 
+    @Override
     public int hashCode(){
         int result = 67;
         if (name != null)

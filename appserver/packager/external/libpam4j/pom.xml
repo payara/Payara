@@ -42,18 +42,18 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.glassfish.main.external</groupId>
         <artifactId>external</artifactId>
-        <version>4.1.2.174</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>libpam4j-repackaged</artifactId>
     <packaging>jar</packaging>
     <name>libpam4j repackaged as a module</name>
     <description>libpam4j (Java binding for libpam.so) repackaged as a module</description>
-    
+
     <properties>
       <libpam4j.version>3.1</libpam4j.version>
     </properties>
@@ -80,8 +80,8 @@
                         <Embed-Dependency>
                             *;scope=compile;inline=true
                         </Embed-Dependency>
-                        <!-- Export everything from the embedded jar 
-                             in the final bundle 
+                        <!-- Export everything from the embedded jar
+                             in the final bundle
                         -->
                         <!-- Exclude unnecessary imports -->
                         <Export-Package>*;version=${libpam4j.version}</Export-Package>
@@ -115,9 +115,9 @@
     </build>
 
     <dependencies>
-        <!-- 
-            Mark them as optional so that GF distribution mechanism won't 
-            package them. It is sufficient to package the wrapped jar. 
+        <!--
+            Mark them as optional so that GF distribution mechanism won't
+            package them. It is sufficient to package the wrapped jar.
         -->
         <dependency>
 	  <groupId>org.jvnet.libpam4j</groupId>
