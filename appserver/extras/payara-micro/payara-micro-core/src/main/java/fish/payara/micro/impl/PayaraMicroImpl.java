@@ -89,6 +89,8 @@ import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -1383,7 +1385,32 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         entriesToDeploy.add(entryName);
                     }
                 }
+                
+                // Sort entries according to deployment type
+                entriesToDeploy.sort(new Comparator<String>() {
+                    // All the file formats - in order of deployment
+                    private final List<String> fileFormats = Arrays.asList(new String[]{".rar", ".jar", ".war", ".ear"});
+                    @Override
+                    public int compare(String s1, String s2) {
+                        String format1 = null;
+                        String format2 = null;
+                        for(String format: fileFormats) {
+                            if (s1.endsWith(format)) {
+                                format1 = format;
+                            }
+                            if (s2.endsWith(format)) {
+                                format2 = format;
+                            }
+                        }
+                        // Get the index of the extension in the list, or 5 if it's not in the list (meaning sort to back)
+                        int index1 = (format1 == null)? 5: fileFormats.indexOf(format1);
+                        int index2 = (format2 == null)? 5: fileFormats.indexOf(format2);
+                        
+                        return index1 - index2;
+                    }
+                });
 
+                // Deploy entries
                 for (String entry : entriesToDeploy) {
                     File file = new File(entry);
                     String contextRoot = file.getName();
