@@ -45,11 +45,16 @@ import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
- *
+ * Validator for the Fault Tolerance Asynchronous annotation.
  * @author Andrew Pielage
  */
 public class AsynchronousValidator {
     
+    /**
+     * Validates the given @Asynchronous annotation.
+     * @param asynchronous The annotation to validate
+     * @param annotatedMethod The annotated method to validate
+     */
     public static void validateAnnotation(Asynchronous asynchronous, AnnotatedMethod<?> annotatedMethod) {
         if (annotatedMethod.getJavaMember().getReturnType() != Future.class) {
             throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""

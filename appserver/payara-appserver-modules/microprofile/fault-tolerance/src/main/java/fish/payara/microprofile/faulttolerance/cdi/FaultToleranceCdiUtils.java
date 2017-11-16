@@ -51,7 +51,7 @@ import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
 
 /**
- *
+ * Utility Methods for the Fault Tolerance Interceptors.
  * @author Andrew Pielage
  */
 public class FaultToleranceCdiUtils {
@@ -106,6 +106,17 @@ public class FaultToleranceCdiUtils {
         return annotation;
     }
     
+    /**
+     * Gets overriding config parameter values if they're present.
+     * @param <A> The annotation type
+     * @param config The config to get the overriding parameter values from
+     * @param annotationClass The annotation class
+     * @param parameterName The name of the parameter to get the override value of
+     * @param annotatedMethodName The annotated method name
+     * @param annotatedClassCanonicalName The canonical name of the annotated method class
+     * @param parameterType The type of the parameter to get the override value of
+     * @return 
+     */
     public static <A extends Annotation> Optional getOverrideValue(Config config, Class<A> annotationClass, 
             String parameterName, String annotatedMethodName, String annotatedClassCanonicalName, Class parameterType) {
         Optional value = Optional.empty();
@@ -114,59 +125,91 @@ public class FaultToleranceCdiUtils {
         
         // Check if there's a config override for the method
         if (config != null) {
+            logger.log(Level.FINER, "Getting config override for annotated method...");
             value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotatedMethodName 
-                    + "/" + annotationName + "/" + parameterName, 
-                    parameterType);
+                    + "/" + annotationName + "/" + parameterName, parameterType);
                 
             // If there wasn't a config override for the method, check if there's one for the class
             if (!value.isPresent()) {
+                logger.log(Level.FINER, "No config override for annotated method, getting config override for the "
+                        + "annotated class...");
                 value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName 
-                        + "/" + parameterName, 
-                        parameterType);
+                        + "/" + parameterName, parameterType);
 
                 // If there wasn't a config override for the class either, check if there's a global one
                 if (!value.isPresent()) {
+                    logger.log(Level.FINER, "No config override for the annotated class, getting application wide "
+                            + "config override...");
                     value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
+                    
+                    if (!value.isPresent()) {
+                        logger.log(Level.FINER, "No config overrides");
+                    }
                 }
             }
+        } else {
+            logger.log(Level.FINE, "No config to get override parameters from.");
         }
         
         return value;
     }
     
+    /**
+     * Gets overriding config parameter values if they're present from an invocation context.
+     * @param <A> The annotation type
+     * @param config The config to get the overriding parameter values from
+     * @param annotationClass The annotation class
+     * @param parameterName The name of the parameter to get the override value of
+     * @param invocationContext The context of the invoking request
+     * @param parameterType The type of the parameter to get the override value of
+     * @return 
+     */
     public static <A extends Annotation> Optional getOverrideValue(Config config, Class<A> annotationClass, 
             String parameterName, InvocationContext invocationContext, Class parameterType) {
         Optional value = Optional.empty();
         
+        // Get the annotation, method, and class names
         String annotationName = annotationClass.getSimpleName();
         String annotatedMethodName = invocationContext.getMethod().getName();
         String annotatedClassCanonicalName = invocationContext.getMethod().getDeclaringClass().getCanonicalName();
         
         // Check if there's a config override for the method
         if (config != null) {
+            logger.log(Level.FINER, "Getting config override for annotated method...");
             value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotatedMethodName 
-                    + "/" + annotationName + "/" + parameterName, 
-                    parameterType);
+                    + "/" + annotationName + "/" + parameterName, parameterType);
             
             // If there wasn't a config override for the method, check if the method has the annotation
             if (!value.isPresent()) {
+                logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
+                        + "annotated directly...");
                 // If the method is annotated directly, simply return
                 if (invocationContext.getMethod().getAnnotation(annotationClass) != null) {
+                    logger.log(Level.FINER, "Method is annotated directly, returning.");
                     return value;
                 }
                 
                 // If there wasn't a config override for the method, check if there's one for the class
                 if (!value.isPresent()) {
+                    logger.log(Level.FINER, "No config override for annotated method, getting config override for the "
+                        + "annotated class...");
                     value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName 
-                            + "/" + parameterName, 
-                            parameterType);
+                            + "/" + parameterName, parameterType);
 
                     // If there wasn't a config override for the class either, check if there's a global one
                     if (!value.isPresent()) {
+                        logger.log(Level.FINER, "No config override for the annotated class, getting application wide "
+                            + "config override...");
                         value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
+                        
+                        if (!value.isPresent()) {
+                            logger.log(Level.FINER, "No config overrides");
+                        }
                     }
                 }
             } 
+        } else {
+            logger.log(Level.FINE, "No config to get override parameters from.");
         }
         
         return value;

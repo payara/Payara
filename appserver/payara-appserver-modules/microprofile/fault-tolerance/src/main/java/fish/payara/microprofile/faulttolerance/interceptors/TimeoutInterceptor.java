@@ -42,6 +42,7 @@ package fish.payara.microprofile.faulttolerance.interceptors;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Future;
@@ -86,7 +87,8 @@ public class TimeoutInterceptor {
         
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
+                .getService(InvocationManager.class);
         
         Config config = null;
         try {
@@ -98,19 +100,27 @@ public class TimeoutInterceptor {
         try {
             if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
                     invocationManager, invocationContext), config)) {
+                logger.log(Level.FINER, "Proceeding invocation with timeout semantics");
                 proceededInvocationContext = timeout(invocationContext);
             } else {
+                // If fault tolerance isn't enabled, just proceed as normal
+                logger.log(Level.FINE, "Fault Tolerance not enabled for {0}, proceeding normally without timeout.", 
+                        faultToleranceService.getApplicationName(invocationManager, invocationContext));
                 proceededInvocationContext = invocationContext.proceed();
             }
         } catch (Exception ex) {
             Retry retry = FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext);
             
             if (retry != null) {
+                logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
             } else {
-                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
+                        invocationContext);
 
                 if (fallback != null) {
+                    logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
+                            + "falling back from Timeout");
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
                 } else {
@@ -118,14 +128,24 @@ public class TimeoutInterceptor {
                 }
             }
         }
-
+        
         return proceededInvocationContext;
     }
 
+    /**
+     * Proceeds the given invocation context with Timeout semantics.
+     * @param invocationContext The invocation context to proceed.
+     * @return The result of the invocation context.
+     * @throws Exception If the invocation context execution throws an exception
+     */
     private Object timeout(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
-
         Timeout timeout = FaultToleranceCdiUtils.getAnnotation(beanManager, Timeout.class, invocationContext);
+        
+        FaultToleranceService faultToleranceService = 
+                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
+                .getService(InvocationManager.class);
         
         Config config = null;
         try {
@@ -141,12 +161,11 @@ public class TimeoutInterceptor {
                 config, Timeout.class, "unit", invocationContext, ChronoUnit.class)
                 .orElse(timeout.unit());
 
-        long timeoutMillis = Duration.of(value, unit).toMillis();
-        long timeoutTime = System.currentTimeMillis() + timeoutMillis;
-        
         Future timeoutFuture = null;
         ThreadLocal<Boolean> timedOut = new ThreadLocal<>();
         timedOut.set(false);
+        long timeoutMillis = Duration.of(value, unit).toMillis();
+        long timeoutTime = System.currentTimeMillis() + timeoutMillis;
         
         try {
             timeoutFuture = startTimeout(timeoutMillis, timedOut);
@@ -154,16 +173,28 @@ public class TimeoutInterceptor {
             stopTimeout(timeoutFuture);
 
             if (System.currentTimeMillis() > timeoutTime || timedOut.get()) {
+                logger.log(Level.FINE, "Execution timed out");
+                RequestEvent requestEvent = new RequestEvent("FaultTolerance-TimeoutException");
+                faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
                 throw new TimeoutException();
             }
         } catch (Exception ex) {
             stopTimeout(timeoutFuture);
+            RequestEvent requestEvent = new RequestEvent("FaultTolerance-TimeoutException");
+            faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
             throw ex;
         }
-
+        
         return proceededInvocationContext;
     }
 
+    /**
+     * Helper method that schedules a thread interrupt after a period of time.
+     * @param timeoutMillis The time in milliseconds to wait before interrupting.
+     * @param timedOut A threadlocal that stores whether or not the interrupt has occurred.
+     * @return A future that can be cancelled if the method execution completes before the interrupt happens
+     * @throws NamingException If the configured ManagedScheduledExecutorService could not be found
+     */
     private Future startTimeout(long timeoutMillis, ThreadLocal<Boolean> timedOut) throws NamingException {
         final Thread thread = Thread.currentThread();
         
@@ -180,6 +211,10 @@ public class TimeoutInterceptor {
         return managedScheduledExecutorService.schedule(timeoutTask, timeoutMillis, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Helper method that stops the scheduled interrupt.
+     * @param timeoutFuture The scheduled interrupt to cancel.
+     */
     private void stopTimeout(Future timeoutFuture) {
         if (timeoutFuture != null) {
             timeoutFuture.cancel(true);

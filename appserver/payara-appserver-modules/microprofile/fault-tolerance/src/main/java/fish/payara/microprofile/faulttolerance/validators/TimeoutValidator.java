@@ -46,7 +46,7 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
- *
+ * Validator for the Fault Tolerance Timeout annotation.
  * @author Andrew Pielage
  */
 public class TimeoutValidator {

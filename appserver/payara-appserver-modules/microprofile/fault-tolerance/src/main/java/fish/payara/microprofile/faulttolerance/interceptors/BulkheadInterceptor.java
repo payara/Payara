@@ -42,6 +42,7 @@ package fish.payara.microprofile.faulttolerance.interceptors;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.io.Serializable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -100,24 +101,33 @@ public class BulkheadInterceptor implements Serializable {
             
             // Attempt to proceed the InvocationContext with Bulkhead semantics if Fault Tolerance is enabled
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)) {
+                logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
                 proceededInvocationContext = bulkhead(invocationContext);
             } else {
+                // If fault tolerance isn't enabled, just proceed as normal
+                logger.log(Level.FINE, "Fault Tolerance not enabled for {0}, proceeding normally without bulkhead.", 
+                        faultToleranceService.getApplicationName(invocationManager, invocationContext));
                 proceededInvocationContext = invocationContext.proceed();
             }
         } catch (Exception ex) {
             Retry retry = FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext);
             
             if (retry != null) {
+                logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
             } else {
                 // If an exception was thrown, check if the method is annotated with @Fallback
-                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
+                        invocationContext);
 
                 // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
                 if (fallback != null) {
+                    logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
+                            + "falling back from Bulkhead");
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
                 } else {
+                    logger.log(Level.FINE, "Fallback annotation not found on method, propagating error upwards.", ex);
                     throw ex;
                 }
             }
@@ -126,7 +136,12 @@ public class BulkheadInterceptor implements Serializable {
         return proceededInvocationContext;
     }
     
-    
+    /**
+     * Proceeds the context under Bulkhead semantics.
+     * @param invocationContext The context to proceed.
+     * @return The outcome of the invocationContext
+     * @throws Exception 
+     */
     private Object bulkhead(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         
@@ -168,6 +183,9 @@ public class BulkheadInterceptor implements Serializable {
                 // If there aren't any free permits, see if there are any free queue permits
                 if (bulkheadExecutionQueueSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                     logger.log(Level.FINER, "Acquired bulkhead queue semaphore.");
+                    RequestEvent requestEvent = new RequestEvent("FaultTolerance-BulkheadQueueing");
+                    faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
+                    
                     // If there is a free queue permit, queue for an executor permit
                     try {
                         logger.log(Level.FINER, "Attempting to acquire bulkhead execution semaphore.");
@@ -177,8 +195,13 @@ public class BulkheadInterceptor implements Serializable {
                         // Release the queue permit
                         bulkheadExecutionQueueSemaphore.release();
                         
+                        requestEvent = new RequestEvent("FaultTolerance-BulkheadExecuting");
+                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
+                                invocationContext);
+                        
                         // Proceed the invocation and wait for the response
                         try {
+                            logger.log(Level.FINER, "Proceeding bulkhead context");
                             proceededInvocationContext = invocationContext.proceed();
                         } catch (Exception ex) {
                             logger.log(Level.FINE, "Exception proceeding Bulkhead context", ex);
@@ -186,7 +209,7 @@ public class BulkheadInterceptor implements Serializable {
                             // Generic catch, as we need to release the semaphore permits
                             bulkheadExecutionSemaphore.release();
                             bulkheadExecutionQueueSemaphore.release();
-
+                            
                             // Let the exception propagate further up - we just want to release the semaphores
                             throw ex;
                         }
@@ -194,25 +217,35 @@ public class BulkheadInterceptor implements Serializable {
                         // Release the execution permit
                         bulkheadExecutionSemaphore.release();
                     } catch (InterruptedException ex) {
+                        requestEvent = new RequestEvent("FaultTolerance-BulkheadException");
+                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
+                                invocationContext);
+                        
                         logger.log(Level.INFO, "Interrupted acquiring bulkhead semaphore", ex);
                         throw new BulkheadException(ex);
                     }
                 } else {
+                    RequestEvent requestEvent = new RequestEvent("FaultTolerance-BulkheadException");
+                    faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
                     throw new BulkheadException("No free work or queue permits.");
                 }
             } else {
+                RequestEvent requestEvent = new RequestEvent("FaultTolerance-BulkheadExecuting");
+                faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
+                
                 // Proceed the invocation and wait for the response
-                    try {
-                        proceededInvocationContext = invocationContext.proceed();
-                    } catch (Exception ex) {
-                        logger.log(Level.FINE, "Exception proceeding Bulkhead context", ex);
-                        
-                        // Generic catch, as we need to release the semaphore permits
-                        bulkheadExecutionSemaphore.release();
-                        
-                        // Let the exception propagate further up - we just want to release the semaphores
-                        throw ex;
-                    }
+                try {
+                    logger.log(Level.FINER, "Proceeding bulkhead context");
+                    proceededInvocationContext = invocationContext.proceed();
+                } catch (Exception ex) {
+                    logger.log(Level.FINE, "Exception proceeding Bulkhead context", ex);
+
+                    // Generic catch, as we need to release the semaphore permits
+                    bulkheadExecutionSemaphore.release();
+
+                    // Let the exception propagate further up - we just want to release the semaphores
+                    throw ex;
+                }
                     
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
@@ -222,6 +255,7 @@ public class BulkheadInterceptor implements Serializable {
             if (bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                 // Proceed the invocation and wait for the response
                 try {
+                    logger.log(Level.FINER, "Proceeding bulkhead context");
                     proceededInvocationContext = invocationContext.proceed();
                 } catch (Exception ex) {
                     logger.log(Level.FINE, "Exception proceeding Bulkhead context", ex);
@@ -236,10 +270,14 @@ public class BulkheadInterceptor implements Serializable {
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
             } else {
+                RequestEvent requestEvent = new RequestEvent("FaultTolerance-BulkheadException");
+                faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
                 throw new BulkheadException("No free work permits.");
             }
         }
         
         return proceededInvocationContext;
     }
+    
+    
 }

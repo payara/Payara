@@ -46,11 +46,17 @@ import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
- *
+ * Validator for the Fault Tolerance Bulkhead annotation.
  * @author Andrew Pielage
  */
 public class BulkheadValidator {
 
+    /**
+     * Validates the given Bulkhead annotation.
+     * @param bulkhead The annotation to validate
+     * @param annotatedMethod The annotated method to validate
+     * @param config The config to get any override values from
+     */
     public static void validateAnnotation(Bulkhead bulkhead, AnnotatedMethod<?> annotatedMethod, Config config) {
         int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
                 config, Bulkhead.class, "value", annotatedMethod.getJavaMember().getName(),

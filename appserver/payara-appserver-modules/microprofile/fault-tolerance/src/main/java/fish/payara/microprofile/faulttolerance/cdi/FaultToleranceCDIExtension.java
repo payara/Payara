@@ -76,6 +76,7 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
 public class FaultToleranceCDIExtension implements Extension {
     
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
+        // Add each of the Fault Tolerance interceptors
         beforeBeanDiscovery.addInterceptorBinding(Asynchronous.class);
         AnnotatedType<AsynchronousInterceptor> asynchronousInterceptor = 
                 beanManager.createAnnotatedType(AsynchronousInterceptor.class);
@@ -105,13 +106,21 @@ public class FaultToleranceCDIExtension implements Extension {
             BeanManager beanManager) throws Exception {
         AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
         
+        // Validate the Fault Tolerance annotations for each annotated method
         Set<AnnotatedMethod<? super T>> annotatedMethods = annotatedType.getMethods();
         for (AnnotatedMethod<?> annotatedMethod : annotatedMethods) {
             validateMethodAnnotations(annotatedMethod);
         }
     }
     
-    private <T> void validateMethodAnnotations(AnnotatedMethod<T> annotatedMethod) throws Exception {      
+    /**
+     * Helper method that validates the Fault Tolerance annotations for a given method.
+     * @param <T> The annotated method type
+     * @param annotatedMethod The annotated method to validate
+     * @throws Exception 
+     */
+    private <T> void validateMethodAnnotations(AnnotatedMethod<T> annotatedMethod) 
+            throws ClassNotFoundException, NoSuchMethodException {      
         Config config = ConfigProvider.getConfig();
         
         for (Annotation annotation : annotatedMethod.getAnnotations()) {

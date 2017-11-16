@@ -48,26 +48,36 @@ import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
- *
+ * Validator for the Fault Tolerance Fallback Annotation.
  * @author Andrew Pielage
  */
 public class FallbackValidator {
     private static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
     
-    public static void validateAnnotation(Fallback fallback, AnnotatedMethod<?> annotatedMethod, Config config)
-            throws Exception {
+    /**
+     * Validate that the Fallback annotation is correct.
+     * @param fallback The fallback annotation to validate
+     * @param annotatedMethod The method annotated with @Fallback
+     * @param config The config of the application
+     * @throws ClassNotFoundException If the fallbackClass could not be found
+     * @throws NoSuchMethodException If the fallbackMethod could not be found
+     */
+    public static void validateAnnotation(Fallback fallback, AnnotatedMethod<?> annotatedMethod, Config config) 
+            throws ClassNotFoundException, NoSuchMethodException {
+        // Get the fallbackMethod
         String fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(
                 config, Fallback.class, "fallbackMethod", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class)
                 .orElse(fallback.fallbackMethod());
         
-
+        // Get the fallbackClass, and check that it can be found
         Class<? extends FallbackHandler> fallbackClass = (Class<? extends FallbackHandler>) Thread.currentThread()
                 .getContextClassLoader().loadClass((String) FaultToleranceCdiUtils
                 .getOverrideValue(config, Fallback.class, "value", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class)
                 .orElse(fallback.value().getName()));
         
+        // Validate the annotated method
         if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
             if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {
                 throw new FaultToleranceDefinitionException("Both a fallback class and method have been set.");

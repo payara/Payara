@@ -99,24 +99,29 @@ public class AsynchronousInterceptor implements Serializable {
             logger.log(Level.INFO, "No config could be found", ex);
         }
         
-        
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
             if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
-                    invocationManager, invocationContext), config)) {
+                    invocationManager, invocationContext), config)) {                
                 Callable callable = () -> {
-                        return invocationContext.proceed();
+                    return invocationContext.proceed();
                 };
+                logger.log(Level.FINER, "Proceeding invocation asynchronously");
                 proceededInvocationContext = new FutureDelegator(managedExecutorService.submit(callable));
             } else {
+                // If fault tolerance isn't enabled, just proceed as normal
+                logger.log(Level.FINE, "Fault Tolerance not enabled for {0}, proceeding normally without asynchronous.", 
+                        faultToleranceService.getApplicationName(invocationManager, invocationContext));
                 proceededInvocationContext = invocationContext.proceed();
             }
         } catch (Exception ex) {
             // If an exception was thrown, check if the method is annotated with @Fallback
+            // We should only get here if executing synchronously, as the exception wouldn't get thrown in this thread
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
             // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
             if (fallback != null) {
+                logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
             } else {
@@ -127,6 +132,9 @@ public class AsynchronousInterceptor implements Serializable {
         return proceededInvocationContext;
     }
 
+    /**
+     * Wrapper class for the Future object
+     */
     class FutureDelegator implements Future<Object> {
 
         private final Future<?> future;
@@ -157,6 +165,7 @@ public class AsynchronousInterceptor implements Serializable {
             try {
                 proceededInvocation = future.get();
                 
+                // If the result of future.get() is still a future, get it again
                 if (proceededInvocation instanceof Future) {
                     Future tempFuture = (Future) proceededInvocation;
                     proceededInvocation = tempFuture.get();
@@ -179,6 +188,7 @@ public class AsynchronousInterceptor implements Serializable {
             try {
                 proceededInvocation = future.get(timeout, unit);
                 
+                // If the result of future.get() is still a future, get it again
                 if (proceededInvocation instanceof Future) {
                     Future tempFuture = (Future) proceededInvocation;
                     proceededInvocation = tempFuture.get(timeout, unit);

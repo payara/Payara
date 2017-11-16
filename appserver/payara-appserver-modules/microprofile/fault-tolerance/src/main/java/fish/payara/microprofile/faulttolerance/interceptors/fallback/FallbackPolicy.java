@@ -39,21 +39,28 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
+import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import javax.enterprise.inject.spi.CDI;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Class that executes the fallback policy defined by the @Fallback annotation.
  * @author Andrew Pielage
  */
 public class FallbackPolicy {
     
+    private static final Logger logger = Logger.getLogger(FallbackPolicy.class.getName());
     private static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
     
     private final Class<? extends FallbackHandler> fallbackClass;
@@ -71,14 +78,31 @@ public class FallbackPolicy {
                 .orElse(fallback.fallbackMethod());
     }
     
+    /**
+     * Performs the fallback operation defined by the @Fallback annotation.
+     * @param invocationContext The failing invocation context
+     * @return The result of the executed fallback method
+     * @throws Exception If the fallback method itself fails.
+     */
     public Object fallback(InvocationContext invocationContext) throws Exception {
         Object fallbackInvocationContext = null;
         
+        FaultToleranceService faultToleranceService = 
+                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
+                .getService(InvocationManager.class);      
+        RequestEvent requestEvent = new RequestEvent("FaultTolerance-Fallback");
+        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);    
+        
         if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
+            logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);
+            
             fallbackInvocationContext = invocationContext.getMethod().getDeclaringClass()
                     .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
                     .invoke(invocationContext.getTarget(), invocationContext.getParameters());
         } else {
+            logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
+            
             ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(), 
                     invocationContext.getParameters());
             
@@ -90,6 +114,9 @@ public class FallbackPolicy {
         return fallbackInvocationContext;
     }
     
+    /**
+     * Default implementation class for the Fault Tolerance ExecutionContext interface
+     */
     private class FaultToleranceExecutionContext implements ExecutionContext {
 
         private final Method method;

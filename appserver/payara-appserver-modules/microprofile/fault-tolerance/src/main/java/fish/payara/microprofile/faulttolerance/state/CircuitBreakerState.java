@@ -41,13 +41,17 @@ package fish.payara.microprofile.faulttolerance.state;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
+ * Class that represents the state of a CircuitBreaker.
  * @author Andrew Pielage
  */
 public class CircuitBreakerState {  
         
+    private static final Logger logger = Logger.getLogger(CircuitBreakerState.class.getName());
+    
     public enum CircuitState {
         OPEN, CLOSED, HALF_OPEN
     }
@@ -61,41 +65,73 @@ public class CircuitBreakerState {
         halfOpenSuccessfulResultsCounter = 0;
     }
     
+    /**
+     * Gets the current circuit state.
+     * @return The current circuit state
+     */
     public CircuitState getCircuitState() {
         return circuitState;
     }
     
+    /**
+     * Sets the CircuitBreaker state to the provided enum value.
+     * @param circuitState The state to set the CIrcuitBreaker to.
+     */
     public void setCircuitState(CircuitState circuitState) {
         this.circuitState = circuitState;
     }
     
+    /**
+     * Records a success or failure result to the CircuitBreaker.
+     * @param result True for a success, false for a failure
+     */
     public void recordClosedResult(Boolean result) {
+        // If the queue is full, remove the oldest result and add
         if (!closedResultsQueue.offer(result)) {
             closedResultsQueue.poll();
             closedResultsQueue.offer(result);
         }
     }
     
+    /**
+     * Clears the results queue.
+     */
     public void resetResults() {
         closedResultsQueue.clear();
     }
     
+    /**
+     * Increments the successful results counter for the half open state.
+     */
     public void incrementHalfOpenSuccessfulResultCounter() {
         halfOpenSuccessfulResultsCounter++;
     }
     
+    /**
+     * Resets the successful results counter for the half open state.
+     */
     public void resetHalfOpenSuccessfulResultCounter() {
         halfOpenSuccessfulResultsCounter = 0;
     }
     
+    /**
+     * Gets the successful results counter for the half open state.
+     * @return The number of consecutive successful results.
+     */
     public int getHalfOpenSuccessFulResultCounter() {
         return halfOpenSuccessfulResultsCounter;
     }
     
+    /**
+     * Checks to see if the CircuitBreaker is over the given failure threshold.
+     * @param failureThreshold The number of failures before the circuit breaker should open
+     * @return True if the CircuitBreaker is over the failure threshold
+     */
     public Boolean isOverFailureThreshold(long failureThreshold) {
         Boolean over = false;
         int failures = 0;
         
+        // Only check if the queue is full
         if (closedResultsQueue.remainingCapacity() == 0) {
             for (Boolean success : closedResultsQueue) {
                 if (!success) {
@@ -107,6 +143,8 @@ public class CircuitBreakerState {
                     }
                 }
             }
+        } else {
+            logger.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
         }
         
         return over;

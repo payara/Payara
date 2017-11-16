@@ -46,10 +46,17 @@ import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 /**
- *
+ * Validator for the Fault Tolerance CircuitBreaker annotation.
  * @author Andrew Pielage
  */
 public class CircuitBreakerValidator {
+    
+    /**
+     * Validates the given CircuitBreaker annotation.
+     * @param circuitBreaker The annotation to validate
+     * @param annotatedMethod The annotated method to validate
+     * @param config The config to get any override values from
+     */
     public static void validateAnnotation(CircuitBreaker circuitBreaker, AnnotatedMethod<?> annotatedMethod, 
             Config config) {
         long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(

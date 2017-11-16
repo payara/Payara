@@ -44,12 +44,20 @@ import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+import sun.util.logging.PlatformLogger;
 
 /**
- *
+ * Validator for the Fault Tolerance Retry annotation.
  * @author Andrew Pielage
  */
 public class RetryValidator {
+    
+    /**
+     * Validates the given Retry annotation.
+     * @param retry The annotation to validate
+     * @param annotatedMethod The annotated method to validate
+     * @param config The config to get any override values from
+     */
     public static void validateAnnotation(Retry retry, AnnotatedMethod<?> annotatedMethod, Config config) {
         int maxRetries = (Integer) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "maxRetries", annotatedMethod.getJavaMember().getName(), 

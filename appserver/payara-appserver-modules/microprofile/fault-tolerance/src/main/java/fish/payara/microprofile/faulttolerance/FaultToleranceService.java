@@ -40,6 +40,8 @@
 package fish.payara.microprofile.faulttolerance;
 
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
@@ -88,6 +90,9 @@ public class FaultToleranceService implements EventListener {
     FaultToleranceServiceConfiguration faultToleranceServiceConfiguration;
     
     @Inject
+    RequestTracingService requestTracingService;
+    
+    @Inject
     ServiceLocator habitat;
     
     @Inject
@@ -109,6 +114,7 @@ public class FaultToleranceService implements EventListener {
     public void postConstruct() {
         events.register(this);
         faultToleranceServiceConfiguration = habitat.getService(FaultToleranceServiceConfiguration.class);
+        requestTracingService = habitat.getService(RequestTracingService.class);
     }
     
     @Override
@@ -501,5 +507,22 @@ public class FaultToleranceService implements EventListener {
                 + "#" + annotatedMethod.getName() 
                 + "(" + Arrays.toString(annotatedMethod.getParameterTypes()) + ")"
                 + ">" + annotatedMethod.getReturnType().getSimpleName();
+    }
+    
+    public void traceFaultToleranceEvent(RequestEvent requestEvent, InvocationManager invocationManager, 
+            InvocationContext invocationContext) {
+        if (requestTracingService != null && requestTracingService.isRequestTracingEnabled()) {
+            addGenericFaultToleranceRequestTracingDetails(requestEvent, invocationManager, invocationContext);
+            requestTracingService.traceRequestEvent(requestEvent);
+        }
+    }
+    
+    private void addGenericFaultToleranceRequestTracingDetails(RequestEvent requestEvent, 
+            InvocationManager invocationManager, InvocationContext invocationContext) {
+        requestEvent.addProperty("App Name", invocationManager.getCurrentInvocation().getAppName());
+        requestEvent.addProperty("Component ID", invocationManager.getCurrentInvocation().getComponentId());
+        requestEvent.addProperty("Module Name", invocationManager.getCurrentInvocation().getModuleName());
+        requestEvent.addProperty("Class Name", invocationContext.getMethod().getDeclaringClass().getName());
+        requestEvent.addProperty("Method Name", invocationContext.getMethod().getName());
     }
 }
