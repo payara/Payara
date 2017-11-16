@@ -138,7 +138,7 @@ public class GetMonitoringConfiguration implements AdminCommand {
         actionReport.appendMessage("Monitoring Service Configuration log frequency? " + monitoringConfig.getLogFrequency() + " " + monitoringConfig.getLogFrequencyUnit());
         actionReport.appendMessage(StringUtils.EOL);
 
-         Map<String, Object> map = new HashMap<String, Object>();
+         Map<String, Object> map = new HashMap<>();
         Properties extraProps = new Properties();
         map.put("enabled", monitoringConfig.getEnabled());
         map.put("amx", monitoringConfig.getAmx());
@@ -148,7 +148,7 @@ public class GetMonitoringConfiguration implements AdminCommand {
         extraProps.put("jmxmonitoringConfiguration", map);
         
         
-        Map<String, Object> propMap = new HashMap<String, Object>();
+        Map<String, Object> propMap = new HashMap<>();
         
         for (Property property : monitoringConfig.getProperty()) {
             Object values[] = new Object[3];

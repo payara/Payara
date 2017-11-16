@@ -45,7 +45,6 @@ import fish.payara.jmx.monitoring.MonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -250,7 +249,8 @@ public class SetMonitoringConfiguration implements AdminCommand {
      * @param input the string to be parsed
      * @param property the property to configure as per the input string.
      * @return a constructed Property.
-     * @throws PropertyVetoException if a config listener vetoes a property attribute value.
+     * @throws PropertyVetoException if a config listener vetoes a property
+     * attribute value.
      */
     private Property parseToProperty(String input, Property property) throws PropertyVetoException {
         // Negative lookbehind - find space characters not preceeded by \
@@ -258,34 +258,53 @@ public class SetMonitoringConfiguration implements AdminCommand {
         String name = null;
         String value = null;
         String description = null;
+
+        if (propertyTokens.length < 2) {
+            throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+                            "jmxmonitoring.configure.attributes.too.few",
+                            "Too few attributes. Required attributes are 'name' and 'value'."));
+        }
+
         for (String token : propertyTokens) {
             token = token.replaceAll("\\\\", "");
             String[] param = token.split("=", 2);
             switch (param[0]) {
                 case "name":
-                    name = param[1];
+                    name = (param.length == 2) ? param[1] : null;
                     break;
                 case "value":
-                    value = param[1];
+                    value = (param.length == 2) ? param[1] : null;
                     break;
                 case "description":
-                    description = param[1];
+                    description = (param.length == 2) ? param[1] : null;
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown property attribute: " + param[0]);
+                    throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+                            "jmxmonitoring.configure.attributes.unknown",
+                            "Unknown attribute: {0}. Valid attributes are: 'name', 'value' and 'description'.",
+                             param[0]));
             }
+        }
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+                            "jmxmonitoring.configure.attributes.invalid",
+                            "Invalid attribute: {0}.",
+                             "name"));
+        }
+        if (value == null || value.isEmpty()) {
+            throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+                            "jmxmonitoring.configure.attributes.invalid",
+                            "Invalid attribute: {0}.",
+                             "value"));
         }
 
-        if (null != name && null != value) {
-            property.setName(name);
-            property.setValue(value);
-            
-            if (description != null) {
-                property.setDescription(description);
-            }
-            return property;
+        property.setName(name);
+        property.setValue(value);
+
+        if (description != null) {
+            property.setDescription(description);
         }
-        throw new IllegalArgumentException("Unknown property attributes.");
+        return property;
     }
 
 }
