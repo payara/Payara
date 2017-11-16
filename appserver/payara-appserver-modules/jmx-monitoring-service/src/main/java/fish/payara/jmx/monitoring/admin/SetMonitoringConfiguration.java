@@ -232,9 +232,11 @@ public class SetMonitoringConfiguration implements AdminCommand {
         }
 
         if (null != addproperty) {
-            String[] addpropertytokens = addproperty.split(" ");
+            // Negative lookbehind - find space characters not preceeded by \
+            String[] addpropertytokens = addproperty.split("(?<!\\\\) ");
             String name = null, value = null, description = null;
             for (String token : addpropertytokens) {
+                token = token.replaceAll("\\\\", "");
                 String[] param = token.split("=",2);
                 switch (param[0]) {
                     case "name":

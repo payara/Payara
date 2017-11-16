@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.annotation.handlers;
@@ -56,14 +58,11 @@ import javax.inject.Provider;
 import static com.sun.enterprise.util.StringUtils.ok;
 
 import javax.annotation.Resource;
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -82,10 +81,10 @@ public class ResourceHandler extends AbstractResourceHandler {
     @Inject 
     private Provider<WSDolSupport> wSDolSupportProvider;
 
-    // Map of all @Resource types that map to env-entries and their
+    /** Map of all @Resource types that map to env-entries and their
     // corresponding types.  
     // XXX - this needs to be synchronized with the list in
-    // com.sun.enterprise.deployment.EnvironmentProperty
+    // com.sun.enterprise.deployment.EnvironmentProperty **/
     private static final Map<Class, Class> envEntryTypes;
 
     static {
@@ -137,7 +136,10 @@ public class ResourceHandler extends AbstractResourceHandler {
     /**
      * This entry point is used both for a single @Resource and iteratively
      * from a compound @Resources processor.
+     * @return 
+     * @throws AnnotationProcessorException 
      */
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
@@ -300,7 +302,7 @@ public class ResourceHandler extends AbstractResourceHandler {
                 webServiceContext = support.getType("javax.xml.ws.WebServiceContext");
             }
         }   catch(Exception e) {
-            // we don't care, either we don't have the class, ot the bundled is not installed
+            // we don't care, either we don't have the class, or the bundled is not installed
         }
         if (resourceType.getName().equals("javax.jms.Queue") ||
                 resourceType.getName().equals("javax.jms.Topic")) {

@@ -48,12 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -133,14 +128,14 @@ public class UberJarCreator {
     public void setPostBootCommands(File postBootCommands) {
         this.postBootCommands = postBootCommands;
     }
-    
+
     public void setPostDeployCommands(File postDeployCommands) {
         this.postDeployCommands = postDeployCommands;
     }
-    
+
     /**
      * Directory to be copied into the root of the uber Jar file
-     * @param copyDirectory 
+     * @param copyDirectory
      */
     public void setDirectoryToCopy(File copyDirectory){
         this.copyDirectory = copyDirectory;
@@ -233,14 +228,14 @@ public class UberJarCreator {
                 jos.flush();
                 jos.closeEntry();
             }
-            
+
             if (!libs.isEmpty()) {
                 for (File lib : libs){
                     JarFile f = new JarFile(lib);
                     JarEntry libEntry = new JarEntry("MICRO-INF/lib/" + lib.getName());
                     libEntry.setMethod(JarEntry.STORED);
                     libEntry.setSize(lib.length());
-                    
+
                     CheckedInputStream check = new CheckedInputStream(new FileInputStream(lib), new CRC32());
                     BufferedInputStream in = new BufferedInputStream(check);
                     while (in.read(new byte[3000]) != -1){
@@ -253,7 +248,7 @@ public class UberJarCreator {
                     jos.closeEntry();
                 }
             }
-            
+
             if (deployments != null) {
                 for (File deployment : deployments) {
                     JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
@@ -276,17 +271,17 @@ public class UberJarCreator {
                     }
                 }
             }
-            
+
             if (copyDirectory != null) {
                 String basePath = copyDirectory.getCanonicalPath().replaceAll(copyDirectory + "$", "");
                 List<File> filesToCopy = fillFiles(copyDirectory);
                 for (File file : filesToCopy) {
-                    
+
                         JarEntry deploymentEntry = new JarEntry(copyDirectory + file.getCanonicalPath().replace(basePath, ""));
                         jos.putNextEntry(deploymentEntry);
                         Files.copy(file, jos);
                         jos.flush();
-                        jos.closeEntry();                    
+                        jos.closeEntry();
                 }
             }
 
@@ -339,7 +334,7 @@ public class UberJarCreator {
                     if (domainFile.isFile()) {
                         JarEntry configEntry = new JarEntry("MICRO-INF/domain/" + domainFile.getName());
                         jos.putNextEntry(configEntry);
-                        
+
                         if (domainFile.getName().equals("domain.xml") && domainXML != null) {
                             domainFile = domainXML;
                         } else if (domainFile.getName().equals("logging.properties") && (loggingPropertiesFile != null)) {
@@ -361,7 +356,7 @@ public class UberJarCreator {
                     }
 
                 }
-                
+
                 File applicationsDir = new File(domainDir, "applications");
                 if (applicationsDir.exists()){
                     for (File app : fillFiles(applicationsDir)){
@@ -390,14 +385,14 @@ public class UberJarCreator {
         }
 
     }
-    
+
     /**
      * Returns a list of all files in directory and subdirectories
      * @param directory The parent directory to search within
-     * @return 
+     * @return
      */
     public static List<File> fillFiles(File directory){
-        List<File> allFiles = new LinkedList<File>();
+        List<File> allFiles = new LinkedList<>();
         for (File file : directory.listFiles()){
             if (file.isDirectory()){
                 allFiles.addAll(fillFiles(file));
@@ -410,6 +405,26 @@ public class UberJarCreator {
             }
         }
         return allFiles;
+    }
+
+    /**
+     * Returns a list of files parsed from a separated list of files.
+     * @param fileList list of files
+     * @param separator separator used in the list of files
+     * @return the list of files
+     */
+    public static List<File> parseFileList(String fileList, String separator) {
+        String[] allJars = fileList.split(separator);
+        List<File> files = new ArrayList<>();
+        for (String jarName : allJars) {
+            File library = new File(jarName);
+            if (library.isDirectory()) {
+                files.addAll(UberJarCreator.fillFiles(library));
+            } else {
+                files.add(library);
+            }
+        }
+        return files;
     }
 
 }

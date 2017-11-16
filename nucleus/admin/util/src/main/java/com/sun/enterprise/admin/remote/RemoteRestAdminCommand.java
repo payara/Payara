@@ -522,6 +522,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     }
 
     /** If command model was load from local cache.
+     * @return 
      */
     public boolean isCommandModelFromCache() {
         return commandModelFromCache;
@@ -530,6 +531,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     /**
      * Set the directory in which any returned files will be stored.
      * The default is the user's home directory.
+     * @param dir
      */
     public void setFileOutputDirectory(File dir) {
         fileOutputDir = dir;
@@ -537,6 +539,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
     /**
      * Return a modifiable list of headers to be added to the request.
+     * @return 
      */
     public List<Header> headers() {
         return requestHeaders;
@@ -549,6 +552,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     /**
      * Run the command using the specified arguments.
      * Return the output of the command.
+     * @param opts
+     * @return 
+     * @throws org.glassfish.api.admin.CommandException
      */
     public String executeCommand(ParameterMap opts) throws CommandException {
         if (logger.isLoggable(Level.FINER)) {

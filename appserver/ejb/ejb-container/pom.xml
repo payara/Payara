@@ -42,7 +42,7 @@
 -->
 <!-- // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.glassfish.main.ejb</groupId>
         <artifactId>ejb</artifactId>
@@ -51,7 +51,7 @@
 
     <artifactId>ejb-container</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>GlassFish Core EJB container implementation</name>
 
     <developers>
@@ -129,7 +129,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>javax.ejb</groupId>
@@ -140,14 +140,14 @@
             <artifactId>ejb-client</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <!-- This dependency is for compilation only  -->
         <dependency>
             <groupId>org.glassfish.metro</groupId>
             <artifactId>webservices-api-osgi</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-core</artifactId>
@@ -249,7 +249,7 @@
         <dependency>
             <groupId>org.glassfish.pfl</groupId>
             <artifactId>pfl-dynamic</artifactId>
-	    <optional>true</optional> 
+	    <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.orb</groupId>

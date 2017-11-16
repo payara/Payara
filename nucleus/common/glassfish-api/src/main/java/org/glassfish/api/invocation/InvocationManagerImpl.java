@@ -107,13 +107,13 @@ public class InvocationManagerImpl implements InvocationManager {
             protected InvocationArray<ComponentInvocation> initialValue() {
                 return new InvocationArray<>();
             }
-            
+
             protected InvocationArray<ComponentInvocation> childValue(InvocationArray<ComponentInvocation> parentValue) {
                 return computeChildTheadInvocation(parentValue);
             }
         };
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public void setThreadInheritableInvocation(List<? extends ComponentInvocation> parentValue) {
@@ -222,7 +222,9 @@ public class InvocationManagerImpl implements InvocationManager {
 
     /**
      * return true iff no invocations on the stack for this thread
+     * @return
      */
+    @Override
     public boolean isInvocationStackEmpty() {
         InvocationArray<ComponentInvocation> v = frames.get();
         return v == null || v.size() == 0;
@@ -230,7 +232,10 @@ public class InvocationManagerImpl implements InvocationManager {
 
     /**
      * return the Invocation object of the component being called
+     * @param <T>
+     * @return
      */
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getCurrentInvocation() {
         InvocationArray<ComponentInvocation> v = frames.get();
@@ -238,13 +243,17 @@ public class InvocationManagerImpl implements InvocationManager {
         if (size == 0) {
             return null;
         }
-        
+
         return (T) v.get(size - 1);
     }
 
     /**
-     * return the Inovcation object of the caller return null if none exist (e.g. caller is from another VM)
+     * return the Invocation object of the caller
+     * return null if none exist (e.g. caller is from another VM)
+     * @param <T>
+     * @return
      */
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getPreviousInvocation() throws InvocationException {
 
@@ -253,7 +262,7 @@ public class InvocationManagerImpl implements InvocationManager {
         if (i < 2) {
             return null;
         }
-        
+
         return (T) v.get(i - 2);
     }
 
@@ -274,9 +283,9 @@ public class InvocationManagerImpl implements InvocationManager {
     public void putAllInvocations(List<? extends ComponentInvocation> invocations) {
         frames.set(new InvocationArray<>((List<ComponentInvocation>) invocations));
     }
-    
+
     private InvocationArray<ComponentInvocation> computeChildTheadInvocation(InvocationArray<ComponentInvocation> parentValue) {
-        
+
         // Always creates a new ArrayList
         InvocationArray<ComponentInvocation> childInvocationArray = new InvocationArray<ComponentInvocation>();
         InvocationArray<ComponentInvocation> parentInvocationArray = parentValue;
@@ -290,7 +299,7 @@ public class InvocationManagerImpl implements InvocationManager {
             // new ComponentInvocation should be with the respective container
 
             if (parrentInvocation.getInvocationType() == SERVLET_INVOCATION) {
-                
+
                 // If this is a thread created by user in servlet's service method
                 // create a new ComponentInvocation with transaction
                 // left to null and instance left to null
@@ -320,12 +329,12 @@ public class InvocationManagerImpl implements InvocationManager {
 
         return childInvocationArray;
     }
-    
+
 
     static class InvocationArray<T extends ComponentInvocation> extends ArrayList<T> {
-        
+
         private static final long serialVersionUID = 1L;
-        
+
         private ComponentInvocationType invocationAttribute;
 
         private InvocationArray(List<T> invocations) {
@@ -348,14 +357,15 @@ public class InvocationManagerImpl implements InvocationManager {
         }
     }
 
+    @Override
     public void registerComponentInvocationHandler(ComponentInvocationType type, RegisteredComponentInvocationHandler handler) {
         List<RegisteredComponentInvocationHandler> setRegCompInvHandlers = regCompInvHandlerMap.get(type);
-        
+
         if (setRegCompInvHandlers == null) {
             setRegCompInvHandlers = new ArrayList<RegisteredComponentInvocationHandler>();
             regCompInvHandlerMap.put(type, setRegCompInvHandlers);
         }
-        
+
         if (setRegCompInvHandlers.size() == 0) {
             setRegCompInvHandlers.add(handler);
         }

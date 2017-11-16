@@ -75,10 +75,10 @@ public class ApplicationValidator extends ComponentValidator
     implements ApplicationVisitor, ManagedBeanVisitor {
 
 
-    // Used to store all descriptor details for validation purpose
+    /** Used to store all descriptor details for validation purpose */
     private HashMap<String, CommonResourceValidator> allResourceDescriptors = new HashMap<String, CommonResourceValidator>();
 
-    // Used to store keys and descriptor names for validation purpose
+    /** Used to store keys and descriptor names for validation purpose */
     private HashMap<String, Vector> validNameSpaceDetails = new HashMap<String, Vector>();
 
     private final String APPCLIENT_KEYS = "APPCLIENT_KEYS";

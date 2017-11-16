@@ -69,7 +69,6 @@ import java.util.*;
  * TODO WebBundleDescriptor could be changed from abstract class to an interface in the future, with this
  * class as its implementation.
  */
-
 public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private final static String DEPLOYMENT_DESCRIPTOR_DIR = "WEB-INF";
@@ -142,7 +141,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private boolean servletInitializersEnabled = true;
 
     /**
-     * Constrct an empty web app [{0}].
+     * Construct an empty web app [{0}].
      */
     public WebBundleDescriptorImpl() {
     }
@@ -150,7 +149,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public WebBundleDescriptor createWebBundleDescriptor() {
         return new WebBundleDescriptorImpl();
     }
-    
+
     protected boolean isExists() {
         return true;
     }
@@ -159,24 +158,26 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * This method will merge the contents of webComponents.
      * @param webBundleDescriptor
      */
+    @Override
     public void addWebBundleDescriptor(WebBundleDescriptor webBundleDescriptor) {
         getWelcomeFilesSet().addAll(webBundleDescriptor.getWelcomeFilesSet());
         addCommonWebBundleDescriptor(webBundleDescriptor, false);
     }
 
+    @Override
     public void addDefaultWebBundleDescriptor(WebBundleDescriptor webBundleDescriptor) {
-        if (getWelcomeFilesSet().size() == 0) {
+        if (getWelcomeFilesSet().isEmpty()) {
             getWelcomeFilesSet().addAll(webBundleDescriptor.getWelcomeFilesSet());
         }
-        
+
 		if (requestCharacterEncoding == null) {
 			requestCharacterEncoding = webBundleDescriptor.getRequestCharacterEncoding();
 		}
-		
+
 		if (responseCharacterEncoding == null) {
 			responseCharacterEncoding = webBundleDescriptor.getResponseCharacterEncoding();
 		}
-        
+
         addCommonWebBundleDescriptor(webBundleDescriptor, true);
     }
 
@@ -286,6 +287,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         addJndiNameEnvironment(webBundleDescriptor);
     }
 
+    @Override
     public void addJndiNameEnvironment(JndiNameEnvironment env) {
 
         // combine with conflict resolution check
@@ -303,6 +305,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         combineAllResourceDescriptors(env);
     }
 
+    @Override
     public boolean isEmpty() {
         return (webComponentDescriptors == null || webComponentDescriptors.isEmpty());
     }
@@ -311,27 +314,34 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * @return the default version of the deployment descriptor
      *         loaded by this descriptor
      */
+    @Override
     public String getDefaultSpecVersion() {
         return WebBundleNode.SPEC_VERSION;
     }
 
     /**
      * Return the set of named descriptors that I have.
+     * @return
      */
+    @Override
     public Collection getNamedDescriptors() {
         return super.getNamedDescriptorsFrom(this);
     }
 
     /**
-     * Return the saet of NamedReferencePairs that I have.
+     * Return the state of NamedReferencePairs that I have.
+     * @return
      */
+    @Override
     public Vector<NamedReferencePair> getNamedReferencePairs() {
         return super.getNamedReferencePairsFrom(this);
     }
 
     /**
      * return the name of my context root
+     * @return
      */
+    @Override
     public String getContextRoot() {
         if (getModuleDescriptor() != null && getModuleDescriptor().getContextRoot() != null) {
             return getModuleDescriptor().getContextRoot();
@@ -379,11 +389,13 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 	public void setResponseCharacterEncoding(String responseCharacterEncoding) {
 		this.responseCharacterEncoding = responseCharacterEncoding;
 	}
- 
+
 
     /**
-     * Return the Set of Web COmponent Descriptors (JSP or JavaServlets) in me.
+     * Return the Set of Web Component Descriptors (JSP or JavaServlets) in me.
+     * @return
      */
+    @Override
     public Set<WebComponentDescriptor> getWebComponentDescriptors() {
         if (webComponentDescriptors == null) {
             webComponentDescriptors = new OrderedSet<WebComponentDescriptor>();
@@ -395,6 +407,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Adds a new Web Component Descriptor to me.
      * @param webComponentDescriptor
      */
+    @Override
     public void addWebComponentDescriptor(WebComponentDescriptor webComponentDescriptor) {
         String name = webComponentDescriptor.getCanonicalName();
         webComponentDescriptor.setWebBundleDescriptor(this);
@@ -422,6 +435,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      *
      * @return web component descriptor in current bundle
      */
+    @Override
     protected WebComponentDescriptor combineWebComponentDescriptor(
             WebComponentDescriptor webComponentDescriptor) {
 
@@ -453,7 +467,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 throw new IllegalArgumentException(localStrings.getLocalString(
                         "web.deployment.exceptionconflictwebcompwithoutimpl",
                         "Two or more web fragments define the same Servlet with conflicting implementation class names that are not overridden by the web.xml"));
-            } 
+            }
             if (resultDesc.getConflictedInitParameterNames().size() > 0) {
                 throw new IllegalArgumentException(localStrings.getLocalString(
                         "web.deployment.exceptionconflictwebcompinitparam",
@@ -475,24 +489,28 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Remove the given web component from me.
+     * @param webComponentDescriptor
      */
-
+    @Override
     public void removeWebComponentDescriptor(WebComponentDescriptor webComponentDescriptor) {
         webComponentDescriptor.setWebBundleDescriptor(null);
         getWebComponentDescriptors().remove(webComponentDescriptor);
         resetUrlPatternToServletNameMap();
     }
 
+    @Override
     public SessionConfig getSessionConfig() {
         return sessionConfig;
     }
 
+    @Override
     public void setSessionConfig(SessionConfig sessionConfig) {
         this.sessionConfig = sessionConfig;
     }
 
     /**
      * DeploymentDescriptorNode.addNodeDescriptor(node) need this.
+     * @param sessionConfigDesc
      */
     public void setSessionConfig(SessionConfigDescriptor sessionConfigDesc) {
         this.sessionConfig = sessionConfigDesc;
@@ -500,13 +518,16 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * WEB SERVICES REF APIS
+     * @return
      */
+    @Override
     public boolean hasServiceReferenceDescriptors() {
         if (serviceReferences == null)
             return false;
         return serviceReferences.size() != 0;
     }
 
+    @Override
     public Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors() {
         if (serviceReferences == null) {
             serviceReferences = new OrderedSet<ServiceReferenceDescriptor>();
@@ -514,12 +535,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return serviceReferences;
     }
 
+    @Override
     public void addServiceReferenceDescriptor(ServiceReferenceDescriptor
             serviceRef) {
         serviceRef.setBundleDescriptor(this);
         getServiceReferenceDescriptors().add(serviceRef);
     }
 
+    @Override
     public void removeServiceReferenceDescriptor(ServiceReferenceDescriptor
             serviceRef) {
         serviceRef.setBundleDescriptor(null);
@@ -529,7 +552,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * Looks up an service reference with the given name.
      * Throws an IllegalArgumentException if it is not found.
+     * @param name
+     * @return
      */
+    @Override
     public ServiceReferenceDescriptor getServiceReferenceByName(String name) {
         ServiceReferenceDescriptor sr = _getServiceReferenceByName(name);
         if (sr != null) {
@@ -542,6 +568,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 new Object[]{getName(), name}));
     }
 
+    @Override
     protected ServiceReferenceDescriptor _getServiceReferenceByName(String name) {
         for (ServiceReferenceDescriptor srd : getServiceReferenceDescriptors()) {
             if (srd.getName().equals(name)) {
@@ -551,6 +578,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return null;
     }
 
+    @Override
     protected void combineServiceReferenceDescriptors(JndiNameEnvironment env) {
         for (Object oserviceRef: env.getServiceReferenceDescriptors()) {
             ServiceReferenceDescriptor serviceRef =
@@ -574,6 +602,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return the set of resource environment references this ejb declares.
      */
+    @Override
     public Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors() {
         if (resourceEnvRefReferences == null) {
             resourceEnvRefReferences = new OrderedSet<ResourceEnvReferenceDescriptor>();
@@ -583,21 +612,27 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * adds a resource environment reference to the bundle
+     * @param resourceEnvRefReference
      */
+    @Override
     public void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvRefReference) {
         getResourceEnvReferenceDescriptors().add(resourceEnvRefReference);
     }
 
     /**
      * removes a existing resource environment reference from the bundle
+     * @param resourceEnvRefReference
      */
+    @Override
     public void removeResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvRefReference) {
         getResourceEnvReferenceDescriptors().remove(resourceEnvRefReference);
     }
 
     /**
+     * @param name
      * @return a resource environment reference by the same name or throw an IllegalArgumentException.
      */
+    @Override
     public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
         ResourceEnvReferenceDescriptor jrd = _getResourceEnvReferenceByName(name);
         if (jrd != null) {
@@ -609,6 +644,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 "This web app [{0}] has no resource environment reference by the name of [{1}]", new Object[]{getName(), name}));
     }
 
+    @Override
     protected ResourceEnvReferenceDescriptor _getResourceEnvReferenceByName(String name) {
         for (ResourceEnvReferenceDescriptor jdr : getResourceEnvReferenceDescriptors()) {
             if (jdr.getName().equals(name)) {
@@ -618,6 +654,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return null;
     }
 
+    @Override
     protected void combineResourceEnvReferenceDescriptors(JndiNameEnvironment env) {
         for (Object ojdRef: env.getResourceEnvReferenceDescriptors()) {
             ResourceEnvReferenceDescriptor jdRef =
@@ -639,6 +676,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     public Set<MimeMapping> getMimeMappingsSet() {
         if (mimeMappings == null) {
             mimeMappings = new HashSet<MimeMapping>();
@@ -648,28 +686,33 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Sets the Set of Mime Mappings for this web application.
+     * @param mimeMappings
      */
+    @Override
     public void setMimeMappings(Set<MimeMapping> mimeMappings) {
         this.mimeMappings = mimeMappings;
     }
 
 
     /**
+     * @return
      * @returns an enumeration of my mime mappings.
      */
+    @Override
     public Enumeration<MimeMapping> getMimeMappings() {
         return (new Vector<MimeMapping>(this.getMimeMappingsSet())).elements();
     }
 
     /**
-     * @add the given mime mapping to my list if the given MimeType is not added
+     * @param mimeMapping the given mime mapping to my list if the given MimeType is not added
      * return the result MimeType of the MimeMapping in the resulting set of MimeMapping
+     * @return
      */
+    @Override
     public String addMimeMapping(MimeMapping mimeMapping) {
         // there should be at most one mapping per extension
         MimeMapping resultMimeMapping = null;
-        for (Iterator<MimeMapping> itr = getMimeMappingsSet().iterator(); itr.hasNext();) {
-            MimeMapping mm = itr.next();
+        for (MimeMapping mm : getMimeMappingsSet()) {
             if (mm.getExtension().equals(mimeMapping.getExtension())) {
                 resultMimeMapping = mm;
                 break;
@@ -685,6 +728,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * add the given mime mapping to my list.
+     * @param mimeMapping
+     * @return
      */
     public String addMimeMapping(MimeMappingDescriptor mimeMapping) {
         return addMimeMapping((MimeMapping) mimeMapping);
@@ -709,6 +754,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     public Set<String> getConflictedMimeMappingExtensions() {
         if (conflictedMimeMappingExtensions == null) {
             conflictedMimeMappingExtensions = new HashSet<>();
@@ -716,10 +762,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return conflictedMimeMappingExtensions;
     }
 
+    @Override
     public LocaleEncodingMappingListDescriptor getLocaleEncodingMappingListDescriptor() {
         return localeEncodingMappingListDesc;
     }
 
+    @Override
     public void setLocaleEncodingMappingListDescriptor(LocaleEncodingMappingListDescriptor lemListDesc) {
         localeEncodingMappingListDesc = lemListDesc;
     }
@@ -734,18 +782,23 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Removes the given mime mapping from my list.
+     * @param mimeMapping
      */
+    @Override
     public void removeMimeMapping(MimeMapping mimeMapping) {
         getMimeMappingsSet().remove(mimeMapping);
     }
 
     /**
      * Return an enumeration of the welcome files I have..
+     * @return
      */
+    @Override
     public Enumeration<String> getWelcomeFiles() {
         return (new Vector<String>(this.getWelcomeFilesSet())).elements();
     }
 
+    @Override
     public Set<String> getWelcomeFilesSet() {
         if (welcomeFiles == null) {
             welcomeFiles = new OrderedSet<String>();
@@ -755,21 +808,27 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Adds a new welcome file to my list.
+     * @param fileUri
      */
+    @Override
     public void addWelcomeFile(String fileUri) {
         getWelcomeFilesSet().add(fileUri);
     }
 
     /**
      * Removes a welcome file from my list.
+     * @param fileUri
      */
+    @Override
     public void removeWelcomeFile(String fileUri) {
         getWelcomeFilesSet().remove(fileUri);
     }
 
     /**
      * Sets the collection of my welcome files.
+     * @param welcomeFiles
      */
+    @Override
     public void setWelcomeFiles(Set<String> welcomeFiles) {
         this.welcomeFiles = welcomeFiles;
     }
@@ -783,6 +842,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Returns an enumeration of the error pages I have.
+     * @return
      */
     public Enumeration<ErrorPageDescriptor> getErrorPageDescriptors() {
         return (new Vector<ErrorPageDescriptor>(getErrorPageDescriptorsSet())).elements();
@@ -790,6 +850,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Adds a new error page to my list.
+     * @param errorPageDescriptor
      */
     public void addErrorPageDescriptor(ErrorPageDescriptor errorPageDescriptor) {
         String errorSignifier = errorPageDescriptor.getErrorSignifierAsString();
@@ -803,6 +864,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Removes the given error page from my list.
+     * @param errorPageDescriptor
      */
     public void removeErrorPageDescriptor(ErrorPageDescriptor errorPageDescriptor) {
         getErrorPageDescriptorsSet().remove(errorPageDescriptor);
@@ -810,6 +872,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Search my error pages for one with thei given signifier or null if there isn't one.
+     * @param signifier
+     * @return
      */
     public ErrorPageDescriptor getErrorPageDescriptorBySignifier(String signifier) {
         for (ErrorPageDescriptor next : getErrorPageDescriptorsSet()) {
@@ -823,6 +887,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return the Set of my Context Parameters.
      */
+    @Override
     public Set<ContextParameter> getContextParametersSet() {
         if (contextParameters == null) {
             contextParameters = new OrderedSet<ContextParameter>();
@@ -833,58 +898,70 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return my Context Parameters in an enumeration.
      */
+    @Override
     public Enumeration<ContextParameter> getContextParameters() {
         return (new Vector<ContextParameter>(getContextParametersSet())).elements();
     }
 
     /**
      * Adds a new context parameter to my list.
+     * @param contextParameter
      */
+    @Override
     public void addContextParameter(ContextParameter contextParameter) {
         getContextParametersSet().add(contextParameter);
     }
 
     /**
      * Adds a new context parameter to my list.
+     * @param contextParameter
      */
+    @Override
     public void addContextParameter(EnvironmentProperty contextParameter) {
         addContextParameter((ContextParameter) contextParameter);
     }
 
     /**
      * Removes the given context parameter from my list.
+     * @param contextParameter
      */
+    @Override
     public void removeContextParameter(ContextParameter contextParameter) {
         getContextParametersSet().remove(contextParameter);
     }
 
     /**
      * Return true if this web app [{0}] can be distributed across different processes.
+     * @return
      */
-
+    @Override
     public boolean isDistributable() {
         return distributable;
     }
 
     /**
      * Sets whether this web app [{0}] can be distributed across different processes.
+     * @param distributable
      */
+    @Override
     public void setDistributable(boolean distributable) {
         this.distributable = distributable;
     }
 
     /**
      * Returns the enumeration of my references to Enterprise Beans.
+     * @return
      */
-
+    @Override
     public Enumeration<EjbReference> getEjbReferences() {
         return (new Vector<EjbReference>(this.getEjbReferenceDescriptors())).elements();
     }
 
     /**
      * Returns the Set of my references to Enterprise Beans.
+     * @return
      */
-
+    @Override
     public Set<EjbReference> getEjbReferenceDescriptors() {
         if (ejbReferences == null) {
             ejbReferences = new OrderedSet<EjbReference>();
@@ -893,13 +970,15 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     /**
+     * @param name
      * @return an Enterprise Bean with the matching name or throw.
      */
-
+    @Override
     public EjbReferenceDescriptor getEjbReferenceByName(String name) {
         return (EjbReferenceDescriptor) getEjbReference(name);
     }
 
+    @Override
     public EjbReference getEjbReference(String name) {
         EjbReference er = _getEjbReference(name);
         if (er != null) {
@@ -911,6 +990,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 "This web app [{0}] has no ejb reference by the name of [{1}] ", new Object[]{getName(), name}));
     }
 
+    @Override
     protected EjbReference _getEjbReference(String name) {
         for (EjbReference er : getEjbReferenceDescriptors()) {
             if (er.getName().equals(name)) {
@@ -921,9 +1001,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     /**
-     * @return a reource reference with the matching name or throw.
+     * @param name
+     * @return a resource reference with the matching name or throw.
      */
-
+    @Override
     public ResourceReferenceDescriptor getResourceReferenceByName(String name) {
         ResourceReferenceDescriptor rrd = _getResourceReferenceByName(name);
         if (rrd != null) {
@@ -935,6 +1016,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 "This web app [{0}] has no resource reference by the name of [{1}]", new Object[]{getName(), name}));
     }
 
+    @Override
     protected ResourceReferenceDescriptor _getResourceReferenceByName(String name) {
         for (ResourceReference next : getResourceReferenceDescriptors()) {
             if (next.getName().equals(name)) {
@@ -946,9 +1028,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
 
     /**
+     * @return
      * @returns my Set of references to resources.
      */
-
+    @Override
     public Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors() {
         if (resourceReferences == null) {
             resourceReferences = new OrderedSet<ResourceReferenceDescriptor>();
@@ -956,17 +1039,19 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return resourceReferences;
     }
 
-    public Set<EntityManagerFactoryReferenceDescriptor>
-    getEntityManagerFactoryReferenceDescriptors() {
+    @Override
+    public Set<EntityManagerFactoryReferenceDescriptor> getEntityManagerFactoryReferenceDescriptors() {
         return entityManagerFactoryReferences;
     }
 
     /**
      * Return the entity manager factory reference descriptor corresponding to
      * the given name.
+     * @param name
+     * @return
      */
-    public EntityManagerFactoryReferenceDescriptor
-    getEntityManagerFactoryReferenceByName(String name) {
+    @Override
+    public EntityManagerFactoryReferenceDescriptor getEntityManagerFactoryReferenceByName(String name) {
         EntityManagerFactoryReferenceDescriptor emfr =
             _getEntityManagerFactoryReferenceByName(name);
         if (emfr != null) {
@@ -979,8 +1064,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 new Object[]{getName(), name}));
     }
 
-    protected EntityManagerFactoryReferenceDescriptor
-    _getEntityManagerFactoryReferenceByName(String name) {
+    @Override
+    protected EntityManagerFactoryReferenceDescriptor _getEntityManagerFactoryReferenceByName(String name) {
         for (EntityManagerFactoryReferenceDescriptor next :
                 getEntityManagerFactoryReferenceDescriptors()) {
 
@@ -991,12 +1076,13 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return null;
     }
 
-    public void addEntityManagerFactoryReferenceDescriptor
-            (EntityManagerFactoryReferenceDescriptor reference) {
+    @Override
+    public void addEntityManagerFactoryReferenceDescriptor (EntityManagerFactoryReferenceDescriptor reference) {
         reference.setReferringBundleDescriptor(this);
         this.getEntityManagerFactoryReferenceDescriptors().add(reference);
     }
 
+    @Override
     protected void combineEntityManagerFactoryReferenceDescriptors(JndiNameEnvironment env) {
         for (EntityManagerFactoryReferenceDescriptor emfRef :
             env.getEntityManagerFactoryReferenceDescriptors()) {
@@ -1018,17 +1104,19 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
-    public Set<EntityManagerReferenceDescriptor>
-    getEntityManagerReferenceDescriptors() {
+    @Override
+    public Set<EntityManagerReferenceDescriptor> getEntityManagerReferenceDescriptors() {
         return entityManagerReferences;
     }
 
     /**
      * Return the entity manager factory reference descriptor corresponding to
      * the given name.
+     * @param name
+     * @return
      */
-    public EntityManagerReferenceDescriptor
-    getEntityManagerReferenceByName(String name) {
+    @Override
+    public EntityManagerReferenceDescriptor getEntityManagerReferenceByName(String name) {
         EntityManagerReferenceDescriptor emr =
             _getEntityManagerReferenceByName(name);
         if (emr != null) {
@@ -1041,8 +1129,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 new Object[]{getName(), name}));
     }
 
-    protected  EntityManagerReferenceDescriptor
-    _getEntityManagerReferenceByName(String name) {
+    @Override
+    protected  EntityManagerReferenceDescriptor _getEntityManagerReferenceByName(String name) {
         for (EntityManagerReferenceDescriptor next :
                 getEntityManagerReferenceDescriptors()) {
 
@@ -1054,12 +1142,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
 
+    @Override
     public void addEntityManagerReferenceDescriptor
             (EntityManagerReferenceDescriptor reference) {
         reference.setReferringBundleDescriptor(this);
         getEntityManagerReferenceDescriptors().add(reference);
     }
 
+    @Override
     protected void combineEntityManagerReferenceDescriptors(JndiNameEnvironment env) {
         for (EntityManagerReferenceDescriptor emRef :
                 env.getEntityManagerReferenceDescriptors()) {
@@ -1084,8 +1174,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * {@inheritDoc}
      */
     @Override
-    public Collection<? extends PersistenceUnitDescriptor>
-           findReferencedPUs() {
+    public Collection<? extends PersistenceUnitDescriptor> findReferencedPUs() {
         Collection<PersistenceUnitDescriptor> pus =
                 new HashSet<PersistenceUnitDescriptor>(
                         findReferencedPUsViaPURefs(this));
@@ -1100,16 +1189,18 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return my set of environment properties.
+     * @return
      */
-
+    @Override
     public Set<EnvironmentEntry> getEnvironmentProperties() {
         return getEnvironmentEntrySet();
     }
 
     /**
      * Adds a new reference to an ejb.
+     * @param ejbReference
      */
-
+    @Override
     public void addEjbReferenceDescriptor(EjbReference ejbReference) {
         if (getEjbReferenceDescriptors().add(ejbReference)) {
             ejbReference.setReferringBundleDescriptor(this);
@@ -1118,25 +1209,30 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Adds a new reference to an ejb.
+     * @param ejbReferenceDescriptor
      */
-
+    @Override
     public void addEjbReferenceDescriptor(EjbReferenceDescriptor ejbReferenceDescriptor) {
         addEjbReferenceDescriptor((EjbReference) ejbReferenceDescriptor);
     }
 
     /**
      * Removes a reference to an ejb.
+     * @param ejbReferenceDescriptor
      */
+    @Override
     public void removeEjbReferenceDescriptor(EjbReferenceDescriptor ejbReferenceDescriptor) {
         removeEjbReferenceDescriptor((EjbReference) ejbReferenceDescriptor);
     }
 
+    @Override
     public void removeEjbReferenceDescriptor(EjbReference ejbReferenceDescriptor) {
         if(getEjbReferenceDescriptors().remove(ejbReferenceDescriptor)) {
             ejbReferenceDescriptor.setReferringBundleDescriptor(null);
         }
     }
 
+    @Override
     protected void combineEjbReferenceDescriptors(JndiNameEnvironment env) {
         for (Object oejbRef: env.getEjbReferenceDescriptors()) {
             EjbReference ejbRef = (EjbReference)oejbRef;
@@ -1159,25 +1255,36 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return an enumeration of references to resources that I have.
+     * @return
      */
+    @Override
     public Enumeration<ResourceReferenceDescriptor> getResourceReferences() {
         return (new Vector<ResourceReferenceDescriptor>(getResourceReferenceDescriptors())).elements();
     }
 
     /**
      * adds a new reference to a resource.
+     * @param resourceReference
      */
+    @Override
     public void addResourceReferenceDescriptor(ResourceReferenceDescriptor resourceReference) {
         getResourceReferenceDescriptors().add(resourceReference);
     }
 
     /**
      * removes a reference to a resource.
+     * @param resourceReference
      */
+    @Override
     public void removeResourceReferenceDescriptor(ResourceReferenceDescriptor resourceReference) {
         getResourceReferenceDescriptors().remove(resourceReference);
     }
 
+    /**
+     *
+     * @param env
+     */
+    @Override
     protected void combineResourceReferenceDescriptors(JndiNameEnvironment env) {
         for (Object oresRef : env.getResourceReferenceDescriptors()) {
             ResourceReferenceDescriptor resRef =
@@ -1198,6 +1305,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     public Set<MessageDestinationReferenceDescriptor> getMessageDestinationReferenceDescriptors() {
         if (messageDestReferences == null) {
             messageDestReferences = new OrderedSet<MessageDestinationReferenceDescriptor>();
@@ -1205,12 +1313,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return messageDestReferences;
     }
 
+    @Override
     public void addMessageDestinationReferenceDescriptor
             (MessageDestinationReferenceDescriptor messageDestRef) {
         messageDestRef.setReferringBundleDescriptor(this);
         getMessageDestinationReferenceDescriptors().add(messageDestRef);
     }
 
+    @Override
     public void removeMessageDestinationReferenceDescriptor
             (MessageDestinationReferenceDescriptor msgDestRef) {
         getMessageDestinationReferenceDescriptors().remove(msgDestRef);
@@ -1219,9 +1329,11 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * Looks up an message destination reference with the given name.
      * Throws an IllegalArgumentException if it is not found.
+     * @param name
+     * @return
      */
-    public MessageDestinationReferenceDescriptor
-    getMessageDestinationReferenceByName(String name) {
+    @Override
+    public MessageDestinationReferenceDescriptor getMessageDestinationReferenceByName(String name) {
         MessageDestinationReferenceDescriptor mdr =
             _getMessageDestinationReferenceByName(name);
         if (mdr != null) {
@@ -1234,6 +1346,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 new Object[]{getName(), name}));
     }
 
+    @Override
     protected MessageDestinationReferenceDescriptor _getMessageDestinationReferenceByName(String name) {
         for (MessageDestinationReferenceDescriptor mdr :
                 getMessageDestinationReferenceDescriptors()) {
@@ -1244,6 +1357,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return null;
     }
 
+    @Override
     protected void combineMessageDestinationReferenceDescriptors(JndiNameEnvironment env) {
         for (Object omdRef : env.getMessageDestinationReferenceDescriptors()) {
             MessageDestinationReferenceDescriptor mdRef =
@@ -1251,7 +1365,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             MessageDestinationReferenceDescriptor mdr =
                 _getMessageDestinationReferenceByName(mdRef.getName());
             if (mdr != null) {
-                combineInjectionTargets(mdr, mdRef);           
+                combineInjectionTargets(mdr, mdRef);
             } else {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).isConflictMessageDestinationReference()) {
@@ -1265,11 +1379,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
-    public Set<LifecycleCallbackDescriptor>
-    getPostConstructDescriptors() {
+    @Override
+    public Set<LifecycleCallbackDescriptor> getPostConstructDescriptors() {
         return postConstructDescs;
     }
 
+    @Override
     public void addPostConstructDescriptor(LifecycleCallbackDescriptor
             postConstructDesc) {
         String className = postConstructDesc.getLifecycleCallbackClass();
@@ -1286,10 +1401,16 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     public LifecycleCallbackDescriptor getPostConstructDescriptorByClass(String className) {
         return getPostConstructDescriptorByClass(className, this);
     }
 
+    /**
+     *
+     * @param webBundleDescriptor
+     */
+    @Override
     protected void combinePostConstructDescriptors(WebBundleDescriptor webBundleDescriptor) {
         boolean isFromXml = false;
         for (LifecycleCallbackDescriptor lccd : getPostConstructDescriptors()) {
@@ -1304,10 +1425,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     public Set<LifecycleCallbackDescriptor> getPreDestroyDescriptors() {
         return preDestroyDescs;
     }
 
+    @Override
     public void addPreDestroyDescriptor(LifecycleCallbackDescriptor
             preDestroyDesc) {
         String className = preDestroyDesc.getLifecycleCallbackClass();
@@ -1324,10 +1447,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     public LifecycleCallbackDescriptor getPreDestroyDescriptorByClass(String className) {
         return getPreDestroyDescriptorByClass(className, this);
     }
 
+    @Override
     protected void combinePreDestroyDescriptors(WebBundleDescriptor webBundleDescriptor) {
         boolean isFromXml = false;
         for (LifecycleCallbackDescriptor lccd : getPreDestroyDescriptors()) {
@@ -1342,6 +1467,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     protected List<InjectionCapable> getInjectableResourcesByClass(String className,
                                   JndiNameEnvironment jndiNameEnv) {
         List<InjectionCapable> injectables =
@@ -1359,7 +1485,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
         if (((WebBundleDescriptor) jndiNameEnv).hasWebServices()) {
             // Add @Resource WebServiceContext present in endpoint impl class to the list of
-            // injectable resources; We do this for servelt endpoint only because the actual 
+            // injectable resources; We do this for servelt endpoint only because the actual
             // endpoint impl class gets replaced by JAXWSServlet in web.xml and hence
             // will never be added as an injectable resource
             for (InjectionCapable next : getInjectableResources(this)) {
@@ -1379,21 +1505,24 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return injectables;
     }
 
+    @Override
     public List<InjectionCapable> getInjectableResourcesByClass(String className) {
         return (getInjectableResourcesByClass(className, this));
     }
 
+    @Override
     public InjectionInfo getInjectionInfoByClass(Class clazz) {
         return (getInjectionInfoByClass(clazz, this));
     }
 
     /**
      * Returns an Enumeration of my SecurityRole objects.
+     * @return
      */
+    @Override
     public Enumeration<SecurityRoleDescriptor> getSecurityRoles() {
         Vector<SecurityRoleDescriptor> securityRoles = new Vector<SecurityRoleDescriptor>();
-        for (Iterator itr = super.getRoles().iterator(); itr.hasNext();) {
-            Role r = (Role) itr.next();
+        for (Role r : super.getRoles()) {
             SecurityRoleDescriptor srd = new SecurityRoleDescriptor(r);
             securityRoles.add(srd);
         }
@@ -1401,8 +1530,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     /**
-     * Add a new abstrct role to me.
+     * Add a new abstract role to me.
+     * @param securityRole
      */
+    @Override
     public void addSecurityRole(SecurityRole securityRole) {
         Role r = new Role(securityRole.getName());
         r.setDescription(securityRole.getDescription());
@@ -1410,15 +1541,21 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     /**
-     * Add a new abstrct role to me.
+     * Add a new abstract role to me.
+     * @param securityRole
      */
+    @Override
     public void addSecurityRole(SecurityRoleDescriptor securityRole) {
         addSecurityRole((SecurityRole) securityRole);
     }
 
     /**
      * Return all the references by a given component (by name) to the given rolename.
+     * @param compName
+     * @param roleName
+     * @return
      */
+    @Override
     public SecurityRoleReference getSecurityRoleReferenceByName(String compName, String roleName) {
         for (WebComponentDescriptor comp : getWebComponentDescriptors()) {
             if (!comp.getCanonicalName().equals(compName))
@@ -1432,6 +1569,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return null;
     }
 
+    @Override
     protected void combineSecurityConstraints(Set<SecurityConstraint> firstScSet,
             Set<SecurityConstraint> secondScSet) {
         Set<String> allUrlPatterns = new HashSet<String>();
@@ -1447,9 +1585,9 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             Iterator<WebResourceCollection> iter = newSc.getWebResourceCollections().iterator();
             while (iter.hasNext()) {
                 WebResourceCollection wrc = iter.next();
-                Set<String> urlPatterns = wrc.getUrlPatterns();   
+                Set<String> urlPatterns = wrc.getUrlPatterns();
                 urlPatterns.removeAll(allUrlPatterns);
-                boolean isEmpty = (urlPatterns.size() == 0);
+                boolean isEmpty = (urlPatterns.isEmpty());
                 addSc = (addSc || (!isEmpty));
                 if (isEmpty) {
                     iter.remove();
@@ -1462,6 +1600,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     public Set<SecurityConstraint> getSecurityConstraintsSet() {
         if (securityConstraints == null) {
             securityConstraints = new HashSet<SecurityConstraint>();
@@ -1471,15 +1610,17 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * My list of security constraints.
+     * @return
      */
+    @Override
     public Enumeration<SecurityConstraint> getSecurityConstraints() {
         return (new Vector<SecurityConstraint>(this.getSecurityConstraintsSet())).elements();
     }
 
+    @Override
     public Collection<SecurityConstraint> getSecurityConstraintsForUrlPattern(String urlPattern) {
         Collection<SecurityConstraint> constraints = new HashSet<SecurityConstraint>();
-        for (Iterator<SecurityConstraint> i = getSecurityConstraintsSet().iterator(); i.hasNext();) {
-            SecurityConstraint next = i.next();
+        for (SecurityConstraint next : getSecurityConstraintsSet()) {
             boolean include = false;
             for (WebResourceCollection nextCol: next.getWebResourceCollections()) {
                 for (String nextPattern: nextCol.getUrlPatterns()) {
@@ -1501,13 +1642,16 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Add a new security constraint.
+     * @param securityConstraint
      */
+    @Override
     public void addSecurityConstraint(SecurityConstraint securityConstraint) {
         getSecurityConstraintsSet().add(securityConstraint);
     }
 
     /**
      * Add a new security constraint.
+     * @param securityConstraint
      */
     public void addSecurityConstraint(SecurityConstraintImpl securityConstraint) {
         addSecurityConstraint((SecurityConstraint) securityConstraint);
@@ -1515,7 +1659,9 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Remove the given security constraint.
+     * @param securityConstraint
      */
+    @Override
     public void removeSecurityConstraint(SecurityConstraint securityConstraint) {
         getSecurityConstraintsSet().remove(securityConstraint);
     }
@@ -1533,7 +1679,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /*
      * @return my set of servlets
     */
-
+    @Override
     public Set<WebComponentDescriptor> getServletDescriptors() {
         Set<WebComponentDescriptor> servletDescriptors = new HashSet<WebComponentDescriptor>();
         for (WebComponentDescriptor next : getWebComponentDescriptors()) {
@@ -1547,6 +1693,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return my Set of jsps.
      */
+    @Override
     public Set<WebComponentDescriptor> getJspDescriptors() {
         Set<WebComponentDescriptor> jspDescriptors = new HashSet<WebComponentDescriptor>();
         for (WebComponentDescriptor next : getWebComponentDescriptors()) {
@@ -1557,6 +1704,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return jspDescriptors;
     }
 
+    @Override
     public Set<EnvironmentEntry> getEnvironmentEntrySet() {
         if (environmentEntries == null) {
             environmentEntries = new OrderedSet<EnvironmentEntry>();
@@ -1566,18 +1714,23 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return my set of environment properties.
+     * @return
      */
+    @Override
     public Enumeration<EnvironmentEntry> getEnvironmentEntries() {
         return (new Vector<EnvironmentEntry>(this.getEnvironmentEntrySet())).elements();
     }
 
     /**
      * Adds this given environment property to my list.
+     * @param environmentEntry
      */
+    @Override
     public void addEnvironmentEntry(EnvironmentEntry environmentEntry) {
         getEnvironmentEntrySet().add(environmentEntry);
     }
 
+    @Override
     protected EnvironmentProperty _getEnvironmentPropertyByName(String name) {
         for (EnvironmentEntry ev : getEnvironmentEntrySet()) {
             if (ev.getName().equals(name)) {
@@ -1590,7 +1743,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * Returns the environment property object searching on the supplied key.
      * throws an illegal argument exception if no such environment property exists.
+     * @param name
+     * @return
      */
+    @Override
     public EnvironmentProperty getEnvironmentPropertyByName(String name) {
         EnvironmentProperty envProp = _getEnvironmentPropertyByName(name);
         if (envProp != null) {
@@ -1605,25 +1761,32 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Removes this given environment property from my list.
+     * @param environmentProperty
      */
+    @Override
     public void removeEnvironmentProperty(EnvironmentProperty environmentProperty) {
         getEnvironmentEntrySet().remove(environmentProperty);
     }
 
     /**
      * Adds this given environment property to my list.
+     * @param environmentProperty
      */
+    @Override
     public void addEnvironmentProperty(EnvironmentProperty environmentProperty) {
         getEnvironmentEntrySet().add(environmentProperty);
     }
 
     /**
      * Removes this given environment property from my list.
+     * @param environmentEntry
      */
+    @Override
     public void removeEnvironmentEntry(EnvironmentEntry environmentEntry) {
         getEnvironmentEntrySet().remove(environmentEntry);
     }
 
+    @Override
     protected void combineEnvironmentEntries(JndiNameEnvironment env) {
         for (Object oenve: env.getEnvironmentProperties()) {
             EnvironmentEntry enve = (EnvironmentEntry)oenve;
@@ -1650,14 +1813,18 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return the information about how I should log in.
+     * @return
      */
+    @Override
     public LoginConfiguration getLoginConfiguration() {
         return loginConfiguration;
     }
 
     /**
      * Specifies the information about how I should log in.
+     * @param loginConfiguration
      */
+    @Override
     public void setLoginConfiguration(LoginConfiguration loginConfiguration) {
         this.loginConfiguration = loginConfiguration;
     }
@@ -1666,6 +1833,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         setLoginConfiguration((LoginConfiguration) loginConfiguration);
     }
 
+    @Override
     protected void combineLoginConfiguration(WebBundleDescriptor webBundleDescriptor) {
         if (getLoginConfiguration() == null) {
             if (webBundleDescriptor.isConflictLoginConfig()) {
@@ -1680,7 +1848,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Search for a web component that I have by name.
+     * @param name
+     * @return
      */
+    @Override
     public WebComponentDescriptor getWebComponentByName(String name) {
         for (WebComponentDescriptor next : getWebComponentDescriptors()) {
             if (next.getName().equals(name)) {
@@ -1692,7 +1863,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Search for a web component that I have by name.
+     * @param name
+     * @return
      */
+    @Override
     public WebComponentDescriptor getWebComponentByCanonicalName(String name) {
         for (WebComponentDescriptor next : getWebComponentDescriptors()) {
             if (next.getCanonicalName().equals(name)) {
@@ -1705,6 +1879,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return a set of web component descriptor of given impl name.
      */
+    @Override
     public WebComponentDescriptor[] getWebComponentByImplName(String name) {
         ArrayList<WebComponentDescriptor> webCompList =
                 new ArrayList<WebComponentDescriptor>();
@@ -1722,6 +1897,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return a Vector of servlet filters that I have.
      */
+    @Override
     public Vector<ServletFilter> getServletFilters() {
         if (servletFilters == null) {
             servletFilters = new Vector<ServletFilter>();
@@ -1733,13 +1909,16 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * @return a Vector of servlet filters that I have.
      */
     @SuppressWarnings("unchecked")
+    @Override
     public Vector<ServletFilter> getServletFilterDescriptors() {
         return (Vector<ServletFilter>) getServletFilters().clone();
     }
 
     /**
      * Adds a servlet filter to this web component.
+     * @param ref
      */
+    @Override
     public void addServletFilter(ServletFilter ref) {
         String name = ref.getName();
         boolean found = false;
@@ -1761,11 +1940,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Removes the given servlet filter from this web component.
+     * @param ref
      */
+    @Override
     public void removeServletFilter(ServletFilter ref) {
         removeVectorItem(getServletFilters(), ref);
     }
 
+    @Override
     protected void combineServletFilters(WebBundleDescriptor webBundleDescriptor) {
         for (ServletFilter servletFilter : webBundleDescriptor.getServletFilters()) {
             ServletFilterDescriptor servletFilterDesc = (ServletFilterDescriptor)servletFilter;
@@ -1811,7 +1993,9 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return a Vector of servlet filters that I have.
+     * @return
      */
+    @Override
     public Vector<ServletFilterMapping> getServletFilterMappings() {
         if (servletFilterMappings == null) {
             servletFilterMappings = new Vector<ServletFilterMapping>();
@@ -1821,15 +2005,19 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return a Vector of servlet filter mappings that I have.
+     * @return
      */
     @SuppressWarnings("unchecked")
+    @Override
     public Vector<ServletFilterMapping> getServletFilterMappingDescriptors() {
         return (Vector<ServletFilterMapping>) getServletFilterMappings().clone();
     }
 
     /**
      * Adds a servlet filter mapping to this web component.
+     * @param ref
      */
+    @Override
     public void addServletFilterMapping(ServletFilterMapping ref) {
         if (!getServletFilterMappings().contains(ref)) {
             getServletFilterMappings().addElement(ref);
@@ -1838,6 +2026,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Adds a servlet filter mapping to this web component.
+     * @param ref
      */
     public void addServletFilterMapping(ServletFilterMappingDescriptor ref) {
         addServletFilterMapping((ServletFilterMapping) ref);
@@ -1845,7 +2034,9 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Removes the given servlet filter mapping from this web component.
+     * @param ref
      */
+    @Override
     public void removeServletFilterMapping(ServletFilterMapping ref) {
         removeVectorItem(getServletFilterMappings(), ref);
     }
@@ -1853,11 +2044,15 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * * Moves the given servlet filter mapping to a new relative location in
      * * the list
+     * @param ref
+     * @param relPos
      */
+    @Override
     public void moveServletFilterMapping(ServletFilterMapping ref, int relPos) {
         moveVectorItem(getServletFilterMappings(), ref, relPos);
     }
 
+    @Override
     protected void combineServletFilterMappings(WebBundleDescriptor webBundleDescriptor) {
         Map<String, ServletFilterMappingInfo> map = new HashMap<String, ServletFilterMappingInfo>();
         for (ServletFilterMapping sfMapping : getServletFilterMappings()) {
@@ -1895,6 +2090,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /* ----
     */
 
+    @Override
     public Vector<AppListenerDescriptor> getAppListeners() {
         if (appListenerDescriptors == null) {
             appListenerDescriptors = new Vector<AppListenerDescriptor>();
@@ -1903,21 +2099,25 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Vector<AppListenerDescriptor> getAppListenerDescriptors() {
         return (Vector<AppListenerDescriptor>) getAppListeners().clone();
     }
 
+    @Override
     public void setAppListeners(Collection<? extends AppListenerDescriptor> c) {
         getAppListeners().clear();
         getAppListeners().addAll(c);
     }
 
+    @Override
     public void addAppListenerDescriptor(AppListenerDescriptor ref) {
         if (!getAppListeners().contains(ref)) {
             getAppListeners().addElement(ref);
         }
     }
 
+    @Override
      public void addAppListenerDescriptorToFirst(AppListenerDescriptor ref) {
          if (!getAppListeners().contains(ref)) {
              getAppListeners().add(0, ref);
@@ -1928,10 +2128,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         addAppListenerDescriptor((AppListenerDescriptor) ref);
     }
 
+    @Override
     public void removeAppListenerDescriptor(AppListenerDescriptor ref) {
         removeVectorItem(getAppListeners(), ref);
     }
 
+    @Override
     public void moveAppListenerDescriptor(AppListenerDescriptor ref,
                                           int relPos) {
         this.moveVectorItem(this.getAppListeners(), ref, relPos);
@@ -1945,6 +2147,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         this.absOrdering = absOrdering;
     }
 
+    @Override
     public boolean isDenyUncoveredHttpMethods() {
         return denyUncoveredHttpMethods;
     }
@@ -1953,18 +2156,26 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         this.denyUncoveredHttpMethods = denyUncoveredHttpMethods;
     }
 
+    @Override
     public boolean isShowArchivedRealPathEnabled() {
         return showArchivedRealPathEnabled;
     }
 
+    /**
+     *
+     * @param enabled
+     */
+    @Override
     public void setShowArchivedRealPathEnabled(boolean enabled) {
         showArchivedRealPathEnabled = enabled;
     }
 
+    @Override
     public int getServletReloadCheckSecs() {
         return servletReloadCheckSecs;
     }
 
+    @Override
     public void setServletReloadCheckSecs(int secs) {
         servletReloadCheckSecs = secs;
     }
@@ -1972,6 +2183,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return true if this bundle descriptor defines web service clients
      */
+    @Override
     public boolean hasWebServiceClients() {
         return !getServiceReferenceDescriptors().isEmpty();
     }
@@ -1985,7 +2197,11 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * remove a specific object from the given list (does not rely on 'equals')
+     * @param list
+     * @param ref
+     * @return
      */
+    @Override
     protected boolean removeVectorItem(Vector<? extends Object> list, Object ref) {
         for (Iterator<? extends Object> i = list.iterator(); i.hasNext();) {
             if (ref == i.next()) {
@@ -1998,8 +2214,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Moves the given object to a new relative location in the specified list
+     * @param list
+     * @param ref
+     * @param rpos
      */
     @SuppressWarnings("unchecked")
+    @Override
     protected void moveVectorItem(Vector list, Object ref, int rpos) {
 
         /* get current position of ref */
@@ -2038,8 +2258,9 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * visitor API implementation
      */
+    @Override
     public void visit(DescriptorVisitor aVisitor) {
-        if (aVisitor instanceof WebBundleVisitor || 
+        if (aVisitor instanceof WebBundleVisitor ||
             aVisitor instanceof ComponentPostVisitor) {
             visit((ComponentVisitor) aVisitor);
         } else {
@@ -2049,13 +2270,20 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * visitor API implementation
+     * @param aVisitor
      */
+    @Override
     public void visit(ComponentVisitor aVisitor) {
         super.visit(aVisitor);
         aVisitor.accept(this);
     }
 
-
+    /**
+     *
+     * @param jarName
+     * @param webFragName
+     */
+    @Override
     public void putJarNameWebFragmentNamePair(String jarName, String webFragName) {
         if (jarName2WebFragNameMap == null) {
             jarName2WebFragNameMap = new HashMap<String, String>();
@@ -2067,6 +2295,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * This method return an unmodifiable version of jarName2WebFragNameMap.
      * @return unmodifiable version of jarName2WebFragNameMap
      */
+    @Override
     public Map<String, String> getJarNameToWebFragmentNameMap() {
         if (jarName2WebFragNameMap == null) {
             jarName2WebFragNameMap = new HashMap<String, String>();
@@ -2077,7 +2306,9 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * This method is used by WebComponentDescriptor only.
      * The returned map is supposed to be only modified by the corresponding url patterns set.
+     * @return
      */
+    @Override
     public Map<String, String> getUrlPatternToServletNameMap() {
         if (urlPattern2ServletName == null) {
             urlPattern2ServletName = new HashMap<String, String>();
@@ -2098,14 +2329,17 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return urlPattern2ServletName;
     }
 
+    @Override
     public void resetUrlPatternToServletNameMap() {
         urlPattern2ServletName = null;
     }
 
+    @Override
     public List<String> getOrderedLibs() {
         return orderedLibs;
     }
 
+    @Override
     public void addOrderedLib(String libName) {
         orderedLibs.add(libName);
     }
@@ -2116,6 +2350,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * @param env1
      * @param env2
      */
+    @Override
     protected void combineInjectionTargets(EnvironmentProperty env1, EnvironmentProperty env2) {
         for (InjectionTarget injTarget: env2.getInjectionTargets()) {
             env1.addInjectionTarget(injTarget);
@@ -2128,6 +2363,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * Return a formatted version as a String.
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         toStringBuffer.append("\nWeb Bundle descriptor");
         toStringBuffer.append("\n");
@@ -2138,6 +2374,11 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    /**
+     *
+     * @param toStringBuffer
+     */
+    @Override
     public void printCommon(StringBuffer toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append("\n context root ").append(getContextRoot());
@@ -2197,6 +2438,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return the module type for this bundle descriptor
      */
+    @Override
     public ArchiveType getModuleType() {
         return DOLUtils.warType();
     }
@@ -2204,6 +2446,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return the visitor for this bundle descriptor
      */
+    @Override
     public ComponentVisitor getBundleVisitor() {
         return new WebBundleValidator();
     }
@@ -2211,6 +2454,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @return the tracer visitor for this descriptor
      */
+    @Override
     public DescriptorVisitor getTracerVisitor() {
         return new WebBundleTracerVisitor();
     }
@@ -2219,6 +2463,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * @return the deployment descriptor directory location inside
      *         the archive file
      */
+    @Override
     public String getDeploymentDescriptorDir() {
         return DEPLOYMENT_DESCRIPTOR_DIR;
     }
@@ -2234,6 +2479,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      *
      * @return object representation of web deployment descriptor
      */
+    @Override
     public SunWebApp getSunDescriptor() {
         if (sunWebApp == null) {
             sunWebApp = new SunWebAppImpl();
@@ -2246,6 +2492,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      *
      * @param webApp SunWebApp object representation of web deployment descriptor
      */
+    @Override
     public void setSunDescriptor(SunWebApp webApp) {
         this.sunWebApp = webApp;
     }
@@ -2253,7 +2500,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * This property can be used to indicate special processing.
      * For example, a Deployer may set this property.
-     */ 
+     * @param key
+     * @param value
+     */
+    @Override
     public void setExtensionProperty(String key, String value) {
         if (null == extensionProperty) {
             extensionProperty = new HashMap<String, String>();
@@ -2263,9 +2513,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Determine if an extension property has been set.
+     * @param key
+     * @return
      */
+    @Override
     public boolean hasExtensionProperty(String key) {
-        if (null == extensionProperty || 
+        if (null == extensionProperty ||
             extensionProperty.get(key) == null) {
             return false;
         }
@@ -2294,6 +2547,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    @Override
     protected void combineResourceDescriptors(JndiNameEnvironment env, JavaEEResourceType javaEEResourceType) {
 	 for (ResourceDescriptor desc : env.getResourceDescriptors(javaEEResourceType)) {
 	     ResourceDescriptor descriptor = getResourceDescriptor(javaEEResourceType, desc.getName());
@@ -2348,5 +2602,5 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /*******************************************************************************************
      * END
      * Deployment Consolidation to Suppport Multiple Deployment API Clients
-     *******************************************************************************************/ 
+     *******************************************************************************************/
 }

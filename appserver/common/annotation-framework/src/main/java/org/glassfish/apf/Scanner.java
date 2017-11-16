@@ -61,7 +61,7 @@ public interface Scanner<T> {
      * that should be processed for anntoations
      * @param archiveFile the archive file for scanning
      * @param bundleDesc the bundle descriptor associated with this archive
-     * @param classloader the classloader used to scan the annotation
+     * @param classLoader the classloader used to scan the annotation
      */
     public void process(File archiveFile, T bundleDesc,
             ClassLoader classLoader) throws IOException;

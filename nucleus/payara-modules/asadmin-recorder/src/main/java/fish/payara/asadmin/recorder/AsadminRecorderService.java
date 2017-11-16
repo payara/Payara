@@ -63,8 +63,11 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Service to record asadmin commands.
+ * This can be for both commands entered at the command line and
+ * for actions in the admin console.
  * @author Andrew Pielage
+ * @since 4.1.1.162
  */
 @Service(name = "asadmin-recorder")
 @RunLevel(StartupRunLevel.VAL)
@@ -136,6 +139,10 @@ public class AsadminRecorderService implements EventListener {
         return asadminCommand;
     }
 
+    /**
+     * Returns true is the asadmin recorder is enabled
+     * @return 
+     */
     public boolean isEnabled() {
         boolean enabled = false;
         if (asadminRecorderConfiguration == null) {
@@ -148,6 +155,11 @@ public class AsadminRecorderService implements EventListener {
         return enabled;
     }
 
+    /**
+     * Records a given asadmin command
+     * @param commandName The name of the command
+     * @param parameters A map of all of the parameters passed as oart of the command
+     */
     public void recordAsadminCommand(String commandName, ParameterMap parameters) {
         String asadminCommand = "";
 

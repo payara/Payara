@@ -105,6 +105,7 @@ public class EjbServicesImpl implements EjbServices {
      * @param ejbDescriptor the ejb to resolve
      * @return a reference to the session object
      */
+    @Override
     public SessionObjectReference resolveEjb(EjbDescriptor<?> ejbDescriptor) {
 
         SessionObjectReference sessionObj = null;
@@ -154,6 +155,7 @@ public class EjbServicesImpl implements EjbServices {
         return clientView != null ? sessionDesc.getPortableJndiName(clientView) : null;
     }
 
+    @Override
     public void registerInterceptors(EjbDescriptor<?> ejbDesc, InterceptorBindings interceptorBindings) {
 
         com.sun.enterprise.deployment.EjbDescriptor glassfishEjbDesc = (com.sun.enterprise.deployment.EjbDescriptor) ((EjbDescriptorImpl<?>) ejbDesc).getEjbDescriptor();
@@ -237,8 +239,6 @@ public class EjbServicesImpl implements EjbServices {
             }
             ejbBeanSuperClass = ejbBeanSuperClass.getSuperclass();
         }
-
-        return;
 
     }
 
@@ -373,6 +373,7 @@ public class EjbServicesImpl implements EjbServices {
         return ejbInt;
     }
 
+    @Override
     public void cleanup() {
         //Nothing to do here.
     }

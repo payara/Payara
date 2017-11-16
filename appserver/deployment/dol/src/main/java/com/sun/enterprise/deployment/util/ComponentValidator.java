@@ -126,7 +126,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
     /**
      * Visits a message destination referencer for the last J2EE 
      * component visited
-     * @param the message destination referencer
+     * @param msgDestReferencer the message destination referencer
      */
     @Override
     protected void accept(MessageDestinationReferencer msgDestReferencer) {
@@ -136,8 +136,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
             return;
         // if it is referred to a physical destination
         } else if (msgDestReferencer.ownedByMessageDestinationRef() && 
-            msgDestReferencer.getMessageDestinationRefOwner(
-            ).getJndiName() != null) {
+            msgDestReferencer.getMessageDestinationRefOwner().getJndiName() != null) {
             return;
         } else {
             MessageDestinationDescriptor msgDest = 
@@ -711,7 +710,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
     /**
      * Visits a service reference for the last J2EE component visited
      * 
-     * @param the service reference
+     * @param serviceRef the service reference
      */
     @Override
     protected void accept(ServiceReferenceDescriptor serviceRef) {
@@ -763,6 +762,10 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         computeRuntimeDefault(resourceEnvRef);
     }
 
+    /**
+     * Sets the JNDI name to default if not already set
+     * @param msgDestRef 
+     */
     protected void accept(MessageDestinationReferenceDescriptor msgDestRef) {
         computeRuntimeDefault(msgDestRef);
     }

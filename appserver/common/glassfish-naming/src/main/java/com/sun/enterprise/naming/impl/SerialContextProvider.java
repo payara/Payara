@@ -44,6 +44,9 @@ import java.util.*;
 import javax.naming.*;
 import java.rmi.*;
 
+/**
+ * Interface for class that lookup JNDI objects
+ */
 public interface SerialContextProvider extends Remote {
 
     /**
@@ -51,7 +54,7 @@ public interface SerialContextProvider extends Remote {
      *
      * @return the object or context bound to the name.
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
     public Object lookup(String name)
             throws NamingException, RemoteException;
@@ -60,7 +63,7 @@ public interface SerialContextProvider extends Remote {
      * Bind the object to the specified name.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
     public void bind(String name, Object obj)
             throws NamingException, RemoteException;
@@ -69,7 +72,7 @@ public interface SerialContextProvider extends Remote {
      * Rebind the object to the specified name.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
     public void rebind(String name, Object obj)
             throws NamingException, RemoteException;
@@ -78,7 +81,7 @@ public interface SerialContextProvider extends Remote {
      * Unbind the specified object.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
     public void unbind(String name)
             throws NamingException, RemoteException;
@@ -87,7 +90,7 @@ public interface SerialContextProvider extends Remote {
      * Rename the bound object.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
     public void rename(String oldname, String newname)
             throws NamingException, RemoteException;
@@ -98,7 +101,7 @@ public interface SerialContextProvider extends Remote {
      * List the contents of the specified context.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
     public Hashtable list(String name) throws NamingException, RemoteException;
 
@@ -107,7 +110,7 @@ public interface SerialContextProvider extends Remote {
      *
      * @return the created subcontext.
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
     public Context createSubcontext(String name)
             throws NamingException, RemoteException;
@@ -116,7 +119,7 @@ public interface SerialContextProvider extends Remote {
      * Destroy the subcontext with the specified name.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
     public void destroySubcontext(String name)
             throws NamingException, RemoteException;

@@ -474,6 +474,8 @@ public class ApplicationHandlers {
         boolean forLB = (Boolean) handlerCtx.getInputValue("forLB");
         for(Map oneRow : selectedRows){
             Map attrs = new HashMap();
+            attrs.put("id", oneRow.get("name"));
+            attrs.put("target", oneRow.get("targetName"));
             String endpoint = (String) oneRow.get("endpoint");
             if(forLB){
                 attrs.put("lbEnabled", Enabled);
@@ -593,7 +595,7 @@ public class ApplicationHandlers {
             }
             oneRow.put("name", appName);
             oneRow.put("selected", false);
-            oneRow.put("endpoint", endpoint);
+            oneRow.put("endpoint", endpoint.replaceAll("/application-ref/.*", "/update-application-ref"));
             oneRow.put("targetName", oneTarget);
             oneRow.put("enabled", attrs.get("enabled"));
             oneRow.put("lbEnabled", attrs.get("lbEnabled"));
