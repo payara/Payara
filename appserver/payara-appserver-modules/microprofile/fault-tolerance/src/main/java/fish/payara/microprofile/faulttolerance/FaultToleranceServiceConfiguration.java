@@ -45,7 +45,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
- *
+ * Configuration for the Fault Tolerance Service.
  * @author Andrew Pielage
  */
 @Configured(name = "microprofile-fault-tolerance-configuration")

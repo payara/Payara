@@ -70,7 +70,7 @@ import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 
 /**
- *
+ * CDI Extension that adds and validates the Fault Tolerance Annotations.
  * @author Andrew Pielage
  */
 public class FaultToleranceCDIExtension implements Extension {

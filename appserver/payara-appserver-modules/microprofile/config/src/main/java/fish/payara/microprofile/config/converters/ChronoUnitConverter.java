@@ -45,7 +45,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
- *
+ * Converter for Strings to ChronoUnits
  * @author Andrew Pielage
  */
 @Priority(1)
