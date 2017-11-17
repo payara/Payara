@@ -485,6 +485,17 @@
                     <artifactId>microprofile-config</artifactId>
                     <version>${project.version}</version>
                 </dependency>
+                <!-- Fault Tolerance -->
+                <dependency>
+                    <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                    <artifactId>microprofile-fault-tolerance-api</artifactId>
+                    <version>${microprofile-fault-tolerance.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.microprofile.fault-tolerance</groupId>
+                    <artifactId>microprofile-fault-tolerance</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>
