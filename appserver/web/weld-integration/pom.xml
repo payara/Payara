@@ -43,19 +43,19 @@
 <!-- Portions Copyright [2016] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-	   <groupId>org.glassfish.main.web</groupId>
-    	   <artifactId>web</artifactId>
+	      <groupId>org.glassfish.main.web</groupId>
+    	  <artifactId>web</artifactId>
         <version>5.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    
+
     <artifactId>weld-integration</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Weld integration for glassfish</name>
-    
+
     <developers>
         <developer>
             <id>mm110999</id>
@@ -68,7 +68,7 @@
             <organization>Oracle, Inc.</organization>
         </developer>
     </developers>
-    
+
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
@@ -91,7 +91,7 @@
             </resource>
         </resources>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -115,7 +115,7 @@
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-javaee-full</artifactId>
             <version>${project.version}</version>
-            <!-- Since weld-integration artifact is part of web distro and we 
+            <!-- Since weld-integration artifact is part of web distro and we
                  don't want deployment-javaee-full to be part of web distro, we
                  mark this dependency as optional for it to be excluded by packager
             -->

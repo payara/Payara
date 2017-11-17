@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- applications/targetListing.jsf -->
@@ -60,6 +61,7 @@
             setSessionAttribute(key="resEditTabs" value="targetTab");
             getRequestValue(key="generalPage" value="#{pageSession.generalPage}");
             setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedName}");
+            setPageSessionAttribute(key="updateEndpoint" value="#{sessionScope.REST_URL}/resources/update-resource-ref");
         />
     </event>
 <sun:form id="propertyForm">
@@ -97,9 +99,12 @@
                     getUIComponent(clientId="$pageSession{targetTableRowGroupId}", component=>$attribute{tableRowGroup});
                     getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
                     foreach (var="row" list="#{requestScope.selectedRows}") {
-                       gf.createAttributeMap(keys={"enabled"} values={"true"} map="#{requestScope.attrMap}");
-                       gf.restRequest(endpoint="#{row.endpoint}"
-                                      attrs="#{requestScope.attrMap}"
+                       createMap(result="#{requestScope.attrsMap}");
+                       mapPut(map="#{requestScope.attrsMap}" key="id" value="#{pageSession.resourceName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="target" value="#{row.targetName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="enabled" value="true");
+                       gf.restRequest(endpoint="#{pageSession.updateEndpoint}"
+                                      attrs="#{requestScope.attrsMap}"
                                       method="post");
                     }                    
                     setAttribute(key="selectedRows" value="${selectedRows}");
@@ -112,9 +117,12 @@
                     getUIComponent(clientId="$pageSession{targetTableRowGroupId}", component=>$attribute{tableRowGroup});
                     getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
                     foreach (var="row" list="#{requestScope.selectedRows}") {
-                       gf.createAttributeMap(keys={"enabled"} values={"false"} map="#{requestScope.attrMap}");
-                       gf.restRequest(endpoint="#{row.endpoint}"
-                                      attrs="#{requestScope.attrMap}"
+                       createMap(result="#{requestScope.attrsMap}");
+                       mapPut(map="#{requestScope.attrsMap}" key="id" value="#{pageSession.resourceName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="target" value="#{row.targetName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="enabled" value="false");
+                       gf.restRequest(endpoint="#{pageSession.updateEndpoint}"
+                                      attrs="#{requestScope.attrsMap}"
                                       method="post");
                     }
                     setAttribute(key="selectedRows" value="${selectedRows}");

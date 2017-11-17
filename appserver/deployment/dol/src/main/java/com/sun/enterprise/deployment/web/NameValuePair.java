@@ -40,6 +40,11 @@
 
 package com.sun.enterprise.deployment.web;
 
+/**
+ * Interface for holding a single name/value pair
+ * <p>
+ * ??Used to hold properties
+ */
 public interface NameValuePair {
 
     public String getName();

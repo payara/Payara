@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.annotation.context;
@@ -55,7 +57,7 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
     /**
      * Add a ejb reference.
      *
-     * @param the ejb reference
+     * @param ejbReference the ejb reference
      */
     public void addEjbReferenceDescriptor(EjbReference ejbReference);
                                                                                
@@ -63,14 +65,15 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Looks up an ejb reference with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the ejb-reference
+     * @param name the name of the ejb-reference
+     * @return 
      */
     public EjbReference getEjbReference(String name);
 
     /**
      * Add a resource reference
      *
-     * @param the resource reference
+     * @param resReference the resource reference
      */
     public void addResourceReferenceDescriptor(ResourceReferenceDescriptor 
                                                resReference);
@@ -79,14 +82,15 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Looks up an resource reference with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the resource-reference
+     * @param name the name of the resource-reference
+     * @return 
      */
     public ResourceReferenceDescriptor getResourceReference(String name);
 
     /**
      * Add a message-destination-ref
      *
-     * @param the msgDestRef
+     * @param msgDestRef the msgDestRef
      */
     public void addMessageDestinationReferenceDescriptor
         (MessageDestinationReferenceDescriptor msgDestRef);
@@ -96,7 +100,8 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Looks up a message-destination-ref with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the message-destination-ref
+     * @param name the name of the message-destination-ref
+     * @return 
      */
     public MessageDestinationReferenceDescriptor getMessageDestinationReference
         (String name);
@@ -105,7 +110,7 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
    /**
      * Add a resource-env-ref
      *
-     * @param the resourceEnvRef
+     * @param resourceEnvRef the resourceEnvRef
      */
     public void addResourceEnvReferenceDescriptor
         (ResourceEnvReferenceDescriptor resourceEnvRef);
@@ -115,7 +120,8 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Looks up a resource-env-ref with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the resource-env-ref
+     * @param name the name of the resource-env-ref
+     * @return 
      */
     public ResourceEnvReferenceDescriptor getResourceEnvReference
         (String name);
@@ -123,7 +129,7 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
     /**
      * Add an env-entry
      *
-     * @param the env-entry
+     * @param envEntry the env-entry
      */
     public void addEnvEntryDescriptor(EnvironmentProperty envEntry);
                                                
@@ -132,7 +138,8 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Looks up an env-entry with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the env-entry
+     * @param name the name of the env-entry
+     * @return 
      */
     public EnvironmentProperty getEnvEntry(String name);
 
@@ -144,7 +151,8 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Looks up an entity manager factory reference with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the emf reference
+     * @param name the name of the emf reference
+     * @return 
      */
     public EntityManagerFactoryReferenceDescriptor 
         getEntityManagerFactoryReference(String name);
@@ -156,7 +164,8 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Looks up an entity manager reference with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the emf reference
+     * @param name the name of the emf reference
+     * @return 
      */
     public EntityManagerReferenceDescriptor getEntityManagerReference
         (String name);
@@ -171,6 +180,7 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Look up an post-construct LifecycleCallbackDescriptor with the
      * given name.  Return null if it is not found
      * @param className
+     * @return 
      */
     public LifecycleCallbackDescriptor getPostConstruct(String className);
 
@@ -184,6 +194,7 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * Look up an pre-destroy LifecycleCallbackDescriptor with the
      * given name.  Return null if it is not found
      * @param className
+     * @return 
      */
     public LifecycleCallbackDescriptor getPreDestroy(String className);
 
@@ -195,6 +206,7 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
 
     /**
      * get all descriptors based on the type
+     * @param type
      * @return Set of ResourceDescriptor
      */
     public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type);

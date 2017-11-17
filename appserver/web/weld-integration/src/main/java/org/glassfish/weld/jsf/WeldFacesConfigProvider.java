@@ -76,6 +76,7 @@ public class WeldFacesConfigProvider implements FacesConfigResourceProvider {
 
     private static final String SERVICES_FACES_CONFIG = "META-INF/services/faces-config.xml";
 
+    @Override
     public Collection<URI> getResources(ServletContext context) {
 
         ServiceLocator defaultServices = (ServiceLocator)context.getAttribute(

@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.archivist;
@@ -55,6 +57,9 @@ import java.util.logging.Level;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * This checks in war archives using JPA
+ */
 @Service
 @ExtensionsArchivistFor("jpa")
 public class WarPersistenceArchivist extends PersistenceArchivist {
@@ -76,6 +81,7 @@ public class WarPersistenceArchivist extends PersistenceArchivist {
         Map<String, ReadableArchive> probablePersitenceArchives =  new HashMap<String, ReadableArchive>();
         try {
             SubArchivePURootScanner warLibScanner = new SubArchivePURootScanner() {
+                @Override
                 String getPathOfSubArchiveToScan() {
                     return "WEB-INF/lib";
                 }

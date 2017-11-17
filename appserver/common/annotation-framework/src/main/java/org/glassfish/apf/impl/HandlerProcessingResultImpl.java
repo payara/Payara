@@ -97,6 +97,7 @@ public class HandlerProcessingResultImpl implements HandlerProcessingResult {
         results.putAll(result.processedAnnotations());
     }
     
+    @Override
     public ResultType getOverallResult(){
         return overallResult;
     }

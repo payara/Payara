@@ -314,6 +314,7 @@ public final class PEAccessLogValve
         
     /**
      * Set writerthread interval (seconds)
+     * @param t
      */
     public void setWriterInterval(int t) {
         if ( t > 0 ){
@@ -328,6 +329,7 @@ public final class PEAccessLogValve
     
     /**
      * Return rotation interval
+     * @return 
      */
     public int geRotationInterval() {        
         return rotationInterval;       
@@ -344,6 +346,7 @@ public final class PEAccessLogValve
     
     /**
      * Set the direct <code>ByteBuffer</code> size
+     * @param size
      */
     public void setBufferSize(int size){
         if ( size > 0 && writeInterval != 0){
@@ -377,6 +380,7 @@ public final class PEAccessLogValve
 
     /**
      * Return the directory in which we create log files.
+     * @return 
      */
     public String getDirectory() {
 
@@ -398,11 +402,11 @@ public final class PEAccessLogValve
 
     /**
      * Return descriptive information about this implementation.
+     * @return 
      */
+    @Override
     public String getInfo() {
-
         return info;
-
     }
 
 
@@ -424,9 +428,9 @@ public final class PEAccessLogValve
 
     /**
      * Return the log file prefix.
+     * @return 
      */
     public String getPrefix() {
-
         return prefix;
 
     }
@@ -453,6 +457,7 @@ public final class PEAccessLogValve
 
     /**
      * Should we rotate the logs
+     * @return 
      */
     public boolean isRotatable() {
 
@@ -475,6 +480,7 @@ public final class PEAccessLogValve
 
     /**
      * Return the log file suffix.
+     * @return 
      */
     public String getSuffix() {
 
@@ -526,6 +532,7 @@ public final class PEAccessLogValve
      * Return whether the attribute name to look for when
      * performing conditional loggging. If null, every
      * request is logged.
+     * @return 
      */
     public String getCondition() {
 
@@ -548,6 +555,7 @@ public final class PEAccessLogValve
 
     /**
      *  Return the date format date based log rotation.
+     * @return 
      */
     public String getFileDateFormat() {
         return fileDateFormat;
@@ -556,6 +564,7 @@ public final class PEAccessLogValve
 
     /**
      *  Set the date format date based log rotation.
+     * @param fileDateFormat
      */
     public void setFileDateFormat(String fileDateFormat) {
         this.fileDateFormat =  fileDateFormat;
@@ -571,7 +580,9 @@ public final class PEAccessLogValve
      *
      * @param request Request being processed
      * @param response Response being processed
+     * @return 
      */ 
+    @Override
     public int invoke(Request request, Response response) {
 
         if (formatter!=null && formatter.needTimeTaken()) {
@@ -582,6 +593,7 @@ public final class PEAccessLogValve
     }
 
    
+    @Override
     public void postInvoke(Request request, Response response)
             throws IOException {
 
@@ -631,6 +643,7 @@ public final class PEAccessLogValve
     /**
      * Log the specified message to the log file, switching files if the date
      * has changed since the previous log call.
+     * @throws java.io.IOException
      */
     public void log() throws IOException {
         
@@ -1041,6 +1054,7 @@ public final class PEAccessLogValve
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -1049,7 +1063,9 @@ public final class PEAccessLogValve
     /**
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this PEAccessLogValve.
+     * @return 
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -1060,6 +1076,7 @@ public final class PEAccessLogValve
      *
      * @param listener The listener to add
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -1073,6 +1090,7 @@ public final class PEAccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1128,6 +1146,7 @@ public final class PEAccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1150,6 +1169,7 @@ public final class PEAccessLogValve
    /**
      * The background writerThread that checks for write the log.
      */
+    @Override
     public void run() {
 
         // Loop until the termination semaphore is set

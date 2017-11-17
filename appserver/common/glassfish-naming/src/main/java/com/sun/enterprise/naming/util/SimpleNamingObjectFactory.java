@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.util;
@@ -45,6 +47,12 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.Context;
 
+/**
+ * Returns instances of the specified object
+ * <p>
+ * This class is always cacheable.
+ * The create method will always return the object originally given
+ */
 @Service
 public class SimpleNamingObjectFactory
     implements NamingObjectFactory {
@@ -52,16 +60,23 @@ public class SimpleNamingObjectFactory
     private String name;
 
     private Object value;
-
+    
+    /**
+     * Creates a factory that will also return instances of the object
+     * @param name name of object. This will be ignored
+     * @param value Object that create will return
+     */
     public SimpleNamingObjectFactory(String name, Object value) {
         this.name = name;
         this.value = value;
     }
 
+    @Override
     public boolean isCreateResultCacheable() {
         return true;
     }
 
+    @Override
     public Object create(Context ic) {
         return value;
     }

@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.annotation.context;
@@ -72,6 +74,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
      *
      * @param ejbReference the ejb reference
      */
+    @Override
     public void addEjbReferenceDescriptor(EjbReference ejbReference) {
         getEjbReferenceContainer().addEjbReferenceDescriptor(ejbReference);
     }
@@ -80,8 +83,10 @@ public class ResourceContainerContextImpl extends AnnotationContext
      * Looks up an ejb reference with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the ejb-reference
+     * @param name the name of the ejb-reference
+     * @return 
      */
+    @Override
     public EjbReference getEjbReference(String name) {
         EjbReference ejbRef = null;
         try {
@@ -114,6 +119,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return (EjbReferenceContainer)descriptor;
     }
 
+    @Override
     public void addResourceReferenceDescriptor(ResourceReferenceDescriptor 
                                                resReference) {
         getResourceReferenceContainer().addResourceReferenceDescriptor
@@ -124,8 +130,10 @@ public class ResourceContainerContextImpl extends AnnotationContext
      * Looks up an resource reference with the given name.
      * Return null if it is not found.
      *
-     * @param the name of the resource-reference
+     * @param name the name of the resource-reference
+     * @return 
      */
+    @Override
     public ResourceReferenceDescriptor getResourceReference(String name) {
         ResourceReferenceDescriptor resourceRef = null;
         try {
@@ -160,6 +168,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
     }
 
 
+    @Override
     public void addMessageDestinationReferenceDescriptor
         (MessageDestinationReferenceDescriptor msgDestReference) {
         getMessageDestinationReferenceContainer(
@@ -167,6 +176,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
     }
                                                
                                                                                
+    @Override
     public MessageDestinationReferenceDescriptor getMessageDestinationReference
         (String name) {
         MessageDestinationReferenceDescriptor msgDestRef = null;
@@ -192,12 +202,14 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return (MessageDestinationReferenceContainer)descriptor;
     }
 
+    @Override
     public void addResourceEnvReferenceDescriptor
         (ResourceEnvReferenceDescriptor resourceEnvReference) {
         getResourceEnvReferenceContainer(
         ).addResourceEnvReferenceDescriptor(resourceEnvReference);
     }
                                                
+    @Override
     public ResourceEnvReferenceDescriptor getResourceEnvReference
         (String name) {
         ResourceEnvReferenceDescriptor resourceEnvRef = null;
@@ -228,18 +240,23 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return resourceEnvRef;
     }
 
-    protected WritableJndiNameEnvironment 
-        getResourceEnvReferenceContainer()
+    /**
+     * Gets the parent of container for resources
+     * @return 
+     */
+    protected WritableJndiNameEnvironment getResourceEnvReferenceContainer()
     {
         return (WritableJndiNameEnvironment)descriptor;
     }
 
+    @Override
     public void addEnvEntryDescriptor(EnvironmentProperty envEntry) {
 
         getEnvEntryContainer().addEnvironmentProperty(envEntry);
 
     }
                                                
+    @Override
     public EnvironmentProperty getEnvEntry(String name) {
         EnvironmentProperty envEntry = null;
         try {
@@ -276,6 +293,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return (WritableJndiNameEnvironment)descriptor;
     }
 
+    @Override
     public void addEntityManagerFactoryReferenceDescriptor
         (EntityManagerFactoryReferenceDescriptor emfRefDesc) {
 
@@ -284,6 +302,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
 
     }
                                                
+    @Override
     public EntityManagerFactoryReferenceDescriptor 
         getEntityManagerFactoryReference(String name) {
 
@@ -324,6 +343,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
     }
 
 
+    @Override
     public void addEntityManagerReferenceDescriptor
         (EntityManagerReferenceDescriptor emRefDesc) {
 
@@ -332,6 +352,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
 
     }
                                                
+    @Override
     public EntityManagerReferenceDescriptor 
         getEntityManagerReference(String name) {
 
@@ -371,9 +392,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return (WritableJndiNameEnvironment)descriptor;
     }
 
-   /**
-     * @param postConstructDesc
-     */
+    @Override
     public void addPostConstructDescriptor(
             LifecycleCallbackDescriptor postConstructDesc) {
         getPostConstructContainer().addPostConstructDescriptor(postConstructDesc);
@@ -383,7 +402,9 @@ public class ResourceContainerContextImpl extends AnnotationContext
      * Look up an post-construct LifecycleCallbackDescriptor with the
      * given name.  Return null if it is not found
      * @param className
+     * @return 
      */
+    @Override
     public LifecycleCallbackDescriptor getPostConstruct(String className) {
         LifecycleCallbackDescriptor postConstructDesc = 
             getPostConstructContainer().getPostConstructDescriptorByClass(className);
@@ -397,6 +418,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
    /**
      * @param preDestroyDesc
      */
+    @Override
     public void addPreDestroyDescriptor(
             LifecycleCallbackDescriptor preDestroyDesc) {
         getPreDestroyContainer().addPreDestroyDescriptor(preDestroyDesc);
@@ -406,7 +428,9 @@ public class ResourceContainerContextImpl extends AnnotationContext
      * Look up an pre-destroy LifecycleCallbackDescriptor with the
      * given name.  Return null if it is not found
      * @param className
+     * @return 
      */
+    @Override
     public LifecycleCallbackDescriptor getPreDestroy(String className) {
         LifecycleCallbackDescriptor preDestroyDesc = 
             getPreDestroyContainer().getPreDestroyDescriptorByClass(className);
@@ -421,14 +445,17 @@ public class ResourceContainerContextImpl extends AnnotationContext
      * Adds the descriptor to the receiver.
      * @param desc Descriptor to add.
      */
+    @Override
     public void addResourceDescriptor(ResourceDescriptor desc) {
         getDataSourceDefinitionContainer().addResourceDescriptor(desc);
     }
 
     /**
      * get all Descriptor descriptors based on the type
+     * @param type
      * @return Descriptor descriptors
      */
+    @Override
     public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type) {
         return getDataSourceDefinitionContainer().getResourceDescriptors(type);
     }
@@ -458,16 +485,29 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return (WritableJndiNameEnvironment)descriptor;
     }
 
+    @Override
     public String getComponentClassName() {
         return componentClassName;
     }
     
+    /**
+     * Returns null by default, this method should be overridden in subclasses
+     * @param serviceSideHandlerChain
+     * @param declaringClass
+     * @return 
+     */
+    @Override
     public HandlerChainContainer[] 
             getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
         // by default return null; appropriate contextx should override this
         return null;
     }
     
+    /**
+     * Returns the default descriptor
+     * @return 
+     */
+    @Override
     public ServiceReferenceContainer[] getServiceRefContainers() {
         // by default we return our descriptor;
         ServiceReferenceContainer[] containers = new ServiceReferenceContainer[1];
@@ -475,6 +515,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return containers;
     }
 
+    @Override
     public void addManagedBean(ManagedBeanDescriptor managedBeanDesc) {
 
         BundleDescriptor bundleDesc = (BundleDescriptor)
