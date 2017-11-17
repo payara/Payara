@@ -44,7 +44,6 @@ import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
-import sun.util.logging.PlatformLogger;
 
 /**
  * Validator for the Fault Tolerance Retry annotation.
