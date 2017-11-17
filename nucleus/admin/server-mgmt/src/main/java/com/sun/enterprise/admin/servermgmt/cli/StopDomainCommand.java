@@ -44,9 +44,17 @@ package com.sun.enterprise.admin.servermgmt.cli;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.DASUtils;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.servermgmt.DomainConfig;
+import com.sun.enterprise.admin.servermgmt.DomainException;
+import com.sun.enterprise.admin.servermgmt.DomainsManager;
+import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
 import com.sun.enterprise.universal.process.ProcessUtils;
+import com.sun.enterprise.util.io.DomainDirs;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
@@ -78,9 +86,10 @@ public class StopDomainCommand extends LocalDomainCommand {
     }
 
     /**
-     * Override initDomain in LocalDomainCommand to only initialize
-     * the local domain information (name, directory) in the local
-     * case, when no --host has been specified.
+     * Override initDomain in LocalDomainCommand to only initialize the local domain information (name, directory) in
+     * the local case, when no --host has been specified.
+     *
+     * @throws org.glassfish.api.admin.CommandException
      */
     @Override
     protected void initDomain() throws CommandException {
@@ -89,7 +98,6 @@ public class StopDomainCommand extends LocalDomainCommand {
         // TODO Byron said in April 2013 that we should probably just check if
         // NetUtils says that the getHost() --> isThisMe() rather than merely
         // checking for the magic "localhost" string.  Too risky to fool with it today.
-
         if (programOpts.getHost().equals(CLIConstants.DEFAULT_HOSTNAME)) {
             super.initDomain();
         } else if (userArgDomainName != null) {  // remote case
@@ -99,18 +107,16 @@ public class StopDomainCommand extends LocalDomainCommand {
     }
 
     @Override
-    protected int executeCommand()
-            throws CommandException {
+    protected int executeCommand() throws CommandException {
 
         if (isLocal()) {
             // if the local password isn't available, the domain isn't running
             // (localPassword is set by initDomain)
-            if (getServerDirs().getLocalPassword() == null){
+            if (getServerDirs().getLocalPassword() == null) {
                 return dasNotRunning();
             }
             programOpts.setHostAndPort(getAdminAddress());
-            logger.finer("Stopping local domain on port "
-                    + programOpts.getPort());
+            logger.finer("Stopping local domain on port " + programOpts.getPort());
 
             /*
              * If we're using the local password, we don't want to prompt
@@ -120,15 +126,16 @@ public class StopDomainCommand extends LocalDomainCommand {
             programOpts.setInteractive(false);
 
             // in the local case, make sure we're talking to the correct DAS
-            if (!isThisDAS(getDomainRootDir()))
+            if (!isThisDAS(getDomainRootDir())) {
                 return dasNotRunning();
+            }
 
             logger.finer("It's the correct DAS");
-        }
-        else { // remote
+        } else { // remote
             // Verify that the DAS is running and reachable
-            if (!DASUtils.pingDASQuietly(programOpts, env))
+            if (!DASUtils.pingDASQuietly(programOpts, env)) {
                 return dasNotRunning();
+            }
 
             logger.finer("DAS is running");
             programOpts.setInteractive(false);
@@ -140,34 +147,92 @@ public class StopDomainCommand extends LocalDomainCommand {
          * so even if the password is wrong we don't want any more
          * prompting here.
          */
-
         doCommand();
         return 0;
     }
 
     /**
-     * Print message and return exit code when
-     * we detect that the DAS is not running.
+     * Print message and return exit code when we detect that the DAS is not running.
+     *
+     * @return Success in all cases
+     * @throws org.glassfish.api.admin.CommandException
      */
     protected int dasNotRunning() throws CommandException {
         if (kill) {
-            if (isLocal())
+            if (isLocal()) {
                 return kill();
-            else // remote.  We can NOT kill and we can't ask it to kill itself.
+            } else // remote.  We can NOT kill and we can't ask it to kill itself.
+            {
                 throw new CommandException(Strings.get("StopDomain.dasNotRunningRemotely"));
+            }
         }
 
         // by definition this is not an error
         // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8387
-        if (isLocal())
-            logger.warning(Strings.get("StopDomain.dasNotRunning", getDomainRootDir()));
-        else
+        if (isLocal()) {
+            try {
+                logger.warning(Strings.get("StopDomain.dasNotRunning", getDomainRootDir(), getRunningDomains()));
+            } catch (IOException | DomainException ex) {
+                Logger.getLogger(StopDomainCommand.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
             logger.warning(Strings.get("StopDomain.dasNotRunningRemotely"));
-        return 0;
+        }
+        // If it has gotten this far, the domain has failed to be stopped and as such the command has failed
+        return 1;
+    }
+
+    /**
+     * Gets the currently running domains. Code lifted with alteration from ListDomainsCommand.
+     * @return String representation of the currently running domains, with newlines ("\n") appended after each.
+     * @throws IOException
+     * @throws DomainException
+     * @throws CommandException 
+     */
+    private String getRunningDomains() throws IOException, DomainException, CommandException {
+        File domainsDirFile = ok(domainDirParam) ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
+        DomainConfig domainConfig = new DomainConfig(null, domainsDirFile.getAbsolutePath());
+        DomainsManager manager = new PEDomainsManager();
+        String[] domainsList = manager.listDomains(domainConfig);
+        programOpts.setInteractive(false);  // no prompting for passwords
+        String runningDomains = "";
+        if (domainsList.length > 0) {
+            for (String domain : domainsList) {
+                ListDomainsCommand.DomainInfo di = getStatus(domain);
+                if (di.status) {
+                    runningDomains = runningDomains + domain + "\n";
+                }
+            }
+        }
+        return runningDomains;
+    }
+
+    private ListDomainsCommand.DomainInfo getStatus(String dn) throws IOException, CommandException {
+        setDomainName(dn);
+        initDomain();
+        ListDomainsCommand.DomainInfo di = new ListDomainsCommand.DomainInfo();
+        di.adminAddr = getAdminAddress();
+        programOpts.setHostAndPort(di.adminAddr);
+        di.status = isThisDAS(getDomainRootDir());
+
+        if (di.status) {
+            di.statusMsg = Strings.get("list.domains.StatusRunning", dn);
+            RemoteCLICommand cmd = new RemoteCLICommand("_get-restart-required", programOpts, env);
+            String restartRequired = cmd.executeAndReturnOutput("_get-restart-required");
+            di.restartRequired = Boolean.parseBoolean(restartRequired.trim());
+            if (di.restartRequired) {
+                di.statusMsg = Strings.get("list.domains.StatusRestartRequired", dn);
+            }
+        } else {
+            di.statusMsg = Strings.get("list.domains.StatusNotRunning", dn);
+        }
+        return di;
     }
 
     /**
      * Execute the actual stop-domain command.
+     *
+     * @throws org.glassfish.api.admin.CommandException
      */
     protected void doCommand() throws CommandException {
         // run the remote stop-domain command and throw away the output
@@ -192,6 +257,8 @@ public class StopDomainCommand extends LocalDomainCommand {
 
     /**
      * Wait for the server to die.
+     *
+     * @throws org.glassfish.api.admin.CommandException
      */
     protected void waitForDeath() throws CommandException {
         if (!programOpts.isTerse()) {
@@ -209,16 +276,17 @@ public class StopDomainCommand extends LocalDomainCommand {
             }
             try {
                 Thread.sleep(100);
-                if (!programOpts.isTerse() && count++ % 10 == 0)
+                if (!programOpts.isTerse() && count++ % 10 == 0) {
                     System.out.print(".");
-            }
-            catch (InterruptedException ex) {
+                }
+            } catch (InterruptedException ex) {
                 // don't care
             }
         }
 
-        if (!programOpts.isTerse())
+        if (!programOpts.isTerse()) {
             System.out.println();
+        }
 
         if (alive) {
             throw new CommandException(Strings.get("StopDomain.DASNotDead",
@@ -237,19 +305,19 @@ public class StopDomainCommand extends LocalDomainCommand {
         try {
             prevPid = new File(getServerDirs().getPidFile().getPath() + ".prev");
 
-            if (!prevPid.canRead())
+            if (!prevPid.canRead()) {
                 throw new CommandException(Strings.get("StopDomain.nopidprev", prevPid));
+            }
 
             pids = FileUtils.readSmallFile(prevPid).trim();
             String s = ProcessUtils.kill(Integer.parseInt(pids));
 
-            if(s != null)
+            if (s != null) {
                 logger.finer(s);
-        }
-        catch (CommandException ce) {
+            }
+        } catch (CommandException ce) {
             throw ce;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new CommandException(Strings.get("StopDomain.pidprevreaderror",
                     prevPid, ex.getMessage()));
         }
