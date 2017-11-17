@@ -128,7 +128,9 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
 
             // Get the actual content, not just the configured
             // endpoints.
-            giso.forceMembershipChange();
+            if(updateCluster) {
+                giso.forceMembershipChange();
+            }
         }
 
         if(logger.isLoggable(Level.FINE))
