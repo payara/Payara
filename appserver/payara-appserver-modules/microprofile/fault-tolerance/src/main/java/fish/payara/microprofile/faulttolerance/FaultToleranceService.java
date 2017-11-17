@@ -81,6 +81,7 @@ import org.jvnet.hk2.annotations.Service;
 public class FaultToleranceService implements EventListener {
     
     public static final String FAULT_TOLERANCE_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
+    public static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
     
     private static final Logger logger = Logger.getLogger(FaultToleranceService.class.getName());
     

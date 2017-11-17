@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
+import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FALLBACK_HANDLER_METHOD_NAME;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
@@ -52,7 +53,6 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
  * @author Andrew Pielage
  */
 public class FallbackValidator {
-    private static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
     
     /**
      * Validate that the Fallback annotation is correct.

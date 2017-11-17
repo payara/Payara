@@ -40,6 +40,7 @@
 package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FALLBACK_HANDLER_METHOD_NAME;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.lang.reflect.Method;
@@ -61,7 +62,6 @@ import org.glassfish.internal.api.Globals;
 public class FallbackPolicy {
     
     private static final Logger logger = Logger.getLogger(FallbackPolicy.class.getName());
-    private static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
     
     private final Class<? extends FallbackHandler> fallbackClass;
     private final String fallbackMethod;
