@@ -109,7 +109,7 @@ public interface HazelcastRuntimeConfiguration
     String getClusterGroupPassword();
     public void setClusterGroupPassword(String value);
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getHostAwarePartitioning();
     public void setHostAwarePartitioning(String value);
 

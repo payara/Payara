@@ -1109,6 +1109,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         hostAware = true;
                         break;
                     }
+                    case nohostaware: {
+                        hostAware = false;
+                        break;
+                    }
                     case mcport: {
                         hzPort = Integer.parseInt(value);
                         break;

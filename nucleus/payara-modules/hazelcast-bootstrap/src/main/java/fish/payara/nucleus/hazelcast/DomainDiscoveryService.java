@@ -48,9 +48,11 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.io.InstanceDirs;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -71,6 +73,8 @@ import org.glassfish.internal.api.ServerContext;
  * @author steve
  */
 public class DomainDiscoveryService implements DiscoveryService {
+    
+    private static Logger logger = Logger.getLogger(DomainDiscoveryService.class.getName());
 
     @Override
     public void start() {
@@ -79,6 +83,7 @@ public class DomainDiscoveryService implements DiscoveryService {
 
     @Override
     public Iterable<DiscoveryNode> discoverNodes() {
+        logger.fine("Starting Domain Node Discovery");
         List<DiscoveryNode> nodes = new LinkedList<>();
         Domain domain = Globals.getDefaultHabitat().getService(Domain.class);
         ServerContext ctxt = Globals.getDefaultHabitat().getService(ServerContext.class);
@@ -89,6 +94,7 @@ public class DomainDiscoveryService implements DiscoveryService {
         if (!env.isDas()) {
             try {
                 // first get hold of the DAS host
+                logger.fine("This is a Standalone Instance");
                 String dasHost = hzConfig.getDASPublicAddress();
                 if (dasHost == null || dasHost.isEmpty()) {
                     dasHost = hzConfig.getDASBindAddress();
@@ -96,31 +102,33 @@ public class DomainDiscoveryService implements DiscoveryService {
                 
                 if (dasHost.isEmpty()) {
                     // ok drag it off the properties file
+                    logger.fine("Neither DAS Public Address or Bind Address is set in the configuration");
                     InstanceDirs instance = new InstanceDirs(env.getInstanceRoot());
                     Properties dasProps = new Properties();
                     dasProps.load(new FileInputStream(instance.getDasPropertiesFile()));
+                    logger.fine("Loaded the das.properties file from the agent directory");
                     dasHost = dasProps.getProperty("agent.das.host");
                     // then do an IP lookup
                     dasHost = InetAddress.getByName(dasHost).getHostAddress();
+                    logger.log(Level.FINE, "Loaded the das.properties file from the agent directory and found DAS IP {0}", dasHost);
                 }
                     
-                if (dasHost.isEmpty() || dasHost.equals("localhost")) {
-                        Enumeration e = NetworkInterface.getNetworkInterfaces();
-                        while (e.hasMoreElements()) {
-                            NetworkInterface ni = (NetworkInterface) e.nextElement();
-                            if (!ni.isLoopback()) {
-                                for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
-                                    nodes.add(new SimpleDiscoveryNode(new Address(ia.getAddress(), Integer.valueOf(hzConfig.getDasPort()))));
-                                }
-                            }
-                        }
+                if (dasHost.isEmpty() || dasHost.equals("127.0.0.1") || dasHost.equals("localhost")) {
+                    logger.fine("Looks like the DAS IP is loopback or empty let's find the actual IP of this machine as that is where the DAS is");
+                    addLocalNodes(nodes, Integer.valueOf(hzConfig.getDasPort()));
                 } else {
+                    logger.log(Level.FINE, "DAS should be listening on {0}", dasHost);
                     nodes.add(new SimpleDiscoveryNode(new Address(dasHost, Integer.valueOf(hzConfig.getDasPort()))));
                 }
 
-                // also add all nodes we are aware of
+                // also add all nodes we are aware of in the domain to see if we can get in using start port
+                logger.fine("Also adding all known domain nodes and start ports in case the DAS is down");
                 for (Node node : domain.getNodes().getNode()) {
-                    nodes.add(new SimpleDiscoveryNode(new Address(node.getNodeHost(), Integer.valueOf(hzConfig.getStartPort()))));
+                    InetAddress address = InetAddress.getByName(node.getNodeHost());
+                    if (!address.isLoopbackAddress()) {
+                        logger.log(Level.FINE, "Adding Node {0}", address);
+                        nodes.add(new SimpleDiscoveryNode(new Address(address.getHostAddress(), Integer.valueOf(hzConfig.getStartPort()))));
+                    }
                 }
             } catch (IOException ex) {
                 Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
@@ -128,21 +136,45 @@ public class DomainDiscoveryService implements DiscoveryService {
             
         } else if (env.isMicro()) {
             try {
-                nodes.add(new SimpleDiscoveryNode(new Address(hzConfig.getDASPublicAddress(), Integer.valueOf(hzConfig.getDasPort()))));
+                logger.log(Level.FINE, "We are Payara Micro therefore adding DAS {0}", hzConfig.getDASPublicAddress());
+                nodes.add(new SimpleDiscoveryNode(new Address(InetAddress.getByName(hzConfig.getDASPublicAddress()), Integer.valueOf(hzConfig.getDasPort()))));
             } catch (UnknownHostException ex) {
                 Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             // ok this is the DAS
+            logger.fine("We are the DAS therefore we will add all known nodes with start port as IP addresses to connect to");
             for (Node node : domain.getNodes().getNode()) {
                 try {
-                    nodes.add(new SimpleDiscoveryNode(new Address(node.getNodeHost(),Integer.valueOf(hzConfig.getStartPort()))));
-                } catch (UnknownHostException ex) {
+                    InetAddress address = InetAddress.getByName(node.getNodeHost());
+                    if (!address.isLoopbackAddress()) {
+                        logger.log(Level.FINE, "Adding Node {0}", address);
+                        nodes.add(new SimpleDiscoveryNode(new Address(address.getHostAddress(), Integer.valueOf(hzConfig.getStartPort()))));
+                    } else {
+                        // we need to add our IP address so add each interface address with the start port
+                        addLocalNodes(nodes, Integer.valueOf(hzConfig.getStartPort()));
+                    }
+                } catch (IOException ex) {
                     Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
         return nodes;
+    }
+
+    private void addLocalNodes(List<DiscoveryNode> nodes, int port) throws SocketException, NumberFormatException {
+        Enumeration e = NetworkInterface.getNetworkInterfaces();
+        while (e.hasMoreElements()) {
+            NetworkInterface ni = (NetworkInterface) e.nextElement();
+            if (!ni.isLoopback()) {
+                for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
+                    if (ia.getAddress() instanceof Inet4Address && !ia.getAddress().isLoopbackAddress()) {
+                        logger.log(Level.FINE, "Adding network interface {0}", ia.getAddress());
+                        nodes.add(new SimpleDiscoveryNode(new Address(ia.getAddress(), port)));
+                    }
+                }
+            }
+        }
     }
 
     @Override

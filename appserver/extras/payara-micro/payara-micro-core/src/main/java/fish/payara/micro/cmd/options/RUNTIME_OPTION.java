@@ -57,6 +57,7 @@ public enum RUNTIME_OPTION {
     clustername(true),
     clusterpassword(true),
     hostaware(false),
+    nohostaware(false),
     startport(true, new PortValidator()),
     addlibs(true, new SeparatedFilesValidator(true, true, false, true, true)),
     addjars(true, new SeparatedFilesValidator(true, true, false, true, true)),

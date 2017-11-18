@@ -41,6 +41,7 @@ package fish.payara.nucleus.hazelcast.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.hazelcast.HazelcastConfigSpecificConfiguration;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
@@ -48,6 +49,7 @@ import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.beans.PropertyVetoException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +66,9 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
@@ -80,7 +85,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.hazelcast.configuration")
-@ExecuteOn(value = {RuntimeType.DAS})
+@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DOMAIN})
+@ExecuteOn(value = {RuntimeType.ALL})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
@@ -94,16 +100,16 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Inject
     protected HazelcastCore hazelcast;
-    
+
     @Inject
     private Domain domain;
-    
+
     @Inject
     private Target targetUtil;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
-    
+
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
 
@@ -115,91 +121,85 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Param(name = "startPort", optional = true)
     private String startPort;
-    
+
     @Param(name = "dasPublicAddress", optional = true)
     private String dasPublicAddress;
-    
+
     @Param(name = "dasBindAddress", optional = true)
     private String dasBindAddress;
-    
+
     @Param(name = "dasPort", optional = true)
     private String dasPort;
 
     @Param(name = "clusterMode", optional = true)
-    private String clusterMode;   
- 
+    private String clusterMode;
+
     @Param(name = "tcpIpMembers", optional = true)
-    private String tcpipMembers; 
-    
+    private String tcpipMembers;
+
     @Param(name = "interfaces", optional = true)
-    private String interfaces; 
-    
+    private String interfaces;
+
     @Param(name = "multicastGroup", shortName = "g", optional = true)
     private String multiCastGroup;
 
     @Param(name = "multicastPort", optional = true)
     private String multicastPort;
-        
+
     @Param(name = "clusterName", optional = true)
     private String hzClusterName;
 
     @Param(name = "clusterPassword", optional = true)
-    private String hzClusterPassword;    
+    private String hzClusterPassword;
 
     @Param(name = "jndiName", shortName = "j", optional = true)
     private String jndiName;
 
     @Param(name = "cacheManagerJndiName", optional = true)
     private String cacheManagerJndiName;
-    
+
     @Param(name = "cachingProviderJndiName", optional = true)
     private String cachingProviderJndiName;
 
     @Param(name = "executorPoolSize", optional = true)
     private String executorPoolSize;
-    
+
     @Param(name = "executorQueueCapacity", optional = true)
     private String executorQueueCapacity;
-    
+
     @Param(name = "scheduledExecutorPoolSize", optional = true)
     private String scheduledExecutorPoolSize;
-    
+
     @Param(name = "scheduledExecutorQueueCapacity", optional = true)
     private String scheduledExecutorQueueCapacity;
-    
+
     @Param(name = "licenseKey", shortName = "lk", optional = true)
     private String licenseKey;
-    
+
     @Param(name = "lite", optional = true, defaultValue = "false")
     private Boolean lite;
 
     @Param(name = "hostawareParitioning", optional = true, defaultValue = "false")
-    private Boolean hostawarePartitioning;   
-    
+    private Boolean hostawarePartitioning;
+
     @Param(name = "memberName", optional = true)
     private String memberName;
-    
+
     @Param(name = "memberGroup", optional = true)
     private String memberGroup;
-    
+
     @Inject
     ServiceLocator serviceLocator;
 
+    @Inject
+    ServerEnvironment server;
+
     @Override
     public void execute(AdminCommandContext context) {
-        
-                
-        Config config = targetUtil.getConfig(target);
-        if (config == null) {
-            context.getActionReport().setMessage("No such config named: " + target);
-            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        
-        HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
 
         final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
+        Config config = targetUtil.getConfig(target);
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -213,48 +213,6 @@ public class SetHazelcastConfiguration implements AdminCommand {
         HazelcastRuntimeConfiguration hazelcastRuntimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         if (hazelcastRuntimeConfiguration != null) {
             try {
-                
-                ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
-                    @Override
-                    public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
-                        if (jndiName != null) {
-                            hazelcastRuntimeConfigurationProxy.setJNDIName(jndiName);
-                        }
-                        if (enabled != null) {
-                            hazelcastRuntimeConfigurationProxy.setEnabled(enabled.toString());
-                        }
-                        if (lite != null) {
-                            hazelcastRuntimeConfigurationProxy.setLite(lite.toString());
-                        }                        if (cacheManagerJndiName != null) {
-                            hazelcastRuntimeConfigurationProxy.setCacheManagerJNDIName(cacheManagerJndiName);
-                        }
-                        if (cachingProviderJndiName != null) {
-                            hazelcastRuntimeConfigurationProxy.setCachingProviderJNDIName(cachingProviderJndiName);
-                        }
-                        if (executorPoolSize != null) {
-                            hazelcastRuntimeConfigurationProxy.setExecutorPoolSize(executorPoolSize);
-                        }
-                        if (executorQueueCapacity != null) {
-                            hazelcastRuntimeConfigurationProxy.setExecutorQueueCapacity(executorQueueCapacity);
-                        }
-                        if (scheduledExecutorPoolSize != null) {
-                            hazelcastRuntimeConfigurationProxy.setScheduledExecutorPoolSize(scheduledExecutorPoolSize);
-                        }
-                        if (scheduledExecutorQueueCapacity != null) {
-                            hazelcastRuntimeConfigurationProxy.setScheduledExecutorQueueCapacity(scheduledExecutorQueueCapacity);
-                        } 
-                        if (memberName != null) {
-                            hazelcastRuntimeConfigurationProxy.setMemberName(memberName);
-                        }
-                        if (memberGroup != null) {
-                            hazelcastRuntimeConfigurationProxy.setMemberGroup(memberGroup);
-                        }
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return null;
-                    }
-                },nodeConfiguration) ;
-                
-                
                 ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
                     @Override
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
@@ -271,18 +229,18 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         if (configFile != null) {
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
                         }
-                        
+
                         if (hostawarePartitioning != null) {
                             hazelcastRuntimeConfigurationProxy.setHostAwarePartitioning(hostawarePartitioning.toString());
                         }
-                        
+
                         if (hzClusterName != null) {
                             hazelcastRuntimeConfigurationProxy.setClusterGroupName(hzClusterName);
                         }
                         if (hzClusterPassword != null) {
                             hazelcastRuntimeConfigurationProxy.setClusterGroupPassword(hzClusterPassword);
                         }
-                        if (licenseKey != null){
+                        if (licenseKey != null) {
                             hazelcastRuntimeConfigurationProxy.setLicenseKey(licenseKey);
                         }
                         if (dasPublicAddress != null) {
@@ -308,6 +266,54 @@ public class SetHazelcastConfiguration implements AdminCommand {
                     }
 
                 }, hazelcastRuntimeConfiguration);
+                
+                // get the local config to be applied to
+
+                if (config != null) {
+                    HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
+
+                    ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
+                        @Override
+                        public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                            if (jndiName != null) {
+                                hazelcastRuntimeConfigurationProxy.setJNDIName(jndiName);
+                            }
+                            if (enabled != null) {
+                                hazelcastRuntimeConfigurationProxy.setEnabled(enabled.toString());
+                            }
+                            if (lite != null) {
+                                hazelcastRuntimeConfigurationProxy.setLite(lite.toString());
+                            }
+                            if (cacheManagerJndiName != null) {
+                                hazelcastRuntimeConfigurationProxy.setCacheManagerJNDIName(cacheManagerJndiName);
+                            }
+                            if (cachingProviderJndiName != null) {
+                                hazelcastRuntimeConfigurationProxy.setCachingProviderJNDIName(cachingProviderJndiName);
+                            }
+                            if (executorPoolSize != null) {
+                                hazelcastRuntimeConfigurationProxy.setExecutorPoolSize(executorPoolSize);
+                            }
+                            if (executorQueueCapacity != null) {
+                                hazelcastRuntimeConfigurationProxy.setExecutorQueueCapacity(executorQueueCapacity);
+                            }
+                            if (scheduledExecutorPoolSize != null) {
+                                hazelcastRuntimeConfigurationProxy.setScheduledExecutorPoolSize(scheduledExecutorPoolSize);
+                            }
+                            if (scheduledExecutorQueueCapacity != null) {
+                                hazelcastRuntimeConfigurationProxy.setScheduledExecutorQueueCapacity(scheduledExecutorQueueCapacity);
+                            }
+                            if (memberName != null) {
+                                hazelcastRuntimeConfigurationProxy.setMemberName(memberName);
+                            }
+                            if (memberGroup != null) {
+                                hazelcastRuntimeConfigurationProxy.setMemberGroup(memberGroup);
+                            }
+                            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                            return null;
+                        }
+                    }, nodeConfiguration);
+                }
+
             } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Exception during command ", ex);
                 actionReport.setMessage(ex.getCause().getMessage());
@@ -316,7 +322,16 @@ public class SetHazelcastConfiguration implements AdminCommand {
             }
 
             if (dynamic) {
-                enableOnTarget(actionReport, theContext, enabled);
+                // this command runs on all instances so they can update their configuration.
+                if ("domain".equals(target)) {
+                    hazelcast.setEnabled(enabled);
+                } else {
+                    for (Server targetServer : targetUtil.getInstances(target)    ) {
+                        if (server.getInstanceName().equals(targetServer.getName())) {
+                            hazelcast.setEnabled(enabled);  
+                        }
+                    }
+                }
             }
 
         }
@@ -324,18 +339,24 @@ public class SetHazelcastConfiguration implements AdminCommand {
     }
 
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+
+        // for all affected targets restart hazelcast. 
+        // However do in turn to prevent a major data loss
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
         CommandRunner.CommandInvocation inv;
         inv = runner.getCommandInvocation("restart-hazelcast", subReport, context.getSubject());
 
-        ParameterMap params = new ParameterMap();
-        params.add("target", "domain");
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
+        List<Server> serversAffected = targetUtil.getInstances(target);
+        for (Server server : serversAffected) {
+            ParameterMap params = new ParameterMap();
+            params.add("target", server.getName());
+            inv.parameters(params);
+            inv.execute();
+            // swallow the offline warning as it is not a problem
+            if (subReport.hasWarnings()) {
+                subReport.setMessage("");
+            }
         }
     }
 
@@ -345,7 +366,7 @@ public class SetHazelcastConfiguration implements AdminCommand {
             try {
                 int port = Integer.parseInt(startPort);
                 if (port < 0 || port > Short.MAX_VALUE * 2) {
-                    actionReport.failure(logger, "start port must be greater than zero or less than " + Short.MAX_VALUE*2+1);
+                    actionReport.failure(logger, "start port must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
                     return result;
                 }
             } catch (NumberFormatException nfe) {
@@ -358,7 +379,7 @@ public class SetHazelcastConfiguration implements AdminCommand {
             try {
                 int port = Integer.parseInt(multicastPort);
                 if (port < 0 || port > Short.MAX_VALUE * 2) {
-                    actionReport.failure(logger, "multicast port must be greater than zero or less than " + Short.MAX_VALUE*2+1);
+                    actionReport.failure(logger, "multicast port must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
                     return result;
                 }
             } catch (NumberFormatException nfe) {
@@ -375,7 +396,7 @@ public class SetHazelcastConfiguration implements AdminCommand {
                     return result;
                 }
             } catch (UnknownHostException ex) {
-                actionReport.failure(logger, multiCastGroup+" is not a valid multicast address ", ex);
+                actionReport.failure(logger, multiCastGroup + " is not a valid multicast address ", ex);
                 return result;
             }
 

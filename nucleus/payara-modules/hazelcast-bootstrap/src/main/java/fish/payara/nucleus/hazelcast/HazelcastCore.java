@@ -59,6 +59,7 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import com.hazelcast.spi.MemberAddressProvider;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -87,6 +88,9 @@ import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * The core class for using Hazelcast in Payara
@@ -95,7 +99,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "hazelcast-core")
 @RunLevel(StartupRunLevel.VAL)
-public class HazelcastCore implements EventListener {
+public class HazelcastCore implements EventListener, ConfigListener {
 
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
     public final static String INSTANCE_GROUP_ATTRIBUTE = "GLASSFISH_INSTANCE_GROUP";
@@ -132,6 +136,10 @@ public class HazelcastCore implements EventListener {
 
     @Inject @Optional
     private JavaEEContextUtil ctxUtil;
+    
+    // Provides ability to register a configuration listener
+    @Inject
+    Transactions transactions;
 
     /**
      * Returns the version of the object that has been instantiated.
@@ -146,6 +154,8 @@ public class HazelcastCore implements EventListener {
         theCore = this;
         events.register(this);
         enabled = Boolean.valueOf(nodeConfig.getEnabled());
+        transactions.addListenerForType(HazelcastConfigSpecificConfiguration.class, this);
+        transactions.addListenerForType(HazelcastRuntimeConfiguration.class, this);
     }
     
     /**
@@ -501,5 +511,10 @@ public class HazelcastCore implements EventListener {
      */
     public int getPort() {
         return theInstance.getCluster().getLocalMember().getSocketAddress().getPort();
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] pces) {
+        return null;
     }
 }

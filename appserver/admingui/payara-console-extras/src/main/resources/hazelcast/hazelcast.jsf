@@ -28,9 +28,6 @@
 
 <event>
     <!beforeCreate
-
-        createMap(result="#{pageSession.attrsMap}")
-        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
@@ -38,8 +35,9 @@
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="dynamic", value="false");
         setPageSessionAttribute(key="clusterMode", value="#{pageSession.valueMap['clusterMode']}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="domain");
         />
 </event>
 
@@ -77,7 +75,7 @@
             <sun:textField id="dasPort" columns="$int{40}" styleClass="integer" maxLength="30" text="#{pageSession.valueMap['dasPort']}" />
         </sun:property>
         <sun:property id="interfacesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.interfaces}"  helpText="$resource{i18nhc.hazelcast.configuration.interfacesHelp}">
-            <sun:textField id="interfaces" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['interfaces']}" />
+            <sun:textField id="interfaces" columns="$int{40}" maxLength="300" text="#{pageSession.valueMap['interfaces']}" />
         </sun:property>  
     </sun:propertySheetSection>
     <sun:propertySheetSection id="cluster">
@@ -112,7 +110,7 @@
             <sun:textField id="multicastGroup" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['multicastGroup']}" />
         </sun:property>    
         <sun:property id="tcpipMembersProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.tcpipMembers}"  helpText="$resource{i18nhc.hazelcast.configuration.tcpipMembersHelp}">
-            <sun:textField id="tcpipMembers" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['tcpipMembers']}" />
+            <sun:textField id="tcpipMembers" columns="$int{40}" maxLength="300" text="#{pageSession.valueMap['tcpipMembers']}" />
         </sun:property> 
     </sun:propertySheetSection>
 </sun:propertySheet>

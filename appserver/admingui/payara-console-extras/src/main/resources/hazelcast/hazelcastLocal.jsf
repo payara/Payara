@@ -34,11 +34,13 @@
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.target}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.target}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
            setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="dynamic", value="false");
+        setPageSessionAttribute(key="lite", value="#{pageSession.valueMap['lite']}");
         />
 </event>
 
@@ -53,7 +55,8 @@
                     prepareSuccessfulMsg();
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="lite" value="#{pageSession.lite}");
-                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration?target=#{pageSession.target}" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
         </sun:panelGroup>
