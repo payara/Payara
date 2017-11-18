@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -398,4 +399,33 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
         }
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
+
+    //-------------------------------- JDBC 4.2 --------------------------------
+   
+    /**
+     *
+     * Retrieves the maximum number of bytes this database allows for
+     * the logical size for a {@code LOB}.
+     *
+     * @return the maximum number of bytes allowed; a result of zero
+     * means that there is no limit or the limit is not known
+     * @exception SQLException if a database access error occurs
+     */
+    @Override
+    public long getMaxLogicalLobSize() throws SQLException {
+        return databaseMetaData.getMaxLogicalLobSize();
+    }
+
+    /**
+     * Retrieves whether this database supports REF CURSOR.
+     *
+     * @return {@code true} if this database supports REF CURSOR;
+     *         {@code false} otherwise
+     * @exception SQLException if a database access error occurs
+     */
+    @Override
+    public boolean supportsRefCursors() throws SQLException{
+        return databaseMetaData.supportsRefCursors();
+    }
+
 }
