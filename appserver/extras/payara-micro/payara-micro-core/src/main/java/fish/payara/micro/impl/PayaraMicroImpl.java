@@ -129,7 +129,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private GlassFish gf;
     private PayaraMicroRuntimeImpl runtime;
     private boolean noCluster = false;
-    private boolean hostAware = false;
+    private boolean hostAware = true;
     private boolean autoBindHttp = false;
     private boolean autoBindSsl = false;
     private boolean liteMember = false;
@@ -2000,7 +2000,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         sslPort = getIntegerProperty("payaramicro.sslPort", Integer.MIN_VALUE);
         hzMulticastGroup = getProperty("payaramicro.mcAddress");
         hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
-        hostAware = getBooleanProperty("payaramicro.hostAware");
+        hostAware = getBooleanProperty("payaramicro.hostAware","true");
         hzStartPort = getIntegerProperty("payaramicro.startPort", Integer.MIN_VALUE);
         hzClusterName = getProperty("payaramicro.clusterName");
         hzClusterPassword = getProperty("payaramicro.clusterPassword");
@@ -2391,6 +2391,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         return "true".equals(property);
     }
+    
+    private Boolean getBooleanProperty(String value, String defaultValue) {
+        String property;
+        property = System.getProperty(value);
+        if (property == null) {
+            property = System.getenv(value.replace('.', '_'));
+            if (property == null) {
+                property = defaultValue;
+            }
+        }
+        return "true".equals(property);
+    }
+
 
     private Integer getIntegerProperty(String value, Integer defaultValue) {
         String property;
