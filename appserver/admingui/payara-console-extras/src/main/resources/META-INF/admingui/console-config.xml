@@ -56,6 +56,13 @@
         content="pluginTreeNodeHazelcastLocal.jsf"
     />
 
+    <integration-point
+        id="notificationLink"
+        type="org.glassfish.admingui:configuration"
+        priority="60"
+        parentId="propSheetSection"
+        content="hazelcast/hazelcastConfigLink.jsf"
+    />
     
     <integration-point
         id="asadminRecorder"
