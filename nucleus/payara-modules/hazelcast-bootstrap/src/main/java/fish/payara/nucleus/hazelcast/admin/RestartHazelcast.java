@@ -89,7 +89,7 @@ public class RestartHazelcast implements AdminCommand {
     
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
-
+    
     @Inject
     private ServerEnvironment serverEnv;
     
