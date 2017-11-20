@@ -53,9 +53,9 @@ public interface FaultToleranceServiceConfiguration extends ConfigBeanProxy, Con
 
     @Attribute(defaultValue = "", dataType = String.class)
     public String getManagedExecutorService();
-    public void setManagedExecutorService();
+    public void setManagedExecutorService(String managedExecutorServiceName);
     
     @Attribute(defaultValue = "", dataType = String.class)
     public String getManagedScheduledExecutorService();
-    public void setManagedScheduledExecutorService();
+    public void setManagedScheduledExecutorService(String managedScheduledExecutorServiceName);
 }
