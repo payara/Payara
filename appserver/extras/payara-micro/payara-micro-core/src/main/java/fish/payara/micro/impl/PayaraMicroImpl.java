@@ -1387,28 +1387,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }
                 
                 // Sort entries according to deployment type
-                entriesToDeploy.sort(new Comparator<String>() {
-                    // All the file formats - in order of deployment
-                    private final List<String> fileFormats = Arrays.asList(new String[]{".rar", ".jar", ".war", ".ear"});
-                    @Override
-                    public int compare(String s1, String s2) {
-                        String format1 = null;
-                        String format2 = null;
-                        for(String format: fileFormats) {
-                            if (s1.endsWith(format)) {
-                                format1 = format;
-                            }
-                            if (s2.endsWith(format)) {
-                                format2 = format;
-                            }
-                        }
-                        // Get the index of the extension in the list, or 5 if it's not in the list (meaning sort to back)
-                        int index1 = (format1 == null)? 5: fileFormats.indexOf(format1);
-                        int index2 = (format2 == null)? 5: fileFormats.indexOf(format2);
-                        
-                        return index1 - index2;
-                    }
-                });
+                entriesToDeploy.sort(new DeploymentComparator());
 
                 // Deploy entries
                 for (String entry : entriesToDeploy) {
