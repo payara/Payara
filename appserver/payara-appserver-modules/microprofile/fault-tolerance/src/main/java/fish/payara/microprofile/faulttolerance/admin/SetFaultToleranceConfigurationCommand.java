@@ -68,7 +68,7 @@ public class SetFaultToleranceConfigurationCommand implements AdminCommand {
                 }
                 
                 if (managedScheduledExecutorServiceName != null) {
-                    configProxy.setManagedExecutorService(managedScheduledExecutorServiceName);
+                    configProxy.setManagedScheduledExecutorService(managedScheduledExecutorServiceName);
                 }
                 
                 return null;
