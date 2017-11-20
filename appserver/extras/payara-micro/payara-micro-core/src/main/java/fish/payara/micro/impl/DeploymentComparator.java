@@ -1,13 +1,14 @@
 package fish.payara.micro.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 /**
- * Compares deployment file locations by their file extension.
+ * Compares deployment files by their file extension.
  */
-public class DeploymentComparator implements Comparator<String> {
+public class DeploymentComparator implements Comparator<File> {
 
     // All the file extensions - in the order they should be deployed.
     private final List<String> fileExtensions;
@@ -22,28 +23,48 @@ public class DeploymentComparator implements Comparator<String> {
 
     /**
      * Compare two files to see which should be deployed first based on file
-     * extension.
+     * extension. Unknown extensions and null files are sorted to the back in
+     * that order.
      *
-     * @param s1 the first file path to compare
-     * @param s2 the second file path to compare
+     * @param f1 the first file to compare
+     * @param f2 the second file to compare
      * @return a negative integer, zero or a positive integer if the first file
      * should be deployed before, at the same time as, or after the second file.
      */
     @Override
-    public int compare(String s1, String s2) {
-        String format1 = null;
-        String format2 = null;
+    public int compare(File f1, File f2) {
+        String extension1 = null;
+        String extension2 = null;
+
+        // First check for null files, and sort them to the back
+        if (f1 == null) {
+            return 5;
+        }
+        if (f2 == null) {
+            return -5;
+        }
+
+        // Now get the extensions of the files. Unknown extensions will be sorted to the back.
         for (String format : fileExtensions) {
-            if (s1.endsWith(format)) {
-                format1 = format;
+            if (f1.getAbsolutePath().endsWith(format)) {
+                extension1 = format;
             }
-            if (s2.endsWith(format)) {
-                format2 = format;
+            if (f2.getAbsolutePath().endsWith(format)) {
+                extension2 = format;
             }
         }
-        // Get the index of the extension in the list, or 5 if it's not in the list (meaning sort to back)
-        int index1 = (format1 == null) ? 5 : fileExtensions.indexOf(format1);
-        int index2 = (format2 == null) ? 5 : fileExtensions.indexOf(format2);
+
+        // Now sort unknown extensions to the back, but in front of null files.
+        if (extension1 == null) {
+            return 5;
+        }
+        if (extension2 == null) {
+            return -5;
+        }
+
+        // Get the index of the extension in the list.
+        int index1 = fileExtensions.indexOf(extension1);
+        int index2 = fileExtensions.indexOf(extension2);
 
         return index1 - index2;
     }
