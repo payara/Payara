@@ -265,7 +265,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
     private MonitoredAttribute parseToMonitoredAttribute(String input, MonitoredAttribute monitoredAttribute) throws PropertyVetoException {
         // Negative lookbehind - find space characters not preceeded by \
         String[] propertyTokens = input.split("(?<!\\\\) ");
-        String attribute = null;
+        String attributeName = null;
         String objectName = null;
         String description = null;
 
@@ -282,8 +282,8 @@ public class SetMonitoringConfiguration implements AdminCommand {
                 throw new IllegalArgumentException("Too few bean monitoring properties. Required properties are: *'attribute' and *'objectName'.");
             }
             switch (param[0]) {
-                case "attribute":
-                    attribute = (param.length == 2) ? param[1] : null;
+                case "attributeName":
+                    attributeName = (param.length == 2) ? param[1] : null;
                     break;
                 case "objectName":
                     objectName = (param.length == 2) ? param[1] : null;
@@ -298,7 +298,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
                              param[0]));
             }
         }
-        if (attribute == null || attribute.isEmpty()) {
+        if (attributeName == null || attributeName.isEmpty()) {
             throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attributes.invalid",
                             "Invalid attribute: {0}.",
@@ -311,7 +311,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
                              "value"));
         }
 
-        monitoredAttribute.setAttributeName(attribute);
+        monitoredAttribute.setAttributeName(attributeName);
         monitoredAttribute.setObjectName(objectName);
 
         if (description != null) {
