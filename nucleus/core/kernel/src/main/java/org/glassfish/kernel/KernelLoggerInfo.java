@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.kernel;
 
@@ -652,5 +652,10 @@ public class KernelLoggerInfo {
             message = "Grizzly Framework {0} could not start - unable to bind to [{1}]",
             level = "INFO")
     public static final String grizzlyUnableToBind = LOGMSG_PREFIX + "-00097";
+    
+    @LogMessageInfo(
+            message = "Cannot find h2db client jar file, h2 jdbc driver will not be available by default.",
+            level = "INFO")
+    public static final String cantFindH2 = LOGMSG_PREFIX + "-00098";
     
 }
