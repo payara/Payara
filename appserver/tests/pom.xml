@@ -52,7 +52,7 @@
     <groupId>org.glassfish.main.tests</groupId>
     <artifactId>tests</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Tests related modules</name>  
+    <name>GlassFish Tests related modules</name>
     <modules>
         <!-- module>quicklook</module -->
     </modules>

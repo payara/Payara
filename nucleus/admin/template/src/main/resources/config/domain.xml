@@ -71,7 +71,7 @@
   <applications/>
   <resources/>
   <servers>
-    <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%"> 
+    <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%">
       <resource-ref ref="jdbc/__TimerPool" />
       <resource-ref ref="jdbc/__default" />
     </server>
@@ -153,11 +153,9 @@
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-client</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder</jvm-options>
-        <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
         <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
@@ -184,8 +182,8 @@
         <jvm-options>-Dfelix.fileinstall.poll=5000</jvm-options>
         <!-- log level: 1 for error, 2 for warning, 3 for info and 4 for debug. -->
         <jvm-options>-Dfelix.fileinstall.log.level=2</jvm-options>
-        <!-- should new bundles be started or installed only? 
-             true => start, false => only install 
+        <!-- should new bundles be started or installed only?
+             true => start, false => only install
         -->
         <jvm-options>-Dfelix.fileinstall.bundles.new.start=true</jvm-options>
         <!-- should watched bundles be started transiently or persistently -->
@@ -301,10 +299,8 @@
          </security-service>
          <diagnostic-service/>
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
-             <jvm-options>-XX:MaxPermSize=192m</jvm-options>
              <jvm-options>-server</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
-             <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
              <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
              <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
              <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
@@ -313,7 +309,6 @@
              <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
              <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
              <jvm-options>-DANTLR_USE_DIRECT_CLASS_LOADING=true</jvm-options>
-             <jvm-options>-XX:NewRatio=2</jvm-options>
              <jvm-options>-Xmx512m</jvm-options>
              <!-- Configure post startup bundle list here. This is a comma separated list of bundle sybolic names.
                   The remote shell bundle has been disabled for cluster and remote instances. -->

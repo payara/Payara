@@ -55,7 +55,7 @@
     
     <name>flashlight-framework</name>
 
-    <profiles>
+   <!--<profiles>
         <profile>
             <id>aix-jdk</id>
             <activation>
@@ -87,7 +87,7 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+    </profiles>-->
 
     <dependencies>
         <dependency>

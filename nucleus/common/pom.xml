@@ -52,7 +52,7 @@
     <groupId>org.glassfish.main.common</groupId>
     <artifactId>nucleus-common</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Nucleus Common modules</name>  
+    <name>GlassFish Nucleus Common modules</name>
     <modules>
         <module>simple-glassfish-api</module>
     	<module>internal-api</module>

@@ -52,7 +52,7 @@
     <groupId>org.glassfish.main.flashlight</groupId>
     <artifactId>nucleus-flashlight</artifactId>
     <packaging>pom</packaging>
-    <name>Flashlight</name>  
+    <name>Flashlight</name>
     <modules>
         <module>agent</module>
         <module>flashlight-extra-jdk-packages</module>

@@ -89,10 +89,10 @@ holder.
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.resources</groupId>
-            <artifactId>resources-connector</artifactId> 
+            <artifactId>resources-connector</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>

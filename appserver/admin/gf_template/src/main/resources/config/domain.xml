@@ -191,13 +191,11 @@
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-client</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
         <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder</jvm-options>
-        <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
         <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
@@ -238,7 +236,6 @@
         -->
         <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
         <!-- End of OSGi bundle configurations -->
-        <jvm-options>-XX:NewRatio=2</jvm-options>
         <!-- Woodstox property needed to pass StAX TCK -->
         <jvm-options>-Dcom.ctc.wstx.returnNullForDefaultNamespace=true</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
@@ -387,11 +384,9 @@
       <monitoring-service-configuration></monitoring-service-configuration>
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
-             <jvm-options>-XX:MaxPermSize=192m</jvm-options>
              <jvm-options>-server</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
-             <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
              <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
              <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
              <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
@@ -402,7 +397,6 @@
              <jvm-options>-Djdbc.drivers=org.apache.derby.jdbc.ClientDriver</jvm-options>
              <jvm-options>-DANTLR_USE_DIRECT_CLASS_LOADING=true</jvm-options>
              <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
-             <jvm-options>-XX:NewRatio=2</jvm-options>
              <jvm-options>-Xmx512m</jvm-options>
              <!-- Configure post startup bundle list here. This is a comma separated list of bundle sybolic names.
                   The remote shell bundle has been disabled for cluster and remote instances. -->

@@ -56,7 +56,7 @@
     <modules>
         <module>config-api</module>
         <module>server-mgmt</module>
-        <module>util</module>    
+        <module>util</module>
         <module>cli</module>
         <module>launcher</module>
         <module>monitor</module>

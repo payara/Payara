@@ -52,7 +52,7 @@
     <groupId>org.glassfish.main.deployment</groupId>
     <artifactId>nucleus-deployment</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Nucleus Deployment Related Modules</name>  
+    <name>GlassFish Nucleus Deployment Related Modules</name>
     <modules>
         <module>common</module>
         <module>admin</module>

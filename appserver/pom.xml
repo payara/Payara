@@ -49,7 +49,7 @@
         <artifactId>payara-nucleus-parent</artifactId>
         <version>4.1.2.174-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
-    </parent>    
+    </parent>
     <artifactId>payara-parent</artifactId>
     <packaging>pom</packaging>
     <name>Payara Appserver Parent Project</name>
@@ -58,9 +58,9 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-      <tag>payara-server-4.1.2.174-SNAPSHOT</tag>
+      <tag>payara-blue-4.1.2.174-SNAPSHOT</tag>
     </scm>
-  
+
     <properties>
         <jms-api.version>2.0.1</jms-api.version>
         <jsp-api.version>2.3.2-b01</jsp-api.version>
@@ -87,8 +87,8 @@
         <javax.security.enterprise-api.version>1.0</javax.security.enterprise-api.version>
         <javax.security.enterprise.version>1.0</javax.security.enterprise.version>
 
-        <product.name>Payara Server</product.name>
-        <brief_product_name>Payara Server</brief_product_name>
+        <product.name>Payara Server Blue</product.name>
+        <brief_product_name>Payara Server Blue</brief_product_name>
         <abbrev_product_name>Payara</abbrev_product_name>
 
         <admin_client_command_name>asadmin</admin_client_command_name>
@@ -168,7 +168,7 @@
         <json.version>1.0</json.version>
         <ddl.version>RELEASE65</ddl.version>
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
-        
+
         <!-- Microprofile version properties -->
         <microprofile-config.version>1.1</microprofile-config.version>
     </properties>
@@ -651,7 +651,7 @@
             <dependency>
                 <groupId>org.glassfish.metro</groupId>
                 <artifactId>webservices-osgi</artifactId>
-                <version>${webservices.version}</version>
+                 <version>${webservices.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.metro</groupId>
@@ -1145,6 +1145,6 @@
             <modules>
                 <module>javaee-api</module>
             </modules>
-        </profile>   
+        </profile>
     </profiles>
 </project>

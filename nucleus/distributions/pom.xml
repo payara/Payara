@@ -89,7 +89,7 @@
         Forget the other distributions
 	<module>atomic</module>
         <module>nucleus</module>
--->        
+-->
         <module>payara-minimal</module>
     </modules>
 
@@ -163,7 +163,7 @@
                             <directory>${project.build.directory}</directory>
                             <includes>
                                 <include>${stage.dir.name}/domains/**</include>
-                            </includes>                            
+                            </includes>
                         </configuration>
                     </execution>
                 </executions>
@@ -171,4 +171,3 @@
         </plugins>
     </build>
 </project>
-

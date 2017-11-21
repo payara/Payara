@@ -50,21 +50,21 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main</groupId>
     <artifactId>nucleus-resources-l10n</artifactId>
-    
+
     <name>nucleus.resources l10n</name>
     <description>Nucleus Resource Classes l10n</description>
-    
+
     <properties>
         <javadoc.skip>true</javadoc.skip>
         <deploy.skip>true</deploy.skip>
         <build.info.exclude>true</build.info.exclude>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
               <groupId>org.glassfish.hk2</groupId>
-              <artifactId>osgiversion-maven-plugin</artifactId>            
+              <artifactId>osgiversion-maven-plugin</artifactId>
               <executions>
                   <execution>
                       <id>compute-osgi-version</id>
@@ -103,4 +103,3 @@
         </resources>
     </build>
 </project>
-

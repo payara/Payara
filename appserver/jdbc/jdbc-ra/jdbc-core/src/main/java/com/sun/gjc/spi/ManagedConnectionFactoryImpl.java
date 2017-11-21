@@ -1506,6 +1506,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                 if(_logger.isLoggable(Level.FINEST)) {
                     _logger.finest("Scheduling timer task for frequent sql trace caching");
                 }
+                
                 Timer timer = ((com.sun.gjc.spi.ResourceAdapterImpl) ra).getTimer();
                 jdbcStatsProvider.getFreqSqlTraceCache().scheduleTimerTask(timer);
             }

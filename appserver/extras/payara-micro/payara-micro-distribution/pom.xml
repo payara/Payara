@@ -462,8 +462,8 @@
                 </plugins>
             </build>
         </profile>
-        
-        <profile>
+	
+	<profile>
             <id>jdk8</id>
             <activation>
                 <jdk>1.8</jdk>

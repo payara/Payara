@@ -56,4 +56,4 @@ if [ ${AS_JAVA} ]; then
     JAVA=${AS_JAVA}/bin/java
 fi
 
-exec "$JAVA" -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar" com.sun.xml.rpc.tools.wsdeploy.Main "$@"
+exec "$JAVA" -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi-aix.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar" com.sun.xml.rpc.tools.wsdeploy.Main "$@"

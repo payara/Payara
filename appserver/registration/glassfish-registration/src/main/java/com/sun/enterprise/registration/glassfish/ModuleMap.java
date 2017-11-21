@@ -313,7 +313,7 @@ public class ModuleMap {
                 put("org.glassfish.main.webservices.soap-tcp", 254);
                 put("org.glassfish.metro.webservices-api-osgi", 255);
                 put("org.glassfish.metro.webservices-extra-jdk-packages", 256);
-                put("org.glassfish.metro.webservices-osgi", 257);
+                put("org.glassfish.metro.webservices-osgi-aix", 257);
                 put("org.glassfish.web.el-impl", 258);
                 put("org.glassfish.web.jsp-impl", 259);
                 put("org.glassfish.web.jstl-impl", 260);

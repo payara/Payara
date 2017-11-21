@@ -321,7 +321,7 @@
         javax.security.jacc.jar
         javax.transaction-api.jar
         javax.xml.rpc-api.jar
-        webservices-osgi.jar
+        webservices-osgi-aix.jar
         weld-osgi-bundle-glassfish4.jar
         jersey-mvc-jsp.jar
       </param-value>

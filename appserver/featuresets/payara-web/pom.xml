@@ -255,7 +255,6 @@
             <type>zip</type>
         </dependency>
     </dependencies>
-    
     <profiles>
         <profile>
             <id>jdk8</id>

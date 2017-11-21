@@ -64,6 +64,7 @@
     </target>
 
     <target name="build-server" depends="declare-wsimport,build-setup" if="wsjar.available">
+        <echo message="Building Server WAR" />
         <javac
                 srcdir="${basedir}/src"
                 destdir="${build.classes.home}"

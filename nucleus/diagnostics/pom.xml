@@ -51,7 +51,7 @@
     <groupId>org.glassfish.main.diagnostics</groupId>
     <artifactId>nucleus-diagnostics</artifactId>
     <packaging>pom</packaging>
-    <name>Diagnostics</name>  
+    <name>Diagnostics</name>
     <modules>
         <module>diagnostics-api</module>
         <module>context</module>

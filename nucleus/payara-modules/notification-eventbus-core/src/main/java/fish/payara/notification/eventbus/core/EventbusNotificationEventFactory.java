@@ -62,13 +62,13 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
 
     @Inject
     private ServerEnvironment environment;
-    
+
     @Inject
     private ServiceLocator habitat;
-    
+
     @Inject
     HazelcastCore hazelcast;
-    
+
     @PostConstruct
     void postConstruct() {
         registerEventFactory(NotifierType.EVENTBUS, this);
@@ -95,5 +95,4 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
         event.setInstanceName(hazelcast.getUUID());
         return event;
     }
-    
 }

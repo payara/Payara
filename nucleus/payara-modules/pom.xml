@@ -65,7 +65,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <module>notification-cdi-eventbus-core</module>
         <module>jsr107-repackaged</module>
     </modules>
-    
+
     <profiles>
         <profile>
             <id>jdk8</id>

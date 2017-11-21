@@ -52,7 +52,7 @@
     <artifactId>nucleus-security</artifactId>
     <packaging>pom</packaging>
     <name>Nucleus Security Parent</name>
-    <description>Security Infrastructure and Technology Integration Modules</description>  
+    <description>Security Infrastructure and Technology Integration Modules</description>
     <modules>
         <module>core</module>
         <module>ssl-impl</module>

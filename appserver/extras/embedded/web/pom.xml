@@ -93,7 +93,7 @@
                                 <ant dir="." antfile="../build.xml" target="create.distribution">
                                     <property name="bundlename" value="org.glassfish.main.embedded.web" />
                                     <property name="finaljar" value="${project.build.directory}/payara-embedded-web.jar" />
-                                    <property name="install.dir.name" value="${install.dir.name}" />                            
+                                    <property name="install.dir.name" value="${install.dir.name}" />
                                 </ant>
                             </tasks>
                         </configuration>
@@ -297,7 +297,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-       
+
         <dependency>
           <groupId>fish.payara.packager</groupId>
           <artifactId>payara-api-package</artifactId>

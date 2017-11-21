@@ -52,7 +52,7 @@
     <groupId>org.glassfish.main.web</groupId>
     <artifactId>web</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Web container related modules</name>  
+    <name>GlassFish Web container related modules</name>
     <modules>
         <module>web-naming</module>
         <module>web-core</module>

@@ -49,7 +49,7 @@
         <version>4.1.2.174-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    
+
     <groupId>org.glassfish.main</groupId>
     <artifactId>verifier</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -73,7 +73,7 @@
               </manifest>
               <manifestEntries>
                 <!-- Don't add this, as we can't rely on Class-Path manifest because of some strange
-                     issue in static mode in glassfish 
+                     issue in static mode in glassfish
                 <Class-Path>../lib/embedded/glassfish-embedded-static-shell.jar ../lib/javahelp.jar</Class-Path>
                 -->
               </manifestEntries>
@@ -94,7 +94,7 @@
         </developer>
     </developers>
     <dependencies>
-        <!-- All the dependencies have been marked provided so that 
+        <!-- All the dependencies have been marked provided so that
              when some module like deployment depends on verifier, they
              don't automatically see verifier's dependency, nor these
              jars appear in Class-Path manifest.-->

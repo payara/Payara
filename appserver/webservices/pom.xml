@@ -52,7 +52,7 @@
     <groupId>org.glassfish.main.webservices</groupId>
     <artifactId>webservices</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Web Services related modules</name>  
+    <name>GlassFish Web Services related modules</name>
     <modules>
         <module>metro-fragments</module>
         <module>metro-glue</module>
@@ -64,4 +64,3 @@
         <module>jsr109-impl-l10n</module>
     </modules>
 </project>
-

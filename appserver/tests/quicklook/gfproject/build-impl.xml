@@ -443,6 +443,7 @@
             <jvmarg value="-Djava.endorsed.dirs=${glassfish.home}/modules/endorsed" />
             <bootclasspath classpathref="boot.class.path"/>
 <sysproperty key="-Djava.endorsed.dirs" value="${glassfish.home}/modules/endorsed"/>
+<sysproperty key="-Djavax.xml.accessExternalSchema" value="all"/>
 
 
         </testng>
@@ -461,6 +462,7 @@
             <jvmarg value="-Djava.endorsed.dirs=${glassfish.home}/modules/endorsed" />
             <bootclasspath classpathref="boot.class.path"/>
 <sysproperty key="-Djava.endorsed.dirs" value="${glassfish.home}/modules/endorsed"/>
+<sysproperty key="-Djavax.xml.accessExternalSchema" value="all"/>
 
 
         </testng>

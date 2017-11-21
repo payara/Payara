@@ -46,7 +46,6 @@ import java.io.InputStream;
 import com.ibm.security.util.ObjectIdentifier;
 import com.ibm.security.util.DerInputStream;
 import com.ibm.security.util.DerOutputStream;
-
 import com.sun.corba.ee.org.omg.GSSUP.GSSUPMechOID;
 import com.sun.logging.LogDomains;
 import com.sun.corba.ee.org.omg.CSI.GSS_NT_Export_Name_OID;
