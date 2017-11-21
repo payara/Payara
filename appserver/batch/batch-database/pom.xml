@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>4.1.2.174</version>
+        <version>4.1.2.181-SNAPSHOT</version>
     </parent>
 
     <artifactId>batch-databases</artifactId>
