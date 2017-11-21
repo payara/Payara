@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
@@ -87,7 +87,7 @@ public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
                 if(duplicates.contains(defnName)){
                 String localString = localStrings.getLocalString(
                         "enterprise.deployment.annotation.handlers.datasourcedefinitionsduplicates",
-                        "@DataSourceDefinitions cannot have multiple definitions with same name : '{0}'",
+                        "@DataSourceDefinitions cannot have multiple definitions with same name : ''{0}''",
                         defnName);
                     throw new IllegalStateException(localString);
                     /*

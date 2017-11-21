@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.container.common.impl.managedbean;
 
@@ -213,27 +213,16 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         for(BundleDescriptor bundle : app.getBundleDescriptors()) {
-
             if (!bundleEligible(bundle)) {
                 continue;
             }
-
-            boolean validationRequired  = (bundle instanceof EjbBundleDescriptor)
-                    || (bundle instanceof ApplicationClientDescriptor);
 
             boolean isCDIBundle = (jcdiService != null && jcdiService.isJCDIEnabled(bundle));
 
             for(ManagedBeanDescriptor next : bundle.getManagedBeans()) {
 
                 try {
-
-                    // TODO Should move this to regular DOL processing stage
-                    if( validationRequired ) {
-                        next.validate();
-                    }
-
                     Set<String> interceptorClasses = next.getAllInterceptorClasses();
-
 
                     Class targetClass = bundle.getClassLoader().loadClass(next.getBeanClassName());
                     InterceptorInfo interceptorInfo = new InterceptorInfo();

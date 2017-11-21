@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.node;
 
@@ -63,7 +64,7 @@ import java.util.logging.Logger;
  * @version
  */
 public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends AbstractBundleNode<T> {
-    public final static String SPEC_VERSION = "3.1";
+    public final static String SPEC_VERSION = "4.0";
 
     protected T descriptor;
     private Map<String, Vector<String>> servletMappings;
@@ -240,13 +241,13 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
                     String servletName = keys.next();
                     Vector<String> mappings = servletMappings.get(servletName);
                     WebComponentDescriptor servlet= descriptor.getWebComponentByCanonicalName(servletName);
-                    if (servlet!=null) {
-                        for (Iterator<String> mapping = mappings.iterator();mapping.hasNext();) {
-                            servlet.addUrlPattern(mapping.next());
-                        }
-                    } else {
-                        throw new RuntimeException("There is no web component by the name of " + servletName + " here.");                    
-                    } 
+                    if(servlet == null) {
+                        servlet = new WebComponentDescriptorStub(servletName);
+                        descriptor.getWebComponentDescriptors().add(servlet);
+                    }
+                    for (Iterator<String> mapping = mappings.iterator(); mapping.hasNext();) {
+                        servlet.addUrlPattern(mapping.next());
+                    }
                 }
             }
             return allDone;

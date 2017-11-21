@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.api.jdbc.validation;
 
 import com.sun.logging.LogDomains;
@@ -61,13 +63,16 @@ public class DefaultConnectionValidation implements ConnectionValidation {
      * Check for validity of <code>java.sql.Connection</code>
      *
      * @param con       <code>java.sql.Connection</code>to be validated
-     * @throws SQLException if the connection is not valid
+     * @param statementTimeout The time in seconds to wait for the query to complete
+     * @return True if connection is valid
      */
-    public boolean isConnectionValid(Connection con) {
+    @Override
+    public boolean isConnectionValid(Connection con, int statementTimeout) {
         boolean isValid = false;
         Statement stmt = null;
         try {
             stmt = con.createStatement();
+            stmt.setQueryTimeout(statementTimeout);
             isValid = stmt.execute(SQL);
         } catch (SQLException sqle) {
             isValid = false;

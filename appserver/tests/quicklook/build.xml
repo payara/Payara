@@ -338,7 +338,7 @@
         
         <mkdir dir="${test.report}"/>    
         <testng outputdir="${test.report}"
-                classpathref="run.testng.classpath">
+                classpathref="run.testng.classpath" haltOnFailure="true">
             <jvmarg value="-Djava.compiler=NONE"/>
             <jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
             <jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
@@ -357,7 +357,7 @@
         <record name="${basedir}/runtestng.output" action="start"/>
         <mkdir dir="${test.report}"/>    
         <testng outputdir="${test.report}"
-                classpathref="embedded.testng.classpath">
+                classpathref="embedded.testng.classpath" haltOnFailure="true">
             <jvmarg value="-Djava.compiler=NONE"/>
             <sysproperty key="glassfish.home" value="${glassfish.home}"/>
             <sysproperty key="BASEDIR" value="${basedir}"/>
@@ -616,17 +616,17 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="start-domain"/>
-	<arg value="domain2"/>
+	<arg value="test-domain"/>
     </exec>
     <waitfor maxwait="30" maxwaitunit="second" checkevery="500">
-        <http url="http://localhost:5048/"/>
+        <http url="http://localhost:4848/"/>
     </waitfor> 
 </target>
 
 <target name="start-server-felix-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin">
         <arg value="start-domain"/>
-	<arg value="domain2"/>
+	<arg value="test-domain"/>
     </exec>
 </target>
 

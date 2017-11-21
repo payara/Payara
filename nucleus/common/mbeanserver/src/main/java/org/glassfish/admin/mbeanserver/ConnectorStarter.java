@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.mbeanserver;
 
-import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.management.MBeanServer;
@@ -48,8 +49,12 @@ import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXServiceURL;
 import javax.security.auth.Subject;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Set;
+import javax.management.remote.JMXPrincipal;
+import org.glassfish.security.common.Group;
+import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.Role;
 
 /**
 Start and stop JMX connectors, base class.
@@ -73,8 +78,10 @@ abstract class ConnectorStarter {
     }
 
     public String hostname() throws UnknownHostException {
-        if (mHostName.equals("") || mHostName.equals("0.0.0.0")) {
+        if (mHostName.equals("")) {
             return Util.localhost();
+        } else if (mHostName.equals("*")) {
+            return "0.0.0.0";
         } else if (mHostName.contains(":") && !mHostName.startsWith("[")) {
             return "["+mHostName+"]";
         }
@@ -114,7 +121,17 @@ abstract class ConnectorStarter {
                 // todo : lloyd, if this becomes a performance bottleneck, we should cache
                 // on first access.
                 JMXAuthenticator controller = mHabitat.getService(JMXAuthenticator.class);
-                return controller.authenticate(credentials);
+                Subject adminSubject = controller.authenticate(credentials);
+                if (adminSubject != null) {
+                    // extract the principal name and create a JMXPrincipal and add to the subject PAYARA-1251         
+                    Set<PrincipalImpl> principals = adminSubject.getPrincipals(PrincipalImpl.class);
+                    for (PrincipalImpl principal : principals) {
+                        if (!(principal instanceof Group) && !(principal instanceof Role)) {
+                            adminSubject.getPrincipals().add(new JMXPrincipal(principal.getName()));
+                        }
+                    }
+                }
+                return adminSubject;               
             }
         };
     }

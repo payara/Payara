@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.server.logging;
 
@@ -87,7 +87,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service()
 @ContractsProvided({UniformLogFormatter.class, Formatter.class})
 @PerLookup
-public class UniformLogFormatter extends Formatter implements LogEventBroadcaster {
+public class UniformLogFormatter extends AnsiColorFormatter implements LogEventBroadcaster {
     
     private static final String RECORD_NUMBER = "RecordNumber";
     private static final String METHOD_NAME = "MethodName";
@@ -285,11 +285,16 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
             String timestamp = dateFormatter.format(date);
             logEvent.setTimestamp(timestamp);
             recordBuffer.append(timestamp);
+            if (color()) {
+                recordBuffer.append(getColor(record.getLevel()));
+            }
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             logEvent.setLevel(record.getLevel().getName());
-            recordBuffer.append(record.getLevel()).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
-            
+            recordBuffer.append(record.getLevel().getLocalizedName()).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            if (color()) {
+                recordBuffer.append(getReset());
+            }
             String compId = getProductId();
             logEvent.setComponentId(compId);
             recordBuffer.append(compId).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
@@ -297,8 +302,13 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
             String loggerName = record.getLoggerName();
             loggerName = (loggerName == null) ? "" : loggerName;
             logEvent.setLogger(loggerName);
+            if (color()) {
+                recordBuffer.append(getLoggerColor());
+            }
             recordBuffer.append(loggerName).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
-
+            if (color()) {
+                recordBuffer.append(getReset());
+            }
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
                 recordBuffer.append("_ThreadID").append(NV_SEPARATOR);
                 logEvent.setThreadId(record.getThreadID());

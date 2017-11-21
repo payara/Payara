@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,8 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
+
 
 /**
  * FlushTag is a JSP tag that is used with the CacheTag. The FlushTag
@@ -73,17 +74,7 @@ public class FlushTag extends TagSupport {
     /**
      * The logger to use for logging ALL web container related messages.
      */
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "FlushTag: clear [{0}]",
-            level = "FINE")
-    private static final String FLUSH_TAG_CLEAR_KEY = "AS-WEB-GLUE-00028";
-
-    @LogMessageInfo(
-            message = "FlushTag: clear cache",
-            level = "FINE")
-    private static final String FLUSH_TAG_CLEAR_CACHE = "AS-WEB-GLUE-00029";
+    private static final Logger _logger = LogFacade.getLogger();
 
     // ---------------------------------------------------------------------
     // Tag logic
@@ -110,13 +101,13 @@ public class FlushTag extends TagSupport {
             cache.remove(key);
 
             if (_logger.isLoggable(Level.FINE))
-                _logger.log(Level.FINE, FLUSH_TAG_CLEAR_KEY, key);
+                _logger.log(Level.FINE, LogFacade.FLUSH_TAG_CLEAR_KEY, key);
         } else {
             // clear the entire cache
             cache.clear();
 
             if (_logger.isLoggable(Level.FINE))
-                _logger.log(Level.FINE, FLUSH_TAG_CLEAR_CACHE);
+                _logger.log(Level.FINE, LogFacade.FLUSH_TAG_CLEAR_CACHE);
         }
 
         return SKIP_BODY;

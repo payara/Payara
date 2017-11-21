@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 //----------------------------------------------------------------------------
 //
@@ -67,11 +68,9 @@ import java.util.*;
 import org.omg.CORBA.*;
 import org.omg.CosTransactions.*;
 
-import com.sun.jts.trace.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
-import com.sun.jts.utils.LogFormatter;
 
 /**
  * The RegisteredSyncs class provides operations that manage a set of
@@ -93,14 +92,14 @@ import com.sun.jts.utils.LogFormatter;
 //   0.01  SAJH   Initial implementation.
 //----------------------------------------------------------------------------
 
-class RegisteredSyncs {
+class RegisteredSyncs implements Cloneable {
 
-    private Vector registered = new Vector();
+    private final List<Synchronization> registered = new ArrayList<>();
 
 	/*
 		Logger to log transaction messages
 	*/  
-    static Logger _logger = LogDomains.getLogger(RegisteredSyncs.class, LogDomains.TRANSACTION_LOGGER);
+    static final Logger _logger = LogDomains.getLogger(RegisteredSyncs.class, LogDomains.TRANSACTION_LOGGER);
 
     /**
      * Default RegisteredSyncs constructor.
@@ -112,6 +111,15 @@ class RegisteredSyncs {
      * @see
      */
     RegisteredSyncs() {}
+
+    private RegisteredSyncs(List<Synchronization> rhs) {
+        registered.addAll(rhs);
+    }
+    
+    @Override
+    protected RegisteredSyncs clone() throws CloneNotSupportedException {
+        return new RegisteredSyncs(registered);
+    }
 
     /**
      * Distributes before completion operations to all registered
@@ -130,7 +138,7 @@ class RegisteredSyncs {
         boolean result = true;
 
         for (int i = 0; i < registered.size() && result == true; i++) {
-            Synchronization sync = (Synchronization) registered.elementAt(i);
+            Synchronization sync = registered.get(i);
             try {
 		 		if(_logger.isLoggable(Level.FINEST))
                 {
@@ -172,7 +180,7 @@ class RegisteredSyncs {
 
         for (int i = 0; i < registered.size(); i++) {
             boolean isProxy = false;
-            Synchronization sync = (Synchronization) registered.elementAt(i);
+            Synchronization sync = registered.get(i);
 
             // COMMENT(Ram J) the instanceof operation should be replaced
             // by a is_local() call, once the local object contract is
@@ -233,7 +241,7 @@ class RegisteredSyncs {
      * @see
      */
     void addSync(Synchronization obj) {
-        registered.addElement(obj);
+        registered.add(obj);
     }
 
     /**
@@ -246,7 +254,7 @@ class RegisteredSyncs {
      * @see
      */
     void empty() {
-        registered.removeAllElements();
+        registered.clear();
     }
 
     /**
@@ -261,8 +269,6 @@ class RegisteredSyncs {
      * @see
      */
     boolean involved() {
-
-        boolean result = (registered.size() != 0);
-        return result;
+        return !registered.isEmpty();
     }
 }

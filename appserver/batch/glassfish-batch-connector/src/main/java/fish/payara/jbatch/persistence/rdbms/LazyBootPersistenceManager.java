@@ -1,20 +1,44 @@
 /*
- * Copyright (c) 2014, 2016 C2B2 Consulting Limited. All rights reserved.
- 
- * The contents of this file are subject to the terms of the Common Development
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
- 
+ *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 package fish.payara.jbatch.persistence.rdbms;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.jobinstance.RuntimeFlowInSplitExecution;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
@@ -54,6 +78,7 @@ import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 public class LazyBootPersistenceManager implements IPersistenceManagerService {
     
     private IPersistenceManagerService lazyProxy;
+    private IBatchConfig ibc;
 
     @Override
     public int jobOperatorGetJobInstanceCount(String string) {
@@ -262,12 +287,16 @@ public class LazyBootPersistenceManager implements IPersistenceManagerService {
 
     @Override
     public void init(IBatchConfig ibc) {
+        this.ibc = ibc;
+        internalInit(ibc);
+ }
+
+    private void internalInit(IBatchConfig ibc1) {
         try {
             // this is the default
-            String dataSourceName = ibc.getDatabaseConfigurationBean().getJndiName();;
+            String dataSourceName = ibc1.getDatabaseConfigurationBean().getJndiName();
             InitialContext ctx = new InitialContext();
             Object object = ctx.lookup(dataSourceName);
-
             //check whether the referenced JNDI entry is a DataSource
             if (object instanceof DataSource) {
                 Connection conn = null;
@@ -277,25 +306,31 @@ public class LazyBootPersistenceManager implements IPersistenceManagerService {
                     String database = conn.getMetaData().getDatabaseProductName();
                     if (database.contains("Derby")) {
                         lazyProxy = new JBatchJDBCPersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
+                    } else if (database.contains("H2")) {
+                        lazyProxy = new H2PersistenceManager();
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("MySQL")) {
                         lazyProxy = new MySqlPersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("Oracle")) {
                         lazyProxy = new OraclePersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("PostgreSQL")) {
                         lazyProxy = new PostgresPersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("DB2")) {
                         lazyProxy = new DB2PersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("Microsoft SQL Server")) {
                         lazyProxy = new SQLServerPersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
+                    } else {
+                        lazyProxy = new NullPersistenceManager(ibc.getDatabaseConfigurationBean().getJndiName(), "{0} Datasource database type is not recognised as supported it's type is " + database);
                     }
-                } catch (SQLException ex) {
+                }catch (SQLException ex) {
                     Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to get connecion to determine database type", ex);
+                    lazyProxy = new NullPersistenceManager(dataSourceName,"{0} is not configured correctly. JBatch could not get a connection to the database");
                 } finally {
                     if (conn != null) {
                         try {
@@ -305,17 +340,17 @@ public class LazyBootPersistenceManager implements IPersistenceManagerService {
                         }
                     }
                 }
-            } else if (object instanceof HazelcastInstance) {
-                //lazyProxy = new HazelcastPersistenceService();
-                //lazyProxy.init(ibc);
+            } else {
+                lazyProxy = new NullPersistenceManager(dataSourceName,"Configured JNDI Name {0} for JBatch Datasource is NOT a datasource");
             }
-        } catch (NamingException ex) {
+        }catch (NamingException ex) {
             Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.WARNING, "Unable to find JBatch configured DataSource", ex);
-        }    }
+            lazyProxy = new NullPersistenceManager(ibc.getDatabaseConfigurationBean().getJndiName());
+        }
+    }
 
     @Override
     public void shutdown() {
         lazyProxy.shutdown();
     }
-    
 }

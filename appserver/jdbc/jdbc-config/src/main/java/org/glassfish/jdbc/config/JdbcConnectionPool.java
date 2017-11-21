@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbc.config;
 
@@ -643,7 +643,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="-1", dataType=Integer.class)
+    @Attribute (defaultValue="-1", dataType=String.class)
     @Min(value=-1)
     String getSlowQueryThresholdInSeconds();
 
@@ -654,7 +654,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setSlowQueryThresholdInSeconds(String value) throws PropertyVetoException;
-
+    
     /**
      * Gets the value of the lazyConnectionEnlistment property.
      *
@@ -934,7 +934,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * @return possible object is
      *         {@link String }
      */
-    @Attribute
+    @Attribute (defaultValue = "fish.payara.jdbc.SilentSqlTraceListener")
     String getSqlTraceListeners();
 
     /**

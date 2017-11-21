@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import java.io.IOException;
@@ -386,6 +387,11 @@ public class SSLConfigurator extends SSLEngineConfigurator {
 
         @Override
         public SSLContext createSSLContext() {
+            return configureSSL();
+        }
+        
+        // Grizzly 2.3.28 introduced a new method on the base class which must be overridden
+        public SSLContext createSSLContext(boolean throwException) {
             return configureSSL();
         }
 

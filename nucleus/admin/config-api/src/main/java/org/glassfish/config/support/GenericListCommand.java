@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -187,7 +187,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             Collections.sort(cols, new Comparator<ColumnInfo>() {
                 @Override
                 public int compare(ColumnInfo o1, ColumnInfo o2) {
-                    return Integer.valueOf(o1.order).compareTo(Integer.valueOf(o2.order));
+                    return Integer.compare(o1.order,o2.order);
                 }
             });
             colfm = headerOpt ? new ColumnFormatter(getColumnHeadings(cols)) : new ColumnFormatter();

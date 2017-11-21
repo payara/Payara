@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2016 Payara Foundation. All rights reserved.
  
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -271,10 +271,10 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 						+ "("
 						+ "jobexecid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
 						+ "jobinstanceid BIGINT,"
-						+ "createtime TIMESTAMP,"
-						+ "starttime TIMESTAMP,"
-						+ "endtime TIMESTAMP,"
-						+ "updatetime TIMESTAMP,"
+						+ "createtime TIMESTAMP NULL,"
+						+ "starttime TIMESTAMP NULL,"
+						+ "endtime TIMESTAMP NULL,"
+						+ "updatetime TIMESTAMP NULL,"
 						+ "parameters BLOB,"
 						+ "batchstatus VARCHAR(512),"
 						+ "exitstatus VARCHAR(512),"
@@ -298,8 +298,8 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 						+ "processskipcount INT,"
 						+ "filtercount INT,"
 						+ "writeskipcount INT,"
-						+ "startTime TIMESTAMP,"
-						+ "endTime TIMESTAMP,"
+						+ "startTime TIMESTAMP NULL,"
+						+ "endTime TIMESTAMP NULL,"
 						+ "persistentData BLOB,"
 						+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
 						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)

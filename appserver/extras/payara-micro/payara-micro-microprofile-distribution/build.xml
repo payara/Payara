@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
+
+<project name="payara-microprofile" default="new.create" basedir=".">
+    <property name="rootdir" value="target"/>
+    <property name="zipdir" value="${rootdir}/packager_zips"/>
+    <property name="stagedir" value="${rootdir}/stage"/>
+    <property name="microdir" value="${stagedir}/MICRO-INF"/>
+    <property name="runtimedir" value="${microdir}/runtime"/>
+    <property name="classesdir" value="${microdir}/classes"/>
+    <property name="deploydir" value="${microdir}/deploy"/>
+    <property name="libdir" value="${microdir}/lib"/>
+    <property name="domaindir" value="${microdir}/domain"/>
+    <property name="tempdir" value="${rootdir}/temp" />
+    
+    <target name="new.create">
+        <antcall target="makeDirs"/>
+        <antcall target="dumpRuntime"/>
+        <antcall target="addSchemas"/>
+        <antcall target="addKeystores"/>
+        <antcall target="tidyRuntimeJars"/>
+        <antcall target="sortOutBootClasses"/>
+        <antcall target="finalClean"/>
+        <antcall target="buildFinalJar"/>
+        <attachArtifact file="${finaljar}"/>
+    </target>
+         
+     <target name="makeDirs">
+         <mkdir dir="${rootdir}/stage/META-INF"/>
+         <mkdir dir="${microdir}"/>
+         <mkdir dir="${domaindir}"/>
+         <mkdir dir="${libdir}"/>
+         <mkdir dir="${runtimedir}"/>
+         <mkdir dir="${classesdir}"/>
+         <mkdir dir="${deploydir}"/>
+     </target>
+     
+     <target name="dumpRuntime">
+         <echo message="Dumping Dependencies into the runtime directory" />
+        <copy todir="${runtimedir}">
+            <fileset dir="${zipdir}">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        <unzip dest="${runtimedir}">
+            <fileset dir="${zipdir}">
+                <include name="*.zip"/>
+                <exclude name="mq**.zip"/>
+            </fileset>
+        </unzip>
+     </target>
+
+     <target name="tidyRuntimeJars">
+         <move todir="${runtimedir}" flatten="true">
+             <fileset dir="${runtimedir}/">
+                 <include name="**/*.jar"/>
+             </fileset>
+         </move>
+	<delete file="${runtimedir}/javahelp.jar"/>
+	<delete file="${runtimedir}/upgrade-tool.jar"/>
+	<delete file="${runtimedir}/web-gui-plugin-common.jar"/>
+	<delete file="${runtimedir}/ha-shoal-cache-store.jar"/>
+	<delete file="${runtimedir}/ha-shoal-cache-bootstrap.jar"/>
+	<delete file="${runtimedir}/ha-file-store.jar"/>
+	<delete file="${runtimedir}/payara-console-extras.jar"/>
+	<delete file="${runtimedir}/shoal-cache.jar"/>
+	<delete file="${runtimedir}/shoal-gms-api.jar"/>
+	<delete file="${runtimedir}/load-balancer-admin.jar"/>
+	<delete file="${runtimedir}/gf-load-balancer-connector.jar"/>
+	<delete file="${runtimedir}/backup.jar"/>
+	<delete file="${runtimedir}/payara-domain.jar"/>
+	<delete file="${runtimedir}/ant.jar" failonerror="false"/>
+	<delete verbose="true" failonerror="false">
+	  <fileset dir="${runtimedir}" includes="console-**-help.jar"/>
+	  <fileset dir="${runtimedir}" includes="**console-plugin.jar"/>
+	  <fileset dir="${runtimedir}" includes="console-**-plugin.jar"/>
+	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
+	  <fileset dir="${runtimedir}" includes="**/appserver-domain*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/payara-domain*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/nucleus-domain*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/weld-se-core.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/derbyLocale*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/jxmpp*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/smack*.jar"/>
+        </delete>
+	<delete file="${runtimedir}/autostart/osgi-cdi.jar" failonerror="false"/>
+     </target>
+     
+     <target name="sortOutBootClasses">
+        <unzip dest="${stagedir}">
+            <fileset dir="${runtimedir}">
+                <include name="*payara-micro-boot*.jar"/>      
+            </fileset>
+        </unzip>
+        <delete>
+            <fileset dir="${runtimedir}">
+                <include name="*payara-micro-boot*.jar"/>      
+            </fileset>
+            <fileset dir="${domaindir}">
+                <include name="microdomain*"/>      
+            </fileset>
+        </delete>
+        <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="Payara Microprofile"/>  
+        <copy todir="${domaindir}" overwrite="true">
+            <fileset dir="${rootdir}/..">
+                <include name="domain.xml"/>
+            </fileset>
+        </copy>  
+     </target>
+     
+    <target name="addSchemas" >
+        <echo message="adding schemas"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/920"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/1.0"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/10.0"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/10.3"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/90"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/910"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/deployment-plan"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/domain"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/jdbc-data-source"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/persistence-configuration"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/security"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/servers"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-application"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-application-client"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-connector"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-diagnostics"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-diagnostics-image"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-ejb-jar"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-interception"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-javaee"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-jms"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-pubsub"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-rdbms-jar"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-sca"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-sca-binding"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-web-app"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-webservices"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-wsee-clienthandlerchain"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-wsee-databinding"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-wsee-standaloneclient"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/webservice-policy-ref"/>        <jar jarfile="${runtimedir}/dtds.jar" basedir="${runtimedir}/glassfish/lib" includes="dtds/**/*"/>
+	<jar jarfile="${runtimedir}/schemas.jar" basedir="${runtimedir}/glassfish/lib" includes="schemas/**/*"/>
+        <delete dir="${runtimedir}/glassfish/lib/dtds" />
+        <delete dir="${runtimedir}/glassfish/lib/schemas" />
+    </target>
+       
+    <target name="addKeystores">
+        <unzip dest="${tempdir}">
+            <fileset dir="${runtimedir}">
+                <include name="payara-domain*.jar"/>      
+            </fileset>
+        </unzip>
+        <copy todir="${domaindir}">
+            <fileset dir="${tempdir}/config">
+                <include name="*.jks"/>
+            </fileset>
+        </copy>       
+    </target>   
+    
+    
+    <target name="finalClean">
+        <delete dir="${runtimedir}/payara41"/>
+        <delete dir="${runtimedir}/glassfish"/>
+        <delete dir="${runtimedir}/lib"/>
+    </target>   
+     
+    <target name="buildFinalJar">
+        <jar basedir="${stagedir}" destfile="${finaljar}" compress="false">
+        <manifest>
+                <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
+                <attribute name="Main-Class" value="fish.payara.micro.PayaraMicro"/>
+                <attribute name="Start-Class" value="fish.payara.micro.impl.PayaraMicroImpl"/>
+        </manifest>
+        </jar>    
+    </target> 
+     
+</project>

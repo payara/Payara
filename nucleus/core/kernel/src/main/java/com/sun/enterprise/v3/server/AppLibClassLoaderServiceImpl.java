@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.v3.server;
@@ -160,6 +162,7 @@ public class AppLibClassLoaderServiceImpl {
             super(urls, parent);
         }
 
+        @Override
         public Class<?> findClass(String name) throws ClassNotFoundException {
             Class<?> c = this.findLoadedClass(name);
             if (c!=null) {
@@ -168,6 +171,7 @@ public class AppLibClassLoaderServiceImpl {
             return super.findClass(name);
         }
 
+        @Override
         public Class<?> findExistingClass(String name) {
             return super.findLoadedClass(name);
         }
@@ -184,15 +188,18 @@ public class AppLibClassLoaderServiceImpl {
             super(parent);
         }
 
+        @Override
         public Class<?> findExistingClass(String name) {
             // no action needed as parent is delegating classloader which will never be a defining classloader
             return null;
         }
 
+        @Override
         public URL findResource(String name) {
             return super.findResource(name);
         }
 
+        @Override
         public Enumeration<URL> findResources(String name) throws IOException {
             return super.findResources(name);
         }

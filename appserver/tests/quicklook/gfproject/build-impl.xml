@@ -352,7 +352,7 @@
     <testng outputdir="${result.output}" verbose="2"
     suitename="${testsuite.name}"
     testname="${testng.test.name}"
-            classpathref="run.testng.classpath">
+            classpathref="run.testng.classpath" haltOnFailure="true">
 	<sysproperty key="glassfish.home" value="${glassfish.home}"/>
 	<sysproperty key="BASEDIR" value="${ws.root}"/>
         <classfileset dir="${test.class.output}" includes="**/${testng.testclient}.class"/>
@@ -369,7 +369,7 @@
     <testng outputdir="${result.output}"
     suitename="${testsuite.name}"
     testname="${testng.test.name}"
-            classpathref="run.testng.classpath">
+            classpathref="run.testng.classpath" haltOnFailure="true">
         <xmlfileset dir="." includes="testng.xml"/>
         <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
         <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
@@ -386,7 +386,7 @@
     <testng outputdir="${result.output}" verbose="2"
     suitename="${testsuite.name}"
     testname="${testng.test.name}"
-            classpathref="embedded.testng.classpath">
+            classpathref="embedded.testng.classpath" haltOnFailure="true">
         <sysproperty key="glassfish.home" value="${glassfish.home}"/>
         <sysproperty key="BASEDIR" value="${ws.root}"/>
         <classfileset dir="${test.class.output}" includes="**/${testng.testclient}.class"/>
@@ -436,7 +436,7 @@
         <testng outputdir="${result.output}" verbose="2"
         suitename="${testsuite.name}"
         testname="${testng.test.name}"
-                classpathref="wsit.classpath" classpath="${build.classes.home}:${basedir}/etc">
+                classpathref="wsit.classpath" classpath="${build.classes.home}:${basedir}/etc" haltOnFailure="true">
             <classfileset dir="${build.classes.home}" includes="**/${testng.testclient}.class"/>
             <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
             <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
@@ -454,7 +454,7 @@
         <testng outputdir="${result.output}"
         suitename="${testsuite.name}"
         testname="${testng.test.name}"
-                classpathref="wsit.classpath" classpath="${build.classes.home}:${basedir}/etc">
+                classpathref="wsit.classpath" classpath="${build.classes.home}:${basedir}/etc" haltOnFailure="true">
             <xmlfileset dir="." includes="testng.xml"/>
             <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
             <jvmarg value="-Dhttp.port=${glassfish.http.port}" />

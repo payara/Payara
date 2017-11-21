@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
@@ -44,6 +45,7 @@ import com.sun.enterprise.deployment.Application;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import org.glassfish.web.deployment.annotation.impl.WarScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
@@ -58,7 +60,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;
@@ -92,12 +94,7 @@ import java.util.logging.Logger;
 @ArchivistFor(WarType.ARCHIVE_TYPE)
 public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
 
-    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Error in parsing default-web.xml",
-            level = "WARNING")
-    private static final String ERROR_PARSING = "AS-WEB-GLUE-00276";
+    private static final Logger logger = LogFacade.getLogger();
 
 
     private static final String DEFAULT_WEB_XML = "default-web.xml";
@@ -126,9 +123,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         java.util.Set webBundles = descriptor.getBundleDescriptors(WebBundleDescriptorImpl.class);
         if (webBundles.size()>0) {
             this.descriptor = (WebBundleDescriptorImpl) webBundles.iterator().next();
-            if (this.descriptor.getModuleDescriptor().isStandalone())
-                return;
-            else
+            if (!this.descriptor.getModuleDescriptor().isStandalone())
                 this.descriptor=null;
         }
     }
@@ -220,7 +215,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                 defaultWebBundleDesc.addWebBundleDescriptor(wddf.read(fis));
             }
         } catch (Exception e) {
-            logger.log(Level.WARNING, ERROR_PARSING);
+            logger.log(Level.WARNING, LogFacade.ERROR_PARSING);
         } finally {
             try {
                 if (fis != null) {
@@ -332,9 +327,15 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         // process annotations in web-fragment
         // extension annotation processing will be done in top level
         if (isProcessAnnotation(descriptor)) {
-            Map<ExtensionsArchivist, RootDeploymentDescriptor> localExtensions =
-                    new HashMap<ExtensionsArchivist, RootDeploymentDescriptor>();
+            Map<ExtensionsArchivist, RootDeploymentDescriptor> localExtensions = new HashMap<>();
             for (WebFragmentDescriptor wfDesc : wfList) {
+                // if web.xml specifies metadata-complete=true,
+                // all web fragment metadata-complete
+                // should be overridden and be true also
+                if (descriptor.isFullAttribute()) {
+                  wfDesc.setFullAttribute(
+                      String.valueOf(descriptor.isFullAttribute()));
+                }
                 super.readAnnotations(archive, wfDesc, localExtensions);
             }
 
@@ -346,17 +347,26 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
             }
         }
 
-        WebFragmentDescriptor mergedWebFragment = null;
+        WebFragmentDescriptor mergedWebFragment = new WebFragmentDescriptor();
+        mergedWebFragment.setExists(false);
         for (WebFragmentDescriptor wf : wfList) {
-            if (mergedWebFragment == null) {
-                mergedWebFragment = wf;
-            } else {
-                mergedWebFragment.addWebBundleDescriptor(wf);
+            // we have the first fragment that's contains the web-fragment.xml file
+            if(!mergedWebFragment.isExists() && wf.isExists()) {
+                mergedWebFragment.setExists(true);
+                mergedWebFragment.setDistributable(wf.isDistributable());
             }
+            mergedWebFragment.addWebBundleDescriptor(wf);
         }
 
-        if (mergedWebFragment != null) {
+        if (!wfList.isEmpty()) {
             descriptor.addWebBundleDescriptor(mergedWebFragment);
+
+            // if there any mapping stubs left, there is something invalid referenced from web.xml
+            for(WebComponentDescriptor desc : descriptor.getWebComponentDescriptors()) {
+                if(desc instanceof WebComponentDescriptorStub) {
+                    throw new RuntimeException(String.format("There is no web component by the name of %s here.", desc.getName()));
+                }
+            }
         }
 
         // apply default from default-web.xml to web.xml
@@ -396,6 +406,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                         }
                     } else {   
                         wfDesc = new WebFragmentDescriptor();
+                        wfDesc.setExists(false);
                     }
                 } finally {
                     if (embeddedArchive != null) {

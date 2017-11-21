@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -58,7 +59,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -72,19 +73,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 @Singleton
 public final class EmbeddedWebContainer extends Embedded implements PostConstruct {
 
-    public static final Logger logger = WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Unable to instantiate ContainerListener of type {0}",
-            level = "SEVERE",
-            cause = "An exception occurred during instantiation of ContainerListener of type {0}",
-            action = "Check the Exception for error")
-    public static final String UNABLE_TO_INSTANTIATE_CONTAINER_LISTENER = "AS-WEB-GLUE-00091";
-
-    @LogMessageInfo(
-            message = "Creating connector for address='{0}' port='{1}' protocol='{2}'",
-            level = "FINE")
-    public static final String CREATE_CONNECTOR = "AS-WEB-GLUE-00092";
+    public static final Logger logger = LogFacade.getLogger();
 
     @Inject
     private ServiceLocator services;
@@ -262,7 +251,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             Class clazz = Class.forName(className);
             return (ContainerListener)clazz.newInstance();
         } catch (Throwable ex){
-            String msg = logger.getResourceBundle().getString(UNABLE_TO_INSTANTIATE_CONTAINER_LISTENER);
+            String msg = logger.getResourceBundle().getString(LogFacade.UNABLE_TO_INSTANTIATE_CONTAINER_LISTENER);
             msg = MessageFormat.format(msg, className);
             logger.log(Level.SEVERE, msg, ex);
         }
@@ -316,7 +305,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             }
         }
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, CREATE_CONNECTOR, new Object[]{(address == null) ? "ALL" : address, port, protocol});
+            logger.log(Level.FINE, LogFacade.CREATE_CONNECTOR, new Object[]{(address == null) ? "ALL" : address, port, protocol});
         }
 
         WebConnector connector = new WebConnector(webContainer);

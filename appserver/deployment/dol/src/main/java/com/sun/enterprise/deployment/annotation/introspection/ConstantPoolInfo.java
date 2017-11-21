@@ -47,6 +47,7 @@
  * the Source Creation and Management node. Right-click the template and choose
  * Open. You can then make changes to the template in the Source Editor.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.deployment.annotation.introspection;
 
@@ -71,6 +72,7 @@ public class ConstantPoolInfo {
     /**
      * Read the input channel and initialize instance data
      * structure.
+     * PAYARA-1010 updated for JDK 7 and 8 https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.4 
      */
     public boolean containsAnnotation(int constantPoolSize, final ByteBuffer buffer) throws IOException { 
             
@@ -103,6 +105,7 @@ public class ConstantPoolInfo {
                     break;
                 case CLASS:
                 case STRING:
+                case METHOD_TYPE:
                     buffer.getShort();
                     break;
                 case FIELDREF:
@@ -119,11 +122,16 @@ public class ConstantPoolInfo {
                     i++;
                     break;
                 case NAMEANDTYPE:
+                case INVOKE_DYNAMIC:
                     buffer.getShort();
                     buffer.getShort();
                     break;
+                case METHOD_HANDLE:
+                    buffer.get();
+                    buffer.getShort();
+                    break;
                 default:
-                    DOLUtils.getDefaultLogger().severe("Unknow type constant pool " + type + " at position" + i);
+                    DOLUtils.getDefaultLogger().severe("Unknown type constant pool " + type + " at position" + i);
                     break;
             }
         }
@@ -142,5 +150,8 @@ public class ConstantPoolInfo {
     public static final int INTERFACEMETHODREF = 11;
     public static final int NAMEANDTYPE = 12;
     public static final int ASCIZ = 1;
-    public static final int UNICODE = 2;    
+    public static final int UNICODE = 2;   
+    public static final int METHOD_HANDLE=15;
+    public static final int METHOD_TYPE=16;
+    public static final int INVOKE_DYNAMIC=18;
 }

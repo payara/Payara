@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+ 
+// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
+ 
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
@@ -111,7 +113,7 @@ public class DeleteLogLevel implements AdminCommand {
         Map<String, String> m = new HashMap<String, String>();
         try {
 
-            String loggerNames[] = properties.split(":");
+            String loggerNames[] = properties.split("(?<!\\\\):");
 
             for (final Object key : loggerNames) {
                 final String logger_name = (String) key;

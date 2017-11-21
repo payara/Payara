@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 
 <project name="glassfish-embedded-all" default="create.distribution" basedir=".">
     <property name="rootdir" value="target"/>
@@ -87,8 +88,7 @@
             </fileset>
         </unzip>
 
-	<mkdir dir="${rootdir}/temp"/>
-
+    	<mkdir dir="${rootdir}/temp"/>
      </target>
 
      <target name="removeJarsNotNeeded">
@@ -100,10 +100,11 @@
 	  <fileset dir="${modulesdir}" includes="console-**-help.jar"/>
 	  <fileset dir="${modulesdir}" includes="console-**-plugin.jar"/>
 	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
-	  <fileset dir="${gfdir}" includes="**/appserver-domain.jar"/>
+	  <fileset dir="${gfdir}" includes="**/appserver-domain*.jar"/>
 	  <fileset dir="${gfdir}" includes="**/nucleus-domain.jar"/>
-          <fileset dir="${gfdir}" includes="**/payara-domain.jar"/>
+          <fileset dir="${gfdir}" includes="**/payara-domain*.jar"/>
 	  <fileset dir="${gfdir}" includes="**/weld-se-core.jar"/>
+	  <fileset dir="${gfdir}" includes="**/weld-environment-common.jar"/>
 	</delete>
 	<delete file="${modulesdir}/autostart/osgi-cdi.jar" failonerror="false"/>
      </target>

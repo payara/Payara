@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,7 +17,7 @@
  */
 package fish.payara.cdi.jsr107;
 
-import fish.payara.cdi.jsr107.impl.PayaraCacheKeyInvocationContext;
+import fish.payara.cdi.jsr107.implementation.PayaraCacheKeyInvocationContext;
 import javax.annotation.Priority;
 import javax.cache.Cache;
 import javax.cache.annotation.CacheKeyGenerator;
@@ -42,6 +42,10 @@ public class CacheResultInterceptor extends AbstractJSR107Interceptor {
     @SuppressWarnings("unchecked")
     public Object cacheResult(InvocationContext ctx) throws Throwable {
         
+        if (!isEnabled()) {
+            return ctx.proceed();
+        }
+        
         // get my annotation
         CacheResult annotation = ctx.getMethod().getAnnotation(CacheResult.class);
         PayaraCacheKeyInvocationContext<CacheResult> pctx = new PayaraCacheKeyInvocationContext<>(ctx, annotation);
@@ -60,7 +64,7 @@ public class CacheResultInterceptor extends AbstractJSR107Interceptor {
                 // check exception cache
                 if (cacheExceptions) {
                     Cache exceptionCache = resolverF.getExceptionCacheResolver(pctx).resolveCache(pctx);
-                    Exception e = (Exception) exceptionCache.get(key);
+                    Throwable e = (Throwable) exceptionCache.get(key);
                     if (e != null) {
                         throw e;
                     }
@@ -74,7 +78,6 @@ public class CacheResultInterceptor extends AbstractJSR107Interceptor {
             result = ctx.proceed();
             cache.put(key, result);
         } catch (Throwable e) {
-            boolean cacheException = false;
             if (cacheExceptions) {
                 Cache exceptionCache = resolverF.getExceptionCacheResolver(pctx).resolveCache(pctx);
                 if (shouldICache(annotation.cachedExceptions(), annotation.nonCachedExceptions(), e, true)) {

@@ -370,7 +370,7 @@
         <jvm-options>-Dosgi.shell.telnet.port=${OSGI_SHELL_TELNET_PORT}</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.maxconn=1</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
-        <jvm-options>-Dgosh.args=--noshutdown -c noop=true</jvm-options>
+        <jvm-options>-Dgosh.args=--nointeractive</jvm-options>
         <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
         <jvm-options>-Dfelix.fileinstall.poll=5000</jvm-options>
         <jvm-options>-Dfelix.fileinstall.log.level=3</jvm-options>
@@ -540,7 +540,7 @@
         <jvm-options>-Dosgi.shell.telnet.port=${OSGI_SHELL_TELNET_PORT}</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.maxconn=1</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
-        <jvm-options>-Dgosh.args=--noshutdown -c noop=true</jvm-options>
+        <jvm-options>-Dgosh.args=--nointeractive</jvm-options>
         <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
         <jvm-options>-Dfelix.fileinstall.poll=5000</jvm-options>
         <jvm-options>-Dfelix.fileinstall.log.level=3</jvm-options>
@@ -707,7 +707,7 @@
         <jvm-options>-Dosgi.shell.telnet.port=${OSGI_SHELL_TELNET_PORT}</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.maxconn=1</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
-        <jvm-options>-Dgosh.args=--noshutdown -c noop=true</jvm-options>
+        <jvm-options>-Dgosh.args=--nointeractive</jvm-options>
         <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
         <jvm-options>-Dfelix.fileinstall.poll=5000</jvm-options>
         <jvm-options>-Dfelix.fileinstall.log.level=3</jvm-options>
@@ -874,7 +874,7 @@
         <jvm-options>-Dosgi.shell.telnet.port=${OSGI_SHELL_TELNET_PORT}</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.maxconn=1</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
-        <jvm-options>-Dgosh.args=--noshutdown -c noop=true</jvm-options>
+        <jvm-options>-Dgosh.args=--nointeractive</jvm-options>
         <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
         <jvm-options>-Dfelix.fileinstall.poll=5000</jvm-options>
         <jvm-options>-Dfelix.fileinstall.log.level=3</jvm-options>
@@ -1041,7 +1041,7 @@
         <jvm-options>-Dosgi.shell.telnet.port=${OSGI_SHELL_TELNET_PORT}</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.maxconn=1</jvm-options>
         <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
-        <jvm-options>-Dgosh.args=--noshutdown -c noop=true</jvm-options>
+        <jvm-options>-Dgosh.args=--nointeractive</jvm-options>
         <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
         <jvm-options>-Dfelix.fileinstall.poll=5000</jvm-options>
         <jvm-options>-Dfelix.fileinstall.log.level=3</jvm-options>

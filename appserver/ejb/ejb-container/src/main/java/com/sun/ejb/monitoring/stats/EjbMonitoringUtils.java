@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.monitoring.stats;
 
 import java.lang.reflect.Method;
@@ -47,10 +47,6 @@ import java.util.logging.Logger;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.external.probe.provider.PluginPoint;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
-import com.sun.enterprise.util.StringUtils;
-
-import org.glassfish.external.statistics.*;
-import org.glassfish.external.statistics.impl.*;
 
 /**
  * Utility class for Ejb monitoring.
@@ -84,6 +80,21 @@ public class EjbMonitoringUtils {
         return beanSubTreeNode;
     }
 
+    static String registerSingleComponent(String nodeItemName, 
+            Object listener) {
+        String beanTreeNode = "ejb/" + nodeItemName;
+        try {
+            StatsProviderManager.register(EJB_MONITORING_NODE, 
+                    PluginPoint.APPLICATIONS, beanTreeNode, listener);
+        } catch (Exception ex) {
+            _logger.log(Level.SEVERE, "[**EjbMonitoringUtils**] Could not "
+                    + "register listener for " + nodeItemName,
+                    ex);
+            return null;
+        }
+        return beanTreeNode;
+    }
+    
     static String registerSubComponent(String appName, String moduleName,
             String beanName, String subNode, Object listener, String invokerId) {
         String subTreeNode = getBeanNode(appName, moduleName, beanName) + NODE + subNode;
@@ -119,8 +130,6 @@ public class EjbMonitoringUtils {
 
         return subTreeNode;
     }
-
-
 
     public static String stringify(Method m) {
         if (_logger.isLoggable(Level.FINE)) {

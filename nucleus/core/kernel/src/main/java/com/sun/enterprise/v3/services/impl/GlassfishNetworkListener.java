@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.services.impl;
 
 import com.sun.appserv.server.util.Version;
@@ -88,6 +90,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     private final GrizzlyService grizzlyService;
     private final NetworkListener networkListener;
     private final Logger logger;
+    private static final  String xFrameOptionsHeader = "X-Frame-Options";
 
     private volatile HttpAdapter httpAdapter;
     
@@ -105,8 +108,6 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
     @Override
     public void start() throws IOException {
-        registerMonitoringStatsProviders();
-        
         super.start();
     }
 
@@ -271,8 +272,11 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             final DelayedExecutor delayedExecutor,
             final int maxRequestHeaders, final int maxResponseHeaders) {
         
-        return new GlassfishHttpCodecFilter(
+        final org.glassfish.grizzly.http.HttpServerFilter httpCodecFilter =
+                new GlassfishHttpCodecFilter(
                 http == null || Boolean.parseBoolean(http.getXpoweredBy()),
+                http == null || Boolean.parseBoolean(http.getServerHeader()),
+                http == null || Boolean.parseBoolean(http.getXframeOptions()),
                 isChunkedEnabled,
                 headerBufferLengthBytes,
                 defaultResponseType,
@@ -280,18 +284,33 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 delayedExecutor,
                 maxRequestHeaders,
                 maxResponseHeaders);
+        
+        if (http != null) { // could be null for HTTP redirect
+            httpCodecFilter.setMaxPayloadRemainderToSkip(
+                    Integer.parseInt(http.getMaxSwallowingInputBytes()));
+            
+            httpCodecFilter.setAllowPayloadForUndefinedHttpMethods(
+                    Boolean.parseBoolean(http.getAllowPayloadForUndefinedHttpMethods()));
+        }
+        
+        return httpCodecFilter;
     }
-
-
 
     protected void registerMonitoringStatsProviders() {
         final String nameLocal = name;
         final GrizzlyMonitoring monitoring = grizzlyService.getMonitoring();
-
-        monitoring.registerThreadPoolStatsProvider(nameLocal);
-        monitoring.registerKeepAliveStatsProvider(nameLocal);
-        monitoring.registerFileCacheStatsProvider(nameLocal);
-        monitoring.registerConnectionQueueStatsProvider(nameLocal);
+        if (monitoring.getThreadPoolStatsProvider(nameLocal) == null) {
+            monitoring.registerThreadPoolStatsProvider(nameLocal);
+        }
+        if (monitoring.getKeepAliveStatsProvider(nameLocal) == null) {
+            monitoring.registerKeepAliveStatsProvider(nameLocal);
+        }
+        if (monitoring.getFileCacheStatsProvider(nameLocal) == null) {
+            monitoring.registerFileCacheStatsProvider(nameLocal);
+        }
+        if (monitoring.getConnectionQueueStatsProvider(nameLocal) == null) {
+            monitoring.registerConnectionQueueStatsProvider(nameLocal);
+        }
     }
 
     protected void unregisterMonitoringStatsProviders() {
@@ -361,9 +380,12 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     private static class GlassfishHttpCodecFilter extends org.glassfish.grizzly.http.HttpServerFilter {
         private final String serverVersion;
         private final String xPoweredBy;
+        private final String xFrameOptions;
         
         public GlassfishHttpCodecFilter(
                 final boolean isXPoweredByEnabled,
+                final boolean isServerInfoEnabled,
+                final boolean isXFrameOptionsEnabled,
                 final boolean chunkingEnabled,
                 final int maxHeadersSize,
                 final String defaultResponseContentType,
@@ -389,8 +411,12 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             */
             String serverInfo = System.getProperty("product.name");
             
-            serverVersion = serverInfo != null ? serverInfo : Version.getVersion();
-            
+            if (isServerInfoEnabled) {
+                serverVersion = serverInfo != null ? serverInfo : Version.getVersion();
+            }else{
+                serverVersion = null;
+            }
+        
             if (isXPoweredByEnabled) {
                 xPoweredBy = "Servlet/3.1 JSP/2.3 "
                         + "(" + ((serverInfo != null && !serverInfo.isEmpty()) ? serverInfo : Version.getVersion())
@@ -399,6 +425,12 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                         + System.getProperty("java.specification.version") + ")";
             } else {
                 xPoweredBy = null;
+            }
+
+            if (isXFrameOptionsEnabled) {
+                xFrameOptions = "SAMEORIGIN";
+            } else {
+                xFrameOptions = null;
             }
         }
         
@@ -417,9 +449,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             if (serverVersion != null && !serverVersion.isEmpty()) {
                 response.addHeader(Header.Server, serverVersion);
             }
-
-
-            
+     
             // Set response "X-Powered-By" header
             if (xPoweredBy != null) {
                 response.addHeader(Header.XPoweredBy, xPoweredBy);
@@ -428,12 +458,17 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             return result;
         }
         
-        // override to chec whether x-Powered By has been added by something else
+        // Override to check whether x-Powered By has been added by something else
         @Override
         protected void onInitialLineEncoded(HttpHeader httpHeader, FilterChainContext ctx) {
-          
+
             if (xPoweredBy == null && httpHeader.containsHeader(Header.XPoweredBy)) {
                 httpHeader.getHeaders().removeHeader(Header.XPoweredBy);
+            }
+
+            // Set response "X-Frame-Options" header
+            if (!httpHeader.containsHeader(xFrameOptionsHeader) && xFrameOptions != null) {
+                httpHeader.addHeader(xFrameOptionsHeader, xFrameOptions);
             }
         }
     }

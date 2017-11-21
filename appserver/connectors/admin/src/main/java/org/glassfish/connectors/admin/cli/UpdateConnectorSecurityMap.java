@@ -212,22 +212,6 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
         final List<String> existingPrincipals = new ArrayList(map.getPrincipal());
         final List<String> existingUserGroups = new ArrayList(map.getUserGroup());
 
-         if (existingPrincipals.isEmpty() && addPrincipals != null) {
-            report.setMessage(localStrings.getLocalString("update.connector.security.map." +
-                    "addPrincipalToExistingUserGroupsWorkSecurityMap",
-                    "Failed to add principals to a security map with user groups."));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        if (existingUserGroups.isEmpty() && addUserGroups != null) {
-            report.setMessage(localStrings.getLocalString("update.connector.security.map." +
-                    "addUserGroupsToExistingPrincipalsWorkSecurityMap",
-                    "Failed to add user groups to a security map with principals."));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
         //check if there is any invalid principal in removePrincipals.
         if (removePrincipals != null) {
             boolean principalExists = true;
@@ -270,7 +254,7 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
 
         //FIX : Bug 4914883.
         //The user should not delete all principals and usergroups in the map.
-        // Atleast one principal or usergroup must exists.
+        // Atleast one principal or usergroup must exist.
 
         if (addPrincipals == null && addUserGroups == null) {
             boolean principalsEmpty = false;
@@ -344,6 +328,12 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
             }
         }
 
+        //ensure that only user-groups or only principals exist in the security map after considering add/remove user-groups/principals option in
+        //the update-connector-security-map command.
+        if (!hasOnlyPrincipalsOrOnlyUserGroups(report, existingPrincipals, existingUserGroups)) {
+            return;
+        }
+
         BackendPrincipal backendPrincipal = map.getBackendPrincipal();
 
         try {
@@ -371,8 +361,12 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
                     if (mappedusername != null && !mappedusername.isEmpty()) {
                         bp.setUserName(mappedusername);
                     }
-                    if (mappedpassword != null && !mappedpassword.isEmpty()) {
-                        bp.setPassword(mappedpassword);
+                    if (mappedpassword != null) {
+                        if(mappedpassword.isEmpty()) {
+                            bp.setPassword(null);
+                        } else {
+                            bp.setPassword(mappedpassword);
+                        }
                     }
 
                     return sm;
@@ -388,4 +382,36 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
             report.setFailureCause(tfe);
         }        
     }   
+
+    /**
+     * A security map can have either a set of principals or a set of
+     * user-groups but not a mix of both. Validation to check whether only
+     * principals are present in the security map or only user-groups are
+     * present in the security map.
+     *
+     * @param report ActionReport
+     * @param existingPrincipals principals
+     * @param existingUserGroups user-groups
+     * @return boolean true - if it is a homogeneous security map, false
+     * otherwise.
+     */
+    private boolean hasOnlyPrincipalsOrOnlyUserGroups(ActionReport report,
+            List<String> existingPrincipals, List<String> existingUserGroups) {
+        if (existingPrincipals.isEmpty() && addPrincipals != null) {
+            report.setMessage(localStrings.getLocalString("update.connector.security.map."
+                    + "addPrincipalToExistingUserGroupsWorkSecurityMap",
+                    "Failed to add principals to a security map with user groups."));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+
+        if (existingUserGroups.isEmpty() && addUserGroups != null) {
+            report.setMessage(localStrings.getLocalString("update.connector.security.map."
+                    + "addUserGroupsToExistingPrincipalsWorkSecurityMap",
+                    "Failed to add user groups to a security map with principals."));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        return true;
+    }
 }

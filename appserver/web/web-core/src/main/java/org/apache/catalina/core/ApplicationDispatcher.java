@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,16 +55,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2016] [Payara Foundation]
 package org.apache.catalina.core;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.InstanceSupport;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -73,11 +73,10 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.text.MessageFormat;
-
 
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_DISPATCH_EVENT;
 
@@ -98,70 +97,8 @@ import static org.apache.catalina.InstanceEvent.EventType.AFTER_DISPATCH_EVENT;
 public final class ApplicationDispatcher
     implements RequestDispatcher {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "Cannot forward after response has been committed",
-        level = "INFO"
-    )
-    public static final String ILLEGAL_STATE_EXCEPTION = "AS-WEB-CORE-00086";
-
-    @LogMessageInfo(
-        message = "Servlet {0} is currently unavailable",
-        level = "WARNING"
-    )
-    public static final String UNAVAILABLE_SERVLET = "AS-WEB-CORE-00087";
-
-    @LogMessageInfo(
-        message = "Allocate exception for servlet {0}",
-        level = "SEVERE",
-        cause = "Could not allocate servlet instance",
-        action = "Verify the configuration of wrapper"
-    )
-    public static final String ALLOCATE_SERVLET_EXCEPTION = "AS-WEB-CORE-00088";
-
-    @LogMessageInfo(
-        message = "Exceeded maximum depth for nested request dispatches: {0}",
-        level = "INFO"
-    )
-    public static final String MAX_DISPATCH_DEPTH_REACHED = "AS-WEB-CORE-00089";
-
-    @LogMessageInfo(
-        message = "Servlet.service() for servlet {0} threw exception",
-        level = "WARNING"
-    )
-    public static final String SERVLET_SERVICE_EXCEPTION = "AS-WEB-CORE-00090";
-
-    @LogMessageInfo(
-        message = "Release filters exception for servlet {0}",
-        level = "SEVERE",
-        cause = "Could not release filter chain",
-        action = "Verify the availability of current filter chain"
-    )
-    public static final String RELEASE_FILTERS_EXCEPTION = "AS-WEB-CORE-00091";
-
-    @LogMessageInfo(
-        message = "Deallocate exception for servlet {0}",
-        level = "SEVERE",
-        cause = "Could not deallocate the allocated servlet instance",
-        action = "Verify the availability of servlet instance"
-    )
-    public static final String DEALLOCATE_SERVLET_EXCEPTION = "AS-WEB-CORE-00092";
-
-    @LogMessageInfo(
-        message = "ApplicationDispatcher[{0}]: {1}",
-        level = "INFO"
-    )
-    public static final String APPLICATION_DISPATCHER_INFO = "AS-WEB-CORE-00093";
-
-    @LogMessageInfo(
-        message = "ApplicationDispatcher[{0}]: {1}",
-        level = "WARNING",
-        cause = "Could not get logger from parent context",
-        action = "Verify if logger is null"
-    )
-    public static final String APPLICATION_DISPATCHER_WARNING = "AS-WEB-CORE-00094";
 
     // This attribute corresponds to a String[] which acts like a stack
     // containing the last two pushed elements
@@ -288,6 +225,8 @@ public final class ApplicationDispatcher
         this.queryString = queryString;
         this.name = name;
 
+        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
+
         if (log.isLoggable(Level.FINE))
             log.log(Level.FINE, "servletPath= " + this.servletPath + ", pathInfo= "
                     + this.pathInfo + ", queryString= " + queryString + ", name= "
@@ -346,6 +285,7 @@ public final class ApplicationDispatcher
      */
     private Wrapper wrapper = null;
 
+    private RequestTracingService requestTracing;
 
     // ------------------------------------------------------------- Properties
 
@@ -375,7 +315,14 @@ public final class ApplicationDispatcher
      */
     public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
-        dispatch(request, response, DispatcherType.FORWARD);
+        // store previous forward
+        Object prevForward = request.getAttribute("fish.payara.servlet.dispatchPath");
+        request.setAttribute("fish.payara.servlet.dispatchPath", this.servletPath);
+        try {
+            dispatch(request, response, DispatcherType.FORWARD);
+        }finally {
+            request.setAttribute("fish.payara.servlet.dispatchPath",prevForward);
+        }
     }
 
     /**
@@ -446,7 +393,7 @@ public final class ApplicationDispatcher
                 if (log.isLoggable(Level.FINE))
                     log.log(Level.FINE, "Forward on committed response --> ISE");
                 throw new IllegalStateException
-                        (rb.getString(ILLEGAL_STATE_EXCEPTION));
+                        (rb.getString(LogFacade.ILLEGAL_STATE_EXCEPTION));
             }
 
             try {
@@ -627,7 +574,6 @@ public final class ApplicationDispatcher
         }
     }
 
-
     private void doInclude(ServletRequest request, ServletResponse response)
         throws ServletException, IOException
     {
@@ -793,7 +739,7 @@ public final class ApplicationDispatcher
 
         // Check for the servlet being marked unavailable
         if (wrapper.isUnavailable()) {
-            String msg = MessageFormat.format(rb.getString(UNAVAILABLE_SERVLET),
+            String msg = MessageFormat.format(rb.getString(LogFacade.UNAVAILABLE_SERVLET),
                                               wrapper.getName());
             log.log(Level.WARNING, msg);
             if (hresponse == null) {
@@ -810,7 +756,7 @@ public final class ApplicationDispatcher
 
         // Allocate a servlet instance to process this request
         String allocateServletMsg =
-                MessageFormat.format(rb.getString(ALLOCATE_SERVLET_EXCEPTION),
+                MessageFormat.format(rb.getString(LogFacade.ALLOCATE_SERVLET_EXCEPTION),
                                      wrapper.getName());
         try {
             if (!unavailable) {
@@ -836,7 +782,7 @@ public final class ApplicationDispatcher
 
         // Call the service() method for the allocated servlet instance
         String servletServiceExceptionMsg =
-                MessageFormat.format(rb.getString(SERVLET_SERVICE_EXCEPTION),
+                MessageFormat.format(rb.getString(LogFacade.SERVLET_SERVICE_EXCEPTION),
                                      wrapper.getName());
         RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
         try {
@@ -858,7 +804,7 @@ public final class ApplicationDispatcher
                 if (reqFacHelper != null) {
                     reqFacHelper.incrementDispatchDepth();
                     if (reqFacHelper.isMaxDispatchDepthReached()) {
-                        String msg = MessageFormat.format(MAX_DISPATCH_DEPTH_REACHED,
+                        String msg = MessageFormat.format(rb.getString(LogFacade.MAX_DISPATCH_DEPTH_REACHED),
                                                           new Object[]{Integer.valueOf(Request.getMaxDispatchDepth())});
                         throw new ServletException(msg);
                     }
@@ -921,7 +867,7 @@ public final class ApplicationDispatcher
             if (filterChain != null)
                 filterChain.release();
         } catch (Throwable e) {
-            String msg = MessageFormat.format(rb.getString(RELEASE_FILTERS_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.RELEASE_FILTERS_EXCEPTION_SEVERE),
                                                            wrapper.getName());
             log.log(Level.SEVERE, msg, e);
             // FIXME Exception handling needs to be simpiler to what is
@@ -930,7 +876,7 @@ public final class ApplicationDispatcher
 
         // Deallocate the allocated servlet instance
         String deallocateServletExceptionMsg =
-                MessageFormat.format(rb.getString(DEALLOCATE_SERVLET_EXCEPTION),
+                MessageFormat.format(rb.getString(LogFacade.ALLOCATE_SERVLET_EXCEPTION),
                                                   wrapper.getName());
         try {
             if (servlet != null) {
@@ -970,7 +916,7 @@ public final class ApplicationDispatcher
                        "]: " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(APPLICATION_DISPATCHER_INFO),
+                String msg = MessageFormat.format(rb.getString(LogFacade.APPLICATION_DISPATCHER_INFO),
                                                   context.getPath(), message);
                 log.log(Level.INFO, msg);
             }
@@ -990,7 +936,7 @@ public final class ApplicationDispatcher
             logger.log("ApplicationDispatcher[" + context.getPath() +
                 "] " + message, t, org.apache.catalina.Logger.WARNING);
         } else {
-            String msg = MessageFormat.format(rb.getString(APPLICATION_DISPATCHER_WARNING),
+            String msg = MessageFormat.format(rb.getString(LogFacade.APPLICATION_DISPATCHER_WARNING),
                                               context.getPath(), message);
             log.log(Level.WARNING, msg, t);
         }

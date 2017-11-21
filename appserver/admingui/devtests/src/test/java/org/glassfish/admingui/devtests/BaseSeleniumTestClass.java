@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+
 package org.glassfish.admingui.devtests;
 
 import com.google.common.base.Function;
@@ -63,7 +65,7 @@ public class BaseSeleniumTestClass {
     public static final String CURRENT_WINDOW = "selenium.browserbot.getCurrentWindow()";
     public static final int TIMEOUT_CALLBACK_LOOP = 1000;
     public static final String TRIGGER_NEW_VALUES_SAVED = "New values successfully saved.";
-    public static final String TRIGGER_COMMON_TASKS = "Other Tasks";
+    public static final String TRIGGER_COMMON_TASKS = "Common Tasks";
     public static final String TRIGGER_REGISTRATION_PAGE = "Receive patch information and bug updates, screencasts and tutorials, support and training offerings, and more";
     public static final String TRIGGER_ERROR_OCCURED = "An error has occurred";
     public static final boolean DEBUG = Boolean.parseBoolean(SeleniumHelper.getParameter("debug", "false"));
@@ -119,7 +121,7 @@ public class BaseSeleniumTestClass {
     @BeforeClass
     public static void setUp() throws Exception {
         if (!DEBUG) {
-            RestUtil.post(helper.getBaseUrl() + "/management/domain/rotate-log", new HashMap<String, Object>());
+            //RestUtil.post(helper.getBaseUrl() + "/management/domain/rotate-log", new HashMap<String, Object>());
         }
     }
 
@@ -646,9 +648,9 @@ public class BaseSeleniumTestClass {
         }
     }
 
-    protected void deleteAllTableRows(String tableId) {
+    protected void deleteAllTableRows(String tableId, int colId) {
         String deleteButtonId = tableId + ":topActionsGroup1:button1";
-        selectAllTableRows(tableId);
+        selectAllTableRows(tableId, colId);
         waitForButtonEnabled(deleteButtonId);
         chooseOkOnNextConfirmation();
         pressButton(deleteButtonId);
@@ -656,11 +658,11 @@ public class BaseSeleniumTestClass {
         this.waitForButtonDisabled(deleteButtonId);
     }
 
-    protected void selectAllTableRows(String tableId) {
+    protected void selectAllTableRows(String tableId, int colId) {
         int count = getTableRowCount(tableId);
         for (int i = 0 ; i < count; i++) {
-            selenium.click(tableId+":rowGroup1:" + i +":col0:select");
-            markCheckbox(tableId+":rowGroup1:" + i +":col0:select");
+            selenium.click(tableId+":rowGroup1:" + i +":col" + colId + ":select");
+            markCheckbox(tableId+":rowGroup1:" + i +":col" + colId + ":select");
         }
     }
 
@@ -1126,7 +1128,7 @@ public class BaseSeleniumTestClass {
                     value = operation();
                     success = true;
                 } catch (Exception e) {
-                    logger.log(Level.FINE, "Exception caught ('{0}'). Sleeping...", e.getMessage());
+                    logger.log(Level.FINE, "Exception caught (''{0}''). Sleeping...", e.getMessage());
                     count++;
                 }
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.web.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -57,11 +57,10 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -109,17 +108,7 @@ public class CreateProtocol implements AdminCommand {
     @Inject
     ServiceLocator services;
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "{0} protocol already exists. Cannot add duplicate protocol.",
-            level = "INFO")
-    private static final String CREATE_PROTOCOL_FAIL_DUPLICATE = "AS-WEB-ADMIN-00017";
-
-    @LogMessageInfo(
-            message = "Failed to create protocol {0}.",
-            level = "INFO")
-    private static final String CREATE_PROTOCOL_FAIL = "AS-WEB-ADMIN-00018";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     /**
      * Executes the command with the command parameters passed as Properties where the keys are the paramter names and
@@ -140,7 +129,7 @@ public class CreateProtocol implements AdminCommand {
         for (Protocol protocol : protocols.getProtocol()) {
             if (protocolName != null &&
                 protocolName.equalsIgnoreCase(protocol.getName())) {
-                report.setMessage(MessageFormat.format(rb.getString(CREATE_PROTOCOL_FAIL_DUPLICATE), protocolName));
+                report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_PROTOCOL_FAIL_DUPLICATE), protocolName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -149,12 +138,12 @@ public class CreateProtocol implements AdminCommand {
         try {
             create(protocols, protocolName, securityEnabled);
         } catch (TransactionFailure e) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_PROTOCOL_FAIL), protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_PROTOCOL_FAIL), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;
         } catch (Exception e) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_PROTOCOL_FAIL), protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_PROTOCOL_FAIL), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

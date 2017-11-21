@@ -1,6 +1,6 @@
 This test is meant to do two things:
 
-1. Verify that the weld-osgi-bundle.jar has been installed and is 
+1. Verify that the weld-osgi-bundle-glassfish4.jar has been installed and is 
    running in a GlassFish instance.
 
 2. Verify the exported packages in the osgi bundle.  It does this 

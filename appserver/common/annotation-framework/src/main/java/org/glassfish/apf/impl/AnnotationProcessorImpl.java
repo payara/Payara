@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.apf.impl;
 
@@ -93,7 +93,9 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     
     public void setDelegate(AnnotationProcessorImpl delegate) {
         this.delegate = delegate;
-    }    
+    }
+    
+    @Override
     public ProcessingContext createContext() {
         ProcessingContext ctx = new ProcessingContextImpl(this);
         ctx.setErrorHandler(new DefaultErrorHandler());
@@ -102,7 +104,11 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     
     /**
      * Log a message on the default logger
+     * @param level
+     * @param locator
+     * @param localizedMessage
      */
+    @Override
     public void log(Level level, AnnotationInfo locator, String localizedMessage){
         if (logger!=null && logger.isLoggable(level)){
             if (locator!=null){
@@ -118,10 +124,12 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     
     /**
      * Starts the annotation processing tool passing the processing context which 
-     * encapuslate all information necessary for the configuration of the tool. 
-     * @param ctx is the initialized processing context
-     * @return the result of the annoations processing
+     * encapsulate all information necessary for the configuration of the tool. 
+     * @param ctx is the initialised processing context
+     * @return the result of the annotations processing
+     * @throws AnnotationProcessorException
      */    
+    @Override
     public ProcessingResult process(ProcessingContext ctx)
         throws AnnotationProcessorException
     {
@@ -149,6 +157,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
      * @throws AnnotationProcessorException if handlers fail to process 
      * an annotation
      */    
+    @Override
     public ProcessingResult process(ProcessingContext ctx, Class[] classes)
         throws AnnotationProcessorException {
         
@@ -402,6 +411,8 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
                     element.getValue());
         }
     }
+    
+    @Override
     public void pushAnnotationHandler(AnnotationHandler handler) {
         
         String type = handler.getAnnotationType().getName();
@@ -427,6 +438,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         currentHandlers.add(handler);
     }
 
+    @Override
     public void popAnnotationHandler(Class<? extends Annotation> type) {
         List<AnnotationHandler> currentHandlers = handlers.get(type.getName());
         if (currentHandlers!=null) {
@@ -434,6 +446,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         }        
     }    
 
+    @Override
     public AnnotationHandler getAnnotationHandler(Class<? extends Annotation> type) {
         List<AnnotationHandler> currentHandlers = handlers.get(type.getName());
         if (currentHandlers!=null && currentHandlers.size()>0) {
@@ -443,9 +456,11 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     }      
     
     /**
+     * @param type
      * @return the last element pushed on the stack which ElementType was
      * the one passed or null if no stack element is of the given type.
      */
+    @Override
     public AnnotatedElement getLastAnnotatedElement(ElementType type) {
         for (int i=annotatedElements.size();i!=0;i--) {
             StackElement e = annotatedElements.get(i - 1);

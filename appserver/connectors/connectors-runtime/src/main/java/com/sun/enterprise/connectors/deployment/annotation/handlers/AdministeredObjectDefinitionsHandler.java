@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
 
@@ -85,7 +87,7 @@ public class AdministeredObjectDefinitionsHandler extends AbstractResourceHandle
                     // where is the local-string file?
                     String localString = localStrings.getLocalString(
                             "enterprise.deployment.annotation.handlers.administeredobjectdefinitionsduplicates",
-                            "@AdministeredObjectDefinitions cannot have multiple definitions with same name : '{0}'",
+                            "@AdministeredObjectDefinitions cannot have multiple definitions with same name : ''{0}''",
                             defnName);
                     throw new IllegalStateException(localString);
                 }else{

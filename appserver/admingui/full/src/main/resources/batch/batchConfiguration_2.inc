@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 #include "/common/shared/alertMsg_1.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nf.batch.configurationTitle}" helpText="$resource{i18nf.batch.configurationTitleHelp}" >
     <!facet pageButtonsTop>

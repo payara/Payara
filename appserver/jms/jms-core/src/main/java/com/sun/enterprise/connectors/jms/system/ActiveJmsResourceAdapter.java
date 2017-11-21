@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -81,6 +81,7 @@ import com.sun.enterprise.config.serverbeans.JmxConnector;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.connectors.inbound.ActiveInboundResourceAdapterImpl;
+import com.sun.enterprise.connectors.jms.JMSLoggerInfo;
 import com.sun.enterprise.connectors.jms.config.JmsAvailability;
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
@@ -107,6 +108,10 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import com.sun.logging.LogDomains;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import java.text.MessageFormat;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -137,6 +142,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Singleton;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.ORBLocator;
+import org.glassfish.api.logging.LogHelper;
 import org.jvnet.hk2.config.types.Property;
 
 //import com.sun.messaging.jmq.util.service.PortMapperClientHandler;
@@ -157,11 +164,9 @@ import org.jvnet.hk2.config.types.Property;
 @Named(ActiveJmsResourceAdapter.JMS_SERVICE)
 public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl implements LazyServiceInitializer, PostConstruct {
 
-    @LoggerInfo(subsystem="JMS", description="Main JMS Logger", publish=true)
-    public static final String JMS_MAIN_LOGGER = "javax.enterprise.resource.jms";
-
-    private static final Logger _logger = Logger.getLogger(JMS_MAIN_LOGGER);
+    private static final Logger _logger = JMSLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
+    
     private final String SETTER = "setProperty";
     private static final String SEPARATOR = "#";
     private static final String MQ_PASS_FILE_PREFIX = "asmq";
@@ -314,30 +319,30 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     @Inject
     private Provider<JMSConfigListener> jmsConfigListenerProvider;
-    
+
     @Inject
     private Provider<ServerEnvironmentImpl> serverEnvironmentImplProvider;
-    
+
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Provider<AdminService> adminServiceProvider;
-    
+
     @Inject
     private Provider<Servers> serversProvider;
-    
+
     private Provider<JmsService> jmsServiceProvider;
-    
+
     @Inject
     private Provider<ServerContext> serverContextProvider;
-    
+
     @Inject
     private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     @Inject
      private ServiceLocator habitat;
-    
+
     @Inject
     private ApplicationRegistry appRegistry;
-    
+
     @Inject
     InvocationManager invManager;
 
@@ -349,6 +354,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         super();
     }
 
+    @Override
     public void postConstruct()
     {
             /*
@@ -382,13 +388,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      *
      * @throws ConnectorRuntimeException in case of an exception.
      */
+    @Override
     protected void loadRAConfiguration() throws ConnectorRuntimeException{
-        
+
         JmsService jmsService = getJmsService();
         if (jmsService != null && jmsService.getType().equals("DISABLED")) {
             throw new ConnectorRuntimeException("JMS Broker is Disabled");
-        }  
-        
+        }
+
         if (connectorRuntime.isServer()) {
             // Check whether MQ has started up or not.
             try {
@@ -418,11 +425,11 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     public void destroy() {
         try {
             JmsService jmsService = getJmsService();
-            
+
             if (jmsService != null && jmsService.getType().equals("DISABLED")) {
                 return;
             }
-            
+
             if (connectorRuntime.isServer() && grizzlyListenerInit && jmsService != null
                     && EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
                 GrizzlyService grizzlyService = null;
@@ -440,9 +447,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                     grizzlyService.removeNetworkProxy(listenerName);
                                     grizzlyListeners.remove(listenerName);
                                 } catch (Exception e) {
-                                    if (_logger.isLoggable(Level.WARNING)) {
-                                        _logger.log(Level.WARNING, "Failed to shut down Grizzly NetworkListener " + listenerName, e);
-                                    }
+                                    LogHelper.log(_logger, Level.WARNING,
+                                            JMSLoggerInfo.SHUTDOWN_FAIL_GRIZZLY, e, listenerName);
                                 }
                             }
                         }
@@ -452,7 +458,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             }
         } catch (Throwable th) {
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.log(Level.WARNING, "Error occurs when shutting down JMSRA: " + th.getMessage());
+                _logger.log(Level.WARNING, JMSLoggerInfo.SHUTDOWN_FAIL_JMSRA,
+                        new Object[]{th.getMessage()});
             }
             throw new RuntimeException(th);
         }
@@ -466,13 +473,15 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     /**
      * Start Grizzly based JMS lazy listener, which is going to initialize
      * JMS container on first request.
-     */  
+     * @param jmsService
+     * @throws com.sun.enterprise.connectors.jms.system.JmsInitialisationException
+     */
     public void initializeLazyListener(JmsService jmsService) throws JmsInitialisationException {
-            
+
             if (jmsService != null && jmsService.getType().equals("DISABLED")) {
                 return;
             }
-        
+
         if (jmsService != null) {
             if (EMBEDDED.equalsIgnoreCase(jmsService.getType()) && !grizzlyListenerInit) {
                 GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
@@ -514,14 +523,15 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         }
     }
 
+    @Override
     protected void startResourceAdapter(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
-        
+
         JmsService jmsService = getJmsService();
 
         if (jmsService != null && jmsService.getType().equals("DISABLED")) {
             return;
         }
-        
+
         try{
         if (this.moduleName_.equals(ConnectorRuntime.DEFAULT_JMS_ADAPTER)) {
             if (connectorRuntime.isServer()) {
@@ -543,7 +553,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                 //set the JMSRA system property to enable XA JOINS
                                 //disabling this due to issue - 8727
                                 //System.setProperty(XA_JOIN_ALLOWED, "true");
-                                
+
                                 // to prevent classloader leaks in new threads clear invocation manager before bootstrapping JMS
                                 resourceadapter_.start(bootStrapContextImpl);
                                 return null;
@@ -566,7 +576,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * URL, apart from the default URL derived from brokerhost:brokerport
      * and reported a PE connection url limitation.
      *
+     * @return 
      */
+    @Override
      protected Set mergeRAConfiguration(ResourceAdapterConfig raConfig, List<Property> raConfigProps) {
    //private void hackMergedProps(Set mergedProps) {
         if (!(connectorRuntime.isServer())) {
@@ -606,6 +618,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     //Overriding ActiveResourceAdapterImpl.setup() as a work around for
     //this condition - connectionDefs_.length != 1
     //Need to remove this once the original problem is fixed
+    @Override
      public void setup() throws ConnectorRuntimeException {
         //TODO NEED TO REMOVE ONCE THE ActiveResourceAdapterImpl.setup() is fixed
         JmsService jmsService = getJmsService();
@@ -613,9 +626,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         if (jmsService != null && jmsService.getType().equals("DISABLED")) {
             return;
         }
-        
-        
-        
+
+
+
         if (connectionDefs_ == null) {
             throw new ConnectorRuntimeException("No Connection Defs defined in the RA.xml");
         }
@@ -827,7 +840,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 same values in all broker instances in the conventional cluster
 
                 */
-    String prefix = null;        
+    String prefix = null;
     if (ClusterMode.CONVENTIONAL_WITH_MASTER_BROKER == clusterMode) {
       prefix = ENHANCED_CLUSTER_DB_PREFIX;
     } else if (ClusterMode.CONVENTIONAL_OF_PEER_BROKERS == clusterMode) {
@@ -864,14 +877,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         String propertyPrefix = fullprefix + "property.";
 
         if(dbJdbcUrl != null) {
-		if ("derby".equals(dbVendor))	
+		if ("derby".equals(dbVendor))
 			dbProps.setProperty(fullprefix + "opendburl", dbJdbcUrl);
 		else
 			dbProps.setProperty(propertyPrefix + "url", dbJdbcUrl);
 	}
 
         for (Object obj : dbprops){
-	    Property prop = (Property) obj;	
+	    Property prop = (Property) obj;
             String key = prop.getName();
             String value = prop.getValue();
             //don't set a prefix if the property name is already prefixed with "imq."
@@ -1154,7 +1167,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
    private Properties listToProperties(List<Property> props){
-	Properties properties = new Properties();   
+	Properties properties = new Properties();
 	if(props != null){
 		for (Property prop : props){
 			String key = prop.getName();
@@ -1213,19 +1226,21 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return converted;
     }
 
+    @Override
     public boolean handles(ConnectorDescriptor cd, String moduleName) {
         return ConnectorsUtil.isJMSRA(moduleName);
     }
 
+    @Override
     public void validateActivationSpec(ActivationSpec spec) {
-       boolean validate =  "true".equals(System.getProperty("validate.jms.ra"));
-                if (validate) {
-                    try {
-                        spec.validate();
-                    } catch (Exception ex) {
-                        _logger.log(Level.SEVERE,  "endpointfactory.as_validate_Failed", ex);
-                    }
-                }
+        boolean validate =  "true".equals(System.getProperty("validate.jms.ra"));
+        if (validate) {
+            try {
+                spec.validate();
+            } catch (Exception ex) {
+                LogHelper.log(_logger, Level.SEVERE, JMSLoggerInfo.ENDPOINT_VALIDATE_FAILED, ex);
+            }
+        }
     }
      /**
      * Computes the instance name for the MQ broker.
@@ -1378,7 +1393,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                      return;
             } else {
                if (! isDBEnabled()){
-		       
+
                 String masterbrkr = getMasterBroker();
                     ConnectorConfigProperty  envProp2 = new ConnectorConfigProperty
                         (MASTERBROKER,masterbrkr , "Master  Broker",
@@ -1424,6 +1439,36 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         if (_logger.isLoggable(Level.FINE))
             logFine("In Appclient container!!!");
         ConnectorDescriptor cd = super.getDescriptor();
+
+        // if the CONNECTION_URL is localhost, in JMSRA,
+        // use the ORB hostname so multi-homed connections work properly
+        ORBLocator orbHelper = habitat.getService(ORBLocator.class);
+        if(orbHelper != null && orbHelper.getORB() != null) {
+            String jmsHost = null;
+            String orbHost = orbHelper.getORBHost(orbHelper.getORB());
+            String jmsPort = "7676";
+            Set<?> props = cd.getConfigProperties();
+            for (Object prop_ : props) {
+                if (prop_ instanceof ConnectorConfigProperty) {
+                    final ConnectorConfigProperty prop = (ConnectorConfigProperty) prop_;
+                    if (prop.getName().equals(CONNECTION_URL)) {
+                        try {
+                            URI url = new URI(prop.getValue());
+                            jmsPort = Integer.toString(url.getPort());
+                            if("localhost".equalsIgnoreCase(url.getHost())) {
+                                jmsHost = orbHost;
+                            }
+                        } catch (URISyntaxException ex) {
+                            _logger.fine(String.format("Invalid Connection URL: %s", prop.getValue()));
+                        }
+                    }
+                }
+            }
+            if(jmsHost != null) {
+                setProperty(cd, new ConnectorConfigProperty(CONNECTION_URL, String.format("mq://%s:%s", orbHost, jmsPort),
+                        "ORB Address List", "java.lang.String"));
+            }
+        }
         ConnectorConfigProperty  envProp1 = new ConnectorConfigProperty  (
                         BROKERTYPE, REMOTE, "Broker Type", "java.lang.String");
                 setProperty(cd, envProp1);
@@ -1586,6 +1631,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         setAddressList();
     }
 
+    /**
+     * Whether JMS should bind to a port
+     * @return false in embedded mode, true otherwise
+     */
     public boolean getDoBind() {
         return doBind;
     }
@@ -1596,29 +1645,30 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         ConnectorDescriptor cd = super.getDescriptor();
         raUtil.setMdbContainerProperties();
 
-        String val = ""+MdbContainerProps.getReconnectEnabled();
-        ConnectorConfigProperty  envProp2 = new ConnectorConfigProperty  (
-            RECONNECTENABLED, val, val, "java.lang.Boolean");
+        String val = "" + MdbContainerProps.getReconnectEnabled();
+        ConnectorConfigProperty envProp2 = new ConnectorConfigProperty(
+                RECONNECTENABLED, val, val, "java.lang.Boolean");
         setProperty(cd, envProp2);
 
-        val = ""+MdbContainerProps.getReconnectDelay();
-        ConnectorConfigProperty  envProp3 = new ConnectorConfigProperty  (
-            RECONNECTINTERVAL, val, val, "java.lang.Integer");
+        val = "" + MdbContainerProps.getReconnectDelay();
+        ConnectorConfigProperty envProp3 = new ConnectorConfigProperty(
+                RECONNECTINTERVAL, val, val, "java.lang.Integer");
         setProperty(cd, envProp3);
 
-        val = ""+MdbContainerProps.getReconnectMaxRetries();
-        ConnectorConfigProperty  envProp4 = new ConnectorConfigProperty  (
-            RECONNECTATTEMPTS, val, val, "java.lang.Integer");
+        val = "" + MdbContainerProps.getReconnectMaxRetries();
+        ConnectorConfigProperty envProp4 = new ConnectorConfigProperty(
+                RECONNECTATTEMPTS, val, val, "java.lang.Integer");
         setProperty(cd, envProp4);
 
         String integrationMode = getJmsService().getType();
         boolean lazyInit = Boolean.valueOf(getJmsHost().getLazyInit());
-        val= "true";
-        if (EMBEDDED.equals(integrationMode) && lazyInit)
-        val = "false";
+        val = "true";
+        if (EMBEDDED.equals(integrationMode) && lazyInit) {
+            val = "false";
+        }
         doBind = Boolean.valueOf(val);
-        ConnectorConfigProperty  envProp5 = new ConnectorConfigProperty  (
-            MQ_PORTMAPPER_BIND, val, val, "java.lang.Boolean");
+        ConnectorConfigProperty envProp5 = new ConnectorConfigProperty(
+                MQ_PORTMAPPER_BIND, val, val, "java.lang.Boolean");
         setProperty(cd, envProp5);
 
 
@@ -1647,7 +1697,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private void setConnectionURL(JmsService jmsService, MQAddressList urlList) {
         ConnectorDescriptor cd = super.getDescriptor();
         String val = urlList.toString();
-        _logger.log(Level.INFO, localStrings.getLocalString("jms.connection.url", "jms.connection.url"), val);
+
+        if(_logger.isLoggable(Level.INFO)) {
+            _logger.log(Level.INFO, JMSLoggerInfo.JMS_CONNECTION_URL,
+                    new Object[]{val});
+        }
+
         ConnectorConfigProperty  envProp1 = new ConnectorConfigProperty  (
            CONNECTION_URL, val, val, "java.lang.String");
         setProperty(cd, envProp1);
@@ -1660,7 +1715,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         urlList = jmsraUtil.getUrlList();
         addressList = urlList.toString();
         //todo: debug info need to remove log statement in production
-        _logger.log(Level.INFO,localStrings.getLocalString("addresslist.setjmsservice.provider", "addresslist.setjmsservice.provider") , addressList);
+
+        if(_logger.isLoggable(Level.INFO)) {
+            _logger.log(Level.INFO, JMSLoggerInfo.ADDRESSLIST_JMSPROVIDER,
+                    new Object[]{addressList});
+        }
+
         ConnectorDescriptor cd = super.getDescriptor();
         setConnectionURL(service, urlList);
 
@@ -1670,7 +1730,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         setProperty(cd, envProp2);
 
         //convert to milliseconds
-        int newval = (new Integer(jmsraUtil.getReconnectInterval())).intValue() * 1000;
+        int newval = Integer.parseInt(jmsraUtil.getReconnectInterval()) * 1000;
         val = "" + newval;
         ConnectorConfigProperty  envProp3 = new ConnectorConfigProperty  (
             RECONNECTINTERVAL, val, val, "java.lang.Integer");
@@ -1722,7 +1782,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             }
         } else {
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.log(Level.WARNING, "invalid.rmi.registy.port");
+                _logger.log(Level.WARNING, JMSLoggerInfo.INVALID_RMI_PORT);
             }
         }
     }
@@ -1770,7 +1830,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 configuredPort = getConfiguredRmiRegistryPort();
             } catch (Exception ex) {
                 if (_logger.isLoggable(Level.WARNING)) {
-                    _logger.log(Level.WARNING, ex.getLocalizedMessage());
+                    _logger.log(Level.WARNING, JMSLoggerInfo.GET_RMIPORT_FAIL, 
+                            new Object[]{ex.getLocalizedMessage()});
                 }
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, "Exception while getting configured rmi " +
@@ -1911,7 +1972,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * solutuion is available from the broker.
      * @param cpr <code>ConnectorConnectionPool</code> object
      * @param loader Class Loader.
+     * @return 
      */
+    @Override
    public ManagedConnectionFactory [] createManagedConnectionFactories
         (com.sun.enterprise.connectors.ConnectorConnectionPool cpr,
          ClassLoader loader) {
@@ -1963,14 +2026,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                             }
                         } catch (NoSuchMethodException ex) {
                             if (_logger.isLoggable(Level.WARNING)) {
-                                _logger.log(Level.WARNING, "no.such.method",
-                                    new Object[] {SETTER, mcf.getClass().getName()});
+                                _logger.log(Level.WARNING, JMSLoggerInfo.NO_SUCH_METHOD,
+                                        new Object[] {SETTER, mcf.getClass().getName()});
                             }
                         } catch (Exception ex) {
-                            if (_logger.isLoggable(Level.SEVERE)) {
-                                _logger.log(Level.SEVERE, "error.execute.method",
-                                new Object[] {SETTER, mcf.getClass().getName()});
-                            }
+                            LogHelper.log(_logger, Level.SEVERE, JMSLoggerInfo.ERROR_EXECUTE_METHOD,
+                                    ex, SETTER, mcf.getClass().getName());
                         }
                     }
                 }
@@ -1978,7 +2039,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                             "java.lang.String");
                 //todo: need to remove log statement
                 if (_logger.isLoggable(Level.INFO)) {
-                    _logger.log(Level.INFO, "addresslist", brokerurl);
+                    _logger.log(Level.INFO, JMSLoggerInfo.ADDRESSLIST,
+                            new Object[]{brokerurl});
                 }
 
                 HashSet addressProp = new HashSet();
@@ -1995,12 +2057,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return (ManagedConnectionFactory [])mcfs.toArray(new ManagedConnectionFactory[mcfs.size()]);
     }
 
+    @Override
      protected ManagedConnectionFactory instantiateMCF(final String mcfClass, final ClassLoader loader)
             throws Exception {
             ManagedConnectionFactory mcf = null;
             if (moduleName_.equals(ConnectorRuntime.DEFAULT_JMS_ADAPTER)) {
                 Object tmp = AccessController.doPrivileged(
                         new PrivilegedExceptionAction() {
+                            @Override
                             public Object run() throws Exception{
                                 return instantiateManagedConnectionFactory(mcfClass, loader);
                             }
@@ -2021,7 +2085,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      *
      * @param cpr <code>ConnectorConnectionPool</code> object
      * @param loader Class Loader.
+     * @return 
      */
+    @Override
     public ManagedConnectionFactory createManagedConnectionFactory
                   (com.sun.enterprise.connectors.ConnectorConnectionPool cpr,
                    ClassLoader loader) {
@@ -2045,16 +2111,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                                         prop.getValueObject()});
                     } catch (NoSuchMethodException ex) {
                         if (_logger.isLoggable(Level.WARNING)) {
-                            _logger.log(Level.WARNING, "no.such.method",
-                            new Object[] {SETTER, mcf.getClass().getName()});
+                            _logger.log(Level.WARNING, JMSLoggerInfo.NO_SUCH_METHOD,
+                                    new Object[] {SETTER, mcf.getClass().getName()});
                         }
                     } catch (Exception ex) {
-                        if (_logger.isLoggable(Level.SEVERE)) {
-                            _logger.log(Level.SEVERE, "error.execute.method",
-                            new Object[] {SETTER, mcf.getClass().getName()});
-                        }
+                        LogHelper.log(_logger, Level.SEVERE, JMSLoggerInfo.ERROR_EXECUTE_METHOD,
+                                ex, SETTER, mcf.getClass().getName());
                     }
-            }
+                }
             }
 
         //CR 6591307- Fix for properties getting overridden when setRA is called. Resetting the  properties if the RA is the JMS RA
@@ -2071,7 +2135,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                           ConnectorConfigProperty  property = (ConnectorConfigProperty ) array[i];
                           if (ActiveJmsResourceAdapter.ADDRESSLIST.equals(property.getName())){
                               if (property.getValue() == null || "".equals(property.getValue()) || "localhost".equals(property.getValue())){
-                                  _logger.log(Level.FINE,"raraddresslist.default.value", property.getValue());
+                                  _logger.log(Level.FINE, "raraddresslist.default.value : " + property.getValue());
                                    configProperties.remove(property);
                               }
                           }
@@ -2084,7 +2148,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
              final String mcfClass = cpr.getConnectorDescriptorInfo().
                 getManagedConnectionFactoryClass();
                 if (_logger.isLoggable(Level.WARNING)) {
-                    _logger.log(Level.WARNING,"rardeployment.mcfcreation_error",
+                    _logger.log(Level.WARNING, JMSLoggerInfo.RARDEPLOYMENT_MCF_ERROR,
                             new Object[]{mcfClass, Ex.getMessage()});
                 }
                 if (_logger.isLoggable(Level.FINE)) {
@@ -2112,7 +2176,11 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      *    defined in the CF that corresponds to the mdb-connection-factory
      *    JNDI name.
      *
+     * @param descriptor_
+     * @param poolDescriptor
+     * @throws com.sun.appserv.connectors.internal.api.ConnectorRuntimeException
      */
+    @Override
     public void updateMDBRuntimeInfo(EjbMessageBeanDescriptor descriptor_,
                                      BeanPoolDescriptor poolDescriptor) throws ConnectorRuntimeException{
 
@@ -2128,7 +2196,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
         if (destinationLookup == null &&  destinationProp == null && (jndiName == null || "".equals(jndiName))) {
             if (_logger.isLoggable(Level.SEVERE)) {
-                _logger.log(Level.SEVERE, "MDB destination not specified.");
+                _logger.log(Level.SEVERE, JMSLoggerInfo.ERROR_IN_DD);
             }
             String msg = sm.getString("ajra.error_in_dd");
             throw new ConnectorRuntimeException(msg);
@@ -2149,13 +2217,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             } else {
                 destName = getPhysicalDestinationFromConfiguration(jndiName, appName, moduleName);
             }
-    
+
             //1.3 jndi-name ==> 1.4 setDestination
             descriptor_.putRuntimeActivationConfigProperty(
                     new EnvironmentProperty(DESTINATION,
                             destName, null));
-    
-    
+
+
             //1.3 (standard) destination-type == 1.4 setDestinationType
             //XXX Do we really need this???
             if (descriptor_.getDestinationType() != null &&
@@ -2164,8 +2232,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                         new EnvironmentProperty(DESTINATION_TYPE,
                                 descriptor_.getDestinationType(), null));
                 if (_logger.isLoggable(Level.INFO)) {
-                    _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                            Object[]{descriptor_.getDestinationType(), jndiName, descriptor_.getName()});
+                    _logger.log(Level.INFO, JMSLoggerInfo.ENDPOINT_DEST_NAME,
+                            new Object[]{descriptor_.getDestinationType(), jndiName, descriptor_.getName()});
                 }
             } else if (isValidDestination(destination) &&
                     ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(destination.getResourceAdapter())) {
@@ -2173,8 +2241,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                         new EnvironmentProperty(DESTINATION_TYPE,
                                 destination.getInterfaceName(), null));
                 if (_logger.isLoggable(Level.INFO)) {
-                    _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                            Object[]{destination.getInterfaceName(), destination.getName(), descriptor_.getName()});
+                    _logger.log(Level.INFO, JMSLoggerInfo.ENDPOINT_DEST_NAME, 
+                            new Object[]{destination.getInterfaceName(), destination.getName(), descriptor_.getName()});
                 }
             } else {
                 /*
@@ -2195,13 +2263,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                 new EnvironmentProperty(DESTINATION_TYPE,
                                         aor.getResType(), null));
                         if (_logger.isLoggable(Level.INFO)) {
-                            _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                                    Object[]{aor.getResType() , aor.getJndiName() , descriptor_.getName()});
+                            _logger.log(Level.INFO, JMSLoggerInfo.ENDPOINT_DEST_NAME,
+                                    new Object[]{aor.getResType(), aor.getJndiName(), descriptor_.getName()});
                         }
                     }
-    
+
                 } catch (Exception e) {
-    
+
                 }
             }
         }
@@ -2590,6 +2658,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     //methods from LazyServiceIntializer
+    @Override
     public boolean initializeService(){
          try {
              String module = ConnectorConstants.DEFAULT_JMS_ADAPTER;
@@ -2605,6 +2674,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
              }
     }
 
+    @Override
     public void handleRequest(SelectableChannel selectableChannel){
         SocketChannel socketChannel = null;
         if (selectableChannel instanceof SocketChannel) {
@@ -2636,12 +2706,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 Method m = c.getMethod("setMasterBroker", String.class);
                 m.invoke(resourceadapter_, newMasterBroker);
                 if (_logger.isLoggable(Level.INFO)) {
-                    _logger.log(Level.INFO, "set.master.broker.success", newMasterBroker);
+                    _logger.log(Level.INFO, JMSLoggerInfo.MASTER_BROKER_SUCCESS,
+                            new Object[]{newMasterBroker});
                 }
             }catch (Exception ex){
                 //throw new RuntimeException ("Error invoking PortMapperClientHandler.handleRequest. Cause - " + ex.getMessage(), ex);
                 if (_logger.isLoggable(Level.INFO)) {
-                    _logger.log(Level.INFO, "set.master.broker.fail", new Object[]{newMasterBroker, ex.getMessage()});
+                    _logger.log(Level.INFO, JMSLoggerInfo.MASTER_BROKER_FAILURE,
+                            new Object[]{newMasterBroker, ex.getMessage()});
                 }
         }
     }
@@ -2651,12 +2723,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             Method m = c.getMethod("setClusterBrokerList", String.class);
             m.invoke(resourceadapter_, brokerList);
             if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, "set.cluster.brokerlist.success", brokerList);
+                _logger.log(Level.INFO, JMSLoggerInfo.CLUSTER_BROKER_SUCCESS, 
+                        new Object[]{brokerList});
             }
         }catch (Exception ex){
             //throw new RuntimeException ("Error invoking PortMapperClientHandler.handleRequest. Cause - " + ex.getMessage(), ex);
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.log(Level.WARNING, "set.cluster.brokerlist.fail", new Object[]{brokerList, ex.getMessage()});
+                _logger.log(Level.WARNING, JMSLoggerInfo.CLUSTER_BROKER_FAILURE,
+                        new Object[]{brokerList, ex.getMessage()});
             }
         }
     }

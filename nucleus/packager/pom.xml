@@ -39,8 +39,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
-
 <!--
   modules used to build glassfish packages
 -->
@@ -48,9 +48,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.1.162-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
+        <version>4.1.2.181-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -109,7 +109,11 @@
         <module>nucleus-management-l10n</module>
         <module>hazelcast-package</module>
         <module>healthcheck-package</module>
-        <module>payara-nucleus</module>
+        <module>phonehome-package</module>
+        <module>requesttracing-package</module>
+        <module>asadmin-recorder-package</module>
+        <module>notification-package</module>
+        <module>payara-api-package</module>
     </modules>
 
     <build>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package org.glassfish.web.admin.monitor.statistics;
 
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -52,6 +51,7 @@ import org.glassfish.external.statistics.RangeStatistic;
 import org.glassfish.admin.monitor.cli.MonitorContract;
 import org.glassfish.flashlight.datatree.TreeNode;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
+import org.glassfish.web.admin.LogFacade;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -59,7 +59,7 @@ import java.util.ResourceBundle;
 @PerLookup
 public class AltServletStatsImpl implements MonitorContract {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
@@ -76,14 +76,14 @@ public class AltServletStatsImpl implements MonitorContract {
 
         if (mrdr == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(rb.getString(HTTPListenerStatsImpl.MRDR_NULL));
+            report.setMessage(rb.getString(LogFacade.MRDR_NULL));
             return report;
         }
 
         TreeNode serverNode = mrdr.get("server");
         if (serverNode == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(rb.getString(HTTPListenerStatsImpl.MRDR_NULL));
+            report.setMessage(rb.getString(LogFacade.MRDR_NULL));
             return report;
         }
 

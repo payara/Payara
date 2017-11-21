@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014,2015] [C2B2 Consulting Limited] 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import java.beans.PropertyChangeEvent;
@@ -614,7 +614,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         final int maxThreads = Integer.parseInt(threadPool.getMaxThreadPoolSize());
         final int timeout = Integer.parseInt(threadPool.getIdleThreadTimeoutSeconds());
         final ThreadPoolConfig poolConfig = ThreadPoolConfig.defaultConfig();
-        poolConfig.setPoolName(networkListener.getName());
+        poolConfig.setPoolName(networkListener.getThreadPool() + "::" + networkListener.getName());
         poolConfig.setCorePoolSize(minThreads);
         poolConfig.setMaxPoolSize(maxThreads);
         poolConfig.setQueueLimit(maxQueueSize);
@@ -689,6 +689,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                getTimeoutSeconds(http), TimeUnit.SECONDS));
         final org.glassfish.grizzly.http.HttpServerFilter httpServerFilter =
             createHttpServerCodecFilter(http);
+        httpServerFilter.setRemoveHandledContentEncodingHeaders(true);
         final Set<ContentEncoding> contentEncodings =
             configureContentEncodings(http);
         for (ContentEncoding contentEncoding : contentEncodings) {
@@ -1102,11 +1103,15 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             new CompressionEncodingFilter(compressionLevel, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
-                GZipContentEncoding.getGzipAliases()));
+                GZipContentEncoding.getGzipAliases(),
+                compressionLevel != CompressionLevel.OFF
+            ));
         final ContentEncoding lzmaEncoding = new LZMAContentEncoding(new CompressionEncodingFilter(compressionLevel, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
-                LZMAContentEncoding.getLzmaAliases()));
+                LZMAContentEncoding.getLzmaAliases(),
+                compressionLevel != CompressionLevel.OFF
+        ));
         final Set<ContentEncoding> set = new HashSet<ContentEncoding>(2);
         set.add(gzipContentEncoding);
         set.add(lzmaEncoding);

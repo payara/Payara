@@ -73,7 +73,7 @@
     </event>
     <sun:form id="propertyForm">
 #include "/cluster/standalone/standaloneInstanceTabs.inc"
-        <sun:title id="propertyContentPage" title="$resource{i18ncs.PropertiesTitle}" >
+        <sun:title id="propertyContentPage" title="$resource{i18ncs.PropertiesTitle}" helpText="$resource{i18nc.microprofile.properties.description}">
 #include "/cluster/shared/instancePropertiesButtons.jsf"
         </sun:title>
 #include "/common/shared/alertMsg_1.inc"

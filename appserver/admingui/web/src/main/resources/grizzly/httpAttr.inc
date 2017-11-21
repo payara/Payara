@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates.] -->
+
 <!-- grizzly/httpAttr.inc -->
 
 
@@ -99,6 +101,11 @@
 
         <sun:property id="MaxPostSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.MaxPostSize}" helpText="$resource{i18n_web.http.MaxPostSizeHelp}" >
             <sun:textField id="headerBLength" styleClass="intAllowMinusOne" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.http.MaxPostSize']}" text="#{pageSession.httpMap['maxPostSizeBytes']}" />
+            <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
+        </sun:property>
+    
+        <sun:property id="MaxFormPostSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.MaxFormPostSize}" helpText="$resource{i18n_web.http.MaxFormPostSizeHelp}" >
+            <sun:textField id="headerBLength" styleClass="intAllowMinusOne" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.http.MaxPostSize']}" text="#{pageSession.httpMap['maxFormPostSizeBytes']}" />
             <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
         </sun:property>
 
@@ -179,6 +186,14 @@
 
         <sun:property id="XpoweredBy"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.XpoweredBy}" helpText="$resource{i18n_web.http.XpoweredByHelp}" >
             <sun:checkbox id="xpoweredByEnabled" selected="#{pageSession.httpMap['xpoweredBy']}" selectedValue="true" />
+        </sun:property>
+    
+        <sun:property id="ServerHeader"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.ServerHeader}" helpText="$resource{i18n_web.http.ServerHeaderHelp}" >
+            <sun:checkbox id="serverHeaderEnabled" selected="#{pageSession.httpMap['serverHeader']}" selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="XframeOptions"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.XframeOptions}" helpText="$resource{i18n_web.http.XframeOptionsHelp}" >
+            <sun:checkbox id="xframeOptionsEnabled" selected="#{pageSession.httpMap['xframeOptions']}" selectedValue="true" />
         </sun:property>
 
         <sun:property id="encodedSlash"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.EncodedSlash}" helpText="$resource{i18n_web.http.EncodedSlashHelp}" >

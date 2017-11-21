@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -61,7 +62,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.lang.annotation.Annotation;
 import javax.xml.stream.events.StartDocument;
 
@@ -97,10 +97,14 @@ public abstract class GenericSniffer implements Sniffer {
      * @param context deployment context
      * @return true if the location is recognized by this sniffer
      */
+    @Override
     public boolean handles(DeploymentContext context) {
         ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {
             return false;
+        }
+        if(archiveType != null) {
+            context.getSource().setExtraData(ArchiveType.class, archiveType);
         }
         return handles(context.getSource());
     }
@@ -115,6 +119,7 @@ public abstract class GenericSniffer implements Sniffer {
      * @param context deployment context
      * @return list of annotations this sniffer is interested in or an empty array
      */
+    @Override
     public String[] getAnnotationNames(DeploymentContext context) {
         List<String> annotationNames = new ArrayList<String>();
         for (Class<? extends Annotation> annotationType : getAnnotationTypes())  {
@@ -130,6 +135,7 @@ public abstract class GenericSniffer implements Sniffer {
      * @param location the file or directory to explore
      * @return true if this sniffer handles this application type
      */
+    @Override
     public boolean handles(ReadableArchive location) {
         if (appStigma != null) {
             try {
@@ -150,6 +156,7 @@ public abstract class GenericSniffer implements Sniffer {
      *
      * @return pattern instance
      */
+    @Override
     public String[] getURLPatterns() {
         if (urlPattern!=null) {
             return new String[] {urlPattern};
@@ -163,6 +170,7 @@ public abstract class GenericSniffer implements Sniffer {
      *
      * @return the container name
      */
+    @Override
     public String getModuleType() {
         return containerName;
     }
@@ -182,6 +190,7 @@ public abstract class GenericSniffer implements Sniffer {
      *
      * @throws java.io.IOException exception if something goes sour
      */
+    @Override
     public synchronized Module[] setup(String containerHome, Logger logger) throws IOException {   // TODO(Sahoo): Change signature to not accept containerHome or logger
         if (modules != null) {
             if (logger.isLoggable(Level.FINE)) {
@@ -210,6 +219,7 @@ public abstract class GenericSniffer implements Sniffer {
      * subsystem.
      * 
      */
+    @Override
     public void tearDown() {
         // It is not safe to uninstall modules in a running server as there might be existing
         // references to objects loaded from those modules, so we don't uninstall modules at this point of time.
@@ -224,6 +234,7 @@ public abstract class GenericSniffer implements Sniffer {
      *
      * @return list of annotations this sniffer is interested in.
      */
+    @Override
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return new Class[0];
     }
@@ -232,14 +243,15 @@ public abstract class GenericSniffer implements Sniffer {
      * @return whether this sniffer should be visible to user
      *
      */
+    @Override
     public boolean isUserVisible() {
         return false;
     }
 
     /**
      * @return whether this sniffer represents a Java EE container type
-     *
      */
+    @Override
     public boolean isJavaEE() {
         return false;
     }
@@ -287,6 +299,7 @@ public abstract class GenericSniffer implements Sniffer {
      * @throws java.io.IOException in case of errors retrieving an entry or 
      * reading the archive contents at an entry
      */
+    @Override
     public Map<String,String> getDeploymentConfigurations(final ReadableArchive location) throws IOException {
         final Map<String,String> deploymentConfigs = new HashMap<String,String>();
 
@@ -333,6 +346,7 @@ public abstract class GenericSniffer implements Sniffer {
      * lists for a certain module
      *
      */
+    @Override
     public String[] getIncompatibleSnifferTypes() {
         return null;
     }

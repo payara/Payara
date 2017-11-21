@@ -37,22 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
 import com.sun.xml.ws.api.server.Container;
 import com.sun.xml.ws.api.server.ResourceInjector;
-import com.sun.xml.ws.api.server.WSEndpoint;
 import com.sun.xml.ws.api.server.Module;
 
 import javax.servlet.ServletContext;
-import com.sun.xml.ws.transport.http.servlet.ServletModule;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.xml.ws.api.server.BoundEndpoint;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import com.sun.xml.ws.api.server.ServerPipelineHook;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JAXWSContainer extends Container {
     
@@ -83,6 +85,8 @@ public class JAXWSContainer extends Container {
 
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
     public <T> T getSPI(Class<T> spiType) {
         if (ServletContext.class.isAssignableFrom( spiType)) {
             return (T)servletContext;
@@ -106,6 +110,20 @@ public class JAXWSContainer extends Container {
             
             if (module != null) {
                 return ((T)spiType.cast(module));
+            }
+            else {
+                return ((T)spiType.cast(new Module() {
+                    @Override
+                    public List<BoundEndpoint> getBoundEndpoints() {
+                        return new ArrayList<BoundEndpoint>(){
+                            private static final long serialVersionUID = 1L;
+                            @Override
+                            public boolean add(BoundEndpoint e) {
+                                return true;
+                            }
+                        };
+                    }
+                }));
             }
         }
         return null;

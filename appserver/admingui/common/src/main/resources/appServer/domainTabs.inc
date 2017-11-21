@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- appServer/domainTabs.jsf -->
@@ -47,6 +48,12 @@
         <!command
             setSessionAttribute(key="domainTabs" value="domainAttrs");
             gf.redirect(page="#{request.contextPath}/common/appServer/serverInstDomainAttrs.jsf");
+        />
+    </sun:tab>
+    <sun:tab id="domainProps" immediate="true" text="$resource{i18nc.headings.DomainProperties}" toolTip="$resource{i18nc.headings.DomainPropertiesTab}">
+        <!command
+            setSessionAttribute(key="domainTabs" value="domainProps");
+            gf.redirect(page="#{request.contextPath}/common/appServer/serverInstDomainProps.jsf");
         />
     </sun:tab>
     <sun:tab id="appConfig" immediate="true" text="$resource{i18n.headings.AppConfig}" toolTip="$resource{i18n.headings.AppConfigTab}" >

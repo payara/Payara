@@ -38,13 +38,15 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] Payara Foundation and/or affiliates
 -->
 
 <!-- sslButtons.inc -->
    
 <!facet pageButtonsTop>
     <sun:panelGroup id="topButtons">
-        <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
+        <!-- This save button will appear if a cert name already exists i.e.  ha already been set. -->
+        <sun:button id="saveButton" rendered="#{not empty pageSession.valueMap['certNickname']}" text="$resource{i18n.button.Save}"
                  onClick="if (checkSSLRequiredElements() && guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
                 convertCiphersItemsToStr(common="#{pageSession.selectedCommon}" ephemeral="#{pageSession.selectedEphemeral}" other="#{pageSession.selectedOther}" ecc="#{pageSession.selectedEcc}" ciphers="#{requestScope.ciphers}")
@@ -61,7 +63,8 @@
             />
         </sun:button>
 
-        <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.OK}"
+        <!-- This ok button will appear if a cert name does not already exist/has been set -->
+        <sun:button id="newButton" rendered="#{empty pageSession.valueMap['certNickname']}" text="$resource{i18n.button.OK}"
                     onClick="if (checkSSLRequiredElements()  && guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}') ) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
                 convertCiphersItemsToStr(common="#{pageSession.selectedCommon}" ephemeral="#{pageSession.selectedEphemeral}" other="#{pageSession.selectedOther}" ecc="#{pageSession.selectedEcc}" ciphers="#{requestScope.ciphers}")

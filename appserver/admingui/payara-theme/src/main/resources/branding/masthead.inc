@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-   Portions Copyright [2014] [C2B2 Consulting Limited] 
+   Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] 
 -->
 
 <sun:masthead id="Masthead" productImageURL="#{request.contextPath}/resource/community-theme/images/masthead-product_name_open.png" 
@@ -50,9 +50,14 @@
               roleInfo="#{domainName}" roleInfoLabel="$resource{i18n.masthead.domainInfoLabel}"
               serverInfo="#{hostName}" serverInfoLabel="$resource{i18n.masthead.serverInfoLabel}"
               dateTime="$boolean{false}" notificationMsg="$attribute{null}">
-
-
-
+    
+        <h:panelGroup layout="block" id="environmentWarningBar" rendered="#{sessionScope.environmentWarningBarEnabled}" style="text-align:center;background-color:#{sessionScope.environmentWarningBarBackgroundColour}">
+            <sun:staticText id="environmentWarningBarMessage"
+                           style="color:#{sessionScope.environmentWarningBarTextColour};"
+                           text="#{sessionScope.environmentWarningBarMessage}"
+                           toolTip="#{sessionScope.environmentWarningBarMessage}">
+            </sun:staticText>
+        </h:panelGroup>
     <!facet consoleLink>
         <sun:hyperlink id="homeLink" toolTip="$resource{i18n.homeLinkTooltip}" target="_top" text="$resource{i18n.masthead.Home}" url="#{request.contextPath}/common/index.jsf" />
     </facet>
@@ -60,6 +65,28 @@
         <sun:hyperlink id="versionLink" toolTip="$resource{i18n.versionTooltip}" text="$resource{i18n.masthead.Version}"
             onClick="javascript: var versionWin = window.open('#{request.contextPath}/common/version.jsf','VersionWindow','scrollbars,resizable,width=800,height=740,top='+((screen.height - (screen.height/1.618)) - (500/2))+',left='+((screen.width-650)/2) ); versionWin.focus(); return false;" onKeyPress="javascript: return true;" />
     </facet>
+    <!facet enableAsadminRecorderLink>
+        <sun:button id="enableAsadminRecorderLink" rendered="#{showEnableAsadminRecorderButton}" toolTip="$resource{i18n.enableAsadminRecorderToolTip}" target="_top" text="$resource{i18n.masthead.enableAsadminRecorder}"
+            onClick="if (!confirm('$resource{i18n.msg.JS.confirmEnableAsadminRecorder}')) {return false;} else {this.value='$resource{i18n.button.Processing}';}" onKeyPress="javascript: return true;">
+                <!command
+                    setSessionAttribute(key="showEnableAsadminRecorderButton", value="false");
+                    setSessionAttribute(key="showDisableAsadminRecorderButton", value="true");
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/enable-asadmin-recorder" method="POST");
+                    redirect("#{request.contextPath}/common/index.jsf");
+                />
+        </sun:button>
+    </facet>
+    <!facet disableAsadminRecorderLink>
+        <sun:button id="disableAsadminRecorderLink" rendered="#{showDisableAsadminRecorderButton}" toolTip="$resource{i18n.disableAsadminRecorderToolTip}" target="_top" text="$resource{i18n.masthead.disableAsadminRecorder}"
+            onClick="if (!confirm('$resource{i18n.msg.JS.confirmDisableAsadminRecorder}')) {return false;} else {this.value='$resource{i18n.button.Processing}';}" onKeyPress="javascript: return true;">
+                <!command
+                    setSessionAttribute(key="showEnableAsadminRecorderButton", value="true");
+                    setSessionAttribute(key="showDisableAsadminRecorderButton", value="false");
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/disable-asadmin-recorder" method="POST");
+                    redirect("#{request.contextPath}/common/index.jsf");
+                />
+        </sun:button>
+    </facet>    
     <!facet helpLink>
         <sun:button id="helpLink" rendered="true" toolTip="$resource{i18n.helpWindowTooltip}" target="help_window" text="$resource{i18n.masthead.Help}" onClick="admingui.help.launchHelp(this); return false;" />
     </facet>

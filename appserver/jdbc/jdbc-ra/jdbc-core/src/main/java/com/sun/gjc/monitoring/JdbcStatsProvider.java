@@ -38,10 +38,14 @@
  * holder.
  */
 
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.gjc.monitoring;
 
 import com.sun.gjc.util.SQLTrace;
-import com.sun.gjc.util.SQLTraceCache;
+import com.sun.gjc.util.FrequentSQLTraceCache;
+import fish.payara.jdbc.stats.SlowSqlTrace;
+import fish.payara.jdbc.stats.SlowSqlTraceCache;
 import org.glassfish.external.probe.provider.annotations.ProbeListener;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.statistics.CountStatistic;
@@ -68,7 +72,9 @@ public class JdbcStatsProvider {
     private StringStatisticImpl freqUsedSqlQueries = new StringStatisticImpl(
             "FreqUsedSqlQueries", "List",
             "Most frequently used sql queries");
-
+    
+    private StringStatisticImpl slowSqlQueries = new StringStatisticImpl("SlowSqlQueries", "List", "Slowest SQL Queries");
+    
     private CountStatisticImpl numStatementCacheHit = new CountStatisticImpl(
             "NumStatementCacheHit", StatisticImpl.UNIT_COUNT,
             "The total number of Statement Cache hits.");
@@ -82,13 +88,24 @@ public class JdbcStatsProvider {
             "The total number of potential Statement leaks");
 
     private PoolInfo poolInfo;
-    private SQLTraceCache sqlTraceCache;
+    private FrequentSQLTraceCache freqSqlTraceCache;
+    private SlowSqlTraceCache slowSqlTraceCache;
 
     public JdbcStatsProvider(String poolName, String appName, String moduleName, int sqlTraceCacheSize,
             long timeToKeepQueries) {
         poolInfo = new PoolInfo(poolName, appName, moduleName);
         if(sqlTraceCacheSize > 0) {
-            this.sqlTraceCache = new SQLTraceCache(poolName, appName, moduleName, sqlTraceCacheSize, timeToKeepQueries);
+            this.freqSqlTraceCache = new FrequentSQLTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
+            this.slowSqlTraceCache = new SlowSqlTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
+        }
+    }
+    
+    public JdbcStatsProvider(String poolName, String appName, String moduleName, int sqlTraceCacheSize,
+            long timeToKeepQueries, int maxStoredEntries) {
+        poolInfo = new PoolInfo(poolName, appName, moduleName);
+        if(sqlTraceCacheSize > 0) {
+            this.freqSqlTraceCache = new FrequentSQLTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries, maxStoredEntries);
+            this.slowSqlTraceCache = new SlowSqlTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
         }
     }
 
@@ -128,26 +145,36 @@ public class JdbcStatsProvider {
      * Whenever a sql statement that is traced is to be cache for monitoring
      * purpose, the SQLTrace object is created for the specified sql and
      * updated in the SQLTraceCache. This is used to update the
-     * frequently used sql queries.
+     * frequently used and slowest sql queries.
      *
      * @param poolName
+     * @param appName
      * @param sql
+     * @param moduleName
+     * @param executionTime
      */
     @ProbeListener(JdbcRAConstants.SQL_TRACING_DOTTED_NAME + JdbcRAConstants.TRACE_SQL)
     public void traceSQLEvent(
                                    @ProbeParam("poolName") String poolName,
                                    @ProbeParam("appName") String appName,
                                    @ProbeParam("moduleName") String moduleName,
-                                   @ProbeParam("sql") String sql) {
+                                   @ProbeParam("sql") String sql,
+                                   @ProbeParam("executionTime") long executionTime) {
 
         PoolInfo poolInfo = new PoolInfo(poolName, appName, moduleName);
         if(this.poolInfo.equals(poolInfo)){
-            if(sqlTraceCache != null) {
+            if(freqSqlTraceCache != null) {
                 if (sql != null) {
-                    SQLTrace cacheObj = new SQLTrace(sql, 1,
-                            System.currentTimeMillis());
-                    sqlTraceCache.checkAndUpdateCache(cacheObj);
+                    SQLTrace cacheObj = new SQLTrace(sql, 1, System.currentTimeMillis());
+                    freqSqlTraceCache.checkAndUpdateCache(cacheObj);
                 }
+            }
+            
+            // If the slowSqlTraceCache has been initialised, create a new SlowSqlTrace object and add it to or update 
+            // the cache
+            if (slowSqlTraceCache != null && sql != null) {
+                SQLTrace cacheObj = new SlowSqlTrace(sql, 1, System.currentTimeMillis(), executionTime);
+                slowSqlTraceCache.checkAndUpdateCache(cacheObj);
             }
         }
     }
@@ -181,12 +208,20 @@ public class JdbcStatsProvider {
 
     @ManagedAttribute(id="frequsedsqlqueries")
     public StringStatistic getfreqUsedSqlQueries() {
-        if(sqlTraceCache != null) {
+        if(freqSqlTraceCache != null) {
             //This is to ensure that only the queries in the last "time-to-keep-
             //queries-in-minutes" is returned back.
-            freqUsedSqlQueries.setCurrent(sqlTraceCache.getTopQueries());
+            freqUsedSqlQueries.setCurrent(freqSqlTraceCache.getTopQueries());
         }
         return freqUsedSqlQueries;
+    }
+    
+    @ManagedAttribute(id = "slowSqlQueries")
+    public StringStatistic getSlowSqlQueries() {
+        if (slowSqlTraceCache != null) {
+            slowSqlQueries.setCurrent(slowSqlTraceCache.getSlowestSqlQueries());
+        }
+        return slowSqlQueries;
     }
 
     @ManagedAttribute(id="numpotentialstatementleak")
@@ -195,10 +230,18 @@ public class JdbcStatsProvider {
     }
     
     /**
-     * Get the SQLTraceCache associated with this stats provider.
-     * @return SQLTraceCache
+     * Get the FrequentSQLTraceCache associated with this stats provider.
+     * @return FrequentSQLTraceCache The FrequentSQLTraceCache associated with this stats provider
      */
-    public SQLTraceCache getSqlTraceCache() {
-        return sqlTraceCache;
+    public FrequentSQLTraceCache getFreqSqlTraceCache() {
+        return freqSqlTraceCache;
+    }
+    
+    /**
+     * Get the SlowSqlTraceCache associated with this stats provider.
+     * @return SlowSqlTraceCache The SlowSqlTraceCache associated with this stats provider
+     */
+    public SlowSqlTraceCache getSlowSqlTraceCache() {
+        return slowSqlTraceCache;
     }
 }

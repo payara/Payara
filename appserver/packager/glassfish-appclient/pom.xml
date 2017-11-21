@@ -40,13 +40,14 @@
     holder.
 
 -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.1.162-SNAPSHOT</version>
+        <version>4.1.2.181-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-appclient</artifactId>
     <name>Glassfish Application Client Package</name>
@@ -164,6 +165,10 @@
         <dependency>
             <groupId>org.jboss.weld.se</groupId>
             <artifactId>weld-se-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.environment</groupId>
+            <artifactId>weld-environment-common</artifactId>
         </dependency>
     </dependencies>
 </project>

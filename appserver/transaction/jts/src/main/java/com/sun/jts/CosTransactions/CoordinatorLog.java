@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1955,103 +1955,6 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
         logStateHolder.logFile.dump();
     }
 
-    /**Dumps the state of the object.
-     *
-     * @param
-     *
-     * @return
-     *
-     * @see
-     */
-
-    void dump() {
-        // NOT USED: CoordinatorLogStateHolder logStateHolder = defaultLogStateHolder;
-
-        //$ somtrDUMP_OBJECT_HEADER;
-
-        // First dump the local transaction id.
-
-        // Dump each section in the CoordinatorLog object.
-
-        if( sectionMapping != null ) {
-            //$   somtrDUMP_LIST_START;
-
-            Enumeration sections = sectionMapping.elements();
-            while( sections.hasMoreElements() ) {
-                CoordinatorLogSection section = (CoordinatorLogSection)sections.nextElement();
-
-                // Dump the section name.
-
-                //$     somtrDUMP_LIST_ELEMENT;
-
-                // Dump Written objects.
-
-                if( section.writtenObjects != null ) {
-                    //$       somtrDUMP_LIST_START;
-
-                    Enumeration objects = section.writtenObjects.elements();
-                    while( objects.hasMoreElements() ) {
-                        String objStr = (String)objects.nextElement();
-
-                        //$         somtrDUMP_LIST_ELEMENT;
-                    }
-
-                    //$       somtrDUMP_LIST_END;
-                }
-
-                // Dump unwritten objects.
-
-                if( section.unwrittenObjects != null ) {
-                    //$       somtrDUMP_LIST_START;
-
-                    Enumeration objects = section.unwrittenObjects.elements();
-                    while( objects.hasMoreElements() ) {
-                        String objStr = (String)objects.nextElement();
-
-                        //$         somtrDUMP_LIST_ELEMENT;
-                    }
-
-                    //$       somtrDUMP_LIST_END;
-                }
-
-                // Dump Written data.
-
-                if( section.writtenData != null ) {
-                    //$       somtrDUMP_LIST_START;
-
-                    Enumeration data = section.writtenData.elements();
-                    while( data.hasMoreElements() ) {
-                        byte[] dataItem = (byte[])data.nextElement();
-
-                        //$         somtrDUMP_LIST_ELEMENT;
-                    }
-
-                    //$       somtrDUMP_LIST_END;
-                }
-
-                // Dump unwritten data.
-
-                if( section.unwrittenData != null ) {
-                    //$       somtrDUMP_LIST_START;
-
-                    Enumeration data = section.unwrittenData.elements();
-                    while( data.hasMoreElements() ) {
-                        byte[] dataItem = (byte[])data.nextElement();
-
-                        //$         somtrDUMP_LIST_ELEMENT;
-                    }
-
-                    //$       somtrDUMP_LIST_END;
-                }
-
-
-                // That is the end of the section.
-
-            }
-
-            //$   somtrDUMP_LIST_END;
-        }
-    }
     // START IASRI 4662745
     public static void setKeypointTrigger(int keypoint)
     {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package test.ejb.remoteview;
 
 
@@ -127,9 +127,9 @@ public class RemoteViewTestNG {
         jndiProps.put("java.naming.factory.initial", "com.sun.enterprise.naming.impl.SerialInitContextFactory");
         jndiProps.put("java.naming.factory.url.pkgs", "com.sun.enterprise.naming");
         jndiProps.put("java.naming.factory.state", "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl");
-        jndiProps.put("java.naming.provider.url", "iiop://localhost:5037");
+        jndiProps.put("java.naming.provider.url", "iiop://localhost:3700");
         jndiProps.setProperty("org.omg.CORBA.ORBInitialHost", "127.0.0.1");
-        jndiProps.setProperty("org.omg.CORBA.ORBInitialPort", "5037");
+        jndiProps.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
         return jndiProps;
     }
 }

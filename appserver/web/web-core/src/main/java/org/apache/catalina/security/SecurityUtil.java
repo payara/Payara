@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,9 +60,8 @@ package org.apache.catalina.security;
 
 
 import org.apache.catalina.Globals;
-import org.apache.catalina.core.StandardServer;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.util.StringManager;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.security.auth.Subject;
 import javax.servlet.Filter;
@@ -111,7 +110,7 @@ public final class SecurityUtil{
     private static HashMap<Object, Method[]> objectCache =
         new HashMap<Object, Method[]>();
         
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
 
     private static boolean packageDefinitionEnabled = (
@@ -125,12 +124,6 @@ public final class SecurityUtil{
     public static final boolean executeUnderSubjectDoAs = true;
     // END SJS WS 7.0 6236329
 
-    @LogMessageInfo(
-            message = "An exception occurs when running the PrivilegedExceptionAction block.",
-            level = "FINE"
-    )
-    public static final String PRIVILEGE_ACTION_EXCEPTION = "AS-WEB-CORE-00322";
-   
     
     /**
      * Perform work as a particular <code>Subject</code>. Here the work
@@ -364,7 +357,7 @@ public final class SecurityUtil{
             }
             
             if (log.isLoggable(Level.FINE)){
-                log.log(Level.FINE, PRIVILEGE_ACTION_EXCEPTION, e);
+                log.log(Level.FINE, LogFacade.PRIVILEGE_ACTION_EXCEPTION, e);
             }
             
             if (e instanceof UnavailableException)

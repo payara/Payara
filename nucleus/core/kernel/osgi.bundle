@@ -38,6 +38,8 @@
 # holder.
 #
 
+# Portions Copyright [2016] [Payara Foundation]
+
 -exportcontents: \
                         com.sun.enterprise.v3.admin; \
                         com.sun.enterprise.v3.admin.adapter; \
@@ -46,13 +48,19 @@
                         com.sun.enterprise.v3.common; \
                         com.sun.enterprise.v3.server; \
                         com.sun.enterprise.v3.services.impl; \
+                        com.sun.enterprise.v3.services.impl.monitor; \
+                        com.sun.enterprise.v3.services.impl.monitor.stats; \
                         org.glassfish.kernel.embedded; \
                         org.glassfish.kernel.event; version=${project.osgi.version}
 
 # dependent flashlight package resolved at runtime
-DynamicImport-Package: org.glassfish.flashlight.provider, \
+DynamicImport-Package: fish.payara.nucleus.requesttracing, \
+                       fish.payara.nucleus.requesttracing.domain, \
+                       fish.payara.nucleus.requesttracing.configuration, \
+                       fish.payara.nucleus.requesttracing.domain.execoptions, \
+                       org.glassfish.flashlight.provider, \
                        com.sun.pkg.client, \
-		       org.glassfish.branding, \
+		               org.glassfish.branding, \
                        org.objectweb.asm;password=GlassFish, \
                        org.objectweb.asm.commons;password=GlassFish
 

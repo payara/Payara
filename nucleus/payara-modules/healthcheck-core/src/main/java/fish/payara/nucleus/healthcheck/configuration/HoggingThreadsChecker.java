@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -22,18 +22,19 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
+@CheckerConfigurationType(type = CheckerType.HOGGING_THREADS)
 public interface HoggingThreadsChecker extends Checker {
 
     @Attribute(defaultValue = "HOGT")
     String getName();
     void setName(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "95")
-    Long getThresholdPercentage();
+    @Attribute(defaultValue = "95", dataType = Long.class)
+    String getThresholdPercentage();
     void setThresholdPercentage(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "3")
-    int getRetryCount();
+    @Attribute(defaultValue = "3", dataType = Integer.class)
+    String getRetryCount();
     void setRetryCount(String value) throws PropertyVetoException;
 
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -48,8 +48,11 @@ import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -66,7 +69,10 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 
 /**
@@ -125,6 +131,8 @@ public class SetLogAttributes implements AdminCommand {
     @Inject
     Clusters clusters;
 
+    @Inject
+    UnprocessedConfigListener ucl;
 
     String[] validAttributes = {"handlers", "handlerServices",
             "java.util.logging.ConsoleHandler.formatter",
@@ -146,7 +154,18 @@ public class SetLogAttributes implements AdminCommand {
             "com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange",
             "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat",
             "com.sun.enterprise.server.logging.GFFileHandler.excludeFields",
-            "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode"};
+            "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
+            "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.ansiColor",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.infoColor",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.warnColor",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.severeColor",
+            "com.sun.enterprise.server.logging.UniformLogFormatter.loggerColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.ansiColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.loggerColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.infoColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.warnColor",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.severeColor"};
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 
@@ -170,6 +189,11 @@ public class SetLogAttributes implements AdminCommand {
                             try {
                                 validateAttributeValue(att_name, att_value);
                             } catch (Exception e) {
+                                // Add in additional error message information if present
+                                if (e.getMessage() != null) {
+                                    report.setMessage(e.getMessage() + "\n");
+                                }
+                                
                                 break;
                             }
                             m.put(att_name, att_value);
@@ -182,7 +206,7 @@ public class SetLogAttributes implements AdminCommand {
                     }
 
                     if (!vlAttribute) {
-                        report.setMessage(localStrings.getLocalString("set.log.attribute.invalid",
+                        report.appendMessage(localStrings.getLocalString("set.log.attribute.invalid",
                                 "Invalid logging attribute name {0} or value {1}.", att_name, att_value));
                         invalidAttribute = true;
                         break;
@@ -214,6 +238,25 @@ public class SetLogAttributes implements AdminCommand {
             } 
 
             if (success) {
+                // do not record duplicate logging attribute restart events
+                boolean triggerRestart = true;
+                unprocessedLoop:
+                for(UnprocessedChangeEvents evts : ucl.getUnprocessedChangeEvents()) {
+                    for(UnprocessedChangeEvent evt : evts.getUnprocessed()) {
+                        if(evt.getEvent().getSource().getClass().getName().equals(this.getClass().getName())) {
+                            triggerRestart = false;
+                            break unprocessedLoop;
+                        }
+                    }
+                }
+                if (triggerRestart) {
+                    List<UnprocessedChangeEvents> logAttrChanges = new ArrayList<>();
+                    logAttrChanges.add(new UnprocessedChangeEvents(new UnprocessedChangeEvent(
+                            new PropertyChangeEvent(this, "Logging Attribute", null, null),
+                            "logging attribute(s) modified")));
+                    ucl.unprocessedTransactedEvents(logAttrChanges);
+                }
+
                 String effectiveTarget = (isDas ? SystemPropertyConstants.DAS_SERVER_NAME : targetConfigName);
                 sbfSuccessMsg.append(localStrings.getLocalString(
                         "set.log.attribute.success", 
@@ -239,12 +282,13 @@ public class SetLogAttributes implements AdminCommand {
         if (attr_name.equals(ROTATION_LIMIT_IN_BYTES)) {
             int rotationSizeLimit = Integer.parseInt(attr_value);
             if (rotationSizeLimit != GFFileHandler.DISABLE_LOG_FILE_ROTATION_VALUE && rotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Value must be greater than " 
+                        + GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE + ".");
             }
         } else if (attr_name.equals(ROTATION_TIMELIMIT_IN_MINUTES)) {
             int rotationTimeLimit = Integer.parseInt(attr_value);
             if (rotationTimeLimit < 0) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Value must be greater than 0.");
             }
         }
     }

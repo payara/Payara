@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.gjc.util;
 
@@ -227,9 +228,7 @@ public class MethodExecutor implements java.io.Serializable {
         Object returnValue = null;
         Method actualMethod = null;
         try {
-            actualMethod = object.getClass().getMethod(methodName, valueTypes);
-        } catch (NoSuchMethodException ex) {
-            throw new ResourceException(ex);
+            actualMethod = getDeclaredMethodRecursively(object.getClass(), methodName, valueTypes);
         } catch (SecurityException ex) {
             throw new ResourceException(ex);
         }
@@ -245,6 +244,23 @@ public class MethodExecutor implements java.io.Serializable {
             }
         }
         return returnValue;
+    }
+
+    private Method getDeclaredMethodRecursively(Class currentClass, String methodName, Class<?>... parameterTypes)
+            throws SecurityException {
+        while (currentClass != null) {
+            try {
+                Method method = currentClass.getDeclaredMethod(methodName, parameterTypes);
+                if(method != null) {
+                    method.setAccessible(true);
+                    return method;
+                }
+            }
+            catch (NoSuchMethodException ex) {
+            }
+            currentClass = currentClass.getSuperclass();
+        }
+        return null;
     }
 
     private Properties stringToProperties(String parameter)

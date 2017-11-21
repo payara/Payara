@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.logging;
 
@@ -179,7 +179,6 @@ public class LogDomains {
     /**
      * Resource Logger
      */
-
     public static final String RSR_LOGGER = DOMAIN_ROOT + "enterprise.resource.resourceadapter";
     // END OF IASRI 4660742
 
@@ -307,6 +306,7 @@ public class LogDomains {
         return getLogger(clazz, namePrefix, true);
     }
 
+
     /**
      * Returns initialized logger. If the resourceBundleLookup is true, tries to
      * find and load the LogStrings.properties via the clazz's classloader.
@@ -325,7 +325,7 @@ public class LogDomains {
      * tries to find and load the LogStrings.properties.
      *
      * @param clazz
-     * @param name
+     * @param namePrefix
      * @param resourceBundleLoader
      * @return
      */

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.ejb.containers;
 
 import com.sun.ejb.base.io.EJBObjectInputStreamHandler;
@@ -177,6 +178,7 @@ public class EjbContainerUtilImpl
 
     private  static EjbContainerUtil _me;
 
+    @Override
     public void postConstruct() {
         ejbContainer = serverConfig.getExtensionByType(EjbContainer.class);
 
@@ -185,6 +187,7 @@ public class EjbContainerUtilImpl
             callFlowAgent = (Agent) Proxy.newProxyInstance(ejbImplClassLoader,
                     new Class[] {Agent.class},
                     new InvocationHandler() {
+                        @Override
                         public Object invoke(Object proxy, Method m, Object[] args) {
                             return null;
                         }
@@ -212,6 +215,7 @@ public class EjbContainerUtilImpl
         _me = this;
     }
 
+    @Override
     public void preDestroy() {
         if( defaultThreadPoolExecutor != null ) {
             defaultThreadPoolExecutor.shutdown();
@@ -221,10 +225,12 @@ public class EjbContainerUtilImpl
         EJBTimerService.unsetEJBTimerService();
     }
 
+    @Override
     public GlassFishORBHelper getORBHelper() {
         return orbHelper;
     }
 
+    @Override
     public ServiceLocator getServices() {
         return services;
     }
@@ -252,64 +258,98 @@ public class EjbContainerUtilImpl
         return _logger;
     }
 
+    @Override
     public  void registerContainer(BaseContainer container) {
         id2Container.put(container.getContainerId(), container);
     }
 
+    @Override
     public  void unregisterContainer(BaseContainer container) {
         id2Container.remove(container.getContainerId());
     }
 
-    public  BaseContainer getContainer(long id) {
-        return id2Container.get(id);
+    @Override
+    public BaseContainer getContainer(long id) {
+        return getContainer(id, 0L);
     }
 
+    @Override
+    public BaseContainer getContainer(long id, long appUniqueId) {
+        BaseContainer rv = id2Container.get(id);
+
+        // try to find by using just the offset from the application
+        if(rv == null && appUniqueId != 0L) {
+            _logger.log(Level.FINE, "Not Found ID: {0}, looking again with appId: {1}", new Object[] { id, appUniqueId } );
+            try {
+                long offset = id & 0xFFFFL;
+                long derivedId = appUniqueId | offset;
+                rv = id2Container.get(derivedId);
+            }
+            catch(Exception e) {
+                _logger.log(Level.FINE, "Cannot derive application ID from context", e);
+            }
+        }
+        return rv;
+    }
+
+    @Override
     public  EjbDescriptor getDescriptor(long id) {
         BaseContainer container = id2Container.get(id);
         return (container != null) ? container.getEjbDescriptor() : null;
     }
 
+    @Override
     public  ClassLoader getClassLoader(long id) {
         BaseContainer container = id2Container.get(id);
         return (container != null) ? container.getClassLoader() : null;
     }
 
+    @Override
     public  Timer getTimer() {
         return _timer;
     }
 
+    @Override
     public  void setInsideContainer(boolean bool) {
         _insideContainer = bool;
     }
 
+    @Override
     public  boolean isInsideContainer() {
         return _insideContainer;
     }
 
+    @Override
     public  InvocationManager getInvocationManager() {
         return _invManager;
     }
 
+    @Override
     public  InjectionManager getInjectionManager() {
         return _injectionManager;
     }
 
+    @Override
     public  GlassfishNamingManager getGlassfishNamingManager() {
         return _gfNamingManager;
     }
 
+    @Override
     public  ComponentEnvManager getComponentEnvManager() {
         return _compEnvManager;
     }
 
+    @Override
     public  ComponentInvocation getCurrentInvocation() {
         return _invManager.getCurrentInvocation();
     }
 
+    @Override
     public JavaEETransactionManager getTransactionManager() {
         return txMgr;
     }
 
+    @Override
     public ServerContext getServerContext() {
         return serverContext;
     }
@@ -329,6 +369,7 @@ public class EjbContainerUtilImpl
         return txData;
     }
     
+    @Override
     public  ContainerSynchronization getContainerSync(Transaction jtx)
         throws RollbackException, SystemException
     {
@@ -343,24 +384,29 @@ public class EjbContainerUtilImpl
         return txData.sync;
     }
 
+    @Override
     public void removeContainerSync(Transaction tx) {
         //No op
     }
 
+    @Override
     public void registerPMSync(Transaction jtx, Synchronization sync)
             throws RollbackException, SystemException {
 
         getContainerSync(jtx).addPMSynchronization(sync);
     }
 
+    @Override
     public EjbContainer getEjbContainer() {
         return ejbContainer;
     }
 
+    @Override
     public ServerEnvironmentImpl getServerEnvironment() {
         return env;
     }
 
+    @Override
     public  Vector getBeans(Transaction jtx) {
         JavaEETransaction tx = (JavaEETransaction) jtx;
         TxData txData = getTxData(tx);
@@ -373,6 +419,7 @@ public class EjbContainerUtilImpl
 
     }
 
+    @Override
     public Object getActiveTxCache(Transaction jtx) {
     	JavaEETransaction tx = (JavaEETransaction) jtx;
         TxData txData = getTxData(tx);
@@ -380,6 +427,7 @@ public class EjbContainerUtilImpl
         return txData.activeTxCache;
     }
 
+    @Override
     public void setActiveTxCache(Transaction jtx, Object cache) {
     	JavaEETransaction tx = (JavaEETransaction) jtx;
         TxData txData = getTxData(tx);
@@ -387,28 +435,34 @@ public class EjbContainerUtilImpl
         txData.activeTxCache = cache;
     }
     
+    @Override
     public Agent getCallFlowAgent() {
         return callFlowAgent;
     }
 
+    @Override
     public void addWork(Runnable task) {
         if (defaultThreadPoolExecutor != null) {
             defaultThreadPoolExecutor.submit(task);
         }
     }
 
+    @Override
     public EjbDescriptor ejbIdToDescriptor(long ejbId) {
         throw new RuntimeException("Not supported yet");
     }
 
+    @Override
     public boolean isEJBLite() {
         return (cmpDeployerProvider.get() == null);
     }
 
+    @Override
     public boolean isEmbeddedServer() {
         return processEnv.getProcessType().isEmbedded();
     }
 
+    @Override
     public Deployment getDeployment() {
         return deploymentProvider.get();
     }
@@ -421,6 +475,7 @@ public class EjbContainerUtilImpl
         Object activeTxCache;
     }
     
+    @Override
     public EjbTimerService getEjbTimerService(String target) {
         EjbTimerService ejbt = null;
         if (target == null) {
@@ -430,13 +485,13 @@ public class EjbContainerUtilImpl
             ejbt = getEjbContainer().getEjbTimerService();
         } else {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.fine("Looking for " + target + " ejb-container config");
+                _logger.log(Level.FINE, "Looking for {0} ejb-container config", target);
             }
             ReferenceContainer rc =  domain.getReferenceContainerNamed(target);
             if (rc != null) {
                 Config config = domain.getConfigNamed(rc.getReference());
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.fine("Found " + config);
+                    _logger.log(Level.FINE, "Found {0}", config);
                 }
                 if (config != null) {
                     ejbt = config.getExtensionByType(EjbContainer.class).getEjbTimerService();
@@ -447,13 +502,16 @@ public class EjbContainerUtilImpl
         return ejbt;
     }
 
+    @Override
     public ProbeProviderFactory getProbeProviderFactory() {
         return probeProviderFactory;
     }
 
    /**
     * Embedded is a single-instance like DAS
+    * @return
     */
+    @Override
     public boolean isDas() {
         return env.isDas() || env.isEmbedded();
     }
@@ -519,12 +577,13 @@ public class EjbContainerUtilImpl
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("Created " + result.toString());
+            _logger.log(Level.FINE, "Created {0}", result.toString());
 
         }
         return result;
     }
     
+    @Override
     public ThreadPoolExecutor getThreadPoolExecutor(String poolName) {
         if(poolName == null) {
             return defaultThreadPoolExecutor;
@@ -533,6 +592,7 @@ public class EjbContainerUtilImpl
 //        TODO retrieve the named ThreadPoolExecutor
     }
 
+    @Override
     public JavaEEIOUtils getJavaEEIOUtils() {
         return javaEEIOUtils;
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -55,7 +56,9 @@ import org.glassfish.weld.connector.WeldUtils;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.api.WeldManager;
+import org.jboss.weld.manager.InjectionTargetFactoryImpl;
 import org.jvnet.hk2.annotations.Service;
+import org.jboss.weld.resources.ClassTransformer;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -84,7 +87,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.enterprise.inject.spi.BeanAttributes;
+import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
+import org.jboss.weld.bean.InterceptorImpl;
+import org.jboss.weld.bean.attributes.BeanAttributesFactory;
+import org.jboss.weld.context.CreationalContextImpl;
+import org.jboss.weld.manager.BeanManagerImpl;
+import static org.jboss.weld.util.reflection.Reflections.cast;
 
 @Service
 @Rank(10)
@@ -118,6 +127,7 @@ public class JCDIServiceImpl implements JCDIService {
     private Logger logger = Logger.getLogger(JCDIServiceImpl.class.getName());
 
 
+    @Override
     public boolean isCurrentModuleJCDIEnabled() {
 
         BundleDescriptor bundle = null;
@@ -144,6 +154,7 @@ public class JCDIServiceImpl implements JCDIService {
 
     }
 
+    @Override
     public boolean isJCDIEnabled(BundleDescriptor bundle) {
 
         // Get the top-level bundle descriptor from the given bundle.
@@ -154,12 +165,14 @@ public class JCDIServiceImpl implements JCDIService {
 
     }
 
+    @Override
     public boolean isCDIScoped(Class<?> clazz) {
         // Check all the annotations on the specified Class to determine if the class is annotated
         // with a supported CDI scope
         return WeldUtils.hasValidAnnotation(clazz, validScopes, excludedScopes);
     }
 
+    @Override
     public void setELResolver(ServletContext servletContext) throws NamingException {
         InitialContext context = new InitialContext();
         BeanManager beanManager = (BeanManager)
@@ -171,10 +184,12 @@ public class JCDIServiceImpl implements JCDIService {
         }
     }
 
+    @Override
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejb, T instance) {
 	    return _createJCDIInjectionContext(ejb, instance);
     }
 
+    @Override
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejb) {
 	    return _createJCDIInjectionContext(ejb, null);
     }
@@ -193,6 +208,9 @@ public class JCDIServiceImpl implements JCDIService {
         WeldManager weldManager = bootstrap.getManager(bda);
 
         org.jboss.weld.ejb.spi.EjbDescriptor ejbDesc = weldManager.getEjbDescriptor(ejb.getName());
+        if(ejbDesc == null) {
+            return null;
+        }
 
         // Get an the Bean object
         Bean<?> bean = weldManager.getBean(ejbDesc);
@@ -250,6 +268,7 @@ public class JCDIServiceImpl implements JCDIService {
 
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx) {
     	JCDIInjectionContextImpl<T> injectionCtxImpl = (JCDIInjectionContextImpl<T>) injectionCtx;
 
@@ -259,6 +278,7 @@ public class JCDIServiceImpl implements JCDIService {
     	// NOTE : PostConstruct is handled by ejb container
     }
 
+    @Override
     public <T>JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle) {
         return createManagedObject(managedClass, bundle, true);
     }
@@ -270,6 +290,7 @@ public class JCDIServiceImpl implements JCDIService {
      * @param bundle  the bundle descriptor
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
     public void injectManagedObject(Object managedObject, BundleDescriptor bundle) {
 
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
@@ -286,25 +307,40 @@ public class JCDIServiceImpl implements JCDIService {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public <T> T createInterceptorInstance(Class<T> interceptorClass,  BundleDescriptor bundle) {
+    @Override
+    public <T> T createInterceptorInstance(Class<T> interceptorClass, EjbDescriptor ejbDesc) {
+        BundleDescriptor bundle = ejbDesc.getEjbBundleDescriptor();
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
 
         // First get BeanDeploymentArchive for this ejb
         BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(topLevelBundleDesc);
         WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
-        BeanManager beanManager = bootstrap.getManager(bda);
-        CreationalContext cc = beanManager.createCreationalContext(null);
+        BeanManagerImpl beanManager = bootstrap.getManager(bda);
+        WeldManager weldManager = beanManager;
 
         AnnotatedType annotatedType = beanManager.createAnnotatedType(interceptorClass);
-        InjectionTarget it =
-            ((WeldManager) beanManager).getInjectionTargetFactory(annotatedType).createInterceptorInjectionTarget();
-        T interceptorInstance = (T) it.produce(cc);
-        it.inject(interceptorInstance, cc);
+        EnhancedAnnotatedType<T> type = ((ClassTransformer) beanManager.getServices().get(ClassTransformer.class)).getEnhancedAnnotatedType(annotatedType, beanManager.getId());
 
+        // Get an the Bean object
+        BeanAttributes<T> attributes = BeanAttributesFactory.forBean(type, beanManager);
+        InterceptorImpl<T> interceptor = InterceptorImpl.of(attributes, type, beanManager);
+
+        // Create the creational context
+        CreationalContext<?> ctx;
+        org.jboss.weld.ejb.spi.EjbDescriptor ejbWeldDesc = weldManager.getEjbDescriptor(ejbDesc.getName());
+        if (ejbWeldDesc == null) {
+            ctx = beanManager.createCreationalContext(null);
+        } else {
+            Bean<?> sessionBean = weldManager.getBean(ejbWeldDesc);
+            ctx = beanManager.createCreationalContext(sessionBean);
+        }
+
+        T interceptorInstance = cast(beanManager.getReference(interceptor, interceptor.getBeanClass(), ctx));
         return interceptorInstance;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
     public <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle,
                                                     boolean invokePostConstruct) {
 
@@ -434,11 +470,13 @@ public class JCDIServiceImpl implements JCDIService {
         }
 
 
+        @Override
         public T getInstance() {
             return instance;
         }
 
         @SuppressWarnings("unchecked")
+        @Override
         public void cleanup(boolean callPreDestroy) {
 
             if( callPreDestroy ) {

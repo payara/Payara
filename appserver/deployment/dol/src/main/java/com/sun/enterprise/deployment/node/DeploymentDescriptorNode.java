@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node;
 
@@ -60,6 +61,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * Superclass of all Nodes implementation
@@ -338,8 +340,9 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
                     DOLUtils.getDefaultLogger().finer("With value " + attributes.getValue(i));
                 }
 		// we try the setAttributeValue first, if not processed then the setElement
-		if (!setAttributeValue(element, new XMLElement(attributes.getQName(i)), attributes.getValue(i))) {
-		    setElementValue(new XMLElement(attributes.getQName(i)), attributes.getValue(i));
+                String attrValue = (String)TranslatedConfigView.getTranslatedValue(attributes.getValue(i));
+		if (!setAttributeValue(element, new XMLElement(attributes.getQName(i)), attrValue)) {
+		    setElementValue(new XMLElement(attributes.getQName(i)), attrValue);
 		}
 	                
             } 
@@ -439,6 +442,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
 	//DOLUtils.getDefaultLogger().finer("SETELEMENTVALUE : " + "in " + getXMLRootTag() + "  Node, startElement " + element.getQName());
         Map dispatchTable = getDispatchTable();

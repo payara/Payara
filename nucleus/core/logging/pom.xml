@@ -41,13 +41,13 @@
 
 -->
 
-<!-- Portions Copyright [2014-2015] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>4.1.1.162-SNAPSHOT</version>
+        <version>4.1.2.181-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logging</artifactId>
@@ -83,13 +83,16 @@
         <artifactId>logging-annotation-processor</artifactId>
         <optional>true</optional>
       </dependency>
-
       <dependency>
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common-util</artifactId>
 	<version>${project.version}</version>
       </dependency>
-
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -106,14 +109,34 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.docs.man</groupId>
+                                    <groupId>fish.payara.docs.man</groupId>
                                     <artifactId>logging-manpage</artifactId>
-                                    <version>${v3-docs.version}</version>
+                                    <version>4.1.1.164</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Export-Package>
+                                    fish.payara.enterprise.server.logging
+                                </Export-Package>
+                            </instructions>
                         </configuration>
                     </execution>
                 </executions>

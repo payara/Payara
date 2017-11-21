@@ -1,0 +1,8 @@
+<f:verbatim>
+    <iframe 
+        id="zendeskFrame" name="zendeskFrame" 
+        style="height:100%;width:100%;pointer-events: all;z-index: 1000!important;transform: translate3d(0, 0, 0);" 
+        frameborder="0" scrolling="auto" 
+        src="/resource/payara_support/zendesk/index.html?url=#{sessionScope.REST_URL}">
+    </iframe>
+</f:verbatim> 

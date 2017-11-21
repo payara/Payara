@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,10 +58,8 @@
 
 package org.apache.naming;
 
-import org.apache.naming.resources.FileDirContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
-
 import java.util.Hashtable;
+import java.util.ResourceBundle;
 
 import javax.naming.Binding;
 import javax.naming.Context;
@@ -83,12 +81,7 @@ public class SelectorContext implements Context {
 
     // -------------------------------------------------------------- Constants
 
-
-    @LogMessageInfo(
-            message = "This context must be accessed through a java: URL",
-            level = "FINE")
-    private static final String NO_JAVA_URL = "AS-WEB-NAMING-00025";
-
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     /**
      * Namespace URL.
@@ -705,7 +698,7 @@ public class SelectorContext implements Context {
                 return (name);
             } else {
                 throw new NamingException
-                    (FileDirContext.rb.getString(NO_JAVA_URL));
+                    (rb.getString(LogFacade.NO_JAVA_URL));
             }
         }
         
@@ -730,7 +723,7 @@ public class SelectorContext implements Context {
                 return (name);
             } else {
                 throw new NamingException
-                        (FileDirContext.rb.getString(NO_JAVA_URL));
+                        (rb.getString(LogFacade.NO_JAVA_URL));
             }
         }
 

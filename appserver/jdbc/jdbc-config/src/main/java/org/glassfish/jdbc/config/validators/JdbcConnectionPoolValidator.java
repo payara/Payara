@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
@@ -100,13 +100,13 @@ public class JdbcConnectionPoolValidator
                         return false;
                     }
                 }
-                if (stmtCacheSize != null && Integer.valueOf(stmtCacheSize) != 0) {
+                if (stmtCacheSize != null && Integer.parseInt(stmtCacheSize) != 0) {
                     if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
                         return false;
                     }
                 }
-                if (stmtLeakTimeout != null && Integer.valueOf(stmtLeakTimeout) != 0) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
+                if (stmtLeakTimeout != null && Integer.parseInt(stmtLeakTimeout) != 0) {
+                    if (!Boolean.parseBoolean(jdbcPool.getWrapJdbcObjects())) {
                         return false;
                     }
                 }

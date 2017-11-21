@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright 2017 Payara Foundation and/or its affiliates -->
+
 <!-- httpSaveButtons.inc -->
 
 #include "/common/shared/editPageLoadDefaultButton.inc"
@@ -50,15 +52,6 @@
                 <!command
 
                     setAttribute(key="emptyStr" value="");
-                    if("#{pageSession.skipAttrsList}=#{null}") {
-                        createList(size="0", result="#{pageSession.skipAttrsList}");
-                    }
-                    if ("#{pageSession.valueMap['redirectPort']} = #{emptyStr}") {
-                        listAdd(list="#{pageSession.skipAttrsList}" value="redirectPort");
-                    }
-                    if ("#{pageSession.valueMap['noCompressionUserAgents']} = #{emptyStr}") {
-                        listAdd(list="#{pageSession.skipAttrsList}" value="noCompressionUserAgents");
-                    }
                     gf.createEntity(endpoint="#{pageSession.selfUrl}"
                                     attrs="#{pageSession.valueMap}"
                                     skipAttrs="#{pageSession.skipAttrsList}"
@@ -92,7 +85,7 @@
                                     setPageSessionAttribute(key="additionalSaveHandlerArgs" 
                                                             value="vsAttrs:%23{pageSession.vsAttrs.data.extraProperties.entity},
                                                                    listenerName:%23{pageSession.networkListAttrs.data.extraProperties.entity['name']},
-                                                                   addFlag:{%23false},
+                                                                   addFlag:false,
                                                                    result:%23{pageSession.vsAttrModified}");
                                     if (#{pageSession.additionalSaveHandler}){
                                         gf.invokeHandler(handler="#{pageSession.additionalSaveHandler}", args="#{pageSession.additionalSaveHandlerArgs}" );
@@ -107,7 +100,7 @@
                                     setPageSessionAttribute(key="additionalSaveHandlerArgs"
                                                             value="vsAttrs:%23{pageSession.vsAttrs.data.extraProperties.entity},
                                                             listenerName:%23{pageSession.networkListAttrs.data.extraProperties.entity['name']},
-                                                            addFlag:{%23false},
+                                                            addFlag:false,
                                                             result:%23{pageSession.vsAttrModified}");
                                     if (#{pageSession.additionalSaveHandler}){
                                         gf.invokeHandler(handler="#{pageSession.additionalSaveHandler}", args="#{pageSession.additionalSaveHandlerArgs}" );
@@ -121,10 +114,6 @@
                     }
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
-                />
-
-                prepareSuccessfulMsg();
-                gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
             </sun:button>
 

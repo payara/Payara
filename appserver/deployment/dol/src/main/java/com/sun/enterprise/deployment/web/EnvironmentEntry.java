@@ -40,6 +40,11 @@
 
 package com.sun.enterprise.deployment.web;
 
+/**
+ * This is an interface to represent an environment entry 
+ * 
+ * @see com.sun.enterprise.deployment.EnvironmentProperty
+ */
 public interface EnvironmentEntry extends NameValuePair {
     public String getType();
     public void setType(String type);

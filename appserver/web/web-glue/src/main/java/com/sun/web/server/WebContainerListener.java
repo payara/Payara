@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.web.server;
 
@@ -49,7 +49,7 @@ import org.apache.catalina.ContainerListener;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 import javax.naming.NamingException;
 import javax.validation.ValidatorFactory;
@@ -69,26 +69,9 @@ import java.util.logging.Logger;
 public final class WebContainerListener 
     implements ContainerListener {
 
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+    private static final Logger _logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = _logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "ContainerEvent: {0}",
-            level = "FINEST")
-    public static final String CONTAINER_EVENT = "AS-WEB-GLUE-00270";
-
-    @LogMessageInfo(
-            message = "Exception during invocation of InjectionManager.destroyManagedObject on {0} of web module {1}",
-            level = "SEVERE",
-            cause = "An exception occurred during destroyManagedObject",
-            action = "Check the exception for the error")
-    public static final String EXCEPTION_DURING_DESTROY_MANAGED_OBJECT = "AS-WEB-GLUE-00271";
-
-    @LogMessageInfo(
-        message = "Exception getting Validator Factory from JNDI: {0}",
-        level = "WARNING")
-    public static final String EXCEPTION_GETTING_VALIDATOR_FACTORY = "AS-WEB-GLUE-00285";
 
     static private HashSet<String> beforeEvents = new HashSet<String>();
     static private HashSet<String> afterEvents = new HashSet<String>();
@@ -166,7 +149,7 @@ public final class WebContainerListener
 
     public void containerEvent(ContainerEvent event) {
         if(_logger.isLoggable(Level.FINEST)) {
-	    _logger.log(Level.FINEST, CONTAINER_EVENT,
+	    _logger.log(Level.FINEST, LogFacade.CONTAINER_EVENT,
                         event.getType() + "," +
                         event.getContainer() + "," +
                         event.getData());
@@ -190,7 +173,7 @@ public final class WebContainerListener
                         }
                     } catch (NamingException exc) {
                         if(_logger.isLoggable(Level.WARNING)) {
-                            _logger.log(Level.FINEST, EXCEPTION_GETTING_VALIDATOR_FACTORY, exc );
+                            _logger.log(Level.FINEST, LogFacade.EXCEPTION_GETTING_VALIDATOR_FACTORY, exc );
                         }
                     }
                 }
@@ -206,7 +189,7 @@ public final class WebContainerListener
                 postInvoke(wm);
             }
         } catch (Throwable t) {
-            String msg = rb.getString(J2EEInstanceListener.EXCEPTION_DURING_HANDLE_EVENT);
+            String msg = rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
             msg = MessageFormat.format(msg,
                 new Object[] { type, event.getContainer() });
             _logger.log(Level.SEVERE, msg, t);
@@ -234,7 +217,7 @@ public final class WebContainerListener
         try {
             injectionMgr.destroyManagedObject(event.getData(), false);
         } catch (Throwable t) {
-            String msg = rb.getString(EXCEPTION_DURING_DESTROY_MANAGED_OBJECT);
+            String msg = rb.getString(LogFacade.EXCEPTION_DURING_DESTROY_MANAGED_OBJECT);
             msg = MessageFormat.format(msg,
                 new Object[] { event.getData(), event.getContainer() });
             _logger.log(Level.SEVERE, msg, t);

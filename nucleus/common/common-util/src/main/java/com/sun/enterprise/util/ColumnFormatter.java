@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.util;
 
 import java.util.ArrayList;
@@ -49,6 +51,8 @@ import java.util.TreeMap;
  * @author Tom Mueller
  */
 public class ColumnFormatter {
+    private static final int MAX_COLUMN_SIZE = 80;
+
     private int numCols = -1;
     private String headings[];
     private List<String[]> valList = new ArrayList<String[]>();
@@ -122,7 +126,7 @@ public class ColumnFormatter {
             }
             longestValue[i] += 2;
             formattedLineBuf.append("%-")
-                    .append(longestValue[i])
+                    .append(longestValue[i] > MAX_COLUMN_SIZE ?  MAX_COLUMN_SIZE : longestValue[i])
                     .append("s");
         }
         String formattedLine = formattedLineBuf.toString();

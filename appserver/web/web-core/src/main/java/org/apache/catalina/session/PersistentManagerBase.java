@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -62,7 +63,6 @@ import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.LifecycleSupport;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -93,182 +93,6 @@ import java.util.logging.Level;
 public abstract class PersistentManagerBase
     extends ManagerBase
     implements Lifecycle, PropertyChangeListener {
-
-    @LogMessageInfo(
-            message = "Checking isLoaded for id, {0}, {1}",
-            level = "SEVERE",
-            cause = "Could not find session associated with given ID",
-            action = "Verify the session ID"
-    )
-    public static final String CHECKING_IS_LOADED_EXCEPTION = "AS-WEB-CORE-00357";
-
-    @LogMessageInfo(
-            message = "Exception clearing the Store",
-            level = "SEVERE",
-            cause = "Could not instantiate PrivilegedStoreClear()",
-            action = "Verify if specified action's run() could remove all sessions from store"
-    )
-    public static final String CLEARING_STORE_EXCEPTION = "AS-WEB-CORE-00358";
-
-    @LogMessageInfo(
-            message = "createSession: Too many active sessions",
-            level = "WARNING"
-    )
-    public static final String CREATE_SESSION_EXCEPTION = "AS-WEB-CORE-00359";
-
-    @LogMessageInfo(
-            message = "Exception in the Store during load",
-            level = "SEVERE",
-            cause = "Could not instantiate PrivilegedStoreKeys()",
-            action = "Verify if specified action's run() does not throw exception"
-    )
-    public static final String STORE_LOADING_EXCEPTION = "AS-WEB-CORE-00360";
-
-    @LogMessageInfo(
-            message = "Loading {0} persisted sessions",
-            level = "FINE"
-    )
-    public static final String LOADING_PERSISTED_SESSIONS = "AS-WEB-CORE-00361";
-
-    @LogMessageInfo(
-            message = "Failed load session from store",
-            level = "SEVERE",
-            cause = "Could not restore sessions from store to manager's list",
-            action = "Verify if the sessions are valid"
-    )
-    public static final String FAILED_LOAD_SESSION_EXCEPTION = "AS-WEB-CORE-00362";
-
-    @LogMessageInfo(
-            message = "Can't load sessions from store",
-            level = "SEVERE",
-            cause = "Could not load sessions from store",
-            action = "Verify if there is no exception to get the array containing the session " +
-                     "identifiers of all Sessions currently saved in this Store"
-    )
-    public static final String CANNOT_LOAD_SESSION_EXCEPTION = "AS-WEB-CORE-00363";
-
-    @LogMessageInfo(
-            message = "Exception in the Store during removeSession",
-            level = "SEVERE",
-            cause = "Could not instantiate PrivilegedStoreRemove()",
-            action = "Verify if the specified action's run() could remove the session with the " +
-                     "specified session identifier from this Store"
-    )
-    public static final String STORE_REMOVE_SESSION_EXCEPTION = "AS-WEB-CORE-00364";
-
-    @LogMessageInfo(
-            message = "Exception removing session",
-            level = "SEVERE",
-            cause = "Could not remove specified session identifier from store",
-            action = "Verify if there is no I/O error occur"
-    )
-    public static final String REMOVING_SESSION_EXCEPTION = "AS-WEB-CORE-00365";
-
-    @LogMessageInfo(
-            message = "Saving {0} persisted sessions",
-            level = "FINE"
-    )
-    public static final String SAVING_PERSISTED_SESSION = "AS-WEB-CORE-00366";
-
-    @LogMessageInfo(
-            message = "Exception in the Store during swapIn",
-            level = "SEVERE",
-            cause = "Could not instantiate PrivilegedStoreLoad",
-            action = "Verify if action's run() can load and return the Session associated with the specified session " +
-                     "identifier from this Store, without removing it"
-    )
-    public static final String STORE_SWAP_IN_EXCEPTION = "AS-WEB-CORE-00367";
-
-    @LogMessageInfo(
-            message = "Error deserializing Session {0}: {1}",
-            level = "SEVERE",
-            cause = "Deserialization error occur, and could not load and return the session " +
-                     "associated with the specified session identifier from this Store",
-            action = "Verify if ClassNotFoundException occur"
-    )
-    public static final String DESERILIZING_SESSION_EXCEPTION = "AS-WEB-CORE-00368";
-
-    @LogMessageInfo(
-            message = "Session swapped in is invalid or expired",
-            level = "SEVERE",
-            cause = "Session swapped in is invalid or expired",
-            action = "Verify if current session is valid"
-    )
-    public static final String INVALID_EXPIRED_SESSION_EXCEPTION = "AS-WEB-CORE-00369";
-
-    @LogMessageInfo(
-            message = "Swapping session {0} in from Store",
-            level = "FINE"
-    )
-    public static final String SWAPPING_SESSION_FROM_STORE = "AS-WEB-CORE-00370";
-
-    @LogMessageInfo(
-            message = "Exception in the Store during writeSession",
-            level = "SEVERE",
-            cause = "Could not write the provided session to the Store",
-            action = "Verify if there are any I/O errors occur"
-    )
-    public static final String STORE_WRITE_SESSION_EXCEPTION = "AS-WEB-CORE-00371";
-
-    @LogMessageInfo(
-            message = "Error serializing Session {0}: {1}",
-            level = "SEVERE",
-            cause = "Could not save the specified Session into this Store",
-            action = "Verify if there are any I/O errors occur"
-    )
-    public static final String SERIALIZING_SESSION_EXCEPTION = "AS-WEB-CORE-00372";
-
-    @LogMessageInfo(
-            message = "Manager has already been started",
-            level = "INFO"
-    )
-    public static final String MANAGER_STARTED_INFO = "AS-WEB-CORE-00373";
-
-    @LogMessageInfo(
-            message = "No Store configured, persistence disabled",
-            level = "SEVERE",
-            cause = "Could not prepare for the beginning of active use of the public methods of this component",
-            action = "Verify if Store has been configured"
-    )
-    public static final String NO_STORE_CONFIG_EXCEPTION = "AS-WEB-CORE-00374";
-
-    @LogMessageInfo(
-            message = "Manager has not yet been started",
-            level = "INFO"
-    )
-    public static final String  MANAGER_NOT_STARTED_INFO = "AS-WEB-CORE-00375";
-
-    @LogMessageInfo(
-            message = "Invalid session timeout setting {0}",
-            level = "SEVERE",
-            cause = "Could not set session timeout from given parameter",
-            action = "Verify the number format for session timeout setting"
-    )
-    public static final String INVALID_SESSION_TIMEOUT_SETTING_EXCEPTION = "AS-WEB-CORE-00376";
-
-    @LogMessageInfo(
-            message = "Swapping session {0} to Store, idle for {1} seconds",
-            level = "FINE"
-    )
-    public static final String SWAPPING_SESSION_TO_STORE = "AS-WEB-CORE-00377";
-
-    @LogMessageInfo(
-            message = "Too many active sessions, {0}, looking for idle sessions to swap out",
-            level = "FINE"
-    )
-    public static final String TOO_MANY_ACTIVE_SESSION = "AS-WEB-CORE-00378";
-
-    @LogMessageInfo(
-            message = "Swapping out session {0}, idle for {1} seconds too many sessions active",
-            level = "FINE"
-    )
-    public static final String SWAP_OUT_SESSION = "AS-WEB-CORE-00379";
-
-    @LogMessageInfo(
-            message = " Backing up session {0} to Store, idle for {1} seconds",
-            level = "FINE"
-    )
-    public static final String BACKUP_SESSION_TO_STORE = "AS-WEB-CORE-00380";
 
     // ---------------------------------------------------- Security Classes
     private class PrivilegedStoreClear
@@ -606,7 +430,7 @@ public abstract class PersistentManagerBase
             if ( super.findSession(id) != null )
                 return true;
         } catch (IOException e) {
-            String msg = MessageFormat.format(rb.getString(CHECKING_IS_LOADED_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.CHECKING_IS_LOADED_EXCEPTION),
                                               new Object[] {id, e.getMessage()});
             log.log(Level.SEVERE, msg, e);
         }
@@ -749,13 +573,13 @@ public abstract class PersistentManagerBase
                     AccessController.doPrivileged(new PrivilegedStoreClear());
                 }catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.log(Level.SEVERE, CLEARING_STORE_EXCEPTION, exception);
+                    log.log(Level.SEVERE, LogFacade.CLEARING_STORE_EXCEPTION, exception);
                 }
             } else {
                 store.clear();
             }
         } catch (IOException e) {
-            log.log(Level.SEVERE, CLEARING_STORE_EXCEPTION, e);
+            log.log(Level.SEVERE, LogFacade.CLEARING_STORE_EXCEPTION, e);
         }
 
     }
@@ -843,7 +667,7 @@ public abstract class PersistentManagerBase
         if ((maxActiveSessions >= 0) &&
                 (sessions.size() >= maxActiveSessions))
             throw new IllegalStateException
-                (rb.getString(CREATE_SESSION_EXCEPTION));
+                (rb.getString(LogFacade.CREATE_SESSION_EXCEPTION));
 
         return (super.createSession());
 
@@ -872,7 +696,7 @@ public abstract class PersistentManagerBase
         if ((maxActiveSessions >= 0) &&
                 (sessions.size() >= maxActiveSessions))
             throw new IllegalStateException
-                (rb.getString(CREATE_SESSION_EXCEPTION));
+                (rb.getString(LogFacade.CREATE_SESSION_EXCEPTION));
 
         return (super.createSession(sessionId));
     }
@@ -992,13 +816,13 @@ public abstract class PersistentManagerBase
                             new PrivilegedStoreKeys());
                 }catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.log(Level.SEVERE, STORE_LOADING_EXCEPTION, exception);
+                    log.log(Level.SEVERE, LogFacade.STORE_LOADING_EXCEPTION, exception);
                 }
             } else {
                 ids = store.keys();
             }
         } catch (IOException e) {
-            log.log(Level.SEVERE, CANNOT_LOAD_SESSION_EXCEPTION, e);
+            log.log(Level.SEVERE, LogFacade.CANNOT_LOAD_SESSION_EXCEPTION, e);
             return;
         }
 
@@ -1007,13 +831,13 @@ public abstract class PersistentManagerBase
             return;
 
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, LOADING_PERSISTED_SESSIONS, String.valueOf(n));
+            log.log(Level.FINE, LogFacade.LOADING_PERSISTED_SESSIONS, String.valueOf(n));
         }
         for (int i = 0; i < n; i++)
             try {
                 swapIn(ids[i]);
             } catch (IOException e) {
-                log.log(Level.SEVERE, FAILED_LOAD_SESSION_EXCEPTION, e);
+                log.log(Level.SEVERE, LogFacade.FAILED_LOAD_SESSION_EXCEPTION, e);
             }
 
     }
@@ -1057,13 +881,13 @@ public abstract class PersistentManagerBase
                     AccessController.doPrivileged(new PrivilegedStoreRemove(id));
                 }catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.log(Level.SEVERE, STORE_REMOVE_SESSION_EXCEPTION, exception);
+                    log.log(Level.SEVERE, LogFacade.STORE_REMOVE_SESSION_EXCEPTION, exception);
                 }
             } else {
                  store.remove(id);
             }               
         } catch (IOException e) {
-            log.log(Level.SEVERE, REMOVING_SESSION_EXCEPTION, e);
+            log.log(Level.SEVERE, LogFacade.REMOVING_SESSION_EXCEPTION, e);
         }        
     }
 
@@ -1121,7 +945,7 @@ public abstract class PersistentManagerBase
             return;
 
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, SAVING_PERSISTED_SESSION, String.valueOf(n));
+            log.log(Level.FINE, LogFacade.SAVING_PERSISTED_SESSION, String.valueOf(n));
         }
         for (int i = 0; i < n; i++)
             try {
@@ -1203,7 +1027,7 @@ public abstract class PersistentManagerBase
                             new PrivilegedStoreLoad(id));
                 }catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.log(Level.SEVERE, STORE_SWAP_IN_EXCEPTION, exception);
+                    log.log(Level.SEVERE, LogFacade.STORE_SWAP_IN_EXCEPTION, exception);
                     if (exception instanceof IOException){
                         throw (IOException)exception;
                     } else if (exception instanceof ClassNotFoundException) {
@@ -1217,18 +1041,18 @@ public abstract class PersistentManagerBase
                      session = store.load(id);
                 }
             }   
-        } catch (ClassNotFoundException e) {
-            String msg = MessageFormat.format(rb.getString(DESERILIZING_SESSION_EXCEPTION),
+        } catch (ClassNotFoundException | ClassCastException e) {
+            String msg = MessageFormat.format(rb.getString(LogFacade.DESERILIZING_SESSION_EXCEPTION),
                                               new Object[] {id, e});
-            log.log(Level.SEVERE, msg);
-            throw new IllegalStateException(msg);
+            log.log(Level.WARNING, msg);
+            return null;
         }
 
         if (session == null)
             return (null);
 
         if (!session.isValid()) {
-            log.log(Level.SEVERE, INVALID_EXPIRED_SESSION_EXCEPTION);
+            log.log(this.store.getManager().getDistributable()? Level.FINE : Level.SEVERE, LogFacade.INVALID_EXPIRED_SESSION_EXCEPTION);
             //6406580 START
             /* - these lines are calling remove on store redundantly
             session.expire();
@@ -1239,7 +1063,7 @@ public abstract class PersistentManagerBase
         }
 
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, SWAPPING_SESSION_FROM_STORE, id);
+            log.log(Level.FINE, LogFacade.SWAPPING_SESSION_FROM_STORE, id);
         }
         session.setManager(this);
         // make sure the listeners know about it.
@@ -1302,14 +1126,14 @@ public abstract class PersistentManagerBase
                     AccessController.doPrivileged(new PrivilegedStoreSave(session));
                 } catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.log(Level.SEVERE, STORE_WRITE_SESSION_EXCEPTION,
+                    log.log(Level.SEVERE, LogFacade.STORE_WRITE_SESSION_EXCEPTION,
                             exception);
                 }
             } else {
                  store.save(session);
             }   
         } catch (IOException e) {
-            log.log(Level.SEVERE,SERIALIZING_SESSION_EXCEPTION, new Object[] {session.getIdInternal(), e});
+            log.log(Level.SEVERE,LogFacade.SERIALIZING_SESSION_EXCEPTION, new Object[] {session.getIdInternal(), e});
             throw e;
         } finally {
             ((StandardContext)getContainer()).sessionPersistedEndEvent(
@@ -1367,7 +1191,7 @@ public abstract class PersistentManagerBase
         // Validate and update our current component state
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, MANAGER_STARTED_INFO);
+                log.log(Level.INFO, LogFacade.MANAGER_STARTED_INFO);
             }
             return;
         }
@@ -1385,7 +1209,7 @@ public abstract class PersistentManagerBase
             log.log(Level.FINEST, "Force random number initialization completed");
 
         if (store == null)
-            log.log(Level.SEVERE, NO_STORE_CONFIG_EXCEPTION);
+            log.log(Level.SEVERE, LogFacade.NO_STORE_CONFIG_EXCEPTION);
         else if (store instanceof Lifecycle)
             ((Lifecycle)store).start();
 
@@ -1408,7 +1232,7 @@ public abstract class PersistentManagerBase
         // Validate and update our current component state
         if (!isStarted()) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, MANAGER_NOT_STARTED_INFO);
+                log.log(Level.INFO,LogFacade. MANAGER_NOT_STARTED_INFO);
             }
             return;
         }
@@ -1461,7 +1285,7 @@ public abstract class PersistentManagerBase
                 setMaxInactiveIntervalSeconds
                     ( ((Integer) event.getNewValue()).intValue()*60 );
             } catch (NumberFormatException e) {
-                log.log(Level.SEVERE, INVALID_SESSION_TIMEOUT_SETTING_EXCEPTION, event.getNewValue().toString());
+                log.log(Level.SEVERE, LogFacade.INVALID_SESSION_TIMEOUT_SETTING_EXCEPTION, event.getNewValue().toString());
             }
         }
 
@@ -1494,7 +1318,7 @@ public abstract class PersistentManagerBase
                     (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
                 if (timeIdle > maxIdleSwap && timeIdle > minIdleSwap) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, SWAPPING_SESSION_TO_STORE, new Object[] {session.getIdInternal(),
+                        log.log(Level.FINE, LogFacade.SWAPPING_SESSION_TO_STORE, new Object[] {session.getIdInternal(),
                                 Integer.valueOf(timeIdle)});
                     }
                     try {
@@ -1525,7 +1349,7 @@ public abstract class PersistentManagerBase
             return;
 
         if(log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, TOO_MANY_ACTIVE_SESSION, Integer.valueOf(sessions.length));
+            log.log(Level.FINE, LogFacade.TOO_MANY_ACTIVE_SESSION, Integer.valueOf(sessions.length));
         }
         int toswap = sessions.length - getMaxActiveSessions();
         long timeNow = System.currentTimeMillis();
@@ -1538,7 +1362,7 @@ public abstract class PersistentManagerBase
                 //skip the session if it cannot be locked
                 if(session.lockBackground()) {
                     if(log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, SWAP_OUT_SESSION, new Object[] {session.getIdInternal(),
+                        log.log(Level.FINE, LogFacade.SWAP_OUT_SESSION, new Object[] {session.getIdInternal(),
                                 Integer.valueOf(timeIdle)});
                     }
                     try {
@@ -1584,7 +1408,7 @@ public abstract class PersistentManagerBase
                     //if session cannot be background locked then skip it
                     if (session.lockBackground()) {                         
                         if (log.isLoggable(Level.FINE)) {
-                            log.log(Level.FINE, BACKUP_SESSION_TO_STORE, new Object[] {session.getIdInternal(),
+                            log.log(Level.FINE, LogFacade.BACKUP_SESSION_TO_STORE, new Object[] {session.getIdInternal(),
                                     Integer.valueOf(timeIdle)});
                         }
                         try {

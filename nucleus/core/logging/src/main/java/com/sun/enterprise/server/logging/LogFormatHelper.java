@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.server.logging;
 
 import java.util.regex.Pattern;
@@ -51,6 +53,8 @@ public class LogFormatHelper {
     
     private static final String ODL_LINE_BEGIN_REGEX = "\\[(\\d){4}";
     
+    private static final String GZIP_EXTENSION = ".gz";
+
     private static final class PatternHolder {
         private static final Pattern ODL_PATTERN = Pattern.compile(ODL_LINE_BEGIN_REGEX);
     }
@@ -93,6 +97,15 @@ public class LogFormatHelper {
             }
         }
         return count;
-    }    
+    }
+
+    /**
+     * Determines whether the given file is compressed (name ends with .gz).
+     * @param filename
+     * @return
+     */
+    public static boolean isCompressedFile(String filename) {
+        return filename.endsWith(GZIP_EXTENSION);
+    }
     
 }

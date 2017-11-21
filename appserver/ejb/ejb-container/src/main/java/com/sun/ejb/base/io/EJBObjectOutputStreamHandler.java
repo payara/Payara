@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.base.io;
 
@@ -211,7 +211,7 @@ final class SerializableJNDIContext
         }
     }
 
-    public Object createObject()
+    public Object createObject(long appUniquId)
         throws IOException
     {
         try {
@@ -297,11 +297,12 @@ final class SerializableS1ASEJBHomeReference
 	super(containerId);
     }
 
-    public Object createObject()
+    @Override
+    public Object createObject(long appUniqueId)
         throws IOException
     {
 	    Object result = null;
-	    BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
+	    BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, appUniqueId);
 	    //container can be null if the app has been undeployed
 	    //  after this was serialized
 	    if (container == null) {
@@ -353,11 +354,12 @@ final class SerializableS1ASEJBObjectReference
         return haEnabled;
     }
 
-    public Object createObject()
+    @Override
+    public Object createObject(long appUniqueId)
         throws IOException
     {
         Object result = null;
-        BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
+        BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, appUniqueId);
         //container can be null if the app has been undeployed
         //  after this was serialized
         if (container == null) {
@@ -407,8 +409,6 @@ final class SerializableS1ASEJBObjectReference
                 }
         }
 
-	    return result;
+        return result;
     }
 }
-
-

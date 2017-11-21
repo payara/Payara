@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.web.jsp;
 
@@ -46,7 +46,7 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.web.WebModule;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jsp.api.ResourceInjector;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 import javax.servlet.jsp.tagext.JspTag;
 import java.lang.String;
@@ -62,19 +62,9 @@ import java.util.logging.Logger;
  */
 public class ResourceInjectorImpl implements ResourceInjector {
 
-    protected static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+    protected static final Logger _logger = LogFacade.getLogger();
 
     protected static final ResourceBundle _rb = _logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Exception during invocation of PreDestroy-annotated method on JSP tag handler [{0}]",
-            level = "WARNING")
-    public static final String EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY = "AS-WEB-GLUE-00094";
-
-    @LogMessageInfo(
-            message = "ServerContext is null for ResourceInjector",
-            level = "INFO")
-    public static final String NO_SERVERT_CONTEXT = "AS-WEB-GLUE-00095";
 
     private InjectionManager injectionMgr;
     private JndiNameEnvironment desc;
@@ -86,7 +76,7 @@ public class ResourceInjectorImpl implements ResourceInjector {
         ServerContext serverContext = webModule.getServerContext();
         if (serverContext == null) {
             throw new IllegalStateException(
-                    _rb.getString(NO_SERVERT_CONTEXT));
+                    _rb.getString(LogFacade.NO_SERVERT_CONTEXT));
         }
         this.injectionMgr = serverContext.getDefaultServices().getService(
             InjectionManager.class);
@@ -118,7 +108,7 @@ public class ResourceInjectorImpl implements ResourceInjector {
             try {
                 injectionMgr.destroyManagedObject(handler);
             } catch (Exception e) {
-                String msg = _rb.getString(EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY);
+                String msg = _rb.getString(LogFacade.EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY);
                 msg = MessageFormat.format(msg, handler);
                 _logger.log(Level.WARNING, msg, e);
             }

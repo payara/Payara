@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.listener;
@@ -58,7 +60,6 @@ import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.inject.Singleton;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.List;
@@ -91,6 +92,7 @@ public class ApplicationScopedResourcesManager implements PostConstruct, PreDest
     @Inject
     private ResourceTypeOrderProcessor resourceTypeOrderProcessor;
 
+    @Override
     public void postConstruct() {
         Collection<Application> apps = applications.getApplications();
         if(apps != null){
@@ -112,6 +114,11 @@ public class ApplicationScopedResourcesManager implements PostConstruct, PreDest
         }
     }
 
+    /**
+     * Gets all {@link Resources} that are part of an application
+     * @param applicationName
+     * @return 
+     */
     public Resources getResources(String applicationName){
         Application app = applications.getApplication(applicationName);
         if(app != null){
@@ -120,6 +127,11 @@ public class ApplicationScopedResourcesManager implements PostConstruct, PreDest
         return null;
     }
 
+    /**
+     * Deploys resources with a specified application
+     * @see #deployResources(Collection)
+     * @param applicationName 
+     */
     public void deployResources(String applicationName){
         Application app = applications.getApplication(applicationName);
         if(app != null){
@@ -183,9 +195,14 @@ public class ApplicationScopedResourcesManager implements PostConstruct, PreDest
     /**
      * Do cleanup of system-resource-adapter, resources, pools
      */
+    @Override
     public void preDestroy() {
     }
 
+    /**
+     * Undeploy all resources associated with a given application
+     * @param applicationName 
+     */
     public void undeployResources(String applicationName){
         Application app = applications.getApplication(applicationName);
         if(app != null){
@@ -301,6 +318,7 @@ public class ApplicationScopedResourcesManager implements PostConstruct, PreDest
      *
      * @param events list of changes
      */
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         return ConfigSupport.sortAndDispatch(events, new ConfigChangeHandler(), _logger);
     }
@@ -317,6 +335,7 @@ public class ApplicationScopedResourcesManager implements PostConstruct, PreDest
          * @param changedType     type of the configuration object
          * @param changedInstance changed instance.
          */
+        @Override
         public <T extends ConfigBeanProxy> NotProcessed changed(Changed.TYPE type, Class<T> changedType,
                                                                 T changedInstance) {
             NotProcessed np ;

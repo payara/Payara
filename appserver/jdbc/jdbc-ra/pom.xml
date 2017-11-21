@@ -40,12 +40,13 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-      <groupId>org.glassfish.main</groupId>
-      <artifactId>glassfish-parent</artifactId>
-      <version>4.1.1.162-SNAPSHOT</version>
+      <groupId>fish.payara</groupId>
+      <artifactId>payara-parent</artifactId>
+      <version>4.1.2.181-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -54,7 +55,6 @@
   <artifactId>jdbc-ra</artifactId>
   <name>JDBC Resource Adapter</name>
   <packaging>pom</packaging>
-  <version>4.1.1.162-SNAPSHOT</version>
 
   <build>
     <plugins>

@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-Portions Copyright [2015] [C2B2 Consulting Limited]
+Portions Copyright [2016-2017] [Payara Foundation]
 -->
 
 <!initPage
@@ -122,24 +122,24 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
     <sun:button id="pingButton" text="$resource{i18njms.jms.Ping}"
                         rendered="#{pageSession.configName != 'default-config'}"
                         onClick="return submitAndDisable(this, '$resource{i18n.button.Processing}');" >
-                        <!command
-                            prepareSuccessfulMsg();
+                <!command
+                    prepareSuccessfulMsg();
 
-                            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/servers/server", result="#{pageSession.serverList}");
-                            foreach (var="server" list="#{pageSession.serverList}") {
-                                gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}", method="GET", result="#{requestScope.serverDetails}");
-                                if ("#{pageSession.configName} = #{requestScope.serverDetails.data.extraProperties.entity.configRef}") {
-                                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}/jms-ping?target=#{server}", method="get", result="#{requestScope.pingResults}");
-                                    if ("(#{requestScope.pingResults.responseCode} = 200)") {
-                                        prepareAlertMsg(type="success", summary="$resource{i18nc.msg.PingSucceed}");
-                                    }
-                                    if ("!(#{requestScope.pingResults.responseCode} = 200)") {
-                                        gf.handleError(detail="#{requestScope.pingResults.data.message}");
-                                    }
-                                }
+                    gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/servers/server", result="#{pageSession.serverList}");
+                    foreach (var="server" list="#{pageSession.serverList}") {
+                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}", method="GET", result="#{requestScope.serverDetails}");
+                        if ("#{pageSession.configName} = #{requestScope.serverDetails.data.extraProperties.entity.configRef}") {
+                            gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}/jms-ping?target=#{server}", method="get", result="#{requestScope.pingResults}");
+                            if ("(#{requestScope.pingResults.responseCode} = 200)") {
+                                prepareAlertMsg(type="success", summary="$resource{i18nc.msg.PingSucceed}");
                             }
-                        />
-                    </sun:button>
+                            if ("!(#{requestScope.pingResults.responseCode} = 200)") {
+                                gf.handleError(detail="#{requestScope.pingResults.data.message}");
+                            }
+                        }
+                    }
+                />
+    </sun:button>
 
                     <!-- PropertySheet .... -->
                     <sun:propertySheet id="propertySheet">			 

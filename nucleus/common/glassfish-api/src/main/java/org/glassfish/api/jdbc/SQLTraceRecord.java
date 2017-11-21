@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [nC2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.jdbc;
 
@@ -249,7 +249,7 @@ public class SQLTraceRecord implements Serializable {
         if(params != null && params.length > 0) {
             int index = 0;
             for(Object param : params) {
-                sb.append("arg[" + index++ + "]=" + param.toString() + " | ");
+                sb.append("arg[" + index++ + "]=" + ((param == null) ? "<null>" : param.toString()) + " | ");
             }
         }
         return sb.toString();

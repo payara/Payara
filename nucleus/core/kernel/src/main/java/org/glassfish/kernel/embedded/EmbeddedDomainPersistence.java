@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2016] [nPayara Foundation and/or it's affiliates]
 package org.glassfish.kernel.embedded;
 
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -108,6 +108,6 @@ public class EmbeddedDomainPersistence extends DomainXmlPersistence {
 
     @Override
     protected void saved(File destination) {
-        logger.log(Level.INFO, "Configuration saved at {0}", destination);
+        logger.log(Level.FINE, "Configuration saved at {0}", destination);
     }
 }

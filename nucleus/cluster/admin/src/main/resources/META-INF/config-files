@@ -41,7 +41,7 @@
 #
 # files in the config directory to synchronize to server instances on startup
 #
-# Portions Copyright [2015] [C2B2 Consulting Limited]
+# Portions Copyright [2016] [Payara Foundation]
 domain.xml
 admin-keyfile
 cacerts.jks

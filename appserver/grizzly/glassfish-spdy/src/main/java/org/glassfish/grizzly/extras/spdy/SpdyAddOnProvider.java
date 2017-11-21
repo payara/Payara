@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2016] [Payara Foundation] 
 package org.glassfish.grizzly.extras.spdy;
 
 import java.util.ArrayList;
@@ -109,11 +109,11 @@ public class SpdyAddOnProvider implements AddOn, ConfigAwareElement<Spdy> {
             }
         }
 
-        if (spdyVersions == null || spdyVersions.length == 0) {
-            spdyVersions = GlassFishSpdyAddOn.getAllVersions();
+        if(spdyVersions != null && spdyVersions.length > 0) {
+            spdyAddOn = new GlassFishSpdyAddOn(spdyMode, spdyVersions);
+        } else {
+            spdyAddOn = new GlassFishSpdyAddOn(spdyMode);
         }
-        
-        spdyAddOn = new GlassFishSpdyAddOn(spdyMode, spdyVersions);
         
         spdyAddOn.setInitialWindowSize(Integer.getInteger(spdy.getInitialWindowSizeInBytes()));
         spdyAddOn.setMaxConcurrentStreams(Integer.getInteger(spdy.getMaxConcurrentStreams()));
@@ -130,6 +130,10 @@ public class SpdyAddOnProvider implements AddOn, ConfigAwareElement<Spdy> {
     private static class GlassFishSpdyAddOn extends SpdyAddOn {
         private FilterChainBuilder filterChainBuilder;
 
+        public GlassFishSpdyAddOn(final SpdyMode mode) {
+            super(mode);
+        }
+        
         public GlassFishSpdyAddOn(final SpdyMode mode,
                 final SpdyVersion... supportedSpdyVersions) {
             super(mode, supportedSpdyVersions);
@@ -149,9 +153,6 @@ public class SpdyAddOnProvider implements AddOn, ConfigAwareElement<Spdy> {
             return new SpdyNpnConfigProbe(filterChainBuilder);
         }
 
-        private static SpdyVersion[] getAllVersions() {
-            return ALL_SPDY_VERSIONS;
-        }
         // ---------------------------------------------------------- Nested Classes
 
         private final class SpdyNpnConfigProbe extends TransportProbe.Adapter {

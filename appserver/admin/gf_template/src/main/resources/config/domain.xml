@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
 <security-configurations>
     <authentication-service default="true" name="adminAuth" use-password-credential="true">
@@ -64,7 +66,7 @@
   </security-configurations>
   <system-applications />
   <resources>
-    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin" />
+    <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-all" />
     <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" object-type="system-all" />
     <jdbc-connection-pool name="__TimerPool" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource">
       <property value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" name="databaseName" />
@@ -118,6 +120,14 @@
       </connector-service>
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+       <asadmin-recorder-configuration></asadmin-recorder-configuration>
+       <request-tracing-service-configuration>
+         <log-notifier></log-notifier>
+       </request-tracing-service-configuration>
+      <notification-service-configuration enabled="true">
+        <log-notifier-configuration enabled="true"></log-notifier-configuration>
+      </notification-service-configuration>
+      <monitoring-service-configuration></monitoring-service-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -233,6 +243,7 @@
         <jvm-options>-Dcom.ctc.wstx.returnNullForDefaultNamespace=true</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
+        <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -264,7 +275,7 @@
         </transports>
       </network-config>
       <thread-pools>
-          <thread-pool name="admin-thread-pool" max-thread-pool-size="50" max-queue-size="256"></thread-pool>
+          <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
           <thread-pool name="http-thread-pool" max-queue-size="4096"></thread-pool>
           <thread-pool name="thread-pool-1" max-thread-pool-size="200"/>
       </thread-pools>
@@ -367,6 +378,13 @@
          </security-service>
          <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" />
          <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+         <request-tracing-service-configuration>
+             <log-notifier></log-notifier>
+         </request-tracing-service-configuration>
+      <notification-service-configuration enabled="true">
+        <log-notifier-configuration enabled="true"></log-notifier-configuration>
+      </notification-service-configuration>
+      <monitoring-service-configuration></monitoring-service-configuration>
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-XX:MaxPermSize=192m</jvm-options>
@@ -397,8 +415,8 @@
              <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
              <!-- Gogo shell configuration -->
              <!--PAYARA-495-->
-             <!--<jvm-options>-Dgosh.args=noshutdown -c noop=true</jvm-options>-->
-             <jvm-options>-Dgosh.args=--noshutdown</jvm-options>
+             <!--<jvm-options>-Dgosh.args=nointeractive</jvm-options>-->
+             <jvm-options>-Dgosh.args=--nointeractive</jvm-options>
              <!-- Directory being watched by fileinstall. -->
              <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
              <!-- Time period fileinstaller thread in ms. -->
@@ -418,6 +436,9 @@
              <!-- End of OSGi bundle configurations -->
              <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
              <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
+             <!-- PAYARA-1033 Maintain backwards compatibility to old Grizzly Memeory Manager -->
+             <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
+             
         </java-config>
          <availability-service>
              <web-container-availability/>
@@ -463,7 +484,7 @@
              <network-listeners>
                  <network-listener address="0.0.0.0" port="${HTTP_LISTENER_PORT}" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool" />
                  <network-listener address="0.0.0.0" port="${HTTP_SSL_LISTENER_PORT}" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool" />
-                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="http-thread-pool" />
+                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="admin-thread-pool" />
              </network-listeners>
              <transports>
                  <transport name="tcp" />
@@ -471,7 +492,8 @@
          </network-config>
          <thread-pools>
              <thread-pool name="http-thread-pool" />
-             <thread-pool max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
+             <thread-pool min-thread-pool-size="2" max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
+	     <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
          </thread-pools>
          <group-management-service/>
          <!--%%%DEFAULT_TOKENS_HERE%%%-->

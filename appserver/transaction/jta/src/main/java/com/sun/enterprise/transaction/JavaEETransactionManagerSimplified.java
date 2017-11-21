@@ -38,52 +38,54 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates.]
+
 package com.sun.enterprise.transaction;
 
-import java.util.*;
-import java.util.logging.*;
-import java.rmi.RemoteException;
-
-import javax.transaction.*;
-import javax.transaction.xa.*;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.WorkException;
-
-import com.sun.appserv.util.cache.Cache;
 import com.sun.appserv.util.cache.BaseCache;
-
+import com.sun.appserv.util.cache.Cache;
+import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.transaction.api.TransactionAdminBean;
 import com.sun.enterprise.transaction.api.XAResourceWrapper;
 import com.sun.enterprise.transaction.config.TransactionService;
-import com.sun.enterprise.transaction.spi.JavaEETransactionManagerDelegate;
-import com.sun.enterprise.transaction.spi.TransactionalResource;
-import com.sun.enterprise.transaction.spi.TransactionInternal;
 import com.sun.enterprise.transaction.monitoring.TransactionServiceProbeProvider;
 import com.sun.enterprise.transaction.monitoring.TransactionServiceStatsProvider;
-
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.transaction.spi.JavaEETransactionManagerDelegate;
+import com.sun.enterprise.transaction.spi.TransactionInternal;
+import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.util.i18n.StringManager;
-
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.ContractsProvided;
+import com.sun.logging.LogDomains;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationException;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.invocation.ResourceHandler;
+import org.glassfish.common.util.Constants;
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.invocation.InvocationException;
-import org.glassfish.api.invocation.ResourceHandler;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.common.util.Constants;
-
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
-
-import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.resource.spi.XATerminator;
+import javax.resource.spi.work.WorkException;
+import javax.transaction.*;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of javax.transaction.TransactionManager interface.
@@ -106,6 +108,8 @@ public class JavaEETransactionManagerSimplified
 
     @Inject protected InvocationManager invMgr;
 
+    @Inject private Provider<RequestTracingService> requestTracing;
+    
     private JavaEETransactionManagerDelegate delegate;
 
     // Sting Manager for Localization
@@ -155,15 +159,29 @@ public class JavaEETransactionManagerSimplified
         statusMap.put(Status.STATUS_ROLLING_BACK, "RollingBack");
 
     }
+    
+    @Inject
+    private ProcessEnvironment processEnvironment;
+    
     public JavaEETransactionManagerSimplified() {
         transactions = new ThreadLocal<JavaEETransaction>();
         localCallCounter = new ThreadLocal();
         delegates = new ThreadLocal<JavaEETransactionManagerDelegate>();
-    }
-
+    }      
+    
     public void postConstruct() {
         initDelegates();
         initProperties();
+    }
+
+    private RequestTracingService getRequestTracing() {
+        RequestTracingService requestTracingService = requestTracing.get();
+        if (requestTracingService == null) {
+            _logger.log(Level.INFO, "Error retrieving Request Tracing "
+                    + "service during initialisation of "
+                    + "JavaEETransactionManagerSimplified - NullPointerException");
+        }
+        return requestTracingService;
     }
 
     private void initProperties() {
@@ -526,7 +544,7 @@ public class JavaEETransactionManagerSimplified
             try {
                 h.getXAResource().end(tx.getLocalXid(), flag);
             } catch ( XAException ex ) {
-                throw new RuntimeException(sm.getString("enterprise_distributedtx.xaresource_end_excep", ex));
+                throw new RuntimeException(sm.getString("enterprise_distributedtx.xaresource_end_excep", ex),ex);
             }
             return true;
         }
@@ -581,6 +599,12 @@ public class JavaEETransactionManagerSimplified
             tx = new JavaEETransactionImpl(this);
 
         setCurrentTransaction(tx);
+
+        if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
+            RequestEvent requestEvent = constructJTABeginEvent(tx);
+            getRequestTracing().traceRequestEvent(requestEvent);
+        }
+        
         return tx;
     }
 
@@ -842,7 +866,7 @@ public class JavaEETransactionManagerSimplified
     public void commit() throws RollbackException,
             HeuristicMixedException, HeuristicRollbackException, SecurityException,
             IllegalStateException, SystemException {
-
+        
         boolean acquiredlock=false;
         try {
             JavaEETransaction tx = transactions.get();
@@ -864,6 +888,10 @@ public class JavaEETransactionManagerSimplified
                 }
             }
 
+            if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
+                RequestEvent requestEvent = constructJTAEndEvent(tx);
+                getRequestTracing().traceRequestEvent(requestEvent);
+            }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
             delegates.set(null);
@@ -897,6 +925,10 @@ public class JavaEETransactionManagerSimplified
                 }
             }
 
+            if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
+                RequestEvent requestEvent = constructJTAEndEvent(tx);
+                getRequestTracing().traceRequestEvent(requestEvent);
+            }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
             delegates.set(null);
@@ -1576,6 +1608,40 @@ public class JavaEETransactionManagerSimplified
         }
 
         return tx;
+    }
+    
+    private RequestEvent constructJTABeginEvent(JavaEETransactionImpl transaction) {
+        RequestEvent requestEvent = new RequestEvent("JTAContextBeginEvent");
+        
+        requestEvent.addProperty("Transaction ID", transaction.getTransactionId());   
+        requestEvent.addProperty("Remaining Timeout", Integer.toString(transaction.getRemainingTimeout()));    
+        
+        return requestEvent;
+    }
+    
+    private RequestEvent constructJTAEndEvent(JavaEETransaction transaction) throws SystemException {
+        RequestEvent requestEvent = new RequestEvent("JTAContextEndEvent");
+
+        if (transaction.getClass().equals(JavaEETransactionImpl.class)) {
+            JavaEETransactionImpl tx = (JavaEETransactionImpl) transaction;
+            requestEvent.addProperty("Transaction ID", (tx.getTransactionId()));
+        }
+        
+        // Check if transaction was rolled back or committed
+        int status = transaction.getStatus();
+        switch (status) {
+            case 3:
+                requestEvent.addProperty("Status", "Committed");
+                break;
+            case 4:
+                requestEvent.addProperty("Status", "Rolled Back");
+                break;
+            default:
+                requestEvent.addProperty("Status", Integer.toString(status));
+                break;
+        }
+        
+        return requestEvent;
     }
 
 /****************************************************************************/

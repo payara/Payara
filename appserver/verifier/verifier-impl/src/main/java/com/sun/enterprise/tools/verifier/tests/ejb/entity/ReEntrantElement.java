@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,27 +79,16 @@ public class ReEntrantElement extends EjbTest implements EjbCheck {
 		((EjbEntityDescriptor)descriptor).isReentrant();
 	    // this will never fail?
 	    // need DOL to turn off checking and map XML elements to DOL 1-1
-	    if ((reentrant == true) || (reentrant == false)) {
 		result.addGoodDetails(smh.getLocalString
 				      ("tests.componentNameConstructor",
 				       "For [ {0} ]",
-				       new Object[] {compName.toString()}));	
+				       new Object[] {compName.toString()}));
 		result.passed
 		    (smh.getLocalString
 		     (getClass().getName() + ".passed",
 		      "reEntrant [ {0} ] is valid within bean [ {1} ]",
 		      new Object[] {new Boolean(reentrant),descriptor.getName()}));
-	    } else {
-		result.addErrorDetails(smh.getLocalString
-				       ("tests.componentNameConstructor",
-					"For [ {0} ]",
-					new Object[] {compName.toString()}));
-		result.failed
-		    (smh.getLocalString
-		     (getClass().getName() + ".failed",
-		      "Error: reEntrant [ {0} ] is not valid within bean [ {1} ]",
-		      new Object[] {new Boolean(reentrant),descriptor.getName()}));
-	    }
+
 	} else {
 	    result.addNaDetails(smh.getLocalString
 				("tests.componentNameConstructor",

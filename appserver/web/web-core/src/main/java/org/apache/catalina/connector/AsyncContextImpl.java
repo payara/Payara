@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,9 @@
 package org.apache.catalina.connector;
 
 import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.*;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +62,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.apache.catalina.connector.Request.REQUEST_ALREADY_RELEASED_EXCEPTION;
 
 class AsyncContextImpl implements AsyncContext {
     // Note...this constant is also defined in org.glassfish.weld.WeldDeployer.  If it changes here it must
@@ -76,50 +75,8 @@ class AsyncContextImpl implements AsyncContext {
      */
     static enum AsyncEventType { COMPLETE, TIMEOUT, ERROR, START_ASYNC }
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Unable to determine target of zero-arg dispatcher",
-            level = "WARNING"
-    )
-    public static final String UNABLE_DETERMINE_TARGET_OF_DISPATCHER = "AS-WEB-CORE-00021";
-
-    @LogMessageInfo(
-            message = "Unable to acquire RequestDispatcher for {0}",
-            level = "WARNING"
-    )
-    public static final String UNABLE_ACQUIRE_REQUEST_DISPATCHER = "AS-WEB-CORE-00022";
-
-    @LogMessageInfo(
-            message = "Unable to acquire RequestDispatcher for {0} in servlet context {1}",
-            level = "WARNING"
-    )
-    public static final String UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT = "AS-WEB-CORE-00023";
-
-    @LogMessageInfo(
-            message = "Error invoking AsyncListener",
-            level = "WARNING"
-    )
-    public static final String ERROR_INVOKE_ASYNCLISTENER = "AS-WEB-CORE-00024";
-
-    @LogMessageInfo(
-            message = "Asynchronous dispatch already in progress, must call ServletRequest.startAsync first",
-            level = "WARNING"
-    )
-    public static final String ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION = "AS-WEB-CORE-00025";
-
-    @LogMessageInfo(
-            message = "Must not call AsyncContext.addListener after the container-initiated dispatch during which ServletRequest.startAsync was called has returned to the container",
-            level = "WARNING"
-    )
-    public static final String ASYNC_CONTEXT_ADD_LISTENER_EXCEPTION = "AS-WEB-CORE-00026";
-
-    @LogMessageInfo(
-            message = "Must not call AsyncContext.setTimeout after the container-initiated dispatch during which ServletRequest.startAsync was called has returned to the container",
-            level = "WARNING"
-    )
-    public static final String ASYNC_CONTEXT_SET_TIMEOUT_EXCEPTION = "AS-WEB-CORE-00027";
 
 
     // Default timeout for async operations
@@ -151,6 +108,8 @@ class AsyncContextImpl implements AsyncContext {
             return Boolean.FALSE;
         }
     };
+    
+    private volatile boolean hasDispatch = false;
 
     private AtomicBoolean isOkToConfigure = new AtomicBoolean(true);
 
@@ -198,16 +157,23 @@ class AsyncContextImpl implements AsyncContext {
         this.origRequest = origRequest;
         init(servletRequest, servletResponse, isStartAsyncWithZeroArg);
     }
-
+    
     @Override
     public ServletRequest getRequest() {
         return servletRequest;
     }
 
+    /**
+     * Get the originated request
+     * @return the original (unwrapped) request
+     */
     Request getOriginalRequest() {
         return origRequest;
     }
 
+    /**
+     * @return the possibly wrapped response passed to {@link ServletRequest.startAsync}
+     */
     @Override
     public ServletResponse getResponse() {
         return servletResponse;
@@ -253,6 +219,7 @@ class AsyncContextImpl implements AsyncContext {
             ServletContext context, String path) {
 
         isDispatchInScope.set(true);
+        hasDispatch = true;
         if (dispatcher != null) {
             if (isDispatchInProgress.compareAndSet(false, true)) {
                 if (delayAsyncDispatchAndComplete) {
@@ -261,18 +228,18 @@ class AsyncContextImpl implements AsyncContext {
                     pool.execute(new Handler(this, dispatcher));
                 }
             } else {
-                String msg = rb.getString(ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION);
+                String msg = rb.getString(LogFacade.ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION);
                 throw new IllegalStateException(msg);
             }
         } else {
             // Should never happen, because any unmapped paths will be
             // mapped to the DefaultServlet
             if (context == null && path == null) {
-                log.log(Level.WARNING, UNABLE_DETERMINE_TARGET_OF_DISPATCHER);
+                log.log(Level.WARNING, LogFacade.UNABLE_DETERMINE_TARGET_OF_DISPATCHER);
             } else if (context == null && path != null) {
-                log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER, path);
+                log.log(Level.WARNING, LogFacade.UNABLE_ACQUIRE_REQUEST_DISPATCHER, path);
             } else {
-                log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT,
+                log.log(Level.WARNING, LogFacade.UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT,
                         new Object[] {path, context.getContextPath()});
             }
         }
@@ -310,24 +277,14 @@ class AsyncContextImpl implements AsyncContext {
 
     @Override
     public void complete() {
-        tryComplete(true);
-    }
-
-    /**
-     * Try to complete the AsyncContext, if it hasn't completed yet
-     * and if service() thread doesn't rely on request/response existence.
-     * @param failIfCompleted 
-     */
-    void tryComplete(final boolean failIfCompleted) {
         if (isAsyncCompleteCalled.compareAndSet(false, true)) {
             if (delayAsyncDispatchAndComplete) {
                 return;
             }
-            
             doComplete();
-        } else if (failIfCompleted) {
+        } else {
             throw new IllegalStateException(rb.getString(
-                    REQUEST_ALREADY_RELEASED_EXCEPTION));
+                    LogFacade.REQUEST_ALREADY_RELEASED_EXCEPTION));
         }
     }
 
@@ -338,14 +295,17 @@ class AsyncContextImpl implements AsyncContext {
     }
     
     void processAsyncOperations() {
-        if (isDispatchInScope()) {
+        processAsyncOperations(false);
+    }
+
+    private void processAsyncOperations(boolean exit) {
+        if (isDispatchInScope() || (exit && hasDispatch)) {
             invokeDelayDispatch();
         } else if (isAsyncComplete()) {
             doComplete();
         }
     }
 
-    
     /**
      * The method is called once service thread finished with the
      * request/response processing and doesn't rely on its existence anymore.
@@ -354,7 +314,7 @@ class AsyncContextImpl implements AsyncContext {
      */
     void onExitService() {
         delayAsyncDispatchAndComplete = false;
-        processAsyncOperations();
+        processAsyncOperations(true);
     }
     
     @Override
@@ -406,7 +366,7 @@ class AsyncContextImpl implements AsyncContext {
         }
 
         if (!isOkToConfigure.get()) {
-            String msg = rb.getString(ASYNC_CONTEXT_ADD_LISTENER_EXCEPTION);
+            String msg = rb.getString(LogFacade.ASYNC_CONTEXT_ADD_LISTENER_EXCEPTION);
             throw new IllegalStateException(msg);
         }
 
@@ -435,7 +395,7 @@ class AsyncContextImpl implements AsyncContext {
     @Override
     public void setTimeout(long timeout) {
         if (!isOkToConfigure.get()) {
-            String msg = rb.getString(ASYNC_CONTEXT_SET_TIMEOUT_EXCEPTION);
+            String msg = rb.getString(LogFacade.ASYNC_CONTEXT_SET_TIMEOUT_EXCEPTION);
             throw new IllegalStateException(msg);
         }
         asyncTimeoutMillis = timeout;
@@ -573,7 +533,23 @@ class AsyncContextImpl implements AsyncContext {
                                      DispatcherType.ASYNC);
             origRequest.setAsyncStarted(false);
             int startAsyncCurrent = asyncContext.startAsyncCounter.get();
+            ClassLoader oldCL;
+            if (Globals.IS_SECURITY_ENABLED) {
+                PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
+                oldCL = AccessController.doPrivileged(pa);
+            } else {
+                oldCL = Thread.currentThread().getContextClassLoader();
+            }
+
             try {
+                ClassLoader newCL = origRequest.getContext().getLoader().getClassLoader();
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(newCL);
+                }
+
                 asyncContext.setDelayAsyncDispatchAndComplete(true);
                 dispatcher.dispatch(asyncContext.getRequest(),
                     asyncContext.getResponse(), DispatcherType.ASYNC);
@@ -603,6 +579,13 @@ class AsyncContextImpl implements AsyncContext {
                 origRequest.errorDispatchAndComplete(t);
             } finally {
                 asyncContext.isStartAsyncInScope.set(Boolean.FALSE);
+
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(oldCL);
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(oldCL);
+                }
             }
         }
     }
@@ -651,7 +634,9 @@ class AsyncContextImpl implements AsyncContext {
                 weldListener.requestInitialized(event);
             }
 
+            boolean oldDelay = isDelayAsyncDispatchAndComplete();
             try {
+                setDelayAsyncDispatchAndComplete(true);
                 for (AsyncListenerContext asyncListenerContext : clone) {
                     AsyncListener asyncListener =
                         asyncListenerContext.getAsyncListener();
@@ -676,15 +661,17 @@ class AsyncContextImpl implements AsyncContext {
                                 break;
                         }
                     } catch (Throwable throwable) {
-                        log.log(Level.WARNING, ERROR_INVOKE_ASYNCLISTENER,
+                        log.log(Level.WARNING, LogFacade.ERROR_INVOKE_ASYNCLISTENER,
                                 throwable);
                     }
                 }
             } finally {
+                setDelayAsyncDispatchAndComplete(oldDelay);
                 if ( weldListener != null ) {
                     ServletRequestEvent event = new ServletRequestEvent(origRequest.getContext().getServletContext(), origRequest);
                     weldListener.requestDestroyed(event);
                 }
+                processAsyncOperations();
             }
 
         } finally {

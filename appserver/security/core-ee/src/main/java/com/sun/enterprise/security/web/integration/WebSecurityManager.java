@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
 
 package com.sun.enterprise.security.web.integration;
 
@@ -670,7 +670,7 @@ public class WebSecurityManager  {
 		WebPrincipal wp = (WebPrincipal)principal;
 		secContext = wp.getSecurityContext();
 	    }else {
-		secContext = new SecurityContext(principal.getName(),null);
+                secContext = SecurityContext.getCurrent();
 	    }
         }
 	if (secContext == null) {

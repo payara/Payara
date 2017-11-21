@@ -38,43 +38,43 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016] [C2B2 Consulting Limited] 
+    Portions Copyright [2016] [Payara Foundation] 
 -->
 
 <!initPage
     setResourceBundle(key="i18n" bundle="org.glassfish.common.admingui.Strings")
-/>
+    />
 <sun:page id="page">
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n.masthead.restartRequired}" >
-<!define name="content">
-<f:verbatim>
+    <!composition template="/templates/default.layout"  guiTitle="$resource{i18n.masthead.restartRequired}" >
+    <!define name="content">
+    <f:verbatim>
         <style type="text/css">
             .collapsed { background-image: url(#{request.contextPath}/theme/com/sun/webui/jsf/suntheme/images/table/grouprow_collapsed.gif); }
             .expanded { background-image: url(#{request.contextPath}/theme/com/sun/webui/jsf/suntheme/images/table/grouprow_expanded.gif); }
         </style>
-</f:verbatim>
-        <sun:form id="form">
-            <!-- Page Title -->
-#include "/common/shared/alertMsg_1.inc"                
-            <sun:title id="title" title="$resource{i18n.masthead.restartRequired}"  helpText="$resource{i18n.restart.RestartHelpText}" >
-                <!facet pageButtonsTop>
-                    <sun:panelGroup id="topButtons">
-                        <sun:button id="stopInstance" style="margin-left: 8pt"
+    </f:verbatim>
+    <sun:form id="form">
+        <!-- Page Title -->
+        #include "/common/shared/alertMsg_1.inc"                
+        <sun:title id="title" title="$resource{i18n.masthead.restartRequired}" helpText="$resource{i18n.restart.RestartHelpText}" >
+            <!facet pageButtonsTop>
+            <sun:panelGroup id="topButtons">
+                <sun:button id="stopInstance" style="margin-left: 8pt"
                             onClick="if (getConfirm(this, '$resource{i18n.msg.JS.confirmRestartInstance}')) {return submitAndDisable(this, '$resource{i18n.button.Processing}', target='_top');} else {return false;}"
                             text="$resource{i18n.button.Restart}"
                             toolTip="$resource{i18n.restart.tooltip}">
-                            <!command
-                                gf.redirect("#{facesContext.externalContext.requestContextPath}/common/appServer/restart-2.jsf");
-                            />
-                        </sun:button>
-                    </sun:panelGroup>
-                </facet>
-            </sun:title>
-            "<ul style="margin-left: 20px;">
-            <foreach key="reason" list="#{unprocessedChanges}">
-                "<li style="display: list-item; list-style: disc outside none">#{reason}</li>
-            </foreach>
-            "</ul>
-        </sun:form>
- </define>
+                    <!command
+                        gf.redirect("#{facesContext.externalContext.requestContextPath}/common/appServer/restart-2.jsf");
+                        />
+                </sun:button>
+            </sun:panelGroup>
+        </facet>
+    </sun:title>
+    "<ul style="margin-left: 20px;">
+        <foreach key="reason" list="#{unprocessedChanges}">
+            "<li style="display: list-item; list-style: disc outside none">#{reason}</li>
+        </foreach>
+        "</ul>
+    </sun:form>
+</define>
 </composition>

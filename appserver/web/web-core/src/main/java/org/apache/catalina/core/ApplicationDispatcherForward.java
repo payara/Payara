@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,12 +60,12 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.ResponseUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ErrorReportValve;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.util.HtmlEntityEncoder;
 
 import javax.servlet.*;
@@ -99,19 +99,9 @@ import java.util.logging.Logger;
  */
 class ApplicationDispatcherForward {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
 
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Exception processing {0}",
-            level = "WARNING")
-    public static final String EXCEPTION_PROCESSING = "AS-WEB-CORE-00095";
-
-    @LogMessageInfo(
-            message = "Exception sending default error page",
-            level = "WARNING")
-    public static final String EXCEPTION_SENDING_DEFAULT_ERROR_PAGE = "AS-WEB-CORE-00096";
 
 
     private static final StringManager sm =
@@ -230,7 +220,7 @@ class ApplicationDispatcherForward {
                 try {
                     serveErrorPage(response, errorPage, statusCode);
                 } catch (Exception e) {
-                    String msg = MessageFormat.format(rb.getString(EXCEPTION_PROCESSING), errorPage);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.EXCEPTION_PROCESSING), errorPage);
                     log.log(Level.WARNING, msg, e);
                 }
             }
@@ -268,10 +258,10 @@ class ApplicationDispatcherForward {
                 servletContext.getRequestDispatcher(errorPage.getLocation());
             dispatcher.dispatch(request, response, DispatcherType.ERROR);
         } catch (IllegalStateException ise) {
-            String msg = MessageFormat.format(rb.getString(EXCEPTION_PROCESSING), errorPage);
+            String msg = MessageFormat.format(rb.getString(LogFacade.EXCEPTION_PROCESSING), errorPage);
             log.log(Level.WARNING, msg, ise);
         } catch (Throwable t) {
-            String msg = MessageFormat.format(rb.getString(EXCEPTION_PROCESSING), errorPage);
+            String msg = MessageFormat.format(rb.getString(LogFacade.EXCEPTION_PROCESSING), errorPage);
             log.log(Level.WARNING, msg, t);
         }
     }
@@ -405,7 +395,7 @@ class ApplicationDispatcherForward {
             response.setContentType("text/html");
             response.getWriter().write(responseContents);
         } catch (Throwable t) {
-            log.log(Level.WARNING, EXCEPTION_SENDING_DEFAULT_ERROR_PAGE, t);
+            log.log(Level.WARNING, LogFacade.EXCEPTION_SENDING_DEFAULT_ERROR_PAGE, t);
         }
     }
 

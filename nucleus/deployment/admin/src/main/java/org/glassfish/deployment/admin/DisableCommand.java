@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.deployment.admin;
 
@@ -48,6 +48,7 @@ import org.glassfish.api.admin.FailurePolicy;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.v3.server.ApplicationLoaderService;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.glassfish.api.ActionReport;
@@ -84,6 +85,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import javax.inject.Provider;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;
@@ -140,6 +142,10 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
     @Inject
     ServiceLocator habitat;
+    
+    @Inject		
+    @Named("ApplicationLoaderService")		
+    private Provider<ApplicationLoaderService> startupProvider;    
     
     private ActionReport report;
     private Logger logger;
@@ -369,9 +375,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 return;
             }
         }
-
-        ApplicationInfo appInfo = deployment.get(appName);
-        
+                
         try {
             
 
@@ -381,6 +385,10 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             // SHOULD CHECK THAT WE ARE THE CORRECT TARGET BEFORE DISABLING 
             String serverName = server.getName();
             if (serverName.equals(target) || (server.getCluster() != null && server.getCluster().getName().equals(target)) ) {
+                // wait until all applications are loaded. Otherwise we get "Application not registered"
+                startupProvider.get();        
+                ApplicationInfo appInfo = deployment.get(appName);
+                
                 final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);           
                 suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);  
             }

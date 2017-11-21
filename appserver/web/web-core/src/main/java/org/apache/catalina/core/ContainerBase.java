@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,6 +80,7 @@ import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
@@ -93,7 +94,6 @@ import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.naming.resources.ProxyDirContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
 
@@ -160,132 +160,8 @@ import org.glassfish.web.valve.GlassFishValve;
 public abstract class ContainerBase
     implements Container, Lifecycle, Pipeline {
 
-    protected static final Logger log = StandardServer.log;
+    protected static final Logger log = LogFacade.getLogger();
     protected static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-        message = "ContainerBase.setLoader: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop previous loader",
-        action = "Verify previous loader"
-    )
-    public static final String CONTAINER_BASE_SET_LOADER_STOP = "AS-WEB-CORE-00099";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setLoader: start:",
-        level = "SEVERE",
-        cause = "Could not start new loader",
-        action = "Verify the configuration of container"
-    )
-    public static final String CONTAINER_BASE_SET_LOADER_START = "AS-WEB-CORE-00100";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setLogger: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop previous logger",
-        action = "Verify previous logger"
-    )
-    public static final String CONTAINER_BASE_SET_LOGGER_STOP = "AS-WEB-CORE-00101";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setLogger: start: ",
-        level = "SEVERE",
-        cause = "Could not start new logger",
-        action = "Verify the configuration of container"
-    )
-    public static final String CONTAINER_BASE_SET_LOGGER_START = "AS-WEB-CORE-00102";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setManager: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop previous manager",
-        action = "Verify previous manager"
-    )
-    public static final String CONTAINER_BASE_SET_MANAGER_STOP = "AS-WEB-CORE-00103";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setManager: start: ",
-        level = "SEVERE",
-        cause = "Could not start new manager",
-        action = "Verify the configuration of container"
-    )
-    public static final String CONTAINER_BASE_SET_MANAGER_START = "AS-WEB-CORE-00104";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setRealm: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop previous realm",
-        action = "Verify previous realm"
-    )
-    public static final String CONTAINER_BASE_SET_REALM_STOP = "AS-WEB-CORE-00105";
-
-    @LogMessageInfo(
-        message = "ContainerBase.setRealm: start: ",
-        level = "SEVERE",
-        cause = "Could not start new realm",
-        action = "Verify the configuration of container"
-    )
-    public static final String CONTAINER_BASE_SET_REALM_START = "AS-WEB-CORE-00106";
-
-    @LogMessageInfo(
-        message = "addChild: Child name {0} is not unique",
-        level = "WARNING"
-    )
-    public static final String DUPLICATE_CHILD_NAME_EXCEPTION = "AS-WEB-CORE-00107";
-
-    @LogMessageInfo(
-        message = "ContainerBase.addChild: start: ",
-        level = "SEVERE",
-        cause = "Could not start new child container",
-        action = "Verify the configuration of parent container"
-    )
-    public static final String CONTAINER_BASE_ADD_CHILD_START = "AS-WEB-CORE-00108";
-
-    @LogMessageInfo(
-        message = "ContainerBase.removeChild: stop: ",
-        level = "SEVERE",
-        cause = "Could not stop existing child container",
-        action = "Verify existing child container"
-    )
-    public static final String CONTAINER_BASE_REMOVE_CHILD_STOP = "AS-WEB-CORE-00109";
-
-    @LogMessageInfo(
-        message = "Container {0} has already been started",
-        level = "INFO"
-    )
-    public static final String CONTAINER_STARTED = "AS-WEB-CORE-00110";
-
-    @LogMessageInfo(
-        message = "Container {0} has not been started",
-        level = "SEVERE",
-        cause = "Current container has not been started",
-        action = "Verify the current container"
-    )
-    public static final String CONTAINER_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00111";
-
-    @LogMessageInfo(
-        message = "Error stopping container {0}",
-        level = "SEVERE",
-        cause = "Could not stop child container",
-        action = "Verify the existence of current child container"
-    )
-    public static final String ERROR_STOPPING_CONTAINER = "AS-WEB-CORE-00112";
-
-    @LogMessageInfo(
-        message = "Error unregistering ",
-        level = "SEVERE",
-        cause = "Could not unregister current container",
-        action = "Verify if the container has been registered"
-    )
-    public static final String ERROR_UNREGISTERING = "AS-WEB-CORE-00113";
-
-    @LogMessageInfo(
-        message = "Exception invoking periodic operation: ",
-        level = "SEVERE",
-        cause = "Could not set the context ClassLoader",
-        action = "Verify the security permission"
-    )
-    public static final String EXCEPTION_INVOKES_PERIODIC_OP = "AS-WEB-CORE-00114";
 
 
 
@@ -304,6 +180,7 @@ public abstract class ContainerBase
             this.child = child;
         }
 
+        @Override
         public Void run() {
             addChildInternal(child);
             return null;
@@ -456,6 +333,7 @@ public abstract class ContainerBase
 
     /**
      * Return the debugging detail level for this component.
+     * @return 
      */
     public int getDebug() {
 
@@ -487,7 +365,9 @@ public abstract class ContainerBase
      * a thread to be spawn. After waiting the specified amount of time, 
      * the thread will invoke the executePeriodic method on this container 
      * and all its children.
+     * @return 
      */
+    @Override
     public int getBackgroundProcessorDelay() {
         return backgroundProcessorDelay;
     }
@@ -500,6 +380,7 @@ public abstract class ContainerBase
      * @param delay The delay in seconds between the invocation of 
      *              backgroundProcess methods
      */
+    @Override
     public void setBackgroundProcessorDelay(int delay) {
         backgroundProcessorDelay = delay;
     }
@@ -509,7 +390,9 @@ public abstract class ContainerBase
      * Return descriptive information about this Container implementation and
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
+     * @return 
      */
+    @Override
     public String getInfo() {
         return this.getClass().getName();
     }
@@ -519,7 +402,9 @@ public abstract class ContainerBase
      * Return the Loader with which this Container is associated.  If there is
      * no associated Loader, return the Loader associated with our parent
      * Container (if any); otherwise, return <code>null</code>.
+     * @return 
      */
+    @Override
     public Loader getLoader() {
 
         try {
@@ -542,6 +427,7 @@ public abstract class ContainerBase
      *
      * @param loader The newly associated loader
      */
+    @Override
     public void setLoader(Loader loader) {
 
         Loader oldLoader;
@@ -561,7 +447,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) oldLoader).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_LOADER_STOP, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_LOADER_STOP, e);
                 }
             }
 
@@ -573,7 +459,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) loader).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_LOADER_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_LOADER_START, e);
                 }
             }
         } finally {
@@ -590,7 +476,9 @@ public abstract class ContainerBase
      * Return the Logger with which this Container is associated.  If there is
      * no associated Logger, return the Logger associated with our parent
      * Container (if any); otherwise return <code>null</code>.
+     * @return 
      */
+    @Override
     public org.apache.catalina.Logger getLogger() {
 
         try {
@@ -613,6 +501,7 @@ public abstract class ContainerBase
      *
      * @param logger The newly associated Logger
      */
+    @Override
     public void setLogger(org.apache.catalina.Logger logger) {
 
         org.apache.catalina.Logger oldLogger;
@@ -631,7 +520,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) oldLogger).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_LOGGER_STOP, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_LOGGER_STOP, e);
                 }
             }
 
@@ -644,7 +533,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) logger).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_LOGGER_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_LOGGER_START, e);
                 }
             }
         } finally {
@@ -661,7 +550,9 @@ public abstract class ContainerBase
      * Return the Manager with which this Container is associated.  If there is
      * no associated Manager, return the Manager associated with our parent
      * Container (if any); otherwise return <code>null</code>.
+     * @return 
      */
+    @Override
     public Manager getManager() {
 
         try {
@@ -684,6 +575,7 @@ public abstract class ContainerBase
      *
      * @param manager The newly associated Manager
      */
+    @Override
     public void setManager(Manager manager) {
 
         Manager oldManager;
@@ -702,7 +594,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) oldManager).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_MANAGER_STOP, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_MANAGER_STOP, e);
                 }
             }
 
@@ -714,7 +606,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) manager).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_MANAGER_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_MANAGER_START, e);
                 }
             }
         } finally {
@@ -728,7 +620,9 @@ public abstract class ContainerBase
 
     /**
      * Return an object which may be utilized for mapping to this component.
+     * @return 
      */
+    @Override
     public Object getMappingObject() {
         return this;
     }
@@ -738,7 +632,9 @@ public abstract class ContainerBase
      * Return a name string (suitable for use by humans) that describes this
      * Container.  Within the set of child containers belonging to a particular
      * parent, Container names must be unique.
+     * @return 
      */
+    @Override
     public String getName() {
 
         return (name);
@@ -756,6 +652,7 @@ public abstract class ContainerBase
      *  added to the children of a parent Container (after which the name
      *  may not be changed)
      */
+    @Override
     public void setName(String name) {
 
         String oldName = this.name;
@@ -767,7 +664,9 @@ public abstract class ContainerBase
     /**
      * Return the Container for which this Container is a child, if there is
      * one.  If there is no defined parent, return <code>null</code>.
+     * @return 
      */
+    @Override
     public Container getParent() {
 
         return (parent);
@@ -797,7 +696,9 @@ public abstract class ContainerBase
      * Return the parent class loader (if any) for this web application.
      * This call is meaningful only <strong>after</strong> a Loader has
      * been configured.
+     * @return 
      */
+    @Override
     public ClassLoader getParentClassLoader() {
         if (parentClassLoader != null)
             return (parentClassLoader);
@@ -817,6 +718,7 @@ public abstract class ContainerBase
      *
      * @param parent The new parent class loader
      */
+    @Override
     public void setParentClassLoader(ClassLoader parent) {
         ClassLoader oldParentClassLoader = this.parentClassLoader;
         this.parentClassLoader = parent;
@@ -828,7 +730,9 @@ public abstract class ContainerBase
     /**
      * Return the Pipeline object that manages the Valves associated with
      * this Container.
+     * @return 
      */
+    @Override
     public Pipeline getPipeline() {
         return (this.pipeline);
     }
@@ -838,6 +742,7 @@ public abstract class ContainerBase
      * @return true if this container was configured with a custom pipeline,
      * false otherwise
      */
+    @Override
     public boolean hasCustomPipeline() {
         return hasCustomPipeline;
     }
@@ -850,6 +755,7 @@ public abstract class ContainerBase
      *
      * @return true if the check is required; false otherwise.
      */
+    @Override
     public boolean isCheckIfRequestIsSecure() {
         return checkIfRequestIsSecure;
     }
@@ -865,6 +771,7 @@ public abstract class ContainerBase
      * @param checkIfRequestIsSecure true if check is required, false
      * otherwise
      */
+    @Override
     public void setCheckIfRequestIsSecure(boolean checkIfRequestIsSecure) {
         this.checkIfRequestIsSecure = checkIfRequestIsSecure;
     }
@@ -874,7 +781,9 @@ public abstract class ContainerBase
      * Return the Realm with which this Container is associated.  If there is
      * no associated Realm, return the Realm associated with our parent
      * Container (if any); otherwise return <code>null</code>.
+     * @return 
      */
+    @Override
     public Realm getRealm() {
         try {
             readLock.lock();
@@ -896,6 +805,7 @@ public abstract class ContainerBase
      *
      * @param realm The newly associated Realm
      */
+    @Override
     public void setRealm(Realm realm) {
 
         Realm oldRealm;
@@ -914,7 +824,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) oldRealm).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_REALM_STOP, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_REALM_STOP, e);
                 }
             }
 
@@ -926,7 +836,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) realm).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_SET_REALM_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_SET_REALM_START, e);
                 }
             }
         } finally {
@@ -943,7 +853,9 @@ public abstract class ContainerBase
       * associated.  If there is no associated resources object, return the
       * resources associated with our parent Container (if any); otherwise
       * return <code>null</code>.
+     * @return 
      */
+    @Override
     public DirContext getResources() {
 
         try {
@@ -966,7 +878,9 @@ public abstract class ContainerBase
      * associated.
      *
      * @param resources The newly associated DirContext
-     */
+     * @throws Exception
+     *///XXX: Is exception ever thrown?
+    @Override
     public void setResources(DirContext resources) throws Exception {
         // Called from StandardContext.setResources()
         //              <- StandardContext.start() 
@@ -1015,6 +929,7 @@ public abstract class ContainerBase
      * @exception IllegalStateException if this Container does not support
      *  child Containers
      */
+    @Override
     public void addChild(Container child) {
         if (Globals.IS_SECURITY_ENABLED) {
             PrivilegedAction<Void> dp =
@@ -1031,7 +946,7 @@ public abstract class ContainerBase
             log.log(Level.FINEST, "Add child " + child + " " + this);
         synchronized(children) {
             if (children.get(child.getName()) != null) {
-                String msg = MessageFormat.format(rb.getString(DUPLICATE_CHILD_NAME_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.DUPLICATE_CHILD_NAME_EXCEPTION),
                                                                child.getName());
             throw new IllegalArgumentException(msg);
             }
@@ -1040,9 +955,9 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) child).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, CONTAINER_BASE_ADD_CHILD_START, e);
+                    log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_ADD_CHILD_START, e);
                     throw new IllegalStateException
-                            (rb.getString(CONTAINER_BASE_ADD_CHILD_START) + e);
+                            (rb.getString(LogFacade.CONTAINER_BASE_ADD_CHILD_START) + e);
                 }
             }
             children.put(child.getName(), child);
@@ -1060,6 +975,7 @@ public abstract class ContainerBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addContainerListener(ContainerListener listener) {
 
         synchronized (listeners) {
@@ -1076,6 +992,7 @@ public abstract class ContainerBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
 
         support.addPropertyChangeListener(listener);
@@ -1088,7 +1005,9 @@ public abstract class ContainerBase
      * the specified name (if any); otherwise, return <code>null</code>
      *
      * @param name Name of the child Container to be retrieved
+     * @return 
      */
+    @Override
     public Container findChild(String name) {
 
         if (name == null)
@@ -1103,7 +1022,9 @@ public abstract class ContainerBase
     /**
      * Return the set of children Containers associated with this Container.
      * If this Container has no children, a zero-length array is returned.
+     * @return 
      */
+    @Override
     public Container[] findChildren() {
 
         synchronized (children) {
@@ -1117,7 +1038,9 @@ public abstract class ContainerBase
      * Return the set of container listeners associated with this Container.
      * If this Container has no registered container listeners, a zero-length
      * array is returned.
+     * @return 
      */
+    @Override
     public ContainerListener[] findContainerListeners() {
 
         synchronized (listeners) {
@@ -1141,6 +1064,7 @@ public abstract class ContainerBase
      * @exception ServletException if a ServletException was thrown
      *  while processing this request
      */
+    @Override
     public void invoke(Request request, Response response)
         throws IOException, ServletException {
 
@@ -1151,9 +1075,11 @@ public abstract class ContainerBase
     /**
      * Remove an existing child Container from association with this parent
      * Container.
-     *
+     * <p>
+     * This will also stop the child container.
      * @param child Existing child Container to be removed
      */
+    @Override
     public void removeChild(Container child) {
         if (child == null) {
             return;
@@ -1175,7 +1101,7 @@ public abstract class ContainerBase
                     ((Lifecycle) child).stop();
                 }
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, CONTAINER_BASE_REMOVE_CHILD_STOP, e);
+                log.log(Level.SEVERE, LogFacade.CONTAINER_BASE_REMOVE_CHILD_STOP, e);
             }
         }
         
@@ -1192,6 +1118,7 @@ public abstract class ContainerBase
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeContainerListener(ContainerListener listener) {
 
         synchronized (listeners) {
@@ -1207,6 +1134,7 @@ public abstract class ContainerBase
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
 
         support.removePropertyChangeListener(listener);
@@ -1221,6 +1149,7 @@ public abstract class ContainerBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -1229,7 +1158,9 @@ public abstract class ContainerBase
     /**
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this Container.
+     * @return 
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -1240,6 +1171,7 @@ public abstract class ContainerBase
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -1259,12 +1191,13 @@ public abstract class ContainerBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents it from being started
      */
+    @Override
     public synchronized void start() throws LifecycleException {
 
         // Validate and update our current component state
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, CONTAINER_STARTED, logName());
+                log.log(Level.INFO, LogFacade.CONTAINER_STARTED, logName());
             }
             return;
         }
@@ -1311,12 +1244,13 @@ public abstract class ContainerBase
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public synchronized void stop() throws LifecycleException {
 
         // Validate and update our current component state
         if (!started) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, CONTAINER_NOT_STARTED_EXCEPTION, logName());
+                log.log(Level.INFO, LogFacade.CONTAINER_NOT_STARTED_EXCEPTION, logName());
             }
             return;
         }
@@ -1343,7 +1277,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) children[i]).stop();
                 } catch (Throwable t) {
-                    String msg = MessageFormat.format(rb.getString(ERROR_STOPPING_CONTAINER), children[i]);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_STOPPING_CONTAINER), children[i]);
                     log.log(Level.SEVERE, msg, t);
                 }
             }
@@ -1391,10 +1325,19 @@ public abstract class ContainerBase
         initialized=true;
     }
     
+    /**
+     * Gets the name of the parent container
+     * @return null if no parent
+     * @throws MalformedObjectNameException 
+     */
     public ObjectName getParentName() throws MalformedObjectNameException {
         return null;
     }
     
+    /**
+     * Stops the component and any children and removes all listeners
+     * @throws Exception 
+     */
     public void destroy() throws Exception {
         if( started ) {
             stop();
@@ -1410,7 +1353,7 @@ public abstract class ContainerBase
                     }
                 }
             } catch( Throwable t ) {
-                log.log(Level.SEVERE, ERROR_UNREGISTERING, t);
+                log.log(Level.SEVERE, LogFacade.ERROR_UNREGISTERING, t);
             }
         }
 
@@ -1453,6 +1396,7 @@ public abstract class ContainerBase
      * @exception IllegalStateException if the specified Valve is already
      *  associated with a different Container
      */
+    @Override
     public synchronized void addValve(GlassFishValve valve) {
 
         pipeline.addValve(valve);
@@ -1466,6 +1410,7 @@ public abstract class ContainerBase
     /**
      * Add Tomcat-style valve.
      */
+    @Override
     public synchronized void addValve(Valve valve) {
 
         pipeline.addValve(valve);
@@ -1475,7 +1420,11 @@ public abstract class ContainerBase
         }
     }
 
-
+    /**
+     * Gets the name of all Tomcat valves
+     * @return
+     * @see org.apache.catalina.valves.ValveBase
+     */
     public ObjectName[] getValveObjectNames() {
         return ((StandardPipeline)pipeline).getValveObjectNames();
     }
@@ -1483,7 +1432,9 @@ public abstract class ContainerBase
     /**
      * <p>Return the Valve instance that has been distinguished as the basic
      * Valve for this Pipeline (if any).
+     * @return 
      */
+    @Override
     public GlassFishValve getBasic() {
         return (pipeline.getBasic());
     }
@@ -1493,7 +1444,9 @@ public abstract class ContainerBase
      * Return the set of Valves in the pipeline associated with this
      * Container, including the basic Valve (if any).  If there are no
      * such Valves, a zero-length array is returned.
+     * @return 
      */
+    @Override
     public GlassFishValve[] getValves() {
         return (pipeline.getValves());
     }
@@ -1503,6 +1456,7 @@ public abstract class ContainerBase
      * @return true if this pipeline has any non basic valves, false
      * otherwise
      */
+    @Override
     public boolean hasNonBasicValves() {
         return pipeline.hasNonBasicValves();
     }
@@ -1514,6 +1468,7 @@ public abstract class ContainerBase
      *
      * @param valve Valve to be removed
      */
+    @Override
     public synchronized void removeValve(GlassFishValve valve) {
 
         pipeline.removeValve(valve);
@@ -1536,6 +1491,7 @@ public abstract class ContainerBase
      *
      * @param valve Valve to be distinguished as the basic Valve
      */
+    @Override
     public void setBasic(GlassFishValve valve) {
 
         pipeline.setBasic(valve);
@@ -1548,6 +1504,7 @@ public abstract class ContainerBase
      * invoked inside the classloading context of this container. Unexpected
      * throwables will be caught and logged.
      */
+    @Override
     public void backgroundProcess() {
     }
 
@@ -1563,6 +1520,7 @@ public abstract class ContainerBase
      * @param type Event type
      * @param data Event data
      */
+    @Override
     public void fireContainerEvent(String type, Object data) {
 
         ContainerListener[] list = null;
@@ -1592,7 +1550,7 @@ public abstract class ContainerBase
                 try {
                     ((Lifecycle) children[i]).start();
                 } catch (Throwable t) {
-                    String msg = MessageFormat.format(rb.getString(CONTAINER_NOT_STARTED_EXCEPTION), children[i]);
+                    String msg = MessageFormat.format(rb.getString(LogFacade.CONTAINER_NOT_STARTED_EXCEPTION), children[i]);
                     log.log(Level.SEVERE, msg, t);
                     if (children[i] instanceof Context) {
                         ((Context) children[i]).setAvailable(false);
@@ -1641,6 +1599,7 @@ public abstract class ContainerBase
 
     /**
      * Return the abbreviated name of this container for logging messages
+     * @return 
      */
     protected String logName() {
 
@@ -1822,7 +1781,7 @@ public abstract class ContainerBase
                 }
                 container.backgroundProcess();
             } catch (Throwable t) {
-                log.log(Level.SEVERE, EXCEPTION_INVOKES_PERIODIC_OP, t);
+                log.log(Level.SEVERE, LogFacade.EXCEPTION_INVOKES_PERIODIC_OP, t);
             } finally {
                 Thread.currentThread().setContextClassLoader(cl);
             }

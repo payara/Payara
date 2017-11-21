@@ -59,7 +59,7 @@
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getDefaultValues(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList" value={"DisplayConfiguration", "EnableSnoop", "TcpNoDelay"});
+        setPageSessionAttribute(key="convertToFalseList" value={"DisplayConfiguration", "TcpNoDelay"});
         //set the following for including buttons.inc
         setPageSessionAttribute(key="edit" value="#{false}" );
         setPageSessionAttribute(key="showDefaultButton" value="#{false}" );

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -50,6 +51,19 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.EarlyLogger;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
+import fish.payara.enterprise.server.logging.JSONLogFormatter;
+import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.*;
+import java.util.logging.Formatter;
+import javax.inject.Inject;
+
+import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.PostConstruct;
@@ -62,23 +76,10 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.glassfish.server.ServerEnvironmentImpl;
-import javax.inject.Inject;
-
 import org.jvnet.hk2.annotations.Optional;
-
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-
-import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.*;
-import java.util.logging.Formatter;
 
 /**
  * Reinitialzie the log manager using our logging.properties file.
@@ -140,6 +141,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String fileHandlerPatternDetail = "";
     String fileHandlerFormatterDetail = "";
     String logFormatDateFormatDetail = "";
+    String compressOnRotationDetail = "";
 
     private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private static final String HANDLER_PROPERTY = "handlers";
@@ -160,6 +162,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String FILEHANDLER_PATTERN_PROPERTY = "java.util.logging.FileHandler.pattern";
     private static final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
     private static final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
+    private static final String COMPRESS_ON_ROTATION_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation";
 
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
@@ -371,6 +374,16 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                         break;
                     }
                 }
+            } else if (formatterClassName.equals(JSONLogFormatter.class.getName())) {
+                JSONLogFormatter formatter = new JSONLogFormatter();
+                formatter.setExcludeFields(excludeFields);
+                for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                    // only get the ConsoleHandler
+                    if (handler.getClass().equals(ConsoleHandler.class)) {
+                        handler.setFormatter(formatter);
+                        break;
+                    }
+                }                
             }
 
             //setting default attributes value for all properties
@@ -396,6 +409,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             fileHandlerPatternDetail = props.get(FILEHANDLER_PATTERN_PROPERTY);
             fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
             logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
+            compressOnRotationDetail = props.get(COMPRESS_ON_ROTATION_PROPERTY);
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
@@ -592,6 +606,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     if (!val.equalsIgnoreCase(oldVal)) {
                                         generateAttributeChangeEvent(MULTI_LINE_MODE_PROPERTY, oldVal, props);
                                     }
+                                } else if (a.equals(COMPRESS_ON_ROTATION_PROPERTY)) {
+                                    if (!val.equals(compressOnRotationDetail)) {
+                                        generateAttributeChangeEvent(COMPRESS_ON_ROTATION_PROPERTY, compressOnRotationDetail, props);
+                                    }
                                 }
                             }
 
@@ -647,7 +665,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
             if (handlerClassName.equals(GFFileHandler.class.getName())) {
                 gfFileHandler = (GFFileHandler) handler;
-            } else {
+            }
+            else if (!handlerClassName.equals(PayaraNotificationFileHandler.class.getName())) {
                 customHandlers.add(handler);
             }
         }
@@ -670,7 +689,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     }
 
     private Formatter getCustomFormatter(String formatterClassName, 
-            GFFileHandler gfFileHandler) 
+            GFFileHandler gfFileHandler)
     {
         try {
             Class customFormatterClass = 
@@ -722,4 +741,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         }
     }
 
+    @Override
+    public PrintStream getErrStream() {
+        return oStdErrBackup;
+    }
+
+    @Override
+    public PrintStream getOutStream() {
+        return oStdOutBackup;
+    }
 }

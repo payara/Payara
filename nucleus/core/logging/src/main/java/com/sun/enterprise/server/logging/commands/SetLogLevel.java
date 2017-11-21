@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -66,6 +67,8 @@ import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.util.logging.LogManager;
+import org.glassfish.api.admin.ServerEnvironment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -109,6 +112,9 @@ public class SetLogLevel implements AdminCommand {
 
     @Inject
     Domain domain;
+    
+    @Inject
+    ServerEnvironment env;
 
     String[] validLevels = {"ALL", "OFF", "EMERGENCY", "ALERT", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST"};
 
@@ -164,6 +170,10 @@ public class SetLogLevel implements AdminCommand {
             } 
 
             if (success) {
+                if (env.isMicro()) {
+                    LogManager.getLogManager().readConfiguration();
+                }
+                
                 successMsg.append(localStrings.getLocalString(
                         "set.log.level.success", "These logging levels are set for {0}.", target));
                 report.setMessage(successMsg.toString());

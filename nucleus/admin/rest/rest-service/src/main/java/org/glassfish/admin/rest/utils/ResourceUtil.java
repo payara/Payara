@@ -37,10 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.asadmin.recorder.AsadminRecorderService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -123,7 +126,7 @@ public class ResourceUtil {
     // need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes
     // stops. We will need a promotion of HK2 for this.
     static final Pattern TOKENIZER;
-
+    
     static {
         String pattern = or(
                 split("x", "X"), // AbcDef -> Abc|Def
@@ -242,7 +245,14 @@ public class ResourceUtil {
     public static RestActionReporter runCommand(String commandName,
                                                 ParameterMap parameters,
                                                 Subject subject,
-                                                boolean managedJob) {
+                                                boolean managedJob) {            
+        AsadminRecorderService asadminRecorderService = Globals.
+                getDefaultHabitat().getService(AsadminRecorderService.class);
+        if (asadminRecorderService.isEnabled()) {
+            asadminRecorderService.recordAsadminCommand(commandName, 
+                                                        parameters);
+        }        
+
         CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
         final CommandInvocation commandInvocation =
@@ -441,8 +451,10 @@ public class ResourceUtil {
                     // can't be found via the method above.  For example: for
                     // Ssl.getSSLInactivityTimeout(), we calculate getSslInactivityTimeout,
                     // which doesn't match due to case.
+                    String booleanMethodName = getAttributeBooleanMethodName(attributeName);
                     for (Method m : configBeanProxy.getMethods()) {
-                        if (m.getName().equalsIgnoreCase(methodName)) {
+                        if (m.getName().equalsIgnoreCase(methodName)
+                                || m.getName().equalsIgnoreCase(booleanMethodName)) {
                             method = m;
                         }
                     }
@@ -801,6 +813,10 @@ public class ResourceUtil {
 
     public static String getAttributeMethodName(String attributeName) {
         return methodNameFromDtdName(attributeName, "get");
+    }
+    
+    public static String getAttributeBooleanMethodName(String attributeName) {
+        return methodNameFromDtdName(attributeName, "is");
     }
 
     private static String split(String lookback, String lookahead) {

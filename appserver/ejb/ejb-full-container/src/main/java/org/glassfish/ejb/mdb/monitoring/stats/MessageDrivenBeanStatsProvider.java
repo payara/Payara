@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.ejb.mdb.monitoring.stats;
 
@@ -66,7 +66,7 @@ public class MessageDrivenBeanStatsProvider extends EjbMonitoringStatsProvider {
 
     @ManagedAttribute(id="messagecount")
     @Description( "Number of messages received for a message-driven bean")
-    public CountStatistic getCreateCount() {
+    public CountStatistic getMessageCount() {
         return messageCount;
     }
 

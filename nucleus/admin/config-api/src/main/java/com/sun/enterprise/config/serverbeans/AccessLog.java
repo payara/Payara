@@ -37,18 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.config.serverbeans;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.types.PropertyBag;
 import java.beans.PropertyVetoException;
-
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.types.PropertyBag;
 
 /**
  * Access log configuration
@@ -196,6 +196,34 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      * @throws PropertyVetoException if a listener vetoes the change
      */
     void setMaxHistoryFiles(String value) throws PropertyVetoException;
+
+    /**
+     * Specifies whether to display access logs on the console
+     * 
+     * @return true if logging to console
+     */
+    @Attribute (defaultValue="false", dataType=Boolean.class)
+    String getLogToConsoleEnabled();
+    /**
+     * specifies whether to display access logs to console
+     * 
+     * @param tf true/false
+     */
+    void setLogToConsoleEnabled(boolean tf);
+    
+    /*
+     * Conditional logging filter
+     *
+     * @return the condition filter for the log
+     */
+    @Attribute
+    String getCondition();
+    /*
+     * Condition logging filter
+     *
+     * @param condition the condition filter for the log 
+    */
+    void setCondition(String condition);
 
 }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.glassfish.web;
 
@@ -45,6 +45,8 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import com.sun.enterprise.util.StringUtils;
@@ -56,7 +58,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.loader.LogFacade;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.sniffer.WarDetector;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -97,47 +99,10 @@ public class WarHandler extends AbstractArchiveHandler {
     private static final String WEBLOGIC_XML = "WEB-INF/weblogic.xml";
     private static final String WAR_CONTEXT_XML = "META-INF/context.xml";
     private static final String DEFAULT_CONTEXT_XML = "config/context.xml";
-    private static final Logger logger = WebappClassLoader.logger;
+    private static final Logger logger = LogFacade.getLogger();
     private static final ResourceBundle rb = logger.getResourceBundle();
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(WarHandler.class);
 
-
-    @LogMessageInfo(
-            message = "extra-class-path component [{0}] is not a valid pathname",
-            level = "SEVERE",
-            cause = "A naming exception is encountered",
-            action = "Check the list of resources")
-    public static final String CLASSPATH_ERROR = "AS-WEB-UTIL-00027";
-
-    @LogMessageInfo(
-            message = "The clearReferencesStatic is not consistent in context.xml for virtual servers",
-            level = "WARNING")
-    public static final String INCONSISTENT_CLEAR_REFERENCE_STATIC = "AS-WEB-UTIL-00028";
-
-    @LogMessageInfo(
-            message = "class-loader attribute dynamic-reload-interval in sun-web.xml not supported",
-            level = "WARNING")
-    public static final String DYNAMIC_RELOAD_INTERVAL = "AS-WEB-UTIL-00029";
-
-    @LogMessageInfo(
-            message = "Property element in sun-web.xml has null 'name' or 'value'",
-            level = "WARNING")
-    public static final String NULL_WEB_PROPERTY = "AS-WEB-UTIL-00030";
-
-    @LogMessageInfo(
-            message = "Ignoring invalid property [{0}] = [{1}]",
-            level = "WARNING")
-    public static final String INVALID_PROPERTY = "AS-WEB-UTIL-00031";
-
-    @LogMessageInfo(
-            message = "The xml element should be [{0}] rather than [{1}]",
-            level = "INFO")
-    public static final String UNEXPECTED_XML_ELEMENT = "AS-WEB-UTIL-00032";
-
-    @LogMessageInfo(
-            message = "This is an unexpected end of document",
-            level = "WARNING")
-    public static final String UNEXPECTED_END_DOCUMENT = "AS-WEB-UTIL-00033";
 
     //the following two system properties need to be in sync with DOLUtils
     private static final boolean gfDDOverWLSDD = Boolean.valueOf(System.getProperty("gfdd.over.wlsdd"));
@@ -161,7 +126,7 @@ public class WarHandler extends AbstractArchiveHandler {
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifierValue = null;
         try {
-            WebXmlParser webXmlParser = getWebXmlParser(archive);
+            WebXmlParser webXmlParser = getWebXmlParser(archive, Application.createApplication());
             versionIdentifierValue = webXmlParser.getVersionIdentifier();
         } catch (XMLStreamException e) {
             logger.log(Level.SEVERE, e.getMessage());
@@ -177,11 +142,13 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     @Override
-    public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
+    public ClassLoader getClassLoader(final ClassLoader parent, final DeploymentContext context) {
+        Application applicationTemp = context.getModuleMetaData(Application.class);
+        final Application application = applicationTemp == null? Application.createApplication() : applicationTemp;
         WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
             @Override
             public WebappClassLoader run() {
-                return new WebappClassLoader(parent);
+                return new WebappClassLoader(parent, application);
             }
         });
         try {
@@ -203,7 +170,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 cloader.addRepository(url.toString());
             }
 
-            WebXmlParser webXmlParser = getWebXmlParser(context.getSource());
+            WebXmlParser webXmlParser = getWebXmlParser(context.getSource(), application);
             configureLoaderAttributes(cloader, webXmlParser, base);
             configureLoaderProperties(cloader, webXmlParser, base);
             
@@ -239,7 +206,7 @@ public class WarHandler extends AbstractArchiveHandler {
         return cloader;
     }
 
-    protected WebXmlParser getWebXmlParser(ReadableArchive archive)
+    protected WebXmlParser getWebXmlParser(ReadableArchive archive, Application application)
             throws XMLStreamException, IOException {
 
         WebXmlParser webXmlParser = null;
@@ -249,18 +216,18 @@ public class WarHandler extends AbstractArchiveHandler {
         if (runtimeAltDDFile != null &&
                 "glassfish-web.xml".equals(runtimeAltDDFile.getPath()) &&
                 runtimeAltDDFile.isFile()) {
-            webXmlParser = new GlassFishWebXmlParser(archive);
+            webXmlParser = new GlassFishWebXmlParser(archive, application);
         } else if (!gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
             webXmlParser = new WeblogicXmlParser(archive);
         } else if (archive.exists(GLASSFISH_WEB_XML)) {
-            webXmlParser = new GlassFishWebXmlParser(archive);
+            webXmlParser = new GlassFishWebXmlParser(archive, application);
         } else if (archive.exists(SUN_WEB_XML)) {
-            webXmlParser = new SunWebXmlParser(archive);
+            webXmlParser = new SunWebXmlParser(archive, application);
         } else if (gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
             webXmlParser = new WeblogicXmlParser(archive);
         } else { // default
             if (gfDDOverWLSDD || ignoreWLSDD) {
-                webXmlParser = new GlassFishWebXmlParser(archive);
+                webXmlParser = new GlassFishWebXmlParser(archive, application);
             } else {
                 webXmlParser = new WeblogicXmlParser(archive);
             }
@@ -310,7 +277,7 @@ public class WarHandler extends AbstractArchiveHandler {
                         URL url = file.toURI().toURL();
                         cloader.addRepository(url.toString());
                     } catch (MalformedURLException mue2) {
-                        String msg = rb.getString(CLASSPATH_ERROR);
+                        String msg = rb.getString(LogFacade.CLASSPATH_ERROR);
                         Object[] params = { path };
                         msg = MessageFormat.format(msg, params);
                         logger.log(Level.SEVERE, msg, mue2);
@@ -425,7 +392,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 cloader.setClearReferencesStatic(value);
             }
         } else if (logger.isLoggable(Level.WARNING)) {
-            logger.log(Level.WARNING, INCONSISTENT_CLEAR_REFERENCE_STATIC);
+            logger.log(Level.WARNING, LogFacade.INCONSISTENT_CLEAR_REFERENCE_STATIC);
         }
     }
     
@@ -464,7 +431,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 if (event == START_ELEMENT) {
                     String localName = parser.getLocalName();
                     if (!name.equals(localName)) {
-                        String msg = rb.getString(UNEXPECTED_XML_ELEMENT);
+                        String msg = rb.getString(LogFacade.UNEXPECTED_XML_ELEMENT);
                         msg = MessageFormat.format(msg, new Object[] { name, localName }); 
                         throw new XMLStreamException(msg);
                     }
@@ -477,7 +444,7 @@ public class WarHandler extends AbstractArchiveHandler {
             while (true) {
                 int event = parser.next();
                 if (event == END_DOCUMENT) {
-                    throw new XMLStreamException(rb.getString(UNEXPECTED_END_DOCUMENT));
+                    throw new XMLStreamException(rb.getString(LogFacade.UNEXPECTED_END_DOCUMENT));
                 } else if (event == END_ELEMENT && name.equals(parser.getLocalName())) {
                     return;
                 }
@@ -494,10 +461,12 @@ public class WarHandler extends AbstractArchiveHandler {
         protected String extraClassPath = null;
 
         protected String versionIdentifier = null;
+        protected final Application application;
 
-        WebXmlParser(ReadableArchive archive) 
+        WebXmlParser(ReadableArchive archive, Application application)
                 throws XMLStreamException, IOException {
 
+            this.application = application;
             if (archive.exists(getXmlFileName())) {
                 try (InputStream is = archive.getEntry(getXmlFileName())) {
                     init(is);
@@ -540,11 +509,10 @@ public class WarHandler extends AbstractArchiveHandler {
          * sun-web-app_2_3-0.dtd, and TRUE in the case of
          * sun-web-app_2_4-0.dtd.
          */
-
-        SunWebXmlParser(ReadableArchive archive)
+        SunWebXmlParser(ReadableArchive archive, Application application)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, application);
         }
 
         @Override
@@ -580,7 +548,7 @@ public class WarHandler extends AbstractArchiveHandler {
                                     // Log warning if dynamic-reload-interval is specified
                                     // in sun-web.xml since it is not supported
                                     if (logger.isLoggable(Level.WARNING)) {
-                                        logger.log(Level.WARNING, DYNAMIC_RELOAD_INTERVAL);
+                                        logger.log(Level.WARNING, LogFacade.DYNAMIC_RELOAD_INTERVAL);
                                     }
                                 }
                             }
@@ -601,7 +569,7 @@ public class WarHandler extends AbstractArchiveHandler {
 
                         if (propName == null || value == null) {
                             throw new IllegalArgumentException(
-                                rb.getString(NULL_WEB_PROPERTY));
+                                rb.getString(LogFacade.NULL_WEB_PROPERTY));
                         }
 
                         if ("ignoreHiddenJarFiles".equals(propName)) {
@@ -609,7 +577,7 @@ public class WarHandler extends AbstractArchiveHandler {
                         } else {
                             Object[] params = { propName, value };
                             if (logger.isLoggable(Level.WARNING)) {
-                                logger.log(Level.WARNING, INVALID_PROPERTY,
+                                logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,
                                            params);
                             }
                         }
@@ -628,7 +596,7 @@ public class WarHandler extends AbstractArchiveHandler {
 
                         if (propName == null || value == null) {
                             throw new IllegalArgumentException(
-                                rb.getString(NULL_WEB_PROPERTY));
+                                rb.getString(LogFacade.NULL_WEB_PROPERTY));
                         }
 
                         if("useMyFaces".equalsIgnoreCase(propName)) {
@@ -638,6 +606,8 @@ public class WarHandler extends AbstractArchiveHandler {
                         }
                     } else if ("version-identifier".equals(name)) {
                         versionIdentifier = parser.getElementText();
+                    } else if (RuntimeTagNames.PAYARA_WHITELIST_PACKAGE.equals(name)) {
+                        application.addWhitelistPackage(parser.getElementText());
                     } else {
                         skipSubTree(name);
                     }
@@ -651,11 +621,10 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     protected class GlassFishWebXmlParser extends SunWebXmlParser {
-
-        GlassFishWebXmlParser(ReadableArchive archive)
+        GlassFishWebXmlParser(ReadableArchive archive, Application application)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, application);
         }
 
         @Override
@@ -673,7 +642,7 @@ public class WarHandler extends AbstractArchiveHandler {
         WeblogicXmlParser(ReadableArchive archive)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, Application.createApplication());
         }
 
         @Override

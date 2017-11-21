@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,12 +55,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.web.loader;
 
 import com.sun.appserv.BytecodePreprocessor;
 import com.sun.appserv.ClassLoaderUtil;
 import com.sun.appserv.server.util.PreprocessorUtil;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
@@ -70,9 +73,6 @@ import org.apache.naming.resources.WebDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.web.util.ExceptionUtils;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.glassfish.hk2.api.PreDestroy;
@@ -153,177 +153,10 @@ public class WebappClassLoader
 {
     // ------------------------------------------------------- Static Variables
 
-    @LogMessagesResourceBundle
-    private static final String SHARED_LOGMESSAGE_RESOURCE =
-            "org.glassfish.web.loader.LogMessages";
-
-    @LoggerInfo(subsystem="WEB", description="WEB Util Logger", publish=true)
-    private static final String WEB_UTIL_LOGGER = "javax.enterprise.web.util";
-
-    public static final Logger logger =
-            Logger.getLogger(WEB_UTIL_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
 
-    @LogMessageInfo(
-            message = "Resource '{0}' is missing",
-            level = "SEVERE",
-            cause = "A naming exception is encountered",
-            action = "Check the list of resources")
-    public static final String MISSING_RESOURCE = "AS-WEB-UTIL-00001";
-
-    @LogMessageInfo(
-            message = "Failed tracking modifications of '{0} : {1}",
-            level = "SEVERE",
-            cause = "A ClassCastException is encountered",
-            action = "Check if the object is an instance of the class")
-    public static final String FAILED_TRACKING_MODIFICATIONS = "AS-WEB-UTIL-00002";
-
-    @LogMessageInfo(
-            message = "WebappClassLoader.findClassInternal({0}) security exception: {1}",
-            level = "WARNING",
-            cause = "An AccessControlException is encountered",
-            action = "Check if the resource is accessible")
-    public static final String FIND_CLASS_INTERNAL_SECURITY_EXCEPTION = "AS-WEB-UTIL-00003";
-
-    @LogMessageInfo(
-            message = "Security Violation, attempt to use Restricted Class: {0}",
-            level = "INFO")
-    public static final String SECURITY_EXCEPTION = "AS-WEB-UTIL-00004";
-
-    @LogMessageInfo(
-            message = "Class {0} has unsupported major or minor version numbers, which are greater than those found in the Java Runtime Environment version {1}",
-            level = "WARNING")
-    public static final String UNSUPPORTED_VERSION = "AS-WEB-UTIL-00005";
-
-    @LogMessageInfo(
-            message = "Unable to load class with name [{0}], reason: {1}",
-            level = "WARNING")
-    public static final String UNABLE_TO_LOAD_CLASS = "AS-WEB-UTIL-00006";
-
-    @LogMessageInfo(
-            message = "The web application [{0}] registered the JDBC driver [{1}] but failed to unregister it when the web application was stopped. To prevent a memory leak, the JDBC Driver has been forcibly unregistered.",
-            level = "WARNING")
-    public static final String CLEAR_JDBC = "AS-WEB-UTIL-00007";
-
-    @LogMessageInfo(
-            message = "JDBC driver de-registration failed for web application [{0}]",
-            level = "WARNING")
-    public static final String JDBC_REMOVE_FAILED = "AS-WEB-UTIL-00008";
-
-    @LogMessageInfo(
-            message = "Exception closing input stream during JDBC driver de-registration for web application [{0}]",
-            level = "WARNING")
-    public static final String JDBC_REMOVE_STREAM_ERROR = "AS-WEB-UTIL-00009";
-
-    @LogMessageInfo(
-            message = "This web container has not yet been started",
-            level = "WARNING")
-    public static final String NOT_STARTED = "AS-WEB-UTIL-00010";
-
-    @LogMessageInfo(
-            message = "Failed to check for ThreadLocal references for web application [{0}]",
-            level = "WARNING")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL = "AS-WEB-UTIL-00011";
-
-    @LogMessageInfo(
-            message = "Unable to determine string representation of key of type [{0}]",
-            level = "SEVERE",
-            cause = "An Exception occurred",
-            action = "Check the exception for error")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_KEY = "AS-WEB-UTIL-00012";
-
-    @LogMessageInfo(
-            message = "Unknown",
-            level = "INFO")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_UNKNOWN = "AS-WEB-UTIL-00013";
-
-    @LogMessageInfo(
-            message = "Unable to determine string representation of value of type [{0}]",
-            level = "SEVERE",
-            cause = "An Exception occurred",
-            action = "Check the exception for error")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_VALUE = "AS-WEB-UTIL-00014";
-
-    @LogMessageInfo(
-            message = "The web application [{0}] created a ThreadLocal with key of type [{1}] (value [{2}]). The ThreadLocal has been correctly set to null and the key will be removed by GC.",
-            level = "FINE")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_DEBUG = "AS-WEB-UTIL-00015";
-
-    @LogMessageInfo(
-            message = "The web application [{0}] created a ThreadLocal with key of type [{1}] (value [{2}]) and a value of type [{3}] (value [{4}]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.",
-            level = "SEVERE",
-            cause = "Failed to remove a ThreadLocal when the web application was stopped",
-            action = "Threads are going to be renewed over time to try and avoid a probable memory leak.")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS = "AS-WEB-UTIL-00016";
-
-    @LogMessageInfo(
-            message = "Failed to find class sun.rmi.transport.Target to clear context class loader for web application [{0}]. This is expected on non-Sun JVMs.",
-            level = "INFO")
-    public static final String CLEAR_RMI_INFO = "AS-WEB-UTIL-00017";
-
-    @LogMessageInfo(
-            message = "Failed to clear context class loader referenced from sun.rmi.transport.Target for web application [{0}]",
-            level = "WARNING")
-    public static final String CLEAR_RMI_FAIL = "AS-WEB-UTIL-00018";
-
-    @LogMessageInfo(
-            message = "Removed [{0}] ResourceBundle references from the cache for web application [{1}]",
-            level = "FINE")
-    public static final String CLEAR_REFERENCES_RESOURCE_BUNDLES_COUNT = "AS-WEB-UTIL-00019";
-
-    @LogMessageInfo(
-            message = "Failed to clear ResourceBundle references for web application [{0}]",
-            level = "SEVERE",
-            cause = "An Exception occurred",
-            action = "Check the exception for error")
-    public static final String CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL = "AS-WEB-UTIL-00020";
-
-    @LogMessageInfo(
-            message = "Illegal JAR entry detected with name {0}",
-            level = "INFO")
-    public static final String ILLEGAL_JAR_PATH = "AS-WEB-UTIL-00021";
-
-    @LogMessageInfo(
-            message = "Unable to validate JAR entry with name {0}",
-            level = "INFO")
-    public static final String VALIDATION_ERROR_JAR_PATH = "AS-WEB-UTIL-00022";
-
-    @LogMessageInfo(
-            message = "Unable to create {0}",
-            level = "WARNING")
-    public static final String UNABLE_TO_CREATE = "AS-WEB-UTIL-00023";
-
-    @LogMessageInfo(
-            message = "Unable to delete {0}",
-            level = "WARNING")
-    public static final String UNABLE_TO_DELETE = "AS-WEB-UTIL-00024";
-
-    @LogMessageInfo(
-            message = "Unable to read data for class with name [{0}]",
-            level = "WARNING")
-    public static final String READ_CLASS_ERROR = "AS-WEB-UTIL-00025";
-
-    @LogMessageInfo(
-            message = "Unable to purge bean classes from BeanELResolver",
-            level = "WARNING")
-    public static final String UNABLE_PURGE_BEAN_CLASSES = "AS-WEB-UTIL-00026";
-
-    @LogMessageInfo(
-            message = "Ignoring [{0}] during Tag Library Descriptor (TLD) processing",
-            level = "WARNING")
-    public static final String TLD_PROVIDER_IGNORE_URL = "AS-WEB-UTIL-00038";
-
-    @LogMessageInfo(
-            message = "Unable to determine TLD resources for [{0}] tag library, because class loader [{1}] for [{2}] is not an instance of java.net.URLClassLoader",
-            level = "WARNING")
-    public static final String UNABLE_TO_DETERMINE_TLD_RESOURCES = "AS-WEB-UTIL-00039";
-    
-    @LogMessageInfo(
-            message = "Using previously defined JDBC leak prevention resource",
-            level = "FINE")
-    public static final String LEAK_PREVENTION_JDBC_REUSE = "AS-WEB-UTIL-00040";
-    
     /**
      * Set of package names which are not allowed to be loaded from a webapp
      * class loader without delegating first.
@@ -420,6 +253,11 @@ public class WebappClassLoader
      * for locally loaded classes or resources.
      */
     protected JarFile[] jarFiles = new JarFile[0];
+
+    /**
+     * Lock to synchronize closing and opening of jar
+     */
+    protected final Object jarFilesLock = new Object();
 
     /**
      * The list of JARs, in the order they should be searched
@@ -552,14 +390,17 @@ public class WebappClassLoader
      */
     private Class<?> jdbcLeakPreventionResourceClass = null;
 
+    private final Application application;
     // ----------------------------------------------------------- Constructors
 
     /**
      * Construct a new ClassLoader with no defined repositories and no
      * parent ClassLoader.
+     * @param application
      */
-    public WebappClassLoader() {
+    public WebappClassLoader(Application application) {
         super(new URL[0]);
+        this.application = application;
         init();
     }
 
@@ -567,19 +408,36 @@ public class WebappClassLoader
     /**
      * Construct a new ClassLoader with the given parent ClassLoader,
      * but no defined repositories.
+     * @param parent
+     * @param application
+     */
+    public WebappClassLoader(ClassLoader parent, Application application) {
+        super(new URL[0], parent);
+        this.application = application;
+        init();
+    }
+
+
+    /**
+     * for use in OSGi loader
+     *
+     * @param parent
      */
     public WebappClassLoader(ClassLoader parent) {
-        super(new URL[0], parent);
-        init();
+        this(parent, Application.createApplication());
     }
 
 
     /**
      * Construct a new ClassLoader with the given parent ClassLoader
      * and defined repositories.
+     * @param urls
+     * @param parent
+     * @param application
      */
-    public WebappClassLoader(URL[] urls, ClassLoader parent) {
+    public WebappClassLoader(URL[] urls, ClassLoader parent, Application application) {
         super(new URL[0], parent);
+        this.application = application;
 
         if (urls != null && urls.length > 0) {
             for (URL url : urls) {
@@ -589,7 +447,6 @@ public class WebappClassLoader
 
         init();
     }
-
 
     // ------------------------------------------------------------- Properties
 
@@ -1074,7 +931,7 @@ public class WebappClassLoader
                     return (true);
                 }
             } catch (NamingException e) {
-                logger.log(Level.SEVERE, MISSING_RESOURCE, paths[i]);
+                logger.log(Level.SEVERE, LogFacade.MISSING_RESOURCE, paths[i]);
                 return (true);
             }
         }
@@ -1127,7 +984,7 @@ public class WebappClassLoader
                     logger.log(Level.FINER, "    Failed tracking modifications of '"
                         + getJarPath() + "'");
             } catch (ClassCastException e) {
-                logger.log(Level.SEVERE, FAILED_TRACKING_MODIFICATIONS, new Object[]{getJarPath(), e.getMessage()});
+                logger.log(Level.SEVERE, LogFacade.FAILED_TRACKING_MODIFICATIONS, new Object[]{getJarPath(), e.getMessage()});
             }
 
         }
@@ -1249,10 +1106,10 @@ public class WebappClassLoader
                 }
             } catch (UnsupportedClassVersionError ucve) {
                 throw new UnsupportedClassVersionError(
-                        getString(UNSUPPORTED_VERSION, name, getJavaVersion()));
+                        getString(LogFacade.UNSUPPORTED_VERSION, name, getJavaVersion()));
             } catch(AccessControlException ace) {
                 if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, FIND_CLASS_INTERNAL_SECURITY_EXCEPTION, new Object[]{ace.getMessage(), ace});
+                    logger.log(Level.WARNING, LogFacade.FIND_CLASS_INTERNAL_SECURITY_EXCEPTION, new Object[]{name, ace.getMessage()});
                 }
                 throw new ClassNotFoundException(name, ace);
             } catch(RuntimeException rex) {
@@ -1261,15 +1118,14 @@ public class WebappClassLoader
                 throw err;
             } catch (Throwable t) {
                 throw new RuntimeException(
-                        getString(UNABLE_TO_LOAD_CLASS, name, t.toString()), t);
+                        getString(LogFacade.UNABLE_TO_LOAD_CLASS, name, t.toString()), t);
             }
             if ((clazz == null) && hasExternalRepositories) {
                 try {
                     clazz = super.findClass(name);
                 } catch(AccessControlException ace) {
                     if (logger.isLoggable(Level.WARNING)) {
-                        String msg = MessageFormat.format(
-                                FIND_CLASS_INTERNAL_SECURITY_EXCEPTION,
+                        String msg = getString(LogFacade.FIND_CLASS_INTERNAL_SECURITY_EXCEPTION,
                                 new Object[]{name, ace.getMessage()});
                         logger.log(Level.WARNING, msg, ace);
                     }
@@ -1668,15 +1524,16 @@ public class WebappClassLoader
      *
      * @param name Name of the class to be loaded
      * @param resolve If <code>true</code> then resolve the class
+     * @return class
      *
      * @exception ClassNotFoundException if the class was not found
      */
     @Override
-    protected Class<?> loadClass(String name, boolean resolve)
+    protected synchronized Class<?> loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
 
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "loadClass(" + name + ")");
+            logger.log(Level.FINER, "loadClass({0})", name);
         }
 
         Class<?> clazz = null;
@@ -1684,7 +1541,7 @@ public class WebappClassLoader
         // Don't load classes if class loader is stopped
         if (!started) {
             throw new IllegalStateException(
-                getString(NOT_STARTED, name));
+                getString(LogFacade.NOT_STARTED, name));
         }
 
         // (0) Check our previously loaded local class cache
@@ -1716,7 +1573,7 @@ public class WebappClassLoader
                 try {
                     securityManager.checkPackageAccess(name.substring(0,i));
                 } catch (SecurityException se) {
-                    String error = MessageFormat.format(SECURITY_EXCEPTION, name);
+                    String error = getString(LogFacade.SECURITY_EXCEPTION, name);
                     if (logger.isLoggable(Level.INFO)) {
                         logger.log(Level.INFO, error, se);
                     }
@@ -1730,7 +1587,8 @@ public class WebappClassLoader
             delegateLoader = system;
         }
 
-        boolean delegateLoad = delegate || filter(name);
+        boolean isWhitelisted = application.isWhitelistEnabled() && DOLUtils.isWhiteListed(application, name);
+        boolean delegateLoad = (delegate && (application.isWhitelistEnabled()? isWhitelisted : true)) || filter(name);
 
         // (1) Delegate to our parent if requested
         if (delegateLoad) {
@@ -1773,7 +1631,7 @@ public class WebappClassLoader
         }
 
         // (3) Delegate if class was not found locally
-        if (!delegateLoad) {
+        if ((application.isWhitelistEnabled()? isWhitelisted : true) && !delegateLoad) {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER, "  Delegating to classloader " + delegateLoader);
             }
@@ -1791,7 +1649,9 @@ public class WebappClassLoader
                 // Ignore
             }
         }
-
+        else if(application.isWhitelistEnabled() && !isWhitelisted) {
+            throw new ClassNotFoundException(String.format("Whitelist enabled, but class [%s] is not whitelisted", name));
+        }
         throw new ClassNotFoundException(name);
     }
 
@@ -2038,7 +1898,7 @@ public class WebappClassLoader
      */
     public void closeJARs(boolean force) {
         if (jarFiles.length > 0) {
-            synchronized (jarFiles) {
+            synchronized (jarFilesLock) {
                 if (force || (System.currentTimeMillis()
                               > (lastJarAccessed + 90000))) {
                     for (int i = 0; i < jarFiles.length; i++) {
@@ -2162,14 +2022,14 @@ public class WebappClassLoader
                         defineClass("org.glassfish.web.loader.JdbcLeakPrevention",
                             classBytes, 0, offset, this.getClass().getProtectionDomain());
                 } else {
-                    logger.log(Level.FINE, getString(LEAK_PREVENTION_JDBC_REUSE, contextName));   
+                    logger.log(Level.FINE, getString(LogFacade.LEAK_PREVENTION_JDBC_REUSE, contextName));   
                 }
             }
             Object obj = jdbcLeakPreventionResourceClass.newInstance();
             @SuppressWarnings("unchecked") // clearJdbcDriverRegistrations() returns List<String>
             List<String> driverNames = (List<String>) obj.getClass().getMethod(
                     "clearJdbcDriverRegistrations").invoke(obj);
-            String msg = rb.getString(CLEAR_JDBC);
+            String msg = rb.getString(LogFacade.CLEAR_JDBC);
             for (String name : driverNames) {
                 logger.warning(MessageFormat.format(msg, contextName, name));
             }
@@ -2178,14 +2038,14 @@ public class WebappClassLoader
             Throwable t = ExceptionUtils.unwrapInvocationTargetException(e);
             ExceptionUtils.handleThrowable(t);
             logger.log(Level.WARNING,
-                    getString(JDBC_REMOVE_FAILED, contextName), t);
+                    getString(LogFacade.JDBC_REMOVE_FAILED, contextName), t);
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException ioe) {
                     logger.log(Level.WARNING,
-                            getString(JDBC_REMOVE_STREAM_ERROR, contextName), ioe);
+                            getString(LogFacade.JDBC_REMOVE_STREAM_ERROR, contextName), ioe);
                 }
             }
         }
@@ -2369,43 +2229,43 @@ public class WebappClassLoader
         } catch (SecurityException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
+                        getString(LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
                         contextName), e);
             }
         } catch (NoSuchFieldException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
+                        getString(LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
                         contextName), e);
             }
         } catch (ClassNotFoundException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
+                        getString(LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
                         contextName), e);
             }
         } catch (IllegalArgumentException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
+                        getString(LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
                         contextName), e);
             }
         } catch (IllegalAccessException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
+                        getString(LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
                         contextName), e);
             }
         } catch (InvocationTargetException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
+                        getString(LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
                         contextName), e);
             }
         } catch (NoSuchMethodException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
+                        getString(LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL,
                         contextName), e);
             }
         }
@@ -2448,10 +2308,10 @@ public class WebappClassLoader
                                     args[2] = key.toString();
                                 } catch (Exception e) {
                                     logger.log(Level.SEVERE, getString(
-                                            CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_KEY,
+                                            LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_KEY,
                                             args[1]), e);
                                     args[2] = getString(
-                                            CHECK_THREAD_LOCALS_FOR_LEAKS_UNKNOWN);
+                                            LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_UNKNOWN);
                                 }
                             }
                             if (value != null) {
@@ -2460,21 +2320,21 @@ public class WebappClassLoader
                                     args[4] = value.toString();
                                 } catch (Exception e) {
                                     logger.log(Level.SEVERE, getString(
-                                            CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_VALUE,
+                                            LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_VALUE,
                                             args[3]), e);
                                     args[4] = getString(
-                                            CHECK_THREAD_LOCALS_FOR_LEAKS_UNKNOWN);
+                                            LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_UNKNOWN);
                                 }
                             }
                             if (value == null) {
                                 if (logger.isLoggable(Level.FINE)) {
                                     logger.log(Level.FINE, getString(
-                                            CHECK_THREAD_LOCALS_FOR_LEAKS_DEBUG,
+                                            LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS_DEBUG,
                                             args));
                                 }
                             } else {
                                 logger.log(Level.SEVERE, getString(
-                                        CHECK_THREAD_LOCALS_FOR_LEAKS,
+                                        LogFacade.CHECK_THREAD_LOCALS_FOR_LEAKS,
                                         args));
                             }
                         }
@@ -2614,31 +2474,31 @@ public class WebappClassLoader
         } catch (ClassNotFoundException e) {
             if (logger.isLoggable(Level.INFO)) {
                 logger.log(Level.INFO,
-                        getString(CLEAR_RMI_INFO,
+                        getString(LogFacade.CLEAR_RMI_INFO,
                         contextName), e);
             }
         } catch (SecurityException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CLEAR_RMI_FAIL,
+                        getString(LogFacade.CLEAR_RMI_FAIL,
                         contextName), e);
             }
         } catch (NoSuchFieldException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CLEAR_RMI_FAIL,
+                        getString(LogFacade.CLEAR_RMI_FAIL,
                         contextName), e);
             }
         } catch (IllegalArgumentException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CLEAR_RMI_FAIL,
+                        getString(LogFacade.CLEAR_RMI_FAIL,
                         contextName), e);
             }
         } catch (IllegalAccessException e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        getString(CLEAR_RMI_FAIL,
+                        getString(LogFacade.CLEAR_RMI_FAIL,
                         contextName), e);
             }
         }
@@ -2709,16 +2569,16 @@ public class WebappClassLoader
 
             if (countRemoved > 0 && logger.isLoggable(Level.FINE)) {
                 logger.fine(getString(
-                        CLEAR_REFERENCES_RESOURCE_BUNDLES_COUNT,
+                        LogFacade.CLEAR_REFERENCES_RESOURCE_BUNDLES_COUNT,
                         Integer.valueOf(countRemoved), contextName));
             }
         } catch (SecurityException e) {
             logger.log(Level.SEVERE, getString(
-                    CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL,
+                    LogFacade.CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL,
                     contextName), e);
         } catch (NoSuchFieldException e) {
             String msg = getString(
-                    CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL, contextName);
+                    LogFacade.CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL, contextName);
             if (System.getProperty("java.vendor").startsWith("Sun")) {
                 logger.log(Level.SEVERE, msg, e);
             } else if (logger.isLoggable(Level.FINE)) {
@@ -2726,11 +2586,11 @@ public class WebappClassLoader
             }
         } catch (IllegalArgumentException e) {
             logger.log(Level.SEVERE, getString(
-                    CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL,
+                    LogFacade.CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL,
                     contextName), e);
         } catch (IllegalAccessException e) {
             logger.log(Level.SEVERE, getString(
-                    CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL,
+                    LogFacade.CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL,
                     contextName), e);
         }
     }
@@ -2743,24 +2603,26 @@ public class WebappClassLoader
      */
     protected boolean openJARs() {
         if (started && (jarFiles.length > 0)) {
-            lastJarAccessed = System.currentTimeMillis();
-            if (jarFiles[0] == null) {
-                for (int i = 0; i < jarFiles.length; i++) {
-                    try {
-                        jarFiles[i] = new JarFile(jarRealFiles[i]);
-                    } catch (IOException e) {
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.log(Level.FINE, "Failed to open JAR", e);
-                        }
-                        for (int j = 0; j < i; j++) {
-                            try {
-                                jarFiles[j].close();
-                            } catch (Throwable t) {
-                                // Ignore
+            synchronized (jarFilesLock) {
+                lastJarAccessed = System.currentTimeMillis();
+                if (jarFiles[0] == null) {
+                    for (int i = 0; i < jarFiles.length; i++) {
+                        try {
+                            jarFiles[i] = new JarFile(jarRealFiles[i]);
+                        } catch (IOException e) {
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.log(Level.FINE, "Failed to open JAR", e);
                             }
+                            for (int j = 0; j < i; j++) {
+                                try {
+                                    jarFiles[j].close();
+                                } catch (Throwable t) {
+                                    // Ignore
+                                }
+                            }
+                            return false;
                         }
-                        return false; 
-                   }
+                    }
                 }
             }
         }
@@ -2874,7 +2736,7 @@ public class WebappClassLoader
     protected ResourceEntry findResourceInternal(String name, String path) {
         if (!started) {
                 throw new IllegalStateException(
-                getString(NOT_STARTED, name));
+                getString(LogFacade.NOT_STARTED, name));
         }
 
         if ((name == null) || (path == null)) {
@@ -3088,15 +2950,15 @@ public class WebappClassLoader
                     if (!resourceFile.getCanonicalPath().startsWith(
                             canonicalLoaderDir)) {
                         throw new IllegalArgumentException(getString(
-                                ILLEGAL_JAR_PATH, jarEntry2.getName()));
+                                LogFacade.ILLEGAL_JAR_PATH, jarEntry2.getName()));
                     }
                 } catch (IOException ioe) {
                     throw new IllegalArgumentException(getString(
-                            VALIDATION_ERROR_JAR_PATH, jarEntry2.getName(), ioe));
+                            LogFacade.VALIDATION_ERROR_JAR_PATH, jarEntry2.getName(), ioe));
                 }
                 if (!FileUtils.mkdirsMaybe(resourceFile.getParentFile())) {
                     logger.log(Level.WARNING,
-                            UNABLE_TO_CREATE,
+                            LogFacade.UNABLE_TO_CREATE,
                             resourceFile.getParentFile().toString());
                 }
 
@@ -3164,7 +3026,7 @@ public class WebappClassLoader
                 pos += n;
             }
         } catch (Exception e) {
-            logger.log(Level.WARNING, getString(READ_CLASS_ERROR, name), e);
+            logger.log(Level.WARNING, getString(LogFacade.READ_CLASS_ERROR, name), e);
             return;
         } finally {
             try {
@@ -3390,7 +3252,7 @@ public class WebappClassLoader
             } else {
                 if (!FileUtils.deleteFileMaybe(file)) {
                     logger.log(Level.WARNING,
-                            UNABLE_TO_DELETE,
+                            LogFacade.UNABLE_TO_DELETE,
                             file.toString());
                 }
 
@@ -3398,7 +3260,7 @@ public class WebappClassLoader
         }
         if (!FileUtils.deleteFileMaybe(dir)) {
             logger.log(Level.WARNING,
-                    UNABLE_TO_DELETE,
+                    LogFacade.UNABLE_TO_DELETE,
                     dir.toString());
         }
 
@@ -3444,7 +3306,7 @@ public class WebappClassLoader
         try {
             m = getBeanELResolverProperties(fld);
         } catch (IllegalAccessException iae) {
-            logger.log(Level.WARNING, UNABLE_PURGE_BEAN_CLASSES, iae);
+            logger.log(Level.WARNING, LogFacade.UNABLE_PURGE_BEAN_CLASSES, iae);
             return;
         }
 

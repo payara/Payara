@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -49,7 +50,6 @@ import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.deployment.web.ServletFilter;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -63,6 +63,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
 {
     private String jarName = null;
     private OrderingDescriptor ordering = null;
+    private boolean exists = true;
 
     /**
      * Constrct an empty web app [{0}].
@@ -87,6 +88,15 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
         this.ordering = ordering;
     }
 
+    @Override
+    public boolean isExists() {
+        return exists;
+    }
+
+    public void setExists(boolean exists) {
+        this.exists = exists;
+    }
+    
     @Override
     protected WebComponentDescriptor combineWebComponentDescriptor(
             WebComponentDescriptor webComponentDescriptor) {

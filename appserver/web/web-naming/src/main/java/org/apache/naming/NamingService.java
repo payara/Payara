@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,7 +67,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanRegistration;
 import javax.management.AttributeChangeNotification;
 import javax.management.Notification;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Implementation of the NamingService JMX MBean.
@@ -80,12 +79,7 @@ public final class NamingService
     extends NotificationBroadcasterSupport
     implements NamingServiceMBean, MBeanRegistration {
     
-    private static final Logger log = org.apache.naming.resources.FileDirContext.logger;
-
-    @LogMessageInfo(
-            message = "Unable to restore original system properties",
-            level = "WARNING")
-    private static final String UNABLE_TO_RESTORE_ORIGINAL_SYS_PROPERTIES = "AS-WEB-NAMING-00024";
+    private static final Logger log = LogFacade.getLogger();
 
     // ----------------------------------------------------- Instance Variables
         
@@ -236,7 +230,7 @@ public final class NamingService
             System.setProperty(Context.URL_PKG_PREFIXES, oldUrlValue);
             System.setProperty(Context.INITIAL_CONTEXT_FACTORY, oldIcValue);
         } catch (Throwable t) {
-            log.log(Level.WARNING, UNABLE_TO_RESTORE_ORIGINAL_SYS_PROPERTIES, t);
+            log.log(Level.WARNING, LogFacade.UNABLE_TO_RESTORE_ORIGINAL_SYS_PROPERTIES, t);
         }
         
         state = State.STOPPED;

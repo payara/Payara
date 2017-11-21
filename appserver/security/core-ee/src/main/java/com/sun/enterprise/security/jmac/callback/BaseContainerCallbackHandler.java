@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
 /*
  * BaseContainerCallbackHandler.java
  *
@@ -374,6 +374,14 @@ abstract class BaseContainerCallbackHandler
     private void processCallerPrincipal(CallerPrincipalCallback cpCallback) {
         final Subject fs = cpCallback.getSubject();
         Principal principal = cpCallback.getPrincipal();
+        
+        // PAYARA-755 If the SAM has set a custom principal then we check that the original WebPrincipal has the same custom principal within it
+        if (principal != null && !(principal instanceof WebPrincipal)) {
+            Principal additional = SecurityContext.getCurrent().getAdditionalPrincipal();
+            if ((additional != null) && (additional instanceof WebPrincipal) && ((WebPrincipal)additional).getCustomPrincipal() == principal) {
+                principal = additional;
+            }
+        }
 
         if (principal instanceof WebPrincipal) {
             WebPrincipal wp = (WebPrincipal) principal;

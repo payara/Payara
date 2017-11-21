@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,11 +61,10 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -84,22 +83,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteProtocol implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "{0} protocol doesn't exist.",
-            level = "INFO")
-    protected static final String DELETE_PROTOCOL_NOT_EXISTS = "AS-WEB-ADMIN-00035";
-
-    @LogMessageInfo(
-            message = "{0} protocol is being used in the network listener {1}.",
-            level = "INFO")
-    protected static final String DELETE_PROTOCOL_BEING_USED = "AS-WEB-ADMIN-00036";
-
-    @LogMessageInfo(
-            message = "Deletion of Protocol {0} failed.",
-            level = "INFO")
-    protected static final String DELETE_PROTOCOL_FAIL = "AS-WEB-ADMIN-00037";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
 
     @Param(name="protocolname", primary=true)
@@ -140,7 +124,7 @@ public class DeleteProtocol implements AdminCommand {
             protocol = protocols.findProtocol(protocolName);
 
             if (protocol == null) {
-                report.setMessage(MessageFormat.format(rb.getString(DELETE_PROTOCOL_NOT_EXISTS), protocolName));
+                report.setMessage(MessageFormat.format(rb.getString(LogFacade.DELETE_PROTOCOL_NOT_EXISTS), protocolName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -152,7 +136,7 @@ public class DeleteProtocol implements AdminCommand {
             for (NetworkListener nwlsnr : nwlsnrList) {
                 if (protocol.getName().equals(nwlsnr.getProtocol())) {
                     report.setMessage(
-                            MessageFormat.format(rb.getString(DELETE_PROTOCOL_BEING_USED),
+                            MessageFormat.format(rb.getString(LogFacade.DELETE_PROTOCOL_BEING_USED),
                                     protocolName,
                                     nwlsnr.getName()));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -170,7 +154,7 @@ public class DeleteProtocol implements AdminCommand {
         } catch(TransactionFailure e) {
             report.setMessage(
                     MessageFormat.format(
-                            rb.getString(DELETE_PROTOCOL_FAIL),
+                            rb.getString(LogFacade.DELETE_PROTOCOL_FAIL),
                             protocolName) +
                     e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package com.sun.gjc.spi;
 
 import com.sun.gjc.common.DataSourceObjectBuilder;
@@ -124,10 +124,10 @@ public abstract class JdbcObjectsFactory implements Serializable {
         }
         return proxiedConn;
     }
-    
-    protected <T> T getProxyObject(final Object actualObject, Class<T>[] ifaces, 
+
+    protected <T> T getProxyObject(final Object actualObject, Class<T>[] ifaces,
             final SQLTraceDelegator sqlTraceDelegator) throws Exception {
-        
+
         T result;
         InvocationHandler ih = new InvocationHandler() {
 
@@ -146,8 +146,8 @@ public abstract class JdbcObjectsFactory implements Serializable {
                 return methodResult;
             }
         };
-        result = (T) Proxy.newProxyInstance(actualObject.getClass().getClassLoader(), ifaces, ih);        
+        result = (T) Proxy.newProxyInstance(actualObject.getClass().getClassLoader(), ifaces, ih);
         return result;
-    }    
+    }
 
 }

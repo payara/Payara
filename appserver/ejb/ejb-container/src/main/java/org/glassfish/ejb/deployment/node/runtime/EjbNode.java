@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.node.runtime;
-
-import java.util.Map;
-import java.util.logging.Level;
 
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
@@ -60,6 +58,9 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import fish.payara.cluster.DistributedLockType;
+import java.util.Map;
+import java.util.logging.Level;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
@@ -159,15 +160,15 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
         } else if (RuntimeTagNames.PASS_BY_REFERENCE.equals(element.getQName())) {
 	    descriptor.getIASEjbExtraDescriptors().setPassByReference(Boolean.valueOf(value));
 	} else if (RuntimeTagNames.JMS_MAX_MESSAGES_LOAD.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setJmsMaxMessagesLoad((Integer.valueOf(value)).intValue());
+	    descriptor.getIASEjbExtraDescriptors().setJmsMaxMessagesLoad(Integer.parseInt(value));
 	} else if (RuntimeTagNames.IS_READ_ONLY_BEAN.equals(element.getQName())) {
 	    descriptor.getIASEjbExtraDescriptors().setIsReadOnlyBean((Boolean.valueOf(value)).booleanValue());
 	} else if (RuntimeTagNames.REFRESH_PERIOD_IN_SECONDS.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setRefreshPeriodInSeconds((Integer.valueOf(value)).intValue());
+	    descriptor.getIASEjbExtraDescriptors().setRefreshPeriodInSeconds(Integer.parseInt(value));
 	} else if (RuntimeTagNames.COMMIT_OPTION.equals(element.getQName())) {
 	    descriptor.getIASEjbExtraDescriptors().setCommitOption(value);
 	} else if (RuntimeTagNames.CMT_TIMEOUT_IN_SECONDS.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setCmtTimeoutInSeconds((Integer.valueOf(value)).intValue());
+	    descriptor.getIASEjbExtraDescriptors().setCmtTimeoutInSeconds(Integer.parseInt(value));
 	} else if (RuntimeTagNames.USE_THREAD_POOL_ID.equals(element.getQName())) {
 	    descriptor.getIASEjbExtraDescriptors().setUseThreadPoolId(value);
 	} else if (RuntimeTagNames.CHECKPOINTED_METHODS.equals(
@@ -176,6 +177,26 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
                 value);
         } else if(RuntimeTagNames.PER_REQUEST_LOAD_BALANCING.equals(element.getQName())) {
             descriptor.getIASEjbExtraDescriptors().setPerRequestLoadBalancing(Boolean.valueOf(value));
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_BEAN.equals(element.getQName())) {
+            ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setClustered(Boolean.valueOf(value));
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_KEY_NAME.equals(element.getQName())) {
+            ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setClusteredKeyValue(value);
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_LOCK_TYPE.equals(element.getQName())) {
+            org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor ejbDesc = (org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor;
+            switch(value.toLowerCase()) {
+                case "inherit":
+                    ejbDesc.setClusteredLockType(DistributedLockType.INHERIT);
+                    break;
+                case "none":
+                    ejbDesc.setClusteredLockType(DistributedLockType.LOCK_NONE);
+                    break;
+                default:
+                    DOLUtils.getDefaultLogger().log(Level.WARNING, "Invalid clustered lock type: {0}", value);
+            }
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH.equals(element.getQName())) {
+             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setDontCallPostConstructOnAttach(!Boolean.valueOf(value));
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH.equals(element.getQName())) {
+             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setDontCallPreDestroyOnDetach(!Boolean.valueOf(value));
         }
         else super.setElementValue(element, value);
     }

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
 
@@ -172,24 +172,29 @@ public final class HttpConnectorAddress {
                  * Check if the system property has been set to determine the
                  * HTTPS protocol to use, and set the protocol to be used to
                  * this value if it has. If it hasn't, or an unrecognised 
-                 * protocol is entered, log a message and use the GlassFish
-                 * default of TLSv1.
+                 * protocol is entered, log a message and use TLSv1.2
                  */
                 if (System.getProperty("fish.payara.clientHttpsProtocol") != null) {
                     switch (System.getProperty("fish.payara.clientHttpsProtocol")) {
-                        case "TLSv1.1": protocol = "TLSV1.1";
+                        case "TLSv1": protocol = "TLSV1";
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);
                                         break;
                         
+                        case "TLSv1.1": protocol = "TLSv1.1";
+                                        logger.log(Level.FINE, 
+                                                AdminLoggerInfo.settingHttpsProtocol,
+                                                protocol);
+                                        break;
+                                        
                         case "TLSv1.2": protocol = "TLSv1.2";
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);
                                         break;
                         
-                        default:        protocol = "TLSv1";
+                        default:        protocol = "TLSv1.2";
                                         String[] logParams = {protocol, 
                                                 System.getProperty("fish.payara.clientHttpsProtocol")};
                                         
@@ -199,7 +204,7 @@ public final class HttpConnectorAddress {
                                         break;
                     }
                 } else {
-                    protocol = "TLSv1";
+                    protocol = "TLSv1.2";
                     logger.log(Level.FINE, AdminLoggerInfo.usingDefaultHttpsProtocol, protocol);
                 }
             }

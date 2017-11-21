@@ -36,6 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright Payara Foundation and/or its affiliates
+ *
  */
 package com.sun.enterprise.admin.servermgmt.services;
 
@@ -204,7 +207,7 @@ public class WindowsService extends NonSMFServiceAdapter {
     @Override
     public final void initializeInternal() {
         try {
-            getTokenMap().put(DISPLAY_NAME_TN, info.serverDirs.getServerName() + " GlassFish Server");
+            getTokenMap().put(DISPLAY_NAME_TN, info.serverDirs.getServerName() + " Payara Server");
             setTemplateFile(TEMPLATE_FILE_NAME);
             setSourceWin32Exe();
             targetDir = new File(getServerDirs().getServerDir(), TARGET_DIR);

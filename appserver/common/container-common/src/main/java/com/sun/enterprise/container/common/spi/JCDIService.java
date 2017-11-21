@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.spi;
 
@@ -67,7 +68,7 @@ public interface JCDIService {
 
     public void injectManagedObject(Object managedObject, BundleDescriptor bundle);
 
-    public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle);
+    public <T> T createInterceptorInstance(Class<T> interceptorClass, EjbDescriptor ejbDesc);
 
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc);
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance);

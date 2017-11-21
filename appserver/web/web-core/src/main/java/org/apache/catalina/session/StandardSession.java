@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,17 +56,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.sun.enterprise.spi.io.BaseIndirectlySerializable;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.tomcat.util.security.PrivilegedSetTccl;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.*;
@@ -81,7 +82,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-//end HERCULES:add
 
 
 
@@ -109,51 +109,10 @@ import java.util.logging.Logger;
 public class StandardSession
     implements HttpSession, Session, Serializable {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+    private static final ResourceBundle rb = log.getResourceBundle();
 
-    @LogMessageInfo(
-            message = "Session id change event listener threw exception",
-            level = "WARNING"
-    )
-    public static final String SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00389";
-
-    @LogMessageInfo(
-            message = "Session event listener threw exception",
-            level = "WARNING"
-    )
-    public static final String SESSION_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00390";
-
-    @LogMessageInfo(
-            message = "Session already invalidated",
-            level = "WARNING"
-    )
-    public static final String SESSION_INVALIDATED_EXCEPTION = "AS-WEB-CORE-00391";
-
-    @LogMessageInfo(
-            message = "Session attribute event listener threw exception",
-            level = "WARNING"
-    )
-    public static final String SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00392";
-
-    @LogMessageInfo(
-            message = "setAttribute: name parameter cannot be null",
-            level = "WARNING"
-    )
-    public static final String NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00393";
-
-    @LogMessageInfo(
-            message = "Session binding event listener threw exception",
-            level = "WARNING"
-    )
-    public static final String SESSION_BINDING_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00394";
-
-    @LogMessageInfo(
-            message = " Cannot serialize session attribute {0} for session {1}",
-            level = "WARNING"
-    )
-    public static final String CANNOT_SERIALIZE_SESSION_EXCEPTION = "AS-WEB-CORE-00395";
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -185,6 +144,9 @@ public class StandardSession
      */
     protected static final String NOT_SERIALIZED =
         "___NOT_SERIALIZABLE_EXCEPTION___";
+
+    protected static final String SEPARATE_BUFFER_SERIALIZATION =
+        "___SEPARATE_BUFFER_SERIALIZATION___";
 
     //HERCULES:add
     /**
@@ -313,6 +275,9 @@ public class StandardSession
      * The Manager with which this Session is associated.
      */
     protected transient Manager manager = null;
+    protected static final transient ThreadLocal<Manager> threadContextManager
+            = new ThreadLocal<>();
+    private transient Cache<Object, Boolean> checkedSerializableObjects = buildSerializableCache();
 
     /**
      * The context with which this Session is associated.
@@ -487,7 +452,7 @@ public class StandardSession
                     } catch (Exception e) {
                         // Ignore
                     }
-                    log(rb.getString(SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION), t);
+                    log(rb.getString(LogFacade.SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION), t);
                 }
             }
         }
@@ -568,7 +533,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(rb.getString(SESSION_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_EVENT_LISTENER_EXCEPTION), t);
             }
         }
     }
@@ -595,7 +560,7 @@ public class StandardSession
     public long getLastAccessedTime() {
         if ( !isValid() ) {
             throw new IllegalStateException
-                ("getLastAccessedTime: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getLastAccessedTime: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
         }
         return (this.lastAccessedTime);
 
@@ -920,7 +885,7 @@ public class StandardSession
                                 // Ignore
                             }
                             // FIXME - should we do anything besides log these?
-                            log(rb.getString(SESSION_EVENT_LISTENER_EXCEPTION), t);
+                            log(rb.getString(LogFacade.SESSION_EVENT_LISTENER_EXCEPTION), t);
                         }
                     }
                 }
@@ -1271,16 +1236,23 @@ public class StandardSession
 
         StandardSession result = null;
 
-        Object obj = ois.readObject();
-        if (obj instanceof StandardSession) {
-            // New format following standard serialization
-            result = (StandardSession) obj;
-        } else {
-            // Old format, obj is an instance of Long and contains the
-            // session's creation time
-            result = (StandardSession) manager.createEmptySession();
-            result.setCreationTime(((Long) obj).longValue());
-            result.readRemainingObject(ois);
+        try {
+            threadContextManager.set(manager);
+
+            Object obj = ois.readObject();
+            if (obj instanceof StandardSession) {
+                // New format following standard serialization
+                result = (StandardSession) obj;
+            } else {
+                // Old format, obj is an instance of Long and contains the
+                // session's creation time
+                result = (StandardSession) manager.createEmptySession();
+                result.setCreationTime(((Long) obj).longValue());
+                result.readRemainingObject(ois);
+            }
+        }
+        finally {
+            threadContextManager.remove();
         }
 
         return result;
@@ -1301,7 +1273,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("getCreationTime: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getCreationTime: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         return (this.creationTime);
 
@@ -1353,7 +1325,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("getAttribute: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getAttribute: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         if (name == null) return null;
 
@@ -1376,7 +1348,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("getAttributeNames: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getAttributeNames: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
 
         return (new Enumerator<String>(attributes.keySet(), true));
@@ -1417,7 +1389,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("getValueNames: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("getValueNames: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         return (keys());
 
@@ -1476,7 +1448,7 @@ public class StandardSession
         //so just return false
         if(_sessionLock == null)
             return false;        
-        synchronized(this) {
+        synchronized(sessionLockMonitor) {
             return _sessionLock.isForegroundLocked();
         } 
     }    
@@ -1490,7 +1462,7 @@ public class StandardSession
         //so just return true
         if(_sessionLock == null)
             return true;
-        synchronized(this) {
+        synchronized(sessionLockMonitor) {
             return _sessionLock.lockBackground();
         }
     }
@@ -1504,7 +1476,7 @@ public class StandardSession
         //so just return true
         if(_sessionLock == null)
             return true;
-        synchronized(this) {
+        synchronized(sessionLockMonitor) {
             return _sessionLock.lockForeground();
         }
     }
@@ -1518,7 +1490,7 @@ public class StandardSession
         //so just return true
         if(_sessionLock == null)
             return;
-        synchronized(this) {
+        synchronized(sessionLockMonitor) {
             _sessionLock.unlockForegroundCompletely();
         }
     }
@@ -1531,7 +1503,7 @@ public class StandardSession
         //so just return true
         if(_sessionLock == null)
             return;
-        synchronized(this) {
+        synchronized(sessionLockMonitor) {
             _sessionLock.unlockForeground();
         }
     } 
@@ -1544,7 +1516,7 @@ public class StandardSession
         //so just return true
         if(_sessionLock == null)
             return;
-        synchronized(this) {
+        synchronized(sessionLockMonitor) {
             _sessionLock.unlockBackground();
         }
     }    
@@ -1568,15 +1540,20 @@ public class StandardSession
      * @return true if this session has been locked by any
      * out-of-band (i.e., non-http) request, false otherwise
      */      
-    public synchronized boolean hasNonHttpLockOccurred() {
+    public boolean hasNonHttpLockOccurred() {
         //in this case we are not using locks
         //so just return false
-        if(_sessionLock == null)
+        if (_sessionLock == null) {
             return false;
-        return _sessionLock.hasNonHttpLockOccurred();
+        }
+        synchronized (sessionLockMonitor) {
+            return _sessionLock.hasNonHttpLockOccurred();
+        }
     }
 
     protected transient SessionLock _sessionLock = new SessionLock();
+
+    protected final Object sessionLockMonitor = new Object();
 
 // ------------------------end session locking ---HERCULES:add--------        
     
@@ -1593,7 +1570,7 @@ public class StandardSession
 
         if (!isValid)
             throw new IllegalStateException
-                ("invalidate: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("invalidate: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
         //make sure foreground locked first
         if(!this.isForegroundLocked()) {
             this.getSessionLockForForeground();
@@ -1622,7 +1599,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                ("isNew: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("isNew: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         return (this.isNew);
 
@@ -1701,7 +1678,7 @@ public class StandardSession
         // Validate our current state
         if (!isValid() && checkValid)
             throw new IllegalStateException
-                ("removeAttribute: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("removeAttribute: " + rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 
         // Remove this attribute from our collection
         Object value = attributes.remove(name);
@@ -1770,7 +1747,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(rb.getString(SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -1823,7 +1800,7 @@ public class StandardSession
         // Name cannot be null
         if (name == null)
             throw new IllegalArgumentException
-                (rb.getString(NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION));
+                (rb.getString(LogFacade.NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION));
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -1834,7 +1811,7 @@ public class StandardSession
         // Validate our current state
         if (!isValid()) {
             throw new IllegalStateException
-                ("setAttribute: "+ rb.getString(SESSION_INVALIDATED_EXCEPTION));
+                ("setAttribute: "+ rb.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
         }
 
         if (manager != null) {
@@ -1850,7 +1827,7 @@ public class StandardSession
             try {
                 ((HttpSessionBindingListener) value).valueBound(event);
             } catch (Throwable t){
-                log(rb.getString(SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -1870,7 +1847,7 @@ public class StandardSession
             } catch (Throwable t) {
                 context.fireContainerEvent(
                     ContainerEvent.AFTER_SESSION_VALUE_UNBOUND, null);
-                log(rb.getString(SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
             }
         }
         
@@ -1935,7 +1912,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(rb.getString(SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
+                log(rb.getString(LogFacade.SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -1961,10 +1938,13 @@ public class StandardSession
         throws ClassNotFoundException, IOException {
 
         if (listeners == null) {
-            listeners = new ArrayList<SessionListener>();
+            listeners = new ArrayList<>();
         }
         if (notes == null) {
-            notes = new Hashtable<String, Object>();
+            notes = new Hashtable<>();
+        }
+        if(checkedSerializableObjects == null) {
+            checkedSerializableObjects = buildSerializableCache();
         }
 
         // Deserialize the scalar instance variables (except Manager)
@@ -2077,8 +2057,22 @@ public class StandardSession
         for (int i = 0; i < n; i++) {
             String name = (String) stream.readObject();
             Object value = stream.readObject();
-            if ((value instanceof String) && (value.equals(NOT_SERIALIZED)))
-                continue;
+            if (value instanceof String) {
+                switch((String)value) {
+                    case NOT_SERIALIZED:
+                        continue;
+                    case SEPARATE_BUFFER_SERIALIZATION:
+                    {
+                        value = stream.readObject();
+                        ManagerBase mgr = (ManagerBase) getManager();
+                        if (mgr == null) {
+                            mgr = (ManagerBase)threadContextManager.get();
+                        }
+                        value = mgr.createObjectInputStream(new ByteArrayInputStream((byte[]) value)).readObject();
+                        break;
+                    }
+                }
+            }
             if (debug >= 2)
                 log("  loading attribute '" + name +
                     "' with value '" + value + "'");
@@ -2192,37 +2186,54 @@ public class StandardSession
              */ 
             
             //following is replacement code from Hercules
+            Object val = saveValues.get(i);
+            Boolean serSuccess = checkedSerializableObjects.getIfPresent(val);
             try {
-                stream.writeObject(saveValues.get(i));
+                if(serSuccess == null) {
+                    ManagerBase mgr = (ManagerBase)getManager();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    try (ObjectOutputStream oos = mgr.createObjectOutputStream(baos)) {
+                        // need to write the object to temporary buffer,
+                        // so main stream doesn't get corrupted in case of partial
+                        // object write and NotSerializedException
+                        checkedSerializableObjects.put(val, false);
+                        oos.writeObject(val);
+                        oos.flush();
+                        stream.writeObject(SEPARATE_BUFFER_SERIALIZATION);
+                        stream.writeObject(baos.toByteArray());
+                    }
+                    checkedSerializableObjects.put(val, true);
+                }
+                else if(serSuccess == true) {
+                    stream.writeObject(val);
+                }
+                else {
+                    stream.writeObject(NOT_SERIALIZED);
+                }
+
                 if (debug >= 2)
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value '" + saveValues.get(i) + "'");
-            } catch (NotSerializableException e) {
-                String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
+            } catch (IOException e) {
+                if((e instanceof NotSerializableException || e.getCause() instanceof NotSerializableException)
+                        && (serSuccess == null || serSuccess == false)) {
+                String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_SERIALIZE_SESSION_EXCEPTION),
                                                   new Object[] {saveNames.get(i), id});
-                log(msg, e);
+                log(msg, Level.WARNING);
                 stream.writeObject(NOT_SERIALIZED);
                 if (debug >= 2)
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value NOT_SERIALIZED");
-            } catch (IOException ioe) {
-		if ( ioe.getCause() instanceof NotSerializableException ) {
-                String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
-                                                  new Object[] {saveNames.get(i), id});
-                	log(msg, ioe);
-                	stream.writeObject(NOT_SERIALIZED);
-                	if (debug >= 2)
-                    		log("  storing attribute '" + saveNames.get(i) +
-                        	"' with value NOT_SERIALIZED");
-		} else 
-			throw ioe;
-	    }
+                }
+                else {
+                    throw e;
+                }
+            }
             //end HERCULES:mod
         }
 
         stream.writeObject(sipAppSessionId);
         stream.writeObject(beKey);
-
     }
 
 
@@ -2376,6 +2387,16 @@ public class StandardSession
         }
     }
 
+    /**
+     * Log a message on the Logger associated with our Manager (if any).
+     *
+     * @param message Message to be logged
+     * @param level
+     */
+    protected void log(String message, Level level) {
+        log.log(level, "StandardSession: {0}", message);
+    }
+
 
     /**
      * Returns true if the given value may be serialized, false otherwise.
@@ -2401,6 +2422,11 @@ public class StandardSession
         }
     }
 
+    private static Cache<Object, Boolean> buildSerializableCache() {
+        return CacheBuilder.newBuilder().softValues()
+                .maximumSize(Integer.getInteger(StandardSession.class.getName() + ".identityCacheSize", 100))
+                .build();
+    }
 }
 
 

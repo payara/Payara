@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -511,7 +511,7 @@ public class TimerState {
             throws Exception {
             Object pKey = null;
             if( primaryKeyBytes_ != null) {
-                pKey = EJBUtils.deserializeObject(primaryKeyBytes_, cl);
+                pKey = EJBUtils.deserializeObject(primaryKeyBytes_, cl, 0L);
                 if( logger.isLoggable(Level.FINER) ) {
                     logger.log(Level.FINER, "Deserialized blob : " + pKey);
                 }
@@ -522,7 +522,7 @@ public class TimerState {
         Serializable getInfo(ClassLoader cl) throws Exception {
             Serializable info = null;
             if( infoBytes_ != null) {
-                info = (Serializable)EJBUtils.deserializeObject(infoBytes_, cl);
+                info = (Serializable)EJBUtils.deserializeObject(infoBytes_, cl, 0L);
                 if( logger.isLoggable(Level.FINER) ) {
                     logger.log(Level.FINER, "Deserialized blob : " + info);
                 }

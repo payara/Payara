@@ -579,18 +579,18 @@ public class PluginHandlers {
 
         ClassLoader cl = cps.getModuleClassLoader(pluginId);
 
-        // Try the viewRoot locale first
-        String path = getHelpPathForResource(helpKey, handlerCtx.getFacesContext().getViewRoot().getLocale(), cl);
-        if (path == null) {
-            // Try the default locale
-            path = getHelpPathForResource(helpKey, Locale.getDefault(), cl);
-
-            // Default to en
-            if (path == null) {
-                path = "/en/help/" + helpKey;
-            }
-        }
-
+//        // Try the viewRoot locale first
+//        String path = getHelpPathForResource(helpKey, handlerCtx.getFacesContext().getViewRoot().getLocale(), cl);
+//        if (path == null) {
+//            // Try the default locale
+//            path = getHelpPathForResource(helpKey, Locale.getDefault(), cl);
+//
+//            // Default to en
+//            if (path == null) {
+//                path = "/en/help/" + helpKey;
+//            }
+//        }
+        String path = "";
         handlerCtx.setOutputValue("url", path);
     }
 

@@ -44,13 +44,11 @@ import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EarType;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.WLSApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.util.AnnotationDetector;
 import com.sun.enterprise.deployment.util.ApplicationValidator;
 import com.sun.enterprise.deployment.util.ApplicationVisitor;
@@ -623,7 +621,12 @@ public class ApplicationArchivist extends Archivist<Application> {
                 // context root as module name for web modules
                 if (!appArchive.exists("META-INF/application.xml")) {
                     if (aModule.getModuleType().equals(DOLUtils.warType())) {
-                        aModule.setContextRoot(aModule.getModuleName());
+                        WebBundleDescriptor wbd = (WebBundleDescriptor) descriptor;
+                        if (wbd.getContextRoot() != null && !wbd.getContextRoot().equals("")) {
+                            aModule.setContextRoot(wbd.getContextRoot());
+                        } else {
+                            aModule.setContextRoot(aModule.getModuleName());
+                        }
                     }
                 }
             } else {

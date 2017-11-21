@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
 
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
@@ -326,7 +327,7 @@
         javax.servlet.jsp.jar
         jspcaching-connector.jar
         web-glue.jar
-        bean-validator.jar
+        hibernate-validator-payara-p1.jar
         javax.ejb.jar
         javax.enterprise.deploy-api.jar
         javax.jms-api.jar
@@ -339,7 +340,7 @@
         javax.transaction-api.jar
         javax.xml.rpc-api.jar
         webservices-osgi.jar
-        weld-osgi-bundle.jar
+        weld-osgi-bundle-glassfish4.jar
         jersey-mvc-jsp.jar
       </param-value>
     </init-param>
@@ -768,6 +769,10 @@
   <mime-mapping>
     <extension>js</extension>
     <mime-type>text/javascript</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>json</extension>
+    <mime-type>application/json</mime-type>
   </mime-mapping>
   <mime-mapping>
     <extension>kar</extension>

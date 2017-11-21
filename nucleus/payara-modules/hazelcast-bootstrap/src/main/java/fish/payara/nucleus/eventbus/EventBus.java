@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,12 +17,15 @@
  */
 package fish.payara.nucleus.eventbus;
 
+import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -32,21 +35,22 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-event-bus")
 @RunLevel(StartupRunLevel.VAL)
-public class EventBus {
+public class EventBus implements EventListener {
     
     private static final Logger logger = Logger.getLogger(EventBus.class.getCanonicalName());
     
     @Inject
     private HazelcastCore hzCore;
     
+    @Inject
+    private Events events;
+    
     private HashMap<String,TopicListener> messageReceivers;
     
     
     @PostConstruct
     public void postConstruct() {
-        if (hzCore.isEnabled()) {
-            logger.info("Payara Clustered Event Bus Enabled");
-        }
+        events.register(this);
         messageReceivers = new HashMap<String, TopicListener>(2);
     }
     
@@ -88,6 +92,21 @@ public class EventBus {
                 messageReceivers.remove(topic);
                 if (hzCore.isEnabled()) {
                     hzCore.getInstance().getTopic(topic).removeMessageListener(tl.getRegistrationID());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void event(Event event) {
+        if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
+            if (hzCore.isEnabled()) {
+                logger.info("Payara Clustered Event Bus Enabled");
+                // add message receivers if any as this maybe a
+                for (String topic : messageReceivers.keySet()) {
+                    TopicListener tl = messageReceivers.get(topic);
+                    String regId = hzCore.getInstance().getTopic(topic).addMessageListener(tl);
+                    tl.setRegistrationID(regId);                   
                 }
             }
         }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation]
 
 package osgiweld;
 
@@ -81,7 +82,7 @@ public class OsgiWeldServlet extends HttpServlet {
             if (gfhome != null) {
                 String jarFile = gfhome + File.separator + ".."
                         + File.separator + ".." + File.separator
-                        + "modules" + File.separator + "weld-osgi-bundle.jar";
+                        + "modules" + File.separator + "weld-osgi-bundle-glassfish4.jar";
                 //System.out.println("Weld Osgi module = " + jarFile);
                 JarFile jar = new JarFile(jarFile);
                 Manifest manifest = jar.getManifest();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  *
 */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.resource.pool.monitor;
 
@@ -210,7 +210,8 @@ public class ConnectorConnPoolStatsProvider {
             } 
             //Decrement counter
             synchronized(numConnFree) {
-                numConnFree.setCurrent(numConnFree.getCurrent() - 1);
+                long numConnFreeSafe = (numConnFree.getCurrent() - 1 >= 0) ? numConnFree.getCurrent() - 1 : 0;
+                numConnFree.setCurrent(numConnFreeSafe);
             }
         }
     }

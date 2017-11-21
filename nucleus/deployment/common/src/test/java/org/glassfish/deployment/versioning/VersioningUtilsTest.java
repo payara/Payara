@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.versioning;
 
@@ -690,11 +691,23 @@ public class VersioningUtilsTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
  
+        @Override
         public String getDeploymentOrder() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void setDeploymentOrder(String value) throws PropertyVetoException{
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+ 
+        @Override
+        public String getDeploymentTime() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setDeploymentTime(String value) throws PropertyVetoException{
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -770,6 +783,26 @@ public class VersioningUtilsTest {
         }
 
         @Override
+        public Property addProperty(Property property) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property lookupProperty(String s) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property removeProperty(String s) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Property removeProperty(Property property) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public Property getProperty(String name) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -818,6 +851,16 @@ public class VersioningUtilsTest {
         @Override
         public <T extends ApplicationExtension> List<T> getExtensionsByType(Class<T> type) {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getTimeDeployed() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void setTimeDeployed(String value) throws PropertyVetoException {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
     }

@@ -1,27 +1,49 @@
 /*
-
- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
-
- The contents of this file are subject to the terms of the Common Development
- and Distribution License("CDDL") (collectively, the "License").  You
- may not use this file except in compliance with the License.  You can
- obtain a copy of the License at
- https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- or packager/legal/LICENSE.txt.  See the License for the specific
- language governing permissions and limitations under the License.
-
- When distributing the software, include this License Header Notice in each
- file and include the License file at packager/legal/LICENSE.txt.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.notification.TimeUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -38,12 +60,14 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.validation.constraints.Min;
 
 /**
- * Admin command to enable/disable all health check services defined in domain.xml.
+ * Admin command to enable/disable all health check services defined in
+ * domain.xml.
  *
  * @author mertcaliskan
  */
@@ -51,17 +75,20 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+    @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+            opType = RestEndpoint.OpType.POST,
             path = "healthcheck-configure",
             description = "Enables/Disables Health Check Service")
 })
 public class HealthCheckConfigurer implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckConfigurer.class);
+    
+    @Inject
+    ServerEnvironment server;
 
     @Inject
     protected Logger logger;
@@ -78,15 +105,35 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
+    @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled")
     private Boolean enabled;
+
+    @Deprecated
+    @Param(name = "notifierEnabled", optional = true)
+    private Boolean notifierEnabled;
+
+    @Param(name = "historicalTraceEnabled", optional = true)
+    private Boolean historicalTraceEnabled;
+  
+    @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
+    @Min(value = 1, message = "Store size must be greater than 0")
+    private Integer historicalTraceStoreSize;
+
+    @Param(name = "historicalTraceStoreTimeout", optional = true)
+    private String historicalTraceStoreTimeout;
 
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
+
+        Properties extraProperties = actionReport.getExtraProperties();
+        if (extraProperties == null) {
+            extraProperties = new Properties();
+            actionReport.setExtraProperties(extraProperties);
+        }
 
         Config config = targetUtil.getConfig(target);
         final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
@@ -99,13 +146,22 @@ public class HealthCheckConfigurer implements AdminCommand {
                         if (enabled != null) {
                             healthCheckServiceConfigurationProxy.enabled(enabled.toString());
                         }
+                        if (historicalTraceEnabled != null) {
+                            healthCheckServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                        }
+                        if (historicalTraceStoreSize != null) {
+                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
+
+                        if (historicalTraceStoreTimeout != null) {
+                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return healthCheckServiceConfiguration;
+                        return healthCheckServiceConfigurationProxy;
                     }
 
                 }, healthCheckServiceConfiguration);
-            }
-            catch(TransactionFailure ex){
+            } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Exception during command ", ex);
                 actionReport.setMessage(ex.getCause().getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -114,13 +170,55 @@ public class HealthCheckConfigurer implements AdminCommand {
         }
 
         if (dynamic) {
-            enableOnTarget(actionReport, context, enabled);
+            if (server.isDas()) {
+                if (targetUtil.getConfig(target).isDas()) {
+                    configureDynamically();
+                }
+            } else {
+                // apply as not the DAS so implicitly it is for us
+                configureDynamically();
+            }
+        }
+
+        enableLogNotifier(context);
+    }
+
+    private void enableLogNotifier(AdminCommandContext context) {
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = context.getActionReport().addSubActionsReport();
+
+        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("healthcheck-log-notifier-configure", subReport, context.getSubject());
+
+        ParameterMap params = new ParameterMap();
+        params.add("dynamic", dynamic.toString());
+        params.add("target", target);
+        if (notifierEnabled != null) {
+            params.add("enabled", notifierEnabled.toString());
+        }
+        if (notifierEnabled == null && enabled != null) {
+            params.add("enabled", enabled.toString());
+        }
+        inv.parameters(params);
+        inv.execute();
+        // swallow the offline warning as it is not a problem
+        if (subReport.hasWarnings()) {
+            subReport.setMessage("");
         }
     }
 
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+
+    private void configureDynamically() {
         service.setEnabled(enabled);
-        actionReport.appendMessage(strings.getLocalString("healthcheck.configure.status.success",
-                "Health Check Service status is set to {0}.", enabled));
+
+        if (historicalTraceEnabled != null) {
+            service.setHistoricalTraceEnabled(historicalTraceEnabled);
+        }
+        if (historicalTraceStoreSize != null) {
+            service.setHistoricalTraceStoreSize(historicalTraceStoreSize);
+        }
+        if (historicalTraceStoreTimeout != null) {
+            long timeout = TimeUtil.setStoreTimeLimit(this.historicalTraceStoreTimeout);
+            service.setHistoricalTraceStoreTimeout(timeout);
+        }
     }
 }

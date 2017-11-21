@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.service;
 
@@ -54,13 +54,10 @@ import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.resource.listener.UnpooledConnectionEventListener;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.util.i18n.StringManager;
-import org.glassfish.connectors.config.SecurityMap;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.RelativePathResolver;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-import org.glassfish.resourcebase.resources.api.ResourceInfo;
-import org.jvnet.hk2.config.types.Property;
-
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.logging.Level;
 import javax.naming.NamingException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionRequestInfo;
@@ -68,10 +65,13 @@ import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.TransactionSupport;
 import javax.security.auth.Subject;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.logging.Level;
+import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.connectors.config.SecurityMap;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.RelativePathResolver;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.config.types.Property;
 
 
 /**
@@ -188,7 +188,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
         try {
 
             _runtime.getResourceNamingService().publishObject(poolInfo, jndiNameForPool, connectorPoolObj, true);
-            ManagedConnectionFactory mcf = obtainManagedConnectionFactory(poolInfo);
+            ManagedConnectionFactory mcf = createManagedConnectionFactory(connectorPoolObj);
             if (mcf == null) {
                 _runtime.getResourceNamingService().unpublishObject(poolInfo, jndiNameForPool);
                 String i18nMsg = localStrings.getString("ccp_adm.failed_to_create_mcf", poolInfo);
@@ -677,7 +677,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
                 result = envProp.getValue();
             }
         }
-        return result;
+        return (String)TranslatedConfigView.getTranslatedValue(result);
     }
 
     private ResourcePrincipal getDefaultResourcePrincipal( PoolInfo poolInfo,
@@ -909,6 +909,13 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
 
     public ManagedConnectionFactory obtainManagedConnectionFactory(PoolInfo poolInfo) throws ConnectorRuntimeException{
         return obtainManagedConnectionFactory(poolInfo, null);
+    }
+
+    private ManagedConnectionFactory createManagedConnectionFactory(ConnectorConnectionPool connectorPoolObj) throws ConnectorRuntimeException {
+        if(_registry.isMCFCreated(connectorPoolObj.getPoolInfo())) {
+            recreateConnectorConnectionPool(connectorPoolObj);
+        }
+        return obtainManagedConnectionFactory(connectorPoolObj.getPoolInfo());
     }
 
     /**

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.handlers;
 
@@ -54,10 +55,9 @@ import org.jvnet.hk2.annotations.Service;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.logging.Level;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * This handler is responsible in handling
@@ -170,10 +170,10 @@ public class WebServletHandler extends AbstractWebHandler {
 
             if (webCompDesc.isServlet()) {
                 messageKey = "web.deployment.annotation.handlers.servletimpldontmatch";
-                defaultMessage = "The servlet '{0}' has implementation '{1}' in xml. It does not match with '{2}' from annotation @{3}.";
+                defaultMessage = "The servlet ''{0}'' has implementation ''{1}'' in xml. It does not match with ''{2}'' from annotation @{3}.";
             } else {
                 messageKey = "web.deployment.annotation.handlers.servletimpljspdontmatch";
-                defaultMessage = "The servlet '{0}' is a jsp '{1}' in xml. It does not match with '{2}' from annotation @{3}.";
+                defaultMessage = "The servlet ''{0}'' is a jsp ''{1}'' in xml. It does not match with ''{2}'' from annotation @{3}.";
             }
             
             log(Level.SEVERE, ainfo,
@@ -199,7 +199,7 @@ public class WebServletHandler extends AbstractWebHandler {
                         validUrlPatterns = false;
                         break;
                     }
-                    webCompDesc.addUrlPattern(up);
+                    webCompDesc.addUrlPattern((String)TranslatedConfigView.getTranslatedValue(up));
                 }
             }
 
@@ -223,7 +223,7 @@ public class WebServletHandler extends AbstractWebHandler {
             for (WebInitParam initParam : initParams) {
                 webCompDesc.addInitializationParameter(
                         new EnvironmentProperty(
-                            initParam.name(), initParam.value(),
+                            initParam.name(), (String)TranslatedConfigView.getTranslatedValue(initParam.value()),
                             initParam.description()));
             }
         }
@@ -256,6 +256,9 @@ public class WebServletHandler extends AbstractWebHandler {
         String servletName = webServletAn.name();
         if (servletName == null || servletName.length() == 0) {
             servletName = webCompClass.getName();
+        }
+        else {
+            servletName = (String)TranslatedConfigView.getTranslatedValue(servletName);
         }
         return servletName;
     }

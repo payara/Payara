@@ -196,6 +196,7 @@
         <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
         <!-- End of OSGi bundle configurations -->
         <jvm-options>-XX:NewRatio=2</jvm-options>
+        <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -324,8 +325,8 @@
              <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
              <!-- Gogo shell configuration -->
              <!--PAYARA-495-->
-             <!--<jvm-options>-Dgosh.args=noshutdown -c noop=true</jvm-options>-->
-             <jvm-options>-Dgosh.args=--noshutdown</jvm-options>
+             <!--<jvm-options>-Dgosh.args=nointeractive</jvm-options>-->
+             <jvm-options>-Dgosh.args=--nointeractive</jvm-options>
              <!-- Directory being watched by fileinstall. -->
              <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
              <!-- Time period fileinstaller thread in ms. -->
@@ -343,6 +344,7 @@
              -->
              <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
              <!-- End of OSGi bundle configurations -->
+             <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
          </java-config>
          <availability-service/>
          <network-config>
@@ -391,7 +393,7 @@
          </network-config>
          <thread-pools>
              <thread-pool name="http-thread-pool" />
-             <thread-pool max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
+             <thread-pool min-thread-pool-size="2" max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
          </thread-pools>
          <group-management-service/>
          <!--%%%DEFAULT_TOKENS_HERE%%%-->

@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.appserv.connectors.internal.api;
 
 import java.util.ArrayList;
@@ -298,6 +300,9 @@ public class AppSpecificConnectorClassLoaderUtil {
                         (com.sun.enterprise.config.serverbeans.Application) itr.next();
                         String appName = application.getName();
                         ApplicationInfo appInfo = appRegistry.get(appName);
+                        if (appInfo == null) {
+                            continue; // the app is not deployed on this node
+                        }
                         Application dolApp = appInfo.getMetaData(Application.class);
                         Collection<ConnectorDescriptor> rarDescriptors = dolApp.getBundleDescriptors(ConnectorDescriptor.class);
                         for (ConnectorDescriptor desc : rarDescriptors) {

@@ -52,6 +52,7 @@ import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
+import org.glassfish.web.ha.LogFacade;
 import javax.inject.Inject;
 
 import org.glassfish.web.ha.session.management.HAStoreBase;
@@ -76,8 +77,7 @@ public class HACNonceCacheImpl  implements CNonceCache {
     private String storeName = null;
     private Map<String, String> props;
     private static final String BS_TYPE_REPLICATED ="replicated";
-    private static final Logger logger =
-            HAStoreBase._logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     public HACNonceCacheImpl() {
     }

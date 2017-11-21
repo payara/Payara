@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>4.1.1.162-SNAPSHOT</version>
+        <version>4.1.2.181-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-domain</artifactId>
     <name>Nucleus template</name>
@@ -73,7 +73,7 @@
                                 <artifactItem>
                                     <groupId>org.glassfish.docs</groupId>
                                     <artifactId>basedocs</artifactId>
-                                    <version>4.1.payara-p2</version>
+                                    <version>4.1.payara-p3</version>
                                     <type>zip</type>
                                     <overWrite>false</overWrite>
                                     <includes>glassfish/lib/templates/**</includes>

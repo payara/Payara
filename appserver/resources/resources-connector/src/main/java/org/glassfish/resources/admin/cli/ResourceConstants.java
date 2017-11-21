@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.admin.cli;
@@ -145,7 +147,11 @@ public final class ResourceConstants {
     public static final String MAIL_HOST = "host";
 
     public static final String MAIL_USER = "user";
+    
+    public static final String MAIL_PASSWORD = "password";
 
+    public static final String MAIL_AUTH = "auth";
+    
     public static final String MAIL_FROM_ADDRESS = "from";
 
     public static final String MAIL_STORE_PROTO = "store-protocol";

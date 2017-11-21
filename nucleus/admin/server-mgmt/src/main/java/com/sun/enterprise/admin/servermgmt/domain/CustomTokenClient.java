@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -123,7 +123,7 @@ public class CustomTokenClient {
                             } else {
                                 if (portBase != null && token.getTokenTypeDetails() instanceof PortTypeDetails) {
                                     PortTypeDetails portTypeDetails = (PortTypeDetails)token.getTokenTypeDetails();
-                                    port = Integer.valueOf(portBase) + Integer.valueOf(portTypeDetails.getBaseOffset());
+                                    port = Integer.parseInt(portBase) + Integer.parseInt(portTypeDetails.getBaseOffset());
                                     if (!generatedTokens.containsKey(PORTBASE_PLACE_HOLDER)) {
                                         // Adding a token to persist port base value as a system tag
                                         generatedTokens.put(PORTBASE_PLACE_HOLDER, SystemPropertyTagBuilder.buildSystemTag(
