@@ -87,7 +87,7 @@ public interface MonitoringServiceConfiguration extends ConfigBeanProxy, ConfigE
     String getLogFrequencyUnit();
     void setLogFrequencyUnit(String value) throws PropertyVetoException;
     
-    @Element("*")
+    @Element
     List<MonitoredAttribute> getMonitoredAttributes();
     
     /**
