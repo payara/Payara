@@ -51,8 +51,8 @@ import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.io.DomainDirs;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
@@ -65,7 +65,7 @@ import org.jvnet.hk2.annotations.*;
 @PerLookup
 public final class ListDomainsCommand extends LocalDomainCommand {
 
-    private static final LocalStringsImpl strings = new LocalStringsImpl(ListDomainsCommand.class);
+    private static final LocalStringsImpl Strings = new LocalStringsImpl(ListDomainsCommand.class);
     private String domainsRoot = null;
 
     @Param(name = "long", shortName = "l", optional = true)
@@ -112,7 +112,7 @@ public final class ListDomainsCommand extends LocalDomainCommand {
                     }
                 }
             } else {
-                logger.fine(strings.get("NoDomainsToList"));
+                logger.fine(Strings.get("NoDomainsToList"));
             }
         } catch (Exception ex) {
             throw new CommandException(ex.getLocalizedMessage());
@@ -120,8 +120,15 @@ public final class ListDomainsCommand extends LocalDomainCommand {
         return 0;
     }
 
-    protected List<String> getRunningDomains() throws IOException, DomainException, CommandException {
-        List<String> runningDomains = new ArrayList<>();
+    /**
+     * Get a list of domains and their status
+     * @return Map<String, Boolean> of domain and status
+     * @throws IOException
+     * @throws DomainException
+     * @throws CommandException 
+     */
+    protected Map<String, Boolean> getDomains() throws IOException, DomainException, CommandException {
+        Map<String, Boolean> runningDomains = new HashMap<>();
         File domainsDirFile = ok(domainDirParam) ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
         
         DomainConfig domainConfig = new DomainConfig(null, domainsDirFile.getAbsolutePath());
@@ -130,9 +137,7 @@ public final class ListDomainsCommand extends LocalDomainCommand {
         programOpts.setInteractive(false);  // no prompting for passwords
         
         for (String domain : domainsList) {
-            if (getStatus(domain).status) {
-                runningDomains.add(domain);
-            }
+            runningDomains.put(domain, getStatus(domain).status);
         }
         return runningDomains;
     }
@@ -154,18 +159,18 @@ public final class ListDomainsCommand extends LocalDomainCommand {
         di.status = isThisDAS(getDomainRootDir());
 
         if (di.status) {
-            di.statusMsg = strings.get("list.domains.StatusRunning", dn);
+            di.statusMsg = Strings.get("list.domains.StatusRunning", dn);
             try {
                 RemoteCLICommand cmd = new RemoteCLICommand("_get-restart-required", programOpts, env);
                 String restartRequired = cmd.executeAndReturnOutput("_get-restart-required");
                 di.restartRequired = Boolean.parseBoolean(restartRequired.trim());
                 if (di.restartRequired) {
-                    di.statusMsg = strings.get("list.domains.StatusRestartRequired", dn);
+                    di.statusMsg = Strings.get("list.domains.StatusRestartRequired", dn);
                 }
             } catch (Exception ex) {
             }
         } else {
-            di.statusMsg = strings.get("list.domains.StatusNotRunning", dn);
+            di.statusMsg = Strings.get("list.domains.StatusNotRunning", dn);
         }
         return di;
     }

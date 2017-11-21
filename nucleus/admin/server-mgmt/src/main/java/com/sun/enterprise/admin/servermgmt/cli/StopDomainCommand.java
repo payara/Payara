@@ -47,6 +47,7 @@ import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
+import java.util.Map;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -170,11 +171,18 @@ public class StopDomainCommand extends LocalDomainCommand {
             ListDomainsCommand listDomains = serviceLocator.getService(ListDomainsCommand.class);
             String runningDomains = "";
             try {
-                for (String domain : listDomains.getRunningDomains()) {
-                    runningDomains = runningDomains + domain + "\n";
+                Map<String, Boolean> domains = listDomains.getDomains();
+                for (String domain : domains.keySet()) {
+                    if (domains.get(domain)) {
+                        runningDomains += "\n" + domain;
+                    }
                 }
             } catch(Exception e) {        
             }
+            runningDomains = 
+                    (runningDomains.length() < 1) 
+                    ? "\nNo domains are currently running." 
+                    : "\nPlease specify one of the currently running domains:" + runningDomains;
             logger.warning(Strings.get("StopDomain.dasNotRunning", getDomainRootDir(), runningDomains));
         } else {
             logger.warning(Strings.get("StopDomain.dasNotRunningRemotely"));
