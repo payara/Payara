@@ -39,6 +39,7 @@
  */
 package fish.payara.jmx.monitoring;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.Notifier;
@@ -91,6 +92,8 @@ import org.jvnet.hk2.config.ConfigView;
 @Service(name = "payara-monitoring")
 @RunLevel(StartupRunLevel.VAL)
 public class MonitoringService implements EventListener {
+    
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(MonitoringService.class);
 
     private final String PREFIX = "payara-monitoring-service(";
 
@@ -306,5 +309,9 @@ public class MonitoringService implements EventListener {
                 Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    public LocalStringManagerImpl getLocalStringManager() {
+        return strings;
     }
 }
