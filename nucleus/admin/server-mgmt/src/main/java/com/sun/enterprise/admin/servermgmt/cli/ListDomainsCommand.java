@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] Payara Foundation and/or its affiliates
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
+import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.DomainsManager;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -49,6 +51,8 @@ import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.io.DomainDirs;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
@@ -60,31 +64,28 @@ import org.jvnet.hk2.annotations.*;
 @Service(name = "list-domains")
 @PerLookup
 public final class ListDomainsCommand extends LocalDomainCommand {
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ListDomainsCommand.class);
+
+    private static final LocalStringsImpl strings = new LocalStringsImpl(ListDomainsCommand.class);
     private String domainsRoot = null;
 
-    @Param(name="long", shortName="l", optional=true)
+    @Param(name = "long", shortName = "l", optional = true)
     boolean longOpt;
-    
-    @Param(shortName="h", optional=true, defaultValue="true")
+
+    @Param(shortName = "h", optional = true, defaultValue = "true")
     boolean header;
-    
+
     /*
      * Override the validate method because super.validate() calls initDomain,
      * and since we don't have a domain name yet, we aren't ready to call that.
      */
     @Override
-    protected void validate()
-            throws CommandException, CommandValidationException {
+    protected void validate() throws CommandException, CommandValidationException {
     }
 
     @Override
     protected int executeCommand() throws CommandException, CommandValidationException {
         try {
-            File domainsDirFile = ok(domainDirParam)
-                    ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
-
+            File domainsDirFile = ok(domainDirParam) ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
             DomainConfig domainConfig = new DomainConfig(null, domainsDirFile.getAbsolutePath());
             DomainsManager manager = new PEDomainsManager();
             String[] domainsList = manager.listDomains(domainConfig);
@@ -92,16 +93,16 @@ public final class ListDomainsCommand extends LocalDomainCommand {
             if (domainsList.length > 0) {
                 if (longOpt) {
                     String headings[] = {"DOMAIN", "ADMIN_HOST", "ADMIN_PORT", "RUNNING", "RESTART_REQUIRED"};
-                    ColumnFormatter cf = header ? new ColumnFormatter(headings) : 
-                            new ColumnFormatter();
+                    ColumnFormatter cf = header ? new ColumnFormatter(headings)
+                            : new ColumnFormatter();
                     for (String dn : domainsList) {
                         DomainInfo di = getStatus(dn);
-                        cf.addRow(new Object[] {
-                            dn, 
-                            di.adminAddr.getHost(), 
-                            di.adminAddr.getPort(), 
+                        cf.addRow(new Object[]{
+                            dn,
+                            di.adminAddr.getHost(),
+                            di.adminAddr.getPort(),
                             di.status,
-                            di.restartRequired                              
+                            di.restartRequired
                         });
                     }
                     logger.info(cf.toString());
@@ -109,25 +110,41 @@ public final class ListDomainsCommand extends LocalDomainCommand {
                     for (String dn : domainsList) {
                         logger.info(getStatus(dn).statusMsg);
                     }
-                }               
-            }
-            else {
+                }
+            } else {
                 logger.fine(strings.get("NoDomainsToList"));
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new CommandException(ex.getLocalizedMessage());
         }
         return 0;
     }
 
+    protected List<String> getRunningDomains() throws IOException, DomainException, CommandException {
+        List<String> runningDomains = new ArrayList<>();
+        File domainsDirFile = ok(domainDirParam) ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
+        
+        DomainConfig domainConfig = new DomainConfig(null, domainsDirFile.getAbsolutePath());
+        DomainsManager manager = new PEDomainsManager();
+        String[] domainsList = manager.listDomains(domainConfig);
+        programOpts.setInteractive(false);  // no prompting for passwords
+        
+        for (String domain : domainsList) {
+            if (getStatus(domain).status) {
+                runningDomains.add(domain);
+            }
+        }
+        return runningDomains;
+    }
+
     static class DomainInfo {
+
         public HostAndPort adminAddr;
         public boolean status;
         public String statusMsg;
         public boolean restartRequired;
     }
-    
+
     private DomainInfo getStatus(String dn) throws IOException, CommandException {
         setDomainName(dn);
         initDomain();
@@ -135,24 +152,19 @@ public final class ListDomainsCommand extends LocalDomainCommand {
         di.adminAddr = getAdminAddress();
         programOpts.setHostAndPort(di.adminAddr);
         di.status = isThisDAS(getDomainRootDir());
-        
+
         if (di.status) {
             di.statusMsg = strings.get("list.domains.StatusRunning", dn);
             try {
-                RemoteCLICommand cmd =
-                        new RemoteCLICommand("_get-restart-required",
-                        programOpts, env);
-                String restartRequired =
-                        cmd.executeAndReturnOutput("_get-restart-required");
+                RemoteCLICommand cmd = new RemoteCLICommand("_get-restart-required", programOpts, env);
+                String restartRequired = cmd.executeAndReturnOutput("_get-restart-required");
                 di.restartRequired = Boolean.parseBoolean(restartRequired.trim());
                 if (di.restartRequired) {
                     di.statusMsg = strings.get("list.domains.StatusRestartRequired", dn);
                 }
+            } catch (Exception ex) {
             }
-            catch (Exception ex) {
-            }
-        }
-        else {
+        } else {
             di.statusMsg = strings.get("list.domains.StatusNotRunning", dn);
         }
         return di;

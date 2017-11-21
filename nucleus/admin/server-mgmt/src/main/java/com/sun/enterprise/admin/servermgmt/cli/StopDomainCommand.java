@@ -44,20 +44,14 @@ package com.sun.enterprise.admin.servermgmt.cli;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.DASUtils;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
-import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.DomainException;
-import com.sun.enterprise.admin.servermgmt.DomainsManager;
-import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
 import com.sun.enterprise.universal.process.ProcessUtils;
-import com.sun.enterprise.util.io.DomainDirs;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.*;
 
 /**
@@ -69,6 +63,9 @@ import org.jvnet.hk2.annotations.*;
 @Service(name = "stop-domain")
 @PerLookup
 public class StopDomainCommand extends LocalDomainCommand {
+
+    @Inject
+    ServiceLocator serviceLocator;
 
     @Param(name = "domain_name", primary = true, optional = true)
     private String userArgDomainName;
@@ -161,8 +158,8 @@ public class StopDomainCommand extends LocalDomainCommand {
         if (kill) {
             if (isLocal()) {
                 return kill();
-            } else // remote.  We can NOT kill and we can't ask it to kill itself.
-            {
+            } else {
+                // remote.  We can NOT kill and we can't ask it to kill itself.
                 throw new CommandException(Strings.get("StopDomain.dasNotRunningRemotely"));
             }
         }
@@ -170,63 +167,20 @@ public class StopDomainCommand extends LocalDomainCommand {
         // by definition this is not an error
         // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8387
         if (isLocal()) {
+            ListDomainsCommand listDomains = serviceLocator.getService(ListDomainsCommand.class);
+            String runningDomains = "";
             try {
-                logger.warning(Strings.get("StopDomain.dasNotRunning", getDomainRootDir(), getRunningDomains()));
-            } catch (IOException | DomainException ex) {
-                Logger.getLogger(StopDomainCommand.class.getName()).log(Level.SEVERE, null, ex);
+                for (String domain : listDomains.getRunningDomains()) {
+                    runningDomains = runningDomains + domain + "\n";
+                }
+            } catch(Exception e) {        
             }
+            logger.warning(Strings.get("StopDomain.dasNotRunning", getDomainRootDir(), runningDomains));
         } else {
             logger.warning(Strings.get("StopDomain.dasNotRunningRemotely"));
         }
-        // If it has gotten this far, the domain has failed to be stopped and as such the command has failed
+        // If it has gotten this far, the domain has failed to be stopped so the command has failed
         return 1;
-    }
-
-    /**
-     * Gets the currently running domains. Code lifted with alteration from ListDomainsCommand.
-     * @return String representation of the currently running domains, with newlines ("\n") appended after each.
-     * @throws IOException
-     * @throws DomainException
-     * @throws CommandException 
-     */
-    private String getRunningDomains() throws IOException, DomainException, CommandException {
-        File domainsDirFile = ok(domainDirParam) ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
-        DomainConfig domainConfig = new DomainConfig(null, domainsDirFile.getAbsolutePath());
-        DomainsManager manager = new PEDomainsManager();
-        String[] domainsList = manager.listDomains(domainConfig);
-        programOpts.setInteractive(false);  // no prompting for passwords
-        String runningDomains = "";
-        if (domainsList.length > 0) {
-            for (String domain : domainsList) {
-                ListDomainsCommand.DomainInfo di = getStatus(domain);
-                if (di.status) {
-                    runningDomains = runningDomains + domain + "\n";
-                }
-            }
-        }
-        return runningDomains;
-    }
-
-    private ListDomainsCommand.DomainInfo getStatus(String dn) throws IOException, CommandException {
-        setDomainName(dn);
-        initDomain();
-        ListDomainsCommand.DomainInfo di = new ListDomainsCommand.DomainInfo();
-        di.adminAddr = getAdminAddress();
-        programOpts.setHostAndPort(di.adminAddr);
-        di.status = isThisDAS(getDomainRootDir());
-
-        if (di.status) {
-            di.statusMsg = Strings.get("list.domains.StatusRunning", dn);
-            RemoteCLICommand cmd = new RemoteCLICommand("_get-restart-required", programOpts, env);
-            String restartRequired = cmd.executeAndReturnOutput("_get-restart-required");
-            di.restartRequired = Boolean.parseBoolean(restartRequired.trim());
-            if (di.restartRequired) {
-                di.statusMsg = Strings.get("list.domains.StatusRestartRequired", dn);
-            }
-        } else {
-            di.statusMsg = Strings.get("list.domains.StatusNotRunning", dn);
-        }
-        return di;
     }
 
     /**
