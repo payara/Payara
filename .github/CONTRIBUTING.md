@@ -74,7 +74,7 @@ git push origin master
 ```
 
 ## Working on an issue
-To start working on an issue, create a new branch on your github repo with the following command:
+To start working on an issue, create a new branch on your GitHub repo with the following command:
 
 ```
 git checkout -b <BranchName>
@@ -134,7 +134,7 @@ Flip back to your own branch, with your changes:
 git checkout <YourBranchName>
 ```
 
-Merge said changes with the master branch by rebasing your code (effectively a neater marge for private repos):
+Merge said changes with the master branch by rebasing your code (effectively a neater merge for private repos):
 
 ```
 git rebase master
@@ -148,15 +148,15 @@ git push origin <YourBranchName>
 
 ## Feature requests and issues
 
-A large portion of our work is prompted by the actions of the community. If you have an issue which you have found with Payara, or a feature which you would like to be implemented we welcome the raising of github issues.
+A large portion of our work is prompted by the actions of the community. If you have an issue which you have found with Payara, or a feature which you would like to be implemented we welcome the raising of GitHub issues.
 
 ## Reporting bugs
 
-If you find a bug within Payara, please post it as a github issue. Github is our main repository for community found issues with Payara and our support team frequently monitor it for new issues. As with submitting issues, a concise title which clearly explains the issue combined with a comment explaining what the found issue is and either how it arose and a stacktrace of the issue, or a test case which is able to reproduce the issue will help us deliver a patch.
+If you find a bug within Payara, please post it as a github issue. GitHub is our main repository for community found issues with Payara and our support team frequently monitor it for new issues. As with submitting issues, a concise title which clearly explains the issue combined with a comment explaining what the found issue is and either how it arose and a stacktrace of the issue, or a test case which is able to reproduce the issue will help us deliver a patch.
 
-## Responses
+### Bug Responses
 
-We continually check the github posted issues for bugs, feature requests, and assorted issues. If you have posted an issue, chances are it has been read by a member of staff. Requests for further information and labels are often posted in order to make it easier for the dev team to see issues. However if your issue has not received a comment or label, don't take this as it having not been read or acted upon!
+We continually check GitHub issues for bugs, feature requests, and assorted issues. If you have posted an issue, chances are it has been read by a member of staff. Requests for further information and labels are often posted in order to make it easier for the dev team to see issues. However if your issue has not received a comment or label, don't take this as it having not been read or acted upon!
 
 ## Questions, advice and guidance
 
