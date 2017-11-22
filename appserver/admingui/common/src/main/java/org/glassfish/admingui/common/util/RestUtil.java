@@ -204,7 +204,11 @@ public class RestUtil {
                 restResponse = post(endpoint, attrs);
             }
         } else if ("put".equals(method)) {
-            restResponse = put(endpoint, attrs);
+            if (useData) {
+                restResponse = put(endpoint, data, (String) handlerCtx.getInputValue("contentType"));
+            } else {
+                restResponse = put(endpoint, attrs);
+            }
         } else if ("get".equals(method)) {
             restResponse = get(endpoint, attrs);
         } else if ("delete".equals(method)) {
@@ -891,6 +895,22 @@ public class RestUtil {
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+        RestResponse rr = RestResponse.getRestResponse(cr);
+        return rr;
+    }
+
+    public static RestResponse put(String address, Object payload, String contentType) {
+        WebTarget target = getJerseyClient().target(address);
+        if (contentType == null) {
+            contentType = MediaType.APPLICATION_JSON;
+        }
+        if (payload instanceof Map) {
+            payload = buildMultivalueMap((Map<String, Object>) payload);
+        }
+        Response cr = target.request(RESPONSE_TYPE).header("Content-Type", contentType)
+                .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
+                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
+                .put(Entity.entity(payload, contentType), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
     }
