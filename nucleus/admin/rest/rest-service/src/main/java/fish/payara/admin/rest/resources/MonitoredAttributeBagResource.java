@@ -140,9 +140,6 @@ public class MonitoredAttributeBagResource extends AbstractResource {
             parameters.put("delattribute", String.format("attributeName=%s objectName=%s", currentAttribute.get("attributeName"), currentAttribute.get("objectName")));
             ResourceUtil.runCommand("set-monitoring-configuration", parameters, getSubject());
         }
-        if (monitoredAttributes == null) {
-            return;
-        }
         for (Map<String, String> data : monitoredAttributes) {
             Map<String, String> parameters = new HashMap<>();
             parameters.put("addattribute", String.format("attributeName=%s objectName=%s", data.get("attributeName"), data.get("objectName")));
