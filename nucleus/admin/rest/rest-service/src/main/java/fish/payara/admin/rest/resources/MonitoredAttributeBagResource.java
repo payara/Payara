@@ -47,7 +47,7 @@ public class MonitoredAttributeBagResource extends AbstractResource {
     /**
      * Gets the monitored-attributes.
      *
-     * @return a list of the monitored-attributes in the specified format.
+     * @return a list of the monitored-attributes after the transaction.
      */
     @GET
     @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -98,17 +98,15 @@ public class MonitoredAttributeBagResource extends AbstractResource {
     }
 
     /**
-     * Deletes the specified monitored-attributes. All specified
-     * monitored-attributes will not exist after this transaction.
+     * Deletes all monitored-attributes.
      *
-     * @param data the list of the monitored-attributes to be deleted.
-     * @return a list of the monitored-attributes which were deleted.
+     * @return a list of the monitored-attributes after the transaction.
      */
     @DELETE
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public ActionReportResult delete(List<Map<String, String>> data) {
-        return get();
+    public ActionReportResult delete() {
+        List<Map<String, String>> emptyList = new ArrayList<>();
+        return put(emptyList);
     }
 
     /**
@@ -145,6 +143,7 @@ public class MonitoredAttributeBagResource extends AbstractResource {
             parameters.put("addattribute", String.format("attributeName=%s objectName=%s", data.get("attributeName"), data.get("objectName")));
             ResourceUtil.runCommand("set-monitoring-configuration", parameters, getSubject());
         }
+        entity = parent.nodeElements("monitored-attributes");
     }
 
     /**
