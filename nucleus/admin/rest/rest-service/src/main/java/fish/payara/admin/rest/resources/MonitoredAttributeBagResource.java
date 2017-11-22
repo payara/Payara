@@ -60,7 +60,7 @@ public class MonitoredAttributeBagResource extends AbstractResource {
         List monitoredAttributes = getMonitoredAttributes();
 
         Properties extraProperties = new Properties();
-        extraProperties.put("monitored-attributes", monitoredAttributes);
+        extraProperties.put("monitoredAttributes", monitoredAttributes);
         ar.setExtraProperties(extraProperties);
 
         return new ActionReportResult(tagName, ar, new OptionsResult(Util.getResourceName(uriInfo)));
@@ -122,8 +122,8 @@ public class MonitoredAttributeBagResource extends AbstractResource {
         for (Dom child : entity) {
             Map<String, String> entry = new HashMap<>();
 
-            entry.put("attribute-name", child.attribute("attribute-name"));
-            entry.put("object-name", child.attribute("object-name"));
+            entry.put("attributeName", child.attribute("attribute-name"));
+            entry.put("objectName", child.attribute("object-name"));
             String description = child.attribute("description");
             if (description != null) {
                 entry.put("description", description);
@@ -137,12 +137,15 @@ public class MonitoredAttributeBagResource extends AbstractResource {
     public void setMonitoredAttributes(List<Map<String, String>> monitoredAttributes) {
         for (Map<String, String> currentAttribute : getMonitoredAttributes()) {
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("delattribute", String.format("attributeName=%s objectName=%s", currentAttribute.get("attribute-name"), currentAttribute.get("object-name")));
+            parameters.put("delattribute", String.format("attributeName=%s objectName=%s", currentAttribute.get("attributeName"), currentAttribute.get("objectName")));
             ResourceUtil.runCommand("set-monitoring-configuration", parameters, getSubject());
+        }
+        if (monitoredAttributes == null) {
+            return;
         }
         for (Map<String, String> data : monitoredAttributes) {
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("addattribute", String.format("attributeName=%s objectName=%s", data.get("attribute-name"), data.get("object-name")));
+            parameters.put("addattribute", String.format("attributeName=%s objectName=%s", data.get("attributeName"), data.get("objectName")));
             ResourceUtil.runCommand("set-monitoring-configuration", parameters, getSubject());
         }
     }
