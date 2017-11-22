@@ -1,7 +1,7 @@
 <!-- jmxmonitoring/monitoredAttributeTable.inc -->
 
 <!-- Table .... -->
-<sun:table id="basicTable"  style="padding: 10pt" title="$resource{i18n.common.AdditionalProperties}" 
+<sun:table id="basicTable"  style="padding: 10pt" title="$resource{i18njmx.jmxmonitoring.monitored.attributes.table.name}" 
            deselectMultipleButton="$boolean{true}"
            deselectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
            selectMultipleButton="$boolean{true}"
@@ -15,13 +15,13 @@
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{topActionGroup});
         />
-        <sun:button id="addSharedTableButton" disabled="#{false}" text="$resource{i18n.button.AddProperty}" >   
+        <sun:button id="addSharedTableButton" disabled="#{false}" text="$resource{i18njmx.jmxmonitoring.monitored.attributes.add.attribute}" >   
             <!command
                 getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
                 addRowToTable(TableRowGroup="$attribute{tableRowGroup}", NameList={"objectName", "attributeName", "description"});
             />                                 
         </sun:button>
-        <sun:button id="button1" text="$resource{i18n.button.DeleteProperties}" disabled="#{true}" primary="#{false}">
+        <sun:button id="button1" text="$resource{i18njmx.jmxmonitoring.monitored.attributes.del.attributes}" disabled="#{true}" primary="#{false}">
             <!command
                 getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{trg});   
                 getSelectedTableRowKeys(tableRowGroup="${trg}" rowKeys=>$attribute{rowKeys});
@@ -67,10 +67,10 @@
                       onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
                       />
     </sun:tableColumn>                    
-    <sun:tableColumn headerText="$resource{i18n.common.PropertyName}" sort="name" rowHeader="$boolean{true}" id="col2">
+    <sun:tableColumn headerText="$resource{i18njmx.jmxmonitoring.monitored.attributes.object.name}" sort="name" rowHeader="$boolean{true}" id="col2">
         <sun:textField columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.PropertyName']}" id="col1St" value="#{td.value.objectName}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18n.common.PropertyValue}" sort="value" rowHeader="$boolean{false}" id="col3">
+    <sun:tableColumn headerText="$resource{i18njmx.jmxmonitoring.monitored.attributes.attribute.name}" sort="value" rowHeader="$boolean{false}" id="col3">
         <sun:textField columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.PropertyValue']}" id="col1St" value="#{td.value.attributeName}" />
     </sun:tableColumn>
     <sun:tableColumn headerText="$resource{i18n.common.description.header}" sort="value" rowHeader="$boolean{false}" id="col4" rendered="#{pageSession.showDescCol != 'false'}">
