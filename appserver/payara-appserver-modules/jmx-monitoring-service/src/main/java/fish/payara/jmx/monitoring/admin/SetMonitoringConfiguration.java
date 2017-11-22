@@ -271,15 +271,17 @@ public class SetMonitoringConfiguration implements AdminCommand {
 
         if (propertyTokens.length < 2) {
             throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
-                            "jmxmonitoring.configure.attributes.too.few",
-                            "Too few attributes. Required attributes are 'name' and 'value'."));
+                    "jmxmonitoring.configure.attributes.too.few",
+                    "Too few properties. Required properties are 'objectName' and 'attributeName'."));
         }
 
         for (String token : propertyTokens) {
             token = token.replaceAll("\\\\", "");
             String[] param = token.split("=", 2);
             if (param.length != 2) {
-                throw new IllegalArgumentException("Too few bean monitoring properties. Required properties are: *'attribute' and *'objectName'.");
+                throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+                        "jmxmonitoring.configure.attributes.too.few",
+                        "Too few properties. Required properties are 'objectName' and 'attributeName'."));
             }
             switch (param[0]) {
                 case "attributeName":
@@ -294,21 +296,21 @@ public class SetMonitoringConfiguration implements AdminCommand {
                 default:
                     throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attributes.unknown",
-                            "Unknown attribute: {0}. Valid attributes are: 'name', 'value' and 'description'.",
+                            "Unknown property: {0}. Valid properties are: 'objectName', 'attributeName' and 'description'.",
                              param[0]));
             }
         }
         if (attributeName == null || attributeName.isEmpty()) {
             throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attributes.invalid",
-                            "Invalid attribute: {0}.",
-                             "name"));
+                            "Invalid property: {0}.",
+                             "attributeName"));
         }
         if (objectName == null || objectName.isEmpty()) {
             throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attributes.invalid",
-                            "Invalid attribute: {0}.",
-                             "value"));
+                            "Invalid property: {0}.",
+                             "objectName"));
         }
 
         monitoredAttribute.setAttributeName(attributeName);
