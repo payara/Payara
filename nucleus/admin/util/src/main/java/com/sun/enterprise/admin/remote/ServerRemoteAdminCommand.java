@@ -80,7 +80,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     public ServerRemoteAdminCommand(ServiceLocator habitat, String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
-        super(name, host, port, secure, "admin", "", logger);
+        super(name, host, port, secure, "admin", "".toCharArray(), logger);
         super.setOmitCache(true); //todo: [mmar] Remove after implementation CLI->ReST done
         completeInit(habitat);
     }
@@ -123,8 +123,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
             if (secureAdminInternalUser != null) {
                 try {
                     result = new AuthenticationInfo(secureAdminInternalUser.getUsername(), 
-                            new String(domainPasswordAliasStore.
-                                get(secureAdminInternalUser.getPasswordAlias())));
+                            domainPasswordAliasStore.get(secureAdminInternalUser.getPasswordAlias()));
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
