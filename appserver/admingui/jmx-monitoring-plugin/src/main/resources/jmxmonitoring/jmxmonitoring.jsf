@@ -95,18 +95,18 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                  <!command
-                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                    mapPut(map="#{pageSession.valueMap}" key="amx" value="#{pageSession.amxSelected}");
-                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                    prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-configuration" 
-                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                            
+                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                     mapPut(map="#{pageSession.valueMap}" key="amx" value="#{pageSession.amxSelected}");
+                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                     prepareSuccessfulMsg();
+                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-configuration" 
+                     attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+
                      if (#{pageSession.hasPropertyTable}) {
                         javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
                         gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/monitored-attribute.json", method="PUT", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
-                    }
-                    py.updateNotifiers(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+                     }
+                     py.updateNotifiers(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
 
                     />
             </sun:button>
