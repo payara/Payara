@@ -57,8 +57,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-monitoring-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}"); 
                 
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/property.json" method="GET" result="#{requestScope.propTable}")
-        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+        gf.restRequest(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}/monitored-attribute.json" method="GET" result="#{requestScope.propTable}")
+        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.monitoredAttributes}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.jmxmonitoringConfiguration}");
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
@@ -72,7 +72,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
-        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
         setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
         
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
@@ -104,9 +103,13 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                             
                      if (#{pageSession.hasPropertyTable}) {
-                        removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
                         javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
-                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+                        if (empty #{requestScope.tmpJSON}) {
+                            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/monitored-attribute.json", method="PUT", data="[]", result="#{requestScope.restResponse}");
+                        }
+                        if (not empty #{requestScope.tmpJSON}) {
+                            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/monitored-attribute.json", method="PUT", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+                        }
                     }
                     py.updateNotifiers(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
 
@@ -172,7 +175,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             </sun:property>
         </sun:propertySheetSection>
     </sun:propertySheet>
-#include "/common/shared/propertyDescTable.inc"
+#include "/jmxmonitoring/monitoredAttributeTable.inc"
              </sun:title>
                 <!--< sun:hidden id="helpKey" value="$resource{helpjmx.jmxService}" /> -->
             </sun:form>
