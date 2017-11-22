@@ -49,7 +49,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
@@ -71,7 +70,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  *
  * @author Andrew Pielage
  */
-@Service(name = "executor-service")
+@Service(name = "payara-executor-service")
 @RunLevel(StartupRunLevel.VAL)
 public class PayaraExecutorService implements ConfigListener {
     
