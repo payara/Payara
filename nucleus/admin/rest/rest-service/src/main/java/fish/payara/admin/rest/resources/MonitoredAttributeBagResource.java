@@ -147,23 +147,6 @@ public class MonitoredAttributeBagResource extends AbstractResource {
         }
     }
 
-    @Path("{ObjectName}/{AttributeName}")
-    @GET
-    public MonitoredAttributeResource getOne(@PathParam("ObjectName") String objectName, @PathParam("AttributeName") String attributeName) {
-        MonitoredAttributeResource resource
-                = serviceLocator.createAndInitialize(MonitoredAttributeResource.class);
-        resource.setBeanByKey(entity, objectName + "/" + attributeName, tagName);
-        return resource;
-    }
-
-    public static class MonitoredAttributeResource extends TemplateRestResource {
-
-        @Override
-        public String getDeleteCommand() {
-            return "GENERIC-DELETE";
-        }
-    }
-
     /**
      * Sets the parent and the tag name of the resource. The Dom entity will be
      * derived from this information.
