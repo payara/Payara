@@ -160,15 +160,37 @@ public class MonitoredAttributeBagResource extends AbstractResource {
      */
     public void setMonitoredAttributes(List<Map<String, String>> attributes) throws TransactionFailure {
         TranslatedConfigView.doSubstitution.set(false);
-        List<Map<String, String>> currentAttributes = getMonitoredAttributes();
+        List<Map<String, String>> existingAttributes = getMonitoredAttributes();
 
-        // Don't attempt to add any attributes that already exist
+        // Get a list of attributes that need adding
         List<Map<String, String>> attributesToAdd = new ArrayList<>(attributes);
-        attributesToAdd.removeAll(currentAttributes);
+        // Start with the list of specified attributes, and remove any that are also in the existing list
+        Iterator<Map<String, String>> iterator = attributesToAdd.iterator();
+        while (iterator.hasNext()) {
+            Map<String, String> attributeToAdd = iterator.next();
+            for (Map<String, String> existingAttribute : existingAttributes) {
+                if (attributesAreEqual(existingAttribute, attributeToAdd)) {
+                    iterator.remove();
+                }
+            }
+        }
 
-        // Get list of attributes that are intended to be deleted
-        List<Map<String, String>> attributesToDelete = new ArrayList<>(currentAttributes);
-        attributesToDelete.removeAll(attributes);
+        // Get a list of attributes that need deleting
+        List<Map<String, String>> attributesToDelete = new ArrayList<>(existingAttributes);
+        // Start with the list of existing attributes, and remove any that aren't also in the specified list
+        iterator = attributesToDelete.iterator();
+        while (iterator.hasNext()) {
+            Map<String, String> attributeToDelete = iterator.next();
+            boolean specified = false;
+            for (Map<String, String> specifiedAttribute : attributes) {
+                if (attributesAreEqual(specifiedAttribute, attributeToDelete)) {
+                    specified = true;
+                }
+            }
+            if (specified) {
+                iterator.remove();
+            }
+        }
 
         try {
             // Add all required attributes
@@ -193,6 +215,11 @@ public class MonitoredAttributeBagResource extends AbstractResource {
             TranslatedConfigView.doSubstitution.set(true);
         }
         entity = parent.nodeElements("monitored-attributes");
+    }
+
+    private boolean attributesAreEqual(Map<String, String> attribute1, Map<String, String> attribute2) {
+        return attribute1.get("attributeName").equals(attribute2.get("attributeName"))
+                && attribute1.get("objectName").equals(attribute2.get("objectName"));
     }
 
     /**
