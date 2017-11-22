@@ -42,7 +42,6 @@ package fish.payara.nucleus.executorservice.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.executorservice.PayaraExecutorServiceConfiguration;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
@@ -125,8 +124,6 @@ public class SetPayaraExecutorServiceConfigurationCommand implements AdminComman
                     }
                     
                     if (threadPoolExecutorKeepAliveTime != null) {
-                        // Check that the KeepAliveTime is valid
-                        Long.valueOf(threadPoolExecutorKeepAliveTime);
                         config.setThreadPoolExecutorKeepAliveTime(threadPoolExecutorKeepAliveTime);
                     }
                     
