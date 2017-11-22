@@ -70,9 +70,8 @@ public class ClusterOperationUtil {
     private static final LocalStringManagerImpl strings =
                         new LocalStringManagerImpl(ClusterOperationUtil.class);
     
-    private static final List<String> ALLOWED_COMMANDS = new ArrayList<String>() {{
-       add("_get-runtime-info");
-    }};
+    // PAYARA-2162 Commands which poll remote instances without setting values can trigger restart-required
+    private static final List<String> ALLOWED_COMMANDS = Arrays.asList("_get-runtime-info");
 
     //TODO : Begin temp fix for undoable commands
     private static List<Server> completedInstances = new ArrayList<Server>();
