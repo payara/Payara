@@ -67,8 +67,7 @@ public class ClusterOperationUtil {
     private static final Logger logger = AdminLoggerInfo.getLogger();
     
     
-    private static final LocalStringManagerImpl strings =
-                        new LocalStringManagerImpl(ClusterOperationUtil.class);
+    private static final LocalStringManagerImpl strings = new LocalStringManagerImpl(ClusterOperationUtil.class);
     
     // PAYARA-2162 Commands which poll remote instances without setting values can trigger restart-required
     private static final List<String> ALLOWED_COMMANDS = Arrays.asList("_get-runtime-info");
