@@ -143,7 +143,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
                 @Override
                 public Object run(final MonitoringServiceConfiguration monitoringConfigProxy) throws PropertyVetoException, TransactionFailure {
                     updateConfiguration(monitoringConfigProxy);
-                    updateAttributes(monitoringConfigProxy);
+                    updateAttributes(monitoringConfigProxy, actionReport);
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return monitoringConfigProxy;
                 }
@@ -218,37 +218,63 @@ public class SetMonitoringConfiguration implements AdminCommand {
      * @throws PropertyVetoException
      * @throws TransactionFailure
      */
-    private void updateAttributes(MonitoringServiceConfiguration monitoringConfig) throws PropertyVetoException, TransactionFailure {
+    private void updateAttributes(MonitoringServiceConfiguration monitoringConfig, ActionReport report) throws PropertyVetoException, TransactionFailure {
         List<MonitoredAttribute> attributes = monitoringConfig.getMonitoredAttributes();
-
+        
+        // If there are attributes to be removed
         if (attributesToRemove != null && !attributesToRemove.isEmpty()) {
-            for (String delProperty : attributesToRemove) {
-                MonitoredAttribute monitoredAttribute = parseToMonitoredAttribute(delProperty, monitoringConfig.createChild(MonitoredAttribute.class));
+            // Loop through them
+            for (String attributeToRemove : attributesToRemove) {
+                // Parse the provided attribute
+                MonitoredAttribute monitoredAttribute = parseToMonitoredAttribute(attributeToRemove, monitoringConfig.createChild(MonitoredAttribute.class));
+                boolean removed = false;
+                // Find the attribute matching the one specified
                 for (MonitoredAttribute attribute : attributes) {
-                    if (attribute.getAttributeName().equals(monitoredAttribute.getAttributeName()) && attribute.getObjectName().equals(monitoredAttribute.getObjectName())) {
+                    if (attribute.equals(monitoredAttribute)) {
                         attributes.remove(attribute);
+                        report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                                "jmxmonitoring.configure.attribute.remove",
+                                "Attribute 'objectName={0} attributeName={1}' successfully deleted.",
+                                monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
+                        removed = true;
                         break;
                     }
+                }
+                if (!removed) {
+                    report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                                "jmxmonitoring.configure.attribute.remove.error",
+                                "Attribute 'objectName={0} attributeName={1}' doesn't exist, so was ignored.",
+                                monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
                 }
             }
         }
 
         if (attributesToAdd != null && !attributesToAdd.isEmpty()) {
-            for (String addProperty : attributesToAdd) {
-                MonitoredAttribute monitoredAttribute = parseToMonitoredAttribute(addProperty, monitoringConfig.createChild(MonitoredAttribute.class));
+            for (String attributeToAdd : attributesToAdd) {
+                MonitoredAttribute monitoredAttribute = parseToMonitoredAttribute(attributeToAdd, monitoringConfig.createChild(MonitoredAttribute.class));
                 boolean attributeExists = false;
                 for(MonitoredAttribute attribute : attributes) {
-                    if (attribute.getAttributeName().equals(monitoredAttribute.getAttributeName()) && attribute.getObjectName().equals(monitoredAttribute.getObjectName())) {
+                    if (attribute.equals(monitoredAttribute)) {
                         attributeExists = true;
+                        report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                                "jmxmonitoring.configure.attribute.add.error",
+                                "Attribute 'objectName={0} attributeName={1}' already exists, so was ignored.",
+                                monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
                         break;
                     }
                 }
                 if (!attributeExists) {
                     attributes.add(monitoredAttribute);
+                    report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                            "jmxmonitoring.configure.attribute.add",
+                            "Attribute 'objectName={0} attributeName={1}' successfully added.",
+                            monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
                 }
             }
         }
     }
+    
+    
     
     /**
      * Produces a
@@ -264,18 +290,18 @@ public class SetMonitoringConfiguration implements AdminCommand {
      */
     private MonitoredAttribute parseToMonitoredAttribute(String input, MonitoredAttribute monitoredAttribute) throws PropertyVetoException {
         // Negative lookbehind - find space characters not preceeded by \
-        String[] propertyTokens = input.split("(?<!\\\\) ");
+        String[] attributeTokens = input.split("(?<!\\\\) ");
         String attributeName = null;
         String objectName = null;
         String description = null;
 
-        if (propertyTokens.length < 2) {
+        if (attributeTokens.length < 2) {
             throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
                     "jmxmonitoring.configure.attributes.too.few",
                     "Too few properties. Required properties are 'objectName' and 'attributeName'."));
         }
 
-        for (String token : propertyTokens) {
+        for (String token : attributeTokens) {
             token = token.replaceAll("\\\\", "");
             String[] param = token.split("=", 2);
             if (param.length != 2) {
