@@ -111,10 +111,10 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Param(name = "logfrequencyunit", optional = true, acceptableValues = "NANOSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS")
     private String logfrequencyunit;
 
-    @Param(name = "addattribute", optional = true, multiple = true)
+    @Param(name = "addattribute", optional = true, multiple = true, alias = "addproperty")
     private List<String> attributesToAdd;
 
-    @Param(name = "delattribute", optional = true, multiple = true)
+    @Param(name = "delattribute", optional = true, multiple = true, alias = "delproperty")
     private List<String> attributesToRemove;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
@@ -310,10 +310,10 @@ public class SetMonitoringConfiguration implements AdminCommand {
                         "Too few properties. Required properties are 'objectName' and 'attributeName'."));
             }
             switch (param[0]) {
-                case "attributeName":
+                case "attributeName": case "name":
                     attributeName = (param.length == 2) ? param[1] : null;
                     break;
-                case "objectName":
+                case "objectName": case "value":
                     objectName = (param.length == 2) ? param[1] : null;
                     break;
                 case "description":
