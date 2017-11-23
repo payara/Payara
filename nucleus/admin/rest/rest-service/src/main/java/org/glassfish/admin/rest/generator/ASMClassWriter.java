@@ -336,10 +336,16 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
     @Override
     public void createGetChildResource(String path, String childResourceClassName) {
         String childClass;
-        if (childResourceClassName.equals("PropertiesBagResource")){
-            childClass = "org/glassfish/admin/rest/resources/PropertiesBagResource";
-        }else {
-            childClass = generatedPath + childResourceClassName;
+        switch (childResourceClassName) {
+            case "PropertiesBagResource":
+                childClass = "org/glassfish/admin/rest/resources/PropertiesBagResource";
+                break;
+            case "MonitoredAttributeBagResource":
+                childClass = "fish/payara/admin/rest/resources/MonitoredAttributeBagResource";
+                break;
+            default:
+                childClass = generatedPath + childResourceClassName;
+                break;
         }
 
         String methodName = "get" + childResourceClassName;
