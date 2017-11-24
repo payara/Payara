@@ -40,8 +40,6 @@
 package fish.payara.micro.cmd.options;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 
 /**

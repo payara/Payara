@@ -43,7 +43,7 @@
             <customization-token
                 title="$jms.service.portNumber.title" name="JMS_PROVIDER_PORT"
                 default-value="7676"
-                description="$jms.service.portNumber.description">
+                description="Port Number that JMS Service will listen for remote clients connection.">
             <port base-offset="7676"></port>
             </customization-token>
         </customization-tokens>

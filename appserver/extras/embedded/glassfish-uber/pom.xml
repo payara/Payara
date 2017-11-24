@@ -46,8 +46,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
         <version>4.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>

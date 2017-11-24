@@ -45,42 +45,58 @@
             <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}') && checkClassname()) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
-                    //Remove the old user groups
-                    gf.restRequest(endpoint="#{pageSession.selfUrl}/user-group" method="GET" result="#{requestScope.result}");
-                    setAttribute(key="oldGroupsList" value="#{requestScope.result.data.extraProperties.leafList}");
-                    convertListToCommaString(list="#{requestScope.oldGroupsList}" commaString="#{requestScope.oldGroupsCommaStr}");
-                    gf.createAttributeMap(keys={"poolName", "mapName", "groups"}
-                                          values={"$pageSession{encodedName}", "$pageSession{encodedMapName}", "$attribute{oldGroupsCommaStr}"},
-                                          map="#{requestScope.attrsMap}");
-                    gf.restRequest(endpoint="#{pageSession.selfUrl}/user-group" attrs="#{requestScope.attrsMap}" method="DELETE");
-                    //Remove the old principals
-                    gf.restRequest(endpoint="#{pageSession.selfUrl}/principal" method="GET" result="#{requestScope.result}");
-                    setAttribute(key="oldPrincipalsList" value="#{requestScope.result.data.extraProperties.leafList}");
-                    convertListToCommaString(list="#{requestScope.oldPrincipalsList}" commaString="#{requestScope.oldPrincipalsCommaStr}");
-                    gf.createAttributeMap(keys={"poolName", "mapName", "principals"}
-                                          values={"$pageSession{encodedName}", "$pageSession{encodedMapName}", "$attribute{oldPrincipalsCommaStr}"},
-                                          map="#{requestScope.attrsMap}");
-                    gf.restRequest(endpoint="#{pageSession.selfUrl}/principal" attrs="#{requestScope.attrsMap}" method="DELETE");
+                    // GlassFish 4 seemingly does not support DELETE and POST for the user-group or principal,
+                    // so use update-connector-security-map instead of the separate requests from GlassFish 3.
+                    // The "add" and "remove" lists cannot contain the same items for this endpoint.
+
+                    // Get the old user groups and principals.
+                    gf.restRequest(endpoint="#{pageSession.selfUrl}/user-group" method="GET" result="#{requestScope.resultU}");
+                    setAttribute(key="oldGroupsList" value="#{requestScope.resultU.data.extraProperties.leafList}");
+                    gf.restRequest(endpoint="#{pageSession.selfUrl}/principal" method="GET" result="#{requestScope.resultP}");
+                    setAttribute(key="oldPrincipalsList" value="#{requestScope.resultP.data.extraProperties.leafList}");
+
+                    // Create the request attributes, which has either user groups or principals (not both).
+                    createMap(result="#{requestScope.attrsMap}");
+                    mapPut(map="#{requestScope.attrsMap}" key="poolname" value="$pageSession{Name}");
+                    mapPut(map="#{requestScope.attrsMap}" key="mapname" value="$pageSession{mapName}");
+
                     if("#{requestScope.usersOptionU}=users"){
-                        //Create a user group with the new values.
-                        setAttribute(key="groupStr" value="#{pageSession.valueMap.userGroupCommaStr}");
-                        gf.createAttributeMap(keys={"poolName", "mapName", "groups"}
-                                              values={"$pageSession{encodedName}", "$pageSession{encodedMapName}", "$attribute{groupStr}"},
-                                              map="#{requestScope.attrsMap}");
-                        gf.restRequest(endpoint="#{pageSession.selfUrl}/user-group" attrs="#{requestScope.attrsMap}" method="POST");
+                        // Remove common elements from the old and new "user groups" lists.
+                        convertStringtoList(str="#{pageSession.valueMap.userGroupCommaStr}" result="#{requestScope.newGroupsList}");
+                        gf.listCombine(list="#{requestScope.oldGroupsCopy}" list2="#{requestScope.oldGroupsList}" result="#{requestScope.oldGroupsCopy}")
+                        foreach(var="oneGroup" list="#{requestScope.oldGroupsCopy}"){
+                            gf.containedIn(list="#{requestScope.newGroupsList}" testStr="#{requestScope.oneGroup}" contain="containsGroup");
+                            if("#{requestScope.containsGroup}"){
+                                listRemove(list="#{requestScope.oldGroupsList}" value="#{requestScope.oneGroup}" result="#{requestScope.oldGroupsList}");
+                                listRemove(list="#{requestScope.newGroupsList}" value="#{requestScope.oneGroup}" result="#{requestScope.newGroupsList}");
+                            }
+                        }
+                        convertListToCommaString(list="#{requestScope.newGroupsList}" commaString="#{requestScope.newGroupsCommaStr}");
+                        mapPut(map="#{requestScope.attrsMap}" key="addusergroups" value="$attribute{newGroupsCommaStr}");
                     }
                     if("#{requestScope.usersOptionP}=principals"){
-                        //Create a principal with the new values.
-                        setAttribute(key="principalStr" value="#{pageSession.valueMap.principalCommaStr}");
-                        gf.createAttributeMap(keys={"poolName", "mapName", "principals"}
-                                              values={"$pageSession{encodedName}", "$pageSession{encodedMapName}", "$attribute{principalStr}"},
-                                              map="#{requestScope.attrsMap}");
-                        gf.restRequest(endpoint="#{pageSession.selfUrl}/principal" attrs="#{requestScope.attrsMap}" method="POST");
+                        // Remove common elements from the old and new "principals" lists.
+                        convertStringtoList(str="#{pageSession.valueMap.principalCommaStr}" result="#{requestScope.newPrincipalsList}");
+                        gf.listCombine(list="#{requestScope.oldPrincipalsCopy}" list2="#{requestScope.oldPrincipalsList}" result="#{requestScope.oldPrincipalsCopy}")
+                        foreach(var="onePrincipal" list="#{requestScope.oldPrincipalsCopy}"){
+                            gf.containedIn(list="#{requestScope.newPrincipalsList}" testStr="#{requestScope.onePrincipal}" contain="containsPrincipal");
+                            if("#{requestScope.containsPrincipal}"){
+                                listRemove(list="#{requestScope.oldPrincipalsList}" value="#{requestScope.onePrincipal}" result="#{requestScope.oldPrincipalsList}");
+                                listRemove(list="#{requestScope.newPrincipalsList}" value="#{requestScope.onePrincipal}" result="#{requestScope.newPrincipalsList}");
+                            }
+                        }
+                        convertListToCommaString(list="#{requestScope.newPrincipalsList}" commaString="#{requestScope.newPrincipalsCommaStr}");
+                        mapPut(map="#{requestScope.attrsMap}" key="addprincipals" value="$attribute{newPrincipalsCommaStr}");
                     }
-                    //Update the backend-principal
-                    createMap(result="#{requestScope.attrsMap}");
-                    mapPut(map="#{requestScope.attrsMap}" key="password" value="#{pageSession.valueMap['mappedPassword']}");
-                    gf.restRequest(endpoint="#{pageSession.selfUrl}/backend-principal" attrs="#{requestScope.attrsMap}" method="POST");
+
+                    convertListToCommaString(list="#{requestScope.oldPrincipalsList}" commaString="#{requestScope.oldPrincipalsCommaStr}");
+                    mapPut(map="#{requestScope.attrsMap}" key="removeprincipals" value="$attribute{oldPrincipalsCommaStr}");
+                    convertListToCommaString(list="#{requestScope.oldGroupsList}" commaString="#{requestScope.oldGroupsCommaStr}");
+                    mapPut(map="#{requestScope.attrsMap}" key="removeusergroups" value="$attribute{oldGroupsCommaStr}");
+
+                    mapPut(map="#{requestScope.attrsMap}" key="mappedpassword" value="#{pageSession.valueMap['mappedPassword']}");
+
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/update-connector-security-map" attrs="#{requestScope.attrsMap}" method="POST");
 
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");

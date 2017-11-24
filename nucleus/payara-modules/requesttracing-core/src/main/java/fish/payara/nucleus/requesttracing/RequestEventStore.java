@@ -52,6 +52,7 @@ import java.util.UUID;
  * Stores all request events  in a thread local that are being traced.
  * The start of the trace is marked with {@link EventType#TRACE_START} and the end of the trace is marked with {@link EventType#TRACE_END}.
  * All the request events placed in between are marked with a conversation id, which is the id of request event with type {@link EventType#TRACE_START}.
+ * @since 4.1.1.163
  */
 @Service
 @Singleton
@@ -64,38 +65,70 @@ public class RequestEventStore {
         }      
     };
 
+    /**
+     * Adds a new event to the request trace
+     * @param requestEvent 
+     */
     void storeEvent(RequestEvent requestEvent) {       
         RequestTrace currentTrace = eventStore.get();
         currentTrace.addEvent(requestEvent);
     }
 
+    /**
+     * Returns how long the request trace took
+     * @return 0 if the trace has not finished
+     */
     long getElapsedTime() {
         return eventStore.get().getElapsedTime();
     }
 
+    /**
+     * Clears the stored request trace and
+     */
     void flushStore() {
         eventStore.set(new RequestTrace());
     }
 
+    /**
+     * Returns the full request trace as a string
+     * @return A JSON-style representation of the request trace
+     */
     String getTraceAsString() {
         return eventStore.get().toString();
     }
     
     // test methods
+    /**
+     * Returns the full trace
+     * @return 
+     * @since 4.1.2.173
+     */
     public RequestTrace getTrace() {
         return eventStore.get();
     }
 
+    /**
+     * Sets a unique identifier for the request trace
+     * @param newID 
+     */
     void setConverstationID(UUID newID) {
         RequestTrace rt = eventStore.get();
         rt.setConversationID(newID);
     }
 
+    /**
+     * Gets the unique identifier for the request trace
+     * @return 
+     */
     UUID getConversationID() {
         RequestTrace rt = eventStore.get();
         return rt.getConversationID();
     }
 
+    /**
+     * Returns true if a request trace has been started and has not been completed
+     * @return 
+     */
     boolean isTraceInProgress() {
         return (eventStore.get().isStarted() && !eventStore.get().isCompleted());
     }

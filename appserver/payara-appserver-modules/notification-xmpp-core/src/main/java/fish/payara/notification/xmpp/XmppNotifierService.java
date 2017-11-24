@@ -125,7 +125,7 @@ public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificat
     @Override
     @Subscribe
     public void handleNotification(XmppNotificationEvent event) {
-        if (executionOptions.isEnabled()) {
+        if (executionOptions != null && executionOptions.isEnabled()) {
             XmppMessage message = new XmppMessage(event, event.getSubject(), event.getMessage());
             queue.addMessage(message);
         }

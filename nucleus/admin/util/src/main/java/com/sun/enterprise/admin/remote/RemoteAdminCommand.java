@@ -388,6 +388,7 @@ public class RemoteAdminCommand {
     /**
      * Set the directory in which any returned files will be stored.
      * The default is the user's home directory.
+     * @param dir
      */
     public void setFileOutputDirectory(File dir) {
         fileOutputDir = dir;
@@ -395,6 +396,7 @@ public class RemoteAdminCommand {
 
     /**
      * Return a modifiable list of headers to be added to the request.
+     * @return 
      */
     public List<Header> headers() {
         return requestHeaders;
@@ -403,6 +405,9 @@ public class RemoteAdminCommand {
     /**
      * Run the command using the specified arguments.
      * Return the output of the command.
+     * @param opts
+     * @return 
+     * @throws org.glassfish.api.admin.CommandException
      */
     public String executeCommand(ParameterMap opts) throws CommandException {
         // first, make sure we have the command model
@@ -1160,7 +1165,6 @@ public class RemoteAdminCommand {
             output = rse.getMessage();
 	    assert rrm != null;
 	    attrs = rrm.getMainAtts();
-            return;
         } catch (RemoteException rfe) {
             // XXX - gross
             if (rfe.getRemoteCause().indexOf("CommandNotFoundException") >= 0) {
@@ -1175,6 +1179,7 @@ public class RemoteAdminCommand {
 
     /**
      * Fetch the command metadata from the remote server.
+     * @throws org.glassfish.api.admin.CommandException
      */
     protected void fetchCommandModel() throws CommandException {
         long startNanos = System.nanoTime();

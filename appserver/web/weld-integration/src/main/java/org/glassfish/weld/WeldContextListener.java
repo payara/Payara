@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -66,7 +68,9 @@ public class WeldContextListener implements ServletContextListener {
 
     /**
      * Stash the Weld EL Resolver and Weld EL Context Listener so it is recognized by JSP.
+     * @param servletContextEvent
      */
+    @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
         if (null != beanManager) {
@@ -88,6 +92,7 @@ public class WeldContextListener implements ServletContextListener {
         }
     }
 
+    @Override
     public void contextDestroyed(ServletContextEvent sce) {
         if (null != beanManager) {
             beanManager = null;

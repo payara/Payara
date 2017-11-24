@@ -71,7 +71,7 @@
   <applications/>
   <resources/>
   <servers>
-    <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%"> 
+    <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%">
       <resource-ref ref="jdbc/__TimerPool" />
       <resource-ref ref="jdbc/__default" />
     </server>
@@ -182,8 +182,8 @@
         <jvm-options>-Dfelix.fileinstall.poll=5000</jvm-options>
         <!-- log level: 1 for error, 2 for warning, 3 for info and 4 for debug. -->
         <jvm-options>-Dfelix.fileinstall.log.level=2</jvm-options>
-        <!-- should new bundles be started or installed only? 
-             true => start, false => only install 
+        <!-- should new bundles be started or installed only?
+             true => start, false => only install
         -->
         <jvm-options>-Dfelix.fileinstall.bundles.new.start=true</jvm-options>
         <!-- should watched bundles be started transiently or persistently -->
@@ -193,7 +193,9 @@
         -->
         <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
         <!-- End of OSGi bundle configurations -->
-    </java-config>
+        <jvm-options>-XX:NewRatio=2</jvm-options>
+        <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
+      </java-config>
       <network-config>
         <protocols>
           <protocol name="http-listener-1">
@@ -296,7 +298,7 @@
              </message-security-config>
          </security-service>
          <diagnostic-service/>
-         <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">           
+         <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-server</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
@@ -337,6 +339,7 @@
              -->
              <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
              <!-- End of OSGi bundle configurations -->
+             <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
          </java-config>
          <availability-service/>
          <network-config>

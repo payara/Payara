@@ -144,7 +144,6 @@ public class WebServicesApplication implements ApplicationContainer {
         return ejbendpoints;
     }
 
-
     private void collectEjbEndpoints(BundleDescriptor bundleDesc) {
         WebServicesDescriptor wsDesc = bundleDesc.getWebServices();
         for (WebService ws : wsDesc.getWebServices()) {
@@ -155,15 +154,8 @@ public class WebServicesApplication implements ApplicationContainer {
                 }
             }
         }
-        //For ejb webservices in war we need to get the extension descriptors
-        //from the WebBundleDescriptor and process those too
-        //http://monaco.sfbay/detail.jsf?cr=6956406
-        for (EjbBundleDescriptor ejbD : bundleDesc.getExtensionsDescriptors(EjbBundleDescriptor.class)) {
-            collectEjbEndpoints(ejbD);
-        }
-
-
     }
+
     public boolean stop(ApplicationContext stopContext) {
         try {
             Iterator<EjbEndpoint> iter = ejbendpoints.iterator();

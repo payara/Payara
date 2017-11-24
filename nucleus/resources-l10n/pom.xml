@@ -42,28 +42,29 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.2.174-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
+        <version>4.1.2.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <groupId>org.glassfish.main</groupId>
     <artifactId>nucleus-resources-l10n</artifactId>
-    
+
     <name>nucleus.resources l10n</name>
     <description>Nucleus Resource Classes l10n</description>
-    
+
     <properties>
         <javadoc.skip>true</javadoc.skip>
         <deploy.skip>true</deploy.skip>
         <build.info.exclude>true</build.info.exclude>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
               <groupId>org.glassfish.hk2</groupId>
-              <artifactId>osgiversion-maven-plugin</artifactId>            
+              <artifactId>osgiversion-maven-plugin</artifactId>
               <executions>
                   <execution>
                       <id>compute-osgi-version</id>
@@ -102,4 +103,3 @@
         </resources>
     </build>
 </project>
-

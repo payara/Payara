@@ -42,9 +42,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.2.174-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
+        <version>4.1.2.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.payara-modules</groupId>
@@ -65,7 +65,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <module>notification-cdi-eventbus-core</module>
         <module>jsr107-repackaged</module>
     </modules>
-    
+
     <profiles>
         <profile>
             <id>jdk8</id>

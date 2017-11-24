@@ -41,6 +41,8 @@ package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -59,9 +61,15 @@ public class RequestTrace {
     private boolean started;
     private boolean completed;
     private long startTime;
+    private long startTimeEpoched;
+    private long endTime;
     private long elapsedTime;
     private LinkedList<RequestEvent> trace;
     
+    /**
+     * Add a new event to the series being traced
+     * @param requestEvent 
+     */
     void addEvent(RequestEvent requestEvent) {
         // Do not add trace events if completed
         if (completed && requestEvent.getEventType() != EventType.TRACE_START) {
@@ -72,6 +80,7 @@ public class RequestTrace {
             case TRACE_START:
                 trace.clear();
                 startTime = requestEvent.getTimestamp();
+                startTimeEpoched = requestEvent.getTimeOccured();
                 requestEvent.setConversationId(requestEvent.getId());
                 trace.add(requestEvent);
                 started = true;
@@ -96,6 +105,7 @@ public class RequestTrace {
                 requestEvent.setTraceTime(requestEvent.getTimestamp() - startTime);
                 trace.add(requestEvent);
                 elapsedTime = TimeUnit.MILLISECONDS.convert(requestEvent.getTimestamp() - startTime, TimeUnit.NANOSECONDS);
+                endTime = requestEvent.getTimeOccured();
                 completed = true;
                     break;
                 }
@@ -105,7 +115,8 @@ public class RequestTrace {
     }
     
     /**
-     * 
+     * Gets how long the trace took.
+     * If the trace has not finished then this will be 0.
      * @return Time for trace in milliseconds
      */
     public long getElapsedTime() {
@@ -115,7 +126,7 @@ public class RequestTrace {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{\"RequestTrace\": {");
-        sb.append("\"startTime\":\"").append(startTime).append('"')
+        sb.append("\"startTime\":\"").append(DateFormat.getDateTimeInstance().format(new Date(startTimeEpoched))).append('"')
           .append(",\"elapsedTime\":\"").append(elapsedTime).append('"').append(',');
         for (RequestEvent re : trace) {
             sb.append(re.toString()); 
@@ -128,24 +139,79 @@ public class RequestTrace {
     }
     
     // methods for testing
+    /**
+     * Returns true if a trace has started.
+     * This will return true even if the trace has completed.
+     * @return 
+     */
     boolean isStarted() {
         return started;
     }
     
+    /**
+     * Returns a list of all the events that make up the trace.
+     * @return 
+     */
     LinkedList<RequestEvent> getTrace() {
         return trace;
     }
 
+    /**
+     * Gets the start time of the request trace in nanoseconds. 
+     * 
+     * This time is NOT related to the epoch or start time of anything, but an
+     * arbitrary point. This is only to be used for comparison.
+     * <p>
+     * See {@link System#nanoTime()} for how this time is generated.
+     * <p>
+     * See {@link #getStartTimeEpoched} for a time that can be used for an absolute value.
+     * @return 
+     * 
+     */
     long getStartTime() {
         return startTime;
     }
+    
+    
+    
+    /**
+     * Gets the time in milliseconds since the epoch (midnight, January 1st 1970)
+     * when the the request trace started.
+     * <p>
+     * See {@link System#currentTimeMillis()} for how this time is generated.
+     * @return 
+     */
+    public long getStartTimeEpoched(){
+        return startTimeEpoched;
+    }
+    
+    /**
+     * Gets the end time of the request trace in milliseconds since the epoch
+     * (midnight, January 1st 1970).
+     * <p>
+     * This value is 0 until the request trace in finished.
+     * @return 
+     */
+    public long getEndTime(){
+        return endTime;
+    }
 
+    /**
+     * Sets a unique identifier for the trace.
+     * This identifier will be applied to all events within it.
+     * @param newID 
+     */
     void setConversationID(UUID newID) {
         for (RequestEvent requestEvent : trace) {
             requestEvent.setConversationId(newID);
         }
     }
 
+    /**
+     * Returns a unique identifier for the trace,
+     * which comes from the first event.
+     * @return {@code null} if no trace started
+     */
     UUID getConversationID() {
         UUID result = null;
         RequestEvent re = trace.getFirst();
@@ -155,6 +221,10 @@ public class RequestTrace {
         return result;
     }
 
+    /**
+     * Returns true if a complete trace has finished
+     * @return 
+     */
     boolean isCompleted() {
         return completed;
     }

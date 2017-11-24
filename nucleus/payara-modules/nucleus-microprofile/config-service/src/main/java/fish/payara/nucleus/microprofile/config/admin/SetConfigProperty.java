@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.admin;
 
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
 import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
 import java.util.logging.Logger;
@@ -64,7 +65,7 @@ import org.jvnet.hk2.annotations.Service;
 @ExecuteOn()
 @TargetType()
 @RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface
-    
+
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
             path = "set-config-property",
@@ -72,10 +73,10 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class SetConfigProperty implements AdminCommand {
 
-    @Param(acceptableValues = "domain,config,server,application,module,cluster", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster, jndi", defaultValue = "domain")
     String source;
 
-    @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
+    @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
     String target;
 
     @Param
@@ -127,7 +128,7 @@ public class SetConfigProperty implements AdminCommand {
             }
             case "module": {
                 if (sourceName == null || moduleName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters module is the source");
+                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
                 } else {
                     service.setModuleProperty(sourceName, moduleName, propertyName, propertyValue);
                 }
@@ -135,6 +136,11 @@ public class SetConfigProperty implements AdminCommand {
             }
             case "cluster": {
                 service.setClusteredProperty(propertyName, propertyValue);
+                break;
+            }
+
+            case "jndi": {
+                service.setJNDIProperty(propertyName, propertyValue, target);
                 break;
             }
 

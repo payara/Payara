@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.config;
@@ -93,6 +95,7 @@ public interface CustomResource extends ConfigBeanProxy, Resource,
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     void setResType(String value) throws PropertyVetoException;
 
@@ -112,6 +115,7 @@ public interface CustomResource extends ConfigBeanProxy, Resource,
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     void setFactoryClass(String value) throws PropertyVetoException;
 
@@ -122,6 +126,7 @@ public interface CustomResource extends ConfigBeanProxy, Resource,
      *         {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
+    @Override
     String getEnabled();
 
     /**
@@ -129,7 +134,9 @@ public interface CustomResource extends ConfigBeanProxy, Resource,
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
+    @Override
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
@@ -146,6 +153,7 @@ public interface CustomResource extends ConfigBeanProxy, Resource,
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     void setDescription(String value) throws PropertyVetoException;
     
@@ -155,9 +163,11 @@ public interface CustomResource extends ConfigBeanProxy, Resource,
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

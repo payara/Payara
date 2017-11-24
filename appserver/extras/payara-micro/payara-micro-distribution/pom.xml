@@ -46,20 +46,13 @@
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>4.1.2.174-SNAPSHOT</version>
+        <version>4.1.2.181-SNAPSHOT</version>
     </parent>
   
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-micro</artifactId>
     <name>Payara Micro Distribution</name>
     <packaging>jar</packaging>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -420,6 +413,13 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.jmx.monitoring</groupId>
+            <artifactId>jmx-monitoring</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <optional>true</optional>
+        </dependency>
         <!-- PAYARA-1081 -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
@@ -462,31 +462,8 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>DeploySnapshot</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>DeploySnapshot</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
+	
+	<profile>
             <id>jdk8</id>
             <activation>
                 <jdk>1.8</jdk>
@@ -496,7 +473,7 @@
                 <dependency>
                     <groupId>org.eclipse.microprofile.config</groupId>
                     <artifactId>microprofile-config-api</artifactId>
-                    <version>1.0-RC2</version>
+                    <version>${microprofile-config.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.nucleus.microprofile.config</groupId>

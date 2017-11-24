@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.api.admin;
@@ -295,6 +297,7 @@ public class AdminCommandLock {
 
     /**
      * Indicates if commands are currently suspended.
+     * @return 
      */
     public synchronized boolean isSuspended() {
         /*
@@ -485,6 +488,7 @@ public class AdminCommandLock {
             suspendCommandsTimedOut = false;
         }
 
+        @Override
         public void run() {
 
             /*

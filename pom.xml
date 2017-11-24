@@ -46,25 +46,25 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-main-aggregator</artifactId>
-    <version>4.1.2.174-SNAPSHOT</version>
+    <version>4.1.2.181-SNAPSHOT</version>
     <packaging>pom</packaging>
-    
+
     <name>Payara Project</name>
-    
+
     <scm>
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-blue-4.1.2.174-SNAPSHOT</tag>
+        <tag>payara-blue-4.1.2.181-SNAPSHOT</tag>
     </scm>
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-    
+
     <profiles>
         <profile>
             <id>release-phase2</id>
@@ -83,7 +83,7 @@
         </profile>
         <profile>
             <!--
-                RE profile for release purposes. 
+                RE profile for release purposes.
             -->
             <id>ips</id>
             <activation>
@@ -98,7 +98,7 @@
                 <module>api</module>
             </modules>
         </profile>
-        
+
         <profile>
             <id>source</id>
             <activation>
@@ -115,7 +115,7 @@
             </modules>
             <properties>
                 <maven.test.skip>true</maven.test.skip>
-                <project>payara</project> 
+                <project>payara</project>
             </properties>
             <build>
                 <plugins>
@@ -140,8 +140,13 @@
                                     <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>payara-4.1.2.174-SNAPSHOT</finalName>    
+<<<<<<< HEAD
+                                    <finalName>payara-4.1.2.181-SNAPSHOT-SNAPSHOT</finalName>
+                                    <includePom>false</includePom>
+=======
+                                    <finalName>payara-4.1.2.181-SNAPSHOT</finalName>    
                                     <includePom>false</includePom>                            
+>>>>>>> bitbucket-upstream/Payara-Blue-4.1.2.181-SNAPSHOT-Release
                                 </configuration>
                             </execution>
                         </executions>
@@ -149,7 +154,7 @@
                 </plugins>
             </build>
         </profile>
-             
+
         <profile>
             <id>javadoc</id>
             <activation>
@@ -190,7 +195,7 @@
                                 <phase>site</phase>
                                 <configuration>
                                     <!-- Specific configuration for the aggregate report -->
-                                    <finalName>payara-4.1.2.174-SNAPSHOT</finalName>
+                                    <finalName>payara-4.1.2.181-SNAPSHOT</finalName>
                                 </configuration>
                             </execution>
                         </executions>
@@ -227,9 +232,9 @@
                 </plugins>
             </build>
         </profile>
-        
+
     </profiles>
-   
+
     <!--
         Skip deploy and install as this is an aggregator POM
     -->

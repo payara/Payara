@@ -2075,6 +2075,7 @@ public class StandardContext
      *
      * @param listener the fully qualified class name of the Listener
      */
+    @Override
     public void addApplicationListener(String listener) {
         addListener(listener, false);
     }
@@ -2084,6 +2085,7 @@ public class StandardContext
      *
      * @param parameter The new application parameter
      */
+    @Override
     public void addApplicationParameter(ApplicationParameter parameter) {
         String newName = parameter.getName();
         Iterator<ApplicationParameter> i =
@@ -2272,6 +2274,7 @@ public class StandardContext
      *
      * @param ejb New EJB resource reference
      */
+    @Override
     public void addEjb(ContextEjb ejb) {
         namingResources.addEjb(ejb);
         if (notifyContainerListeners) {
@@ -2284,6 +2287,7 @@ public class StandardContext
      *
      * @param environment New environment entry
      */
+    @Override
     public void addEnvironment(ContextEnvironment environment) {
 
         ContextEnvironment env = findEnvironment(environment.getName());
@@ -2363,10 +2367,17 @@ public class StandardContext
      *
      * @param filterDef The filter definition to be added
      */
+    @Override
     public void addFilterDef(FilterDef filterDef) {
         addFilterDef(filterDef, false, true);
     }
 
+    /**
+     * Add a filter definition to this Context.
+     * @param filterDef The filter definition to be added
+     * @param isProgrammatic 
+     * @param createRegistration
+     */
     public void addFilterDef(FilterDef filterDef, boolean isProgrammatic,
             boolean createRegistration) {
         if (createRegistration) {
@@ -3672,6 +3683,8 @@ public class StandardContext
 
     /**
      * Checks whether this context contains the given Servlet instance
+     * @param servlet
+     * @return 
      */
     public boolean hasServlet(Servlet servlet) {
         for (Map.Entry<String, Container> e : children.entrySet()) {
@@ -3701,6 +3714,7 @@ public class StandardContext
     /**
      * Gets the ServletRegistration corresponding to the servlet with the
      * given <tt>servletName</tt>.
+     * @param servletName
      */
     @Override
     public ServletRegistration getServletRegistration(String servletName) {
@@ -3785,6 +3799,7 @@ public class StandardContext
      * the Java implementation class appropriate for this Context
      * implementation.  The constructor of the instantiated Wrapper
      * will have been called, but no properties will have been set.
+     * @return 
      */
     @Override
     public Wrapper createWrapper() {
@@ -3847,6 +3862,7 @@ public class StandardContext
 
     /**
      * Return the set of application parameters for this application.
+     * @return 
      */
     @Override
     public List<ApplicationParameter> findApplicationParameters() {
@@ -3855,6 +3871,7 @@ public class StandardContext
 
     /**
      * Gets the security constraints defined for this web application.
+     * @return 
      */
     @Override
     public List<SecurityConstraint> getConstraints() {
@@ -3864,6 +3881,7 @@ public class StandardContext
     /**
      * Checks whether this web application has any security constraints
      * defined.
+     * @return 
      */
     @Override
     public boolean hasConstraints() {
@@ -3875,6 +3893,7 @@ public class StandardContext
      * otherwise, return <code>null</code>.
      *
      * @param name Name of the desired EJB resource reference
+     * @return 
      */
     @Override
     public ContextEjb findEjb(String name) {
@@ -3884,6 +3903,7 @@ public class StandardContext
     /**
      * Return the defined EJB resource references for this application.
      * If there are none, a zero-length array is returned.
+     * @return 
      */
     @Override
     public ContextEjb[] findEjbs() {
@@ -3895,6 +3915,7 @@ public class StandardContext
      * otherwise, return <code>null</code>.
      *
      * @param name Name of the desired environment entry
+     * @return 
      */
     @Override
     public ContextEnvironment findEnvironment(String name) {
@@ -3905,6 +3926,7 @@ public class StandardContext
      * Return the set of defined environment entries for this web
      * application.  If none have been defined, a zero-length array
      * is returned.
+     * @return 
      */
     @Override
     public ContextEnvironment[] findEnvironments() {
@@ -3916,6 +3938,7 @@ public class StandardContext
      * if any; otherwise return <code>null</code>.
      *
      * @param errorCode Error code to look up
+     * @return 
      */
     @Override
     public ErrorPage findErrorPage(int errorCode) {
@@ -3931,6 +3954,7 @@ public class StandardContext
      * if any; otherwise return <code>null</code>.
      *
      * @param exceptionType Exception type to look up
+     * @return 
      */
     @Override
     public ErrorPage findErrorPage(String exceptionType) {
@@ -3958,6 +3982,7 @@ public class StandardContext
      * otherwise return <code>null</code>.
      *
      * @param filterName Filter name to look up
+     * @return 
      */
     @Override
     public FilterDef findFilterDef(String filterName) {
@@ -3979,6 +4004,7 @@ public class StandardContext
 
     /**
      * Return the list of filter mappings for this Context.
+     * @return 
      */
     @Override
     public List<FilterMap> findFilterMaps() {
@@ -6877,6 +6903,7 @@ public class StandardContext
     /**
      * Return the major version of the Java Servlet API that we implement.
      */
+    @Override
     public int getMajorVersion() {
         return context.getMajorVersion();
     }
@@ -6884,6 +6911,7 @@ public class StandardContext
     /**
      * Return the minor version of the Java Servlet API that we implement.
      */
+    @Override
     public int getMinorVersion() {
         return context.getMinorVersion();
     }
@@ -6892,6 +6920,7 @@ public class StandardContext
      * Return the MIME type of the specified file, or <code>null</code> if
      * the MIME type cannot be determined.
      */
+    @Override
     public String getMimeType(String file) {
 
         if (file == null)
@@ -6910,6 +6939,7 @@ public class StandardContext
      * Return a <code>RequestDispatcher</code> object that acts as a
      * wrapper for the named servlet.
      */
+    @Override
     public RequestDispatcher getNamedDispatcher(String name) {
 
         // Validate the name argument
@@ -6928,6 +6958,7 @@ public class StandardContext
     /**
      * Return the display name of this web application.
      */
+    @Override
     public String getServletContextName() {
         return getDisplayName();
     }
@@ -6935,6 +6966,7 @@ public class StandardContext
     /**
      * Remove the context attribute with the specified name, if any.
      */
+    @Override
     public void removeAttribute(String name) {
         context.removeAttribute(name);
     }
@@ -6943,6 +6975,7 @@ public class StandardContext
      * Bind the specified value with the specified context attribute name,
      * replacing any existing value for that name.
      */
+    @Override
     public void setAttribute(String name, Object value) {
         context.setAttribute(name, value);
     }
@@ -6950,6 +6983,7 @@ public class StandardContext
     /**
      * Return the name and version of the servlet container.
      */
+    @Override
     public String getServerInfo() {
         return context.getServerInfo();
     }
@@ -6959,6 +6993,7 @@ public class StandardContext
      * <code>null</code> if the container was unable to perform the
      * translation
      */
+    @Override
     public String getRealPath(String path) {
         if (!(showArchivedRealPathEnabled || directoryDeployed)) {
             return null;
@@ -7009,6 +7044,7 @@ public class StandardContext
     /**
      * Writes the specified message to a servlet log file.
      */
+    @Override
     public void log(String message) {
         org.apache.catalina.Logger logger = getLogger();
         if (logger != null) {
@@ -7024,6 +7060,7 @@ public class StandardContext
     /**
      * Writes the specified exception and message to a servlet log file.
      */
+    @Override
     public void log(Exception exception, String message) {
         org.apache.catalina.Logger logger = getLogger();
         if (logger != null)
@@ -7033,20 +7070,27 @@ public class StandardContext
     /**
      * Writes the specified message and exception to a servlet log file.
      */
+    @Override
     public void log(String message, Throwable throwable) {
         org.apache.catalina.Logger logger = getLogger();
         if (logger != null)
             logger.log(logName() + message, throwable);
     }
 
+    @Override
+    @Deprecated
     public Servlet getServlet(String name) {
         return context.getServlet(name);
     }
 
+    @Deprecated
+    @Override
     public Enumeration<String> getServletNames() {
         return context.getServletNames();
     }
 
+    @Deprecated
+    @Override
     public Enumeration<Servlet> getServlets() {
         return context.getServlets();
     }
@@ -7057,6 +7101,7 @@ public class StandardContext
      * <code>getResource</code>.  If no such resource can be identified,
      * return <code>null</code>.
      */
+    @Override
     public InputStream getResourceAsStream(String path) {
 
         if (path == null || !path.startsWith("/"))
@@ -7069,7 +7114,7 @@ public class StandardContext
         DirContext resources = null;
 
         if (alternateDocBases == null
-                || alternateDocBases.size() == 0) {
+                || alternateDocBases.isEmpty()) {
             resources = getResources();
         } else {
             AlternateDocBase match = AlternateDocBase.findMatch(
@@ -7099,6 +7144,7 @@ public class StandardContext
      * The path must begin with a "/" and is interpreted as relative to the
      * current context root.
      */
+    @Override
     public java.net.URL getResource(String path)
         throws MalformedURLException {
 
@@ -7129,7 +7175,7 @@ public class StandardContext
 
             DirContext resources = null;
             if (alternateDocBases == null
-                    || alternateDocBases.size() == 0) {
+                    || alternateDocBases.isEmpty()) {
                 resources = context.getResources();
             } else {
                 AlternateDocBase match = AlternateDocBase.findMatch(
@@ -7169,6 +7215,7 @@ public class StandardContext
      * specified collection. Each path will be a String starting with
      * a "/" character. The returned set is immutable.
      */
+    @Override
     public Set<String> getResourcePaths(String path) {
         // Validate the path argument
         if (path == null) {
@@ -7186,7 +7233,7 @@ public class StandardContext
         DirContext resources = null;
 
         if (alternateDocBases == null
-                || alternateDocBases.size() == 0) {
+                || alternateDocBases.isEmpty()) {
             resources = getResources();
         } else {
             AlternateDocBase match = AlternateDocBase.findMatch(
@@ -7250,6 +7297,7 @@ public class StandardContext
      * wrapper for the resource at the given path.  The path must begin
      * with a "/" and is interpreted as relative to the current context root.
      */
+    @Override
     public RequestDispatcher getRequestDispatcher(String path) {
 
         // Validate the path argument
@@ -7363,6 +7411,7 @@ public class StandardContext
      * parsing xml instances.
      * @param webXmlValidation true to enable xml instance validation
      */
+    @Override
     public void setXmlValidation(boolean webXmlValidation){
         this.webXmlValidation = webXmlValidation;
     }
@@ -7372,14 +7421,16 @@ public class StandardContext
      * @return true if validation is enabled.
      *
      */
+    @Override
     public boolean getXmlValidation(){
         return webXmlValidation;
     }
 
     /**
      * Get the server.xml <context> attribute's xmlNamespaceAware.
-     * @return true if namespace awarenes is enabled.
+     * @return true if namespace awareness is enabled.
      */
+    @Override
     public boolean getXmlNamespaceAware(){
         return webXmlNamespaceAware;
     }
@@ -7389,6 +7440,7 @@ public class StandardContext
      * parsing xml instances.
      * @param webXmlNamespaceAware true to enable namespace awareness
      */
+    @Override
     public void setXmlNamespaceAware(boolean webXmlNamespaceAware){
         this.webXmlNamespaceAware= webXmlNamespaceAware;
     }
@@ -7398,6 +7450,7 @@ public class StandardContext
      * parsing tlds files.
      * @param tldValidation true to enable xml instance validation
      */
+    @Override
     public void setTldValidation(boolean tldValidation){
         this.tldValidation = tldValidation;
     }
@@ -7407,6 +7460,7 @@ public class StandardContext
      * @return true if validation is enabled.
      *
      */
+    @Override
     public boolean getTldValidation(){
         return tldValidation;
     }
@@ -7415,6 +7469,7 @@ public class StandardContext
      * Get the server.xml <host> attribute's xmlNamespaceAware.
      * @return true if namespace awarenes is enabled.
      */
+    @Override
     public boolean getTldNamespaceAware(){
         return tldNamespaceAware;
     }
@@ -7424,6 +7479,7 @@ public class StandardContext
      * parsing xml instances.
      * @param tldNamespaceAware true to enable namespace awareness
      */
+    @Override
     public void setTldNamespaceAware(boolean tldNamespaceAware){
         this.tldNamespaceAware= tldNamespaceAware;
     }
@@ -7442,6 +7498,12 @@ public class StandardContext
         start();
     }
 
+    /**
+     * Returns the state of the server.
+     * <p>
+     * It will return 0, 1 3 or 4.
+     * @return 0 = STARTING; 1= RUNNING; 3 = STOPPED, 4 = FAILED
+     */
     public int getState() {
         if( started ) {
             return 1; // RUNNING
@@ -7456,6 +7518,11 @@ public class StandardContext
         return 3; // STOPPED
     }
 
+    /**
+     * Checks if the context has been initialised.
+     * If it has, then no servlets or servlet filters can be added to it.
+     * @return 
+     */
     boolean isContextInitializedCalled() {
         return isContextInitializedCalled;
     }
@@ -7464,6 +7531,7 @@ public class StandardContext
      * Creates an ObjectInputStream that provides special deserialization
      * logic for classes that are normally not serializable (such as
      * javax.naming.Context).
+     * @param is
      */
     public ObjectInputStream createObjectInputStream(InputStream is)
             throws IOException {
@@ -7493,6 +7561,8 @@ public class StandardContext
      * Creates an ObjectOutputStream that provides special serialization
      * logic for classes that are normally not serializable (such as
      * javax.naming.Context).
+     * @param os
+     * @return 
      */
     public ObjectOutputStream createObjectOutputStream(OutputStream os)
             throws IOException {
@@ -7509,10 +7579,18 @@ public class StandardContext
         return startTimeMillis;
     }
 
+    /**
+     * ???
+     * @return false
+     */
     public boolean isEventProvider() {
         return false;
     }
 
+    /**
+     * ???MBean stats? unused
+     * @return false
+     */
     public boolean isStatisticsProvider() {
         return false;
     }
@@ -7520,46 +7598,101 @@ public class StandardContext
     /*
      * HTTP session related monitoring events
      */
+    
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider
+     * @param session 
+     */
     public void sessionCreatedEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionDestroyedEvent
+     * @param session 
+     */
     public void sessionDestroyedEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionRejectedEvent
+     * @param maxSessions 
+     */
     public void sessionRejectedEvent(int maxSessions) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionExpiredEvent
+     * @param session 
+     */
     public void sessionExpiredEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionPersistedStartEvent
+     * @param session 
+     */
     public void sessionPersistedStartEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionPersistedEndEvent
+     * @param session 
+     */
     public void sessionPersistedEndEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionActivatedStartEvent
+     * @param session 
+     */
     public void sessionActivatedStartEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionActivatedEndEvent
+     * @param session 
+     */
     public void sessionActivatedEndEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionPassivatedStartEvent
+     * @param session 
+     */
     public void sessionPassivatedStartEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * Trigger for monitoring
+     * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionPassivatedEndEvent
+     * @param session 
+     */
     public void sessionPassivatedEndEvent(HttpSession session) {
         // Deliberate noop
     }
 
+    /**
+     * 
+     * @return 0
+     */
     public long getUniqueId() {
         return 0L;
     }
@@ -7574,16 +7707,19 @@ public class StandardContext
 
         /**
          * Constructor
+         * @param delegate
          */
         public RestrictedServletContextListener(
                 ServletContextListener delegate) {
             this.delegate = delegate;
         }
 
+        @Override
         public void contextInitialized(ServletContextEvent sce) {
             delegate.contextInitialized(sce);
         }
 
+        @Override
         public void contextDestroyed(ServletContextEvent sce) {
             delegate.contextDestroyed(sce);
         }

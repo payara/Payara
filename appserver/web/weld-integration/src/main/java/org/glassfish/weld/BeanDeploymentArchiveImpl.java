@@ -126,6 +126,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     /**
      * Produce a <code>BeanDeploymentArchive</code> form information contained
      * in the provided <code>ReadableArchive</code>.
+     * @param archive
+     * @param ejbs
+     * @param ctx
      */
     public BeanDeploymentArchiveImpl(ReadableArchive archive,
                                      Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs,
@@ -167,8 +170,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         getClassLoader();
     }
 
-    //These are for empty BDAs that do not model Bean classes in the current
+    /** These are for empty BDAs that do not model Bean classes in the current
     //deployment unit -- for example: BDAs for portable Extensions.
+    */
     public BeanDeploymentArchiveImpl(String                                                  id,
                                      List<Class<?>>                                          wClasses,
                                      List<URL>                                               beansXmlUrls,
@@ -208,10 +212,12 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
     }
 
+    @Override
     public Collection<BeanDeploymentArchive> getBeanDeploymentArchives() {
         return beanDeploymentArchives;
     }
 
+    @Override
     public Collection<String> getBeanClasses() {
         //This method is called during BeanDeployment.deployBeans, so this would
         //be the right time to place the module classloader for the BDA as the TCL
@@ -244,8 +250,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public void addBeanClass(String beanClassName) {
         boolean added = false;
-        for (Iterator<String> iterator = moduleClassNames.iterator(); iterator.hasNext(); ) {
-            String c = iterator.next();
+        for (String c : moduleClassNames) {
             if (c.equals(beanClassName)) {
                 if (logger.isLoggable(FINE)) {
                     logger.log(FINE, CDILoggerInfo.ADD_BEAN_CLASS, new Object[]{c, beanClassNames});
@@ -266,6 +271,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
     }
 
+    @Override
     public BeansXml getBeansXml() {
         BeansXml result = null;
 
@@ -285,6 +291,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
      *
      * @return the EJB descriptors
      */
+    @Override
     public Collection<EjbDescriptor<?>> getEjbs() {
 
         return ejbDescImpls;
@@ -303,6 +310,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return match;
     }
 
+    @Override
     public ServiceRegistry getServices() {
         if (simpleServiceRegistry == null) {
             simpleServiceRegistry = new SimpleServiceRegistry();
@@ -310,6 +318,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return simpleServiceRegistry;
     }
 
+    @Override
     public String getId() {
         return id;
     }
@@ -321,6 +330,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     //A graphical representation of the BDA hierarchy to aid in debugging
     //and to provide a better representation of how Weld treats the deployed
     //archive.
+    @Override
     public String toString() {
         String beanClassesString = ((getBeanClasses().size() > 0) ? getBeanClasses().toString() : "");
         String initVal = "|ID: " + getId() + ", bdaType= " + bdaType
@@ -353,13 +363,17 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         StringBuffer sb = new StringBuffer("[");
         for (BeanDeploymentArchive accessibleBDA : bda.getBeanDeploymentArchives()) {
             if (accessibleBDA instanceof BeanDeploymentArchiveImpl) {
-                sb.append(((BeanDeploymentArchiveImpl) accessibleBDA).getFriendlyId() + ",");
+                sb.append(((BeanDeploymentArchiveImpl) accessibleBDA).getFriendlyId()).append(",");
             }
         }
         sb.append("]");
         return sb.toString();
     }
 
+    /**
+     * Gets the Bean Deployment Archive type
+     * @return WAR, RAR, JAR or UNKNOWN
+     */
     public BDAType getBDAType() {
         return bdaType;
     }
