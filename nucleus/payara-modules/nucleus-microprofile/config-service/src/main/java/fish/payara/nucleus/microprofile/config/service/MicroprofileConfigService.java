@@ -40,9 +40,14 @@
 package fish.payara.nucleus.microprofile.config.service;
 
 import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.config.serverbeans.RefContainer;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import fish.payara.nucleus.store.ClusteredStore;
@@ -51,6 +56,7 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,12 +71,15 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.admin.cli.resources.CLIUtil;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.api.Target;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
@@ -79,8 +88,10 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
 import org.glassfish.resources.config.CustomResource;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -135,6 +146,15 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
 
     @Inject
     private BindableResourcesHelper bindableResourcesHelper;
+
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
+
+    @Inject
+    private ServiceLocator habitat;
+
+    @Inject
+    private ResourceUtil resourceUtil;
 
     // This injects the configuration from the domain.xml magically
     // and for the correct server configuation
@@ -524,6 +544,112 @@ public class MicroprofileConfigService implements EventListener, ConfigListener 
             result.put((String) key, (String) map.get(key));
         }
         return result;
+    }
+
+    public void deleteDomainProperty(final String propertyName) {
+        for (Property object : domainConfiguration.getProperty()) {
+            if ((PROPERTY_PREFIX + propertyName).equals(object.getName())) {
+                try {
+                    ConfigSupport.deleteChild((ConfigBean) ConfigBean.unwrap(domainConfiguration), (ConfigBean) ConfigBean.unwrap(object));
+                } catch (TransactionFailure ex) {
+                    Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+
+    public void deleteConfigProperty(String sourceName, final String propertyName) {
+        Config config = domainConfiguration.getConfigs().getConfigByName(sourceName);
+        if (config != null) {
+            for (Property object : config.getProperty()) {
+                if ((PROPERTY_PREFIX + propertyName).equals(object.getName())) {
+                    try {
+                        ConfigSupport.deleteChild((ConfigBean) ConfigBean.unwrap(config), (ConfigBean) ConfigBean.unwrap(object));
+                    } catch (TransactionFailure ex) {
+                        Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+    }
+
+    public void deleteServerProperty(String sourceName, final String propertyName) {
+        Server config = domainConfiguration.getServerNamed(sourceName);
+        if (config != null) {
+            for (Property object : config.getProperty()) {
+                if ((PROPERTY_PREFIX + propertyName).equals(object.getName())) {
+                    try {
+                        ConfigSupport.deleteChild((ConfigBean) ConfigBean.unwrap(config), (ConfigBean) ConfigBean.unwrap(object));
+                    } catch (TransactionFailure ex) {
+                        Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+    }
+
+    public void deleteApplicationProperty(String sourceName, final String propertyName) {
+        Application app = domainConfiguration.getApplications().getApplication(sourceName);
+        if (app != null) {
+            for (Property object : app.getProperty()) {
+                if ((PROPERTY_PREFIX + propertyName).equals(object.getName())) {
+                    try {
+                        ConfigSupport.deleteChild((ConfigBean) ConfigBean.unwrap(app), (ConfigBean) ConfigBean.unwrap(object));
+                    } catch (TransactionFailure ex) {
+                        Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+    }
+
+    public void deleteModuleProperty(String sourceName, String moduleName, final String propertyName) {
+        Application app = domainConfiguration.getApplications().getApplication(sourceName);
+        if (app != null) {
+            Module m = app.getModule(moduleName);
+            for (Property object : m.getProperty()) {
+                if ((PROPERTY_PREFIX + propertyName).equals(object.getName())) {
+                    try {
+                        ConfigSupport.deleteChild((ConfigBean) ConfigBean.unwrap(m), (ConfigBean) ConfigBean.unwrap(object));
+                    } catch (TransactionFailure ex) {
+                        Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+    }
+
+    public void deleteClusteredProperty(String propertyName) {
+        clusterStore.remove(CLUSTERED_CONFIG_STORE, propertyName);
+    }
+
+    public void deleteJNDIProperty(final String propertyName, String target) {
+
+        try {
+            
+            try {
+                // remove the resource reference
+                resourceUtil.deleteResourceRef(propertyName, target);
+            } catch (TransactionFailure ex) {
+                Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                
+                public Object run(Resources param) throws PropertyVetoException,
+                        TransactionFailure {
+                    CustomResource resource = (CustomResource) domainConfiguration.getResources().getResourceByName(CustomResource.class, propertyName);
+                    if (resource != null && resource.getJndiName().equals(propertyName)) {
+                        return param.getResources().remove(resource);
+                    }
+                    return null;
+                }
+            }, domainConfiguration.getResources());
+            
+        } catch (TransactionFailure ex) {
+            Logger.getLogger(MicroprofileConfigService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
 }
