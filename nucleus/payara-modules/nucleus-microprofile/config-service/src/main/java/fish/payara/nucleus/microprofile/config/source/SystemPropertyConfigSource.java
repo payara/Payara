@@ -37,60 +37,61 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.cdi;
+package fish.payara.nucleus.microprofile.config.source;
 
-import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
-import java.lang.reflect.Member;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.enterprise.inject.spi.InjectionPoint;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
 
 /**
- * This class is used as the template for synthetic beans when creating a bean
- * for each converter type registered in the Config
+ *
  * @author Steve Millidge (Payara Foundation)
  */
-public class ConfigPropertyProducer {
+public class SystemPropertyConfigSource extends PayaraConfigSource implements ConfigSource {
     
-    /**
-     * General producer method for injecting a property into a field annotated 
-     * with the @ConfigProperty annotation.
-     * Note this does not have @Produces annotation as a synthetic bean using this method
-     * is created in teh CDI Extension.
-     * @param ip
-     * @return 
-     */
-    @ConfigProperty
-    @Dependent
-    public static final Object getGenericProperty(InjectionPoint ip) {
-        Object result = null;
-        ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
-        PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
-        Class<?> type = (Class<?>) ip.getType();
-        String name = property.name();
-        if (name.isEmpty()) {
-            // derive the property name from the injection point
-            Class beanClass = null;
-            Bean bean = ip.getBean();
-            if (bean == null) {
-                Member member = ip.getMember();
-                beanClass = member.getDeclaringClass();
-            } else {
-                beanClass = bean.getBeanClass();
-            }
-            StringBuilder sb = new StringBuilder(beanClass.getCanonicalName());
-            sb.append('.');
-            sb.append(ip.getMember().getName());
-            name =  sb.toString();
-        }
-        result = config.getValue(name, property.defaultValue(),type);
-        if (result == null) {
-            throw new DeploymentException("Microprofile Config Property " + property.name() + " can not be found");
+    // Provides access to information on the server including;
+    // command line, initial context, service locator, installation
+    // Classloaders, config root for the server
+    private ServerContext context;
+
+    public SystemPropertyConfigSource() {
+        context = Globals.getDefaultHabitat().getService(ServerContext.class);
+    }
+
+    @Override
+    public Map<String, String> getProperties() {
+        Properties props = System.getProperties();
+        HashMap<String, String> result = new HashMap<>(props.size());
+        for (String propertyName : props.stringPropertyNames()) {
+            result.put(propertyName, props.getProperty(propertyName));
         }
         return result;
     }
 
+    @Override
+    public int getOrdinal() {
+        return 400;
+    }
+
+    @Override
+    public String getValue(String propertyName) {
+        String result;
+        result = System.getProperty(propertyName);
+        if (result == null) {
+            result = context.getConfigBean().getSystemPropertyValue(propertyName);
+            if (result == null) {
+                result = domainConfiguration.getSystemPropertyValue(propertyName);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public String getName() {
+        return "SystemProperty";
+    }
+    
 }

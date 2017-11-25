@@ -37,60 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.cdi;
+package fish.payara.nucleus.microprofile.config.converters;
 
-import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
-import java.lang.reflect.Member;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.enterprise.inject.spi.InjectionPoint;
-import org.eclipse.microprofile.config.ConfigProvider;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.annotation.Priority;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.spi.Converter;
 
 /**
- * This class is used as the template for synthetic beans when creating a bean
- * for each converter type registered in the Config
+ *
  * @author Steve Millidge (Payara Foundation)
  */
-public class ConfigPropertyProducer {
-    
-    /**
-     * General producer method for injecting a property into a field annotated 
-     * with the @ConfigProperty annotation.
-     * Note this does not have @Produces annotation as a synthetic bean using this method
-     * is created in teh CDI Extension.
-     * @param ip
-     * @return 
-     */
-    @ConfigProperty
-    @Dependent
-    public static final Object getGenericProperty(InjectionPoint ip) {
-        Object result = null;
-        ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
-        PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
-        Class<?> type = (Class<?>) ip.getType();
-        String name = property.name();
-        if (name.isEmpty()) {
-            // derive the property name from the injection point
-            Class beanClass = null;
-            Bean bean = ip.getBean();
-            if (bean == null) {
-                Member member = ip.getMember();
-                beanClass = member.getDeclaringClass();
-            } else {
-                beanClass = bean.getBeanClass();
-            }
-            StringBuilder sb = new StringBuilder(beanClass.getCanonicalName());
-            sb.append('.');
-            sb.append(ip.getMember().getName());
-            name =  sb.toString();
-        }
-        result = config.getValue(name, property.defaultValue(),type);
-        if (result == null) {
-            throw new DeploymentException("Microprofile Config Property " + property.name() + " can not be found");
-        }
-        return result;
-    }
+@Priority(1)
+public class URLConverter implements Converter<URL> {
 
+    @Override
+    public URL convert(String value) {
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
+        
+        try {
+            URL result = new URL(value);
+            return result;
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
 }

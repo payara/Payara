@@ -102,5 +102,11 @@ holder.
             <version>4.1.1.171-SNAPSHOT</version>
             <type>jar</type>
         </dependency>-->
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>1.1</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

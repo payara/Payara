@@ -40,10 +40,15 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
-import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -53,6 +58,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * asAdmin command to the set the value of a config property
@@ -88,61 +94,75 @@ public class DeleteConfigProperty implements AdminCommand {
     @Param(optional = true)
     String moduleName;
 
-    @Inject
-    MicroprofileConfigService service;
-
     @Override
     public void execute(AdminCommandContext context) {
+        try {
+            switch (source) {
+                case "domain": {
+                    DomainConfigSource csource = new DomainConfigSource();
+                    csource.deleteValue(propertyName);
+                    break;
+                }
+                case "config": {
+                    if (sourceName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the configuration if config is the source");
+                    } else {
+                        ConfigConfigSource csource = new ConfigConfigSource(sourceName);
+                        if (!csource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the configuration named " + sourceName + " is in your domain");
+                        }
+                    }
+                    break;
+                }
+                case "server": {
+                    if (sourceName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the server if server is the source");
+                    } else {
+                        ServerConfigSource csource = new ServerConfigSource(sourceName);
+                        if (!csource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the server named " + sourceName + " is in your domain");
+                        }
+                    }
+                    break;
+                }
+                case "application": {
+                    if (sourceName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
+                    } else {
+                        ApplicationConfigSource csource = new ApplicationConfigSource(sourceName);
+                        if (!csource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the application named " + sourceName + " is in your domain");
+                        }
+                    }
+                    break;
+                }
+                case "module": {
+                    if (sourceName == null || moduleName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
+                    } else {
+                        ModuleConfigSource csource = new ModuleConfigSource(sourceName, moduleName);
+                        if (!csource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the application named " + sourceName + " with the module " + moduleName + " is in your domain");
+                        }
+                    }
+                    break;
+                }
+                case "cluster": {
+                    ClusterConfigSource csource = new ClusterConfigSource();
+                    csource.deleteValue(propertyName);
+                    break;
+                }
 
-        switch (source) {
-            case "domain": {
-                service.deleteDomainProperty(propertyName);
-                break;
-            }
-            case "config": {
-                if (sourceName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the configuration if config is the source");
-                } else {
-                    service.deleteConfigProperty(sourceName, propertyName);
+                case "jndi": {
+                    JNDIConfigSource jsource = new JNDIConfigSource();
+                    jsource.deleteValue(propertyName, target);
+                    break;
                 }
-                break;
-            }
-            case "server": {
-                if (sourceName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the server if server is the source");
-                } else {
-                    service.deleteServerProperty(sourceName, propertyName);
-                }
-                break;
-            }
-            case "application": {
-                if (sourceName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
-                } else {
-                    service.deleteApplicationProperty(sourceName, propertyName);
-                }
-                break;
-            }
-            case "module": {
-                if (sourceName == null || moduleName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
-                } else {
-                    service.deleteModuleProperty(sourceName, moduleName, propertyName);
-                }
-                break;
-            }
-            case "cluster": {
-                service.deleteClusteredProperty(propertyName);
-                break;
-            }
 
-            case "jndi": {
-                service.deleteJNDIProperty(propertyName, target);
-                break;
             }
-
+        } catch (TransactionFailure txFailure) {
+            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getCanonicalName()), "Failed to set config property", txFailure);
         }
-
     }
 
 }
