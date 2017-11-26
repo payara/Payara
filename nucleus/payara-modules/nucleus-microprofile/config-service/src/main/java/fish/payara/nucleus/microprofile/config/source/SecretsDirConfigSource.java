@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -28,8 +29,8 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 public class SecretsDirConfigSource extends PayaraConfigSource implements ConfigSource {
 
     private Path secretsDir;
-    private HashMap<String, String> properties;
-    private HashMap<String, FileTime> storedModifiedTimes;
+    private ConcurrentHashMap<String, String> properties;
+    private ConcurrentHashMap<String, FileTime> storedModifiedTimes;
 
     public SecretsDirConfigSource() {
         findFile();
@@ -129,8 +130,8 @@ public class SecretsDirConfigSource extends PayaraConfigSource implements Config
     }
 
     private void loadProperties() {
-        properties = new HashMap<>();
-        storedModifiedTimes = new HashMap<>();
+        properties = new ConcurrentHashMap<>();
+        storedModifiedTimes = new ConcurrentHashMap<>();
         if (Files.exists(secretsDir) && Files.isDirectory(secretsDir) && Files.isReadable(secretsDir)) {
             File files[] = secretsDir.toFile().listFiles();
             for (File file : files) {
