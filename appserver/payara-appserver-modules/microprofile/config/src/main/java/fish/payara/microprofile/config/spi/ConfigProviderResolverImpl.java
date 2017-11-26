@@ -40,6 +40,7 @@
 package fish.payara.microprofile.config.spi;
 
 import fish.payara.microprofile.config.converters.BooleanConverter;
+import fish.payara.microprofile.config.converters.ChronoUnitConverter;
 import fish.payara.microprofile.config.converters.DoubleConverter;
 import fish.payara.microprofile.config.converters.DurationConverter;
 import fish.payara.microprofile.config.converters.FloatConverter;
@@ -304,6 +305,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.add(new InstantConverter());
         result.add(new URLConverter());
         result.add(new InetAddressConverter());
+        result.add(new ChronoUnitConverter());
         return result;
         
     }
