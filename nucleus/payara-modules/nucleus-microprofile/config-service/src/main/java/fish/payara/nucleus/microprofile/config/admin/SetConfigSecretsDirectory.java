@@ -1,0 +1,106 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package fish.payara.nucleus.microprofile.config.admin;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import java.beans.PropertyVetoException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+
+/**
+ * asAdmin command to the set the directory for the Secrets Dir Config Source
+ *
+ * @since 4.1.2.181
+ * @author Steve Millidge (Payara Foundation)
+ */
+@Service(name = "set-config-secrets-dir") // the name of the service is the asadmin command name
+@PerLookup // this means one instance is created every time the command is run
+@ExecuteOn()
+@TargetType()
+@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface
+    
+    @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
+            opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
+            path = "set-config-secrets-dir",
+            description = "Sets the Secrets Directory for the Secrets Config Source")
+})
+public class SetConfigSecretsDirectory implements AdminCommand {
+    
+    @Param
+    String directory;
+    
+    @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
+    String target;
+       
+    @Inject
+    Target targetUtil;
+    
+    @Inject
+    ServerEnvironment env;
+
+    @Override
+    public void execute(AdminCommandContext context) {
+        
+        // do validation
+        Path directoryPath = Paths.get(directory);
+        boolean absolute = true;
+        boolean relativeFound = false;
+        if (!Files.isDirectory(directoryPath) || !Files.exists(directoryPath) || !Files.isReadable(directoryPath)) {
+            absolute = false;
+            // ok try relative to the server root
+            context.getActionReport().appendMessage("Could not find readable secrets directory at " + directoryPath.toString() + "\n");
+            Path instanceRoot = env.getInstanceRoot().toPath();
+            Path relative = Paths.get(instanceRoot.toString(), directory);
+            if (!Files.isDirectory(relative) || !Files.exists(relative) || !Files.isReadable(relative)) {
+                context.getActionReport().appendMessage("Could not find readable secrets directory at " + relative.toString() + "\n");
+                context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+            relativeFound = true;
+            directoryPath = relative;
+            context.getActionReport().appendMessage("Using readable secrets directory at " + relative.toString() + "\n");
+        } else {
+            context.getActionReport().appendMessage("Using readable secrets directory at " + directoryPath.toString() + "\n");            
+        }
+        
+        Config configVal = targetUtil.getConfig(target);
+        MicroprofileConfigConfiguration serviceConfig = configVal.getExtensionByType(MicroprofileConfigConfiguration.class);
+        try {
+            final Path toSet = directoryPath;
+            ConfigSupport.apply(new SingleConfigCode<MicroprofileConfigConfiguration>() {
+                @Override
+                public Object run(MicroprofileConfigConfiguration t) throws PropertyVetoException, TransactionFailure {
+                    t.setSecretDir(toSet.toString());
+                    return null;
+                }
+            }, serviceConfig);
+        } catch (TransactionFailure ex) {
+            Logger.getLogger(SetConfigSecretsDirectory.class.getName()).log(Level.SEVERE, "Could not set Secrets Directory", ex);
+            context.getActionReport().failure(Logger.getLogger(this.getClass().getName()), "Could not set Secrets Directory", ex);
+        }
+    }
+    
+}

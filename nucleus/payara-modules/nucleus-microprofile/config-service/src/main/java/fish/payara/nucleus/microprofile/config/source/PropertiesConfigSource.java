@@ -48,7 +48,7 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class PropertiesConfigSource extends PayaraConfigSource implements ConfigSource {
+public class PropertiesConfigSource implements ConfigSource {
     
     private final Properties props;
     private final String appName;

@@ -77,6 +77,14 @@ public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, Config
     
     @Attribute(defaultValue = "115", dataType = Integer.class)
     Integer getJNDIOrdinality();
-    public void setJNDIOrdinality(Integer message);   
+    public void setJNDIOrdinality(Integer message);  
+    
+    @Attribute(defaultValue = "secrets", dataType = String.class)
+    String getSecretDir();
+    public void setSecretDir(String directory);
+    
+    @Attribute(defaultValue = "90", dataType = Integer.class)
+    Integer getSecretDirOrdinality();
+    public void setSecretDirOrdinality(Integer message);  
     
 }

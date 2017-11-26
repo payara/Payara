@@ -61,6 +61,16 @@ public class SystemPropertyConfigSource extends PayaraConfigSource implements Co
         context = Globals.getDefaultHabitat().getService(ServerContext.class);
     }
 
+    /**
+     * Only use in unit tests
+     * @param test 
+     */
+    SystemPropertyConfigSource(boolean test) {
+        super(test);
+    }
+    
+    
+
     @Override
     public Map<String, String> getProperties() {
         Properties props = System.getProperties();
@@ -80,7 +90,7 @@ public class SystemPropertyConfigSource extends PayaraConfigSource implements Co
     public String getValue(String propertyName) {
         String result;
         result = System.getProperty(propertyName);
-        if (result == null) {
+        if (result == null && context != null) {
             result = context.getConfigBean().getSystemPropertyValue(propertyName);
             if (result == null) {
                 result = domainConfiguration.getSystemPropertyValue(propertyName);

@@ -63,6 +63,7 @@ import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
 import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
+import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 import java.io.IOException;
@@ -322,6 +323,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
         sources.add(new SystemPropertyConfigSource());
         sources.add(new JNDIConfigSource());
         sources.add(new PayaraServerProperties());
+        sources.add(new SecretsDirConfigSource());
         if (appName != null) {
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));
