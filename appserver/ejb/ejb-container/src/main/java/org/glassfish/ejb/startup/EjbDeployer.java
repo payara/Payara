@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016/2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +65,7 @@ import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import java.security.SecureRandom;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -126,7 +126,7 @@ public class EjbDeployer
     private Object lock = new Object();
     private volatile CMPDeployer cmpDeployer = null;
 
-    private static Random random = new Random();
+    private static SecureRandom random = new SecureRandom();
 
     // Property used to persist unique id across server restart.
     static final String APP_UNIQUE_ID_PROP = "org.glassfish.ejb.container.application_unique_id";
