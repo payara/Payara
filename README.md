@@ -1,4 +1,4 @@
-![#badassfish](https://avatars3.githubusercontent.com/u/7817189?v=3&s=100)
+![#badassfish](payara-logo-blue.png)
 
 # Payara 5
 This is an experimental branch which includes the changes and upcoming modules due to debut with GlassFish 5. The main Payara project continues to exist on the _master_ branch.
@@ -54,10 +54,13 @@ We take GlassFish, support it, add fixes, add enhancements and we release it as 
 
 Payara Server 5 currently supports the following JDKs:
 
-* Oracle JDK 8
+* Azul Zulu 9 [Testing]
+* OpenJDK 9 [Testing]
+* Oracle JDK 9 [Testing]
 * Azul Zulu 8
-* OpenJDK 8
 * IBM J9 8 [Payara Blue Only]
+* OpenJDK 8
+* Oracle JDK 8
 
 Payara Server 5 currently supports the following OSs:
 
@@ -87,7 +90,7 @@ Payara Server 5 is currently tested on the following platforms:
 |Debian 8               |✓              |               |               |       |
 |CentOS 7               |✓              |               |               |       |
 |OpenSUSE 42.2          |✓              |               |               |       |
-|AIX 7.3 TL3            |               |               |               |✓       |
+|AIX 7.3 TL3            |               |               |               |✓      |
 |macOS      10.12.5     |✓              |               |               |       |
 
 
