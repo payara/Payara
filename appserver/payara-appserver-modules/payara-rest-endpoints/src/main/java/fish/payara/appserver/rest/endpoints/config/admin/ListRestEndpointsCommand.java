@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.ws.rs.HttpMethod;
 import org.apache.catalina.Container;
 import org.apache.catalina.core.StandardWrapper;
 import org.glassfish.api.admin.RestEndpoints;
@@ -177,12 +178,18 @@ public class ListRestEndpointsCommand implements AdminCommand {
             for (Class containedClass : containedClasses) {
                 List<RestEndpointModel> classEndpoints = getEndpointsForClass(containedClass);
 
-                // loop through endpoints in given class
-                for (RestEndpointModel endpoint : classEndpoints) {
-                    String endpointPath = appRoot + jerseyAppRoot + endpoint.getPath();
+                if (!classEndpoints.isEmpty()) {
+                    // loop through endpoints in given class
+                    for (RestEndpointModel endpoint : classEndpoints) {
+                        String endpointPath = appRoot + jerseyAppRoot + endpoint.getPath();
+                        Map endpointMap = new HashMap<>();
+                        endpointMap.put(endpointPathName, endpointPath);
+                        endpointMap.put(requestMethodName, endpoint.getRequestMethod());
+                        endpoints.add(endpointMap);
+                    }
                     Map endpointMap = new HashMap<>();
-                    endpointMap.put(endpointPathName, endpointPath);
-                    endpointMap.put(requestMethodName, endpoint.getRequestMethod());
+                    endpointMap.put(endpointPathName, appRoot + jerseyAppRoot + "/application.wadl");
+                    endpointMap.put(requestMethodName, HttpMethod.GET);
                     endpoints.add(endpointMap);
                 }
             }
