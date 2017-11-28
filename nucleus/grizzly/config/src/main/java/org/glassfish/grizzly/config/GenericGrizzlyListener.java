@@ -749,7 +749,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final Http httpElement,
                                         final FilterChainBuilder builder,
                                         final boolean secure) {
-        if (httpElement != null && httpElement.isHttp2Enabled()) {
+        if (!skipHttp2 && httpElement != null && httpElement.isHttp2Enabled()) {
 
             Http2AddOn http2Addon = new Http2AddOn(Http2Configuration.builder()
                     .disableCipherCheck(httpElement.isHttp2DisableCipherCheck())
