@@ -71,7 +71,6 @@ import org.glassfish.grizzly.config.dom.ProtocolChain;
 import org.glassfish.grizzly.config.dom.ProtocolChainInstanceHandler;
 import org.glassfish.grizzly.config.dom.ProtocolFilter;
 import org.glassfish.grizzly.config.dom.SelectionKeyHandler;
-import org.glassfish.grizzly.config.dom.Spdy;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
