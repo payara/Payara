@@ -188,16 +188,16 @@ public class ListRestEndpointsCommand implements AdminCommand {
                         endpointMap.put(requestMethodName, endpoint.getRequestMethod());
                         endpoints.add(endpointMap);
                     }
-                    
-                    // Jersey will automatically generate a wadl file for the endpoints, so add
-                    // it for every deployed application with endpoints
-                    Map endpointMap = new HashMap<>();
-                    endpointMap.put(endpointPathName, appRoot + jerseyAppRoot + jerseyWADL);
-                    endpointMap.put(requestMethodName, HttpMethod.GET);
-                    endpoints.add(endpointMap);
+
                 }
             }
 
+            // Jersey will automatically generate a wadl file for the endpoints, so add
+            // it for every deployed application with endpoints
+            Map endpointMap = new HashMap<>();
+            endpointMap.put(endpointPathName, appRoot + jerseyAppRoot + jerseyWADL);
+            endpointMap.put(requestMethodName, HttpMethod.GET);
+            endpoints.add(endpointMap);
         }
 
         // error out in the case of an empty application
