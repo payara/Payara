@@ -99,8 +99,7 @@ public class StopDomainCommand extends LocalDomainCommand {
         if (programOpts.getHost().equals(CLIConstants.DEFAULT_HOSTNAME)) {
             super.initDomain();
         } else if (userArgDomainName != null) {  // remote case
-            throw new CommandException(
-                    Strings.get("StopDomain.noDomainNameAllowed"));
+            throw new CommandException(Strings.get("StopDomain.noDomainNameAllowed"));
         }
     }
 
@@ -179,13 +178,14 @@ public class StopDomainCommand extends LocalDomainCommand {
                 }
             } catch(Exception e) {        
             }
-            runningDomains = 
-                    (runningDomains.length() < 1) 
-                    ? "\nNo domains are currently running." 
-                    : "\nPlease specify one of the currently running domains:" + runningDomains;
-            logger.warning(Strings.get("StopDomain.dasNotRunning", getDomainRootDir(), runningDomains));
+            if (runningDomains.length() < 1) {
+                logger.warning(Strings.get("StopDomain.noDomainsRunning", getDomainRootDir()));
+            } else {
+                logger.warning(Strings.get("StopDomain.selectedDomainNotRunning", getDomainRootDir(), runningDomains));
+            }
         } else {
             logger.warning(Strings.get("StopDomain.dasNotRunningRemotely"));
+            
         }
         // If it has gotten this far, the domain has failed to be stopped so the command has failed
         return 1;

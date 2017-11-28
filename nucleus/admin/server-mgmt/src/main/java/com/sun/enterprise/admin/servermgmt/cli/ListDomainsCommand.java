@@ -65,7 +65,7 @@ import org.jvnet.hk2.annotations.*;
 @PerLookup
 public final class ListDomainsCommand extends LocalDomainCommand {
 
-    private static final LocalStringsImpl Strings = new LocalStringsImpl(ListDomainsCommand.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ListDomainsCommand.class);
     private String domainsRoot = null;
 
     @Param(name = "long", shortName = "l", optional = true)
@@ -112,7 +112,7 @@ public final class ListDomainsCommand extends LocalDomainCommand {
                     }
                 }
             } else {
-                logger.fine(Strings.get("NoDomainsToList"));
+                logger.fine(STRINGS.get("NoDomainsToList"));
             }
         } catch (Exception ex) {
             throw new CommandException(ex.getLocalizedMessage());
@@ -159,18 +159,18 @@ public final class ListDomainsCommand extends LocalDomainCommand {
         di.status = isThisDAS(getDomainRootDir());
 
         if (di.status) {
-            di.statusMsg = Strings.get("list.domains.StatusRunning", dn);
+            di.statusMsg = STRINGS.get("list.domains.StatusRunning", dn);
             try {
                 RemoteCLICommand cmd = new RemoteCLICommand("_get-restart-required", programOpts, env);
                 String restartRequired = cmd.executeAndReturnOutput("_get-restart-required");
                 di.restartRequired = Boolean.parseBoolean(restartRequired.trim());
                 if (di.restartRequired) {
-                    di.statusMsg = Strings.get("list.domains.StatusRestartRequired", dn);
+                    di.statusMsg = STRINGS.get("list.domains.StatusRestartRequired", dn);
                 }
             } catch (Exception ex) {
             }
         } else {
-            di.statusMsg = Strings.get("list.domains.StatusNotRunning", dn);
+            di.statusMsg = STRINGS.get("list.domains.StatusNotRunning", dn);
         }
         return di;
     }
