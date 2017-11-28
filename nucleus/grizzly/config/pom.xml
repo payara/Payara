@@ -108,6 +108,10 @@
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http2</artifactId>
+        </dependency>
         
         <!-- test deps -->
         <dependency>
@@ -115,11 +119,6 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http2</artifactId>
-            <scope>test</scope>
-         </dependency>
          <dependency>
              <groupId>org.glassfish.grizzly</groupId>
              <artifactId>grizzly-npn-api</artifactId>
