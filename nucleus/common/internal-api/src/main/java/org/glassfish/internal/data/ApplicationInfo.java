@@ -374,6 +374,11 @@ public class ApplicationInfo extends ModuleInfo {
 
     }
 
+    public void initialize() {
+        getModuleInfos().forEach(module -> module.getEngineRefs().forEach(EngineRef::initialize));
+    }
+
+
     public void stop(ExtendedDeploymentContext context, Logger logger) {
 
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();

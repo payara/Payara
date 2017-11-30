@@ -477,6 +477,20 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             appInfo.setAppClassLoader(context.getClassLoader());
             events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, context), false);
 
+            if (loadOnCurrentInstance(context)) {
+                appInfo.setLibraries(commandParams.libraries());
+                try {
+                    notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.LOAD, context);
+                    appInfo.load(context, tracker);
+                    notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.LOAD, context);
+                } catch (Throwable loadException) {
+                    logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
+                    report.failure(logger, "Exception while loading the app", null);
+                    report.setFailureCause(loadException);
+                    tracker.actOn(logger);
+                    return null;
+                }
+            }
         } catch (Exception e) {
             report.failure(logger, localStrings.getLocalString("error.deploying.app", "Exception while deploying the app [{0}]", appName), null);
             report.setFailureCause(e);
@@ -508,10 +522,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // associated engines and the application info is created and registered
         if (loadOnCurrentInstance(context)) {
             try {
-                notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.LOAD, context);
-                appInfo.load(context, tracker);
-                notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.LOAD, context);
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
+                appInfo.initialize();
                 appInfo.start(context, tracker);
                 notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
             } catch (Throwable loadException) {
