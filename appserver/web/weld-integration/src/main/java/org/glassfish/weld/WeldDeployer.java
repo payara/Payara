@@ -486,11 +486,15 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         WeldBootstrap bootstrap = context.getTransientAppMetaData(WELD_BOOTSTRAP,
                 WeldBootstrap.class);
+
+        if(bootstrap != null && appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class) == null) {
+            // no bootstrap if no CDI BDAs exist yet
+            bootstrap = null;
+        }
+
         boolean setTransientAppMetaData = false;
-        if ( bootstrap == null) {
+        if ( bootstrap == null ) {
             bootstrap = new WeldBootstrap();
-            Application app = context.getModuleMetaData(Application.class);
-            appToBootstrap.put(app, bootstrap);
             setTransientAppMetaData = true;
             // Stash the WeldBootstrap instance, so we may access the WeldManager later..
             context.addTransientAppMetaData(WELD_BOOTSTRAP, bootstrap);
@@ -557,6 +561,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         if (bda != null && !bda.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
             if(setTransientAppMetaData) {
                 // Do this only if we have a root BDA
+                Application app = context.getModuleMetaData(Application.class);
+                appToBootstrap.put(app, bootstrap);
                 appInfo.addTransientAppMetaData(WELD_BOOTSTRAP, bootstrap);
             }
 
