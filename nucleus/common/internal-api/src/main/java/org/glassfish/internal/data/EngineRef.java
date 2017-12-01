@@ -185,6 +185,8 @@ public class EngineRef {
     }
 
     void initialize() {
-        appCtr.initialize();
+        if(appCtr != null) {
+            appCtr.initialize();
+        }
     }
 }
