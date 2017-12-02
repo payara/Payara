@@ -531,6 +531,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (loadOnCurrentInstance(context)) {
             try {
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
+                appInfo.initialize();
                 appInfo.start(context, tracker);
                 notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
             } catch (Throwable loadException) {
