@@ -82,6 +82,7 @@ import java.util.ArrayList;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
+import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
@@ -247,13 +248,13 @@ public class MonitoringService implements EventListener {
     private List<MonitoringJob> buildJobs() {
         List<MonitoringJob> jobs = new LinkedList<>();
 
-        for (Property prop : configuration.getProperty()) {
+        for (MonitoredAttribute mbean : configuration.getMonitoredAttributes()) {
             boolean exists = false;
 
             for (MonitoringJob job : jobs) {
                 if (job.getMBean().getCanonicalKeyPropertyListString()
-                        .equals(prop.getValue())) {
-                    job.addAttribute(prop.getName());
+                        .equals(mbean.getObjectName())) {
+                    job.addAttribute(mbean.getAttributeName());
                     exists = true;
                     break;
                 }
@@ -263,9 +264,9 @@ public class MonitoringService implements EventListener {
                 ObjectName name;
                 List<String> list;
                 try {
-                    name = new ObjectName(prop.getValue());
+                    name = new ObjectName(mbean.getObjectName());
                     list = new LinkedList<>();
-                    list.add(prop.getName());
+                    list.add(mbean.getAttributeName());
                     jobs.add(new MonitoringJob(name, list));
                 } catch (MalformedObjectNameException ex) {
                     Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
