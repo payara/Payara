@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.cdi.extension;
 
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
@@ -66,10 +68,11 @@ import javax.enterprise.inject.spi.EventMetadata;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 /**
  *
@@ -95,49 +98,31 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     
     @PostConstruct
     void postConstruct() {
-        runtime.addCDIListener(this);
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        if (managedExecutorService == null) {
-            try {
-                InitialContext ctx = new InitialContext();
-                managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
-            } catch (NamingException ex) {
-                Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
+        ExtendedDeploymentContext dc = Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext();
+        ctxUtil.setInstanceComponentId(DOLUtils.getComponentEnvId((JndiNameEnvironment)DOLUtils.getCurrentBundleForContext(dc)));
+        try {
+            InitialContext ctx = new InitialContext();
+            managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
+        } catch (NamingException ex) {
+            throw new RuntimeException(ex);
         }
+        runtime.addCDIListener(this);
     }
 
     @PreDestroy
     void preDestroy() {
         runtime.removeCDIListener(this);
-        ctxUtil = null;
     }
     
-    public void onStart(@Observes @Initialized(ApplicationScoped.class) ServletContext init) {
-       initialize();
-       if (runtime.isClustered()) {
-            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized for " + init.getContextPath());
-        }
+    public void onStart(@Observes @Initialized(ApplicationScoped.class) Object init) {
+        initialize();
     }
     
     @Override
     public void initialize() {
-        
-        // try again
-
-        if (ctxUtil.getInvocationComponentId() == null) {
-            ctxUtil.setInstanceContext();
-        }
-        
-        if (managedExecutorService == null) {
-            try {
-                InitialContext ctx = new InitialContext();
-                managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
-            } catch (NamingException ex) {
-                Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
+       if (runtime.isClustered()) {
+            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized");
         }
     }
 
@@ -257,5 +242,4 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     private String[] deserializeToArray(String serializedItems) {
         return serializedItems.split(ITEM_SEPARATOR);
     }
-
 }
