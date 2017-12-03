@@ -103,6 +103,10 @@ public class ListHazelcastMembers implements AdminCommand {
                     if (memberName != null) {
                         builder.append(memberName).append("-");
                     }
+                    String groupName = member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+                    if (groupName != null) {
+                        builder.append(groupName).append("-");                        
+                    }
                     builder.append(member.getSocketAddress().toString());
                     if (member.localMember()) {
                         builder.append("-this");

@@ -130,7 +130,6 @@ public class IiopFolbGmsClient implements ClusterListener {
                 nodes = services.getService(Nodes.class);
                 fineLog( "IiopFolbGmsClient: nodes {0}", nodes );
 
-                // TBD PAYARA-189 need to be able to get real server names from the cluster UUIDs
                 String instanceName = cluster.getUnderlyingHazelcastService().getMemberName() ;
                 fineLog( "IiopFolbGmsClient: instanceName {0}", instanceName );
 
@@ -432,12 +431,18 @@ public class IiopFolbGmsClient implements ClusterListener {
 
     @Override
     public void memberAdded(String guid) {
-        addMember(guid);
+        // if member added into my group
+        if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(cluster.getMemberGroup(guid))) {
+            addMember(cluster.getMemberName(guid));
+        }
     }
 
     @Override
     public void memberRemoved(String guid) {
-        removeMember(guid);
+        // if member disappeared from my group in the cluster
+        if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(cluster.getMemberGroup(guid))) {
+            removeMember(cluster.getMemberName(guid));
+        }
     }
 
     class GroupInfoServiceGMSImpl extends GroupInfoServiceBase {

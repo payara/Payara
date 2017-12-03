@@ -131,12 +131,12 @@ public class DistributedEJBTimerService
     }
 
     @Override
-    public void memberAdded(String string) {
+    public void memberAdded(String memberUUID) {
     }
 
     @Override
-    public void memberRemoved(String string) {
-        migrateTimers(string);
+    public void memberRemoved(String memberUUID) {
+        migrateTimers(cluster.getMemberName(memberUUID));
     }
 
 } //DistributedEJBTimerService.java
