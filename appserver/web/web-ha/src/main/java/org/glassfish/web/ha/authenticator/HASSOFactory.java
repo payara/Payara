@@ -95,7 +95,7 @@ public class HASSOFactory implements SSOFactory {
     @Override
     public GlassFishSingleSignOn createSingleSignOnValve(String virtualServerName) {
         PersistenceType persistenceType = serverConfigLookup.getPersistenceTypeFromConfig();
-        String persistenceTypeStr = persistenceType != null? persistenceType.getType() : PersistenceType.REPLICATED.getType();
+        String persistenceTypeStr = persistenceType != null? persistenceType.getType() : PersistenceType.HAZELCAST.getType();
         return new HASingleSignOn(ioUtils,
                 getSsoEntryMetadataBackingStore(persistenceTypeStr, STORE_NAME, services));
     }   
