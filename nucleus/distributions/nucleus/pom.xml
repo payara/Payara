@@ -40,7 +40,8 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -93,13 +94,6 @@
 	<dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-common-l10n</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>nucleus-shoal</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

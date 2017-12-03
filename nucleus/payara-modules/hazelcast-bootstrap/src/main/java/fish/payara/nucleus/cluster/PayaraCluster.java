@@ -75,6 +75,10 @@ public class PayaraCluster implements MembershipListener, EventListener {
     public ClusterExecutionService getExecService() {
         return execService;
     }
+    
+    public HazelcastCore getUnderlyingHazelcastService() {
+        return hzCore;
+    }
 
     public ClusteredStore getClusteredStore() {
         return clusteredStore;

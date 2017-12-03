@@ -51,11 +51,8 @@ import org.omg.PortableInterceptor.IORInfo;
 
 import com.sun.logging.*;
 import com.sun.enterprise.deployment.EjbDescriptor;
-//import com.sun.enterprise.util.ORBManager;
-//import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import fish.payara.nucleus.cluster.PayaraCluster;
 import org.glassfish.enterprise.iiop.util.IIOPUtils;
-import org.glassfish.gms.bootstrap.GMSAdapter;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.omg.CORBA.ORB;
 
 
@@ -70,8 +67,8 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject
     }
 
     private Codec codec;
-    private GMSAdapterService gmsAdapterService;
-    private GMSAdapter gmsAdapter;
+    
+    private PayaraCluster cluster;
 
     //private GlassFishORBHelper helper = null;
     private ORB orb;
@@ -79,12 +76,7 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject
     public SecIORInterceptor(Codec c, ORB orb) {
         codec = c;
         this.orb = orb;
-        this.gmsAdapterService = Lookups.getGMSAdapterService();
-        if (this.gmsAdapterService==null) {
-            this.gmsAdapter = null ;
-        } else {
-            this.gmsAdapter = gmsAdapterService.getGMSAdapter() ;
-        }
+        cluster = Lookups.getCluster();
     }
     
     public void destroy() {
@@ -121,7 +113,7 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject
 			+ " " + iorInfo );
 	}
 
-        if (gmsAdapter != null) {
+        if (cluster != null && cluster.isEnabled()) {
 
 	    // If this app server instance is part of a dynamic cluster (that is,
 	    // one that supports RMI-IIOP failover and load balancing, DO NOT

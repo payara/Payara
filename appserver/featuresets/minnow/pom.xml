@@ -38,6 +38,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 -->
 
@@ -83,12 +84,6 @@
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-common</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>shoal</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

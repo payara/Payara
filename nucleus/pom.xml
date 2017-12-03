@@ -283,7 +283,6 @@
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>5.0.3</asm.version>
-        <shoal.version>1.7.0-M1</shoal.version>
         <ha-api.version>3.1.9</ha-api.version>      
         <hazelcast.version>3.9.1</hazelcast.version>
         <smack.version>4.1.9</smack.version>
@@ -1227,21 +1226,6 @@ Parent is ${project.parent}</echo>
                 <groupId>org.jvnet.hudson</groupId>
                 <artifactId>trilead-ssh2</artifactId>
                 <version>${trilead-ssh2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.shoal</groupId>
-                <artifactId>shoal-gms-api</artifactId>
-                <version>${shoal.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.shoal</groupId>
-                <artifactId>shoal-gms-impl</artifactId>
-                <version>${shoal.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.shoal</groupId>
-                <artifactId>shoal-cache</artifactId>
-                <version>${shoal.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.ha</groupId>
