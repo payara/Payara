@@ -43,6 +43,8 @@ package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
@@ -163,6 +165,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         if (handle.getInvocation() != null) {
             appName = handle.getInvocation().getAppName();
+        }
+        if(appName == null) {
+            appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment)handle.getInvocation().getJNDIEnvironment()).getName();
         }
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
         if (!isApplicationEnabled(appName)) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb;
 
@@ -217,6 +218,11 @@ public interface Container {
      * Called by webservice code to do ejb invocation post processing.
      */
     void webServicePostInvoke(EjbInvocation inv);
+
+    /**
+     * Called after creation when Hazelcast is available
+     */
+    default void initialize() {};
 
     /**
      * Called by the EJB(Local)Home after invoking ejbCreate on an EntityBean.
