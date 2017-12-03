@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -184,8 +185,9 @@ public class DynamicReloader implements Runnable {
         for (ApplicationName m : applications.getModules()) {
             if (m instanceof Application) {
                 Application app = (Application) m;
-                if (Boolean.valueOf(app.getDeployProperties().getProperty
+                if (app.getLocation() == null || Boolean.valueOf(app.getDeployProperties().getProperty
                     (ServerTags.IS_LIFECYCLE))) {
+                    // skip apps without a location
                     // skip lifecycle modules
                     continue;
                 }
