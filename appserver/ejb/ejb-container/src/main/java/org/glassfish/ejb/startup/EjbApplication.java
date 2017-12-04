@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
@@ -243,6 +243,11 @@ public class EjbApplication
         }
         
         return true;
+    }
+
+    @Override
+    public void initialize() {
+        containers.forEach(Container::initialize);
     }
 
     public boolean stop(ApplicationContext stopContext) {
