@@ -39,8 +39,16 @@
  */
 package fish.payara.appserver.micro.services.data;
 
-import fish.payara.micro.data.ModuleDescriptor;
+import static java.util.stream.Collectors.toList;
+
+import java.util.List;
+import java.util.Map.Entry;
+
 import org.glassfish.internal.data.ModuleInfo;
+
+import com.sun.enterprise.web.WebApplication;
+
+import fish.payara.micro.data.ModuleDescriptor;
 
 /**
  *
@@ -48,14 +56,27 @@ import org.glassfish.internal.data.ModuleInfo;
  */
 public class ModuleDescriptorImpl implements ModuleDescriptor {
     
+    private static final long serialVersionUID = 1L;
+    
     private String name;
     private String contextRoot;
     private String type;
+    private List<Entry<String, String>> servletMappings;
 
     public ModuleDescriptorImpl(ModuleInfo info) {
-        this.name = info.getName();
-        this.contextRoot = info.getModuleProps().getProperty("context-root");
-        this.type = info.getModuleProps().getProperty("archiveType");
+        name = info.getName();
+        contextRoot = info.getModuleProps().getProperty("context-root");
+        type = info.getModuleProps().getProperty("archiveType");
+        
+        servletMappings = info.getEngineRefs()
+                              .stream()
+                              .filter(e -> e.getApplicationContainer() instanceof WebApplication)
+                              .map(e -> (WebApplication) e.getApplicationContainer())
+                              .flatMap(e -> e.getWebModules().stream())
+                              .filter(e-> e.getContextRoot().equals(contextRoot))
+                              .flatMap(e -> e.getWebBundleDescriptor().getUrlPatternToServletNameMap().entrySet().stream())
+                              .collect(toList());
+  
     }
 
     @Override
@@ -71,6 +92,11 @@ public class ModuleDescriptorImpl implements ModuleDescriptor {
     @Override
     public String getType() {
         return type;
+    }
+    
+    @Override
+    public List<Entry<String, String>> getServletMappings() {
+        return servletMappings;
     }
     
 }

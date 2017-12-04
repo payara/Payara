@@ -17,9 +17,6 @@
  */
 package fish.payara.appserver.micro.services.data;
 
-import fish.payara.micro.data.ModuleDescriptor;
-import fish.payara.micro.data.ApplicationDescriptor;
-import fish.payara.micro.data.InstanceDescriptor;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,7 +28,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
 import org.glassfish.internal.data.ApplicationInfo;
+
+import fish.payara.micro.data.ApplicationDescriptor;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.micro.data.ModuleDescriptor;
 
 /**
  *
@@ -305,19 +308,31 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         if (memberUUID != null) {
             sb.append("Hazelcast Member UUID ").append(this.memberUUID).append('\n');
         }
-        for (ApplicationDescriptor ad : getDeployedApplications()) {
+        
+        for (ApplicationDescriptor applicationDescriptor : getDeployedApplications()) {
             sb.append("Deployed: ");
-            sb.append(ad.getName()).append(" ( ");
-            for (ModuleDescriptor md : ad.getModuleDescriptors()) {
-                sb.append(md.getName()).append(' ').append(md.getType()).append(' ');
-                if (md.getContextRoot() != null) {
-                    sb.append(md.getContextRoot()).append(' ');
+            sb.append(applicationDescriptor.getName()).append(" ( ");
+            for (ModuleDescriptor moduleDescriptor : applicationDescriptor.getModuleDescriptors()) {
+                sb.append(moduleDescriptor.getName()).append(' ').append(moduleDescriptor.getType()).append(' ');
+                if (moduleDescriptor.getContextRoot() != null) {
+                    sb.append(moduleDescriptor.getContextRoot());
+                } else {
+                    sb.append("***");
                 }
+                
+                sb.append(" [ ");
+                for (Entry<String, String> servletMapping : moduleDescriptor.getServletMappings()) {
+                    sb.append("< ")
+                      .append(servletMapping.getValue()).append(' ').append(servletMapping.getKey())
+                      .append(" >");
+                }
+                sb.append(" ] ");
             }
             sb.append(")\n");
-            String libraries = ad.getLibraries();
+            
+            String libraries = applicationDescriptor.getLibraries();
             if (libraries != null) {
-                sb.append(' ').append(ad.getLibraries());
+                sb.append(' ').append(applicationDescriptor.getLibraries());
             }
         }
         sb.append('\n');
