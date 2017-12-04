@@ -57,17 +57,21 @@
 package fish.payara.arquillian.container.payara.managed;
 
 import static java.lang.Runtime.getRuntime;
+import static java.util.logging.Level.SEVERE;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+
+import fish.payara.arquillian.container.payara.process.CloseableProcess;
+import fish.payara.arquillian.container.payara.process.ConsoleReader;
+import fish.payara.arquillian.container.payara.process.OutputLoggingConsumer;
+import fish.payara.arquillian.container.payara.process.ProcessOutputConsumer;
+import fish.payara.arquillian.container.payara.process.SilentOutputConsumer;
 
 /**
  * A class for issuing asadmin commands using the admin-cli.jar of the GlassFish distribution.
@@ -180,27 +184,18 @@ class PayaraServerControl {
             System.out.println(description + " using command: " + cmd.toString());
         }
 
-        Process process = null;
-        ConsoleReader consoleReader = null;
         int result;
-        try {
-            process = new ProcessBuilder(cmd).redirectErrorStream(true).start();
-            consoleReader = new ConsoleReader(process, consumer);
+        
+        try (
+            CloseableProcess process = new CloseableProcess(new ProcessBuilder(cmd).redirectErrorStream(true).start());
+            ConsoleReader consoleReader = new ConsoleReader(process, consumer)) {
+            
             new Thread(consoleReader).start();
             result = process.waitFor();
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, description + " failed.", e);
+
+        } catch (IOException | InterruptedException e) {
+            logger.log(SEVERE, description + (e instanceof IOException? " failed." : " interrupted."), e);
             throw new LifecycleException("Unable to execute " + cmd.toString(), e);
-        } catch (InterruptedException e) {
-            logger.log(Level.WARNING, description + " interrupted.", e);
-            throw new LifecycleException("Unable to execute " + cmd.toString(), e);
-        } finally {
-            if (consoleReader != null) {
-                consoleReader.close();
-            }
-            if (process != null) {
-                process.destroy();
-            }
         }
 
         if (result != 0) {
@@ -223,60 +218,12 @@ class PayaraServerControl {
         return cmd;
     }
 
-    private static class ConsoleReader implements Runnable, Closeable {
-
-        private final ProcessOutputConsumer consumer;
-
-        private final BufferedReader reader;
-
-        private ConsoleReader(final Process process, ProcessOutputConsumer consumer) {
-            this.reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            this.consumer = consumer;
-        }
-
-        public void run() {
-            String line;
-            try {
-                while ((line = reader.readLine()) != null) {
-                    consumer.consume(line);
-                }
-            } catch (IOException failOnReading) {
-                logger.log(Level.SEVERE, failOnReading.getMessage(), failOnReading);
-            }
-        }
-
-        public void close() {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException failOnClose) {
-                    logger.log(Level.SEVERE, failOnClose.getMessage(), failOnClose);
-                }
-            }
-        }
-    }
-
-    private interface ProcessOutputConsumer {
-
-        void consume(String line);
-    }
-
     private ProcessOutputConsumer createProcessOutputConsumer() {
         if (config.isOutputToConsole()) {
             return new OutputLoggingConsumer();
         }
+        
         return new SilentOutputConsumer();
     }
 
-    private static class OutputLoggingConsumer implements ProcessOutputConsumer {
-        public void consume(String line) {
-            System.out.println(line);
-        }
-    }
-
-    private class SilentOutputConsumer implements ProcessOutputConsumer {
-        public void consume(String line) {
-            // noop
-        }
-    }
 }
