@@ -831,22 +831,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 }
                 
             }
-            if( isTimedObject_ ) {
-                if( !isStatefulSession ) {
-                    // EJBTimerService should be accessed only if needed 
-                    // not to cause it to be loaded if it's not used.
-                    EJBTimerService timerService = EJBTimerService.getEJBTimerService();
-                    if( timerService != null ) {
-                        timerService.timedObjectCount();
-                    }
-                } else {
-                    isTimedObject_ = false;
-                    throw new EJBException(localStrings.getLocalString(
-                            "ejb.stateful_cannot_be_timed_object", 
-                            "EJB {0} is invalid. Stateful session ejbs cannot be Timed Objects",
-                            ejbDescriptor.getName()));
-                }
-            }
 
             preInitialize(ejbDesc, loader);
             
@@ -880,6 +864,26 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 		+ "; containerId: " + ejbDescriptor.getUniqueId();
 	_logger.log(Level.FINE, "Instantiated container for: "
 		+ _debugDescription);
+    }
+
+    @Override
+    public void initialize() {
+        if (isTimedObject_) {
+            if (!isStatefulSession) {
+                // EJBTimerService should be accessed only if needed
+                // not to cause it to be loaded if it's not used.
+                EJBTimerService timerService = EJBTimerService.getEJBTimerService();
+                if (timerService != null) {
+                    timerService.timedObjectCount();
+                }
+            } else {
+                isTimedObject_ = false;
+                throw new EJBException(localStrings.getLocalString(
+                        "ejb.stateful_cannot_be_timed_object",
+                        "EJB {0} is invalid. Stateful session ejbs cannot be Timed Objects",
+                        ejbDescriptor.getName()));
+            }
+        }
     }
 
     protected ProtocolManager getProtocolManager() {

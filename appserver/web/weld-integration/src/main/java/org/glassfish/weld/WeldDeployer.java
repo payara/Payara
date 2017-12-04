@@ -72,7 +72,6 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
-import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.services.*;
 import org.glassfish.weld.util.Util;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -99,11 +98,17 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import java.security.AccessController;
 import javax.enterprise.inject.spi.Extension;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.glassfish.weld.connector.WeldUtils;
@@ -113,8 +118,6 @@ import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.exceptions.WeldException;
 import org.jboss.weld.probe.ProbeExtension;
 import org.jboss.weld.resources.spi.ResourceLoader;
-import org.jboss.weld.module.ejb.WeldEjbModule;
-import org.jboss.weld.module.WeldModule;
 import org.jboss.weld.security.NewInstanceAction;
 
 @Service
@@ -180,6 +183,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     ArchiveFactory archiveFactory;
+
+    @Inject
+    private JavaEEContextUtil ctxUtil;
+
+    @Inject
+    private Deployment deployment;
 
     private Map<Application, WeldBootstrap> appToBootstrap =
             new HashMap<Application, WeldBootstrap>();
@@ -257,6 +266,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     }
 
                 });
+
+                BundleDescriptor bd = DOLUtils.getCurrentBundleForContext(deployment.getCurrentDeploymentContext());
+                ComponentInvocation inv = new ComponentInvocation(DOLUtils.getComponentEnvId((JndiNameEnvironment)bd), ComponentInvocationType.SERVLET_INVOCATION, appInfo, fAppName, fAppName);
+                inv.setJNDIEnvironment(bd);
                 try {
                     bootstrap.startExtensions(deploymentImpl.getExtensions());
                     bootstrap.startContainer(deploymentImpl.getAppName() + ".bda", Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
@@ -266,6 +279,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
 
                     bootstrap.validateBeans();
+                    invocationManager.preInvoke(inv);
                     bootstrap.endInitialization();
                 } catch (Throwable t) {
                     try {
@@ -278,6 +292,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     de.initCause(t);
                     throw(de);
                 } finally {
+                    invocationManager.postInvoke(inv);
                     invocationManager.popAppEnvironment();
 
                     //The TCL is originally the EAR classloader
