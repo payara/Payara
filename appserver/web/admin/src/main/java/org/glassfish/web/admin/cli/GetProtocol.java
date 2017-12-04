@@ -68,6 +68,13 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * CLI command for getting the properties of a protocol.
+ * <p>
+ * {@literal
+ * Usage: asadmin> get-protocol
+ * [--target <target(default:server)>]
+ * [-v|--verbose <verbose(default:false)>]
+ * protocolname
+ * }</p>
  */
 @Service(name = "get-protocol")
 @PerLookup
