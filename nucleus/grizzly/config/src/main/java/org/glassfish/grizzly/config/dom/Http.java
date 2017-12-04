@@ -96,7 +96,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String COMPRESSION_PATTERN = "on|off|force|\\d+";
     String DEFAULT_ADAPTER = "org.glassfish.grizzly.http.server.StaticHttpHandler";
     String URI_ENCODING = "UTF-8";
-    String VERSION = "HTTP/1.1";
     String SCHEME_PATTERN = "http|https";
 
     // HTTP2 properties
@@ -325,14 +324,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getUriEncoding();
 
     void setUriEncoding(String encoding);
-
-    /**
-     * The version of the HTTP protocol used by the HTTP Service
-     */
-    @Attribute(defaultValue = VERSION)
-    String getVersion();
-
-    void setVersion(String version);
 
     /**
      * The HTTP scheme (http or https) to override HTTP request scheme picked up

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import static java.util.logging.Level.WARNING;
@@ -749,6 +749,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final Http httpElement,
                                         final FilterChainBuilder builder,
                                         final boolean secure) {
+        isHttp2Enabled = false;
         if (!skipHttp2 && httpElement != null && httpElement.isHttp2Enabled()) {
 
             Http2AddOn http2Addon = new Http2AddOn(Http2Configuration.builder()
