@@ -299,12 +299,17 @@ public class LogFacade {
     public static final String MRDR_NULL = prefix + "00046";
 
     @LogMessageInfo(
-            message = "No network listener with the name `{0}` was found for target `{1}`",
-            level = "WARNING")
-    public static final String UNKNOWN_NETWORK_LISTENER = prefix + "00047";
-
-    @LogMessageInfo(
             message = "No config with the name `{0}` was found.",
             level = "WARNING")
-    public static final String UNKNOWN_CONFIG = prefix + "00048";
+    public static final String UNKNOWN_CONFIG = prefix + "00047";
+
+    @LogMessageInfo(
+            message = "No network listener with the name `{0}` was found for target `{1}`.",
+            level = "WARNING")
+    public static final String UNKNOWN_NETWORK_LISTENER = prefix + "00048";
+
+    @LogMessageInfo(
+            message = "No protocol with the name `{0}` was found for target `{1}`.",
+            level = "WARNING")
+    public static final String UNKNOWN_PROTOCOL = prefix + "00049";
 }
