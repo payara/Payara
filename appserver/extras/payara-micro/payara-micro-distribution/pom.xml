@@ -46,80 +46,73 @@
   <parent>
     <groupId>fish.payara.extras.payara-micro</groupId>
     <artifactId>payara-micro-parent</artifactId>
-    <version>5.1.2.173-SNAPSHOT</version>
+    <version>5.0.0.Alpha4-SNAPSHOT</version>
   </parent>
-  
+
   <groupId>fish.payara.extras</groupId>
   <artifactId>payara-micro</artifactId>
   <name>Payara Micro Distribution</name>
   <packaging>jar</packaging>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-  <build>
-    <defaultGoal>install</defaultGoal>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>copy-dependencies</id>
-                    <goals>
-                        <goal>copy-dependencies</goal>
-                    </goals>
-                    <configuration>
-                        <outputDirectory>${project.build.directory}/packager_zips</outputDirectory>
-                        <overWriteReleases>false</overWriteReleases>
-                        <overWriteSnapshots>true</overWriteSnapshots>
-                        <excludeTransitive>true</excludeTransitive>
-                        <includeScope>compile</includeScope>
-                        <includeScope>runtime</includeScope>
-                    </configuration>
-               </execution>
-            </executions>
-        </plugin>
-        <plugin>
-            <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-            <artifactId>maven-antrun-extended-plugin</artifactId>
-            <executions>
-                <execution>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>run</goal>
-                    </goals>
-                    <configuration>
-                        <tasks>
-                            <ant dir="." antfile="build.xml" target="new.create">
-                                <property name="bundlename" value="fish.payara.micro" />
-                                <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
-                                <property name="install.dir.name" value="${install.dir.name}" />                            
-                            </ant>
-                        </tasks>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-        <plugin>
-            <artifactId>maven-jar-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>default-jar</id>
-                    <phase>never</phase>
-                    <configuration>
-                        <finalName>unwanted</finalName>
-                        <classifier>unwanted</classifier>
-                    </configuration>
-                </execution>
-            </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/packager_zips</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <includeScope>compile</includeScope>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                <artifactId>maven-antrun-extended-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <ant dir="." antfile="build.xml" target="new.create">
+                                    <property name="bundlename" value="fish.payara.micro" />
+                                    <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
+                                    <property name="install.dir.name" value="${install.dir.name}" />
+                                </ant>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>never</phase>
+                        <configuration>
+                            <finalName>unwanted</finalName>
+                            <classifier>unwanted</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
       <dependencies>
         <dependency>
@@ -223,7 +216,7 @@
             <version>${project.version}</version>
             <type>jar</type>
             <optional>true</optional>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>ejb.security</artifactId>
@@ -289,7 +282,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>javadb</artifactId>
+            <artifactId>h2db</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
@@ -379,9 +372,9 @@
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>            
+            <type>jar</type>
             <optional>true</optional>
-        </dependency>    
+        </dependency>
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -406,7 +399,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.batch</groupId>
+            <groupId>fish.payara.appserver</groupId>
             <artifactId>payara-jbatch</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
@@ -420,6 +413,13 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.jmx.monitoring</groupId>
+            <artifactId>jmx-monitoring</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <optional>true</optional>
+        </dependency>
         <!-- PAYARA-1081 -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
@@ -427,7 +427,19 @@
             <version>${jackson.version}</version>
             <optional>true</optional>
         </dependency>
-      </dependencies>
+        <!-- JMS Annotation handlers -->
+        <dependency>
+            <groupId>org.glassfish.main.jms</groupId>
+            <artifactId>jms-handlers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-executor-service</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->
@@ -456,30 +468,30 @@
                 </plugins>
             </build>
         </profile>
+
         <profile>
-            <id>DeploySnapshot</id>
+            <id>jdk8</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>DeploySnapshot</name>
-                </property>
+                <jdk>1.8</jdk>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <dependencies>
+                <!-- Add Microprofile 1.1 apis -->
+                <dependency>
+                    <groupId>org.eclipse.microprofile.config</groupId>
+                    <artifactId>microprofile-config-api</artifactId>
+                    <version>${microprofile-config.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.nucleus.microprofile.config</groupId>
+                    <artifactId>microprofile-config-service</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.microprofile.config</groupId>
+                    <artifactId>microprofile-config</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
         </profile>
-        
     </profiles>
 </project>

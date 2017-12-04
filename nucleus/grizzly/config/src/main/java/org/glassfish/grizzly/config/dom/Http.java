@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
+
 package org.glassfish.grizzly.config.dom;
 
 import javax.validation.constraints.NotNull;
@@ -70,6 +73,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean WEBSOCKET_SUPPORT_ENABLED = true;
     boolean XPOWERED_BY = true;
     boolean SERVER_HEADER = true;
+    boolean XFRAME_OPTIONS = true;
     boolean ALLOW_PAYLOAD_FOR_UNDEFINED_HTTP_METHODS = false;
 
     int COMPRESSION_MIN_SIZE = 2048;
@@ -437,6 +441,11 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getServerHeader();
 
     void setServerHeader(String serverHeader);
+    
+    @Attribute(defaultValue = "" + XFRAME_OPTIONS, dataType = Boolean.class)
+    String getXframeOptions();
+
+    void setXframeOptions(String xframeOptions);
 
     /**
      * @return <tt>true</tt>, if payload will be allowed for HTTP methods, for

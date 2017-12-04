@@ -45,11 +45,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main.extras</groupId>
+        <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
 
+    <groupId>org.glassfish.main.extras</groupId>
     <artifactId>glassfish-embedded-shell</artifactId>
     <version>4.1-SNAPSHOT</version>
     <name>Embedded GlassFish Shell</name>

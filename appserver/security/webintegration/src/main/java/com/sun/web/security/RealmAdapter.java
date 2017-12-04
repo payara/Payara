@@ -48,6 +48,7 @@ import static com.sun.enterprise.security.jmac.config.HttpServletConstants.REGIS
 import static com.sun.enterprise.security.jmac.config.HttpServletConstants.REGISTER_WITH_AUTHENTICATOR;
 import static java.lang.Boolean.TRUE;
 import static java.net.URLEncoder.encode;
+import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
@@ -478,7 +479,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     @Override
     public void logout() {
         setSecurityContext(null);
-        resetPolicyContext();
+        
+        doPrivileged((PrivilegedAction<Void>)
+            () -> {
+                resetPolicyContext(); return null;
+            }
+        );
     }
 
     @Override

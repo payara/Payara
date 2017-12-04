@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.client.packageappclient;
 
@@ -150,6 +151,9 @@ public class PackageAppClient {
     private final static String ASENV_CONF = GLASSFISH_CONFIG + "/asenv.conf";
     private final static String ASENV_BAT = GLASSFISH_CONFIG + "/asenv.bat";
 
+    private static final char UNIX_SEPARATOR = '/';
+    private static final char WINDOWS_SEPARATOR = '\\';
+
     private final static String[] SINGLE_FILES_TO_COPY = {
         IMQJMSRA_APP,
         IMQ_JAR,
@@ -241,8 +245,14 @@ public class PackageAppClient {
         /*
          * The glassfish-acc.xml file and sun-acc.xml files.
          */
+        boolean customConfigFileProvided = argValue("-xml", args) != null;
         for (File configFile : configFiles) {
-            addFile(os, installDir.toURI(), configFile.toURI(), tempFile, "");
+            if (!customConfigFileProvided) {
+                addFile(os, installDir.toURI(), configFile.toURI(), tempFile, "");
+            } else {
+                addFile(os, configFile.toURI(), tempFile, "",
+                        DOMAIN_1_CONFIG + File.separator + getFileName(configFile.toURI().toString()));
+            }
         }
 
         os.close();
@@ -310,6 +320,16 @@ public class PackageAppClient {
             final File outputFile,
             final String indent
             ) throws IOException {
+        addFile(os, absoluteURIToAdd, outputFile, indent, installDirURI.relativize(absoluteURIToAdd).toString());
+    }
+
+    private void addFile(
+            final JarOutputStream os,
+            final URI absoluteURIToAdd,
+            final File outputFile,
+            final String indent,
+            final String relativizedURL
+    ) throws IOException {
         try {
             if (isVerbose) {
                 System.err.println(indent + strings.get("addingFile", absoluteURIToAdd));
@@ -319,7 +339,8 @@ public class PackageAppClient {
                 return;
             }
 
-            JarEntry entry = new JarEntry(OUTPUT_PREFIX + installDirURI.relativize(absoluteURIToAdd).toString());
+            JarEntry entry = new JarEntry(OUTPUT_PREFIX + relativizedURL);
+
             try {
                 /*
                  * Some modules in the GlassFish build are marked as optional
@@ -354,6 +375,23 @@ public class PackageAppClient {
         } catch (Exception ex) {
             throw new IOException(absoluteURIToAdd.toASCIIString(), ex);
         }
+    }
+
+    private String getFileName(String filename) {
+        if (filename == null) {
+            return null;
+        }
+        int index = indexOfLastSeparator(filename);
+        return filename.substring(index + 1);
+    }
+
+    private int indexOfLastSeparator(String filename) {
+        if (filename == null) {
+            return -1;
+        }
+        int lastUnixPos = filename.lastIndexOf(UNIX_SEPARATOR);
+        int lastWindowsPos = filename.lastIndexOf(WINDOWS_SEPARATOR);
+        return Math.max(lastUnixPos, lastWindowsPos);
     }
 
     /**
@@ -426,7 +464,7 @@ public class PackageAppClient {
      */
     private void copyFileToStream(
             final OutputStream os,
-            final URI uriToCopy) throws FileNotFoundException, IOException {
+            final URI uriToCopy) throws IOException {
         File fileToCopy = new File(uriToCopy);
         InputStream is = new BufferedInputStream(new FileInputStream(fileToCopy));
         try {
@@ -501,13 +539,10 @@ public class PackageAppClient {
             final File userSpecifiedFile = new File(xmlArg);
             files = new File[] {userSpecifiedFile};
             if ( ! userSpecifiedFile.exists()) {
-            System.err.println(strings.get("xmlNotFound", userSpecifiedFile.getAbsolutePath()));
-        }
-
-
+                System.err.println(strings.get("xmlNotFound", userSpecifiedFile.getAbsolutePath()));
+            }
         }
         return files;
-
     }
 
     private File findInstallDir(final File currentJarFile) throws URISyntaxException {

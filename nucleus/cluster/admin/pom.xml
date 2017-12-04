@@ -40,13 +40,14 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.cluster</groupId>
         <artifactId>cluster</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>    
     <artifactId>cluster-admin</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -148,11 +149,6 @@
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency> <!-- for FindBugs -->
-            <groupId>org.codehaus.jettison</groupId>
-            <artifactId>jettison</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

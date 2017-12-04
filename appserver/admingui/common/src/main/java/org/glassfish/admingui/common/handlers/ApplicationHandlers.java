@@ -70,6 +70,8 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.util.Date;
 
 
 import java.util.TreeSet;
@@ -125,6 +127,7 @@ public class ApplicationHandlers {
             oneRow.put("sniffers", engines);
             oneRow.put("deploymentOrder", RestUtil.getAttributesMap(prefix+encodedName).get("deploymentOrder"));
             oneRow.put("deploymentTime", RestUtil.getAttributesMap(prefix+encodedName).get("deploymentTime"));
+            oneRow.put("deploymentOccuranceTime", DateFormat.getDateTimeInstance().format(new Date(Long.valueOf((String)RestUtil.getAttributesMap(prefix+encodedName).get("timeDeployed")))));
 
             List sniffersList = GuiUtil.parseStringList(engines, ",");
             oneRow.put("sniffersList", sniffersList);
@@ -471,6 +474,8 @@ public class ApplicationHandlers {
         boolean forLB = (Boolean) handlerCtx.getInputValue("forLB");
         for(Map oneRow : selectedRows){
             Map attrs = new HashMap();
+            attrs.put("id", oneRow.get("name"));
+            attrs.put("target", oneRow.get("targetName"));
             String endpoint = (String) oneRow.get("endpoint");
             if(forLB){
                 attrs.put("lbEnabled", Enabled);
@@ -590,7 +595,7 @@ public class ApplicationHandlers {
             }
             oneRow.put("name", appName);
             oneRow.put("selected", false);
-            oneRow.put("endpoint", endpoint);
+            oneRow.put("endpoint", endpoint.replaceAll("/application-ref/.*", "/update-application-ref"));
             oneRow.put("targetName", oneTarget);
             oneRow.put("enabled", attrs.get("enabled"));
             oneRow.put("lbEnabled", attrs.get("lbEnabled"));

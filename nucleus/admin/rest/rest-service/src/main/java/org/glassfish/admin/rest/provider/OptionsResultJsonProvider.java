@@ -36,13 +36,12 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.provider;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.results.OptionsResult;
 
 import javax.ws.rs.Produces;
@@ -51,11 +50,17 @@ import javax.ws.rs.ext.Provider;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import org.glassfish.admin.rest.RestLogging;
 
 
 /**
- * JSON provider for OptionsResult.
+ * Json provider for OptionsResult.
  *
  * @author Rajeshwar Patil
  */
@@ -69,20 +74,24 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
         super(OptionsResult.class, MediaType.APPLICATION_JSON_TYPE);
     }
 
-    //get json representation for the given OptionsResult object
+    /**
+     * Gets json representation for the given OptionsResult object
+     * @param proxy
+     * @return 
+     */
     @Override
     public String getContent(OptionsResult proxy) {
-        JSONObject obj = new JSONObject();
+        JsonObjectBuilder obj = Json.createObjectBuilder();
         try {
-            obj.put(proxy.getName(), getRespresenationForMethodMetaData(proxy));
-        } catch (JSONException ex) {
+            obj.add(proxy.getName(), getRespresenationForMethodMetaData(proxy));
+        } catch (JsonException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
         return obj.toString();
     }
 
-    public JSONArray getRespresenationForMethodMetaData(OptionsResult proxy) {
-        JSONArray arr = new JSONArray();
+    public JsonArray getRespresenationForMethodMetaData(OptionsResult proxy) {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
         Set<String> methods = proxy.methods();
         Iterator<String> iterator = methods.iterator();
         String methodName;
@@ -90,22 +99,22 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
             try {
                 methodName = iterator.next();
                 MethodMetaData methodMetaData = proxy.getMethodMetaData(methodName);
-                JSONObject method = new JSONObject();
-                method.put(NAME, methodName);
+                JsonObjectBuilder method = Json.createObjectBuilder();
+                method.add(NAME, methodName);
 //                method.put(QUERY_PARAMETERS, getQueryParams(methodMetaData));
-                method.put(MESSAGE_PARAMETERS, getMessageParams(methodMetaData));
-                arr.put(method);
-            } catch (JSONException ex) {
+                method.add(MESSAGE_PARAMETERS, getMessageParams(methodMetaData));
+                arr.add(method.build());
+            } catch (JsonException ex) {
                 RestLogging.restLogger.log(Level.SEVERE, null, ex);
             }
         }
 
-        return arr;
+        return arr.build();
     }
 
 //    //get json representation for the method query parameters
-//    private JSONObject getQueryParams(MethodMetaData methodMetaData) throws JSONException {
-//        JSONObject obj = new JSONObject();
+//    private JsonObject getQueryParams(MethodMetaData methodMetaData) throws JsonException {
+//        JsonObject obj = new JsonObject();
 //        if (methodMetaData.sizeQueryParamMetaData() > 0) {
 //            Set<String> queryParams = methodMetaData.queryParams();
 //            Iterator<String> iterator = queryParams.iterator();
@@ -120,19 +129,19 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
 //        return obj;
 //    }
 
-    private JSONObject getParameter(ParameterMetaData parameterMetaData) throws JSONException {
-        JSONObject result = new JSONObject();
+    private JsonObject getParameter(ParameterMetaData parameterMetaData) throws JsonException {
+        JsonObjectBuilder result = Json.createObjectBuilder();
         Iterator<String> iterator = parameterMetaData.attributes().iterator();
         String attributeName;
         while (iterator.hasNext()) {
             attributeName = iterator.next();
-            result.put(attributeName, parameterMetaData.getAttributeValue(attributeName));
+            result.add(attributeName, parameterMetaData.getAttributeValue(attributeName));
         }
-        return result;
+        return result.build();
     }
 
-    private JSONObject getMessageParams(MethodMetaData methodMetaData) throws JSONException {
-        JSONObject result = new JSONObject();
+    private JsonObject getMessageParams(MethodMetaData methodMetaData) throws JsonException {
+        JsonObjectBuilder result = Json.createObjectBuilder();
         if (methodMetaData.sizeParameterMetaData() > 0) {
             Set<String> parameters = methodMetaData.parameters();
             Iterator<String> iterator = parameters.iterator();
@@ -140,10 +149,10 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
             while (iterator.hasNext()) {
                 parameter = iterator.next();
                 ParameterMetaData parameterMetaData = methodMetaData.getParameterMetaData(parameter);
-                result.put(parameter, getParameter(parameterMetaData));
+                result.add(parameter, getParameter(parameterMetaData));
             }
         }
 
-        return result;
+        return result.build();
     }
 }

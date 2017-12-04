@@ -42,13 +42,15 @@
 -->
 <!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+    
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
+    
+    <groupId>org.glassfish.main</groupId>
     <artifactId>javaee-api-parent</artifactId>
     <packaging>pom</packaging>
     <name>JavaEE API</name>
@@ -57,7 +59,6 @@
     <modules>
         <module>javax.javaee-web-api</module>
         <module>javax.javaee-api</module>
-        <module>javax.javaee-endorsed-api</module>
     </modules>
 
     <properties>
@@ -139,15 +140,6 @@
                     <inherited>false</inherited>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-remote-resources-plugin</artifactId>
-                    <configuration>
-                        <resourceBundles>
-                            <resourceBundle>org.glassfish:legal:1.1</resourceBundle>
-                        </resourceBundles>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <executions>
@@ -170,7 +162,7 @@
                                     <groupId>net.java</groupId>
                                     <artifactId>jvnet-parent</artifactId>
                                     <version>3</version>
-				</parent>
+				                </parent>
                                 <groupId>javax</groupId>
                                 <artifactId>${projet.artifactId}</artifactId>
                                 <version>${javaee.version}</version>
@@ -203,11 +195,25 @@
     <a href="{@docRoot}/doc-files/speclicense.html" target="_top">license terms</a>.
 ]]>
                         </bottom>
+
+                        <links>
+                            <link>http://docs.oracle.com/javase/8/docs/api/</link>
+                            <link>http://docs.oracle.com/javaee/7/api/</link>
+                        </links>
+                        <tags>
+                            <tag>
+                                <name>implSpec</name>
+                                <placement>a</placement>
+                                <head>Implementation Specification:</head>
+                            </tag>
+                        </tags>
+                        
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
+    
     <profiles>
         <!--
             A profile to report serialVersionUID errors when compiling

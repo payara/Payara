@@ -42,6 +42,7 @@
 package org.glassfish.weld.connector;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,6 +109,11 @@ public class WeldUtils {
     public static final String EXPANDED_RAR_SUFFIX = "_rar";
     public static final String EXPANDED_JAR_SUFFIX = "_jar";
 
+    /**
+     * Bean Deployment Archive type.
+     * <p>
+     * Can be WAR, JAR, RAR or UNKNOWN.
+     */
     public static enum BDAType { WAR, JAR, RAR, UNKNOWN };
 
     protected static final List<String> cdiScopeAnnotations;
@@ -161,8 +167,8 @@ public class WeldUtils {
      *
      * @param context  The deployment context
      * @param archive  The archive in question
-     *
      * @return true, if it is an implicit bean deployment archive; otherwise, false.
+     * @throws java.io.IOException
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
             throws IOException {
@@ -487,8 +493,7 @@ public class WeldUtils {
 
         return result;
     }
-
-
+    
     public static boolean isImplicitBeanDiscoveryEnabled(DeploymentContext context) {
         boolean result = false;
 
@@ -508,7 +513,15 @@ public class WeldUtils {
         return result;
     }
 
-
+    public static boolean isCDIDevModeEnabled(DeploymentContext context) {
+        Object propValue = context.getAppProps().get(ServerTags.CDI_DEV_MODE_ENABLED_PROP);
+        return propValue != null && Boolean.parseBoolean((String) propValue);
+    }
+    
+    public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
+       context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
+    }
+    
   public static InputStream getBeansXmlInputStream(DeploymentContext context) {
     return getBeansXmlInputStream( context.getSource() );
   }
@@ -605,6 +618,7 @@ public class WeldUtils {
     private static class LocalDefaultHandler extends DefaultHandler {
         String beanDiscoveryMode = null;
 
+        @Override
         public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
             if ( qName.equals( "beans" ) ) {
                 beanDiscoveryMode = attributes.getValue("bean-discovery-mode");

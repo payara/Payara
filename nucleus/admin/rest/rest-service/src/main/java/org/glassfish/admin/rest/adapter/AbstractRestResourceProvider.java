@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.adapter;
@@ -49,7 +51,7 @@ import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.jettison.JettisonFeature;
+import org.glassfish.jersey.jsonp.JsonProcessingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.MessageProperties;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -90,7 +92,7 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
     }
 
     protected Feature getJsonFeature() {
-        return new JettisonFeature();
+        return new JsonProcessingFeature();
     }
 
     @Override

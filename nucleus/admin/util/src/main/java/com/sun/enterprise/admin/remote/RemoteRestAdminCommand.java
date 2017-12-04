@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.admin.remote;
@@ -44,7 +46,6 @@ import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.reader.CliActionReport;
 import com.sun.enterprise.admin.remote.reader.ProprietaryReader;
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
-import com.sun.enterprise.admin.remote.reader.StringProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseEventReceiver;
 import com.sun.enterprise.admin.remote.sse.GfSseEventReceiverProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
@@ -72,15 +73,17 @@ import com.sun.enterprise.admin.util.HttpConnectorAddress;
 import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.net.NetUtils;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.api.admin.Payload;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.common.util.admin.AuthTokenManager;
-import org.w3c.dom.*;
 
 /**
  * Utility class for executing remote admin commands.
@@ -449,44 +452,48 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
         try {
             boolean sawFile = false;
-            JSONObject obj = new JSONObject(str);
-            obj = obj.getJSONObject("command");
+            JsonParser parser = Json.createParser(new StringReader(str));
+            parser.next();
+            JsonObject obj = parser.getObject();
+            obj = obj.getJsonObject("command");
             CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), etag);
-            cm.dashOk = obj.optBoolean("@unknown-options-are-operands", false);
-            cm.managedJob = obj.optBoolean("@managed-job", false);
-            cm.setUsage(obj.optString("usage", null));
-            Object optns = obj.opt("option");
-            if (!JSONObject.NULL.equals(optns)) {
-                JSONArray jsonOptions;
-                if (optns instanceof JSONArray) {
-                    jsonOptions = (JSONArray) optns;
+            cm.dashOk = obj.getBoolean("@unknown-options-are-operands", false);
+            cm.managedJob = obj.getBoolean("@managed-job", false);
+            cm.setUsage(obj.getString("usage", null));
+            JsonValue optns = obj.get("option");
+            if (!JsonValue.NULL.equals(optns) && optns != null) {
+                JsonArray jsonOptions;
+                if (optns instanceof JsonArray) {
+                    jsonOptions = (JsonArray) optns;
                 } else {
-                    jsonOptions = new JSONArray();
-                    jsonOptions.put(optns);
+                    JsonArrayBuilder optBuilder = Json.createArrayBuilder();
+                    optBuilder.add(optns);
+                    jsonOptions = optBuilder.build();                    
                 }
-                for (int i = 0; i < jsonOptions.length(); i++) {
-                    JSONObject jsOpt = jsonOptions.getJSONObject(i);
+                
+                for (int i = 0; i < jsonOptions.size(); i++) {
+                    JsonObject jsOpt = jsonOptions.getJsonObject(i);
                     String type = jsOpt.getString("@type");
                     ParamModelData opt = new ParamModelData(
                             jsOpt.getString("@name"),
                             typeOf(type),
-                            jsOpt.optBoolean("@optional", false),
-                            jsOpt.optString("@default"),
-                            jsOpt.optString("@short"),
-                            jsOpt.optBoolean("@obsolete", false),
-                            jsOpt.optString("@alias"));
-                    opt.param._acceptableValues = jsOpt.optString("@acceptable-values");
+                            jsOpt.getBoolean("@optional", false),
+                            jsOpt.getString("@default", null),
+                            jsOpt.getString("@short", null),
+                            jsOpt.getBoolean("@obsolete", false),
+                            jsOpt.getString("@alias", null));
+                    opt.param._acceptableValues = jsOpt.getString("@acceptable-values", "");
                     if ("PASSWORD".equals(type)) {
                         opt.param._password = true;
-                        opt.prompt = jsOpt.optString("@prompt");
-                        opt.promptAgain = jsOpt.optString("@prompt-again");
+                        opt.prompt = jsOpt.getString("@prompt", null);
+                        opt.promptAgain = jsOpt.getString("@prompt-again", null);
                     } else if ("FILE".equals(type)) {
                         sawFile = true;
                     }
-                    if (jsOpt.optBoolean("@primary", false)) {
+                    if (jsOpt.getBoolean("@primary", false)) {
                         opt.param._primary = true;
                     }
-                    if (jsOpt.optBoolean("@multiple", false)) {
+                    if (jsOpt.getBoolean("@multiple", false)) {
                         if (opt.type == File.class) {
                             opt.type = File[].class;
                         } else {
@@ -508,13 +515,14 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             }
             this.usage = cm.getUsage();
             return cm;
-        } catch (JSONException ex) {
-            logger.log(Level.FINER, "Can not parse command metadata", ex);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Can not parse command metadata", ex);
             return null;
         }
     }
 
     /** If command model was load from local cache.
+     * @return 
      */
     public boolean isCommandModelFromCache() {
         return commandModelFromCache;
@@ -523,6 +531,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     /**
      * Set the directory in which any returned files will be stored.
      * The default is the user's home directory.
+     * @param dir
      */
     public void setFileOutputDirectory(File dir) {
         fileOutputDir = dir;
@@ -530,6 +539,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
     /**
      * Return a modifiable list of headers to be added to the request.
+     * @return 
      */
     public List<Header> headers() {
         return requestHeaders;
@@ -542,6 +552,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     /**
      * Run the command using the specified arguments.
      * Return the output of the command.
+     * @param opts
+     * @return 
+     * @throws org.glassfish.api.admin.CommandException
      */
     public String executeCommand(ParameterMap opts) throws CommandException {
         if (logger.isLoggable(Level.FINER)) {

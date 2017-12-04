@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
@@ -51,10 +51,9 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
     <system-applications />
     <applications />
     <resources>
-        <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" object-type="system-all" />
-        <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.EmbeddedDataSource" res-type="javax.sql.DataSource">
-            <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_default" />
-            <property name="connectionAttributes" value=";create=true" />
+        <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default" object-type="system-all" />
+        <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource"> 
+            <property name="URL" value="jdbc:h2:~/test" />
         </jdbc-connection-pool>
         <context-service description="context service" jndi-name="concurrent/__defaultContextService" object-type="system-all"></context-service>
         <managed-executor-service maximum-pool-size="200" core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" task-queue-capacity="20000" jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all"></managed-executor-service>
@@ -97,6 +96,10 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
                 <module-log-levels />
             </log-service>
+            <monitoring-service-configuration amx="false" enabled="false" log-frequency="30">
+        	<log-notifier></log-notifier>
+        	<eventbus-notifier></eventbus-notifier>
+            </monitoring-service-configuration>
             <security-service activate-default-principal-to-role-mapping="true" jacc="simple">
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
                     <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
@@ -157,7 +160,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             <request-tracing-service-configuration>
                 <log-notifier enabled="true"></log-notifier>
             </request-tracing-service-configuration>
-            <notification-service-configuration enabled="true">
+            <notification-service-configuration enabled="false">
                 <log-notifier-configuration enabled="true"></log-notifier-configuration>
                 <eventbus-notifier-configuration enabled="false"></eventbus-notifier-configuration>
             </notification-service-configuration>

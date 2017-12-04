@@ -45,12 +45,12 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.extras</groupId>
     <artifactId>extras</artifactId>
     <packaging>pom</packaging>
     

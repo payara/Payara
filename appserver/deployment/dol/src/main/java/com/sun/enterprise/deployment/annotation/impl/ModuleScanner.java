@@ -40,35 +40,26 @@
 
 package com.sun.enterprise.deployment.annotation.impl;
 
-import com.sun.enterprise.deployment.annotation.introspection.ClassFile;
-import com.sun.enterprise.deployment.annotation.introspection.ConstantPoolInfo;
 import com.sun.enterprise.deployment.annotation.introspection.DefaultAnnotationScanner;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import java.io.ByteArrayOutputStream;
-import java.util.Enumeration;
-import java.util.jar.JarFile;
 import java.util.zip.ZipException;
 import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.JavaEEScanner;
 import org.glassfish.hk2.classmodel.reflect.*;
 import javax.inject.Inject;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.jar.JarEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import java.net.URL;
 import java.util.concurrent.*;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -132,7 +123,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         setParser(parser);
         process(file, bundleDesc, classLoader);
         completeProcess(bundleDesc, archiveFile);
-        calculateResults();
+        calculateResults(bundleDesc);
     }
 
     /**
@@ -150,7 +141,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         addLibraryJars(bundleDescr, archive);
     }
 
-    protected void calculateResults() {
+    protected void calculateResults(T bundleDesc) {
         try {
             classParser.awaitTermination();
         } catch (InterruptedException e) {
@@ -162,7 +153,12 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         Level logLevel = (System.getProperty("glassfish.deployment.dump.scanning")!=null?Level.INFO:Level.FINE);
         boolean shouldLog = deplLogger.isLoggable(logLevel);
         ParsingContext context = classParser.getContext();
-        for (String annotation: defaultScanner.getAnnotations()) {
+        boolean isFullAttribute = false;
+        if (bundleDesc instanceof BundleDescriptor) {
+            isFullAttribute = ((BundleDescriptor)bundleDesc).isFullAttribute();
+        }
+        Set<String> annotationsToProcess = defaultScanner.getAnnotations(isFullAttribute);
+        for (String annotation: annotationsToProcess) {
             Type type = context.getTypes().getBy(annotation);
 
             // we never found anyone using that type
@@ -268,7 +264,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     /**
      * This will include all class in directory to be scanned.
-     * param directory
+     * @param directory
      */
     protected void addScanDirectory(File directory) throws IOException {
         scannedURI.add(directory.toURI());
@@ -277,10 +273,12 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         }
     } 
     
+    @Override
     public ClassLoader getClassLoader() {
         return classLoader;
     }
 
+    @Override
     public Set<Class> getElements() {
         Set<Class> elements = new HashSet<Class>();
         if (getClassLoader() == null) {
@@ -311,6 +309,11 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         return elements;
     }
 
+    /**
+     * 
+     * @param bundleDesc
+     * @param moduleArchive 
+     */
     protected void addLibraryJars(T bundleDesc, 
         ReadableArchive moduleArchive) {
         List<URI> libraryURIs = new ArrayList<URI>(); 
@@ -320,7 +323,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
             }
 
             for (URI uri : libraryURIs) {
-                File libFile = new File(uri);;
+                File libFile = new File(uri);
                 if (libFile.isFile()) {
                     addScanJar(libFile);
                 } else if (libFile.isDirectory()) {

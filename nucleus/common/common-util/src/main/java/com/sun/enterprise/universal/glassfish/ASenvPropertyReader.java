@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.universal.glassfish;
 
@@ -382,6 +383,7 @@ public class ASenvPropertyReader {
     static private Map<String, String> envToPropMap = new HashMap<String, String>();
     {
         envToPropMap.put("AS_DERBY_INSTALL", DERBY_ROOT_PROPERTY);
+        envToPropMap.put("AS_H2_INSTALL", H2_ROOT_PROPERTY);
         envToPropMap.put("AS_IMQ_LIB", IMQ_LIB_PROPERTY);
         envToPropMap.put("AS_IMQ_BIN", IMQ_BIN_PROPERTY);
         envToPropMap.put("AS_CONFIG", CONFIG_ROOT_PROPERTY);

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.spi;
 
@@ -74,11 +75,12 @@ public interface JCDIService {
      * @param bundle The ejb bundle.
      * @param ejbContext The ejb context.
      * @param ejbInterceptors All of the ejb interceptors for the ejb.
+     * @param ejbDesc
      *
      * @return The interceptor instance.
      */
     <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle, JCDIInjectionContext<?> ejbContext,
-            Set<EjbInterceptor> ejbInterceptors);
+            Set<EjbInterceptor> ejbInterceptors, EjbDescriptor ejbDesc);
 
     <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc);
     <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance);

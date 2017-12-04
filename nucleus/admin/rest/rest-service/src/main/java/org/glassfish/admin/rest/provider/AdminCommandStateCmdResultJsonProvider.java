@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
@@ -43,11 +45,12 @@ import com.sun.enterprise.v3.common.ActionReporter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.Json;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.resources.CommandResult;
 import org.glassfish.admin.rest.utils.JsonUtil;
@@ -62,7 +65,7 @@ import org.glassfish.admin.rest.utils.JsonUtil;
 public class AdminCommandStateCmdResultJsonProvider extends AdminCommandStateJsonProvider {
     
     @Override
-    protected void addActionReporter(ActionReporter ar, JSONObject json) throws JSONException {
+    protected void addActionReporter(ActionReporter ar, JsonObject json) throws JsonException {
         if (ar != null) {
             CommandResult cr = CompositeUtil.instance().getModel(CommandResult.class);
             cr.setMessage(ar.getMessage());
@@ -75,7 +78,7 @@ public class AdminCommandStateCmdResultJsonProvider extends AdminCommandStateJso
                 }
                 cr.setExtraProperties(map);
             }
-            json.put("command-result", (JSONObject) JsonUtil.getJsonObject(cr));
+            json.put("command-result", (JsonObject) JsonUtil.getJsonValue(cr));
         }
     }
     

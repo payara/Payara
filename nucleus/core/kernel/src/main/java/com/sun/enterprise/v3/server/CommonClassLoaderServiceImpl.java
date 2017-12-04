@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -105,6 +105,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
 
     private static final String SERVER_EXCLUDED_ATTR_NAME = "GlassFish-ServerExcluded";
 
+    @Override
     public void postConstruct() {
         APIClassLoader = acls.getAPIClassLoader();
         assert (APIClassLoader != null);
@@ -146,7 +147,8 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         // See issue https://glassfish.dev.java.net/issues/show_bug.cgi?id=13612
         // We no longer add derby jars to launcher class loader, we add them to common class loader instead.
         cpElements.addAll(findDerbyClient());
-        List<URL> urls = new ArrayList<URL>();
+        cpElements.addAll(findH2Client());
+        List<URL> urls = new ArrayList<>();
         StringBuilder cp = new StringBuilder();
         for (File f : cpElements) {
             try {
@@ -216,6 +218,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         }
 
         return Arrays.asList(derbyLib.listFiles(new FilenameFilter(){
+            @Override
             public boolean accept(File dir, String name) {
                 // Include only files having .jar extn and exclude all localisation jars, because they are
                 // already mentioned in the Class-Path header of the main jars
@@ -224,9 +227,38 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         }));
     }
 
+    private List<File> findH2Client() {
+        final String H2_HOME_PROP = "AS_H2_INSTALL";
+        StartupContext startupContext = env.getStartupContext();
+        Properties arguments = null;
+
+        if (startupContext != null) {
+            arguments = startupContext.getArguments();
+        }
+
+        String h2Home = null;
+
+        if (arguments != null) {
+            h2Home = arguments.getProperty(H2_HOME_PROP,
+                    System.getProperty(H2_HOME_PROP));
+        }	
+        File h2Lib = null;
+        if (h2Home != null) {
+            h2Lib = new File(h2Home, "bin");
+        }
+
+        if (h2Lib==null || !h2Lib.exists()) {
+            logger.info(KernelLoggerInfo.cantFindH2);
+            return Collections.EMPTY_LIST;
+        }
+
+        return Arrays.asList(h2Lib.listFiles((dir, name) -> name.endsWith(".jar")));
+    }
+
     private static class JarFileFilter implements FilenameFilter {
         private final String JAR_EXT = ".jar"; // NOI18N
 
+        @Override
         public boolean accept(File dir, String name) {
             return name.endsWith(JAR_EXT);
         }

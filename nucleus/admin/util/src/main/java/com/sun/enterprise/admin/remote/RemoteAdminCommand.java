@@ -37,39 +37,74 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.admin.remote;
 
-import com.sun.enterprise.admin.util.AdminLoggerInfo;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.net.ssl.SSLException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandModel.ParamModel;
-
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.universal.GFBase64Encoder;
-import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
-import com.sun.enterprise.admin.util.AuthenticationInfo;
-import com.sun.enterprise.admin.util.CachedCommandModel;
-import com.sun.enterprise.admin.util.HttpConnectorAddress;
-import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.admin.payload.PayloadImpl;
+import org.glassfish.api.admin.AuthenticationException;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.CommandModel.ParamModel;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.InvalidCommandException;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Payload;
-import javax.xml.parsers.*;
 import org.glassfish.common.util.admin.AuthTokenManager;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import com.sun.enterprise.admin.util.AdminLoggerInfo;
+import com.sun.enterprise.admin.util.AuthenticationInfo;
+import com.sun.enterprise.admin.util.CachedCommandModel;
+import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
+import com.sun.enterprise.admin.util.HttpConnectorAddress;
+import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.universal.io.SmartFile;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.util.net.NetUtils;
 
 /**
  * Utility class for executing remote admin commands.
@@ -388,6 +423,7 @@ public class RemoteAdminCommand {
     /**
      * Set the directory in which any returned files will be stored.
      * The default is the user's home directory.
+     * @param dir
      */
     public void setFileOutputDirectory(File dir) {
         fileOutputDir = dir;
@@ -395,6 +431,7 @@ public class RemoteAdminCommand {
 
     /**
      * Return a modifiable list of headers to be added to the request.
+     * @return 
      */
     public List<Header> headers() {
         return requestHeaders;
@@ -403,6 +440,9 @@ public class RemoteAdminCommand {
     /**
      * Run the command using the specified arguments.
      * Return the output of the command.
+     * @param opts
+     * @return 
+     * @throws org.glassfish.api.admin.CommandException
      */
     public String executeCommand(ParameterMap opts) throws CommandException {
         // first, make sure we have the command model
@@ -1065,16 +1105,18 @@ public class RemoteAdminCommand {
     /**
      * Add a password option, passing it as a header in the request
      */
-    private StringBuilder addPasswordOption(StringBuilder uriString, String name,
-            String option) throws IOException {
+    private StringBuilder addPasswordOption(StringBuilder uriString, String name, String option) throws IOException {
         if (passwordOptions == null) {
             passwordOptions = new StringBuilder();
         } else {
             passwordOptions.append(QUERY_STRING_SEPARATOR);
         }
-        GFBase64Encoder encoder = new GFBase64Encoder();
-        passwordOptions.append(name).append('=').append(
-                URLEncoder.encode(encoder.encode(option.getBytes()), "UTF-8"));
+        
+        passwordOptions
+            .append(name)
+            .append('=')
+            .append(URLEncoder.encode(new String(Base64.getMimeEncoder().encode(option.getBytes()), UTF_8), "UTF-8"));
+        
         return uriString;
     }
     
@@ -1160,7 +1202,6 @@ public class RemoteAdminCommand {
             output = rse.getMessage();
 	    assert rrm != null;
 	    attrs = rrm.getMainAtts();
-            return;
         } catch (RemoteException rfe) {
             // XXX - gross
             if (rfe.getRemoteCause().indexOf("CommandNotFoundException") >= 0) {
@@ -1175,6 +1216,7 @@ public class RemoteAdminCommand {
 
     /**
      * Fetch the command metadata from the remote server.
+     * @throws org.glassfish.api.admin.CommandException
      */
     protected void fetchCommandModel() throws CommandException {
         long startNanos = System.nanoTime();

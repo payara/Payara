@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -51,13 +51,6 @@
     <artifactId>payara-api</artifactId>
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <developers>
         <developer>
@@ -141,10 +134,9 @@
                                 <Export-Package>
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.micro.cdi,
+                                    fish.payara.cluster,
                                     fish.payara.nucleus.requesttracing.api,
-                                    fish.payara.notification.eventbus,
-                                    fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service
+                                    fish.payara.notification.eventbus
                                 </Export-Package>
                             </instructions>
                         </configuration>
@@ -163,33 +155,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>DeploySnapshot</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>DeploySnapshot</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>

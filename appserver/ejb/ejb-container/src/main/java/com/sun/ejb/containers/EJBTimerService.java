@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -77,6 +77,7 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.ejb.PersistentTimerService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import org.glassfish.internal.api.Globals;
 
 /*
@@ -115,6 +116,7 @@ public class EJBTimerService {
     private boolean shutdown_;
     
     private RequestTracingService requestTracing;
+    private StuckThreadsStore stuckThreadsStore;
 
     // Total number of ejb components initialized as timed objects between the
     // start and end of a single server instance.  This value is used during
@@ -176,7 +178,8 @@ public class EJBTimerService {
         domainName_ = env.getDomainName();
         isDas = env.isDas() || env.isEmbedded();
         
-        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        stuckThreadsStore = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
 
         initProperties();
     }
@@ -236,7 +239,7 @@ public class EJBTimerService {
                 synchronized (lock) {
                     // choose service based on the configuration setting
                     EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
-                    String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEJBTimerService();
+                    String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEjbTimerService();
                     PersistentTimerService persistentTS = null;
                     for (PersistentTimerService pts : persistentTSList) {
                         if (pts.getClass().getSimpleName().startsWith(serviceType)) {
@@ -1442,7 +1445,7 @@ public class EJBTimerService {
                            "Adding work pool task for timer " + timerId);
                     }
 
-                    TaskExpiredWork work = new TaskExpiredWork(this, timerId,requestTracing);
+                    TaskExpiredWork work = new TaskExpiredWork(this, timerId,requestTracing, stuckThreadsStore);
                     ejbContainerUtil.addWork(work);
                 } else {
                     logger.log(Level.FINE, "Timer " + timerId + 
@@ -1933,28 +1936,37 @@ public class EJBTimerService {
         private EJBTimerService timerService_;
         private TimerPrimaryKey timerId_;
         private RequestTracingService requestTracing;
+        private StuckThreadsStore stuckThreads;
 
         public TaskExpiredWork(EJBTimerService timerService, 
                                TimerPrimaryKey timerId,
-                               RequestTracingService rt) {
+                               RequestTracingService rt, StuckThreadsStore stuckThreadStore) {
             timerService_ = timerService;
             timerId_ = timerId;
             requestTracing = rt;
+            stuckThreads = stuckThreadStore;
         }
 
+        @Override
         public void run() {
+            if (stuckThreads != null){
+                stuckThreads.registerThread(Thread.currentThread().getId());
+            }
             // Delegate to Timer Service.
             if (requestTracing != null && requestTracing.isRequestTracingEnabled()){
                 requestTracing.startTrace();
                 RequestEvent re = new RequestEvent("EJBTimer-FIRE");
                 re.addProperty("TimerID", timerId_.toString());
                 requestTracing.traceRequestEvent(re);
-            }
+            }          
             try {
                 timerService_.deliverTimeout(timerId_);
             }finally {
                 if (requestTracing != null && requestTracing.isRequestTracingEnabled() ){
                     requestTracing.endTrace();
+                }
+                if (stuckThreads != null){
+                    stuckThreads.deregisterThread(Thread.currentThread().getId());
                 }
             }
         } 

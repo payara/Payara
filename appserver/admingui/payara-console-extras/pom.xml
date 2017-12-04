@@ -44,7 +44,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
     <artifactId>payara-console-extras</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -91,10 +91,22 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
             <scope>provided</scope>
             <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>weld-integration</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

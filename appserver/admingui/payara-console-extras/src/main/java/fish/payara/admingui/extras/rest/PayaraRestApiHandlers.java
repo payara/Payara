@@ -37,6 +37,7 @@
  */
 package fish.payara.admingui.extras.rest;
 
+import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -44,19 +45,21 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
+import static org.glassfish.weld.WeldDeployer.DEV_MODE_PROPERTY;
 
 /**
  * A class containing Payara specific handler methods for the REST API
  * @author Andrew Pielage
  */
-public class PayaraRestApiHandlers
-{
+public class PayaraRestApiHandlers {
+    
     /**
      * Gets information about the instances current registered to the Hazelcast cluster.
      * @param handlerCtx 
@@ -260,10 +263,65 @@ public class PayaraRestApiHandlers
                 result.put(componentName, false);
                 if((List)payaraEndpointsExtraProps.get("endpointList") != null) {
                     result.put(componentName, true);
+                     // Change the component type to JAX-RS. Couldn't be obtained at an earlier point since JAX-RS resources are compiled to JSP.
+                    rowMap.put("type", "JAX-RS");
                 }
             }
           }catch(Exception ex){
             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.hasRestEndpoints") + ex.getLocalizedMessage());
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+                ex.printStackTrace();
+            }
+          }
+          handlerCtx.setOutputValue("result", result);
+    }
+    
+    /**
+     * Gets a map of components with CDI dev mode status
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.isCDIDevMode",
+        input = {
+            @HandlerInput(name = "appName", type = String.class, required = true),
+            @HandlerInput(name = "rowList", type = java.util.List.class, required = true)},
+        output = {
+            @HandlerOutput(name = "result", type = java.util.Map.class)})
+    public static void isCDIDevMode(HandlerContext handlerCtx) {
+        Map result = new HashMap();
+        try{
+            String appName = (String) handlerCtx.getInputValue("appName");
+            String encodedAppName = URLEncoder.encode(appName, "UTF-8");
+            List rowList = (List) handlerCtx.getInputValue("rowList");
+            for(Object row : rowList) {
+                Map rowMap = (Map) row;
+                boolean enabled = false;
+                String componentName = (String) rowMap.get("name");
+                String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
+                result.put(componentName, false);
+                if(!((String)rowMap.get("sniffers")).contains("cdi")){
+                    continue;
+                }
+                
+                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName + "/property";
+                Map attrMap = Collections.singletonMap("componentname", encodedComponentName);
+                Map payaraEndpointDataMap = RestUtil.restRequest(endpoint, attrMap, "GET", null, true, false);
+                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+                List<Map> properties = (List<Map>)payaraEndpointsExtraProps.get("properties");
+                for (Map property : properties) {
+                    if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
+                            && Boolean.parseBoolean((String) property.get("value"))) {
+                        result.put(componentName, true);
+                        enabled = true;
+                        break;
+                    }
+                }
+                if (!enabled) {
+                    result.put(componentName, Boolean.getBoolean(DEV_MODE_PROPERTY));
+                }
+            }
+
+          }catch(Exception ex){
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.isCDIDevMode"), ex.getLocalizedMessage()});
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
@@ -364,7 +422,8 @@ public class PayaraRestApiHandlers
                 @HandlerInput(name="notifiers", type=String[].class, required=true),
                 @HandlerInput(name="dynamic", type=Boolean.class, required=true),
                 @HandlerInput(name="quiet", type=boolean.class, defaultValue="false"),
-                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true")
+                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true"),
+                @HandlerInput(name="target", type=String.class, required=true)
             })
     public static void updateNotifiers(HandlerContext handlerCtx) {
         String[] notifiers = (String[]) handlerCtx.getInputValue("notifiers");
@@ -373,10 +432,16 @@ public class PayaraRestApiHandlers
         Boolean dynamic = (Boolean) handlerCtx.getInputValue("dynamic");
         Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
         Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
+        String target = (String) handlerCtx.getInputValue("target");
         List<String> enabledNotifiers = Arrays.asList(enabled);
+        
+        if (dynamic == null) {
+            dynamic = false;
+        }
 
         boolean forRequestTracing = false;
         boolean forHealthCheck = false;
+        boolean forMonitoring = false;
 
         for (String notifier : notifiers){
             String name = notifier.split("-")[1];
@@ -387,6 +452,9 @@ public class PayaraRestApiHandlers
             } else if (endpoint.contains("health-check-service-configuration")){
                 restEndpoint = endpoint + "/healthcheck-" + name + "-notifier-configure";
                 forHealthCheck = true;
+            } else if (endpoint.contains("monitoring-service-configuration")){
+                restEndpoint = endpoint + "/monitoring-" + name + "-notifier-configure";
+                forMonitoring = true;
             } else {
                 //Unknown service being configured
                 throw new UnknownConfigurationException();
@@ -400,6 +468,7 @@ public class PayaraRestApiHandlers
             }
             //PAYARA-1616 go silent, bootstrap will take place after iteration.
             attrs.put("dynamic", "false");
+            attrs.put("target", target);
             RestUtil.restRequest(restEndpoint, attrs, "post", handlerCtx, quiet, throwException);
         }
         // PAYARA-1616
@@ -413,6 +482,10 @@ public class PayaraRestApiHandlers
                 String restEndpoint = endpoint +  "/bootstrap-healthcheck";
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
+            if (forMonitoring){
+                String restEndpoint = endpoint + "/bootstrap-monitoring";
+                RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
+            }
         }
     }
   
@@ -422,7 +495,7 @@ public class PayaraRestApiHandlers
     public static void getHistoricHealthcheckMessages(HandlerContext handlerCtx){
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
         String endpoint;
-        
+
         // Check for trailing slashes
         endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-healthchecks" : parentEndpoint 
                 + "/" + "list-historic-healthchecks";
@@ -444,5 +517,132 @@ public class PayaraRestApiHandlers
         }
         handlerCtx.setOutputValue("result", messages);
     }
+
+    @Handler(id = "py.getHistoricRequestTracingMessages",
+            input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
+            output = @HandlerOutput(name = "result", type = java.util.List.class))
+    public static void getHistoricRequestTracingMessages(HandlerContext handlerCtx){
+
+        String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
+        String endpoint;
+
+        // Check for trailing slashes
+        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-requesttraces" : parentEndpoint
+                + "/" + "list-historic-requesttraces";
+
+        Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, false);
+        Map data = (Map) responseMap.get("data");
+
+        // Extract the information from the Map and place it in a List for representation in the dataTable
+        List<Map> messages = new ArrayList<>();
+        if (data != null) {
+            Map extraProperties = (Map) data.get("extraProperties");
+            if (extraProperties != null) {
+                messages = (List<Map>) extraProperties.get("historicmessages");
+                if (messages != null)
+                if (messages == null) {
+                    // Re-initialise to empty if members is not found
+                    messages = new ArrayList<>();
+                }
+            }
+        }
+        handlerCtx.setOutputValue("result", messages);
+    }
+
+    /**
+     * Gets the context roots of all deployed applications on the domain.
+     * This is outputted as List<Map<String, String>> for usage within the Virtual-Servers page.
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.getVirtualServersAttributes",
+            input = {
+                @HandlerInput(name = "configName", type = String.class, required = true),
+                @HandlerInput(name = "sessionScopeRestURL", type = String.class, required = true),
+                @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
+                @HandlerInput(name = "childType", type = String.class, required = true),
+                @HandlerInput(name = "skipList", type = List.class, required = false),
+                @HandlerInput(name = "includeList", type = List.class, required = false),
+                @HandlerInput(name = "id", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = "result", type = java.util.List.class)
+    })
+    public static void getVirtualServersAttributes(HandlerContext handlerCtx) {
+        String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
+        String childType = (String) handlerCtx.getInputValue("childType");
+        String configName = (String) handlerCtx.getInputValue("configName");
+        String sessionScopeRestURL = (String) handlerCtx.getInputValue("sessionScopeRestURL");
+        sessionScopeRestURL = sessionScopeRestURL.endsWith("/") ? sessionScopeRestURL : sessionScopeRestURL + "/";
+        String serverName = "";
        
+        try {
+            List<Map> table = RestUtil.buildChildEntityList(
+                    (String)handlerCtx.getInputValue("parentEndpoint"),
+                    (String)handlerCtx.getInputValue("childType"),
+                    (List)handlerCtx.getInputValue("skipList"),
+                    (List)handlerCtx.getInputValue("includeList"),
+                    (String)handlerCtx.getInputValue("id"));
+            
+            if (configName.equals("default-config")) {
+                for (Map row : table) {
+                    row.put("contextRoot", "");
+                }
+            } else {
+                List<String> instances = RestUtil.getChildList(sessionScopeRestURL + "servers/server");
+                for (String instance : instances) {
+                    String configRef = (String) RestUtil.getAttributesMap(instance).get("configRef");
+                    if (configRef.equals(configName)) {
+                        serverName = instance.substring(instance.lastIndexOf("/") + 1);
+                    }
+                }
+                String deployedApplicationsEndpoint = sessionScopeRestURL + "servers/server/" + serverName 
+                        + "/application-ref";
+
+                List<String> deployedApplications = RestUtil.getChildList(deployedApplicationsEndpoint);
+                List<String> virtualServers = RestUtil.getChildList(parentEndpoint + "/" + childType);
+                List<String> applications = RestUtil.getChildList(sessionScopeRestURL + "applications/application");
+
+                for (String virtualServer : virtualServers) {         
+                    String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf("/") + 1);
+
+                    for (int i = 0; i < deployedApplications.size(); i++) {
+                        deployedApplications.set(i, deployedApplications.get(i)
+                                .substring(deployedApplications.get(i).lastIndexOf("/") + 1));
+                    }
+
+                    String contextRoots = "";
+
+                    for (String application : applications) {
+                        String applicationName = application.substring(application.lastIndexOf("/") + 1);
+                        String[] deployedVirtualServers; 
+                        if (RestUtil.get(deployedApplicationsEndpoint + "/" + applicationName).isSuccess()) {
+                            String deployedVirtualServersString = ((String) RestUtil.getAttributesMap(
+                                    deployedApplicationsEndpoint + "/" + applicationName).get("virtualServers"));
+			    if (deployedVirtualServersString != null) {
+			    	deployedVirtualServers = deployedVirtualServersString.split(",");
+                                for (String deployedVirtualServer : deployedVirtualServers) {
+    	                            if (!deployedVirtualServer.equals("") && deployedApplications.contains(applicationName) 
+        	                            && virtualServerName.equals(deployedVirtualServer)) {
+                	                if (!contextRoots.equals("")) {
+                        	            contextRoots += "<br>" + RestUtil.getAttributesMap(application).get("contextRoot");
+                                	} else {
+                                            contextRoots += RestUtil.getAttributesMap(application).get("contextRoot");
+	                                }
+                                    }
+                            	}
+			    }
+                        }
+                    }
+
+                    for (Map row : table) {
+                        if (row.get("name").equals(virtualServerName)) {
+                            row.put("contextRoot", contextRoots);
+                        }
+                    }
+                }
+            }
+            handlerCtx.setOutputValue("result", table);
+        } catch (Exception ex) {
+            GuiUtil.handleException(handlerCtx, ex);
+        }
+    }
 }

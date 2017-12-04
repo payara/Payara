@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.annotation.introspection;
@@ -71,9 +73,10 @@ public abstract class AbstractAnnotationScanner implements AnnotationScanner {
      * Test if the passed constant pool string is a reference to 
      * a Type.TYPE annotation of a J2EE component
      *
-     * @String the constant pool info string 
+     * @String value the constant pool info string 
      * @return true if it is an annotation reference of interest to this scanner
      */
+    @Override
     public boolean isAnnotation(String value) {
         if (annotations==null) {
             synchronized(this) {
@@ -91,6 +94,13 @@ public abstract class AbstractAnnotationScanner implements AnnotationScanner {
         return constantPoolToFQCN(annotations);
     }
 
+    /**
+     * For a set of annotations removes first and last character and replaces any / with .
+     * <p>
+     * i.e. @Properties{ to Properties
+     * @param annotations
+     * @return 
+     */
     public static Set<String> constantPoolToFQCN(Set<String> annotations) {
         // for now I transform ConstantPoolInfo type in FQCN
         Set<String> fqcns = new HashSet<String>();

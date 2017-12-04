@@ -51,6 +51,10 @@
     
     <description>Builds, tests, and runs the project V3 Quicklook</description>
 
+	<presetdef name="javac">
+	    <javac includeantruntime="false" />
+	</presetdef>
+	
     <target name="all_cluster">
         <record name="${basedir}/allrun.output" action="start"/>
         <antcall target="start-server-felix"/>
@@ -616,17 +620,17 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="start-domain"/>
-	<arg value="domain2"/>
+	<arg value="test-domain"/>
     </exec>
     <waitfor maxwait="30" maxwaitunit="second" checkevery="500">
-        <http url="http://localhost:5048/"/>
+        <http url="http://localhost:4848/"/>
     </waitfor> 
 </target>
 
 <target name="start-server-felix-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin">
         <arg value="start-domain"/>
-	<arg value="domain2"/>
+	<arg value="test-domain"/>
     </exec>
 </target>
 

@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
 import com.sun.enterprise.deployment.*;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.weld.DeploymentImpl;
@@ -67,8 +68,11 @@ import javax.xml.ws.WebServiceRef;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import org.glassfish.api.invocation.ComponentInvocation;
 
-
+/**
+ * Class to provide actual injection of an annotation and related services
+ */
 public class InjectionServicesImpl implements InjectionServices {
 
     private InjectionManager injectionManager;
@@ -84,17 +88,24 @@ public class InjectionServicesImpl implements InjectionServices {
         this.deployment = deployment;
     }
 
+    /**
+     * Checks if the specified class is annotated with @Interceptor
+     * @see javax.interceptor.Interceptor
+     * @param beanClass
+     * @return 
+     */
     private boolean isInterceptor( Class beanClass ) {
       HashSet<String> annos = new HashSet<>();
       annos.add( javax.interceptor.Interceptor.class.getName() );
       boolean res = false;
-      while ( ! res && beanClass != Object.class ) {
+      while ( !res && beanClass != Object.class ) {
         res = WeldUtils.hasValidAnnotation( beanClass, annos, null );
         beanClass  = beanClass.getSuperclass();
       }
       return res;
     }
 
+    @Override
     public <T> void aroundInject(InjectionContext<T> injectionContext) {
         try {
             ServiceLocator serviceLocator = Globals.getDefaultHabitat();
@@ -102,6 +113,10 @@ public class InjectionServicesImpl implements InjectionServices {
             EjbContainerServices containerServices = serviceLocator.getService(EjbContainerServices.class);
 
             JndiNameEnvironment componentEnv = compEnvManager.getCurrentJndiNameEnvironment();
+            if(componentEnv == null) {
+                InvocationManager invMgr = serviceLocator.getService(InvocationManager.class);
+                componentEnv = (JndiNameEnvironment)invMgr.<ComponentInvocation>getCurrentInvocation().getJNDIEnvironment();
+            }
 
             ManagedBeanDescriptor mbDesc = null;
 
@@ -177,6 +192,7 @@ public class InjectionServicesImpl implements InjectionServices {
         }
     }
 
+    @Override
     public <T> void registerInjectionTarget(InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
         if ( bundleContext instanceof EjbBundleDescriptor ) {
             // we can't handle validting producer fields for ejb bundles because the JNDI environment is not setup
@@ -210,6 +226,12 @@ public class InjectionServicesImpl implements InjectionServices {
 
     }
 
+    /**
+     * 
+     * @param annotatedClass
+     * @param annotatedField
+     * @param injectionResources 
+     */
     private void validateEjbProducer( Class annotatedClass,
                                       AnnotatedField annotatedField,
                                       List<InjectionCapable> injectionResources ) {
@@ -309,6 +331,12 @@ public class InjectionServicesImpl implements InjectionServices {
         }
     }
 
+    /**
+     * Make sure that the annotated field can be assigned the resource that is to be injected.
+     * Otherwise, this throws a {@link DefinitionException}
+     * @param annotatedField
+     * @param resourceClass 
+     */
     private void validateResourceClass(AnnotatedField annotatedField, Class resourceClass) {
         if ( ! annotatedField.getJavaMember().getType().isAssignableFrom( resourceClass ) ) {
             throwProducerDefinitionExeption( annotatedField.getJavaMember().getName(),
@@ -349,6 +377,15 @@ public class InjectionServicesImpl implements InjectionServices {
         return null;
     }
 
+    /**
+     * Returns the JNDI name to lookup
+     * <p>
+     * This calls getJndiName with the appropriate arguments for the annotation type
+     * @param annotatedClass
+     * @param annotatedField
+     * @param injectionResources
+     * @return 
+     */
     private String getLookupName( Class annotatedClass, AnnotatedField annotatedField, List<InjectionCapable> injectionResources ) {
         String lookupName = null;
         if ( annotatedField.isAnnotationPresent( Resource.class ) ) {
@@ -376,6 +413,15 @@ public class InjectionServicesImpl implements InjectionServices {
         return lookupName;
     }
 
+    /**
+     * Returns JNDI name
+     * <p>
+     * lookup > mappedName > name
+     * @param lookup
+     * @param mappedName
+     * @param name
+     * @return 
+     */
     private String getJndiName( String lookup, String mappedName, String name ) {
         String jndiName = lookup;
         if ( jndiName == null || jndiName.length() == 0 ) {
@@ -390,6 +436,7 @@ public class InjectionServicesImpl implements InjectionServices {
 
 
 
+    @Override
     public void cleanup() {
 
     }

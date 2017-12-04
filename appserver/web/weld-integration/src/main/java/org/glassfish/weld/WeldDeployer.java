@@ -72,7 +72,6 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
-import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.services.*;
 import org.glassfish.weld.util.Util;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -99,14 +98,27 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import java.security.AccessController;
+import javax.enterprise.inject.spi.Extension;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
+import org.glassfish.weld.connector.WeldUtils;
+import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
+import org.jboss.weld.exceptions.WeldException;
+import org.jboss.weld.probe.ProbeExtension;
 import org.jboss.weld.resources.spi.ResourceLoader;
-import org.jboss.weld.module.ejb.WeldEjbModule;
-import org.jboss.weld.module.WeldModule;
+import org.jboss.weld.security.NewInstanceAction;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer>
@@ -126,17 +138,37 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     // change there as well.  The reason it is duplicated is so that a dependency from web-core to gf-weld-connector
     // is not necessary.
     private static final String WELD_LISTENER = "org.jboss.weld.module.web.servlet.WeldListener";
-    												   
+
     static final String WELD_TERMINATION_LISTENER = "org.jboss.weld.module.web.servlet.WeldTerminalListener";
 
     private static final String WELD_SHUTDOWN = "weld_shutdown";
 
-    //This constant is used to indicate if bootstrap shutdown has been called or not.
+    /**
+     * This constant is used to indicate if bootstrap shutdown has been called or not.
+     */
     private static final String WELD_BOOTSTRAP_SHUTDOWN = "weld_bootstrap_shutdown";
 
     private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.module.web.servlet.ConversationFilter";
     private static final String WELD_CONVERSATION_FILTER_NAME = "CDI Conversation Filter";
-    
+
+    public static final String DEV_MODE_PROPERTY = "org.jboss.weld.development";
+
+    private static final String PROBE_FILTER_NAME = "weld-probe-filter";
+
+    private static final String PROBE_FILTER_CLASS_NAME = "org.jboss.weld.probe.ProbeFilter";
+
+    private static final boolean PROBE_FILTER_ASYNC_SUPPORT = true;
+
+    private static final String PROBE_FILTER_URL_PATTERN = "/*";
+
+    private static final String PROBE_FILTER_DISPATCHER_TYPE = "REQUEST";
+
+    private static final String PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE = ".*payara.*|.*glassfish.*";
+
+    private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "javax.servlet.http.*";
+
+    private static final String PROBE_ALLOW_REMOTE_ADDRESS = "";
+
     @Inject
     private Events events;
 
@@ -151,6 +183,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     ArchiveFactory archiveFactory;
+
+    @Inject
+    private JavaEEContextUtil ctxUtil;
+
+    @Inject
+    private Deployment deployment;
 
     private Map<Application, WeldBootstrap> appToBootstrap =
             new HashMap<Application, WeldBootstrap>();
@@ -179,6 +217,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return new MetaData(true, null, new Class[] {Application.class});
     }
 
+    @Override
     public void postConstruct() {
         events.register(this);
     }
@@ -189,7 +228,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
      * deployment process is complete.  When all modules have been loaded, a deployment
      * graph is produced defining the accessibility relationships between
      * <code>BeanDeploymentArchive</code>s.
+     * @param event
      */
+    @Override
     public void event(Event event) {
         if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_LOADED) ) {
             ApplicationInfo appInfo = (ApplicationInfo)event.hook();
@@ -225,6 +266,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     }
 
                 });
+
+                BundleDescriptor bd = DOLUtils.getCurrentBundleForContext(deployment.getCurrentDeploymentContext());
+                ComponentInvocation inv = new ComponentInvocation(DOLUtils.getComponentEnvId((JndiNameEnvironment)bd), ComponentInvocationType.SERVLET_INVOCATION, appInfo, fAppName, fAppName);
+                inv.setJNDIEnvironment(bd);
                 try {
                     bootstrap.startExtensions(deploymentImpl.getExtensions());
                     bootstrap.startContainer(deploymentImpl.getAppName() + ".bda", Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
@@ -234,6 +279,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
 
                     bootstrap.validateBeans();
+                    invocationManager.preInvoke(inv);
                     bootstrap.endInitialization();
                 } catch (Throwable t) {
                     try {
@@ -246,6 +292,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     de.initCause(t);
                     throw(de);
                 } finally {
+                    invocationManager.postInvoke(inv);
                     invocationManager.popAppEnvironment();
 
                     //The TCL is originally the EAR classloader
@@ -423,14 +470,17 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return appToBootstrap.get(app);
     }
 
+    @Override
     protected void generateArtifacts(DeploymentContext dc) throws DeploymentException {
 
     }
 
+    @Override
     protected void cleanArtifacts(DeploymentContext dc) throws DeploymentException {
 
     }
 
+    @Override
     public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
         return null;
     }
@@ -444,6 +494,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
      * for all modules (and <code>BeanDeploymentArchive</code> information has been collected
      * for all <code>Weld</code> modules), a relationship structure is produced defining the
      * accessiblity rules for the <code>BeanDeploymentArchive</code>s.
+     * @param container
+     * @param context
+     * @return
      */
     @Override
     public WeldApplicationContainer load(WeldContainer container, DeploymentContext context) {
@@ -472,7 +525,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         EjbServices ejbServices = null;
 
-        Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
+        Set<EjbDescriptor> ejbs = new HashSet<>();
         if( ejbBundle != null ) {
             ejbs.addAll(ejbBundle.getEjbs());
             ejbServices = new EjbServicesImpl(services);
@@ -488,7 +541,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         if(!context.getArchiveHandler().getArchiveType().isEmpty()) {
             archiveName = String.format("%s.%s", BeanDeploymentArchiveImpl.stripApplicationVersion(archiveName), context.getArchiveHandler().getArchiveType());
         }
-        
+
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
         if (deploymentImpl == null) {
             deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory, archiveName);
@@ -518,14 +571,16 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
 
         DeployCommandParameters dc = context.getCommandParameters(DeployCommandParameters.class);
-        deploymentImpl.getServices().add(ExternalConfiguration.class,
-                new ExternalConfigurationImpl(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"),
-                dc != null? !dc.isAvailabilityEnabled() : true));
+        ExternalConfigurationImpl externalConfiguration = new ExternalConfigurationImpl();
+        externalConfiguration.setRollingUpgradesDelimiter(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"));
+        externalConfiguration.setBeanIndexOptimization(dc != null? !dc.isAvailabilityEnabled() : true);
+        deploymentImpl.getServices().add(ExternalConfiguration.class, externalConfiguration);
 
         BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
         if (bda != null && !bda.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
 
             WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
+            boolean developmentMode = isDevelopmentMode(context);
             if( wDesc != null) {
                 wDesc.setExtensionProperty(WELD_EXTENSION, "true");
 
@@ -553,10 +608,33 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                             break;
                       }
                 }
+
+                if (developmentMode) {
+                    // if development mode enabled then for WAR register ProbeFilter and register ProbeExtension for every deployment
+                    ServletFilterDescriptor servletFilter = new ServletFilterDescriptor();
+                    servletFilter.setClassName(PROBE_FILTER_CLASS_NAME);
+                    servletFilter.setName(PROBE_FILTER_NAME);
+                    servletFilter.setAsyncSupported(PROBE_FILTER_ASYNC_SUPPORT);
+                    wDesc.addServletFilter(servletFilter);
+
+                    ServletFilterMappingDescriptor servletFilterMapping = new ServletFilterMappingDescriptor();
+                    servletFilterMapping.setName(PROBE_FILTER_NAME);
+                    servletFilterMapping.addURLPattern(PROBE_FILTER_URL_PATTERN);
+                    servletFilterMapping.addDispatcher(PROBE_FILTER_DISPATCHER_TYPE);
+                    wDesc.addServletFilterMapping(servletFilterMapping);
+                }
+            }
+
+            if (developmentMode) {
+
+                externalConfiguration.setProbeEventMonitorExcludeType(PROBE_EVENT_MONITOR_EXCLUDE_TYPE);
+                externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
+                externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
+                deploymentImpl.addDynamicExtension(createProbeExtension());
             }
 
             BundleDescriptor bundle = (wDesc != null) ? wDesc : ejbBundle;
-            if( bundle != null) {
+            if (bundle != null) {
 
                 if (!bda.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
                     // Register EE injection manager at the bean deployment archive level.
@@ -606,7 +684,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         return wbApp;
     }
-    
+
     private EEModuleDescriptor getEEModuleDescriptor(BeanDeploymentArchive beanDeploymentArchive) {
         EEModuleDescriptor eeModuleDescriptor = null;
         if (beanDeploymentArchive instanceof BeanDeploymentArchiveImpl) {
@@ -621,6 +699,38 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
 
         return eeModuleDescriptor;
+    }
+
+    private boolean isDevelopmentMode(DeploymentContext context) {
+        boolean devMode = WeldUtils.isCDIDevModeEnabled(context) || Boolean.getBoolean(DEV_MODE_PROPERTY);
+        WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
+        if (!devMode && wDesc != null) {
+            Enumeration<ContextParameter> cpEnumeration = wDesc.getContextParameters();
+            while (cpEnumeration.hasMoreElements()) {
+                ContextParameter param = cpEnumeration.nextElement();
+                if (DEV_MODE_PROPERTY.equals(param.getName()) && Boolean.valueOf(param.getValue())) {
+                    devMode = true;
+                    WeldUtils.setCDIDevMode(context, devMode);
+                    break;
+                }
+            }
+        }
+        return devMode;
+    }
+
+    private Metadata<Extension> createProbeExtension() {
+        ProbeExtension probeExtension;
+        Class<ProbeExtension> probeExtensionClass = ProbeExtension.class;
+        try {
+            if (System.getSecurityManager() != null) {
+                probeExtension = AccessController.doPrivileged(NewInstanceAction.of(probeExtensionClass));
+            } else {
+                probeExtension = probeExtensionClass.newInstance();
+            }
+        } catch (Exception e) {
+            throw new WeldException(e.getCause());
+        }
+        return new MetadataImpl<Extension>(probeExtension, "N/A");
     }
 
     private void addWeldListenerToAllWars(DeploymentContext context) {

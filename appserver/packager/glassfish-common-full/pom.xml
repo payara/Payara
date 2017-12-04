@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-common-full</artifactId>
     <name>Glassfish Commons for Full Distribution </name>
@@ -179,7 +179,7 @@
             <artifactId>javax.batch-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.batch</groupId>
+            <groupId>fish.payara.appserver</groupId>
             <artifactId>payara-jbatch</artifactId>
            <version>${project.version}</version>
         </dependency>

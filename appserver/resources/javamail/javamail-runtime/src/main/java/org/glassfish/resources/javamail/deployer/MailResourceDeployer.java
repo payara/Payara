@@ -71,6 +71,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * Handles mail resource events in the server instance.
@@ -104,6 +105,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         MailResource mailRes =
                 (MailResource) resource;
@@ -127,6 +129,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource) throws Exception {
         MailResource mailResource =
                 (MailResource) resource;
@@ -154,6 +157,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         MailResource mailRes =
                 (MailResource) resource;
@@ -166,6 +170,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void undeployResource(Object resource) throws Exception {
         MailResource mailRes =
                 (MailResource) resource;
@@ -191,6 +196,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void redeployResource(Object resource)
             throws Exception {
 
@@ -201,6 +207,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof MailResource;
     }
@@ -208,6 +215,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -215,6 +223,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
@@ -222,6 +231,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void enableResource(Object resource) throws Exception {
         deployResource(resource);
     }
@@ -229,6 +239,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void disableResource(Object resource) throws Exception {
         undeployResource(resource);
     }
@@ -238,6 +249,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * initialization and from mail resource deployer to handle resource events.
      *
      * @param mailResource mail resource
+     * @param resourceInfo
      */
     public void installMailResource(MailBean mailResource, ResourceInfo resourceInfo) {
 
@@ -265,6 +277,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * config bean into mail j2ee resource.
      *
      * @param mailResourceConfig mail-resource config bean
+     * @param resourceInfo
      * @return a new instance of j2ee mail resource
      */
     public static MailBean toMailBean(
@@ -279,11 +292,11 @@ public class MailResourceDeployer extends GlobalResourceDeployer
         mailResource.setStoreProtocolClass(mailResourceConfig.getStoreProtocolClass());
         mailResource.setTransportProtocol(mailResourceConfig.getTransportProtocol());
         mailResource.setTransportProtocolClass(mailResourceConfig.getTransportProtocolClass());
-        mailResource.setMailHost(mailResourceConfig.getHost());
-        mailResource.setUsername(mailResourceConfig.getUser());
-        mailResource.setPassword(mailResourceConfig.getPassword());
+        mailResource.setMailHost((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getHost()));
+        mailResource.setUsername((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getUser()));
+        mailResource.setPassword((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getPassword()));
         mailResource.setAuth(Boolean.valueOf(mailResourceConfig.getAuth()));
-        mailResource.setMailFrom(mailResourceConfig.getFrom());
+        mailResource.setMailFrom((String) TranslatedConfigView.getTranslatedValue(mailResourceConfig.getFrom()));
         mailResource.setDebug(Boolean.valueOf(mailResourceConfig.getDebug()));
 
         // sets the properties
@@ -301,6 +314,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
         if (handles(resource)) {
             if (!postApplicationDeployment) {
@@ -313,6 +327,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
                                           Resources allResources)
             throws ResourceConflictException {

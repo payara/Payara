@@ -44,7 +44,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>net.java</groupId>
         <artifactId>jvnet-parent</artifactId>
@@ -52,24 +52,24 @@
         <relativePath />
     </parent>
 
-    <groupId>org.glassfish.main</groupId>
-    <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>5.1.2.173-SNAPSHOT</version>
+    <groupId>fish.payara</groupId>
+    <artifactId>payara-nucleus-parent</artifactId>
+    <version>5.0.0.Alpha4-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>GlassFish Nucleus Parent Project</name>
+    <name>Payara Nucleus Parent Project</name>
 
     <scm>
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.1.2.173-SNAPSHOT</tag>
+        <tag>payara-server-5.0.0.Alpha4-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/payara/Payara/issues</url>
     </issueManagement>
-    
+
     <licenses>
       <license>
         <name>CDDL + GPLv2 with classpath exception</name>
@@ -90,7 +90,7 @@
             <name>Central Repository</name>
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
-    
+
         <repository>
             <id>jvnet-nexus-releases</id>
             <name>Java.net Releases Repositories</name>
@@ -102,7 +102,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
+
         <repository>
             <id>jvnet-nexus-staging</id>
             <name>Java.net Staging Repositories</name>
@@ -114,7 +114,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
+
         <repository>
             <id>jvnet-nexus-promoted</id>
             <name>Java.net Promoted Repositories</name>
@@ -126,7 +126,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
+
         <repository>
             <id>jvnet-nexus-1074</id>
             <name>Java.net orgglassfish-1074 Repositories</name>
@@ -138,7 +138,30 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
+
+        <repository>
+          <id>eclipse.microprofile</id>
+          <name>Eclipse MicroProfile Repository</name>
+          <url>https://repo.eclipse.org/content/groups/microprofile/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+
+        <!--
+        <repository>
+           <id>payara-patched-externals-local</id>
+           <name>Payara Patched Externals local</name>
+           <url>file:///opt/PayaraDev/Payara_PatchedProjects</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+         -->
+
         <repository>
            <id>payara-patched-externals</id>
 	       <name>Payara Patched Externals</name>
@@ -148,23 +171,12 @@
            		<enabled>true</enabled>
            	</releases>
             	<snapshots>
-                	<enabled>false</enabled>
+                	<enabled>true</enabled> <!-- TEMP for HK2 until b45 released -->
             	</snapshots>
         </repository>
-        
-        <repository>
-           <id>javaee-security-spec-bintray</id>
-           <name>Soteria Bintray</name>
-           <url>https://dl.bintray.com/javaee-security-spec/maven/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-         </repository>
+
     </repositories>
-    
+
     <pluginRepositories>
         <pluginRepository>
             <id>jvnet-nexus-promoted</id>
@@ -179,9 +191,9 @@
         </pluginRepository>
         <pluginRepository>
            <id>payara-patched-externals</id>
-	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
+	       <name>Payara Patched Externals</name>
+	       <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+	       <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
            	<releases>
            		<enabled>true</enabled>
            	</releases>
@@ -199,60 +211,70 @@
         <javadoc.skip>false</javadoc.skip>
         <javadoc.version>2.10.3</javadoc.version>
         <deploy.skip>true</deploy.skip>
-        
+
         <!-- Java EE -->
-        
+
         <!-- Servlet -->
-        <servlet-api.version>4.0.0-b07</servlet-api.version>
-        <grizzly.version>2.4.0-beta9</grizzly.version>
-        <grizzly.npn.version>1.5</grizzly.npn.version>
-        
+        <servlet-api.version>4.0.0</servlet-api.version>
+        <grizzly.version>2.4.1</grizzly.version>
+        <grizzly.npn.version>1.7</grizzly.npn.version>
+
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
-        <jax-rs-api.impl.version>2.1-m09</jax-rs-api.impl.version>
-        <jersey.version>2.26-b06</jersey.version>
-        
+        <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
+        <jersey.version>2.26</jersey.version>
+
         <!-- Bean Validation -->
-        <javax.validation.version>1.1.0.Final</javax.validation.version>
-        <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
-        
+        <javax.validation.version>2.0.0.Final</javax.validation.version>
+        <hibernate.validator.version>6.0.3.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.0.3.Final</hibernate.validator-cdi.version>
+
         <!-- Expression language -->
         <javax.el.version>3.0.1-b04</javax.el.version>
         <javax.el-api.version>3.0.1-b04</javax.el-api.version>
-        
-        <!-- JavaMail -->
-        <mail.version>1.6.0-rc2</mail.version>
-        
-        <management-api.version>1.1-rev-1</management-api.version>
-        
-        <javax.annotation-api.version>1.3</javax.annotation-api.version>
-        
-        
-        <!-- Other -->
-        
-        <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <hk2.version>2.5.0-b38</hk2.version>
-        <hk2.plugin.version>2.5.0-b38</hk2.plugin.version>
 
-        <glassfish-corba.version>4.0.1.payara-p6</glassfish-corba.version>
+        <!-- JavaMail -->
+        <mail.version>1.6.0</mail.version>
+
+        <management-api.version>1.1-rev-1</management-api.version>
+
+        <javax.annotation-api.version>1.3</javax.annotation-api.version>
+
+
+        <!-- Other -->
+
+        <hk2.version>2.5.0-b45-SNAPSHOT</hk2.version>
+        <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
+
+        <!-- 4.1.1-b001  -->
+        <glassfish-corba.version>4.1.1.payara-p1</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <saaj-api.version>1.3.4</saaj-api.version>
-        
+        <saaj-api.version>1.4.0</saaj-api.version>
+
+        <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.3.3</classmate.version>
         <jboss.logging.version>3.3.1.Final</jboss.logging.version>
-        <!-- PAYARA-625 -->
-        <javassist.version>3.20.0-GA</javassist.version>
-       
+        <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
+        <javassist.version>3.22.0-CR2</javassist.version>
+
+        <!-- A pure Java implementation of the SSH-2 protocol, a successor to Ganymed  -->
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
-        <pfl.version>4.0.0-b004</pfl.version>
+
+        <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
+        <pfl.version>4.0.1-b002</pfl.version>
+        <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0-b001</gmbal.version>
-        <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.7</antlr.version>
-        
-        <jackson.version>2.8.8</jackson.version>
-        <jettison.version>1.3.8</jettison.version>
-       
+
+        <!-- Jackson is a high-performance JSON processor (parser, generator) -->
+        <jackson.version>2.8.9</jackson.version>
+        <!-- A StAX implementation for JSON. -->
+
+        <jsonp.version>1.1</jsonp.version>
+
         <mimepull.version>1.9.7</mimepull.version>
+
+        <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <jbi.version>1.0</jbi.version>
         <glassfish-management-api.version>3.2.1-b002</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
@@ -263,28 +285,31 @@
         <asm.version>5.0.3</asm.version>
         <shoal.version>1.7.0-M1</shoal.version>
         <ha-api.version>3.1.9</ha-api.version>
-        
+
         <hazelcast.version>3.8</hazelcast.version>
-        
+
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
         <xpp3.version>1.1.4c_7</xpp3.version>
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
         <lombok.version>1.16.14</lombok.version>
-        
+
         <!-- Build -->
-    
+
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.7</command-security-plugin.version>
+        <command-security-plugin.version>1.0.8</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
-        
+        <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
+        <ant.version>1.10.1</ant.version>
+        <ant-launcher.version>1.10.1</ant-launcher.version>
+
         <!-- Debug / analysis -->
-        
-        <findbugs.skip>false</findbugs.skip>
+
+        <findbugs.skip>true</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
         <findbugs.exclude />
@@ -327,13 +352,13 @@
 
         <pluginManagement>
             <plugins>
-               
+
                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.0.0</version>
                </plugin>
-               
+
                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -350,31 +375,31 @@
                         </testExcludes>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.2</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.20</version>
                     <configuration>
                         <useSystemClassLoader>true</useSystemClassLoader>
-                        <!-- 
+                        <!--
                         <forkCount>0</forkCount>
                          -->
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.0.1</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
@@ -383,85 +408,85 @@
                         <additionalparam>${javadoc.options}</additionalparam>
                     </configuration>
                 </plugin>
-              
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.5.3</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>3.0.1</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.5</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
                     <version>2.5.2</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.0.2</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
                     <version>1.6</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>2.8.2</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>1.7</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-remote-resources-plugin</artifactId>
                     <version>1.5</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-eclipse-plugin</artifactId>
                     <version>2.9</version>
                 </plugin>
-              
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-invoker-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
                     <version>2.2</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.glassfish.hk2</groupId>
                     <artifactId>hk2-inhabitant-generator</artifactId>
@@ -482,7 +507,7 @@
                     <artifactId>config-generator</artifactId>
                     <version>${hk2.plugin.version}</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                     <artifactId>maven-antrun-extended-plugin</artifactId>
@@ -498,18 +523,19 @@
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.8.1</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
                     <version>3.3.0</version>
                 </plugin>
+
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <version>${glassfishbuild.version}</version>
                 </plugin>
-              
+
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>antlr-maven-plugin</artifactId>
@@ -530,7 +556,7 @@
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>1.7</version>
                 </plugin>
-             
+
             </plugins>
         </pluginManagement>
 
@@ -560,7 +586,7 @@
                     </execution>
                 </executions>
             </plugin>
-        
+
             <!-- force cleaning of the local repository
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -589,7 +615,7 @@
                 </executions>
             </plugin>
 	    -->
-            
+
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
@@ -610,7 +636,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-eclipse-plugin</artifactId>
@@ -620,7 +646,7 @@
                     <addGroupIdToProjectName>true</addGroupIdToProjectName>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-inhabitant-generator</artifactId>
@@ -628,7 +654,7 @@
                     <supportedProjectTypes>jar,ejb,war,glassfish-jar</supportedProjectTypes>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -636,7 +662,7 @@
                     <!-- By default, we don't export anything. -->
                     <Export-Package />
                     <instructions>
-                        <!-- 
+                        <!--
                             Read all the configuration from osgi.bundle file, if it exists.
                         -->
                         <_include>-osgi.bundle</_include>
@@ -648,7 +674,7 @@
                     </supportedProjectTypes>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>command-security-maven-plugin</artifactId>
@@ -657,7 +683,7 @@
                     <isFailureFatal>${command.security.maven.plugin.isFailureFatal}</isFailureFatal>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>config-generator</artifactId>
@@ -666,12 +692,12 @@
                     <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
                 </configuration>
             </plugin>
-            
-               <plugin>
+
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
-                    <!--  
+                    <!--
                     <forkCount>0</forkCount>
                     <reuseForks>true</reuseForks>
                     -->
@@ -693,13 +719,13 @@
                             <tasks>
                                 <echo>
 Building ${project.artifactId} (final name ${project.build.finalName})
-Running from ${basedir} 
-Output dir is ${project.build.outputDirectory} 
+Running from ${basedir}
+Output dir is ${project.build.outputDirectory}
 Parent is ${project.parent}</echo>
 
                                 <echo file="${basedir}/target/MANIFEST.MF">Manifest-Version: 1.0
                                 </echo>
-                                
+
                                 <copy toDir="${project.build.outputDirectory}/META-INF" overwrite="false">
                                     <fileset dir="${basedir}/target" includes="MANIFEST.MF">
                                         <present present="srconly" targetdir="${project.build.outputDirectory}/META-INF"/>
@@ -721,7 +747,7 @@ Parent is ${project.parent}</echo>
                             <classpathLayoutType>custom</classpathLayoutType>
                             <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
                         </manifest>
-                        
+
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                     <excludes>
@@ -729,8 +755,8 @@ Parent is ${project.parent}</echo>
                     </excludes>
                 </configuration>
             </plugin>
-            
-            
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -741,17 +767,17 @@ Parent is ${project.parent}</echo>
                     </excludes>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgiversion-maven-plugin</artifactId>
-                
-                <!-- 
+
+                <!--
                     Since we don't want a qualifier like b05 or SNAPSHOT to appear
                     in the package version attribute, we use the following goal to
                     populate a project property with an OSGi version which is
                     equivalent to maven version without qualifier and then use that
-                    property in osgi.bundle while exporting. 
+                    property in osgi.bundle while exporting.
                 -->
                 <configuration>
                     <dropVersionComponent>qualifier</dropVersionComponent>
@@ -787,7 +813,7 @@ Parent is ${project.parent}</echo>
                     </dependency>
                 </dependencies>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -817,9 +843,9 @@ Parent is ${project.parent}</echo>
                     </reportPlugins>
                 </configuration>
             </plugin>
-            
-           
-            
+
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -828,7 +854,7 @@ Parent is ${project.parent}</echo>
                     <skip>${javadoc.skip}</skip>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -842,7 +868,7 @@ Parent is ${project.parent}</echo>
 
     <dependencyManagement>
         <dependencies>
-        
+
             <!-- Servlet -->
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -856,7 +882,7 @@ Parent is ${project.parent}</echo>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
-            
+
             <!-- JAX-RS -->
             <dependency>
                 <groupId>javax.ws.rs</groupId>
@@ -875,13 +901,26 @@ Parent is ${project.parent}</echo>
                 <artifactId>jersey-hk2</artifactId>
                 <version>2.26-b06</version>
             </dependency>
-            
+
+
+            <!-- Bean Validation (BVal) -->
             <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>${javax.annotation-api.version}</version>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${javax.validation.version}</version>
             </dependency>
-            
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator-cdi</artifactId>
+                <version>${hibernate.validator-cdi.version}</version>
+            </dependency>
+
+
             <!-- Expression Language (EL) -->
             <dependency>
                 <groupId>javax.el</groupId>
@@ -893,7 +932,8 @@ Parent is ${project.parent}</echo>
                 <artifactId>javax.el</artifactId>
                 <version>${javax.el.version}</version>
             </dependency>
-            
+
+
             <!-- JavaMail -->
             <dependency>
                 <groupId>javax.mail</groupId>
@@ -905,8 +945,13 @@ Parent is ${project.parent}</echo>
                 <artifactId>javax.mail</artifactId>
                 <version>${mail.version}</version>
             </dependency>
-        
-        
+
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax.annotation-api.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-bom</artifactId>
@@ -914,12 +959,13 @@ Parent is ${project.parent}</echo>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
                 <version>1.0.1</version>
             </dependency>
-          
+
             <dependency>
                 <groupId>com.sun.xml.stream</groupId>
                 <artifactId>sjsxp</artifactId>
@@ -950,45 +996,88 @@ Parent is ${project.parent}</echo>
                 <artifactId>gmbal</artifactId>
                 <version>${gmbal.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
-                <version>4.2.0</version>
+                <version>5.0.0</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
-                <version>4.2.0</version>
+                <version>6.0.0</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.enterprise</artifactId>
-                <version>4.2.0</version>
+                <version>5.0.0</version>
                 <scope>provided</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.main</artifactId>
-                <version>4.2.1</version>
+                <version>5.6.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.webconsole</artifactId>
-                <version>3.1.2</version>
+                <version>4.3.4</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.eventadmin</artifactId>
-                <version>1.2.8</version>
+                <version>1.4.8</version>
             </dependency>
-          
             <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-base</artifactId>
-                <version>${jackson.version}</version>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.shell</artifactId>
+                <version>1.4.3</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.gogo.runtime</artifactId>
+                <version>1.0.6</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.gogo.shell</artifactId>
+               <version>1.0.0</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.gogo.command</artifactId>
+               <version>1.0.2</version>
+            </dependency>
+            <dependency> <!-- A utility to automatically install bundles from a directory.-->
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.fileinstall</artifactId>
+               <version>3.6.0</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
+               <artifactId>org.apache.felix.configadmin</artifactId>
+               <version>1.8.16</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId> <!-- Implementation of the Declarative Services specification 1.3 -->
+               <artifactId>org.apache.felix.scr</artifactId>
+               <version>2.0.12</version>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId> <!-- OSGi Companion Code for org.osgi.dto Version 1.0.0. -->
+                <artifactId>org.osgi.dto</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId> <!-- Bundle repository service. -->
+                <artifactId>org.apache.felix.bundlerepository</artifactId>
+                <version>2.0.10</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
@@ -1005,14 +1094,14 @@ Parent is ${project.parent}</echo>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.jettison</groupId>
-                <artifactId>jettison</artifactId>
-                <version>${jettison.version}</version>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
 
             <dependency>
@@ -1060,7 +1149,7 @@ Parent is ${project.parent}</echo>
                 <artifactId>glassfish-corba-internal-api</artifactId>
                 <version>${glassfish-corba.version}</version>
             </dependency>
-          
+
             <dependency>
                 <groupId>org.glassfish.pfl</groupId>
                 <artifactId>pfl-basic</artifactId>
@@ -1114,7 +1203,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>1.3.1</version>
+                <version>2.5</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
@@ -1170,46 +1259,6 @@ Parent is ${project.parent}</echo>
                 <groupId>org.glassfish.annotations</groupId>
                 <artifactId>logging-annotation-processor</artifactId>
                 <version>${logging-annotation-processor.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.shell</artifactId>
-                <version>1.4.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.gogo.runtime</artifactId>
-                <version>0.8.0</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.gogo.shell</artifactId>
-               <version>0.8.0</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.gogo.command</artifactId>
-               <version>0.8.0</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.fileinstall</artifactId>
-               <version>3.1.10</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.configadmin</artifactId>
-               <version>1.2.4</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.scr</artifactId>
-               <version>1.4.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.bundlerepository</artifactId>
-                <version>1.6.6</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.docs.man</groupId>
@@ -1277,7 +1326,7 @@ Parent is ${project.parent}</echo>
                 </dependency>
             </dependencies>
         </profile>
-        
+
         <profile>
             <id>mac</id>
             <activation>
@@ -1295,7 +1344,7 @@ Parent is ${project.parent}</echo>
                 </dependency>
             </dependencies>
         </profile>
-        
+
         <profile>
             <id>copyright</id>
             <activation>
@@ -1403,6 +1452,66 @@ Parent is ${project.parent}</echo>
             <properties>
                 <javadoc.options>-Xdoclint:none</javadoc.options>
             </properties>
+        </profile>
+
+        <profile>
+            <id>DeploySnapshot-Internal</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>payara-nexus</id>
+                    <url>https://nexus.payara.fish/content/repositories/payara-snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>payara-nexus</serverId>
+                            <nexusUrl>https://nexus.payara.fish/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>DeploySnapshot-Sonatype</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

@@ -57,7 +57,7 @@ public class RestTests {
     @Test
     public void testManagementEndpoint() {
         try {
-            HttpURLConnection connection = getConnection("http://localhost:5048/management/domain.xml");
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -67,7 +67,7 @@ public class RestTests {
     @Test
     public void testMonitoringEndpoint() {
         try {
-            HttpURLConnection connection = getConnection("http://localhost:5048/monitoring/domain.xml");
+            HttpURLConnection connection = getConnection("http://localhost:4848/monitoring/domain.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -77,7 +77,7 @@ public class RestTests {
     @Test
     public void testEndpointWithEncodedSlash() {
         try {
-            HttpURLConnection connection = getConnection("http://localhost:5048/management/domain/resources/jdbc-resource/jdbc%2F__TimerPool.xml");
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain/resources/jdbc-resource/jdbc%2F__TimerPool.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -87,7 +87,7 @@ public class RestTests {
     @Test
     public void testAdminCommandEndpoint() {
         try {
-            HttpURLConnection connection = getConnection("http://localhost:5048/management/domain/version.xml");
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain/version.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -97,7 +97,7 @@ public class RestTests {
     @Test
     public void testChildConfigBeanEndpoint() {
         try {
-            HttpURLConnection connection = getConnection("http://localhost:5048/management/domain/applications.xml");
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain/applications.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());

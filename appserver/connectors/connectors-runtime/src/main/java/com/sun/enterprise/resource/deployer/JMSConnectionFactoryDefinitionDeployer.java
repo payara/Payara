@@ -72,6 +72,7 @@ import java.util.logging.Logger;
 import static com.sun.appserv.connectors.internal.api.ConnectorConstants.LOCAL_TRANSACTION_TX_SUPPORT_STRING;
 import static com.sun.appserv.connectors.internal.api.ConnectorConstants.NO_TRANSACTION_TX_SUPPORT_STRING;
 import static com.sun.appserv.connectors.internal.api.ConnectorConstants.XA_TRANSACTION_TX_SUPPORT_STRING;
+import org.glassfish.config.support.TranslatedConfigView;
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 @Service
@@ -242,7 +243,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         }
 
         public String getValue() {
-            return value;
+            return (String) TranslatedConfigView.getTranslatedValue(value);
         }
 
         public void setValue(String value) throws PropertyVetoException {

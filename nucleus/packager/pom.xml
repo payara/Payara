@@ -48,9 +48,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -113,7 +113,8 @@
         <module>requesttracing-package</module>
         <module>asadmin-recorder-package</module>
         <module>notification-package</module>
-        <module>payara-api-package</module>
+	<module>payara-api-package</module>
+	<module>payara-executor-service-package</module>
     </modules>
 
     <build>

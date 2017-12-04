@@ -109,7 +109,6 @@
 	<delete file="${runtimedir}/shoal-gms-api.jar"/>
 	<delete file="${runtimedir}/load-balancer-admin.jar"/>
 	<delete file="${runtimedir}/gf-load-balancer-connector.jar"/>
-        <delete file="${runtimedir}/eventbus-notifier-console-plugin"/>
 	<delete file="${runtimedir}/backup.jar"/>
 	<delete file="${runtimedir}/ant.jar" failonerror="false"/>
 	<delete verbose="true" failonerror="false">
@@ -122,7 +121,6 @@
 	  <fileset dir="${runtimedir}" includes="**/nucleus-domain.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-se-shaded.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/derbyLocale*.jar"/>
 	</delete>
 	<delete file="${runtimedir}/autostart/osgi-cdi.jar" failonerror="false"/>
      </target>

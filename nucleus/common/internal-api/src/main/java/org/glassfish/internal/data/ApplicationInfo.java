@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
@@ -137,6 +137,10 @@ public class ApplicationInfo extends ModuleInfo {
     public void add(EngineRef ref) {
         engines.add(ref);
         reversedEngines.addFirst(ref);
+    }
+    
+    public void removeTransientAppMetaData(String metaDataKey) {
+        transientAppMetaData.remove(metaDataKey);
     }
     
     public void addTransientAppMetaData(String metaDataKey, 
@@ -369,6 +373,11 @@ public class ApplicationInfo extends ModuleInfo {
         }
 
     }
+
+    public void initialize() {
+        getModuleInfos().forEach(module -> module.getEngineRefs().forEach(EngineRef::initialize));
+    }
+
 
     public void stop(ExtendedDeploymentContext context, Logger logger) {
 

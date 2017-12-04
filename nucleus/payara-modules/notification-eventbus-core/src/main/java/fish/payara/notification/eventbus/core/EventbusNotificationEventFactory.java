@@ -39,6 +39,7 @@
  */
 package fish.payara.notification.eventbus.core;
 
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import org.glassfish.api.StartupRunLevel;
@@ -48,6 +49,9 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.PostConstruct;
 import java.text.MessageFormat;
 import java.util.logging.Level;
+import javax.inject.Inject;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * @author mertcaliskan
@@ -56,15 +60,26 @@ import java.util.logging.Level;
 @RunLevel(StartupRunLevel.VAL)
 public class EventbusNotificationEventFactory extends NotificationEventFactory<EventbusNotificationEvent> {
 
+    @Inject
+    private ServerEnvironment environment;
+    
+    @Inject
+    private ServiceLocator habitat;
+    
+    @Inject
+    HazelcastCore hazelcast;
+    
     @PostConstruct
     void postConstruct() {
         registerEventFactory(NotifierType.EVENTBUS, this);
     }
 
+    @Override
     public EventbusNotificationEvent buildNotificationEvent(String subject, String message) {
         EventbusNotificationEvent event = initializeEvent(new EventbusNotificationEvent());
         event.setSubject(subject);
         event.setMessage(message);
+        event.setInstanceName(hazelcast.getUUID());;
 
         return event;
     }
@@ -77,6 +92,8 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
             message = MessageFormat.format(message, parameters);
         }
         event.setMessage(message);
+        event.setInstanceName(hazelcast.getUUID());
         return event;
     }
+    
 }

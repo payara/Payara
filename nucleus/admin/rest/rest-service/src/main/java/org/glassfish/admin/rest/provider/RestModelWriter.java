@@ -36,15 +36,17 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
 import java.util.List;
 import java.util.logging.Level;
+import javax.json.JsonException;
+import javax.json.JsonValue;
 import javax.ws.rs.Produces;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.RestModel;
@@ -67,9 +69,9 @@ public class RestModelWriter extends BaseProvider<RestModel> {
         final List<String> wrapObjectHeader = requestHeaders.get().getRequestHeader("X-Wrap-Object");
         boolean wrapObject = ((wrapObjectHeader != null) && (wrapObjectHeader.size() > 0));
         try {
-            JSONObject object = (JSONObject)JsonUtil.getJsonObject(proxy);
-            sb.append(object.toString(getFormattingIndentLevel()));
-        } catch (JSONException ex) {
+            JsonValue object = (JsonValue)JsonUtil.getJsonValue(proxy);
+            sb.append(object.toString());
+        } catch (JsonException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 

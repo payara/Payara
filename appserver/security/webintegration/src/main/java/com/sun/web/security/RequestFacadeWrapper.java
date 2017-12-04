@@ -117,7 +117,7 @@ class RequestFacadeWrapper extends RequestFacade implements HttpServletRequest {
     }
     
     @Override
-    public HttpServletMapping getServletMapping() {
+    public HttpServletMapping getHttpServletMapping() {
     		return servletRequest.getHttpServletMapping(); 
     }
 

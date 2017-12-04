@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
@@ -128,17 +130,6 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     public abstract String getContent(T proxy);
 
-    protected int getFormattingIndentLevel() {
-        RestConfig rg = ResourceUtil.getRestConfig(habitat);
-        if (rg == null){
-            return -1;
-        }
-        else {
-            return Integer.parseInt(rg.getIndentLevel());
-        }
-
-    }
-
      /**
       * returns true if the HTML viewer displays the hidden CLI command links
       */
@@ -155,7 +146,6 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
      * returns true if the HTML viewer displays the deprecated elements or attributes
      * of a config bean
      */
-
     protected boolean canShowDeprecatedItems() {
 
         RestConfig rg = ResourceUtil.getRestConfig(habitat);

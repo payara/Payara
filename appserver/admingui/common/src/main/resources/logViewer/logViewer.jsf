@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- logViewer/logViewer.jsf -->
@@ -92,7 +94,7 @@
 	attrs="#{requestScope.attrs}"
 	method="GET"
 	result="#{requestScope.queryResult}");
-    setPageSessionAttribute(key="logFiles" value="#{requestScope.queryResult.data['InstanceLogFileNames']}");
+    setPageSessionAttribute(key="logFiles" value="#{requestScope.queryResult.data['logNames']}");
     if(!$attribute{logFile}) {
 	setAttribute(key="logFile" value="#{pageSession.logFiles[0]}");
     }
@@ -424,8 +426,8 @@
 	<sun:tableColumn headerText="$resource{i18nc.logViewer.colLogLevel}" rowHeader="true" sort="#{td.value.loggedLevel}" id="col2">
 	    <staticText id="levelCol" value="#{td.value.loggedLevel}"/>
 	</sun:tableColumn>
-	<sun:tableColumn headerText="$resource{i18nc.logViewer.messageLabel}" rowHeader="true" sort="#{td.value.Message}" id="col3">
-	    <staticText id="messageCol" value="#{td.value.Message}"/>
+	<sun:tableColumn headerText="$resource{i18nc.logViewer.messageLabel}" rowHeader="true" sort="#{td.value.message}" id="col3">
+	    <staticText id="messageCol" value="#{td.value.message}"/>
 	    <sun:hyperlink id="logDetail" text="$resource{i18nc.logViewer.moreInfoLinkText}"
 	    onClick="
 	    var logDetailWin = window.open('logEntryDetail.jsf?instanceName=#{instanceName}&logLevel=#{td.value.loggedLevel}&logFile=#{pageSession.encodedLogFile}&recNumber=#{td.value.recordNumber}','LogDetail','width='+window.outerWidth+',height='+window.outerHeight+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');

@@ -36,15 +36,16 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
 
-import java.util.Iterator;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import javax.ws.rs.core.Response.Status;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
 
 public class Common {
     public static final int SC_OK = Status.OK.getStatusCode();
@@ -290,19 +291,19 @@ public class Common {
         return verifier.status(statuses);
     }
 
-    public static void verify(Environment environment, ObjectValue want, JSONObject have) throws Exception {
+    public static void verify(Environment environment, ObjectValue want, JsonObject have) throws Exception {
         DataVerifier.verify(environment, want, have);
     }
 
     public static ObjectValue cloneObjectVal(ObjectValue v) throws Exception {
-        return toObjectVal(v.toJSONObject());
+        return toObjectVal(v.toJsonObject());
     }
 
-    public static ObjectValue toObjectVal(JSONObject j) throws Exception {
+    public static ObjectValue toObjectVal(JsonObject j) throws Exception {
         return (ObjectValue) toValue(j);
     }
 
-    public static ArrayValue toArrayVal(JSONArray j) throws Exception {
+    public static ArrayValue toArrayVal(JsonArray j) throws Exception {
         return (ArrayValue) toValue(j);
     }
 
@@ -322,24 +323,23 @@ public class Common {
         if (j instanceof Boolean) {
             return booleanVal().value((Boolean) j);
         }
-        if (JSONObject.NULL == j) {
+        if (JsonObject.NULL == j) {
             return nilVal();
         }
 
-        if (j instanceof JSONObject) {
-            JSONObject jo = (JSONObject) j;
+        if (j instanceof JsonObject) {
+            JsonObject jo = (JsonObject) j;
             ObjectValue ov = objectVal();
-            for (Iterator<String> i = jo.keys(); i.hasNext();) {
-                String key = i.next();
+            for (String key : jo.keySet()) {
                 ov.put(key, toValue(jo.get(key)));
             }
             return ov;
         }
 
-        if (j instanceof JSONArray) {
-            JSONArray ja = (JSONArray) j;
+        if (j instanceof JsonArray) {
+            JsonArray ja = (JsonArray) j;
             ArrayValue av = arrayVal();
-            for (int i = 0; i < ja.length(); i++) {
+            for (int i = 0; i < ja.size(); i++) {
                 av.add(toValue(ja.get(i)));
             }
             return av;

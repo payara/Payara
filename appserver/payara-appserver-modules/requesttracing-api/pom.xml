@@ -44,9 +44,10 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
+    <packaging>glassfish-jar</packaging>
     <artifactId>requesttracing-api</artifactId>
     <name>Request Tracing CDI API</name>
     <description>Request Tracing CDI API</description>
@@ -65,12 +66,9 @@
                         </goals>
                         <configuration>
                             <instructions>
-                                <Import-Package>
-                                    javax.enterprise.inject.spi,
-                                    fish.payara.nucleus.requesttracing.api
-                                </Import-Package>
                                 <Export-Package>
-                                    fish.payara.nucleus.requesttracing.api.extension
+                                    fish.payara.requesttracing.api,
+                                    fish.payara.requesttracing.api.extension
                                 </Export-Package>
                             </instructions>
                         </configuration>

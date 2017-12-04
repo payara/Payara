@@ -40,6 +40,18 @@
 
 package org.glassfish.api.admin;
 
+/**
+ * Interface for running commands on an instance
+ * <p>
+ * This is for the actual execution of the command, and should not be used for the commands themselves.
+ * @see com.sun.enterprise.admin.cli.CLICommand
+ * @see org.glassfish.api.admin.AdminCommand
+ */
 public interface InstanceCommand {
+    
+    /**
+     * 
+     * @return 
+     */
     public String getCommandOutput();
 }

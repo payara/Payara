@@ -40,18 +40,21 @@
     holder.
 
 -->
+<!--"Portions Copyright [2017] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
+    <groupId>org.glassfish.main</groupId>
     <artifactId>inplanted</artifactId>
+    <version>4.1-SNAPSHOT</version>
     <name>Inplanted mode embedded testing</name>
 
   <build>
@@ -127,7 +130,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.3.1</version>
 		</dependency>
         <dependency>
             <groupId>org.glassfish.main.web</groupId>

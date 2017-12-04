@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
     Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
@@ -45,9 +44,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.admingui</groupId>
@@ -145,6 +144,7 @@
         <module>slack-notifier-console-plugin</module>
         <module>hipchat-notifier-console-plugin</module>
         <module>eventbus-notifier-console-plugin</module>
+        <module>cdieventbus-notifier-console-plugin</module>
     	<module>email-notifier-console-plugin</module>
         <module>snmp-notifier-console-plugin</module>
         <module>xmpp-notifier-console-plugin</module>
@@ -153,6 +153,7 @@
         <module>healthcheck-service-console-plugin</module>
         <module>newrelic-notifier-console-plugin</module>
         <module>jmx-monitoring-plugin</module>
+        <module>rest-monitoring-plugin</module>
     </modules>
     <build>
         <plugins>

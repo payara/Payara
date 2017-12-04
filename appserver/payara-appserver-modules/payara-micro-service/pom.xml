@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
+    
     <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-service</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara Micro Service</name>
+    
     <developers>
         <developer>
             <id>smillidge</id>
@@ -40,6 +43,7 @@
             </roles>
         </developer>
     </developers>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -98,7 +102,6 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-api</artifactId>
-            <version>${weld-api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -106,6 +109,22 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+   	        <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-glue</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>container-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

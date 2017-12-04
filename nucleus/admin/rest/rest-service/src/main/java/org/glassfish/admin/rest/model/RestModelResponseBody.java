@@ -36,11 +36,13 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyrigh [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.model;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonException;
+import javax.json.JsonObject;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.JsonUtil;
 
@@ -69,10 +71,10 @@ public class RestModelResponseBody<T extends RestModel> extends ResponseBody {
     }
 
     @Override
-    protected void populateJson(JSONObject object) throws JSONException {
+    protected void populateJson(JsonObject object) throws JsonException {
         super.populateJson(object);
         if (getEntity() != null) {
-            object.put("item", JsonUtil.getJsonObject(getEntity()));
+            object.put("item", JsonUtil.getJsonValue(getEntity()));
         }
     }
 }

@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.deployment.admin;
 
 import java.net.URI;
@@ -76,6 +77,7 @@ import org.jvnet.hk2.config.Transaction;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -167,6 +169,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private ActionReport report;
     private DeploymentTracing timing;
     private transient DeployCommandSupplementalInfo suppInfo;
+    private static final String EJB_JAR_XML = "META-INF/ejb-jar.xml";
+    private static final String SUN_EJB_JAR_XML = "META-INF/sun-ejb-jar.xml";
+    private static final String GF_EJB_JAR_XML = "META-INF/glassfish-ejb-jar.xml";
 
     public DeployCommand() {
         origin = Origin.deploy;
@@ -258,6 +263,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 tracing.addMark(DeploymentTracing.Mark.INITIAL_CONTEXT_CREATED);
             }
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
+
+            if (!forceName) {
+                if (archiveHandler.getArchiveType().equals("ejb")
+                        && (archive.exists(EJB_JAR_XML)
+                        || archive.exists(SUN_EJB_JAR_XML)
+                        || archive.exists(GF_EJB_JAR_XML))) {
+
+                    name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
+                }
+            }
+
             if (name == null) {
                 name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
             } else {
@@ -340,6 +356,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     @Override
     public void execute(AdminCommandContext context) {
         long timeTakenToDeploy = 0;
+        long deploymentTimeMillis = 0;
+
         try {
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
             Collection<Interceptor> interceptors = habitat.getAllServices(Interceptor.class);
@@ -420,7 +438,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             // create the parent class loader
             deploymentContext
                     = deployment.getBuilder(logger, this, report).
-                    source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
+                            source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
             if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.CONTEXT_CREATED);
                 deploymentContext.addModuleMetaData(tracing);
@@ -473,6 +491,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 type = archiveHandler.getArchiveType();
             }
             appProps.setProperty(Application.ARCHIVE_TYPE_PROP_NAME, type);
+            if (appProps.getProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP) == null) {
+                appProps.setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, Boolean.FALSE.toString());
+            }
 
             savedAppConfig.store(appProps);
 
@@ -484,8 +505,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.DEPLOY);
             }
-            ApplicationInfo appInfo;
-            appInfo = deployment.deploy(deploymentContext);
+            Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
+            if(!loadOnly) {
+                deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
+            }
+            ApplicationInfo appInfo = deplResult.appInfo;
 
             /*
              * Various deployers might have added to the downloadable or
@@ -510,7 +534,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     // Set the application deploy time
                     timeTakenToDeploy = timing.elapsed();
                     deploymentContext.getTransientAppMetaData("application", Application.class).setDeploymentTime(Long.toString(timeTakenToDeploy));
-                    
+
+                    deploymentTimeMillis = System.currentTimeMillis();
+                    deploymentContext.getTransientAppMetaData("application", Application.class).setTimeDeployed(Long.toString(deploymentTimeMillis));
                     // register application information in domain.xml
                     deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
                     if (tracing != null) {
@@ -566,9 +592,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                 logger.info(localStrings.getLocalString(
                         "deploy.done",
-                        "Deployment of {0} done is {1} ms",
+                        "Deployment of {0} done is {1} ms at {2}",
                         name,
-                        timeTakenToDeploy));
+                        timeTakenToDeploy, DateFormat.getDateInstance().format(new Date(deploymentTimeMillis))));
             } else if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
                 String errorMessage = report.getMessage();
                 Throwable cause = report.getFailureCause();
@@ -603,7 +629,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                 }
             }
-            if (deploymentContext != null) {
+            if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
             }
         }

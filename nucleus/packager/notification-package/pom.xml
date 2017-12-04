@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.packager</groupId>
     <artifactId>notification-package</artifactId>
@@ -61,6 +61,11 @@
         <dependency>
             <groupId>fish.payara.nucleus</groupId>
             <artifactId>notification-eventbus-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.nucleus</groupId>
+            <artifactId>notification-cdi-eventbus-core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

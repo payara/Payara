@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.jdbc.deployer;
 
@@ -93,6 +93,7 @@ import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.resource.pool.ResourcePool;
 import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
 import com.sun.enterprise.util.i18n.StringManager;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * Handles Jdbc connection pool events in the server instance. When user adds a
@@ -510,13 +511,12 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
                 } else if ("USERNAME".equals(name.toUpperCase(Locale.getDefault()))
                         || "USER".equals(name.toUpperCase(locale))) {
 
-                    propList.add(new ConnectorConfigProperty("User",
-                            rp.getValue(), "user name", "java.lang.String"));
+                    propList.add(new ConnectorConfigProperty("User", (String) TranslatedConfigView.getTranslatedValue(rp.getValue()), "user name", "java.lang.String"));
 
                 } else if ("PASSWORD".equals(name.toUpperCase(locale))) {
 
                     propList.add(new ConnectorConfigProperty("Password",
-                            rp.getValue(), "Password", "java.lang.String"));
+                            (String) TranslatedConfigView.getTranslatedValue(rp.getValue()), "Password", "java.lang.String"));
 
                 } else if ("JDBC30DATASOURCE".equals(name.toUpperCase(locale))) {
 
@@ -545,16 +545,21 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
                     propList.add(new ConnectorConfigProperty("TimeToKeepQueriesInMinutes",
                             rp.getValue(), "TimeToKeepQueriesInMinutes", "java.lang.String"));
 
+                } else if ("MAXCACHESIZE".equals(name.toUpperCase(Locale.getDefault())) || "MAX-CACHE-SIZE".equals(name.toUpperCase(Locale.getDefault()))){
+                    
+                    propList.add(new ConnectorConfigProperty("MaxCacheSize",
+                            rp.getValue(), "MaxCacheSize", "java.lang.String"));
+                    
                 } else if (mcfConPropKeys.containsKey(name.toUpperCase(Locale.getDefault()))) {
 
                     propList.add(new ConnectorConfigProperty(
                             (String) mcfConPropKeys.get(name.toUpperCase(Locale.getDefault())),
-                            rp.getValue() == null ? "" : rp.getValue(),
+                            rp.getValue() == null ? "" : (String) TranslatedConfigView.getTranslatedValue(rp.getValue()),
                             "Some property",
                             "java.lang.String"));
                 } else {
                     driverProperties = driverProperties + "set" + escape(name)
-                            + "#" + escape(rp.getValue()) + "##";
+                            + "#" + escape((String) TranslatedConfigView.getTranslatedValue(rp.getValue())) + "##";
                 }
             }
 

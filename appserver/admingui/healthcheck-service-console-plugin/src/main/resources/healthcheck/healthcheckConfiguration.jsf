@@ -1,42 +1,42 @@
 <!--
 
- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2017 Payara Foundation and/or its affiliatess. 
- All rights reserved.
+Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
 
- The contents of this file are subject to the terms of either the GNU
- General Public License Version 2 only ("GPL") or the Common Development
- and Distribution License("CDDL") (collectively, the "License").  You
- may not use this file except in compliance with the License.  You can
- obtain a copy of the License at
- https://github.com/payara/Payara/blob/master/LICENSE.txt
- See the License for the specific
- language governing permissions and limitations under the License.
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common Development
+and Distribution License("CDDL") (collectively, the "License").  You
+may not use this file except in compliance with the License.  You can
+obtain a copy of the License at
+https://github.com/payara/Payara/blob/master/LICENSE.txt
+See the License for the specific
+language governing permissions and limitations under the License.
 
- When distributing the software, include this License Header Notice in each
- file and include the License file at glassfish/legal/LICENSE.txt.
+When distributing the software, include this License Header Notice in each
+file and include the License file at glassfish/legal/LICENSE.txt.
 
- GPL Classpath Exception:
- The Payara Foundation designates this particular file as subject to the "Classpath"
- exception as provided by the Payara Foundation in the GPL Version 2 section of the License
- file that accompanied this code.
+GPL Classpath Exception:
+The Payara Foundation designates this particular file as subject to the "Classpath"
+exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+file that accompanied this code.
 
- Modifications:
- If applicable, add the following below the License Header, with the fields
- enclosed by brackets [] replaced by your own identifying information:
- Portions Copyright [year] [name of copyright owner]"
- Contributor(s):
- If you wish your version of this file to be governed by only the CDDL or
- only the GPL Version 2, indicate your decision by adding "[Contributor]
- elects to include this software in this distribution under the [CDDL or GPL
- Version 2] license."  If you don't indicate a single choice of license, a
- recipient has the option to distribute your version of this file under
- either the CDDL, the GPL Version 2 or to extend the choice of license to
- its licensees as provided above.  However, if you add GPL Version 2 code
- and therefore, elected the GPL Version 2 license, then the option applies
- only if the new code is made subject to such option by the copyright
- holder.
+Modifications:
+If applicable, add the following below the License Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyright [year] [name of copyright owner]"
+
+Contributor(s):
+If you wish your version of this file to be governed by only the CDDL or
+only the GPL Version 2, indicate your decision by adding "[Contributor]
+elects to include this software in this distribution under the [CDDL or GPL
+Version 2] license."  If you don't indicate a single choice of license, a
+recipient has the option to distribute your version of this file under
+either the CDDL, the GPL Version 2 or to extend the choice of license to
+its licensees as provided above.  However, if you add GPL Version 2 code
+and therefore, elected the GPL Version 2 license, then the option applies
+only if the new code is made subject to such option by the copyright
+holder.
 -->
 
 <!initPage
@@ -57,7 +57,7 @@
                 method="GET" result="#{requestScope.resp}");      
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.healthcheckConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");       
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});        
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});
         py.getHistoricHealthcheckMessages(parentEndpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
@@ -67,7 +67,7 @@
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
-        
+
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
         setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
         if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
@@ -92,12 +92,12 @@
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierEnabled" value="#{pageSession.notifierEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled" 
+                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
                             value="#{pageSession.historicalTraceEnabledSelected}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/healthcheck-configure" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                    py.updateNotifiers(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}" dynamic="#{pageSession.dynamic}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+                    py.updateNotifiers(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
                     />
             </sun:button>
         </sun:panelGroup>
@@ -128,6 +128,12 @@
             <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['historicalTraceStoreSize']}"/>
         </sun:property>
+        <sun:property id="historicalTraceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreTimeoutLabel}"
+                      helpText="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreTimeoutLabelHelpText}">
+            <sun:textField id="historicalTraceStoreTimeoutField" columns="$int{40}" maxLength="250"
+                           text="#{pageSession.valueMap['historicalTraceStoreTimeout']}"/>
+        </sun:property>
     </sun:propertySheetSection>
 
     <sun:propertySheetSection id="notifiers">
@@ -140,9 +146,19 @@
                 selectedItemsLabel="$resource{i18nhx.healthcheck.configuration.selectedNotifiers}">
             </sun:addRemove>
         </sun:property>
-   </sun:propertySheetSection>
-      
-   <sun:propertySheetSection id="histroic">
+
+        <sun:property>
+            <sun:staticText text="$resource{i18nhx.healthcheck.link.to.notification.page.text.prefix}" />
+            <sun:hyperlink
+                    toolTip="$resource{i18nhx.healthcheck.link.to.notification.page.text}"
+                    url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
+                <sun:staticText text="$resource{i18nhx.healthcheck.link.to.notification.page.text}" />
+            </sun:hyperlink>
+            <sun:staticText text="$resource{i18nhx.healthcheck.link.to.notification.page.text.suffix}" />
+        </sun:property>
+    </sun:propertySheetSection>
+
+   <sun:propertySheetSection id="historic">
      <sun:property>            
         <sun:table id="historicHealthcheckTable" title="$resource{i18nhx.healthcheck.historic.table.name}" >
             <sun:tableRowGroup id="historicHealthcheckRowGroup" data={"$attribute{historic}"} sourceVar="td" 

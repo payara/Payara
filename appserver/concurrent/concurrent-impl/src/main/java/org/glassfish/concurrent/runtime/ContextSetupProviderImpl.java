@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
@@ -63,6 +65,7 @@ import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import org.glassfish.internal.api.Globals;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
@@ -82,6 +85,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private boolean classloading, security, naming, workArea;
 
     private RequestTracingService requestTracing;
+    private StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
                                     Deployment deployment,
@@ -97,6 +101,12 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
         } catch (NullPointerException ex) {
             logger.log(Level.INFO, "Error retrieving Request Tracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException");
+        }
+        try {
+            this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
                     + "during initialisation of Concurrent Context - NullPointerException");
         }
         
@@ -156,6 +166,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getInvocation() != null) {
             appName = handle.getInvocation().getAppName();
         }
+        if(appName == null) {
+            appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment)handle.getInvocation().getJNDIEnvironment()).getName();
+        }
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
         if (!isApplicationEnabled(appName)) {
             throw new IllegalStateException("Module " + appName + " is disabled");
@@ -186,12 +199,15 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             requestTracing.traceRequestEvent(requestEvent);
         }
         
+        if (stuckThreads != null){
+            stuckThreads.registerThread(Thread.currentThread().getId());
+        }
+        
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
 
     private RequestEvent constructConcurrentContextEvent(ComponentInvocation invocation) {
         requestTracing.startTrace();
-        
         RequestEvent requestEvent = new RequestEvent("ConcurrentContextTrace");
         
         requestEvent.addProperty("App Name", invocation.getAppName());
@@ -240,6 +256,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             requestTracing.endTrace();
+        }
+        if (stuckThreads != null){
+            stuckThreads.deregisterThread(Thread.currentThread().getId());
         }
     }
     

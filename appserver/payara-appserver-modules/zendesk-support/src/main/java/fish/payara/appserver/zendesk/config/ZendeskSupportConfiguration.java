@@ -39,6 +39,7 @@
  */
 package fish.payara.appserver.zendesk.config;
 
+import java.beans.PropertyVetoException;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -51,7 +52,11 @@ import org.jvnet.hk2.config.Configured;
 @Configured(name="zendesk-support-configuration")
 public interface ZendeskSupportConfiguration extends ConfigBeanProxy, ConfigExtension {
     
-    @Attribute(required = true)
+    @Attribute
     String getEmailAddress();
     public void setEmailAddress(String emailAddress);
+    
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    Boolean getEnabled();
+    public void setEnabled(Boolean value);
 }

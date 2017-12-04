@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.api;
@@ -63,30 +65,37 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
         properties_ = new HashMap();
     }
 
+    @Override
     public ResourceInfo getResourceInfo() {
         return resourceInfo;
     }
 
     // START OF IASRI #4626188
+    @Override
     public void setEnabled(boolean value) {
         enabled_ = value;
     }
 
+    @Override
     public boolean isEnabled() {
         return enabled_;
     }
 
+    @Override
     public void setDescription(String value) {
         description_ = value;
     }
 
+    @Override
     public String getDescription() {
         return description_;
     }
     // END OF IASRI #4626188
 
+    @Override
     public abstract int getType();
 
+    @Override
     public Set getProperties() {
         Set shallowCopy = new HashSet();
         Collection collection = properties_.values();
@@ -97,19 +106,23 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
         return shallowCopy;
     }
 
+    @Override
     public void addProperty(ResourceProperty property) {
         properties_.put(property.getName(), property);
     }
 
+    @Override
     public boolean removeProperty(ResourceProperty property) {
         Object removedObj = properties_.remove(property.getName());
         return (removedObj != null);
     }
 
+    @Override
     public ResourceProperty getProperty(String propertyName) {
         return (ResourceProperty) properties_.get(propertyName);
     }
 
+    @Override
     public JavaEEResource makeClone(ResourceInfo resourceInfo) {
         JavaEEResource clone = doClone(resourceInfo);
         Set entrySet = properties_.entrySet();
@@ -128,6 +141,13 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
         return clone;
     }
 
+    /**
+     * Gets a the of properties as a JSON array
+     * i.e. [ propname1=value , propname2=othervalue ]
+     * <p>
+     * If there are no properties an empty string is returned.
+     * @return 
+     */
     protected String getPropsString() {
         StringBuffer propsBuffer = new StringBuffer();
         Set props = getProperties();
@@ -139,12 +159,17 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
                     propsBuffer.append(" , ");
                 }
                 ResourceProperty next = (ResourceProperty) iter.next();
-                propsBuffer.append(next.getName() + "=" + next.getValue());
+                propsBuffer.append(next.getName()).append("=").append(next.getValue());
             }
             propsBuffer.append(" ]");
         }
         return propsBuffer.toString();
     }
 
+    /**
+     * Creates a JavaEEResource from a specified {@link ResourceInfo}
+     * @param resourceInfo
+     * @return 
+     *///
     protected abstract JavaEEResource doClone(ResourceInfo resourceInfo);
 }

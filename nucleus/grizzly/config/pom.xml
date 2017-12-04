@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.grizzly</groupId>
         <artifactId>nucleus-grizzly</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     
@@ -91,7 +91,11 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>hk2-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>config-types</artifactId>
         </dependency>
         <dependency>
             <groupId>stax</groupId>

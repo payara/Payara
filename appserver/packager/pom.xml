@@ -45,9 +45,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>5.1.2.173-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
+        <version>5.0.0.Alpha4-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -120,6 +120,7 @@
         <module>metro</module>
         <module>glassfish-appclient</module>
         <module>javadb</module>
+        <module>h2db</module>
         <module>jersey</module>
         <module>glassfish-jcdi</module>
         <module>mq</module>
@@ -179,8 +180,22 @@
         <module>payara-api</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
+	<module>rest-monitoring</module>
+	<module>payara-executor-service</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>microprofile-package</module>
+            </modules>
+        </profile>
+    </profiles>
+    
     <build>
         <outputDirectory>${temp.dir}</outputDirectory>
         <pluginManagement>

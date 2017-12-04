@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,58 +59,128 @@ public class RequestTracingExecutionOptions {
     private TimeUnit thresholdUnit;
     private boolean historicalTraceEnabled;
     private Integer historicalTraceStoreSize;
+    private Long historicalTraceTimeout;
     private Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = new HashMap<NotifierType, NotifierExecutionOptions>();
 
+    /**
+     * Adds a notifier to be used with request tracing
+     * @param notifierExecutionOptions 
+     */
     public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
         getNotifierExecutionOptionsList().put(notifierExecutionOptions.getNotifierType(), notifierExecutionOptions);
     }
+    
+    /**
+     * Removes a notifier from the list of configured ones
+     * @param notifierExecutionOptions A notifier with the same type of this will be removed
+     */
     public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
         getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
     }
+    
+    /**
+     * Removes all notifiers from the request tracing service
+     */
     public void resetNotifierExecutionOptions() {
         getNotifierExecutionOptionsList().clear();
     }
 
+    /**
+     * Whether request tracing is set to use the notification service at all
+     * @return 
+     */
     public boolean isEnabled() {
         return enabled;
     }
 
+    /**
+     * Set whether request tracing is set to use the notification service at all
+     * @param enabled 
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
+    /**
+     * Gets the threshold value above which request traces will be sent to the notification service
+     * @return
+     * @see #getThresholdUnit() 
+     */
     public Long getThresholdValue() {
         return thresholdValue;
     }
 
+    /**
+     * Sets the threshold value above which request traces will be sent to the notification service
+     * @param thresholdValue
+     * @see #setThresholdUnit(TimeUnit) 
+     */
     public void setThresholdValue(Long thresholdValue) {
         this.thresholdValue = thresholdValue;
     }
 
+    /**
+     * Gets the {@link TimeUnit} which the threshold for request traces is using
+     * @return
+     * @see #getThresholdValue()
+     */
     public TimeUnit getThresholdUnit() {
         return thresholdUnit;
     }
 
+    /**
+     * Sets he {@link TimeUnit} which the threshold for request traces is using
+     * @param thresholdUnit
+     * @see #setThresholdValue(Long)
+     */
     public void setThresholdUnit(TimeUnit thresholdUnit) {
         this.thresholdUnit = thresholdUnit;
     }
 
+    /**
+     * Returns true if a store of historic traces is enabled
+     * @return 
+     */
     public boolean isHistoricalTraceEnabled() {
         return historicalTraceEnabled;
     }
 
+    /**
+     * Set whether a store of historic traces is enabled
+     * @param historicalTraceEnabled 
+     */
     public void setHistoricalTraceEnabled(boolean historicalTraceEnabled) {
         this.historicalTraceEnabled = historicalTraceEnabled;
     }
 
+    /**
+     * Gets maximum the number of traces stored
+     * @return 
+     */
     public Integer getHistoricalTraceStoreSize() {
         return historicalTraceStoreSize;
     }
 
+    /**
+     * Sets the maximum number of traces to store
+     * @param historicalTraceStoreSize 
+     */
     public void setHistoricalTraceStoreSize(Integer historicalTraceStoreSize) {
         this.historicalTraceStoreSize = historicalTraceStoreSize;
     }
 
+    public Long getHistoricalTraceTimeout() {
+        return historicalTraceTimeout;
+    }
+
+    public void setHistoricalTraceTimeout(Long historicalTraceTimeout) {
+        this.historicalTraceTimeout = historicalTraceTimeout;
+    }
+
+    /**
+     * Gets the notifier options configured with request tracing
+     * @return 
+     */
     public Map<NotifierType, NotifierExecutionOptions> getNotifierExecutionOptionsList() {
         return notifierExecutionOptionsList;
     }
@@ -123,6 +193,7 @@ public class RequestTracingExecutionOptions {
                 ", thresholdUnit=" + thresholdUnit +
                 ", historicalTraceEnabled=" + historicalTraceEnabled +
                 ", historicalTraceStoreSize=" + historicalTraceStoreSize +
+                ", historicalTraceTimeout=" + historicalTraceTimeout +
                 ", notifierExecutionOptionsList=" + notifierExecutionOptionsList +
                 '}';
     }

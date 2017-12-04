@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.resource.pool.monitor;
 
@@ -109,7 +109,8 @@ public class ConnectorConnPoolAppStatsProvider {
             if (appName != null && appName.equals(this.appName)) {
                 //Decrement numConnUsed counter
                 synchronized (numConnUsed) {
-                    numConnUsed.setCurrent(numConnUsed.getCurrent() - 1);
+                    long numConnUsedSafe = (numConnUsed.getCurrent() >= 0) ? numConnUsed.getCurrent() - 1 : 0;
+                    numConnUsed.setCurrent(numConnUsedSafe);
                 }
             }
         }
