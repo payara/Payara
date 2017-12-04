@@ -113,7 +113,8 @@
         <module>requesttracing-package</module>
         <module>asadmin-recorder-package</module>
         <module>notification-package</module>
-        <module>payara-api-package</module>
+	<module>payara-api-package</module>
+	<module>payara-executor-service-package</module>
     </modules>
 
     <build>
