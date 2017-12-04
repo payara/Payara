@@ -47,7 +47,7 @@ To stop Payara Server, just issue the following command:
 4. Where to go next?
 ====================
 
-Open the following in your browser: https://payara.gitbooks.io/payara-server/content/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
+Open the following in your browser: https://docs.payara.fish/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
 Make sure to also check the Payara Server 4.1.2.174 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-174.html
