@@ -40,7 +40,6 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
@@ -48,6 +47,7 @@ import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -66,7 +66,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @since 4.1.2.173
  * @author Steve Millidge (Payara Foundation)
  */
-@Service(name = "set-config-property") // the name of the service is the asadmin command name
+@Service(name = "delete-config-property") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run
 @ExecuteOn()
 @TargetType()
@@ -74,10 +74,10 @@ import org.jvnet.hk2.config.TransactionFailure;
 
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
-            path = "set-config-property",
-            description = "Sets a configuration property")
+            path = "delete-config-property",
+            description = "Deletes a configuration property")
 })
-public class SetConfigProperty implements AdminCommand {
+public class DeleteConfigProperty implements AdminCommand {
 
     @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster, jndi", defaultValue = "domain")
     String source;
@@ -88,9 +88,6 @@ public class SetConfigProperty implements AdminCommand {
     @Param
     String propertyName;
 
-    @Param
-    String propertyValue;
-
     @Param(optional = true)
     String sourceName;
 
@@ -99,12 +96,11 @@ public class SetConfigProperty implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-
         try {
             switch (source) {
                 case "domain": {
                     DomainConfigSource csource = new DomainConfigSource();
-                    csource.setValue(propertyName, propertyValue);
+                    csource.deleteValue(propertyName);
                     break;
                 }
                 case "config": {
@@ -112,8 +108,8 @@ public class SetConfigProperty implements AdminCommand {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the configuration if config is the source");
                     } else {
                         ConfigConfigSource csource = new ConfigConfigSource(sourceName);
-                        if (!csource.setValue(propertyName, propertyValue)) {
-                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the configuration named " + sourceName + " is in your domain");
+                        if (!csource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the configuration named " + sourceName + " is in your domain");
                         }
                     }
                     break;
@@ -123,8 +119,8 @@ public class SetConfigProperty implements AdminCommand {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the server if server is the source");
                     } else {
                         ServerConfigSource csource = new ServerConfigSource(sourceName);
-                        if (!csource.setValue(propertyName, propertyValue)) {
-                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the server named " + sourceName + " is in your domain");
+                        if (!csource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the server named " + sourceName + " is in your domain");
                         }
                     }
                     break;
@@ -134,8 +130,8 @@ public class SetConfigProperty implements AdminCommand {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
                     } else {
                         ApplicationConfigSource csource = new ApplicationConfigSource(sourceName);
-                        if (!csource.setValue(propertyName, propertyValue)) {
-                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the application named " + sourceName + " is in your domain");
+                        if (!csource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the application named " + sourceName + " is in your domain");
                         }
                     }
                     break;
@@ -145,30 +141,28 @@ public class SetConfigProperty implements AdminCommand {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
                     } else {
                         ModuleConfigSource csource = new ModuleConfigSource(sourceName, moduleName);
-                        if (!csource.setValue(propertyName, propertyValue)) {
-                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the application named " + sourceName + " with the module " + moduleName + " is in your domain");
+                        if (!csource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the application named " + sourceName + " with the module " + moduleName + " is in your domain");
                         }
                     }
                     break;
                 }
                 case "cluster": {
                     ClusterConfigSource csource = new ClusterConfigSource();
-                    csource.setValue(propertyName, propertyValue);
+                    csource.deleteValue(propertyName);
                     break;
                 }
 
                 case "jndi": {
                     JNDIConfigSource jsource = new JNDIConfigSource();
-                    if (!jsource.setValue(propertyName, propertyValue, target)) {
-                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. See the server log for details");
-                    }
+                    jsource.deleteValue(propertyName, target);
                     break;
                 }
 
             }
-
         } catch (TransactionFailure txFailure) {
             context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getCanonicalName()), "Failed to set config property", txFailure);
         }
     }
+
 }

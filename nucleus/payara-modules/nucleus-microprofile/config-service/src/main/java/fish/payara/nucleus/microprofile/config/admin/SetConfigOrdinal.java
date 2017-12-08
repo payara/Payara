@@ -40,8 +40,7 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
@@ -83,9 +82,6 @@ public class SetConfigOrdinal implements AdminCommand {
     
     @Param (optional = true, defaultValue = "server") // if no target is specified it will be the DAS
     String target;
-    
-    @Inject
-    MicroprofileConfigService service;
     
     @Inject
     Target targetUtil;
