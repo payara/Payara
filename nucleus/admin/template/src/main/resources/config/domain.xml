@@ -213,7 +213,6 @@
             <http default-virtual-server="server" max-connections="250">
               <file-cache enabled="false"></file-cache>
             </http>
-            <http2></http2>
             <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>
           </protocol>
           <protocol name="admin-listener">
@@ -383,7 +382,6 @@
                      <http default-virtual-server="server">
                          <file-cache />
                      </http>
-                     <http2></http2>
                      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as" />
                  </protocol>
                  

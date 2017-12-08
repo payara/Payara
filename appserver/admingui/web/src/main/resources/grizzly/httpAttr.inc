@@ -119,8 +119,31 @@
             <sun:textField id="UriEncoding"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.UriEncoding']}" text="#{pageSession.httpMap['uriEncoding']}" />
         </sun:property>
 
-        <sun:property id="Version"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Version}" helpText="$resource{i18n_web.http.VersionHelp}" >
-            <sun:textField id="Version"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.Version']}" text="#{pageSession.httpMap['version']}" />
+        <sun:property id="Http2Enabled"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.enabled}" helpText="$resource{i18n_web.http.http2.enabled.help}" >
+            <sun:checkbox label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['http2Enabled']}" selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="Http2DisableCipherCheck"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.disableCipherCheck}" helpText="$resource{i18n_web.http.http2.disableCipherCheck.help}" >
+            <sun:checkbox label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['http2DisableCipherCheck']}" selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="Http2MaxConcurrentStreams"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.maxConcurrentStreams}" helpText="$resource{i18n_web.http.http2.maxConcurrentStreams.help}" >
+            <sun:textField id="Http2MaxConcurrentStreams"  styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.http.http2.maxConcurrentStreams']}" text="#{pageSession.httpMap['http2MaxConcurrentStreams']}" />
+        </sun:property>
+
+        <sun:property id="Http2InitialWindowSizeInBytes"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.initialWindowSizeInBytes}" helpText="$resource{i18n_web.http.http2.initialWindowSizeInBytes.help}" >
+            <sun:textField id="Http2InitialWindowSizeInBytes"  styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.http.http2.initialWindowSizeInBytes']}" text="#{pageSession.httpMap['http2InitialWindowSizeInBytes']}" />
+            <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
+        </sun:property>
+
+        <sun:property id="Http2MaxFramePayloadSizeInBytes"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.maxFramePayloadSizeInBytes}" helpText="$resource{i18n_web.http.http2.maxFramePayloadSizeInBytes.help}" >
+            <sun:textField id="Http2MaxFramePayloadSizeInBytes"  styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.http.http2.maxFramePayloadSizeInBytes']}" text="#{pageSession.httpMap['http2MaxFramePayloadSizeInBytes']}" />
+            <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
+        </sun:property>
+
+        <sun:property id="Http2MaxHeaderListSizeInBytes"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.maxHeaderListSizeInBytes}" helpText="$resource{i18n_web.http.http2.maxHeaderListSizeInBytes.help}" >
+            <sun:textField id="Http2MaxHeaderListSizeInBytes"  styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.http.http2.maxHeaderListSizeInBytes']}" text="#{pageSession.httpMap['http2MaxHeaderListSizeInBytes']}" />
+            <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
         </sun:property>
 
        <sun:property id="Compression"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Compression}" helpText="$resource{i18n_web.http.CompressionHelp}">

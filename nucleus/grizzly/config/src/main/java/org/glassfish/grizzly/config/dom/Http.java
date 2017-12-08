@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,8 +96,15 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String COMPRESSION_PATTERN = "on|off|force|\\d+";
     String DEFAULT_ADAPTER = "org.glassfish.grizzly.http.server.StaticHttpHandler";
     String URI_ENCODING = "UTF-8";
-    String VERSION = "HTTP/1.1";
     String SCHEME_PATTERN = "http|https";
+
+    // HTTP2 properties
+    boolean HTTP2_ENABLED = true;
+    int MAX_CONCURRENT_STREAMS = 100;
+    int INITIAL_WINDOW_SIZE_IN_BYTES = 64 * 1024 - 1;
+    int MAX_FRAME_PAYLOAD_SIZE_IN_BYTES = (1 << 24) - 1;
+    int MAX_HEADER_LIST_SIZE_IN_BYTES = 4096;
+    boolean DISABLE_CIPHER_CHECK = false;
 
     @Attribute(defaultValue = DEFAULT_ADAPTER)
     String getAdapter();
@@ -183,16 +190,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     FileCache getFileCache();
 
     void setFileCache(FileCache value);
-
-    @Element
-    Spdy getSpdy();
-
-    void setSpdy(Spdy value);
-
-    @Element
-    Http2 getHttp2();
-
-    void setHttp2(Http2 value);
 
     /**
      * The response type to be forced if the content served cannot be matched by any of the MIME mappings for
@@ -329,14 +326,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     void setUriEncoding(String encoding);
 
     /**
-     * The version of the HTTP protocol used by the HTTP Service
-     */
-    @Attribute(defaultValue = VERSION)
-    String getVersion();
-
-    void setVersion(String version);
-
-    /**
      * The HTTP scheme (http or https) to override HTTP request scheme picked up
      * by Grizzly or web-container during HTTP request processing.
      */
@@ -457,6 +446,57 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getAllowPayloadForUndefinedHttpMethods();
 
     void setAllowPayloadForUndefinedHttpMethods(String allowPayloadForUndefinedHttpMethods);
+
+    // ---------------------------------------------------- HTTP2 CONFIGURATION
+
+    /**
+     * Configures the number of concurrent streams allowed per HTTP2 connection.
+     * The default is 100.
+     */
+    @Attribute(defaultValue = "" + MAX_CONCURRENT_STREAMS, dataType = Integer.class)
+    int getHttp2MaxConcurrentStreams();
+
+    void setHttp2MaxConcurrentStreams(int maxConcurrentStreams);
+
+    /**
+     * Configures the initial window size in bytes.  The default is 64K - 1.
+     */
+    @Attribute(defaultValue = "" + INITIAL_WINDOW_SIZE_IN_BYTES, dataType = Integer.class)
+    int getHttp2InitialWindowSizeInBytes();
+
+    void setHttp2InitialWindowSizeInBytes(int initialWindowSizeInBytes);
+
+    /**
+     * Configures the maximum size of the HTTP2 frame payload to be accepted.  The default is 2^24 - 1.
+     */
+    @Attribute(defaultValue = "" + MAX_FRAME_PAYLOAD_SIZE_IN_BYTES, dataType = Integer.class)
+    int getHttp2MaxFramePayloadSizeInBytes();
+
+    void setHttp2MaxFramePayloadSizeInBytes(int maxFramePayloadSizeInBytes);
+
+    /**
+     * Configures the maximum size, in bytes, of the header list.
+     */
+    @Attribute(defaultValue = "" + MAX_HEADER_LIST_SIZE_IN_BYTES, dataType = Integer.class)
+    int getHttp2MaxHeaderListSizeInBytes();
+
+    void setHttp2MaxHeaderListSizeInBytes(int maxHeaderListSizeInBytes);
+
+    /**
+     * Controls whether or not insecure cipher suites are allowed to establish TLS connections.
+     */
+    @Attribute(defaultValue = "" + DISABLE_CIPHER_CHECK, dataType = Boolean.class)
+    boolean isHttp2DisableCipherCheck();
+
+    void setHttp2DisableCipherCheck(boolean disableCipherCheck);
+
+    /**
+     * Controls whether or not HTTP/2 is enabled..
+     */
+    @Attribute(defaultValue = "" + HTTP2_ENABLED, dataType = Boolean.class)
+    boolean isHttp2Enabled();
+
+    void setHttp2Enabled(boolean http2Enabled);
 
     @DuckTyped
     Protocol getParent();
