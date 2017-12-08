@@ -15,27 +15,18 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  -->
-<sun:tab id="clusterHazelcast" immediate="true" text="Hazelcast" toolTip="$resource{i18nhc.hazelcast.hazelcastTabs}">
-    <!beforeCreate
-        setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
-        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-    />
-    <!command
-        setSessionAttribute(key="clusterTabs" value="hazelcastMembers");
-        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
-    />
-            
+<sun:tabSet id="hazelcastTabs" immediate="true" selected="#{sessionScope.hazelcastTabs}" >            
     <sun:tab id="hazelcastMembers" immediate="$boolean{true}" text="$resource{i18nhc.hazelcast.membersTab}" toolTip="$resource{i18nhc.hazelcast.membersTabTip}" >
         <!command
-        setSessionAttribute(key="clusterTabs" value="hazelcastMembers");
-        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastMembersCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
+        setSessionAttribute(key="hazelcastTabs" value="hazelcastMembers");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastMembersDomain.jsf?tabSetName=hazelcastTabs");
         />
     </sun:tab>
 
     <sun:tab id="hazelcastConfig" immediate="$boolean{true}" text="$resource{i18nhc.hazelcast.configuration}" toolTip="$resource{i18nhc.hazelcast.configurationTip}" >
         <!command
-        setSessionAttribute(key="clusterTabs" value="hazelcastConfig");
-        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
+        setSessionAttribute(key="hazelcastTabs" value="hazelcastConfig");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcast.jsf?tabSetName=hazelcastTabs");
         />
     </sun:tab>
-</sun:tab>
+</sun:tabSet>

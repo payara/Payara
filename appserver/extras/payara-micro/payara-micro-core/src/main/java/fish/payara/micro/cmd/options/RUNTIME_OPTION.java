@@ -57,6 +57,7 @@ public enum RUNTIME_OPTION {
     clustername(true),
     clusterpassword(true),
     hostaware(false),
+    nohostaware(false),
     startport(true, new PortValidator()),
     addlibs(true, new SeparatedFilesValidator(true, true, false, true, true)),
     addjars(true, new SeparatedFilesValidator(true, true, false, true, true)),
@@ -91,6 +92,8 @@ public enum RUNTIME_OPTION {
     postdeploycommandfile(true, new FileValidator(true,true,false)),
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
+    clustermode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
+    interfaces(true),
     help(false);
 
     private RUNTIME_OPTION(boolean value) {
@@ -110,6 +113,8 @@ public enum RUNTIME_OPTION {
         return value;
     }
     private final Validator validator;
+    
+    // Indicates the runtime option requires a value
     private final boolean value;
 
 }
