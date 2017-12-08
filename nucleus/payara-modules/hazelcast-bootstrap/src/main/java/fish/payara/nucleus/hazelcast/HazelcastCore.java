@@ -409,6 +409,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");
             config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);            
         }
         int port = Integer.valueOf(configuration.getStartPort());
         if (env.isDas() && !env.isMicro()) {
