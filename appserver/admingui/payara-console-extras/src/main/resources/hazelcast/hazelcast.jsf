@@ -28,44 +28,31 @@
 
 <event>
     <!beforeCreate
-        getRequestValue(key="config" value="#{pageSession.configName}");
-        urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
-        getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
-
-        if(#{pageSession.isCluster}=true){
-        setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
-        setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
-        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
-        }
-        if(#{pageSession.isCluster}=false){
-        setPageSessionAttribute(key="isCluster", value="false");
-        setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
-        setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
-        }
-
-        createMap(result="#{pageSession.attrsMap}")
-        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
+        setSessionAttribute(key="hazelcastTabs" value="hazelcastConfig");
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="dynamic", value="false");
+        setPageSessionAttribute(key="clusterMode", value="#{pageSession.valueMap['clusterMode']}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="domain");
         />
 </event>
 
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
+#include "/hazelcast/hazelcastTabs.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.configurationTitle}" helpText="$resource{i18nhc.hazelcast.configurationTitleHelp}" >
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
                         onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
-                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="true");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="clusterMode" value="#{pageSession.clusterMode}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
@@ -74,14 +61,24 @@
     </facet>
 </sun:title>
 <sun:propertySheet id="propertySheet">
-#include "/common/shared/configNameSection.inc"
-    <sun:propertySheetSection id="hazelcast">
-        <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.enabled}"  helpText="$resource{i18nhc.hazelcast.configuration.enabledHelp}">
-            <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
-        </sun:property>
+    <sun:propertySheetSection id="networking">
         <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dynamic}"  helpText="$resource{i18nhc.hazelcast.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
+        <sun:property id="dasBindAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasBindAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.dasBindAddressHelp}">
+            <sun:textField id="dasBindAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['dasBindAddress']}" />
+        </sun:property>
+        <sun:property id="dasPublicAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasPublicAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.dasPublicAddressHelp}">
+            <sun:textField id="dasPublicAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['dasPublicAddress']}" />
+        </sun:property>
+        <sun:property id="dasPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasPort}"  helpText="$resource{i18nhc.hazelcast.configuration.dasPortHelp}">
+            <sun:textField id="dasPort" columns="$int{40}" styleClass="integer" maxLength="30" text="#{pageSession.valueMap['dasPort']}" />
+        </sun:property>
+        <sun:property id="interfacesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.interfaces}"  helpText="$resource{i18nhc.hazelcast.configuration.interfacesHelp}">
+            <sun:textField id="interfaces" columns="$int{40}" maxLength="300" text="#{pageSession.valueMap['interfaces']}" />
+        </sun:property>  
+    </sun:propertySheetSection>
+    <sun:propertySheetSection id="cluster">
         <sun:property id="configFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.configFile}"  helpText="$resource{i18nhc.hazelcast.configuration.configFileHelp}">
             <sun:textField id="hazelcastConfigurationFile" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['hazelcastConfigurationFile']}" />
         </sun:property>
@@ -94,24 +91,27 @@
         <sun:property id="startPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.startPort}"  helpText="$resource{i18nhc.hazelcast.configuration.startPortHelp}">
             <sun:textField id="startPort" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['startPort']}" />
         </sun:property>
+        <sun:property id="licenseKeyProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.licenseKey}"  helpText="$resource{i18nhc.hazelcast.configuration.licenseKeyHelp}">
+            <sun:textField id="licenseKey" columns="$int{40}" maxLength="100" text="#{pageSession.valueMap['licenseKey']}" />
+        </sun:property> 
+        <sun:property id="hostawareProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.hostaware}"  helpText="$resource{i18nhc.hazelcast.configuration.hostawareHelp}">
+            <sun:checkbox id="hostaware" selected="#{pageSession.valueMap['hostAwareParitioning']}" selectedValue="true" />
+        </sun:property>
+    </sun:propertySheetSection>
+    <sun:propertySheetSection id="discovery">
+        <sun:property id="discoveryModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.discoveryMode}"  helpText="$resource{i18nhc.hazelcast.configuration.discoveryModeHelp}" visible="#{true}" >
+            <sun:dropDown id="clusterMode" selected="#{pageSession.clusterMode}" required="#{false}" value="#{pageSession.clusterMode}" labels={"domain","tcpip","multicast"} values={"domain","tcpip","multicast"} >
+            </sun:dropDown>
+        </sun:property>
         <sun:property id="multicastPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.multicastPort}"  helpText="$resource{i18nhc.hazelcast.configuration.multicastPortHelp}">
             <sun:textField id="multicastPort"  styleClass="integer" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['multicastPort']}" />
         </sun:property>
         <sun:property id="multicastGroupProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.multicastGroup}"  helpText="$resource{i18nhc.hazelcast.configuration.multicastGroupHelp}">
             <sun:textField id="multicastGroup" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['multicastGroup']}" />
         </sun:property>    
-        <sun:property id="jndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.jndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.jndiNameHelp}">
-            <sun:textField id="jndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['jndiName']}" />
-        </sun:property>
-        <sun:property id="licenseKeyProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.licenseKey}"  helpText="$resource{i18nhc.hazelcast.configuration.licenseKeyHelp}">
-            <sun:textField id="licenseKey" columns="$int{40}" maxLength="100" text="#{pageSession.valueMap['licenseKey']}" />
+        <sun:property id="tcpipMembersProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.tcpipMembers}"  helpText="$resource{i18nhc.hazelcast.configuration.tcpipMembersHelp}">
+            <sun:textField id="tcpipMembers" columns="$int{40}" maxLength="300" text="#{pageSession.valueMap['tcpipMembers']}" />
         </sun:property> 
-        <sun:property id="liteProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
-            <sun:checkbox id="lite" selected="#{pageSession.valueMap['lite']}" selectedValue="true" />
-        </sun:property>
-    <sun:property id="hostawareProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.hostaware}"  helpText="$resource{i18nhc.hazelcast.configuration.hostawareHelp}">
-        <sun:checkbox id="hostaware" selected="#{pageSession.valueMap['hostAwareParitioning']}" selectedValue="true" />
-    </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>
 <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />

@@ -17,15 +17,15 @@
  file and include the License file at packager/legal/LICENSE.txt.
 -->
 
-<sun:property>
-    <sun:hyperlink 
-        toolTip="$resource{i18nhc.tree.hazelcast}"
-        url="/payaraExtras/hazelcast/hazelcastLocal.jsf?configName=#{configName}"
-        >
-        <sun:image url="/resource/images/hazelcast.png" />
-        <sun:staticText text="$resource{i18nhc.tree.hazelcast}" />
-    </sun:hyperlink>
+<!-- pluginTreeNodeHazelcast.jsf -->
+
+<!--  ===================================== Nodes ======================  -->
+<sun:treeNode  id="hazelcastLocal"
+    text="$resource{i18nhc.tree.hazelcast}"
+    url="/payaraExtras/hazelcast/hazelcastLocal.jsf?configName=${configName}"
+    imageURL="/resource/images/hazelcast.png"
+    >
     <!beforeCreate
         setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
-        />
-</sun:property>
+    />
+</sun:treeNode>

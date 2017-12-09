@@ -129,7 +129,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private GlassFish gf;
     private PayaraMicroRuntimeImpl runtime;
     private boolean noCluster = false;
-    private boolean hostAware = false;
+    private boolean hostAware = true;
     private boolean autoBindHttp = false;
     private boolean autoBindSsl = false;
     private boolean liteMember = false;
@@ -167,7 +167,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String postBootFileName;
     private String postDeployFileName;
     private RuntimeDirectory runtimeDir = null;
-
+    private String clustermode;
+    private String interfaces;
+    
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
@@ -1114,6 +1116,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         hostAware = true;
                         break;
                     }
+                    case nohostaware: {
+                        hostAware = false;
+                        break;
+                    }
                     case mcport: {
                         hzPort = Integer.parseInt(value);
                         break;
@@ -1305,6 +1311,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case postdeploycommandfile:
                         postDeployFileName = value;
+                        break;
+                    case clustermode:
+                        clustermode = value;
+                        break;
+                    case interfaces:
+                        interfaces = value;
                         break;
                     default:
                         break;
@@ -1731,44 +1743,72 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void configureHazelcast() {
         // check hazelcast cluster overrides
         if (noCluster) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false"));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.enabled=false"));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.ejb-container.ejb-timer-service.ejb-timer-service=Dummy"));
         } else {
 
             if (hzPort > Integer.MIN_VALUE) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-port=" + hzPort));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-port=" + hzPort));
             }
 
             if (hzStartPort > Integer.MIN_VALUE) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.start-port=" + hzStartPort));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.start-port=" + hzStartPort));
             }
 
             if (hzMulticastGroup != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-group=" + hzMulticastGroup));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-group=" + hzMulticastGroup));
             }
 
             if (alternateHZConfigFile != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile.getName()));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile.getName()));
             }
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.lite=" + liteMember));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.lite=" + liteMember));
 
             if (hzClusterName != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
             }
 
             if (hzClusterPassword != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword));
             }
 
             if (instanceName != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.member-name=" + instanceName));
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.generate-names=false"));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-name=" + instanceName));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.generate-names=false"));
             }
 
             if (instanceGroup != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.member-group=" + instanceGroup));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-group=" + instanceGroup));
             }
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
+            preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
+            
+            if (clustermode != null) {
+                if (clustermode.startsWith("tcpip:")) {
+                    String tcpipmembers = clustermode.substring(6);
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.tcpip-members=" + tcpipmembers));
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=tcpip"));
+                } else if (clustermode.startsWith("multicast:")) {
+                    String hostPort[] = clustermode.split(":");
+                    if (hostPort.length == 3) {
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-group=" + hostPort[1]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-port=" + hostPort[2]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
+                    }
+                }  else if (clustermode.startsWith("domain:")) {
+                    String hostPort[] = clustermode.split(":");
+                    if (hostPort.length == 3) {
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-public-address=" + hostPort[1]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-port=" + hostPort[2]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=domain"));
+                    }
+                }
+            } else {
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
+            }
+            
+            if (interfaces != null) {
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.interface=" + interfaces));                
+            }
         }
     }
 
@@ -1967,7 +2007,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         sslPort = getIntegerProperty("payaramicro.sslPort", Integer.MIN_VALUE);
         hzMulticastGroup = getProperty("payaramicro.mcAddress");
         hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
-        hostAware = getBooleanProperty("payaramicro.hostAware");
+        hostAware = getBooleanProperty("payaramicro.hostAware","true");
         hzStartPort = getIntegerProperty("payaramicro.startPort", Integer.MIN_VALUE);
         hzClusterName = getProperty("payaramicro.clusterName");
         hzClusterPassword = getProperty("payaramicro.clusterPassword");
@@ -1979,6 +2019,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         enableRequestTracing = getBooleanProperty("payaramicro.enableRequestTracing");
         requestTracingThresholdUnit = getProperty("payaramicro.requestTracingThresholdUnit", "SECONDS");
         requestTracingThresholdValue = getLongProperty("payaramicro.requestTracingThresholdValue", 30L);
+        clustermode = getProperty("payaramicro.clusterMode");
+        interfaces = getProperty("payaramicro.interfaces");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2101,6 +2143,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (hzClusterPassword != null) {
             props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
+        }
+        
+        if (clustermode != null) {
+            props.setProperty("payaramicro.clusterMode", clustermode);
+        }
+        
+        if (interfaces != null) {
+            props.setProperty("payaramicro.interfaces", interfaces);
         }
 
         props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
@@ -2348,6 +2398,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         return "true".equals(property);
     }
+    
+    private Boolean getBooleanProperty(String value, String defaultValue) {
+        String property;
+        property = System.getProperty(value);
+        if (property == null) {
+            property = System.getenv(value.replace('.', '_'));
+            if (property == null) {
+                property = defaultValue;
+            }
+        }
+        return "true".equals(property);
+    }
+
 
     private Integer getIntegerProperty(String value, Integer defaultValue) {
         String property;
