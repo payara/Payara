@@ -158,8 +158,8 @@ public class HazelcastCore implements EventListener, ConfigListener {
         transactions.addListenerForType(HazelcastRuntimeConfiguration.class, this);
         
         if (env.isMicro()) {
-            memberName = configuration.getMemberName();
-            memberGroup = configuration.getMemberGroup();
+            memberName = nodeConfig.getMemberName();
+            memberGroup = nodeConfig.getMemberGroup();
         } else {
             memberName = context.getInstanceName();
             Cluster cluster = context.getConfigBean().getCluster();
