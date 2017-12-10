@@ -41,6 +41,7 @@ package fish.payara.micro.data;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -75,6 +76,6 @@ public interface ModuleDescriptor extends Serializable {
      * </p>
      * @return
      */
-    List<Entry<String, String>> getServletMappings();
+    Map<String, String> getServletMappings();
     
 }
