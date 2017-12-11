@@ -40,10 +40,15 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import java.util.logging.Logger;
-import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -53,6 +58,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * asAdmin command to the set the value of a config property
@@ -91,61 +97,78 @@ public class SetConfigProperty implements AdminCommand {
     @Param(optional = true)
     String moduleName;
 
-    @Inject
-    MicroprofileConfigService service;
-
     @Override
     public void execute(AdminCommandContext context) {
 
-        switch (source) {
-            case "domain": {
-                service.setDomainProperty(propertyName, propertyValue);
-                break;
-            }
-            case "config": {
-                if (sourceName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the configuration if config is the source");
-                } else {
-                    service.setConfigProperty(sourceName, propertyName, propertyValue);
+        try {
+            switch (source) {
+                case "domain": {
+                    DomainConfigSource csource = new DomainConfigSource();
+                    csource.setValue(propertyName, propertyValue);
+                    break;
                 }
-                break;
-            }
-            case "server": {
-                if (sourceName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the server if server is the source");
-                } else {
-                    service.setServerProperty(sourceName, propertyName, propertyValue);
+                case "config": {
+                    if (sourceName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the configuration if config is the source");
+                    } else {
+                        ConfigConfigSource csource = new ConfigConfigSource(sourceName);
+                        if (!csource.setValue(propertyName, propertyValue)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the configuration named " + sourceName + " is in your domain");
+                        }
+                    }
+                    break;
                 }
-                break;
-            }
-            case "application": {
-                if (sourceName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
-                } else {
-                    service.setApplicationProperty(sourceName, propertyName, propertyValue);
+                case "server": {
+                    if (sourceName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the server if server is the source");
+                    } else {
+                        ServerConfigSource csource = new ServerConfigSource(sourceName);
+                        if (!csource.setValue(propertyName, propertyValue)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the server named " + sourceName + " is in your domain");
+                        }
+                    }
+                    break;
                 }
-                break;
-            }
-            case "module": {
-                if (sourceName == null || moduleName == null) {
-                    context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
-                } else {
-                    service.setModuleProperty(sourceName, moduleName, propertyName, propertyValue);
+                case "application": {
+                    if (sourceName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
+                    } else {
+                        ApplicationConfigSource csource = new ApplicationConfigSource(sourceName);
+                        if (!csource.setValue(propertyName, propertyValue)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the application named " + sourceName + " is in your domain");
+                        }
+                    }
+                    break;
                 }
-                break;
-            }
-            case "cluster": {
-                service.setClusteredProperty(propertyName, propertyValue);
-                break;
+                case "module": {
+                    if (sourceName == null || moduleName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
+                    } else {
+                        ModuleConfigSource csource = new ModuleConfigSource(sourceName, moduleName);
+                        if (!csource.setValue(propertyName, propertyValue)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the application named " + sourceName + " with the module " + moduleName + " is in your domain");
+                        }
+                    }
+                    break;
+                }
+                case "cluster": {
+                    ClusterConfigSource csource = new ClusterConfigSource();
+                    csource.setValue(propertyName, propertyValue);
+                    break;
+                }
+
+                case "jndi": {
+                    JNDIConfigSource jsource = new JNDIConfigSource();
+                    if (!jsource.setValue(propertyName, propertyValue, target)) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. See the server log for details");
+                    }
+                    break;
+                }
+
             }
 
-            case "jndi": {
-                service.setJNDIProperty(propertyName, propertyValue, target);
-                break;
-            }
-
+        } catch (TransactionFailure txFailure) {
+            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getCanonicalName()), "Failed to set config property", txFailure);
         }
-
     }
-
 }

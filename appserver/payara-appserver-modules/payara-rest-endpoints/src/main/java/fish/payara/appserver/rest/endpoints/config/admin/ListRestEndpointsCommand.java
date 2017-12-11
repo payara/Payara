@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.ws.rs.HttpMethod;
 import org.apache.catalina.Container;
 import org.apache.catalina.core.StandardWrapper;
 import org.glassfish.api.admin.RestEndpoints;
@@ -121,6 +122,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
     private final String requestMethodName = "requestMethod";
     private final String endpointPathName = "endpointPath";
     private final String endpointListName = "endpointList";
+    private final String jerseyWADL = "/application.wadl";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -177,16 +179,25 @@ public class ListRestEndpointsCommand implements AdminCommand {
             for (Class containedClass : containedClasses) {
                 List<RestEndpointModel> classEndpoints = getEndpointsForClass(containedClass);
 
-                // loop through endpoints in given class
-                for (RestEndpointModel endpoint : classEndpoints) {
-                    String endpointPath = appRoot + jerseyAppRoot + endpoint.getPath();
-                    Map endpointMap = new HashMap<>();
-                    endpointMap.put(endpointPathName, endpointPath);
-                    endpointMap.put(requestMethodName, endpoint.getRequestMethod());
-                    endpoints.add(endpointMap);
+                if (!classEndpoints.isEmpty()) {
+                    // loop through endpoints in given class
+                    for (RestEndpointModel endpoint : classEndpoints) {
+                        String endpointPath = appRoot + jerseyAppRoot + endpoint.getPath();
+                        Map endpointMap = new HashMap<>();
+                        endpointMap.put(endpointPathName, endpointPath);
+                        endpointMap.put(requestMethodName, endpoint.getRequestMethod());
+                        endpoints.add(endpointMap);
+                    }
+
                 }
             }
 
+            // Jersey will automatically generate a wadl file for the endpoints, so add
+            // it for every deployed application with endpoints
+            Map endpointMap = new HashMap<>();
+            endpointMap.put(endpointPathName, appRoot + jerseyAppRoot + jerseyWADL);
+            endpointMap.put(requestMethodName, HttpMethod.GET);
+            endpoints.add(endpointMap);
         }
 
         // error out in the case of an empty application

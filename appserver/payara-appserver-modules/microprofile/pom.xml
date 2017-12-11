@@ -51,5 +51,6 @@ holder.
     <packaging>pom</packaging>
     <modules>
         <module>config</module>
+        <module>fault-tolerance</module>
     </modules>
 </project>

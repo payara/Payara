@@ -77,6 +77,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -935,79 +936,60 @@ public class VirtualServer extends StandardHost
         }
     }
 
-
-    /*
+    /**
      * Configures this virtual server with the specified log file.
      *
-     * @param logFile The value of the virtual server's log-file attribute in
-     * the domain.xml
+     * @param logFile the value of the virtual server's log-file attribute in
+     * the domain.xml.
+     * @param logLevel the verbosity of the logger.
+     * @param logServiceFile the file used for the log service.
      */
     synchronized void setLogFile(String logFile, String logLevel, String logServiceFile) {
-
-        /** catalina file logger code
-        String logPrefix = logFile;
-        String logDir = null;
-        String logSuffix = null;
-
-        if (logPrefix == null || logPrefix.equals("")) {
-            return;
-        }
-
-        int index = logPrefix.lastIndexOf(File.separatorChar);
-        if (index != -1) {
-            logDir = logPrefix.substring(0, index);
-            logPrefix = logPrefix.substring(index+1);
-        }
-
-        index = logPrefix.indexOf('.');
-        if (index != -1) {
-            logSuffix = logPrefix.substring(index);
-            logPrefix = logPrefix.substring(0, index);
-        }
-
-        logPrefix += "_";
-
-        FileLogger contextLogger = new FileLogger();
-        if (logDir != null) {
-            contextLogger.setDirectory(logDir);
-        }
-        contextLogger.setPrefix(logPrefix);
-        if (logSuffix != null) {
-            contextLogger.setSuffix(logSuffix);
-        }
-        contextLogger.setTimestamp(true);
-        contextLogger.setLevel(logLevel); 
-         */
-        
 
         /*
          * Configure separate logger for this virtual server only if
          * 'log-file' attribute of this <virtual-server> and 'file'
          * attribute of <log-service> are different (See 6189219).
          */
-        boolean noCustomLog = (logFile == null ||
-            (logServiceFile != null && new File(logFile).equals(
-                    new File(logServiceFile))));
+        boolean customLog = (logFile != null && logServiceFile != null
+                && !new File(logFile).equals(new File(logServiceFile)));
 
-        if ((fileLoggerHandler == null && noCustomLog) ||
-                (fileLoggerHandler != null && logFile != null &&
-                logFile.equals(fileLoggerHandler.getLogFile()))) {
+        boolean logFileChanged = logFile != null
+                && ((fileLoggerHandler != null && !logFile.equals(fileLoggerHandler.getLogFile()))
+                || fileLoggerHandler == null);
+
+        /*
+         * Exit early if the log file isn't being changed.
+         */
+        if (!logFileChanged) {
             return;
         }
 
-        Logger newLogger = null;
-        FileLoggerHandler oldHandler = fileLoggerHandler;
-        //remove old handler
-        if (oldHandler != null) {
-            _logger.removeHandler(oldHandler);
+        // As it is being changed, close the old file handler
+        if (fileLoggerHandler != null) {
+            _logger.removeHandler(fileLoggerHandler);
+            close(fileLoggerHandler);
+            fileLoggerHandler = null;
         }
 
-        if (noCustomLog) {
-            fileLoggerHandler = null;
+        // Store new logger to replace current one
+        Logger newLogger = null;
+
+        /*
+         * If the file is being changed to the log service file, reset the logger.
+         */
+        if (!customLog) {
             newLogger = _logger;
+            for (Handler h : _logger.getHandlers()) {
+                newLogger.removeHandler(h);
+            }
+            newLogger.setUseParentHandlers(true);
         } else {
-            // append the _logger name with "._vs.<virtual-server-id>"
-            String lname = _logger.getName() + "._vs." + getID();
+            // append the _logger name with "._vs.<virtual-server-id>" if it doesn't already have it
+            String lname = _logger.getName();
+            if (!lname.endsWith("._vs." + getID())) {
+                lname = _logger.getName() + "._vs." + getID();
+            }
             newLogger = LogManager.getLogManager().getLogger(lname);
             if (newLogger == null) {
                 newLogger = new Logger(lname, null) {
@@ -1020,7 +1002,7 @@ public class VirtualServer extends StandardHost
                                 record.setResourceBundle(bundle);
                             }
                         }
-                        record.setThreadID((int)Thread.currentThread().getId());
+                        record.setThreadID((int) Thread.currentThread().getId());
                         super.log(record);
                     }
 
@@ -1034,7 +1016,7 @@ public class VirtualServer extends StandardHost
                     public synchronized void addHandler(Handler handler) {
                         super.addHandler(handler);
                         if (handler instanceof FileLoggerHandler) {
-                            ((FileLoggerHandler)handler).associate();
+                            ((FileLoggerHandler) handler).associate();
                         }
                     }
 
@@ -1055,13 +1037,13 @@ public class VirtualServer extends StandardHost
                             }
                             if (hasHandler) {
                                 super.removeHandler(handler);
-                                ((FileLoggerHandler)handler).disassociate();
+                                ((FileLoggerHandler) handler).disassociate();
                             }
                         }
                     }
                 };
 
-                synchronized(Logger.class) {
+                synchronized (Logger.class) {
                     LogManager.getLogManager().addLogger(newLogger);
                 }
             }
@@ -1088,13 +1070,12 @@ public class VirtualServer extends StandardHost
             }
 
             // create and add new handler
-            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logServiceFile);
-            newLogger.addHandler(fileLoggerHandler);            
+            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
+            newLogger.addHandler(fileLoggerHandler);
             newLogger.setUseParentHandlers(false);
         }
 
         setLogger(newLogger, logLevel);
-        close(oldHandler);
     }
 
     /**
@@ -2343,20 +2324,22 @@ public class VirtualServer extends StandardHost
 
         Map<String, String> servlets = facade.getAddedServlets();
         Map<String, String[]> mappings = facade.getServletMappings();
-        List<String> listeners = facade.getListeners();
+        List<String> flisteners = facade.getListeners();
         Map<String, String> filters = facade.getAddedFilters();
         Map<String, String> servletNameFilterMappings = facade.getServletNameFilterMappings();
         Map<String, String> urlPatternFilterMappings = facade.getUrlPatternFilterMappings();
 
-        if (!filters.isEmpty() || !listeners.isEmpty() || !servlets.isEmpty()) {
+        if (!filters.isEmpty() || !flisteners.isEmpty() || !servlets.isEmpty()) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, LogFacade.MODIFYING_WEB_XML, file.getAbsolutePath());
             }
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            dbFactory.setValidating(true);
+            dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = null;
-            Element webapp = null;
+            Document doc;
+            Element webapp;
 
             if ((file != null) && (file.exists())) {
                 doc = dBuilder.parse(file);
@@ -2526,7 +2509,7 @@ public class VirtualServer extends StandardHost
                 }
             }
 
-            for (String listenerStr : listeners) {
+            for (String listenerStr : flisteners) {
                 Element listener = doc.createElement("listener");
                 Element listenerClass = doc.createElement("listener-class");
                 listenerClass.setTextContent(listenerStr);

@@ -39,8 +39,8 @@
  */
 package fish.payara.microprofile.config.cdi;
 
-import fish.payara.microprofile.config.spi.InjectedPayaraConfig;
-import fish.payara.microprofile.config.spi.PayaraConfig;
+import fish.payara.nucleus.microprofile.config.spi.InjectedPayaraConfig;
+import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Optional;
