@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -58,8 +59,8 @@ public class CommandXMLResultParser {
     static DFDeploymentStatus parse(InputStream is) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory pf = SAXParserFactory.newInstance();
         SAXParser parser = pf.newSAXParser();
-        
-        
+        pf.setValidating(true);
+        pf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         
         DFDeploymentStatus topStatus = null;
         ResultHandler rh = new ResultHandler();
@@ -106,9 +107,6 @@ public class CommandXMLResultParser {
                      * to the current level DFDeploymentStatus.
                      */
                     addLevel();
-//                    DFDeploymentStatus newLevel = new DFDeploymentStatus();
-//                    currentLevel.addSubStage(newLevel);
-//                    currentLevel = newLevel;
                 }
                 currentLevel.setStageStatus(exitCodeToStatus(attrToText(attributes, "exit-code")));
                 currentLevel.setStageDescription(attrToText(attributes, "description"));

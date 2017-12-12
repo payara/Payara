@@ -75,6 +75,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.types.Property;
+import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
+import java.util.ArrayList;
 
 /**
  * Asadmin command to get the monitoring service's current configuration and pretty print it to the shell.
@@ -95,7 +97,7 @@ import org.jvnet.hk2.config.types.Property;
 })
 public class GetMonitoringConfiguration implements AdminCommand {
 
-    private final String ATTRIBUTE_HEADERS[] = {"|Name|", "|Value|", "|Description|"};
+    private final String ATTRIBUTE_HEADERS[] = {"|Object Name|", "|Attribute|", "|Description|"};
     private final static String NOTIFIER_HEADERS[] = {"Name", "Notifier Enabled"};
 
     @Inject
@@ -138,7 +140,7 @@ public class GetMonitoringConfiguration implements AdminCommand {
         actionReport.appendMessage("Monitoring Service Configuration log frequency? " + monitoringConfig.getLogFrequency() + " " + monitoringConfig.getLogFrequencyUnit());
         actionReport.appendMessage(StringUtils.EOL);
 
-         Map<String, Object> map = new HashMap<String, Object>();
+         Map<String, Object> map = new HashMap<>();
         Properties extraProps = new Properties();
         map.put("enabled", monitoringConfig.getEnabled());
         map.put("amx", monitoringConfig.getAmx());
@@ -148,19 +150,21 @@ public class GetMonitoringConfiguration implements AdminCommand {
         extraProps.put("jmxmonitoringConfiguration", map);
         
         
-        Map<String, Object> propMap = new HashMap<String, Object>();
+        List<Map<String, String>> monitoredAttributes = new ArrayList<>();
         
-        for (Property property : monitoringConfig.getProperty()) {
+        for (MonitoredAttribute monitoredBean : monitoringConfig.getMonitoredAttributes()) {
             Object values[] = new Object[3];
-            values[0] = property.getName();
-            values[1] = property.getValue();
-            values[2] = property.getDescription();
-            propMap.put(property.getName(), property.getValue());
+            values[0] = monitoredBean.getObjectName();
+            values[1] = monitoredBean.getAttributeName();
+            values[2] = monitoredBean.getDescription();
+            Map<String, String> monitoredAttribute = new HashMap<>();
+            monitoredAttribute.put(monitoredBean.getObjectName(), monitoredBean.getAttributeName());
+            monitoredAttributes.add(monitoredAttribute);
             attributeColumnFormatter.addRow(values);
         }
         
         //Cannot change key in line below - required for admingui propertyDescTable.inc
-        extraProps.put("properties", propMap);
+        extraProps.put("monitored-beans", monitoredAttributes);
         
         actionReport.setExtraProperties(extraProps);
         
