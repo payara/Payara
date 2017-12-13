@@ -38,6 +38,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 -->
 
@@ -66,7 +67,7 @@
                     <archive>
                         <!-- XXX - which of these are needed? -->
                         <manifestEntries>
-                               <Class-Path>../../modules/cluster-common.jar ../../modules/cluster-ssh.jar ../../modules/config-api.jar ../../modules/internal-api.jar ../../modules/config-types.jar ../../modules/shoal-gms-impl.jar cluster-l10n.jar</Class-Path>
+                               <Class-Path>../../modules/cluster-common.jar ../../modules/cluster-ssh.jar ../../modules/config-api.jar ../../modules/internal-api.jar ../../modules/config-types.jar cluster-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -159,14 +160,6 @@
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>ssl-impl</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.shoal</groupId>
-            <artifactId>shoal-gms-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.shoal</groupId>
-            <artifactId>shoal-gms-impl</artifactId>
         </dependency>
     </dependencies>
 </project>

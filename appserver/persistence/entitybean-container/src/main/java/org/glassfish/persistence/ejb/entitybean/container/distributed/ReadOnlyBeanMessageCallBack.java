@@ -42,33 +42,32 @@ package org.glassfish.persistence.ejb.entitybean.container.distributed;
 
 import com.sun.ejb.containers.EjbContainerUtil;
 
-import org.glassfish.gms.bootstrap.GMSAdapter;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
-import com.sun.enterprise.ee.cms.core.CallBack;
-import com.sun.enterprise.ee.cms.core.GroupManagementService;
-import com.sun.enterprise.ee.cms.core.MessageSignal;
-import com.sun.enterprise.ee.cms.core.Signal;
-
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
+import fish.payara.nucleus.cluster.PayaraCluster;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.EventBus;
+import fish.payara.nucleus.eventbus.MessageReceiver;
+import java.io.Serializable;
 
 @Service
-public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnlyBeanNotifier {
+public class ReadOnlyBeanMessageCallBack implements MessageReceiver, DistributedReadOnlyBeanNotifier {
 
     @Inject
     private EjbContainerUtil ejbContainerUtil;
-
+    
     @Inject
-    GMSAdapterService gmsAdapterService;
+    EventBus eventBus;
+    
+    @Inject
+    PayaraCluster cluster;
 
     private static DistributedReadOnlyBeanService _readOnlyBeanService = DistributedEJBServiceFactory
             .getDistributedEJBService().getDistributedReadOnlyBeanService();
-
-    private GroupManagementService gms;
 
     private static final String GMS_READ_ONLY_COMPONENT_NAME = "__GMS__READ_ONLY_BEAN__";
 
@@ -77,36 +76,30 @@ public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnl
 
     public void postConstruct() {
         if (!ejbContainerUtil.isDas()) {
-            if (gmsAdapterService != null) {
-                GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();
-                if (gmsAdapter != null) {
-                    gms = gmsAdapter.getModule();
-                    gmsAdapter.registerMessageListener(GMS_READ_ONLY_COMPONENT_NAME, this);
-                    _readOnlyBeanService.setDistributedReadOnlyBeanNotifier(this);
-                }
+            if (eventBus != null && cluster != null && cluster.isEnabled()) {
+                _readOnlyBeanService.setDistributedReadOnlyBeanNotifier(this);
+                eventBus.addMessageReceiver(GMS_READ_ONLY_COMPONENT_NAME, this);
             }
         }
     }
+    
 
-    public void processNotification(Signal signal) { 
-        try {
-            MessageSignal messageSignal = (MessageSignal) signal;
-            byte[] payload = messageSignal.getMessage();
-            int size = payload.length;
-            long ejbID = bytesToLong(payload, 0);
-            if (size == 8) {
-                _logger.log(Level.WARNING, "ReadOnlyBeanMessageCallBack: " + " Got message for ejbID: " + ejbID);
-                _readOnlyBeanService.handleRefreshAllRequest(ejbID);
-            } else {
-                byte[] pkData = new byte[size - 8];
-                System.arraycopy(payload, 8, pkData, 0, pkData.length);
-                _readOnlyBeanService.handleRefreshRequest(ejbID, pkData);
-                _logger.log(Level.WARNING, "ReadOnlyBeanMessageCallBack: " + " Handled message for ejbID: " + ejbID);
-            }
-        } catch (Exception ex) {
-            _logger.log(Level.WARNING, "ReadOnlyBeanMessageCallBack: " + "Got exception while handling message", ex);
+    @Override
+    public void receiveMessage(ClusterMessage cm) {
+        RefreshPayload message = (RefreshPayload) cm.getPayload();
+        byte[] payload = message.payload;
+        int size = payload.length;
+        long ejbID = bytesToLong(payload, 0);
+        if (size == 8) {
+            _logger.log(Level.WARNING, "ReadOnlyBeanMessageCallBack: " + " Got message for ejbID: " + ejbID);
+            _readOnlyBeanService.handleRefreshAllRequest(ejbID);
+        } else {
+            byte[] pkData = new byte[size - 8];
+            System.arraycopy(payload, 8, pkData, 0, pkData.length);
+            _readOnlyBeanService.handleRefreshRequest(ejbID, pkData);
+            _logger.log(Level.WARNING, "ReadOnlyBeanMessageCallBack: " + " Handled message for ejbID: " + ejbID);
         }
-    }
+    }    
 
     /**
      * This is called by the container after it has called refresh
@@ -123,7 +116,7 @@ public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnl
         longToBytes(ejbID, payload, 0);
         System.arraycopy(pk, 0, payload, 8, size);
         try {
-            gms.getGroupHandle().sendMessage(GMS_READ_ONLY_COMPONENT_NAME, payload);
+            eventBus.publish(GMS_READ_ONLY_COMPONENT_NAME, new ClusterMessage(new RefreshPayload(payload)));
             _logger.log(Level.WARNING, "ReadOnlyBeanMessageCallBack: " + " Sent message for ejbID: " + ejbID);
         } catch (Exception ex) {
             _logger.log(Level.WARNING, "ReadOnlyBeanMessageCallBack: " + "Got exception during notifyRefresh", ex);
@@ -143,7 +136,7 @@ public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnl
 
         longToBytes(ejbID, payload, 0);
         try {
-            gms.getGroupHandle().sendMessage(GMS_READ_ONLY_COMPONENT_NAME, payload);
+            eventBus.publish(GMS_READ_ONLY_COMPONENT_NAME, new ClusterMessage(new RefreshPayload(payload)));
         } catch (Exception ex) {
             _logger.log(Level.WARNING, "ReadOnlyBeanMessageCallBack: " + "Got exception during notifyRefreshAll", ex);
         }
@@ -209,4 +202,13 @@ public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnl
 
         return (b1 | b2 | b3 | b4);
     }
+    
+    private class RefreshPayload implements Serializable {
+        byte payload[];
+
+        private RefreshPayload(byte[] payload) {
+            this.payload = payload;
+        }
+    }
+
 }

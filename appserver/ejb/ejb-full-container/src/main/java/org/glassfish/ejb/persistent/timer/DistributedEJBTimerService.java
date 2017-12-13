@@ -46,13 +46,8 @@ import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
 import com.sun.enterprise.transaction.spi.RecoveryEventListener;
-
-import org.glassfish.gms.bootstrap.GMSAdapter;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
-import com.sun.enterprise.ee.cms.core.CallBack;
-import com.sun.enterprise.ee.cms.core.GMSConstants;
-import com.sun.enterprise.ee.cms.core.PlannedShutdownSignal;
-import com.sun.enterprise.ee.cms.core.Signal;
+import fish.payara.nucleus.cluster.ClusterListener;
+import fish.payara.nucleus.cluster.PayaraCluster;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
@@ -63,7 +58,7 @@ import java.util.logging.Level;
 
 @Service
 public class DistributedEJBTimerService
-    implements PersistentTimerService, RecoveryEventListener, PostConstruct, CallBack {
+    implements PersistentTimerService, RecoveryEventListener, PostConstruct, ClusterListener {
 
     private static Logger logger = EjbContainerUtilImpl.getLogger();
 
@@ -71,23 +66,15 @@ public class DistributedEJBTimerService
     private EjbContainerUtil ejbContainerUtil;
 
     @Inject
-    GMSAdapterService gmsAdapterService;
+    PayaraCluster cluster;
 
     @Inject
     RecoveryResourceRegistry recoveryResourceRegistry;
 
     public void postConstruct() {
         if (!ejbContainerUtil.isDas()) {
-            if (gmsAdapterService != null) {
-                GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();
-                if (gmsAdapter != null) {
-                    // We only register interest in the Planned Shutdown event here.
-                    // Because of the dependency between transaction recovery and
-                    // timer migration, the timer migration operation during an
-                    // unexpected failure is initiated by the transaction recovery
-                    // subsystem.
-                    gmsAdapter.registerPlannedShutdownListener(this);
-                }
+            if (cluster != null && cluster.isEnabled()) {
+                cluster.addClusterListener(this);
             }
             // Register for transaction recovery events
             recoveryResourceRegistry.addEventListener(this);
@@ -96,23 +83,6 @@ public class DistributedEJBTimerService
 
     public void initPersistentTimerService(String target) {
         PersistentEJBTimerService.initEJBTimerService(target);
-    }
-
-    @Override
-    public void processNotification(Signal signal) {
-        if (signal instanceof PlannedShutdownSignal) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "[DistributedEJBTimerService] planned shutdown signal: " + signal);
-            }
-            PlannedShutdownSignal pssig = (PlannedShutdownSignal)signal;
-            if (pssig.getEventSubType() == GMSConstants.shutdownType.INSTANCE_SHUTDOWN) {
-                migrateTimers(signal.getMemberToken());
-            }
-        } else {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "[DistributedEJBTimerService] ignoring signal: " + signal);
-            }
-        }
     }
 
     @Override
@@ -158,6 +128,15 @@ public class DistributedEJBTimerService
         }
         
         return result;
+    }
+
+    @Override
+    public void memberAdded(String memberUUID) {
+    }
+
+    @Override
+    public void memberRemoved(String memberUUID) {
+        migrateTimers(cluster.getMemberName(memberUUID));
     }
 
 } //DistributedEJBTimerService.java

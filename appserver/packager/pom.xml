@@ -96,7 +96,6 @@
         <module>glassfish-nucleus</module>
         <module>glassfish-corba-base</module>
         <module>glassfish-common</module>
-        <module>shoal</module>
         <module>glassfish-cluster</module>
         <module>glassfish-javahelp</module>
         <module>glassfish-registration</module>

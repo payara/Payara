@@ -56,6 +56,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
@@ -155,6 +156,19 @@ public class HazelcastCore implements EventListener, ConfigListener {
         enabled = Boolean.valueOf(nodeConfig.getEnabled());
         transactions.addListenerForType(HazelcastConfigSpecificConfiguration.class, this);
         transactions.addListenerForType(HazelcastRuntimeConfiguration.class, this);
+        
+        if (env.isMicro()) {
+            memberName = nodeConfig.getMemberName();
+            memberGroup = nodeConfig.getMemberGroup();
+        } else {
+            memberName = context.getInstanceName();
+            Cluster cluster = context.getConfigBean().getCluster();
+            if (cluster == null) {
+                memberGroup = context.getConfigBean().getConfigRef();
+            } else {
+                memberGroup = cluster.getName();
+            }
+        }
     }
     
     /**
@@ -165,9 +179,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
      * @since 4.1.1.171
      */
     public String getMemberName() {
-        if (enabled && !booted) {
-            bootstrapHazelcast();
-        }
         return memberName;
     }
     
@@ -177,9 +188,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
      * @since 4.1.1.171
      */
     public String getMemberGroup() {
-        if (enabled && !booted) {
-            bootstrapHazelcast();
-        }
         return memberGroup;
     }
     
@@ -438,8 +446,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
             Config config = buildConfiguration();
             theInstance = Hazelcast.newHazelcastInstance(config);
             if (env.isMicro()) {
-                memberName = nodeConfig.getMemberName();
-                memberGroup = nodeConfig.getMemberGroup();
                 if (Boolean.valueOf(configuration.getGenerateNames()) || memberName == null) {
                     NameGenerator gen = new NameGenerator();
                     memberName = gen.generateName();
@@ -465,15 +471,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                                 HazelcastCore.INSTANCE_ATTRIBUTE, memberName);
                     }
                 }
-            } else {
-                if (memberName == null) {
-                    memberName = context.getInstanceName();
-                }
-                if (memberGroup == null) {
-                    memberGroup = context.getConfigBean().getConfigRef();
-                }
-            }
-
+            } 
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
             hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);

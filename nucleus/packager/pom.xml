@@ -98,7 +98,6 @@
         <module>nucleus</module>
         <module>nucleus-corba-base</module>
         <module>nucleus-common</module>
-        <module>nucleus-shoal</module>
         <module>nucleus-cluster</module>
         <module>nucleus-management</module>
         <module>nucleus-osgi</module>

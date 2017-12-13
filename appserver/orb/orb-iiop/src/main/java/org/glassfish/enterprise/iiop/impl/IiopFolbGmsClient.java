@@ -39,6 +39,8 @@
  */
 // Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.enterprise.iiop.impl;
 
 import java.util.HashMap;
@@ -47,12 +49,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import com.sun.enterprise.ee.cms.core.FailureNotificationSignal;
-import com.sun.enterprise.ee.cms.core.JoinedAndReadyNotificationSignal;
-import com.sun.enterprise.ee.cms.core.PlannedShutdownSignal;
-import com.sun.enterprise.ee.cms.core.Signal;
-import com.sun.enterprise.ee.cms.core.SignalAcquireException;
-import com.sun.enterprise.ee.cms.core.SignalReleaseException;
 import com.sun.logging.LogDomains;
 
 import com.sun.corba.ee.spi.orb.ORB ;
@@ -72,15 +68,14 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.ee.cms.core.CallBack;
+import fish.payara.nucleus.cluster.PayaraCluster;
+import fish.payara.nucleus.cluster.ClusterListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import static org.glassfish.api.naming.NamingClusterInfo.IIOP_CLUSTER_UPDATE_PROPERTY;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.PropertyResolver;
-import org.glassfish.gms.bootstrap.GMSAdapter;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.ORBPackage.InvalidName;
 
@@ -90,7 +85,7 @@ import org.omg.CORBA.ORBPackage.InvalidName;
 /**
  * @author Harold Carr
  */
-public class IiopFolbGmsClient implements CallBack {
+public class IiopFolbGmsClient implements ClusterListener {
     private static final Logger _logger =
        LogDomains.getLogger(IiopFolbGmsClient.class,
            LogDomains.CORBA_LOGGER);
@@ -103,13 +98,11 @@ public class IiopFolbGmsClient implements CallBack {
 
     private Nodes nodes ;
 
-    private GMSAdapterService gmsAdapterService ;
-
-    private GMSAdapter gmsAdapter ;
-
     private Map<String, ClusterInstanceInfo> currentMembers;
 
     private GroupInfoService gis;
+    
+    private PayaraCluster cluster;
     
     private static final String USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY = "useNodeHostForLocalNode";
     
@@ -127,17 +120,9 @@ public class IiopFolbGmsClient implements CallBack {
             services ) ;
         this.services = services ;
 
-        gmsAdapterService = services.getService(GMSAdapterService.class);
-
+        cluster = services.getService(PayaraCluster.class);
 	try {
-            if (gmsAdapterService == null) {
-                return ;
-            }
-
-            gmsAdapter = gmsAdapterService.getGMSAdapter() ;
-            fineLog( "IiopFolbGmsClient: gmsAdapter {0}", gmsAdapter );
-
-            if (gmsAdapter != null) {
+            if (cluster != null && cluster.isEnabled()) {
                 domain = services.getService( Domain.class );
                 fineLog( "IiopFolbGmsClient: domain {0}", domain) ;
 
@@ -147,7 +132,7 @@ public class IiopFolbGmsClient implements CallBack {
                 nodes = services.getService(Nodes.class);
                 fineLog( "IiopFolbGmsClient: nodes {0}", nodes );
 
-                String instanceName = gmsAdapter.getModule().getInstanceName() ;
+                String instanceName = cluster.getUnderlyingHazelcastService().getMemberName() ;
                 fineLog( "IiopFolbGmsClient: instanceName {0}", instanceName );
 
                 myServer = servers.getServer(instanceName) ;
@@ -161,9 +146,7 @@ public class IiopFolbGmsClient implements CallBack {
 
                 fineLog( "iiop instance info = " + getIIOPEndpoints() ) ;
 
-                gmsAdapter.registerFailureNotificationListener(this);
-                gmsAdapter.registerJoinedAndReadyNotificationListener(this);
-                gmsAdapter.registerPlannedShutdownListener(this);
+                cluster.addClusterListener(this);
 
                 fineLog( "IiopFolbGmsClient: GMS action factories added");
             } else {
@@ -174,7 +157,7 @@ public class IiopFolbGmsClient implements CallBack {
 	} catch (Throwable t) {
             _logger.log(Level.SEVERE, t.getLocalizedMessage(), t);
 	} finally {
-            fineLog( "IiopFolbGmsClient: gmsAdapter {0}", gmsAdapter ) ;
+            fineLog( "IiopFolbGmsClient: Payara Cluster {0}", cluster ) ;
 	}
     }
 
@@ -206,31 +189,11 @@ public class IiopFolbGmsClient implements CallBack {
     }
 
     public boolean isGMSAvailable() {
-        return gmsAdapter != null ;
-    }
-
-    ////////////////////////////////////////////////////
-    //
-    // Action
-    //
-
-    @Override
-    public void processNotification(final Signal signal) {
-        try {
-            fineLog( "processNotification: signal {0}", signal ) ;
-            signal.acquire();
-            handleSignal(signal);
-        } catch (SignalAcquireException e) {
-            _logger.log(Level.SEVERE, e.getLocalizedMessage());
-	} catch (Throwable t) {
-	    _logger.log(Level.SEVERE, t.getLocalizedMessage(), t);
-        } finally {
-	    try {
-		signal.release();
-	    } catch (SignalReleaseException e) {
-		_logger.log(Level.SEVERE, e.getLocalizedMessage());
-	    }
-	}
+        boolean result = false;
+        if (cluster != null && cluster.isEnabled()) {
+            result = true;
+        }
+        return  result;
     }
 
     ////////////////////////////////////////////////////
@@ -238,32 +201,10 @@ public class IiopFolbGmsClient implements CallBack {
     // Implementation
     //
 
-    private void handleSignal(final Signal signal) 
+    private void removeMember(final String signal)
     {
-        fineLog( "IiopFolbGmsClient.handleSignal: signal from: {0}",
-            signal.getMemberToken());
-        fineLog( "IiopFolbGmsClient.handleSignal: map entryset: {0}",
-            signal.getMemberDetails().entrySet());
-
-	if (signal instanceof PlannedShutdownSignal ||
-	    signal instanceof FailureNotificationSignal) {
-
-	    removeMember(signal);
-
-	} else if (signal instanceof JoinedAndReadyNotificationSignal) {
-
-	    addMember(signal);
-
-	} else {
-	    _logger.log(Level.SEVERE, 
-                "IiopFolbGmsClient.handleSignal: unknown signal: {0}",
-                signal.toString());
-	}
-    }
-
-    private void removeMember(final Signal signal)
-    {
-	String instanceName = signal.getMemberToken();
+        // TBD really need to map to real member name
+	String instanceName = signal;
 	try {
             fineLog( "IiopFolbGmsClient.removeMember->: {0}",
                 instanceName);
@@ -292,9 +233,9 @@ public class IiopFolbGmsClient implements CallBack {
 	}
     }
 
-    private void addMember(final Signal signal)
+    private void addMember(final String signal)
     {
-	final String instanceName = signal.getMemberToken();
+	final String instanceName = signal;
 	try {
             fineLog( "IiopFolbGmsClient.addMember->: {0}", instanceName);
 
@@ -488,6 +429,22 @@ public class IiopFolbGmsClient implements CallBack {
             }
         }
         return result.toString() ;
+    }
+
+    @Override
+    public void memberAdded(String guid) {
+        // if member added into my group
+        if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(cluster.getMemberGroup(guid))) {
+            addMember(cluster.getMemberName(guid));
+        }
+    }
+
+    @Override
+    public void memberRemoved(String guid) {
+        // if member disappeared from my group in the cluster
+        if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(cluster.getMemberGroup(guid))) {
+            removeMember(cluster.getMemberName(guid));
+        }
     }
 
     class GroupInfoServiceGMSImpl extends GroupInfoServiceBase {

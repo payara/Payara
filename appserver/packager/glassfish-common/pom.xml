@@ -156,11 +156,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
-            <artifactId>gms-bootstrap</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>javax.enterprise.deploy</groupId>
             <artifactId>javax.enterprise.deploy-api</artifactId>
         </dependency>
