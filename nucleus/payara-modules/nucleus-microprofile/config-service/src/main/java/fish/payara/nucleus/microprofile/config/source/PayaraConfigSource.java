@@ -58,4 +58,13 @@ public class PayaraConfigSource {
         configService = Globals.getDefaultHabitat().getService(ConfigProviderResolverImpl.class);
     }
     
+    /**
+     * Should only be used for test purposes
+     * @param test 
+     */
+    PayaraConfigSource(boolean test) {
+        domainConfiguration = null;
+        configService = null;
+    }
+    
 }

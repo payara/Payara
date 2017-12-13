@@ -168,6 +168,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String postBootFileName;
     private String postDeployFileName;
     private RuntimeDirectory runtimeDir = null;
+    private String secretsDir;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -984,6 +985,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             configurePhoneHome();
             configureNotificationService();
             configureHealthCheck();
+            configureSecrets();
 
             // Add additional libraries
             addLibraries();
@@ -1299,6 +1301,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case postdeploycommandfile:
                         postDeployFileName = value;
+                        break;
+                    case secretsdir:
+                        secretsDir = value;
                         break;
                     default:
                         break;
@@ -1979,6 +1984,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         enableRequestTracing = getBooleanProperty("payaramicro.enableRequestTracing");
         requestTracingThresholdUnit = getProperty("payaramicro.requestTracingThresholdUnit", "SECONDS");
         requestTracingThresholdValue = getLongProperty("payaramicro.requestTracingThresholdValue", 30L);
+        secretsDir = getProperty("payaramicro.secretsDir");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2101,6 +2107,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (hzClusterPassword != null) {
             props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
+        }
+        
+        if (secretsDir != null) {
+            props.setProperty("payaramicro.secretsDir", secretsDir);
         }
 
         props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
@@ -2402,6 +2412,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
         } else {
             LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());
+        }
+    }
+
+    private void configureSecrets() {
+        if (secretsDir != null) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.microprofile-config.secret-dir=" + secretsDir));            
         }
     }
 
