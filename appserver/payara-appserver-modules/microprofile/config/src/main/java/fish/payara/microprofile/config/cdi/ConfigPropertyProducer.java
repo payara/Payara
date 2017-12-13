@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.config.cdi;
 
-import fish.payara.microprofile.config.spi.PayaraConfig;
+import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import java.lang.reflect.Member;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.spi.Bean;

@@ -321,7 +321,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
                 }
                 
                 sb.append(" [ ");
-                for (Entry<String, String> servletMapping : moduleDescriptor.getServletMappings()) {
+                for (Entry<String, String> servletMapping : moduleDescriptor.getServletMappings().entrySet()) {
                     sb.append("< ")
                       .append(servletMapping.getValue()).append(' ').append(servletMapping.getKey())
                       .append(" >");

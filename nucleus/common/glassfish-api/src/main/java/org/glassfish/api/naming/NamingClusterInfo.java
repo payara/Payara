@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.naming;
 
@@ -59,6 +60,8 @@ public interface NamingClusterInfo {
 
     public static final String IIOP_URL_PROPERTY = "com.sun.appserv.ee.iiop.endpointslist";
 
+    public static final String IIOP_CLUSTER_UPDATE_PROPERTY = "fish.payara.iiop.clusterupdate";
+
     public static final String IC_BASED_WEIGHTED = "ic-based-weighted";
 
     public static final String IC_BASED = "ic-based";
@@ -68,7 +71,7 @@ public interface NamingClusterInfo {
     public static final String CORBALOC = "corbaloc:";
 
     void initGroupInfoService(Hashtable<?, ?> myEnv, String defaultHost, String defaultPort,
-                              ORB orb, ServiceLocator services);
+                              ORB orb, ServiceLocator services, boolean updateCluster);
 
     void setClusterInstanceInfo(Hashtable<?, ?> myEnv, String defaultHost, String defaultPort,
                                 boolean membershipChangeForced);

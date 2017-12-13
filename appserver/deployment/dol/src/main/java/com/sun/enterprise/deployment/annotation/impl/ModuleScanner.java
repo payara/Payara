@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.deployment.annotation.impl;
 
@@ -348,18 +349,24 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         if (executorService != null) {
             return executorService;
         }
+
         Runtime runtime = Runtime.getRuntime();
-       int nrOfProcessors = runtime.availableProcessors();
-        executorService = Executors.newFixedThreadPool(nrOfProcessors, new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("dol-jar-scanner");
-                t.setDaemon(true);
-                t.setContextClassLoader(getClass().getClassLoader());
-                return t;
-            }
-        });
+        int nrOfProcessors = runtime.availableProcessors();
+
+        executorService = new ThreadPoolExecutor(0, nrOfProcessors,
+                30L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        Thread t = new Thread(r);
+                        t.setName("dol-jar-scanner");
+                        t.setDaemon(true);
+                        t.setContextClassLoader(getClass().getClassLoader());
+                        return t;
+                    }
+                });
+
         return executorService;
     }
 

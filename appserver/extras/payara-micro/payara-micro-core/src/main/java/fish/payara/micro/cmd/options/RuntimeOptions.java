@@ -100,9 +100,10 @@ public class RuntimeOptions {
                 try {
                     RUNTIME_OPTION option = RUNTIME_OPTION.valueOf(arg.substring(2).toLowerCase());
                     String value = null;
-                    if (option.getValue()) {
+                    if (option.hasFollowingValue()) {
                         // there is a second value
                         value = args[i+1];
+                        i++;
                         if (value.startsWith("--")) {
                             throw new IndexOutOfBoundsException();
                         }
@@ -110,7 +111,7 @@ public class RuntimeOptions {
                     }
                     List<String> values = options.get(option);
                     if (values == null) {
-                        values = new LinkedList<String>();
+                        values = new LinkedList<>();
                         options.put(option, values);
                     }
                     values.add(value);
@@ -121,6 +122,14 @@ public class RuntimeOptions {
                 } catch (ValidationException ve) {
                     throw new ValidationException(arg + " " + ve.getMessage(),ve);
                 }
+            } else if (arg.endsWith(".war") || arg.endsWith(".ear") || arg.endsWith(".rar") || arg.endsWith(".jar")) {
+                // we have a "raw" deployment
+                List<String> values = options.get(RUNTIME_OPTION.deploy);
+                if (values == null) {
+                    values = new LinkedList<>();
+                    options.put(RUNTIME_OPTION.deploy, values);
+                }
+                values.add(arg);
             }
         }
     }

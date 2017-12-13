@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.servlets;
 
 import java.io.IOException;
@@ -81,9 +81,9 @@ import javax.naming.directory.DirContext;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -335,6 +335,8 @@ public class WebdavServlet
         DocumentBuilderFactory documentBuilderFactory = null;
         try {
             documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setValidating(true);
+            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             documentBuilderFactory.setNamespaceAware(true);
             documentBuilderFactory.setExpandEntityReferences(false);
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -1936,7 +1938,7 @@ public class WebdavServlet
 
         if (path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF") ||
             path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF")) {
-            errorList.put(path, Integer.valueOf(WebdavStatus.SC_FORBIDDEN));
+            errorList.put(path, WebdavStatus.SC_FORBIDDEN);
             return;
         }
 
@@ -1948,12 +1950,11 @@ public class WebdavServlet
         if (lockTokenHeader == null)
             lockTokenHeader = "";
 
-        Enumeration<NameClassPair> enumeration = null;
+        Enumeration<NameClassPair> enumeration;
         try {
             enumeration = resources.list(path);
         } catch (NamingException e) {
-            errorList.put(path, Integer.valueOf
-                (WebdavStatus.SC_INTERNAL_SERVER_ERROR));
+            errorList.put(path, WebdavStatus.SC_INTERNAL_SERVER_ERROR);
             return;
         }
 

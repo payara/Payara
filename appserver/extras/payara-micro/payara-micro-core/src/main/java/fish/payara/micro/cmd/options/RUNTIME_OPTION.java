@@ -96,12 +96,12 @@ public enum RUNTIME_OPTION {
     interfaces(true),
     help(false);
 
-    private RUNTIME_OPTION(boolean value) {
-        this(value, new Validator());
+    private RUNTIME_OPTION(boolean hasValue) {
+        this(hasValue, new Validator());
     }
 
-    private RUNTIME_OPTION(boolean value, Validator validator) {
-        this.value = value;
+    private RUNTIME_OPTION(boolean hasValue, Validator validator) {
+        this.value = hasValue;
         this.validator = validator;
     }
 
@@ -109,7 +109,7 @@ public enum RUNTIME_OPTION {
         return validator.validate(optionValue);
     }
 
-    boolean getValue() {
+    boolean hasFollowingValue() {
         return value;
     }
     private final Validator validator;
