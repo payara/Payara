@@ -145,7 +145,7 @@ public class RuntimeInfo implements AdminCommand {
         checkDtrace();
         setDasName();
         top.addProperty("java.vm.name", System.getProperty("java.vm.name"));
-        setRestartable();
+//        setRestartable();
         reportMessage.append(Strings.get("runtime.info.debug", jpdaEnabled ? "enabled" : "not enabled"));
         report.setMessage(reportMessage.toString());
     }
@@ -168,54 +168,6 @@ public class RuntimeInfo implements AdminCommand {
         catch (Exception ex) {
             // ignore
         }
-    }
-
-    /**
-     * March 11 2011 -- See JIRA 16197
-     * Say the user started the server with a passwordfile arg.  After they started it
-     * they deleted the password file. If we don't do anything special restart-server
-     * will take down the server -- but it will not startup again.  The user will have no clue why.
-     * We can NOT tell the user directly because the restart server command is asynchronous
-     * (@Async annotation).
-     * So -- this method was added as a pre-flight check.  The client restart commands
-     * should run this command and check the restartable flag to make sure
-     * the restart doesn't fail because of a missing password file.
-     */
-    private void setRestartable() {
-        // false positive is MUCH better than false negative.  Err on the side of
-        // trying to restart if in doubt.  No harm can result from that.
-        restartable = true;
-        String passwordFile = null;
-
-        try {
-            Properties props = Globals.get(StartupContext.class).getArguments();
-            String argsString = props.getProperty("-asadmin-args");
-
-            if (ok(argsString) && argsString.indexOf("--passwordfile") >= 0) {
-                String[] args = argsString.split(",,,");
-
-                for (int i = 0; i < args.length; i++) {
-                    if (args[i].equals("--passwordfile")) {
-                        if ((i + 1) < args.length && ok(args[i + 1])) {
-                            passwordFile = args[i + 1];
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        catch (Exception e) {
-            // nothing to do, but I'll do this anyway because I'm paranoid
-            restartable = true;
-        }
-
-        if (ok(passwordFile)) {
-            // the --passwordfile is here -- so it had best point to a file that
-            // exists and can be read!  In all other cases -- restartable is true
-            File pwf = new File(passwordFile);
-            restartable = pwf.canRead();
-        }
-        top.addProperty("restartable", Boolean.toString(restartable));
     }
 
     private int parsePort(String s) {

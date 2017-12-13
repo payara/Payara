@@ -40,10 +40,15 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
-import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -88,23 +93,22 @@ public class GetConfigProperty implements AdminCommand {
     @Param(optional = true)
     String moduleName;
 
-    @Inject
-    MicroprofileConfigService service;
-
     @Override
     public void execute(AdminCommandContext context) {
 
         String result = null;
         switch (source) {
             case "domain": {
-                result = service.getDomainProperty(propertyName);
+                DomainConfigSource csource = new DomainConfigSource();
+                result = csource.getValue(propertyName);
                 break;
             }
             case "config": {
                 if (sourceName == null) {
                     context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the configuration if config is the source");
                 } else {
-                    result = service.getConfigProperty(sourceName, propertyName);
+                    ConfigConfigSource csource = new ConfigConfigSource(sourceName);
+                    result = csource.getValue(propertyName);
                 }
                 break;
             }
@@ -112,7 +116,8 @@ public class GetConfigProperty implements AdminCommand {
                 if (sourceName == null) {
                     context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the server if server is the source");
                 } else {
-                    result = service.getServerProperty(sourceName, propertyName);
+                    ServerConfigSource csource = new ServerConfigSource(sourceName);
+                    result = csource.getValue(propertyName);
                 }
                 break;
             }
@@ -120,7 +125,8 @@ public class GetConfigProperty implements AdminCommand {
                 if (sourceName == null) {
                     context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
                 } else {
-                    result = service.getApplicationProperty(sourceName, propertyName);
+                    ApplicationConfigSource csource = new ApplicationConfigSource(sourceName);
+                    result = csource.getValue(propertyName);
                 }
                 break;
             }
@@ -128,16 +134,19 @@ public class GetConfigProperty implements AdminCommand {
                 if (sourceName == null || moduleName == null) {
                     context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
                 } else {
-                    result = service.getModuleProperty(sourceName, moduleName, propertyName);
+                    ModuleConfigSource csource = new ModuleConfigSource(sourceName, moduleName);
+                    result = csource.getValue(propertyName);
                 }
                 break;
             }
             case "cluster": {
-                result = service.getClusteredProperty(propertyName);
+                ClusterConfigSource csource = new ClusterConfigSource();
+                result = csource.getValue(propertyName);
                 break;
             }
             case "jndi": {
-                result = service.getJNDIProperty(propertyName, target);
+                JNDIConfigSource csource = new JNDIConfigSource();
+                result = csource.getValue(propertyName);
                 break;
             }
         }

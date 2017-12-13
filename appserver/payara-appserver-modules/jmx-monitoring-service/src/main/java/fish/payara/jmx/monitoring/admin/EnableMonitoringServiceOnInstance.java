@@ -14,6 +14,8 @@
 package fish.payara.jmx.monitoring.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.universal.i18n.LocalStrings;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.jmx.monitoring.MonitoringService;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -70,7 +72,9 @@ public class EnableMonitoringServiceOnInstance implements AdminCommand {
         }
 
         monitoringService.setEnabled(enabled);
-        actionReport.appendMessage("The JMX Monitoring Service status set to " + enabled + " on " + target);
+        actionReport.appendMessage(monitoringService.getLocalStringManager().getLocalString("jmxmonitoring.configure.status.success",
+                "Monitoring Service Status is set to {0} on {1}.",
+                enabled, target));
     }
-    
+
 }
