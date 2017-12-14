@@ -78,12 +78,6 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.cluster</groupId>
-            <artifactId>gms-bootstrap-l10n</artifactId>
-            <version>${project.version}</version>
-	    <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
             <artifactId>cluster-ssh-l10n</artifactId>
             <version>${project.version}</version>
 	    <optional>true</optional>
