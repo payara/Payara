@@ -170,7 +170,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private RuntimeDirectory runtimeDir = null;
     private String clustermode;
     private String interfaces;
-    
+    private String secretsDir;
+
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
@@ -986,6 +987,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             configurePhoneHome();
             configureNotificationService();
             configureHealthCheck();
+            configureSecrets();
 
             // Add additional libraries
             addLibraries();
@@ -1318,6 +1320,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case interfaces:
                         interfaces = value;
+			break;
+                    case secretsdir:
+                        secretsDir = value;
                         break;
                     default:
                         break;
@@ -2028,6 +2033,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         requestTracingThresholdValue = getLongProperty("payaramicro.requestTracingThresholdValue", 30L);
         clustermode = getProperty("payaramicro.clusterMode");
         interfaces = getProperty("payaramicro.interfaces");
+        secretsDir = getProperty("payaramicro.secretsDir");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2158,6 +2164,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         
         if (interfaces != null) {
             props.setProperty("payaramicro.interfaces", interfaces);
+        }
+
+        if (secretsDir != null) {
+            props.setProperty("payaramicro.secretsDir", secretsDir);
         }
 
         props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
@@ -2472,6 +2482,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
         } else {
             LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());
+        }
+    }
+
+    private void configureSecrets() {
+        if (secretsDir != null) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.microprofile-config.secret-dir=" + secretsDir));            
         }
     }
 

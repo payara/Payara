@@ -46,7 +46,7 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class EnvironmentConfigSource extends PayaraConfigSource implements ConfigSource {
+public class EnvironmentConfigSource implements ConfigSource {
     
     @Override
     public Map<String, String> getProperties() {

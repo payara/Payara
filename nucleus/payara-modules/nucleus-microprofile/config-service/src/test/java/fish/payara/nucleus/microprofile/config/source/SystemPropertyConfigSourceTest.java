@@ -39,69 +39,85 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.ServerContext;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author Steve Millidge (Payara Foundation)
+ * @author steve
  */
-public class SystemPropertyConfigSource extends PayaraConfigSource implements ConfigSource {
+public class SystemPropertyConfigSourceTest {
     
-    // Provides access to information on the server including;
-    // command line, initial context, service locator, installation
-    // Classloaders, config root for the server
-    private ServerContext context;
-
-    public SystemPropertyConfigSource() {
-        context = Globals.getDefaultHabitat().getService(ServerContext.class);
+    public SystemPropertyConfigSourceTest() {
+    }
+    
+    @BeforeClass
+    public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
     }
 
     /**
-     * Only use in unit tests
-     * @param test 
+     * Test of getProperties method, of class SystemPropertyConfigSource.
      */
-    SystemPropertyConfigSource(boolean test) {
-        super(test);
+    @Test
+    public void testGetProperties() {
+        System.out.println("getProperties");
+        SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
+        Properties expResult = System.getProperties();
+        Map<String, String> result = instance.getProperties();
+        for (String stringPropertyName : expResult.stringPropertyNames()) {
+            assertEquals(expResult.getProperty(stringPropertyName), instance.getValue(stringPropertyName));
+        }
+        
+    }
+
+    /**
+     * Test of getOrdinal method, of class SystemPropertyConfigSource.
+     */
+    @Test
+    public void testGetOrdinal() {
+        System.out.println("getOrdinal");
+        SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
+        int expResult = 400;
+        int result = instance.getOrdinal();
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getName method, of class SystemPropertyConfigSource.
+     */
+    @Test
+    public void testGetName() {
+        System.out.println("getName");
+        SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
+        String expResult = "SystemProperty";
+        String result = instance.getName();
+        assertEquals(expResult, result);
     }
     
-    
-
-    @Override
-    public Map<String, String> getProperties() {
-        Properties props = System.getProperties();
-        HashMap<String, String> result = new HashMap<>(props.size());
-        for (String propertyName : props.stringPropertyNames()) {
-            result.put(propertyName, props.getProperty(propertyName));
-        }
-        return result;
-    }
-
-    @Override
-    public int getOrdinal() {
-        return 400;
-    }
-
-    @Override
-    public String getValue(String propertyName) {
-        String result;
-        result = System.getProperty(propertyName);
-        if (result == null && context != null) {
-            result = context.getConfigBean().getSystemPropertyValue(propertyName);
-            if (result == null) {
-                result = domainConfiguration.getSystemPropertyValue(propertyName);
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public String getName() {
-        return "SystemProperty";
+    @Test
+    public void testAddProperty() {
+        SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
+        assertNull(instance.getValue("NoProperty"));
+        System.setProperty("NoProperty", "test");
+        assertEquals("test", instance.getValue("NoProperty"));
     }
     
 }

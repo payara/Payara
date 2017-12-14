@@ -39,7 +39,6 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Server;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
