@@ -101,12 +101,8 @@
 	<delete file="${runtimedir}/javahelp.jar"/>
 	<delete file="${runtimedir}/upgrade-tool.jar"/>
 	<delete file="${runtimedir}/web-gui-plugin-common.jar"/>
-	<delete file="${runtimedir}/ha-shoal-cache-store.jar"/>
-	<delete file="${runtimedir}/ha-shoal-cache-bootstrap.jar"/>
 	<delete file="${runtimedir}/ha-file-store.jar"/>
 	<delete file="${runtimedir}/payara-console-extras.jar"/>
-	<delete file="${runtimedir}/shoal-cache.jar"/>
-	<delete file="${runtimedir}/shoal-gms-api.jar"/>
 	<delete file="${runtimedir}/load-balancer-admin.jar"/>
 	<delete file="${runtimedir}/gf-load-balancer-connector.jar"/>
 	<delete file="${runtimedir}/backup.jar"/>

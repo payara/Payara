@@ -72,17 +72,4 @@
             priority="100"
             parentId="#{configNameId}"
             content="/availability/pluginTreeNodeAvailSvc.jsf"/>
-    <integration-point
-            id="gms_node"
-            type="org.glassfish.admingui:navNode"
-            priority="280"
-            parentId="#{configNameId}"
-            content="/configuration/pluginTreeNodeGms.inc"/>
-    <integration-point
-                id="gmsLink"
-                type="org.glassfish.admingui:configuration"
-                priority="280"
-                parentId="propSheetSection"
-                content="/configuration/gmsConfigurationLink.inc"
-        />
 </console-config>

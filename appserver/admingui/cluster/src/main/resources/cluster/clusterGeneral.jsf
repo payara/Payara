@@ -175,34 +175,6 @@
                 <sun:hyperlink id="configlink" text="#{pageSession.valueMap['configRef']}"
                     url="#{request.contextPath}/common/configuration/configuration.jsf?configName=#{pageSession.valueMap['configRef']}" />
             </sun:property>
-
-            <sun:property id="gmsEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.GMS}" helpText="$resource{i18ncs.cluster.GMSHelp}">
-                <sun:checkbox id="gmscb" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['gmsEnabled']}" selectedValue="true" />
-            </sun:property>
-
-           <sun:property id="gmsMulticastPort"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.gmsMulticastPort}" helpText="$resource{i18ncs.cluster.gmsMulticastPortHelp}">
-                <sun:textField id="gmsMulticastPort"  styleClass="port" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.gmsMulticastPort']}" text="#{pageSession.valueMap['gmsMulticastPort']}"/>
-            </sun:property>
-            <sun:property id="gmsMulticastAddress"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.gmsMulticastAddress}" helpText="$resource{i18ncs.cluster.gmsMulticastAddressHelp}">
-                <sun:textField id="gmsMulticastAddress"  columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.gmsMulticastAddress']}" text="#{pageSession.valueMap['gmsMulticastAddress']}"/>
-            </sun:property>
-
-            <sun:property id="GmsBindInterfaceAddress"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.gmsBindInterfaceAddress}" helpText="$resource{i18ncs.cluster.gmsBindInterfaceAddressHelp}">
-                <sun:textField id="GmsBindInterfaceAddress"  columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.gmsBindInterfaceAddress']}" text="#{pageSession.valueMap['gmsBindInterfaceAddress']}"/>
-            </sun:property>
-
-            <sun:property id="instanceStatusProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.status}" >
-                <if condition="#{pageSession.numNotRunning}">
-                    <sun:staticText id="instanceStatusStopped" text=" #{pageSession.numNotRunning}" />
-                    "<br />
-                </if>
-                <if condition="#{pageSession.numRequireRestart}">
-                    <sun:staticText id="instanceStatusRequireRestart" text="#{pageSession.numRequireRestart}" />
-                    "<br />
-                </if>
-                <sun:staticText id="instanceStatusRunning" text="#{pageSession.numRunning}" />
-                "<br />
-            </sun:property>
         </sun:propertySheetSection>
 
     </sun:propertySheet>
