@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>5.Beta1</version>
     </parent>
     <artifactId>javadb</artifactId>
     <name>Java DB Package</name>

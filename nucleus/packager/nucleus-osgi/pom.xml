@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>5.Beta1</version>
     </parent>
     <artifactId>nucleus-osgi</artifactId>
     <name>Glassfish OSGi Support Package</name>
