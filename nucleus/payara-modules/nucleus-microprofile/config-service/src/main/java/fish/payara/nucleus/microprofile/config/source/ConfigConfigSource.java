@@ -39,7 +39,6 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Config;
 import static fish.payara.nucleus.microprofile.config.source.PayaraConfigSource.PROPERTY_PREFIX;
 import java.beans.PropertyVetoException;

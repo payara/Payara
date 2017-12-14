@@ -37,54 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.spi;
+package fish.payara.nucleus.microprofile.config.source;
 
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
- * @since 4.1.2.173
- * @author Steve Millidge (Payara Foundation)
+ *
+ * @author steve
  */
-@Configured(name="microprofile-config")
-public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, ConfigExtension {
-    
-    @Attribute(defaultValue = "110", dataType = Integer.class)
-    Integer getDomainOrdinality();
-    public void setDomainOrdinality(Integer message);
+@RunWith(Suite.class)
+@Suite.SuiteClasses({fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSourceTest.class})
+public class NewTestSuite {
 
-    @Attribute(defaultValue = "120", dataType = Integer.class)
-    Integer getConfigOrdinality();
-    public void setConfigOrdinality(Integer message);    
-    
-    @Attribute(defaultValue = "130", dataType = Integer.class)
-    Integer getServerOrdinality();
-    public void setServerOrdinality(Integer message);
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
 
-    @Attribute(defaultValue = "140", dataType = Integer.class)
-    Integer getApplicationOrdinality();
-    public void setApplicationOrdinality(Integer message);    
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
 
-    @Attribute(defaultValue = "150", dataType = Integer.class)
-    Integer getModuleOrdinality();
-    public void setModuleOrdinality(Integer message);    
+    @Before
+    public void setUp() throws Exception {
+    }
 
-    @Attribute(defaultValue = "160", dataType = Integer.class)
-    Integer getClusterOrdinality();
-    public void setClusterOrdinality(Integer message);    
-    
-    @Attribute(defaultValue = "115", dataType = Integer.class)
-    Integer getJNDIOrdinality();
-    public void setJNDIOrdinality(Integer message);  
-    
-    @Attribute(defaultValue = "secrets", dataType = String.class)
-    String getSecretDir();
-    public void setSecretDir(String directory);
-    
-    @Attribute(defaultValue = "90", dataType = Integer.class)
-    Integer getSecretDirOrdinality();
-    public void setSecretDirOrdinality(Integer message);  
+    @After
+    public void tearDown() throws Exception {
+    }
     
 }

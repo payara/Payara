@@ -18,4 +18,4 @@ nb-configuration.xml
 /appserver/tests/quicklook/*.output
 /appserver/tests/quicklook/*.log
 /appserver/tests/quicklook/**/*.war
-
+/nucleus/payara-modules/nucleus-microprofile/config-service/nbproject/

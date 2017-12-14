@@ -63,6 +63,7 @@ public enum RUNTIME_OPTION {
     addjars(true, new SeparatedFilesValidator(true, true, false, true, true)),
     rootdir(true, new DirectoryValidator(true, true, true)),
     deploymentdir(true, new DirectoryValidator(true, true, false)),
+    secretsdir(true,new DirectoryValidator(true, true, false)),
     domainconfig(true, new FileValidator(true, true, true)),
     minhttpthreads(true, new IntegerValidator(1, Integer.MAX_VALUE)),
     maxhttpthreads(true, new IntegerValidator(2, Integer.MAX_VALUE)),
