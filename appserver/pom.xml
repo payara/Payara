@@ -127,7 +127,7 @@
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
         <schema2beans.version>3.1.1</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
-        <mq.version>5.1.1.final-payara-p3</mq.version>
+        <mq.version>5.1.1.final.payara-p3</mq.version>
         <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld-api.version>2.4.Final</weld-api.version>
