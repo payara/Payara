@@ -85,7 +85,7 @@
         <javax.validation-api.version>1.1.0.Final</javax.validation-api.version>
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
         <javax.security.enterprise-api.version>1.0</javax.security.enterprise-api.version>
-        <javax.security.enterprise.version>1.0</javax.security.enterprise.version>
+        <javax.security.enterprise.version>1.1-b01.payara-p1</javax.security.enterprise.version>
 
         <product.name>Payara Server</product.name>
         <brief_product_name>Payara Server</brief_product_name>
