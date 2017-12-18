@@ -133,12 +133,13 @@
                                 </Import-Package>
                                 <Export-Package>
                                     fish.payara.cdi.jsr107.impl,
-                                    fish.payara.micro.cdi,
                                     fish.payara.cluster,
+                                    fish.payara.micro.cdi,
                                     fish.payara.nucleus.requesttracing.api,
                                     fish.payara.notification.eventbus,
                                     fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service
+                                    fish.payara.nucleus.notification.service,
+                                    fish.payara.roles.api
                                 </Export-Package>
                             </instructions>
                         </configuration>
