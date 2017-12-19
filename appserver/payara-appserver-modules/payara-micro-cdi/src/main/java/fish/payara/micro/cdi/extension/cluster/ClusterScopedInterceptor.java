@@ -71,6 +71,11 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor @ClusterScopedIntercepted @Log @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class ClusterScopedInterceptor implements Serializable {
+    private final BeanManager bm = CDI.current().getBeanManager();
+    private transient ClusteredSingletonLookupImpl clusteredLookup;
+    private static final long serialVersionUID = 1L;
+
+
     public ClusterScopedInterceptor() {
         init();
     }
@@ -143,9 +148,4 @@ public class ClusterScopedInterceptor implements Serializable {
         in.defaultReadObject();
         init();
     }
-
-
-    private final BeanManager bm = CDI.current().getBeanManager();
-    private transient ClusteredSingletonLookupImpl clusteredLookup;
-    private static final long serialVersionUID = 1L;
 }

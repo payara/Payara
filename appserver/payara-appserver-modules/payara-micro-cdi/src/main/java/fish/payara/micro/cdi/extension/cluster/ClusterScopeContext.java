@@ -59,12 +59,15 @@ import org.glassfish.internal.deployment.Deployment;
  * @author lprimak
  */
 class ClusterScopeContext implements Context {
+    private final BeanManager bm;
+    private final ClusteredSingletonLookupImpl clusteredLookup;
+
+
     public ClusterScopeContext(BeanManager bm, Deployment deployment) {
         this.bm = bm;
         Application app = deployment.getCurrentDeploymentContext().getModuleMetaData(Application.class);
         clusteredLookup = new ClusteredSingletonLookupImpl(bm, DOLUtils.getApplicationName(app));
     }
-
 
     @Override
     public Class<? extends Annotation> getScope() {
@@ -120,8 +123,4 @@ class ClusterScopeContext implements Context {
     static <TT> Clustered getAnnotation(Bean<TT> bean) {
         return bean.getBeanClass().getAnnotation(Clustered.class);
     }
-
-
-    private final BeanManager bm;
-    private final ClusteredSingletonLookupImpl clusteredLookup;
 }
