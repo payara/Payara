@@ -411,7 +411,11 @@ public abstract class AbstractSingletonContainer
 
     @Override
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
-	return new SingletonContextImpl(instance, this);
+	EJBContextImpl rv = new SingletonContextImpl(instance, this);
+        if(rv.getJCDIInjectionContext() == null && isJCDIEnabled()) {
+            rv.setJCDIInjectionContext(_createJCDIInjectionContext());
+        }
+        return rv;
     }
 
     private SingletonContextImpl createSingletonEJB()
