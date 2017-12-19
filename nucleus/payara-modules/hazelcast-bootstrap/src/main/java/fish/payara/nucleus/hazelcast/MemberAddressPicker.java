@@ -47,6 +47,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import org.glassfish.api.admin.ServerEnvironment;
 import java.util.logging.Logger;
@@ -125,7 +126,15 @@ public class MemberAddressPicker implements MemberAddressProvider {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface intf = interfaces.nextElement();
-                logger.log(Level.FINE, "Found Network Interface {0} Address {1}", new Object[]{intf.getName(), intf.getInetAddresses().nextElement()});
+                try {
+                    logger.log(Level.FINE, "Found Network Interface {0} Address {1}", new Object[]{intf.getName(), 
+                            intf.getInetAddresses().nextElement()});
+                } catch (NoSuchElementException nsee) {
+                    logger.log(Level.FINER, "Could not obtain address information for Network Interface: " 
+                            + intf.getName(), nsee);
+                    logger.log(Level.FINE, "Found Network Interface {0}", intf.getName());
+                }
+                
                 if (!intf.isLoopback() && !intf.getName().contains("docker0")) {
                     logger.log(Level.FINE, "Adding interface {0} as a possible interface", intf.getName());
                     possibleInterfaces.add(intf);
