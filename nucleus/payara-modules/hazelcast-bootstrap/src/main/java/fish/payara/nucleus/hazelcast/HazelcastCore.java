@@ -79,7 +79,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.ServerEnvironment.Status;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
@@ -259,6 +261,10 @@ public class HazelcastCore implements EventListener, ConfigListener {
             } finally {
                 Utility.setContextClassLoader(oldCL);
             }
+        }
+        else if(event.is(EventTypes.SERVER_STARTUP) && isEnabled() && booted) {
+            // send this event only after all Startup services have been initialized
+            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
         }
     }
 
@@ -475,7 +481,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
             hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);
-            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            if(env.getStatus() == Status.started) {
+                // only issue this event if the server is already running,
+                // otherwise the SERVER_STARTUP event will issue this event as well
+                events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            }
             bindToJNDI();
             booted = true;
         }
