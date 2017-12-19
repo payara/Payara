@@ -62,10 +62,16 @@ import lombok.experimental.Delegate;
 @RequiredArgsConstructor
 @SuppressWarnings("unchecked")
 class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
+    private static final ApplicationScopedFilter appScopedFilter = new ApplicationScopedFilter();
+    private static final ClusteredAnnotationLiteral clusteredScopedLiteral = new ClusteredAnnotationLiteral();
+    private static final ClusteredInterceptorAnnotationLiteral clusteredScopedInterceptorLiteral = new ClusteredInterceptorAnnotationLiteral();
+    private @Delegate(types = {AnnotatedType.class, Annotated.class}, excludes = Exclusions.class) final AnnotatedType<TT> wrapped;
+
+
     @Override
     public Set<Annotation> getAnnotations() {
         return FluentIterable.from(Iterables.filter(wrapped.getAnnotations(), Predicates.not(appScopedFilter)))
-        .append(clusteredScopedLiteral).append(clusteredScopedInterceptorLiteral).toSet();
+                             .append(clusteredScopedLiteral).append(clusteredScopedInterceptorLiteral).toSet();
     }
 
     interface Exclusions {
@@ -82,9 +88,4 @@ class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
             return input.annotationType().equals(ApplicationScoped.class);
         }
     };
-
-    private static final ApplicationScopedFilter appScopedFilter = new ApplicationScopedFilter();
-    private static final ClusteredAnnotationLiteral clusteredScopedLiteral = new ClusteredAnnotationLiteral();
-    private static final ClusteredInterceptorAnnotationLiteral clusteredScopedInterceptorLiteral = new ClusteredInterceptorAnnotationLiteral();
-    private @Delegate(types = {AnnotatedType.class, Annotated.class}, excludes = Exclusions.class) final AnnotatedType<TT> wrapped;
 }

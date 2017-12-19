@@ -62,6 +62,9 @@ import org.glassfish.internal.deployment.Deployment;
  */
 @Log
 public class ClusteredAnnotationProcessor {
+    private Deployment deployment;
+
+
     public void beforeBeanDiscovery(BeforeBeanDiscovery bbd, BeanManager bm) {
         bbd.addScope(ClusterScoped.class, true, true);
         deployment = Globals.getDefaultHabitat().getService(Deployment.class);
@@ -94,7 +97,4 @@ public class ClusteredAnnotationProcessor {
             throw new IllegalStateException(String.format("Clustered @ApplicationScoped %s must be Serializable", annotatedType.toString()));
         }
     }
-
-
-    private Deployment deployment;
 }

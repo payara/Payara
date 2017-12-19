@@ -54,6 +54,8 @@ import javax.enterprise.inject.spi.ProcessAnnotatedType;
  * @author steve
  */
 public class PayaraMicroCDIExtension implements Extension {
+    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
+
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
 
@@ -73,6 +75,4 @@ public class PayaraMicroCDIExtension implements Extension {
     <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat, BeanManager bm) {
          clusteredAnnotationProcessor.processAnnotatedType(pat, bm);
     }
-
-    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
 }
