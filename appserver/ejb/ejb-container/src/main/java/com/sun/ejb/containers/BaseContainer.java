@@ -1696,7 +1696,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
         EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 
-        JCDIService.JCDIInjectionContext<Object> jcdiCtx = null;
+        JCDIService.JCDIInjectionContext<?> jcdiCtx = null;
         Object instance = null;
 
         EJBContextImpl ctx = _constructEJBContextImpl(null);
@@ -1705,12 +1705,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         try {
             ejbInv = createEjbInvocation(null, ctx);
             invocationManager.preInvoke(ejbInv);
-            
-            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
-                jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
-                if(jcdiCtx == null) {
-                    jcdiService = null;
-                }
+            if(isJCDIEnabled()) {
+                // In cdi we need this for the interceptors to store dependent jcdi contexts.  We can't assign the
+                // other info as the ejb has not been created yet.
+                jcdiCtx = jcdiService.createEmptyJCDIInjectionContext();
+                ctx.setJCDIInjectionContext( jcdiCtx );
             }
             if(jcdiCtx != null) {
                 instance = jcdiCtx.getInstance();
@@ -1747,6 +1746,18 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         return contextImpl;
     }
 
+    protected boolean isJCDIEnabled() {
+        return (jcdiService != null) && jcdiService.isJCDIEnabled(ejbDescriptor.getEjbBundleDescriptor()) && (this.ejbClass.getAnnotation(Vetoed.class) == null);
+    }
+
+    protected JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext() {
+        JCDIService.JCDIInjectionContext<?> rv = jcdiService.createJCDIInjectionContext(ejbDescriptor);
+        if (rv == null) {
+            jcdiService = null;
+        }
+        return rv;
+    }
+
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
 	// Overridden for any container that supports injection
 	throw new IllegalStateException();
@@ -1762,8 +1773,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         Object[] interceptorInstances = null;
 
-        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
-	    jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
+        if (isJCDIEnabled()) {
+            jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
             Class[] interceptorClasses = interceptorManager.getInterceptorClasses();
             interceptorInstances = new Object[interceptorClasses.length];
 
