@@ -40,6 +40,7 @@
  */
 package fish.payara.appserver.roles.api;
 
+import javax.ws.rs.core.SecurityContext;
 import fish.payara.roles.api.Roles;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -47,11 +48,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.ws.rs.core.Context;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 
 /**
  *
@@ -61,25 +64,27 @@ import javax.interceptor.InvocationContext;
 @Roles
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class RolesCDIInterceptor implements Serializable {
-    
-    @Resource
-    SessionContext ctx2;
-    
+
     @AroundInvoke
     public Object method(InvocationContext ctx) {
-        List<String> permittedRoles = Arrays.asList(ctx.getMethod().getAnnotation(Roles.class).allowed());
+        InvocationManager ivm = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
         Object result = null;
-
-        for (String s : permittedRoles) {
-            if (ctx2.isCallerInRole(s)) {
-                try {
-                    result = ctx.proceed();
-                } catch (Exception ex) {
-                    Logger.getLogger(RolesCDIInterceptor.class.getName()).log(Level.SEVERE, null, ex);
+        System.out.println("within interceptor");
+        if (ctx.getMethod().getAnnotation(Roles.class) != null) {
+            List<String> permittedRoles = Arrays.asList(ctx.getMethod().getAnnotation(Roles.class).allowed());
+            for (String s : permittedRoles) {
+                if (/*secz.isUserInRole(s)*/true) {
+                    try {
+                        System.out.println("pass");
+                        result = ctx.proceed();
+                    } catch (Exception ex) {
+                        System.out.println("Exception within invoc");
+                        Logger.getLogger(RolesCDIInterceptor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
-
+        System.out.println("fail");
         return result;
     }
 }
