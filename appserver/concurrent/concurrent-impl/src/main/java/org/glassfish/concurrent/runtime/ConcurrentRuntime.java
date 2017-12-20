@@ -152,6 +152,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         return applicationRegistry;
     }
 
+    public ComponentEnvManager getCompEnvMgr() {
+        return compEnvMgr;
+    }
+
     public synchronized ContextServiceImpl getContextService(ResourceInfo resource, ContextServiceConfig config) {
         String jndiName = config.getJndiName();
         if (contextServiceMap != null && contextServiceMap.containsKey(jndiName)) {
