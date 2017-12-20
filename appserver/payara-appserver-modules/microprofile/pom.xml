@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.Beta1</version>
+        <version>5.Beta2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.microprofile</groupId>
     <artifactId>microprofile</artifactId>
