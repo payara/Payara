@@ -143,12 +143,23 @@ public class HazelcastCore implements EventListener, ConfigListener {
     @Inject
     Transactions transactions;
 
+    private static final ThreadLocal<Boolean> thrLocalDisabled = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+
     /**
      * Returns the version of the object that has been instantiated.
      * @return null if an instance of {@link HazelcastCore} has not been created
      */
     public static HazelcastCore getCore() {
         return theCore;
+    }
+
+    public static void setThreadLocalDisabled(boolean tf) {
+        thrLocalDisabled.set(tf);
     }
 
     @PostConstruct
@@ -246,7 +257,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
      * @return Whether Hazelcast is currently enabled
      */
     public boolean isEnabled() {
-        return enabled;
+        return enabled && !thrLocalDisabled.get();
     }
 
     @Override
@@ -448,7 +459,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
      * Starts Hazelcast if not already enabled
      */
     private synchronized void bootstrapHazelcast() {
-        if (!booted && enabled) {
+        if (!booted && enabled && !thrLocalDisabled.get()) {
             Config config = buildConfiguration();
             theInstance = Hazelcast.newHazelcastInstance(config);
             if (env.isMicro()) {
