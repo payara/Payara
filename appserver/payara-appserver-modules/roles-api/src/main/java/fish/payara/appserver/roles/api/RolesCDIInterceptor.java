@@ -47,8 +47,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
+import javax.annotation.Resource;
 import javax.ejb.SessionContext;
-import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -61,22 +61,17 @@ import javax.interceptor.InvocationContext;
 @Roles
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class RolesCDIInterceptor implements Serializable {
-
-    @Inject
-    SecurityManager seczMan;
     
-    @Inject
+    @Resource
     SessionContext ctx2;
-
+    
     @AroundInvoke
     public Object method(InvocationContext ctx) {
-
-        System.out.println("&&&&&&&&&&&&&&&&& Hello!");
         List<String> permittedRoles = Arrays.asList(ctx.getMethod().getAnnotation(Roles.class).allowed());
         Object result = null;
 
         for (String s : permittedRoles) {
-            if (ctx2.isCallerInRole(s)/*  seczMan.checkPermission(seczMan.getSecurityContext(), permittedRoles) isUserInRole(s)*/) {
+            if (ctx2.isCallerInRole(s)) {
                 try {
                     result = ctx.proceed();
                 } catch (Exception ex) {
@@ -86,16 +81,5 @@ public class RolesCDIInterceptor implements Serializable {
         }
 
         return result;
-
-//        if (!permittedRoles.isEmpty()) {
-//            if (true /*allowed*/) {
-//                try {
-//                    result = ctx.proceed();
-//                } catch (Exception ex) {
-//                    Logger.getLogger(RolesCDIInterceptor.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            }
-//        }
-//        return result;
     }
 }

@@ -67,8 +67,8 @@
                         <configuration>
                             <instructions>
                                 <Export-Package>
-                                    fish.payara.roles.api,
-                                    fish.payara.roles.api.extension
+                                    fish.payara.appserver.roles.api,
+                                    fish.payara.appserver.roles.api.extension
                                 </Export-Package>
                             </instructions>
                         </configuration>

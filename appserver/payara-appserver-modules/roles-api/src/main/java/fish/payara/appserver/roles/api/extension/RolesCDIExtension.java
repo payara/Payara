@@ -55,10 +55,8 @@ import javax.enterprise.inject.spi.Extension;
 public class RolesCDIExtension implements Extension {
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-        System.out.println("HElllllloooo from bbd!!!!!!!!!!!!!");
         bbd.addInterceptorBinding(Roles.class);
-        AnnotatedType<Roles> cpat = bm.createAnnotatedType(Roles.class);
+        AnnotatedType<RolesCDIInterceptor> cpat = bm.createAnnotatedType(RolesCDIInterceptor.class);
         bbd.addAnnotatedType(cpat, RolesCDIInterceptor.class.getName());
-        System.out.println("andy asked me to go here");
     }
 }
