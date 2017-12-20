@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
@@ -72,6 +73,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
+    private transient ComponentEnvManager compEnvMgr;
     private transient Applications applications;
     // transactionManager should be null for ContextService since it uses TransactionSetupProviderImpl
     private transient JavaEETransactionManager transactionManager;
@@ -89,11 +91,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
                                     Deployment deployment,
+                                    ComponentEnvManager compEnvMgr,
                                     Applications applications,
                                     JavaEETransactionManager transactionManager,
                                     CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
+        this.compEnvMgr = compEnvMgr;
         this.applications = applications;
         this.transactionManager = transactionManager;
         
@@ -166,7 +170,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getInvocation() != null) {
             appName = handle.getInvocation().getAppName();
         }
-        if(appName == null) {
+        if(appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
             appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment)handle.getInvocation().getJNDIEnvironment()).getName();
         }
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
@@ -281,19 +285,17 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     }
 
     private ComponentInvocation createComponentInvocation(ComponentInvocation currInv) {
-//        ComponentInvocation newInv = new ComponentInvocation(
-//                currInv.getComponentId(),
-//                ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
-//                currInv.getContainer(),
-//                currInv.getAppName(),
-//                currInv.getModuleName()
-//        );
         ComponentInvocation newInv = currInv.clone();
         newInv.setResourceTableKey(null);
         newInv.instance = currInv.getInstance();
-//        if (naming) {
-//            newInv.setJNDIEnvironment(currInv.getJNDIEnvironment());
-//        }
+        if (naming && newInv.getJNDIEnvironment() == null) {
+            Object currJndiEnv = currInv.getJNDIEnvironment();
+            // try to get environment from component ID, do not override existing if exists
+            if(newInv.getComponentId() != null && currJndiEnv == null && compEnvMgr != null) {
+                currJndiEnv = compEnvMgr.getJndiNameEnvironment(newInv.getComponentId());
+            }
+            newInv.setJNDIEnvironment(currJndiEnv);
+        }
         if (!naming) {
             newInv.setJNDIEnvironment(null);
         }

@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
@@ -100,6 +102,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     @Inject
     ApplicationRegistry applicationRegistry;
+
+    @Inject
+    ComponentEnvManager compEnvMgr;
 
     /**
      * Returns the ConcurrentRuntime instance.
@@ -294,7 +299,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         boolean isContextInfoEnabled = Boolean.valueOf(contextInfoEnabled);
         ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = parseContextInfo(contextInfo, isContextInfoEnabled);
         ContextSetupProviderImpl contextSetupProvider =
-                new ContextSetupProviderImpl(invocationManager, deployment, applications,
+                new ContextSetupProviderImpl(invocationManager, deployment, compEnvMgr, applications,
                                              cleanupTransaction? transactionManager: null, contextTypes);
         ContextServiceImpl obj = new ContextServiceImpl(jndiName, contextSetupProvider,
                 new TransactionSetupProviderImpl(transactionManager));
