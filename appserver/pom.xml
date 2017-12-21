@@ -117,6 +117,7 @@
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
         <webservices.version>2.3.2-b608.payara-p3</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
+        <jcip-annotations.version>1.0-1</jcip-annotations.version>
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
         <jaxb.version>2.2.12-b141219.1637</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>

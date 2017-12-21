@@ -81,7 +81,7 @@ holder.
                                 <artifactItem>
                                     <groupId>com.github.stephenc.jcip</groupId>
                                     <artifactId>jcip-annotations</artifactId>
-                                    <version>1.0-1</version>
+                                    <version>${jcip-annotations.version}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
