@@ -79,7 +79,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.ServerEnvironment.Status;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
@@ -141,12 +143,23 @@ public class HazelcastCore implements EventListener, ConfigListener {
     @Inject
     Transactions transactions;
 
+    private static final ThreadLocal<Boolean> thrLocalDisabled = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+
     /**
      * Returns the version of the object that has been instantiated.
      * @return null if an instance of {@link HazelcastCore} has not been created
      */
     public static HazelcastCore getCore() {
         return theCore;
+    }
+
+    public static void setThreadLocalDisabled(boolean tf) {
+        thrLocalDisabled.set(tf);
     }
 
     @PostConstruct
@@ -244,7 +257,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
      * @return Whether Hazelcast is currently enabled
      */
     public boolean isEnabled() {
-        return enabled;
+        return enabled && !thrLocalDisabled.get();
     }
 
     @Override
@@ -259,6 +272,10 @@ public class HazelcastCore implements EventListener, ConfigListener {
             } finally {
                 Utility.setContextClassLoader(oldCL);
             }
+        }
+        else if(event.is(EventTypes.SERVER_STARTUP) && isEnabled() && booted) {
+            // send this event only after all Startup services have been initialized
+            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
         }
     }
 
@@ -442,7 +459,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
      * Starts Hazelcast if not already enabled
      */
     private synchronized void bootstrapHazelcast() {
-        if (!booted && enabled) {
+        if (!booted && enabled && !thrLocalDisabled.get()) {
             Config config = buildConfiguration();
             theInstance = Hazelcast.newHazelcastInstance(config);
             if (env.isMicro()) {
@@ -475,7 +492,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
             hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);
-            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            if(env.getStatus() == Status.started) {
+                // only issue this event if the server is already running,
+                // otherwise the SERVER_STARTUP event will issue this event as well
+                events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            }
             bindToJNDI();
             booted = true;
         }

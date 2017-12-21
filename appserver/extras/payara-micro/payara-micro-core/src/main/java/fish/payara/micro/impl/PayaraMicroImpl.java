@@ -86,6 +86,7 @@ import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
@@ -994,16 +995,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
             // boot the server
             preBootCommands.executeCommands(gf.getCommandRunner());
-            gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false");
-            gf.start();
-            postBootCommands.executeCommands(gf.getCommandRunner());
-            this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
+            HazelcastCore.setThreadLocalDisabled(true);
+            try {
+                gf.start();
+                postBootCommands.executeCommands(gf.getCommandRunner());
+                this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
-            // load all applications, but do not start them until Hazelcast gets a chance to initialize
-            deployAll();
+                // load all applications, but do not start them until Hazelcast gets a chance to initialize
+                deployAll();
+            } finally {
+                HazelcastCore.setThreadLocalDisabled(false);
+            }
             if(!noCluster) {
-                 gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=true");
-                 gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true");
+                gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true", "--target", "server-config");
             }
 
             gf.getCommandRunner().run("initialize-all-applications");
