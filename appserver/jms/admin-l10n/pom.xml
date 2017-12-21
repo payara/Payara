@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.jms</groupId>
         <artifactId>jms</artifactId>
-        <version>5.Beta1</version>
+        <version>5.Beta2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jms-admin-l10n</artifactId>

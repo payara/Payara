@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>javaee-pom</artifactId>
-        <version>5.Beta1</version>
+        <version>5.Beta2-SNAPSHOT</version>
     </parent>
 
     <name>GlassFish javaee.jar </name>
