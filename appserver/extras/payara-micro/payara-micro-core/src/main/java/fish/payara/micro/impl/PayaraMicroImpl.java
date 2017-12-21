@@ -1007,7 +1007,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 HazelcastCore.setThreadLocalDisabled(false);
             }
             if(!noCluster) {
-                gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true", "--target", "server-config");
+                gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true", "--target", "server-config", "--hostawarepartitioning", Boolean.toString(hostAware),"--lite", Boolean.toString(liteMember));
             }
 
             gf.getCommandRunner().run("initialize-all-applications");
