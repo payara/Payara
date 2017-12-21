@@ -31,6 +31,7 @@ smack 4.1.9
 jxmpp 0.4.2
 xpp3 1.1.4c_7
 snmp4j 2.5.3
+jcip-annotations 1.0-1
 Code from SpringBoot for Launching Executable JARS
 Code from JBoss as base for the Payara Arquillian Containers
 
