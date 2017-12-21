@@ -37,66 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jaxrs;
+package fish.payara.microprofile.jwtauth.tck;
 
-import java.lang.reflect.Method;
-
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.container.DynamicFeature;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.FeatureContext;
-import javax.ws.rs.ext.Provider;
+import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
- * This JAX-RS dynamic feature will install filters for JAX-RS resources
- * that check roles or deny all access.
+ * This arquillian extension installs the {@link ArquillianArchiveProcessor}, which
+ * inserts our artefacts into the test archive, and installs our own {@link URLResourceProvider},
+ * to compensate for an ending / after the base URL uses for testing.
  * 
  * @author Arjan Tijms
+ *
  */
-@Provider
-public class RolesAllowedDynamicFeature implements DynamicFeature {
+public class ArquillianExtension implements LoadableExtension {
     
-    @Context
-    private HttpServletRequest request;
-    
-    @Context
-    private HttpServletResponse response;
-
     @Override
-    public void configure(ResourceInfo resourceInfo, FeatureContext configuration) {
-        Method resourceMethod = resourceInfo.getResourceMethod();
-
-        // ## Method level access
+    public void register(ExtensionBuilder extensionBuilder) {
+        System.err.println("\n\n\n\n Registered Payara TCK ArquillianExtension \n\n\n\n");
         
-        // Deny All (Excluded) resources cannot be accessed by anyone
-        if (resourceMethod.isAnnotationPresent(DenyAll.class)) {
-            configuration.register(new DenyAllRequestFilter());
-            return;
-        }
-        
-        // Permit All (Unchecked) resources are free to be accessed by everyone
-        if (resourceMethod.isAnnotationPresent(PermitAll.class)) {
-            return;
-        }
-
-        // Access is granted via role 
-        RolesAllowed rolesAllowed = resourceMethod.getAnnotation(RolesAllowed.class);
-        if (rolesAllowed != null) {
-            configuration.register(new RolesAllowedRequestFilter(request, response, rolesAllowed.value()));
-            return;
-        }
-        
-        // ## Class level access
-
-        rolesAllowed = resourceInfo.getResourceClass().getAnnotation(RolesAllowed.class);
-        if (rolesAllowed != null) {
-            configuration.register(new RolesAllowedRequestFilter(request, response, rolesAllowed.value()));
-        }
+        extensionBuilder.service(ApplicationArchiveProcessor.class, ArquillianArchiveProcessor.class)
+                        .override(
+                                ResourceProvider.class,
+                                org.jboss.arquillian.container.test.impl.enricher.resource.URLResourceProvider.class,
+                                fish.payara.microprofile.jwtauth.tck.URLResourceProvider.class);
     }
- 
+
 }

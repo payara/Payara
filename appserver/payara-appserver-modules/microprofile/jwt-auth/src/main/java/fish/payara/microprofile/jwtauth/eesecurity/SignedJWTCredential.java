@@ -45,7 +45,6 @@ import javax.security.enterprise.credential.Credential;
  * A credential carrying a signed JWT token 
  * 
  * @author Arjan Tijms
- *
  */
 public class SignedJWTCredential implements Credential {
     

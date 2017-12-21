@@ -39,38 +39,82 @@
  */
 package fish.payara.microprofile.jwtauth.jwt;
 
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toSet;
+
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.security.enterprise.CallerPrincipal;
 
+import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 /**
  * A default implementation of {@link JsonWebToken}.
  * 
  * @author Arjan Tijms
- *
  */
 public class JsonWebTokenImpl extends CallerPrincipal implements JsonWebToken {
     
     private final Map<String, JsonValue> claims;
-    
+
     public JsonWebTokenImpl(String callerName, Map<String, JsonValue> claims) {
         super(callerName);
         this.claims = claims;
     }
     
+    public Map<String, JsonValue> getClaims() {
+        return claims;
+    }
+    
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getClaim(String claimName) {
-        return (T) claims.get(claimName);
+        
+        JsonValue claimValue = getClaims().get(claimName);
+        if (claimValue == null) {
+            return null;
+        }
+        
+        try {
+            Claims claim = Claims.valueOf(claimName);
+            
+            if (claim.getType().equals(Long.class)) {
+                return (T) (Long) ((JsonNumber) claimValue).longValue();
+            }
+            
+            if (claim.getType().equals(Set.class)) {
+                if (claimValue instanceof JsonString) {
+                    return (T) singleton( ((JsonString) claimValue).getString());
+                } else {
+                    return (T) new HashSet<>(((JsonArray) claimValue).getValuesAs(JsonString.class)).stream().map(t ->
+                    t.getString()).collect(toSet());
+                }
+            }
+            
+        } catch (IllegalArgumentException e) {
+            // ignore, not an enum
+        }
+        
+        // All JsonValue are returned as their JsonValue sub-type, except for JsonString, which
+        // is always returned as string.
+        // See org.eclipse.microprofile.jwt.tck.parsing.TestTokenClaimTypesTest.validateCustomString(TestTokenClaimTypesTest.java:180)
+        if (claimValue instanceof JsonString) {
+            return (T) ((JsonString) claimValue).getString();
+        }
+        
+        return (T) getClaims().get(claimName);
     }
     
     @Override
     public Set<String> getClaimNames() {
-        return claims.keySet();
+        return getClaims().keySet();
     }
 
 }

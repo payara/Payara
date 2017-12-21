@@ -37,66 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jaxrs;
+package fish.payara.microprofile.jwtauth.tck;
 
-import java.lang.reflect.Method;
+import java.util.logging.Logger;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.container.DynamicFeature;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.FeatureContext;
-import javax.ws.rs.ext.Provider;
+import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
- * This JAX-RS dynamic feature will install filters for JAX-RS resources
- * that check roles or deny all access.
+ * This archive processor adds the files <code>payara-mp-jwt.properties</code>
+ * and <code>web.xml</code> to each archive being created by the MP-JWT TCK.
+ * 
+ * <p>
+ * <code>payara-mp-jwt.properties</code> configures the valid issuer, while
+ * <code>web.xml</code> contains a fix for a TCK bug, and a fix for a Payara bug
+ * (see inside that file for more details).
  * 
  * @author Arjan Tijms
+ *
  */
-@Provider
-public class RolesAllowedDynamicFeature implements DynamicFeature {
+public class ArquillianArchiveProcessor implements ApplicationArchiveProcessor {
     
-    @Context
-    private HttpServletRequest request;
-    
-    @Context
-    private HttpServletResponse response;
+    private static Logger log = Logger.getLogger(ArquillianArchiveProcessor.class.getName());
 
     @Override
-    public void configure(ResourceInfo resourceInfo, FeatureContext configuration) {
-        Method resourceMethod = resourceInfo.getResourceMethod();
-
-        // ## Method level access
-        
-        // Deny All (Excluded) resources cannot be accessed by anyone
-        if (resourceMethod.isAnnotationPresent(DenyAll.class)) {
-            configuration.register(new DenyAllRequestFilter());
+    public void process(Archive<?> archive, TestClass testClass) {
+        if (!(archive instanceof WebArchive)) {
             return;
         }
         
-        // Permit All (Unchecked) resources are free to be accessed by everyone
-        if (resourceMethod.isAnnotationPresent(PermitAll.class)) {
-            return;
-        }
-
-        // Access is granted via role 
-        RolesAllowed rolesAllowed = resourceMethod.getAnnotation(RolesAllowed.class);
-        if (rolesAllowed != null) {
-            configuration.register(new RolesAllowedRequestFilter(request, response, rolesAllowed.value()));
+        WebArchive webArchive = WebArchive.class.cast(archive);
+        Node publicKeyNode = webArchive.get("/WEB-INF/classes/publicKey.pem");
+        if (publicKeyNode == null) {
             return;
         }
         
-        // ## Class level access
-
-        rolesAllowed = resourceInfo.getResourceClass().getAnnotation(RolesAllowed.class);
-        if (rolesAllowed != null) {
-            configuration.register(new RolesAllowedRequestFilter(request, response, rolesAllowed.value()));
-        }
+        log.info("Augmenting virtual web archive: " + archive);
+        
+        webArchive.addAsResource("payara-mp-jwt.properties")
+                  .addAsWebInfResource("web.xml")
+                  ;
+        
+        log.info("Virtually augmented web archive: \n" + webArchive.toString(true));
     }
- 
 }

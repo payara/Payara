@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.jwtauth.cdi;
 
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toSet;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReference;
 
@@ -78,42 +79,44 @@ import fish.payara.microprofile.jwtauth.eesecurity.SignedJWTIdentityStore;
 import fish.payara.microprofile.jwtauth.jwt.ClaimAnnotationLiteral;
 import fish.payara.microprofile.jwtauth.jwt.ClaimValueImpl;
 import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
 
 /**
  * This class contains most of the actual logic from CdiExtension. Places in a separate
  * class since otherwise the <code>@Observes</code> effectively disappears.
  * 
  * @author Arjan Tijms
- *
  */
 public class CdiExtension2 {
     
-  public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
+    private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, emptyMap());
+    
+    public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
       
-      afterBeanDiscovery.addBean(new CdiProducer<IdentityStore>()
+        afterBeanDiscovery.addBean(new CdiProducer<IdentityStore>()
               .scope(ApplicationScoped.class)
               .beanClass(IdentityStore.class)
               .types(Object.class, IdentityStore.class, SignedJWTIdentityStore.class)
               .addToId("store " + LoginConfig.class)
               .create(e-> new SignedJWTIdentityStore()));
       
-      afterBeanDiscovery.addBean(new CdiProducer<HttpAuthenticationMechanism>()
+        afterBeanDiscovery.addBean(new CdiProducer<HttpAuthenticationMechanism>()
               .scope(ApplicationScoped.class)
               .beanClass(HttpAuthenticationMechanism.class)
               .types(Object.class, HttpAuthenticationMechanism.class, JWTAuthenticationMechanism.class)
               .addToId("mechanism " + LoginConfig.class)
               .create(e-> new JWTAuthenticationMechanism()));
       
-      // MP-JWT 1.0 7.1.1. Injection of JsonWebToken
-      afterBeanDiscovery.addBean(new CdiProducer<JsonWebToken>()
+        // MP-JWT 1.0 7.1.1. Injection of JsonWebToken
+        afterBeanDiscovery.addBean(new CdiProducer<JsonWebToken>()
               .scope(RequestScoped.class)
               .beanClass(JsonWebToken.class)
               .types(Object.class, JsonWebToken.class)
               .addToId("token " + LoginConfig.class)
-              .create(e-> (JsonWebToken) getBeanReference(SecurityContext.class).getCallerPrincipal()));
+              .create(e-> getJsonWebToken()));
       
-      // MP-JWT 1.0 7.1.2
-      for (JWTInjectableType injectableType : computeTypes()) {
+        // MP-JWT 1.0 7.1.2
+        for (JWTInjectableType injectableType : computeTypes()) {
           
           // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks
           // us to support.
@@ -131,11 +134,13 @@ public class CdiExtension2 {
                                           getCurrentInjectionPoint(
                                                   CdiUtils.getBeanManager(), creationalContext), Claim.class);
                       
-                      // Obtain the raw named value from the request scoped JsonWebToken and convert
+                      String claimName = getClaimName(claim);
+                      
+                      // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and convert
                       // it according to the target type for which this Bean<T> was created.
                       Object claimObj = injectableType.convert(
-                                              getBeanReference(JsonWebToken.class)
-                                                  .getClaim(claim.value()));
+                                              getJsonWebToken().getClaims()
+                                                               .get(claimName));
                       
                       
                       // If the target type has an Optional in it, wrap the converted value
@@ -147,7 +152,7 @@ public class CdiExtension2 {
                       // If the target type has a ClaimValue in it, wrap the converted value
                       // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
                       if (injectableType.isClaimValue()) {
-                          claimObj = new ClaimValueImpl<Object>(claim.value(), claimObj);
+                          claimObj = new ClaimValueImpl<Object>(claimName, claimObj);
                       }
                       
                       return claimObj;
@@ -220,6 +225,23 @@ public class CdiExtension2 {
         }
 
         return null;
+    }
+    
+    public static JsonWebTokenImpl getJsonWebToken() {
+        JsonWebTokenImpl jsonWebToken = (JsonWebTokenImpl) getBeanReference(SecurityContext.class).getCallerPrincipal();
+        if (jsonWebToken == null) {
+            jsonWebToken = emptyJsonWebToken;
+        }
+        
+        return jsonWebToken;
+    }
+    
+    public static String getClaimName(Claim claim) {
+        if (claim.value().equals("")) {
+            return claim.standard().name();
+        }
+
+        return claim.value();
     }
 
 }

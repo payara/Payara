@@ -39,113 +39,67 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import static java.util.Arrays.asList;
+import static java.lang.Thread.currentThread;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static org.eclipse.microprofile.jwt.Claims.exp;
-import static org.eclipse.microprofile.jwt.Claims.groups;
-import static org.eclipse.microprofile.jwt.Claims.iat;
-import static org.eclipse.microprofile.jwt.Claims.iss;
-import static org.eclipse.microprofile.jwt.Claims.jti;
-import static org.eclipse.microprofile.jwt.Claims.sub;
-import static org.eclipse.microprofile.jwt.Claims.upn;
 
-import java.io.StringReader;
+import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Properties;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
-import javax.json.JsonString;
-import javax.json.JsonValue;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 
-import org.eclipse.microprofile.jwt.Claims;
-
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jwt.SignedJWT;
-
 import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
+import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid according to
  * the MP-JWT 1.0 spec.
  * 
  * @author Arjan Tijms
- *
  */
 public class SignedJWTIdentityStore implements IdentityStore {
     
-    private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti, upn, groups);
+    private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
+    
+    private String acceptedIssuer;
+    
+    public SignedJWTIdentityStore() {
+        try {
+            Properties properties = new Properties();
+            properties.load(currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties").openStream());
+            
+            acceptedIssuer = properties.getProperty("accepted.issuer");
+            
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load properties", e);
+        }
+    }
     
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
 
         try {
-            SignedJWT signedJWT = SignedJWT.parse(signedJWTCredential.getSignedJWT());
+            JsonWebTokenImpl jsonWebToken = 
+                    jwtTokenParser.parse(
+                            signedJWTCredential.getSignedJWT(), 
+                            acceptedIssuer, 
+                            readPublicKey("/publicKey.pem"));
             
-            // MP-JWT 1.0 4.1 typ
-            if (!checkIsJWT(signedJWT.getHeader())) {
-                return INVALID_RESULT;
-            }
-
-            // 1.0 4.1 alg + MP-JWT 1.0 6.1 1
-            if (!signedJWT.getHeader().getAlgorithm().equals(JWSAlgorithm.RS256)) {
-                throw new IllegalStateException();
-            }
-            
-            Map<String, JsonValue> rawClaims = 
-                    new HashMap<>(
-                            Json.createReader(new StringReader(signedJWT.getPayload().toString()))
-                                .readObject());
-            
-            
-            // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
-            if (!checkRequiredClaimsPresent(rawClaims)) {
-                return INVALID_RESULT;
-            }
-            
-            // MP-JWT 1.0 6.1 2
-            if (!checkIssuer(rawClaims)) {
-                return INVALID_RESULT;
-            }
-            
-            if (!checkNotExpired(rawClaims)) {
-                return INVALID_RESULT;
-            }
-            
-            PublicKey publicKey = readPublicKey("/publicKey.pem");
-
-            // MP-JWT 1.0 6.1 2
-            if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
-                throw new IllegalStateException();
-            }
-            
-            if (!(rawClaims.get("upn") instanceof JsonString)) {
-                throw new IllegalStateException();
-            }
-            
-            String userPrincipalName = ((JsonString) rawClaims.get("upn")).getString();
-            List<String> groups = ((JsonArray) rawClaims.get("groups")).getValuesAs(JsonString.class).stream().map(t -> t.getString()).collect(Collectors.toList());
+            List<String> groups = new ArrayList<String>(
+                    jsonWebToken.getClaim("groups"));
             
             return new CredentialValidationResult(
-                    new JsonWebTokenImpl(
-                            userPrincipalName, 
-                            rawClaims), 
+                    jsonWebToken, 
                     new HashSet<>(groups));
             
         } catch (Exception e) {
-            e.printStackTrace();
+            // Ignore
         }
 
         return INVALID_RESULT;
@@ -154,7 +108,10 @@ public class SignedJWTIdentityStore implements IdentityStore {
     public PublicKey readPublicKey(String resourceName) throws Exception {
         
         byte[] byteBuffer = new byte[16384];
-        int length = getClass().getResource(resourceName).openStream().read(byteBuffer);
+        int length = currentThread().getContextClassLoader()
+                                    .getResource(resourceName)
+                                    .openStream()
+                                    .read(byteBuffer);
         
         String key = new String(byteBuffer, 0, length)
                             .replaceAll("-----BEGIN (.*)-----", "")
@@ -165,37 +122,6 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         return KeyFactory.getInstance("RSA")
                          .generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(key)));
-    }
-   
-    private boolean checkRequiredClaimsPresent(Map<String, JsonValue> presentedClaims) {
-        for (Claims requiredClaim : requiredClaims) {
-            if (presentedClaims.get(requiredClaim.name())  == null) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    private boolean checkNotExpired(Map<String, JsonValue> presentedClaims) {
-        int currentTime = (int) (System.currentTimeMillis() / 1000);
-        long expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).intValue();
-        
-        return currentTime < expiredTime;
-    }
-    
-    private boolean checkIssuer(Map<String, JsonValue> presentedClaims) {
-        if (!(presentedClaims.get(iss.name()) instanceof JsonString)) {
-            return false;
-        }
-        
-        String issuer = ((JsonString) presentedClaims.get(iss.name())).getString();
-        
-        return !issuer.isEmpty(); // for now
-    }
-    
-    private boolean checkIsJWT(JWSHeader header) {
-        return header.getType().toString().equals("JWT");
     }
     
 

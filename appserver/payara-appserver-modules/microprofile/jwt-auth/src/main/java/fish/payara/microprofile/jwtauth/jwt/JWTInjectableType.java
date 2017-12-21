@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.jwtauth.jwt;
 
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 import static javax.json.Json.createArrayBuilder;
 
@@ -61,7 +62,6 @@ import org.eclipse.microprofile.jwt.ClaimValue;
  * basic claim values can be injected.  
  * 
  * @author Arjan Tijms
- *
  */
 public class JWTInjectableType {
 
@@ -92,6 +92,10 @@ public class JWTInjectableType {
     }
 
     public Object convert(JsonValue value) {
+        if (value == null) {
+            return null;
+        }
+        
         return converter.apply(value);
     }
 
@@ -140,8 +144,9 @@ public class JWTInjectableType {
         if (coreClass.equals(String.class)) {
             converter = e -> ((JsonString) e).getString();
         } else if (coreClass.equals(Set.class)) {
-            converter = e -> new HashSet<>(((JsonArray) e).getValuesAs(JsonString.class)).stream().map(t ->
-            t.getString()).collect(toSet());
+            converter = e -> e instanceof JsonArray
+                    ? new HashSet<>(((JsonArray) e).getValuesAs(JsonString.class)).stream().map(t -> t.getString()).collect(toSet())
+                    : singleton(((JsonString) e).getString());
         } else if (coreClass.equals(Long.class)) {
             converter = e -> ((JsonNumber) e).longValue();
         } else if (coreClass.equals(Boolean.class)) {

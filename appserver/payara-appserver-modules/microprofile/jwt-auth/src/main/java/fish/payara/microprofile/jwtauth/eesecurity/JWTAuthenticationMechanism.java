@@ -39,11 +39,14 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
+import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
+
 import javax.enterprise.inject.spi.CDI;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
@@ -54,7 +57,6 @@ import javax.servlet.http.HttpServletResponse;
  * to an {@link IdentityStore} for validation. 
  * 
  * @author Arjan Tijms
- *
  */
 public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
 
@@ -67,8 +69,15 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
             SignedJWTCredential credential = getCredential(request);
             
             if (credential != null) {
-                return httpMessageContext.notifyContainerAboutLogin(
-                    identityStoreHandler.validate(credential));
+                
+                CredentialValidationResult result = identityStoreHandler.validate(credential);
+                if (result.getStatus() == VALID) {
+                    httpMessageContext.getClientSubject()
+                                      .getPrincipals()
+                                      .add(result.getCallerPrincipal());
+                }
+                
+                return httpMessageContext.notifyContainerAboutLogin(result);
             }
         }
         

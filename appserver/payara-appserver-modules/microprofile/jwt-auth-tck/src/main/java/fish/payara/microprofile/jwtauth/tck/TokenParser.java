@@ -37,66 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jaxrs;
+package fish.payara.microprofile.jwtauth.tck;
 
-import java.lang.reflect.Method;
+import java.security.PublicKey;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.container.DynamicFeature;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.FeatureContext;
-import javax.ws.rs.ext.Provider;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.eclipse.microprofile.jwt.tck.util.ITokenParser;
+
+import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
 
 /**
- * This JAX-RS dynamic feature will install filters for JAX-RS resources
- * that check roles or deny all access.
+ * This implements the artefact mandated by the MP-JWT TCK for offline (outside container) testing
+ * of the token parser.
  * 
  * @author Arjan Tijms
+ *
  */
-@Provider
-public class RolesAllowedDynamicFeature implements DynamicFeature {
+public class TokenParser implements ITokenParser {
     
-    @Context
-    private HttpServletRequest request;
+    private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
     
-    @Context
-    private HttpServletResponse response;
-
     @Override
-    public void configure(ResourceInfo resourceInfo, FeatureContext configuration) {
-        Method resourceMethod = resourceInfo.getResourceMethod();
-
-        // ## Method level access
-        
-        // Deny All (Excluded) resources cannot be accessed by anyone
-        if (resourceMethod.isAnnotationPresent(DenyAll.class)) {
-            configuration.register(new DenyAllRequestFilter());
-            return;
-        }
-        
-        // Permit All (Unchecked) resources are free to be accessed by everyone
-        if (resourceMethod.isAnnotationPresent(PermitAll.class)) {
-            return;
-        }
-
-        // Access is granted via role 
-        RolesAllowed rolesAllowed = resourceMethod.getAnnotation(RolesAllowed.class);
-        if (rolesAllowed != null) {
-            configuration.register(new RolesAllowedRequestFilter(request, response, rolesAllowed.value()));
-            return;
-        }
-        
-        // ## Class level access
-
-        rolesAllowed = resourceInfo.getResourceClass().getAnnotation(RolesAllowed.class);
-        if (rolesAllowed != null) {
-            configuration.register(new RolesAllowedRequestFilter(request, response, rolesAllowed.value()));
+    public JsonWebToken parse(String bearerToken, String issuer, PublicKey signedBy) throws Exception {
+        try {
+            return jwtTokenParser.parse(bearerToken, issuer, signedBy);
+        } catch (Exception e) {
+            throw new IllegalStateException("", e);
         }
     }
- 
+
 }

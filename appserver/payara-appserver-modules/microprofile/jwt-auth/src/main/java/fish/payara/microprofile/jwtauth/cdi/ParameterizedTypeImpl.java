@@ -49,7 +49,6 @@ import java.lang.reflect.Type;
  * the generic list.
  * 
  * @author Arjan Tijms
- *
  */
 public class ParameterizedTypeImpl implements ParameterizedType {
 

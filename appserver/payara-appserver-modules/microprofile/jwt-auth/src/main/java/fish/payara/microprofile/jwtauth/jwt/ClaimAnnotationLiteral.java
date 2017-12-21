@@ -49,6 +49,7 @@ import org.eclipse.microprofile.jwt.Claims;
 /**
  * An annotation literal for Claim.
  * 
+ * @author Arjan Tijms
  */
 @SuppressWarnings("all")
 public class ClaimAnnotationLiteral extends AnnotationLiteral<Claim> implements Claim {
@@ -64,6 +65,5 @@ public class ClaimAnnotationLiteral extends AnnotationLiteral<Claim> implements 
     public Claims standard() {
         return UNKNOWN;
     }
-    
     
 }

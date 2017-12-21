@@ -40,15 +40,22 @@
 package fish.payara.microprofile.jwtauth.jaxrs;
 
 import static java.util.Arrays.stream;
+import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
+import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
+import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 
 import java.io.IOException;
 
 import javax.annotation.Priority;
-import javax.servlet.ServletException;
+import javax.enterprise.inject.spi.CDI;
+import javax.security.enterprise.AuthenticationStatus;
+import javax.security.enterprise.SecurityContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 
@@ -65,6 +72,8 @@ import javax.ws.rs.container.ContainerRequestFilter;
  */
 @Priority(AUTHORIZATION)
 public class RolesAllowedRequestFilter implements ContainerRequestFilter {
+    
+    private final SecurityContext securityContext;
 
     private final String[] rolesAllowed;
     private final HttpServletRequest request;
@@ -74,15 +83,23 @@ public class RolesAllowedRequestFilter implements ContainerRequestFilter {
         this.request = request;
         this.response = response;
         this.rolesAllowed = rolesAllowed;
+        this.securityContext = CDI.current().select(SecurityContext.class).get();
     }
 
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
-        if (rolesAllowed.length > 0 && !isAuthenticated(requestContext)) {
-            try {
-                request.authenticate(response);
-            } catch (ServletException e) {
-                throw new ForbiddenException("Forbidden");
+        if (rolesAllowed.length > 0 && !isAuthenticated()) {
+                
+            AuthenticationStatus status =  securityContext.authenticate(request, response, withParams());
+            
+            // Authentication was not done at all (i.e. no credentials present) or
+            // authentication failed (i.e. wrong credentials, credentials expired, etc)
+            if (status == NOT_DONE || status == SEND_FAILURE) {
+                throw new NotAuthorizedException("Authentication resulted in " + status);
+            }
+            
+            if (status == SUCCESS && !isAuthenticated()) { // compensate for possible Soteria bug, need to investigate
+                throw new NotAuthorizedException("Authentication not done (i.e. no JWT credential found)");
             }
 
         }
@@ -90,12 +107,12 @@ public class RolesAllowedRequestFilter implements ContainerRequestFilter {
         boolean hasRole = stream(rolesAllowed).anyMatch(r -> requestContext.getSecurityContext().isUserInRole(r));
 
         if (!hasRole) {
-            throw new ForbiddenException("No role");
+            throw new ForbiddenException("Caller not in requested role");
         }
 
     }
 
-    private static boolean isAuthenticated(final ContainerRequestContext requestContext) {
-        return requestContext.getSecurityContext().getUserPrincipal() != null;
+    private boolean isAuthenticated() {
+        return securityContext.getCallerPrincipal() != null;
     }
 }

@@ -37,66 +37,65 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jaxrs;
+package fish.payara.microprofile.jwtauth.tck;
 
-import java.lang.reflect.Method;
+import java.lang.annotation.Annotation;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.container.DynamicFeature;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.FeatureContext;
-import javax.ws.rs.ext.Provider;
+import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
+import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
+import org.jboss.arquillian.container.test.impl.enricher.resource.OperatesOnDeploymentAwareProvider;
+import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.test.api.ArquillianResource;
 
 /**
- * This JAX-RS dynamic feature will install filters for JAX-RS resources
- * that check roles or deny all access.
+ * A minimal replacement for the base URL provider backing the URL injection
+ * in tests. This is needed to compensate for an ending slash difference.
  * 
  * @author Arjan Tijms
+ *
  */
-@Provider
-public class RolesAllowedDynamicFeature implements DynamicFeature {
-    
-    @Context
-    private HttpServletRequest request;
-    
-    @Context
-    private HttpServletResponse response;
+public class URLResourceProvider extends OperatesOnDeploymentAwareProvider {
+
+    @Inject
+    private Instance<ProtocolMetaData> protocolMetadataInstance;
 
     @Override
-    public void configure(ResourceInfo resourceInfo, FeatureContext configuration) {
-        Method resourceMethod = resourceInfo.getResourceMethod();
-
-        // ## Method level access
-        
-        // Deny All (Excluded) resources cannot be accessed by anyone
-        if (resourceMethod.isAnnotationPresent(DenyAll.class)) {
-            configuration.register(new DenyAllRequestFilter());
-            return;
-        }
-        
-        // Permit All (Unchecked) resources are free to be accessed by everyone
-        if (resourceMethod.isAnnotationPresent(PermitAll.class)) {
-            return;
-        }
-
-        // Access is granted via role 
-        RolesAllowed rolesAllowed = resourceMethod.getAnnotation(RolesAllowed.class);
-        if (rolesAllowed != null) {
-            configuration.register(new RolesAllowedRequestFilter(request, response, rolesAllowed.value()));
-            return;
-        }
-        
-        // ## Class level access
-
-        rolesAllowed = resourceInfo.getResourceClass().getAnnotation(RolesAllowed.class);
-        if (rolesAllowed != null) {
-            configuration.register(new RolesAllowedRequestFilter(request, response, rolesAllowed.value()));
+    public Object doLookup(ArquillianResource resource, Annotation... qualifiers) {
+        try {
+            
+            return removeTrailingSlash(
+                    protocolMetadataInstance
+                            .get()
+                            .getContexts(HTTPContext.class)
+                            .iterator()
+                            .next()
+                            .getServlets()
+                            .get(0)
+                            .getBaseURI()
+                            .toURL());
+            
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException("Error converting to URL", e);
         }
     }
- 
+    
+    private URL removeTrailingSlash(URL url) throws MalformedURLException {
+        if (url.getPath().endsWith("/")) {
+            String urlString = url.toExternalForm();
+            urlString = urlString.substring(0, urlString.length() - 1);
+
+            url = new URL(urlString);
+        }
+
+        return url;
+    }
+    
+    @Override
+    public boolean canProvide(Class<?> type) {
+        return type.isAssignableFrom(URL.class);
+    }
+
 }

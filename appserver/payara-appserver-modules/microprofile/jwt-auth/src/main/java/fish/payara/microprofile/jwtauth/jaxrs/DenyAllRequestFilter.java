@@ -53,7 +53,6 @@ import javax.ws.rs.container.ContainerRequestFilter;
  * which this filter is applied.
  * 
  * @author Arjan Tijms
- *
  */
 @Priority(AUTHORIZATION)
 public class DenyAllRequestFilter implements ContainerRequestFilter {

@@ -48,69 +48,78 @@ holder.
         <version>4.1.2.181-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.microprofile.jwt-auth</groupId>
-    <artifactId>microprofile-jwt-auth</artifactId>
-    <name>Microprofile - JWT</name>
+    <artifactId>jwt-auth-tck</artifactId>
+    <name>Microprofile - JWT - TCK</name>
 
-    <description>Implementation of MicroProfile Interoperable JWT RBAC API</description>
-    <packaging>glassfish-jar</packaging>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-             <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>3.3.0</version><!--$NO-MVN-MAN-VER$-->
-                    <configuration>
-                        <instructions>
-                            <Specification-Version>1.0</Specification-Version>
-                            <Implementation-Version>${project.version}</Implementation-Version>
-                        </instructions>
-                    </configuration>
-                </plugin>
-        </plugins>
-    </build>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>1.1.13.Final</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
+    
+        <!-- JWT -->
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
-            <artifactId>microprofile-jwt-auth-api</artifactId>
+            <artifactId>microprofile-jwt-auth-tck</artifactId>
             <version>1.0</version>
         </dependency>
-
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
+            <groupId>org.eclipse.microprofile.jwt</groupId>
+            <artifactId>microprofile-jwt-auth-tck</artifactId>
+            <version>1.0</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.jwt-auth</groupId>
+            <artifactId>microprofile-jwt-auth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Arquillian -->
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-test-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.arquillian</groupId>
+            <artifactId>arquillian-payara-server-4-remote</artifactId>
+            <version>1.0.Beta2</version>
+        </dependency>
+
+        <!-- JAX-RS client API dependencies -->
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-processing</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>javax.security.enterprise</groupId>
-            <artifactId>javax.security.enterprise-api</artifactId>
-        </dependency>
-        
-          <dependency>
-              <groupId>org.glassfish.soteria</groupId>
-              <artifactId>javax.security.enterprise</artifactId>
-          </dependency>
-        
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
-            <version>5.1</version>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
         </dependency>
     </dependencies>
+
 </project>

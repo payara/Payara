@@ -39,12 +39,21 @@
  */
 package fish.payara.microprofile.jwtauth.cdi;
 
-import java.lang.annotation.Annotation;
+import static org.eclipse.microprofile.jwt.Claims.UNKNOWN;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
@@ -53,6 +62,8 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessBean;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import javax.enterprise.inject.spi.ProcessManagedBean;
+import javax.enterprise.inject.spi.ProcessSessionBean;
 
 import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.jwt.Claim;
@@ -76,7 +87,8 @@ public class CdiExtension implements Extension {
      * a mechanism needs to be installed.
      */
     private boolean addJWTAuthenticationMechanism;
-    
+    private final Set<String> roles = new HashSet<>();
+
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
         beforeBean.addAnnotatedType(beanManager.createAnnotatedType(InjectionPointGenerator.class), "JWT InjectionPointGenerator ");
     }
@@ -93,6 +105,31 @@ public class CdiExtension implements Extension {
         if (loginConfig != null && loginConfig.authMethod().equals("MP-JWT")) {
             addJWTAuthenticationMechanism = true;
         }
+    }
+    
+    /**
+     * Find all the roles used by the <code>@RolesAllowed</code> annotation, so these can be programmatically
+     * declared later on. 
+     * 
+     */
+    public <T> void findRoles(@Observes ProcessManagedBean<T> eventIn, BeanManager beanManager) {
+        
+        ProcessManagedBean<T> event = eventIn; // JDK8 u60 workaround
+        
+        if (event instanceof ProcessSessionBean) {
+            // @RolesAllowed on session beans is already handled
+            return;
+        }
+        
+        List<Annotated> annotatedElements = new ArrayList<>(event.getAnnotatedBeanClass().getMethods());
+        annotatedElements.add(event.getAnnotatedBeanClass());
+        
+        for (Annotated annotated : annotatedElements) {
+            RolesAllowed rolesAllowed = annotated.getAnnotation(RolesAllowed.class);
+            if (rolesAllowed != null) {
+                roles.addAll(Arrays.asList(rolesAllowed.value()));
+            }
+        }
         
     }
     
@@ -101,7 +138,8 @@ public class CdiExtension implements Extension {
         ProcessInjectionTarget<T> event = eventIn; // JDK8 u60 workaround
         
         for (InjectionPoint injectionPoint : event.getInjectionTarget().getInjectionPoints()) {
-            if (hasClaim(injectionPoint)) {
+            Claim claim = hasClaim(injectionPoint);
+            if (claim != null) {
                 
                 // MP-JWT 1.0 7.1.3. 
                 
@@ -113,10 +151,16 @@ public class CdiExtension implements Extension {
                     throw new DeploymentException(
                         "Can't inject using qualifier " + Claim.class + " in a target with scope " + scope);
                 }
+                
+                if (!claim.value().equals("") && claim.standard() != UNKNOWN && !claim.value().equals(claim.standard().name())) {
+                    throw new DeploymentException(
+                        "Claim value " + claim.value() + " should be equal to claim standard " + claim.standard().name() +
+                        " or one of those should be left at their default value");
+                }
             }
         }
     }
-    
+   
     public void installMechanismIfNeeded(@Observes AfterBeanDiscovery eventIn, BeanManager beanManager) {
 
         AfterBeanDiscovery afterBeanDiscovery = eventIn; // JDK8 u60 workaround
@@ -126,14 +170,22 @@ public class CdiExtension implements Extension {
         }
     }
     
-    private static boolean hasClaim(InjectionPoint injectionPoint) {
+    public Set<String> getRoles() {
+        return roles;
+    }
+    
+    public boolean isAddJWTAuthenticationMechanism() {
+        return addJWTAuthenticationMechanism;
+    }
+    
+    private static Claim hasClaim(InjectionPoint injectionPoint) {
         for (Annotation qualifier : injectionPoint.getQualifiers()) {
             if (qualifier.annotationType().equals(Claim.class)) {
-                return true;
+                return (Claim) qualifier;
             }
         }
         
-        return false;
+        return null;
     }
 
 }
