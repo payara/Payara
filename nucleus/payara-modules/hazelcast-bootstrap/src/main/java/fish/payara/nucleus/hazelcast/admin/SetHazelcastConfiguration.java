@@ -179,7 +179,7 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Param(name = "lite", optional = true, defaultValue = "false")
     private Boolean lite;
 
-    @Param(name = "hostawareParitioning", optional = true, defaultValue = "false")
+    @Param(name = "hostawarePartitioning", optional = true, defaultValue = "false")
     private Boolean hostawarePartitioning;
 
     @Param(name = "memberName", optional = true)
