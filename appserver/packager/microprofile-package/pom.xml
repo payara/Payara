@@ -166,8 +166,9 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>5.1</version>
+            <version>${nimbus-jose-jwt.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>org.glassfish.main.external</groupId>
             <artifactId>jcip-annotations-repackaged</artifactId>
@@ -176,17 +177,17 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>5.0.4</version>
+            <version>${asm.version}</version>
         </dependency>
         <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>accessors-smart</artifactId>
-            <version>1.2</version>
+            <version>${accessors-smart.version}</version>
         </dependency>
         <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
-            <version>2.3</version>
+            <version>${json-smart.version}</version>
         </dependency>
     </dependencies>
         
