@@ -166,7 +166,7 @@ public class CdiExtension implements Extension {
         AfterBeanDiscovery afterBeanDiscovery = eventIn; // JDK8 u60 workaround
 
         if (addJWTAuthenticationMechanism) {
-            CdiExtension2.installAuthenticationMechanism(afterBeanDiscovery);
+            CdiInitEventHandler.installAuthenticationMechanism(afterBeanDiscovery);
         }
     }
     

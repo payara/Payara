@@ -87,7 +87,7 @@ import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
  * 
  * @author Arjan Tijms
  */
-public class CdiExtension2 {
+public class CdiInitEventHandler {
     
     private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, emptyMap());
     
@@ -123,7 +123,7 @@ public class CdiExtension2 {
           
             afterBeanDiscovery.addBean(new CdiProducer<Object>()
                               .scope(Dependent.class)
-                              .beanClass(CdiExtension2.class)
+                              .beanClass(CdiInitEventHandler.class)
                               .types(injectableType.getFullType())
                               .qualifiers(new ClaimAnnotationLiteral())
                               .addToId("claim for " + injectableType.getFullType())
@@ -163,7 +163,6 @@ public class CdiExtension2 {
     }
 
     private static Set<JWTInjectableType> computeTypes() {
-        
         Set<JWTInjectableType> baseTypes = new HashSet<>(asList(
             new JWTInjectableType(String.class),
             new JWTInjectableType(new ParameterizedTypeImpl(Set.class, String.class), Set.class),
