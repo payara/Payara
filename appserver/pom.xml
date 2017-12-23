@@ -116,7 +116,6 @@
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         
         <nimbus-jose-jwt.version>5.1</nimbus-jose-jwt.version>
-        <asm.version>5.0.4</asm.version>
         <accessors-smart.version>1.2</accessors-smart.version>
         <json-smart.version>2.3</json-smart.version>
         
@@ -179,6 +178,7 @@
         <!-- Microprofile version properties -->
         <microprofile-config.version>1.1</microprofile-config.version>
         <microprofile-fault-tolerance.version>1.0</microprofile-fault-tolerance.version>
+        <microprofile-jwt-auth.version>1.0</microprofile-jwt-auth.version>
     </properties>
 
     <modules>

@@ -90,7 +90,7 @@ public class RolesDeclarationInitializer implements ServletContainerInitializer 
                 }
             }
         } catch (Exception e) {
-            // Ignore
+            logger.log(FINEST, "Exception trying to use CDI:", e);
         }
         
         if (roles == null) {

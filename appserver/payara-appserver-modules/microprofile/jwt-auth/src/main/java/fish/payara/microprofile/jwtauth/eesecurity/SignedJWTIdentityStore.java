@@ -40,6 +40,7 @@
 package fish.payara.microprofile.jwtauth.eesecurity;
 
 import static java.lang.Thread.currentThread;
+import static java.util.logging.Level.FINEST;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 
 import java.io.IOException;
@@ -51,6 +52,7 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
@@ -66,8 +68,9 @@ import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
  */
 public class SignedJWTIdentityStore implements IdentityStore {
     
-    private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
+    private static final Logger logger = Logger.getLogger(SignedJWTIdentityStore.class.getName()); 
     
+    private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
     private String acceptedIssuer;
     
     public SignedJWTIdentityStore() {
@@ -83,7 +86,6 @@ public class SignedJWTIdentityStore implements IdentityStore {
     }
     
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
-
         try {
             JsonWebTokenImpl jsonWebToken = 
                     jwtTokenParser.parse(
@@ -99,30 +101,27 @@ public class SignedJWTIdentityStore implements IdentityStore {
                     new HashSet<>(groups));
             
         } catch (Exception e) {
-            // Ignore
+            logger.log(FINEST, "Exception trying to parse JWT token.", e);
         }
 
         return INVALID_RESULT;
     }
     
     public PublicKey readPublicKey(String resourceName) throws Exception {
-        
         byte[] byteBuffer = new byte[16384];
         int length = currentThread().getContextClassLoader()
                                     .getResource(resourceName)
                                     .openStream()
                                     .read(byteBuffer);
         
-        String key = new String(byteBuffer, 0, length)
-                            .replaceAll("-----BEGIN (.*)-----", "")
-                            .replaceAll("-----END (.*)----", "")
-                            .replaceAll("\r\n", "")
-                            .replaceAll("\n", "")
-                            .trim();
+        String key = new String(byteBuffer, 0, length).replaceAll("-----BEGIN (.*)-----", "")
+                                                      .replaceAll("-----END (.*)----", "")
+                                                      .replaceAll("\r\n", "")
+                                                      .replaceAll("\n", "")
+                                                      .trim();
 
         return KeyFactory.getInstance("RSA")
                          .generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(key)));
     }
-    
 
 }

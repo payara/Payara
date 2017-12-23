@@ -144,9 +144,7 @@ public class JWTInjectableType {
         if (coreClass.equals(String.class)) {
             converter = e -> ((JsonString) e).getString();
         } else if (coreClass.equals(Set.class)) {
-            converter = e -> e instanceof JsonArray
-                    ? new HashSet<>(((JsonArray) e).getValuesAs(JsonString.class)).stream().map(t -> t.getString()).collect(toSet())
-                    : singleton(((JsonString) e).getString());
+            converter = e -> convertToSet(e);
         } else if (coreClass.equals(Long.class)) {
             converter = e -> ((JsonNumber) e).longValue();
         } else if (coreClass.equals(Boolean.class)) {
@@ -157,6 +155,14 @@ public class JWTInjectableType {
         } else {
             converter = e -> e;
         }
+    }
+    
+    private static Set<String> convertToSet(JsonValue jsonValue) {
+        if (jsonValue instanceof JsonArray) {
+            return new HashSet<>(((JsonArray) jsonValue).getValuesAs(JsonString.class)).stream().map(t -> t.getString()).collect(toSet());
+        }
+        
+        return singleton(((JsonString) jsonValue).getString());
     }
 
 }

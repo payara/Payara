@@ -71,7 +71,7 @@ holder.
                     <version>3.3.0</version><!--$NO-MVN-MAN-VER$-->
                     <configuration>
                         <instructions>
-                            <Specification-Version>1.0</Specification-Version>
+                            <Specification-Version>${microprofile-jwt-auth.version}</Specification-Version>
                             <Implementation-Version>${project.version}</Implementation-Version>
                         </instructions>
                     </configuration>
@@ -83,7 +83,7 @@ holder.
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
-            <version>1.0</version>
+            <version>${microprofile-jwt-auth.version}</version>
         </dependency>
 
         <dependency>
@@ -97,10 +97,10 @@ holder.
             <artifactId>javax.security.enterprise-api</artifactId>
         </dependency>
         
-          <dependency>
-              <groupId>org.glassfish.soteria</groupId>
-              <artifactId>javax.security.enterprise</artifactId>
-          </dependency>
+        <dependency>
+          <groupId>org.glassfish.soteria</groupId>
+          <artifactId>javax.security.enterprise</artifactId>
+        </dependency>
         
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -110,7 +110,7 @@ holder.
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>5.1</version>
+            <version>${nimbus-jose-jwt.version}</version>
         </dependency>
     </dependencies>
 </project>

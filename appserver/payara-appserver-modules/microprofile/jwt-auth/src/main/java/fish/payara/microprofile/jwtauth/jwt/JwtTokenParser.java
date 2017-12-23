@@ -141,7 +141,7 @@ public class JwtTokenParser {
 
     private boolean checkNotExpired(Map<String, JsonValue> presentedClaims) {
         int currentTime = (int) (System.currentTimeMillis() / 1000);
-        long expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).intValue();
+        int expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).intValue();
 
         return currentTime < expiredTime;
     }

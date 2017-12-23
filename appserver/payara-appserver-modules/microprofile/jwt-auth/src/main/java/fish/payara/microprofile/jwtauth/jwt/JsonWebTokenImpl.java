@@ -91,10 +91,9 @@ public class JsonWebTokenImpl extends CallerPrincipal implements JsonWebToken {
             
             if (claim.getType().equals(Set.class)) {
                 if (claimValue instanceof JsonString) {
-                    return (T) singleton( ((JsonString) claimValue).getString());
+                    return (T) singleton(((JsonString) claimValue).getString());
                 } else {
-                    return (T) new HashSet<>(((JsonArray) claimValue).getValuesAs(JsonString.class)).stream().map(t ->
-                    t.getString()).collect(toSet());
+                    return (T) asStringSet((JsonArray) claimValue);
                 }
             }
             
@@ -115,6 +114,12 @@ public class JsonWebTokenImpl extends CallerPrincipal implements JsonWebToken {
     @Override
     public Set<String> getClaimNames() {
         return getClaims().keySet();
+    }
+    
+    private static Set<String> asStringSet(JsonArray jsonArray) {
+        return new HashSet<>((jsonArray).getValuesAs(JsonString.class))
+                                        .stream().map(t -> t.getString())
+                                        .collect(toSet());
     }
 
 }

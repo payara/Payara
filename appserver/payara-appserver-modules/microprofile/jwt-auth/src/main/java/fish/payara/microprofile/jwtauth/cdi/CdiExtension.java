@@ -145,7 +145,7 @@ public class CdiExtension implements Extension {
                 
                 Bean<?> bean = injectionPoint.getBean();
                 
-                Class<?> scope = bean != null? injectionPoint.getBean().getScope() : null;
+                Class<?> scope = bean != null ? injectionPoint.getBean().getScope() : null;
                 
                 if (scope != null && (scope.equals(ApplicationScoped.class) || scope.equals(SessionScoped.class))) {
                     throw new DeploymentException(
