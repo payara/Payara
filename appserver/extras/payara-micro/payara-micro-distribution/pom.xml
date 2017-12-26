@@ -46,7 +46,7 @@
   <parent>
     <groupId>fish.payara.extras.payara-micro</groupId>
     <artifactId>payara-micro-parent</artifactId>
-    <version>5.0.0.Alpha4-SNAPSHOT</version>
+    <version>5.Beta2-SNAPSHOT</version>
   </parent>
 
   <groupId>fish.payara.extras</groupId>
@@ -489,6 +489,17 @@
                 <dependency>
                     <groupId>fish.payara.microprofile.config</groupId>
                     <artifactId>microprofile-config</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <!-- Fault Tolerance -->
+                <dependency>
+                    <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                    <artifactId>microprofile-fault-tolerance-api</artifactId>
+                    <version>${microprofile-fault-tolerance.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.microprofile.fault-tolerance</groupId>
+                    <artifactId>microprofile-fault-tolerance</artifactId>
                     <version>${project.version}</version>
                 </dependency>
             </dependencies>

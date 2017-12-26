@@ -39,6 +39,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -46,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>5.Beta2-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-common-web</artifactId>
     <name>Glassfish Commons for Web Profile Distribution </name>
@@ -223,12 +225,6 @@
             <groupId>org.glassfish.main.loadbalancer</groupId>
             <artifactId>load-balancer-admin</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <!-- TODO: move back to shoal package after nucleus distro build moves
-        to its own workspace -->
-        <dependency>
-            <groupId>org.shoal</groupId>
-            <artifactId>shoal-cache</artifactId>
         </dependency>
         <!-- schema2beans - both CMP and LB admin now depend on it -->
         <dependency>

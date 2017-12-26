@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>5.Beta2-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-corba</artifactId>
     <name>Corba Package</name>

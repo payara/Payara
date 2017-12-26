@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 
 /*
  * ReplicationWebEventPersistentManager.java
@@ -47,8 +49,8 @@
 
 package org.glassfish.web.ha.session.management;
 
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.apache.catalina.Session;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.common.GlassFishHAReplicaPredictor;
 import org.glassfish.ha.common.HACookieInfo;
 import org.glassfish.ha.common.HACookieManager;
@@ -80,10 +82,6 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
 
     @Inject
     private ServiceLocator services;
-
-    @Inject
-    private GMSAdapterService gmsAdapterService;
-
 
     private GlassFishHAReplicaPredictor predictor;
 
@@ -244,8 +242,9 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
             return null;
         }
         String gmsClusterName = "";
-        if (gmsAdapterService.isGmsEnabled()) {
-            gmsClusterName = gmsAdapterService.getGMSAdapter().getClusterName();
+        HazelcastCore hazelcast = services.getService(HazelcastCore.class);
+        if (hazelcast.isEnabled()) {
+            gmsClusterName = hazelcast.getMemberGroup();
         }
         HACookieInfo cookieInfo = predictor.makeCookie(gmsClusterName, sessionId, oldJreplicaValue);
         HACookieManager.setCurrrent(cookieInfo);
@@ -261,10 +260,12 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
         BackingStoreFactory factory = services.getService(BackingStoreFactory.class, persistenceType);
         BackingStoreConfiguration<String, T> conf = new BackingStoreConfiguration<String, T>();
 
-        if(gmsAdapterService.isGmsEnabled()) {
-            clusterName = gmsAdapterService.getGMSAdapter().getClusterName();
-            instanceName = gmsAdapterService.getGMSAdapter().getModule().getInstanceName();
+        HazelcastCore hazelcast = services.getService(HazelcastCore.class);
+        if (hazelcast.isEnabled()) {
+            clusterName = hazelcast.getMemberGroup();
+            instanceName = hazelcast.getMemberName();
         }
+        
         conf.setStoreName(storeName)
                 .setClusterName(clusterName)
                 .setInstanceName(instanceName)

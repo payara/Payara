@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.v3.server;
 
@@ -2293,16 +2293,20 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     private ExecutorService createExecutorService() {
         Runtime runtime = Runtime.getRuntime();
         int nrOfProcessors = runtime.availableProcessors();
-        return Executors.newFixedThreadPool(nrOfProcessors, new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("deployment-jar-scanner");
-                t.setContextClassLoader(getClass().getClassLoader());
-                t.setDaemon(true);
-                return t;
-            }
-        });
+
+        return new ThreadPoolExecutor(0, nrOfProcessors,
+                30L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        Thread t = new Thread(r);
+                        t.setName("deployment-jar-scanner");
+                        t.setContextClassLoader(getClass().getClassLoader());
+                        t.setDaemon(true);
+                        return t;
+                    }
+                });
     }
 
     @Override

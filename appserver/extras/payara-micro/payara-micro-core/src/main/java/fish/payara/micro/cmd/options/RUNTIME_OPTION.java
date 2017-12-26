@@ -57,11 +57,13 @@ public enum RUNTIME_OPTION {
     clustername(true),
     clusterpassword(true),
     hostaware(false),
+    nohostaware(false),
     startport(true, new PortValidator()),
     addlibs(true, new SeparatedFilesValidator(true, true, false, true, true)),
     addjars(true, new SeparatedFilesValidator(true, true, false, true, true)),
     rootdir(true, new DirectoryValidator(true, true, true)),
     deploymentdir(true, new DirectoryValidator(true, true, false)),
+    secretsdir(true,new DirectoryValidator(true, true, false)),
     domainconfig(true, new FileValidator(true, true, true)),
     minhttpthreads(true, new IntegerValidator(1, Integer.MAX_VALUE)),
     maxhttpthreads(true, new IntegerValidator(2, Integer.MAX_VALUE)),
@@ -91,14 +93,16 @@ public enum RUNTIME_OPTION {
     postdeploycommandfile(true, new FileValidator(true,true,false)),
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
+    clustermode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
+    interfaces(true),
     help(false);
 
-    private RUNTIME_OPTION(boolean value) {
-        this(value, new Validator());
+    private RUNTIME_OPTION(boolean hasValue) {
+        this(hasValue, new Validator());
     }
 
-    private RUNTIME_OPTION(boolean value, Validator validator) {
-        this.value = value;
+    private RUNTIME_OPTION(boolean hasValue, Validator validator) {
+        this.value = hasValue;
         this.validator = validator;
     }
 
@@ -106,10 +110,12 @@ public enum RUNTIME_OPTION {
         return validator.validate(optionValue);
     }
 
-    boolean getValue() {
+    boolean hasFollowingValue() {
         return value;
     }
     private final Validator validator;
+    
+    // Indicates the runtime option requires a value
     private final boolean value;
 
 }

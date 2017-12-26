@@ -86,9 +86,11 @@ import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -129,7 +131,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private GlassFish gf;
     private PayaraMicroRuntimeImpl runtime;
     private boolean noCluster = false;
-    private boolean hostAware = false;
+    private boolean hostAware = true;
     private boolean autoBindHttp = false;
     private boolean autoBindSsl = false;
     private boolean liteMember = false;
@@ -167,6 +169,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String postBootFileName;
     private String postDeployFileName;
     private RuntimeDirectory runtimeDir = null;
+    private String clustermode;
+    private String interfaces;
+    private String secretsDir;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -983,22 +988,26 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             configurePhoneHome();
             configureNotificationService();
             configureHealthCheck();
+            configureSecrets();
 
             // Add additional libraries
             addLibraries();
 
             // boot the server
             preBootCommands.executeCommands(gf.getCommandRunner());
-            gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false");
-            gf.start();
-            postBootCommands.executeCommands(gf.getCommandRunner());
-            this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
+            HazelcastCore.setThreadLocalDisabled(true);
+            try {
+                gf.start();
+                postBootCommands.executeCommands(gf.getCommandRunner());
+                this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
-            // load all applications, but do not start them until Hazelcast gets a chance to initialize
-            deployAll();
+                // load all applications, but do not start them until Hazelcast gets a chance to initialize
+                deployAll();
+            } finally {
+                HazelcastCore.setThreadLocalDisabled(false);
+            }
             if(!noCluster) {
-                 gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=true");
-                 gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true");
+                gf.getCommandRunner().run("set-hazelcast-configuration", "--enabled", "true", "--dynamic", "true", "--target", "server-config", "--hostawarepartitioning", Boolean.toString(hostAware),"--lite", Boolean.toString(liteMember));
             }
 
             gf.getCommandRunner().run("initialize-all-applications");
@@ -1112,6 +1121,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case hostaware: {
                         hostAware = true;
+                        break;
+                    }
+                    case nohostaware: {
+                        hostAware = false;
                         break;
                     }
                     case mcport: {
@@ -1306,6 +1319,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case postdeploycommandfile:
                         postDeployFileName = value;
                         break;
+                    case clustermode:
+                        clustermode = value;
+                        break;
+                    case interfaces:
+                        interfaces = value;
+			break;
+                    case secretsdir:
+                        secretsDir = value;
+                        break;
                     default:
                         break;
                 }
@@ -1373,13 +1395,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         int deploymentCount = 0;
         Deployer deployer = gf.getDeployer();
 
-        // search MICRO-INF/deploy for deployments
+        // search and deploy from MICRO-INF/deploy directory.
         // if there is a deployment called ROOT deploy to the root context /
         URL url = this.getClass().getClassLoader().getResource("MICRO-INF/deploy");
         if (url != null) {
             String entryName = "";
             try {
-                List<String> entriesToDeploy = new LinkedList<>();
+                List<String> microInfEntries = new LinkedList<>();
                 JarURLConnection urlcon = (JarURLConnection) url.openConnection();
                 JarFile jFile = urlcon.getJarFile();
                 Enumeration<JarEntry> entries = jFile.entries();
@@ -1387,11 +1409,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     JarEntry entry = entries.nextElement();
                     entryName = entry.getName();
                     if (!entry.isDirectory() && !entryName.endsWith(".properties") && !entryName.endsWith(".xml") && !entryName.endsWith(".gitkeep") && entryName.startsWith("MICRO-INF/deploy")) {
-                        entriesToDeploy.add(entryName);
+                        microInfEntries.add(entryName);
                     }
                 }
 
-                for (String entry : entriesToDeploy) {
+                for (String entry : microInfEntries) {
                     File file = new File(entry);
                     String contextRoot = file.getName();
                     String name = contextRoot.substring(0, contextRoot.length() - 4);
@@ -1416,6 +1438,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             LOGGER.info("No META-INF/deploy directory");
         }
 
+        // Deploy command line provided files
         if (deployments != null) {
             for (File war : deployments) {
                 if (war.exists() && war.canRead()) {
@@ -1433,13 +1456,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         // Deploy from deployment directory
         if (deploymentRoot != null) {
-            for (File war : deploymentRoot.listFiles()) {
-                String warPath = war.getAbsolutePath();
-                if (war.isFile() && war.canRead() && (warPath.endsWith(".war") || warPath.endsWith(".ear") || warPath.endsWith(".jar") || warPath.endsWith(".rar"))) {
-                    if (war.getName().startsWith("ROOT.")) {
-                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
+            
+            // Get all files in the directory, and sort them by file type
+            List<File> deploymentDirEntries = Arrays.asList(deploymentRoot.listFiles());
+            deploymentDirEntries.sort(new DeploymentComparator());
+            
+            for (File entry : deploymentDirEntries) {
+                String entryPath = entry.getAbsolutePath();
+                if (entry.isFile() && entry.canRead() && (entryPath.endsWith(".war") || entryPath.endsWith(".ear") || entryPath.endsWith(".jar") || entryPath.endsWith(".rar"))) {
+                    if (entry.getName().startsWith("ROOT.")) {
+                        deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
+                        deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
                     }
                     deploymentCount++;
                 }
@@ -1731,44 +1759,72 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void configureHazelcast() {
         // check hazelcast cluster overrides
         if (noCluster) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false"));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.enabled=false"));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.ejb-container.ejb-timer-service.ejb-timer-service=Dummy"));
         } else {
 
             if (hzPort > Integer.MIN_VALUE) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-port=" + hzPort));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-port=" + hzPort));
             }
 
             if (hzStartPort > Integer.MIN_VALUE) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.start-port=" + hzStartPort));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.start-port=" + hzStartPort));
             }
 
             if (hzMulticastGroup != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-group=" + hzMulticastGroup));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-group=" + hzMulticastGroup));
             }
 
             if (alternateHZConfigFile != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile.getName()));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile.getName()));
             }
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.lite=" + liteMember));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.lite=" + liteMember));
 
             if (hzClusterName != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
             }
 
             if (hzClusterPassword != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword));
             }
 
             if (instanceName != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.member-name=" + instanceName));
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.generate-names=false"));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-name=" + instanceName));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.generate-names=false"));
             }
 
             if (instanceGroup != null) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.member-group=" + instanceGroup));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-group=" + instanceGroup));
             }
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
+            preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
+            
+            if (clustermode != null) {
+                if (clustermode.startsWith("tcpip:")) {
+                    String tcpipmembers = clustermode.substring(6);
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.tcpip-members=" + tcpipmembers));
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=tcpip"));
+                } else if (clustermode.startsWith("multicast:")) {
+                    String hostPort[] = clustermode.split(":");
+                    if (hostPort.length == 3) {
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-group=" + hostPort[1]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-port=" + hostPort[2]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
+                    }
+                }  else if (clustermode.startsWith("domain:")) {
+                    String hostPort[] = clustermode.split(":");
+                    if (hostPort.length == 3) {
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-public-address=" + hostPort[1]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-port=" + hostPort[2]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=domain"));
+                    }
+                }
+            } else {
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
+            }
+            
+            if (interfaces != null) {
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.interface=" + interfaces));                
+            }
         }
     }
 
@@ -1967,7 +2023,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         sslPort = getIntegerProperty("payaramicro.sslPort", Integer.MIN_VALUE);
         hzMulticastGroup = getProperty("payaramicro.mcAddress");
         hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
-        hostAware = getBooleanProperty("payaramicro.hostAware");
+        hostAware = getBooleanProperty("payaramicro.hostAware","true");
         hzStartPort = getIntegerProperty("payaramicro.startPort", Integer.MIN_VALUE);
         hzClusterName = getProperty("payaramicro.clusterName");
         hzClusterPassword = getProperty("payaramicro.clusterPassword");
@@ -1979,6 +2035,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         enableRequestTracing = getBooleanProperty("payaramicro.enableRequestTracing");
         requestTracingThresholdUnit = getProperty("payaramicro.requestTracingThresholdUnit", "SECONDS");
         requestTracingThresholdValue = getLongProperty("payaramicro.requestTracingThresholdValue", 30L);
+        clustermode = getProperty("payaramicro.clusterMode");
+        interfaces = getProperty("payaramicro.interfaces");
+        secretsDir = getProperty("payaramicro.secretsDir");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2101,6 +2160,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (hzClusterPassword != null) {
             props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
+        }
+        
+        if (clustermode != null) {
+            props.setProperty("payaramicro.clusterMode", clustermode);
+        }
+        
+        if (interfaces != null) {
+            props.setProperty("payaramicro.interfaces", interfaces);
+        }
+
+        if (secretsDir != null) {
+            props.setProperty("payaramicro.secretsDir", secretsDir);
         }
 
         props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
@@ -2348,6 +2419,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         return "true".equals(property);
     }
+    
+    private Boolean getBooleanProperty(String value, String defaultValue) {
+        String property;
+        property = System.getProperty(value);
+        if (property == null) {
+            property = System.getenv(value.replace('.', '_'));
+            if (property == null) {
+                property = defaultValue;
+            }
+        }
+        return "true".equals(property);
+    }
+
 
     private Integer getIntegerProperty(String value, Integer defaultValue) {
         String property;
@@ -2402,6 +2486,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
         } else {
             LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());
+        }
+    }
+
+    private void configureSecrets() {
+        if (secretsDir != null) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.microprofile-config.secret-dir=" + secretsDir));            
         }
     }
 

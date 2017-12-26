@@ -16,6 +16,7 @@
  -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
+<hazelcast-runtime-configuration></hazelcast-runtime-configuration>
 <security-configurations>
     <authentication-service default="true" name="adminAuth" use-password-credential="true">
       <security-provider name="spcrealm" type="LoginModule" provider-name="adminSpc">
@@ -86,12 +87,12 @@
         <property value="${com.sun.aas.installRoot}/.." name="ipsRoot" />
         <das-config dynamic-reload-enabled="false" autodeploy-enabled="false"/>
       </admin-service>
+      <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
       <connector-service shutdown-timeout-in-seconds="30">
       </connector-service>
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" timeout-in-seconds="300">
          <property name="xaresource-txn-timeout" value="300"/>
        </transaction-service>
-       <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
        <ejb-container max-pool-size="128">
          <ejb-timer-service />
        </ejb-container>
@@ -340,7 +341,7 @@
          <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" timeout-in-seconds="300">
            <property name="xaresource-txn-timeout" value="300"/>
          </transaction-service>
-         <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+         <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
          <request-tracing-service-configuration>
              <log-notifier></log-notifier>
          </request-tracing-service-configuration>

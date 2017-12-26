@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
@@ -63,7 +63,7 @@ import org.glassfish.api.admin.*;
 import static com.sun.enterprise.admin.cli.CLIConstants.*;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.FileInputStream;
-import java.util.logging.Logger;
+import java.security.SecureRandom;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.admin.payload.PayloadFilesManager.Perm;
 import org.glassfish.hk2.api.PerLookup;
@@ -135,8 +135,6 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";
     private String INSTANCE_DOTTED_NAME;
     private String RENDEZVOUS_DOTTED_NAME;
-    //private String RENDEZVOUS_DOTTED_NAME_VALUE;
-    //private boolean isDasRunning;
 
     /**
      */
@@ -177,7 +175,6 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
 
         INSTANCE_DOTTED_NAME = "servers.server." + instanceName;
         RENDEZVOUS_DOTTED_NAME = INSTANCE_DOTTED_NAME + ".property." + RENDEZVOUS_PROPERTY_NAME;
-        //RENDEZVOUS_DOTTED_NAME_VALUE = RENDEZVOUS_DOTTED_NAME + "=true";
     }
 
     private boolean isRegisteredToDAS() throws CommandException {
@@ -220,16 +217,11 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
                 throw new CommandException(Strings.get("import.sync.bundle.domainXmlNotFound",
                     syncBundle));
             }
-        } catch (IOException ex) {
+        } catch (IOException | XMLStreamException ex) {
             logger.log(Level.SEVERE, Strings.get("import.sync.bundle.inboundPayloadFailed",
                     syncBundle, ex.getLocalizedMessage()), ex);
             throw new CommandException(Strings.get("import.sync.bundle.inboundPayloadFailed",
                     syncBundle, ex.getLocalizedMessage()), ex);
-        } catch (XMLStreamException xe) {
-            logger.log(Level.SEVERE, Strings.get("import.sync.bundle.inboundPayloadFailed",
-                    syncBundle, xe.getLocalizedMessage()), xe);
-            throw new CommandException(Strings.get("import.sync.bundle.inboundPayloadFailed",
-                    syncBundle, xe.getLocalizedMessage()), xe);
         } finally {
             if (input != null) {
                 try {
@@ -248,7 +240,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
             if (zip != null) {
                 try {
                     zip.close();
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     // ignored
                 }
             }
@@ -341,14 +333,8 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
             dasProperties.setProperty(K_DAS_PORT, String.valueOf(DASPort));
             dasProperties.setProperty(K_DAS_IS_SECURE, String.valueOf(dasIsSecure));
             dasProperties.setProperty(K_DAS_PROTOCOL, DASProtocol);
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(dasPropsFile);
+            try (FileOutputStream fos = new FileOutputStream(dasPropsFile)) {
                 dasProperties.store(fos, Strings.get("Instance.dasPropertyComment"));
-            } finally {
-                if (fos != null) {
-                    fos.close();
-                }
             }
         }
     }
@@ -356,7 +342,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private void backupInstanceDir() throws CommandException {
         File f = getServerDirs().getServerDir();
         if (f != null && f.isDirectory()) {
-            Random r = new Random();
+            SecureRandom r = new SecureRandom();
             setBackupDir(r.nextInt());
             File backup = getBackupDir();
             if (!f.renameTo(backup)) {

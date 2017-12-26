@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>5.Beta2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.microprofile</groupId>
     <artifactId>microprofile</artifactId>
@@ -51,5 +51,6 @@ holder.
     <packaging>pom</packaging>
     <modules>
         <module>config</module>
+        <module>fault-tolerance</module>
     </modules>
 </project>

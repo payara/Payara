@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.util.net;
 
 import com.sun.enterprise.util.CULoggerInfo;
@@ -44,6 +45,7 @@ import com.sun.enterprise.util.StringUtils;
 import java.net.*;
 import java.util.*;
 import java.io.*;
+import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -466,7 +468,7 @@ public class NetUtils {
         int range = endingPort - startingPort;
         int port = 0;
         if (range > 0) {
-            Random r = new Random();
+            SecureRandom r = new SecureRandom();
             while (true) {
                 port = r.nextInt(range + 1) + startingPort;
                 if (isPortFree(hostName, port)) {

@@ -440,7 +440,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                     break;
                 case stuckThreadsPropertyName:
                     extraPropsMap = new HashMap<>(6);
-                    extraPropsMap.put("checkerName", DEFUALT_STUCK_THEAD_NAME);
+                    extraPropsMap.put("checkerName", DEFAULT_STUCK_THREAD_NAME);
                     extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
                     break;
             }
@@ -459,7 +459,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         if (extraPropsMap.containsValue(DEFAULT_HOGGING_THREADS_NAME)) {
             extraPropsMap.put("threshold-percentage", DEFAULT_THRESHOLD_PERCENTAGE);
             extraPropsMap.put("retry-count", DEFAULT_RETRY_COUNT);
-        } else if (extraPropsMap.containsValue(DEFUALT_STUCK_THEAD_NAME)){
+        } else if (extraPropsMap.containsValue(DEFAULT_STUCK_THREAD_NAME)){
             extraPropsMap.put("threshold",  DEFAULT_TIME);
             extraPropsMap.put("thresholdUnit", DEFAULT_UNIT);
         } else {

@@ -1,0 +1,110 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2016 Payara Foundation and/or its affiliatess. 
+ All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="Hazelcast Configuration"  >
+
+<!define name="content">
+
+<event>
+    <!beforeCreate
+        createMap(result="#{pageSession.attrsMap}")
+        getRequestValue(key="configName" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="target", value="#{pageSession.configName}");
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.target}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.target}"  method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
+        if (#{pageSession.valueMap['enabled']}=true) {
+           setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        setPageSessionAttribute(key="dynamic", value="false");
+        setPageSessionAttribute(key="lite", value="#{pageSession.valueMap['lite']}");
+        />
+</event>
+
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.local.configurationTitle}" helpText="$resource{i18nhc.hazelcast.local.configurationTitleHelp}" >
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    prepareSuccessfulMsg();
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="lite" value="#{pageSession.lite}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+<sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+    <sun:propertySheetSection id="main">
+        <sun:property id="enabled" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.enabled}"  helpText="$resource{i18nhc.hazelcast.configuration.enabledHelp}">
+            <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dynamic}"  helpText="$resource{i18nhc.hazelcast.configuration.dynamicHelp}">
+            <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="lite" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
+            <sun:checkbox id="lite" selected="#{pageSession.lite}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="memberGroupProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.memberGroup}"  helpText="$resource{i18nhc.hazelcast.configuration.memberGroupHelp}">
+            <sun:textField id="memberGroup" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['memberGroup']}" />
+        </sun:property>
+    </sun:propertySheetSection>
+    <sun:propertySheetSection id="jndi">
+        <sun:property id="jndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.jndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.jndiNameHelp}">
+            <sun:textField id="jndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['jndiName']}" />
+        </sun:property>  
+        <sun:property id="cacheManagerJndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.cacheManagerJndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.cacheManagerJndiNameHelp}">
+            <sun:textField id="cacheManagerJndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['cacheManagerJndiName']}" />
+        </sun:property>    
+        <sun:property id="cachingProviderJndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.cachingProviderJndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.cachingProviderJndiNameHelp}">
+            <sun:textField id="cachingProviderJndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['cachingProviderJndiName']}" />
+        </sun:property>  
+    </sun:propertySheetSection>
+    <sun:propertySheetSection id="performance">
+        <sun:property id="executorPoolSizeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.executorPoolSize}"  helpText="$resource{i18nhc.hazelcast.configuration.executorPoolSizeHelp}">
+            <sun:textField id="executorPoolSize" styleClass="integer" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['executorPoolSize']}" />
+        </sun:property> 
+        <sun:property id="executorQueueCapacityProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.executorQueueCapacity}"  helpText="$resource{i18nhc.hazelcast.configuration.executorQueueCapacityHelp}">
+            <sun:textField id="executorQueueCapacity" styleClass="integer" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['executorQueueCapacity']}" />
+        </sun:property> 
+        <sun:property id="scheduledExecutorPoolSizeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.scheduledExecutorPoolSize}"  helpText="$resource{i18nhc.hazelcast.configuration.scheduledExecutorPoolSizeHelp}">
+            <sun:textField id="scheduledExecutorPoolSize" styleClass="integer" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['scheduledExecutorPoolSize']}" />
+        </sun:property> 
+        <sun:property id="scheduledExecutorQueueCapacityProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.scheduledExecutorQueueCapacity}"  helpText="$resource{i18nhc.hazelcast.configuration.scheduledExecutorQueueCapacityHelp}">
+            <sun:textField id="scheduledExecutorQueueCapacity" styleClass="integer" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['scheduledExecutorQueueCapacity']}" />
+        </sun:property> 
+    </sun:propertySheetSection>
+</sun:propertySheet>
+<sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />
+</sun:form>
+</define>
+</composition>

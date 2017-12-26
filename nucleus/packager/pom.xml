@@ -50,7 +50,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>5.Beta2-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -98,7 +98,6 @@
         <module>nucleus</module>
         <module>nucleus-corba-base</module>
         <module>nucleus-common</module>
-        <module>nucleus-shoal</module>
         <module>nucleus-cluster</module>
         <module>nucleus-management</module>
         <module>nucleus-osgi</module>

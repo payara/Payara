@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,17 @@
  */
 package fish.payara.appserver.micro.services.data;
 
-import static java.util.stream.Collectors.toList;
-
-import java.util.List;
-import java.util.Map.Entry;
 
 import org.glassfish.internal.data.ModuleInfo;
 
 import com.sun.enterprise.web.WebApplication;
+import com.sun.enterprise.web.WebModule;
 
 import fish.payara.micro.data.ModuleDescriptor;
+import java.util.HashMap;
+import java.util.Map;
+import org.glassfish.internal.data.EngineRef;
+import org.glassfish.api.deployment.ApplicationContainer;
 
 /**
  *
@@ -58,25 +59,26 @@ public class ModuleDescriptorImpl implements ModuleDescriptor {
     
     private static final long serialVersionUID = 1L;
     
-    private String name;
-    private String contextRoot;
-    private String type;
-    private List<Entry<String, String>> servletMappings;
+    private final String name;
+    private final String contextRoot;
+    private final String type;
+    private final Map<String, String> servletMappings;
 
     public ModuleDescriptorImpl(ModuleInfo info) {
         name = info.getName();
         contextRoot = info.getModuleProps().getProperty("context-root");
         type = info.getModuleProps().getProperty("archiveType");
-        
-        servletMappings = info.getEngineRefs()
-                              .stream()
-                              .filter(e -> e.getApplicationContainer() instanceof WebApplication)
-                              .map(e -> (WebApplication) e.getApplicationContainer())
-                              .flatMap(e -> e.getWebModules().stream())
-                              .filter(e-> e.getContextRoot().equals(contextRoot))
-                              .flatMap(e -> e.getWebBundleDescriptor().getUrlPatternToServletNameMap().entrySet().stream())
-                              .collect(toList());
-  
+        servletMappings = new HashMap<>();
+        for (EngineRef engineRef : info.getEngineRefs()) {
+            ApplicationContainer container = engineRef.getApplicationContainer();
+                if (container instanceof WebApplication) {
+                    for (WebModule module : ((WebApplication) ((ApplicationContainer)container)).getWebModules()) {
+                        if (module.getContextRoot().equals(contextRoot)) {
+                            servletMappings.putAll(module.getWebBundleDescriptor().getUrlPatternToServletNameMap());
+                       }
+                    }
+                }
+        }  
     }
 
     @Override
@@ -95,7 +97,7 @@ public class ModuleDescriptorImpl implements ModuleDescriptor {
     }
     
     @Override
-    public List<Entry<String, String>> getServletMappings() {
+    public Map<String, String> getServletMappings() {
         return servletMappings;
     }
     

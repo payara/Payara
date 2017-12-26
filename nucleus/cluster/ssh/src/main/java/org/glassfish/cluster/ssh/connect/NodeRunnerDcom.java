@@ -37,30 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.cluster.ssh.connect;
 
 import com.sun.enterprise.util.cluster.Paths;
 import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteAsadmin;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
-import java.io.*;
-import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
-import com.sun.enterprise.config.serverbeans.SshAuth;
-import com.sun.enterprise.config.serverbeans.SshConnector;
-import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
-import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteScripter;
 import org.glassfish.api.admin.SSHCommandExecutionException;
 import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import org.glassfish.cluster.ssh.util.DcomInfo;
-import org.glassfish.cluster.ssh.util.DcomUtils;
 import org.glassfish.common.util.admin.AsadminInput;
 import static com.sun.enterprise.util.StringUtils.ok;
+import java.security.SecureRandom;
 
 public class NodeRunnerDcom {
     private final Logger logger;
@@ -136,7 +129,7 @@ public class NodeRunnerDcom {
      */
     private void setupAuthTokenFile(List<String> cmd, List<String> stdin) throws WindowsException {
         WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(dcomInfo.getCredentials());
-        authTokenFilePath = dcomInfo.getNadminParentPath() + "\\token_" + System.nanoTime() + new Random().nextInt(1000);
+        authTokenFilePath = dcomInfo.getNadminParentPath() + "\\token_" + System.nanoTime() + new SecureRandom().nextInt(1000);
         authTokenFilePath = createUniqueFilename(dcomInfo.getNadminParentPath());
         authTokenFile = new WindowsRemoteFile(wrfs, authTokenFilePath);
         authTokenFile.copyFrom(stdin);
@@ -162,7 +155,7 @@ public class NodeRunnerDcom {
         if(random.length() > 16)
             random = random.substring(random.length() - 16);
 
-        random += "" + new Random(System.currentTimeMillis()).nextInt(10000);
+        random += "" + new SecureRandom().nextInt(10000);
 
         return path + "\\DELETE_ME_" + random;
     }

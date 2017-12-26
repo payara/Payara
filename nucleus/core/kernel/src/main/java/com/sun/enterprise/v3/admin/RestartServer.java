@@ -46,6 +46,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.process.JavaClassRunner;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.StringUtils;
+import static com.sun.enterprise.util.StringUtils.ok;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.embeddable.GlassFish;
@@ -60,21 +61,21 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 /**
- * For non-verbose mode:
- * Stop this server, spawn a new JVM that will wait for this JVM to die.  The new JVM then starts the server again.
+ * For non-verbose mode: Stop this server, spawn a new JVM that will wait for this JVM to die. The new JVM then starts
+ * the server again.
  *
- * For verbose mode:
- * We want the asadmin console itself to do the respawning -- so just return a special int from
- * System.exit().  This tells asadmin to restart.
+ * For verbose mode: We want the asadmin console itself to do the respawning -- so just return a special int from
+ * System.exit(). This tells asadmin to restart.
  *
  * @author Byron Nevins
  */
 public class RestartServer {
+
     @Inject
     private Provider<GlassFish> glassfishProvider;
-    
+
     private final Lock stopLock = new ReentrantLock();
-    
+
     protected final void setDebug(Boolean b) {
         debug = b;
     }
@@ -90,19 +91,19 @@ public class RestartServer {
     /**
      * Restart of the application server :
      *
-     * All running services are stopped.
-     * LookupManager is flushed.
+     * All running services are stopped. LookupManager is flushed.
      *
      * Client code that started us should notice the special return value and restart us.
      */
     protected final void doExecute(AdminCommandContext context) {
         try {
             // unfortunately we can't rely on constructors with HK2...
-            if (registry == null)
+            if (registry == null) {
                 throw new NullPointerException(new LocalStringsImpl(getClass()).get("restart.server.internalError", "registry was not set"));
+            }
 
             init(context);
-            
+
             // get the GlassFish object - we have to wait in case startup is still in progress
             // This is a temporary work-around until HK2 supports waiting for the service to 
             // show up in the ServiceLocator. 
@@ -111,7 +112,7 @@ public class RestartServer {
                 Thread.sleep(1000);
                 gfKernel = glassfishProvider.get();
             }
-            
+
             if (!supervised) {
                 // do it now while we still have the Logging service running...
                 reincarnate();
@@ -119,8 +120,7 @@ public class RestartServer {
             prepareToExit();
             // else we just return a special int from System.exit()
             gfKernel.stop();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             context.getLogger().severe(strings.get("restart.server.failure", e));
         } finally {
             stopLock.unlock();
@@ -137,10 +137,11 @@ public class RestartServer {
             public void run() {
                 stopLock.lock();
                 int ret = RESTART_NORMAL;
-                
-                if (debug != null)
+
+                if (debug != null) {
                     ret = debug ? RESTART_DEBUG_ON : RESTART_DEBUG_OFF;
-                
+                }
+
                 System.exit(ret);
             }
         };
@@ -163,17 +164,20 @@ public class RestartServer {
 
     private void reincarnate() {
         try {
-            if (setupReincarnationWithAsadmin() || setupReincarnationWithOther())
-                doReincarnation();
-            else
-                logger.severe(strings.get("restart.server.noStartupInfo",
-                        strings.get("restart.server.asadminError"),
-                        strings.get("restart.server.nonAsadminError")));
-        }
-        catch (RDCException rdce) {
+            if (restartable()) {
+                if (setupReincarnationWithAsadmin() || setupReincarnationWithOther()) {
+                    doReincarnation();
+                } else {
+                    logger.severe(strings.get("restart.server.noStartupInfo",
+                            strings.get("restart.server.asadminError"),
+                            strings.get("restart.server.nonAsadminError")));
+                }
+            } else {
+                logger.severe(strings.get("restart.server.noPasswordFile", passwordFilePath));
+            }
+        } catch (RDCException rdce) {
             // already logged...
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.severe(strings.get("restart.server.internalError", e));
         }
 
@@ -186,12 +190,11 @@ public class RestartServer {
 
             String[] props = normalProps;
 
-            if (Boolean.parseBoolean(System.getenv("AS_SUPER_DEBUG")))
+            if (Boolean.parseBoolean(System.getenv("AS_SUPER_DEBUG"))) {
                 props = debuggerProps;  // very very difficult to debug this stuff otherwise!
-
+            }
             new JavaClassRunner(classpath, props, classname, args);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.severe(strings.get("restart.server.jvmError", e));
             throw new RDCException();
         }
@@ -212,6 +215,31 @@ public class RestartServer {
         argsString = props.getProperty("-startup-args");
 
         return verify("restart.server.nonAsadminError");
+    }
+
+    private boolean restartable() throws RDCException {
+        boolean restartable = true;
+        File passwordFile;
+        String asadminString = props.getProperty("-asadmin-args");
+        if (ok(asadminString) && asadminString.contains("--passwordfile")) {
+            String[] asadminArgs = asadminString.split(",,,");
+            for (int i = 0; i < asadminArgs.length; i++) {
+                if (asadminArgs[i].equals("--passwordfile")) {
+                    if ((i + 1) < asadminArgs.length && ok(asadminArgs[i + 1])) {
+                        passwordFilePath = asadminArgs[i + 1];
+                        break;
+                    }
+                }
+            }
+        } else {
+            // if there's no password file set, we're done here
+            return true;
+        }
+        passwordFile = new File(passwordFilePath);
+        if (ok(passwordFilePath)) {
+            restartable = passwordFile.canRead();
+        }
+        return restartable;
     }
 
     private boolean verify(String errorStringKey) throws RDCException {
@@ -237,7 +265,9 @@ public class RestartServer {
 
     private void handleDebug() {
         if (debug == null) // nothing to do!
+        {
             return;
+        }
 
         stripDebugFromArgs();
         stripOperandFromArgs();
@@ -280,23 +310,27 @@ public class RestartServer {
             }
         }
 
-        if (indexOfDebug < 0)
+        if (indexOfDebug < 0) {
             return;
+        }
 
         int oldlen = args.length;
         int newlen = oldlen - 1;
 
-        if (twoArgs)
+        if (twoArgs) {
             --newlen;
+        }
 
         String[] newArgs = new String[newlen];
         int ctr = 0;
 
         for (int i = 0; i < oldlen; i++) {
-            if (i == indexOfDebug)
+            if (i == indexOfDebug) {
                 continue;
-            if (twoArgs && i == (indexOfDebug + 1))
+            }
+            if (twoArgs && i == (indexOfDebug + 1)) {
                 continue;
+            }
 
             newArgs[ctr++] = args[i];
         }
@@ -307,8 +341,9 @@ public class RestartServer {
     private void stripOperandFromArgs() {
         // remove the domain-name operand
         // it may not be here!
-        if (args.length < 2 || !StringUtils.ok(serverName))
+        if (args.length < 2 || !StringUtils.ok(serverName)) {
             return;
+        }
 
         int newlen = args.length - 1;
 
@@ -321,6 +356,7 @@ public class RestartServer {
 
     private boolean ok(String s) {
         return s != null && s.length() > 0;
+
     }
 
     // We use this simply to tell the difference between fatal errors and other
@@ -337,7 +373,9 @@ public class RestartServer {
     private String argsString;
     private String[] args;
     private String serverName = "";
-    private static final LocalStringsImpl strings = new LocalStringsImpl(RestartServer.class);
+    private String passwordFilePath = "";
+    private static final LocalStringsImpl strings = new LocalStringsImpl(RestartServer.class
+    );
     /////////////             static variables               ///////////////////
     private static final String magicProperty = "-DAS_RESTART=" + ProcessUtils.getPid();
     private static final String[] normalProps = {magicProperty};
