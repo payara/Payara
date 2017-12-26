@@ -152,7 +152,7 @@ public class SecretsDirConfigSourceTest {
         assertEquals("value1", value);
         // change the file
         Path file1 = Paths.get(testDirectory.toString(), "property1");
-        Thread.sleep(100);
+        Thread.sleep(1000);
         System.out.println("Test measured last modified time before write " + Files.getLastModifiedTime(file1));
         Files.write(file1, "value-changed".getBytes());
         System.out.println("Test measured last modified time after write" + Files.getLastModifiedTime(file1));
