@@ -126,20 +126,13 @@ public class MemberAddressPicker implements MemberAddressProvider {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface intf = interfaces.nextElement();
-                try {
-                    logger.log(Level.FINE, "Found Network Interface {0} Address {1}", new Object[]{intf.getName(), 
-                            intf.getInetAddresses().nextElement()});
-                } catch (NoSuchElementException nsee) {
-                    logger.log(Level.FINER, "Could not obtain address information for Network Interface: " 
-                            + intf.getName(), nsee);
-                    logger.log(Level.FINE, "Found Network Interface {0}", intf.getName());
-                }
+                logger.log(Level.FINE, "Found Network Interface {0}", new Object[]{intf.getName()});
                 
-                if (!intf.isLoopback() && !intf.getName().contains("docker0")) {
+                if (intf.isUp() && !intf.isLoopback() && !intf.isVirtual() && !intf.getName().contains("docker0") &&!intf.getDisplayName().contains("Teredo") && intf.getInterfaceAddresses().size()>0) {
                     logger.log(Level.FINE, "Adding interface {0} as a possible interface", intf.getName());
                     possibleInterfaces.add(intf);
                 } else {
-                    logger.fine("Ignoring docker or loopback interface " + intf.getName());
+                    logger.fine("Ignoring down, docker or loopback interface " + intf.getName());
                 }
             }
         } catch (SocketException socketException) {
