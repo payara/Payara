@@ -104,7 +104,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         HazelcastRuntimeConfiguration runtimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
         String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member",
-                            "Cluster Name","Cluster Password", "License Key", "Host Aware Paritioning","Das Public Address","DAS Bind Address","Das Port","Tcpip Members",
+                            "Cluster Name","Cluster Password", "License Key", "Host Aware Partitioning","Das Public Address","DAS Bind Address","Das Port","Tcpip Members",
                             "Cluster Mode", "Member Name", "Member Group", "Interfaces", "Cache Manager JNDI Name", "Caching Provider JNDI Name",
                             "Executor Pool Size", "Executor Queue Capacity", "Scheduled Executor Pool Size", "Scheduled Executor Queue Capacity"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
@@ -149,7 +149,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("clusterName", values[7]);
         map.put("clusterPassword", values[8]);
         map.put("licenseKey", values[9]);
-        map.put("hostAwareParitioning", values[10]);
+        map.put("hostAwarePartitioning", values[10]);
         map.put("dasPublicAddress", values[11]);
         map.put("dasBindAddress", values[12]);
         map.put("dasPort", values[13]);

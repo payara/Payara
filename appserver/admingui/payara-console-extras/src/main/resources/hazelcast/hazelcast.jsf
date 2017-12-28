@@ -95,7 +95,7 @@
             <sun:textField id="licenseKey" columns="$int{40}" maxLength="100" text="#{pageSession.valueMap['licenseKey']}" />
         </sun:property> 
         <sun:property id="hostawareProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.hostaware}"  helpText="$resource{i18nhc.hazelcast.configuration.hostawareHelp}">
-            <sun:checkbox id="hostaware" selected="#{pageSession.valueMap['hostAwareParitioning']}" selectedValue="true" />
+            <sun:checkbox id="hostaware" selected="#{pageSession.valueMap['hostAwarePartitioning']}" selectedValue="true" />
         </sun:property>
     </sun:propertySheetSection>
     <sun:propertySheetSection id="discovery">
