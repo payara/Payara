@@ -45,6 +45,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -154,6 +155,17 @@ public class MemberAddressPicker implements MemberAddressProvider {
             }
             logger.log(Level.FINE, "Picked address {0}", chosenAddress);
             bindAddress = new InetSocketAddress(chosenAddress,port);
+        }
+        
+        if (bindAddress == null) {
+            try {
+                // ok do the easy thing
+                logger.log(Level.FINE,"Could not find an appropriate address by searching falling back to local host");
+                bindAddress = new InetSocketAddress(InetAddress.getLocalHost(),port);
+            } catch (UnknownHostException ex) {
+                logger.log(Level.FINE,"Could not find local host, falling back to loop back address");
+                bindAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(),port);
+            }
         }
     }
     
