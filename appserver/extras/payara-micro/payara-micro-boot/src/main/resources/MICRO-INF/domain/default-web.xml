@@ -297,6 +297,14 @@ Portions Copyright [2016] [Payara Foundation]
       <param-value>false</param-value>
     </init-param>
     <init-param>
+      <param-name>compilerSourceVM</param-name>
+      <param-value>1.8</param-value>
+    </init-param>
+    <init-param>
+      <param-name>compilerTargetVM</param-name>
+      <param-value>1.8</param-value>
+    </init-param>
+    <init-param>
       <param-name>httpMethods</param-name>
       <param-value>GET,POST,HEAD</param-value>
     </init-param>
