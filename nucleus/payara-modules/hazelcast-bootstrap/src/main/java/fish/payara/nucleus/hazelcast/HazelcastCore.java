@@ -297,6 +297,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         } else if (this.enabled && enabled) {
             // we need to reboot
             shutdownHazelcast();
+            this.enabled = true;
             booted =false;
             bootstrapHazelcast();
         }
