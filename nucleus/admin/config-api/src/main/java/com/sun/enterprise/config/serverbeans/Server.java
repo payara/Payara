@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;

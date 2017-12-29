@@ -123,6 +123,20 @@ public class DGTest extends ConfigApiTest {
 
         
     }
+    
+    @Test
+    public void testGetNamedDeploymentGroup() {
+        Domain d = habitat.getService(Domain.class);
+        assertNotNull("dg1 should be found by name from the domain",d.getDeploymentGroupNamed("dg1"));
+    }
+    
+    @Test
+    public void testGetDeploymentGroupsForServer() {
+        Domain d = habitat.getService(Domain.class);
+        DeploymentGroup dg1 = d.getDeploymentGroupNamed("dg1");
+        List<DeploymentGroup> dgs = d.getDeploymentGroupsForInstance("server");
+        assertEquals("List should have 2 Deployment Groups", 2L, dgs.size());
+    }
 
 
     @Test

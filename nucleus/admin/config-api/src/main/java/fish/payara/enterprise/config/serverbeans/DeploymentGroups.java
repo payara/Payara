@@ -39,12 +39,11 @@
  */
 package fish.payara.enterprise.config.serverbeans;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Clusters;
 import java.util.List;
 import org.glassfish.api.I18n;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.Delete;
+import org.glassfish.config.support.TypeAndNameResolver;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
@@ -64,7 +63,7 @@ public interface DeploymentGroups extends ConfigBeanProxy {
      */
     @Element
     @Create(value="create-deployment-group", i18n=@I18n("create.deploymentgroup.command"))
-    @Delete(value="delete-deployment-group", i18n=@I18n("delete.deploymentgroup.command"))
+    @Delete(value="delete-deployment-group", resolver= TypeAndNameResolver.class, i18n=@I18n("delete.deploymentgroup.command"))
     public List<DeploymentGroup> getDeploymentGroup();
     
     /**

@@ -149,7 +149,7 @@ public interface DeploymentGroup extends Named, Payload, RefContainer, PropertyB
             return instances;
         }
 
-        public static DGServerRef getServerRefByRef(DeploymentGroup me, String name) {
+        public static DGServerRef getDGServerRefByRef(DeploymentGroup me, String name) {
             for (DGServerRef ref : me.getDGServerRef()) {
                 if (ref.getRef().equals(name)) {
                     return ref;
