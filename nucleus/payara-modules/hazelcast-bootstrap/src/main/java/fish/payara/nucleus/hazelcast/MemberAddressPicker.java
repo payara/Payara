@@ -45,6 +45,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -126,20 +127,13 @@ public class MemberAddressPicker implements MemberAddressProvider {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface intf = interfaces.nextElement();
-                try {
-                    logger.log(Level.FINE, "Found Network Interface {0} Address {1}", new Object[]{intf.getName(), 
-                            intf.getInetAddresses().nextElement()});
-                } catch (NoSuchElementException nsee) {
-                    logger.log(Level.FINER, "Could not obtain address information for Network Interface: " 
-                            + intf.getName(), nsee);
-                    logger.log(Level.FINE, "Found Network Interface {0}", intf.getName());
-                }
+                logger.log(Level.FINE, "Found Network Interface {0}", new Object[]{intf.getName()});
                 
-                if (!intf.isLoopback() && !intf.getName().contains("docker0")) {
+                if (intf.isUp() && !intf.isLoopback() && !intf.isVirtual() && !intf.getName().contains("docker0") &&!intf.getDisplayName().contains("Teredo") && intf.getInterfaceAddresses().size()>0) {
                     logger.log(Level.FINE, "Adding interface {0} as a possible interface", intf.getName());
                     possibleInterfaces.add(intf);
                 } else {
-                    logger.fine("Ignoring docker or loopback interface " + intf.getName());
+                    logger.fine("Ignoring down, docker or loopback interface " + intf.getName());
                 }
             }
         } catch (SocketException socketException) {
@@ -161,6 +155,17 @@ public class MemberAddressPicker implements MemberAddressProvider {
             }
             logger.log(Level.FINE, "Picked address {0}", chosenAddress);
             bindAddress = new InetSocketAddress(chosenAddress,port);
+        }
+        
+        if (bindAddress == null) {
+            try {
+                // ok do the easy thing
+                logger.log(Level.FINE,"Could not find an appropriate address by searching falling back to local host");
+                bindAddress = new InetSocketAddress(InetAddress.getLocalHost(),port);
+            } catch (UnknownHostException ex) {
+                logger.log(Level.FINE,"Could not find local host, falling back to loop back address");
+                bindAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(),port);
+            }
         }
     }
     
