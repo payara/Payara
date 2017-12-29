@@ -755,6 +755,16 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                         }
                     }
                 }
+                
+                // check the deployment group
+                DeploymentGroup dg = getDeploymentGroupNamed(d, target2);
+                if (dg != null) {
+                    for (Server svr : dg.getInstances()) {
+                        if (svr.getName().equals(currentInstance)) {
+                            return true;
+                        }
+                    }
+                }
             }
             return false;
         }
@@ -770,6 +780,11 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 Cluster cluster = getClusterNamed(me, target);
                 if (cluster != null) {
                     servers.addAll(cluster.getInstances());
+                } else {
+                    DeploymentGroup dg = getDeploymentGroupNamed(me, target);
+                    if (dg != null) {
+                        servers.addAll(dg.getInstances());
+                    }
                 }
             }
             return servers;
@@ -808,6 +823,16 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                                 allAppRefs.addAll(svr.getApplicationRef());
                             }
                         }
+                    } else {
+                        DeploymentGroup dg = getDeploymentGroupNamed(me, target);
+                        if (dg != null) {
+                            allAppRefs.addAll(dg.getApplicationRef());
+                            if (includeInstances) {
+                                for (Server svr: dg.getInstances()) {
+                                    allAppRefs.addAll(svr.getApplicationRef());
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -840,6 +865,17 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                     return false;
                 }
             }
+            
+            List<DeploymentGroup> dgs = getDeploymentGroupsForInstance(me, target);
+            if (dgs != null) {
+                for (DeploymentGroup dg : dgs) {
+                    ApplicationRef ref = dg.getApplicationRef(appName);
+                    if (ref == null || !Boolean.valueOf(ref.getEnabled())) {
+                        return false;
+                    }
+                }
+            }
+            
 
             for (ApplicationRef ref :
                 getApplicationRefsInTarget(me, target, true)) {
@@ -891,6 +927,12 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             if (d.getClusters() != null) {
                 for (Cluster cluster : d.getClusters().getCluster()) {
                     targets.add(cluster.getName());
+                }
+            }
+            
+            if (d.getDeploymentGroups() != null) {
+                for (DeploymentGroup dg : d.getDeploymentGroups().getDeploymentGroup()) {
+                    targets.add(dg.getName());
                 }
             }
             return targets;

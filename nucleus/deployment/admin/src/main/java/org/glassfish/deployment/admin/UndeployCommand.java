@@ -111,7 +111,7 @@ import org.glassfish.deployment.versioning.VersioningException;
 @I18n("undeploy.command")
 @PerLookup
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
         @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.DELETE, path = "undeploy", description = "Undeploy an application")
 })

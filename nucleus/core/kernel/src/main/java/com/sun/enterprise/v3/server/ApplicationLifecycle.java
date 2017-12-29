@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -1262,6 +1263,20 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                             ((Server)svr_w).getApplicationRef().add(appRef2);
                         }
                     }
+                    
+                    DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+                    if (dg != null) {
+                        ConfigBeanProxy dg_w = t.enroll(dg);
+                        ApplicationRef appRef = dg_w.createChild(ApplicationRef.class);
+                        setAppRefAttributes(appRef, deployParams);
+                        ((DeploymentGroup)dg_w).getApplicationRef().add(appRef);
+                        for (Server svr : dg.getInstances() ) {
+                            ConfigBeanProxy svr_w = t.enroll(svr);
+                            ApplicationRef appRef2 = svr_w.createChild(ApplicationRef.class);
+                            setAppRefAttributes(appRef2, deployParams);
+                            ((Server)svr_w).getApplicationRef().add(appRef2);
+                        }                        
+                    }
                 }
             } catch(TransactionFailure e) {
                 t.rollback();
@@ -1501,6 +1516,21 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                            ).remove(appRef);
                                         break;
                                     }
+                                }
+                            }
+                        }
+                        
+                        // TO DO remove from deployment groups
+                        DeploymentGroup dg = dmn.getDeploymentGroupNamed(target);
+                        if (dg != null) {
+                            // remove the application-ref from cluster
+                            ConfigBeanProxy dg_w = t.enroll(dg);
+                            for (ApplicationRef appRef : 
+                                dg.getApplicationRef()) {
+                                if (appRef.getRef().equals(appName)) {
+                                    ((DeploymentGroup)dg_w).getApplicationRef().remove(
+                                            appRef);
+                                        break;
                                 }
                             }
                         }

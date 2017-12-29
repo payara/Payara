@@ -52,6 +52,7 @@ import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -479,7 +480,17 @@ public class DeploymentUtils {
             if (cluster != null) {
                 config = domain.getConfigs().getConfigByName(
                     cluster.getConfigRef());
+            } else {
+                DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+                if (dg != null) {
+                    // get the first server in the group
+                    List<Server> servers = dg.getInstances();
+                    if (servers!= null && servers.size() > 1) {
+                        config = servers.get(0).getConfig();
+                    }
+                }
             }
+            
         }
 
         if (config != null) {
