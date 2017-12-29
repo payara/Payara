@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,54 +37,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.enterprise.config.serverbeans;
 
-package com.sun.enterprise.config.serverbeans;
-
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Clusters;
+import java.util.List;
 import org.glassfish.api.I18n;
-import org.glassfish.config.support.*;
+import org.glassfish.config.support.Create;
+import org.glassfish.config.support.Delete;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-
-import java.util.List;
-
 
 /**
- * Clusters configuration. Maintain a list of {@link Cluster}
- * active configurations.
+ * Config Bean for Deployment Groups.
+ * This element is at the domain level and contains a DeploymentGroup bean underneath
+ * @author Steve Millidge (Payara Foundation)
  */
 @Configured
-public interface Clusters extends ConfigBeanProxy {
-
-     /**
-      * Return the list of clusters currently configured
-      *
-      * @return list of {@link Cluster }
-      */
-    @Element
-    @Create(value="create-cluster", decorator=Cluster.Decorator.class, i18n=@I18n("create.cluster.command"))
-    @Delete(value="delete-cluster", resolver= TypeAndNameResolver.class, decorator=Cluster.DeleteDecorator.class
-        , i18n=@I18n("delete.cluster.command"))
-    public List<Cluster> getCluster();
-
+public interface DeploymentGroups extends ConfigBeanProxy {
+    
     /**
-     * Return the cluster with the given name, or null if no such cluster exists.
-     *
-     * @param   name    the name of the cluster
-     * @return          the Cluster object, or null if no such server
+     * Returns the list of deployment groups
+     * @return 
+     */
+    @Element
+    @Create(value="create-deployment-group", i18n=@I18n("create.deploymentgroup.command"))
+    @Delete(value="delete-deployment-group", i18n=@I18n("delete.deploymentgroup.command"))
+    public List<DeploymentGroup> getDeploymentGroup();
+    
+    /**
+     * Return the deployment group with the specified name
+     * @param name The name of the deployment group to return
+     * @return The deployment group
      */
     @DuckTyped
-    public Cluster getCluster(String name);
+    public DeploymentGroup getDeploymentGroup(String name);
 
     class Duck {
-        public static Cluster getCluster(Clusters clusters, String name) {
-            for (Cluster cluster : clusters.getCluster()) {
-                if (cluster.getName().equals(name)) {
-                    return cluster;
+        public static DeploymentGroup getDeploymentGroup(DeploymentGroups dgs, String name) {
+            for (DeploymentGroup dg : dgs.getDeploymentGroup()) {
+                if (dg.getName().equals(name)) {
+                    return dg;
                 }
             }
             return null;
         }
     }
+    
+    
 }

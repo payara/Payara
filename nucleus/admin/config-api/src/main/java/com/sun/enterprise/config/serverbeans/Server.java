@@ -58,6 +58,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
+import fish.payara.enterprise.config.serverbeans.DGServerRef;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
@@ -74,6 +77,7 @@ import static org.glassfish.config.support.Constants.*;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -273,6 +277,9 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
      */
     @DuckTyped
     Cluster getCluster();
+    
+    @DuckTyped
+    List<DeploymentGroup> getDeploymentGroup();
 
     // four trivial methods that ReferenceContainer's need to implement
     @DuckTyped
@@ -336,6 +343,23 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                 }
             }
             return null;
+        }
+        
+        public static List<DeploymentGroup> getDeploymentGroup(Server server) {
+            List<DeploymentGroup> result = new LinkedList<>();
+            Dom serverDom = Dom.unwrap(server);
+            DeploymentGroups dgs = serverDom.getHabitat().getService(DeploymentGroups.class);
+            if (dgs != null) {
+                for (DeploymentGroup dg : dgs.getDeploymentGroup()) {
+                    for(DGServerRef ref : dg.getDGServerRef()) {
+                        if (ref.getRef().equals(server.getName())) {
+                            result.add(dg);
+                            break;
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         public static String getReference(Server server) {

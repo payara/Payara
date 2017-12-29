@@ -43,6 +43,7 @@ package com.sun.enterprise.config.serverbeans;
 import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.StringUtils;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
@@ -261,6 +262,26 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
      *              {@link Clusters }
      */
     void setClusters(Clusters value) throws PropertyVetoException;
+    
+        /**
+     * Gets the value of the clusters property.
+     *
+     * @return possible object is
+     *         {@link Clusters }
+     */
+    @Element
+    @NotNull
+    DeploymentGroups getDeploymentGroups();
+
+    /**
+     * Sets the value of the clusters property.
+     *
+     * @param value allowed object is
+     *              {@link Clusters }
+     */
+    void setDeploymentGroups(DeploymentGroups value) throws PropertyVetoException;
+    
+    
 
     /**
      * Gets the value of the nodes property.
