@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
@@ -72,7 +74,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("update.application.ref.command")
 @PerLookup
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Cluster.class, opType = RestEndpoint.OpType.POST,
             path = "update-application-ref", description = "Update an Application Reference on a cluster target"),

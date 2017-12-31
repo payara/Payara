@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
@@ -108,7 +108,7 @@ import org.glassfish.deployment.versioning.VersioningService;
 @I18n("create.application.ref.command")
 @ExecuteOn(value={RuntimeType.DAS})
 @PerLookup
-@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.POST, path="create-application-ref"),
     @RestEndpoint(configBean=Server.class,opType=RestEndpoint.OpType.POST, path="create-application-ref")

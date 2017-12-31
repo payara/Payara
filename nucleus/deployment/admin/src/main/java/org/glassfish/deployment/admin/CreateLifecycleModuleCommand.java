@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.Application;
@@ -85,7 +87,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 @I18n("create.lifecycle.module")
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @PerLookup
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
         opType=RestEndpoint.OpType.POST, 
