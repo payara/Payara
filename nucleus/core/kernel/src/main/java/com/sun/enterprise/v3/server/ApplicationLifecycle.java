@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
@@ -1520,7 +1521,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                             }
                         }
                         
-                        // TO DO remove from deployment groups
                         DeploymentGroup dg = dmn.getDeploymentGroupNamed(target);
                         if (dg != null) {
                             // remove the application-ref from cluster
@@ -1533,6 +1533,21 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                         break;
                                 }
                             }
+                            // remove the application-ref from deployment group instances
+                            // only if the server is not also a target (i.e. domain undeploy)
+                            for (Server svr : dg.getInstances() ) {
+                                if (!targets.contains(svr.getName())) {
+                                    ConfigBeanProxy svr_w = t.enroll(svr);
+                                    for (ApplicationRef appRef : 
+                                        svr.getApplicationRef()) {
+                                        if (appRef.getRef().equals(appName)) {
+                                            ((Server)svr_w).getApplicationRef(
+                                               ).remove(appRef);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }                            
                         }
                     }
 
@@ -2113,7 +2128,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 referencedTargets.contains(target)) {
                 return;
             } else {
-                if (!DeploymentUtils.isDomainTarget(target)) {
+                if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
                     throw new IllegalArgumentException(localStrings.getLocalString("redeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting redeploy operation.", name)); 
                 }
             } 
@@ -2124,7 +2139,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
         if (referencedTargets.size() > 1) {
             Application app = applications.getApplication(name);
-            if (!DeploymentUtils.isDomainTarget(target)) {
+            if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
                 if (app.isLifecycleModule()) {  
                     throw new IllegalArgumentException(localStrings.getLocalString("delete_lifecycle_on_multiple_targets", "Lifecycle module {0} is referenced by more than one targets. Please remove other references before attempting delete operation.", name)); 
                 } else {
