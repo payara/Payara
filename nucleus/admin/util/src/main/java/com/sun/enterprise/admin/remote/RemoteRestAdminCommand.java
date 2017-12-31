@@ -457,8 +457,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             JsonObject obj = parser.getObject();
             obj = obj.getJsonObject("command");
             CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), etag);
-            cm.dashOk = obj.getBoolean("@unknown-options-are-operands", false);
-            cm.managedJob = obj.getBoolean("@managed-job", false);
+            cm.dashOk = parseBoolean(obj,"@unknown-options-are-operands", false);
+            cm.managedJob = parseBoolean(obj,"@managed-job", false);
             cm.setUsage(obj.getString("usage", null));
             JsonValue optns = obj.get("option");
             if (!JsonValue.NULL.equals(optns) && optns != null) {
@@ -477,10 +477,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     ParamModelData opt = new ParamModelData(
                             jsOpt.getString("@name"),
                             typeOf(type),
-                            jsOpt.getBoolean("@optional", false),
+                            parseBoolean(jsOpt, "@optional", false),
                             jsOpt.getString("@default", null),
                             jsOpt.getString("@short", null),
-                            jsOpt.getBoolean("@obsolete", false),
+                            parseBoolean(jsOpt, "@obsolete", false),
                             jsOpt.getString("@alias", null));
                     opt.param._acceptableValues = jsOpt.getString("@acceptable-values", "");
                     if ("PASSWORD".equals(type)) {
@@ -490,10 +490,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     } else if ("FILE".equals(type)) {
                         sawFile = true;
                     }
-                    if (jsOpt.getBoolean("@primary", false)) {
+                    if (parseBoolean(jsOpt, "@primary", false)) {
                         opt.param._primary = true;
                     }
-                    if (jsOpt.getBoolean("@multiple", false)) {
+                    if (parseBoolean(jsOpt, "@multiple", false)) {
                         if (opt.type == File.class) {
                             opt.type = File[].class;
                         } else {
@@ -1686,6 +1686,25 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             }
         }
         return val;
+    }
+    
+    private boolean parseBoolean(JsonObject obj, String key, boolean defaultValue) {
+        boolean result = defaultValue;
+        JsonValue get = obj.get(key);
+        if (get != null && null != get.getValueType()) switch (get.getValueType()) {
+            case STRING:
+                result = Boolean.valueOf(obj.getString(key, Boolean.toString(defaultValue)));
+                break;
+            case TRUE:
+                result = true;
+                break; 
+            case FALSE:
+                result = false;
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 
     private static boolean ok(String s) {
