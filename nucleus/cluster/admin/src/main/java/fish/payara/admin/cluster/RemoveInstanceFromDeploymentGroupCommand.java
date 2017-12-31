@@ -67,7 +67,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "remove-instance-from-deployment-group")
 @I18n("remove.instance.from.deployment.group")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.ALL})
 @RestEndpoints({
     @RestEndpoint(configBean = DeploymentGroups.class,
             opType = RestEndpoint.OpType.POST,
@@ -81,7 +81,7 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
 
     @Param(name = "deploymentGroup")
     String deploymentGroup;
-
+   
     @Inject
     private Domain domain;
 

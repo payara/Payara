@@ -485,7 +485,7 @@ public class DeploymentUtils {
                 if (dg != null) {
                     // get the first server in the group
                     List<Server> servers = dg.getInstances();
-                    if (servers!= null && servers.size() > 1) {
+                    if (servers!= null && servers.size() >= 1) {
                         config = servers.get(0).getConfig();
                     }
                 }

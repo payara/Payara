@@ -54,6 +54,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -67,7 +68,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "add-instance-to-deployment-group")
 @I18n("add.instance.to.deployment.group")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.ALL})
 @RestEndpoints({
     @RestEndpoint(configBean = DeploymentGroups.class,
             opType = RestEndpoint.OpType.POST,
@@ -81,23 +82,26 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
 
     @Param(name = "deploymentGroup")
     String deploymentGroup;
-
+        
     @Inject
     private Domain domain;
+    
+    @Inject
+    ServerEnvironment env;
 
     @Override
     public void execute(AdminCommandContext context) {
 
         Server server = domain.getServerNamed(instanceName);
         ActionReport report = context.getActionReport();
-        if (server == null) {
+        if (server == null && env.isDas()) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Instance " + instanceName + " does not exist");
             return;
         }
 
         DeploymentGroup dg = domain.getDeploymentGroupNamed(deploymentGroup);
-        if (dg == null) {
+        if (dg == null && env.isDas()) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Deployment Group " + deploymentGroup + " does not exist");
             return;

@@ -41,6 +41,8 @@ package fish.payara.enterprise.config.serverbeans;
 
 import java.util.List;
 import org.glassfish.api.I18n;
+import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.Delete;
 import org.glassfish.config.support.TypeAndNameResolver;
@@ -62,8 +64,8 @@ public interface DeploymentGroups extends ConfigBeanProxy {
      * @return 
      */
     @Element
-    @Create(value="create-deployment-group", i18n=@I18n("create.deploymentgroup.command"))
-    @Delete(value="delete-deployment-group", resolver= TypeAndNameResolver.class, i18n=@I18n("delete.deploymentgroup.command"))
+    @Create(value="create-deployment-group", cluster = @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.ALL}), i18n=@I18n("create.deploymentgroup.command") )
+    @Delete(value="delete-deployment-group", resolver= TypeAndNameResolver.class, i18n=@I18n("delete.deploymentgroup.command"), cluster = @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.ALL}))
     public List<DeploymentGroup> getDeploymentGroup();
     
     /**
