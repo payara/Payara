@@ -143,6 +143,12 @@ public class Target {
             return getServerConfig(targetName);
         if(CommandTarget.CLUSTER.isValid(habitat, targetName))
                 return getClusterConfig(targetName);
+        if (isDeploymentGroup(targetName)) {
+            List<Server> servers = getInstances(targetName);
+            if (servers.size() >= 1) {
+                return servers.get(0).getConfig();
+            }
+        }
         return null;
     }
 

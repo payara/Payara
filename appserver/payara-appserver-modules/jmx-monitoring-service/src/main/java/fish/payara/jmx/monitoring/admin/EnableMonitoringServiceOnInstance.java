@@ -14,8 +14,6 @@
 package fish.payara.jmx.monitoring.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.universal.i18n.LocalStrings;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.jmx.monitoring.MonitoringService;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -43,7 +41,7 @@ import org.jvnet.hk2.annotations.Service;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("__enable-monitoring-service-on-instance")
 @ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,

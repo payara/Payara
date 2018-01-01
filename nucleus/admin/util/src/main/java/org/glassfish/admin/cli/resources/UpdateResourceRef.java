@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.cli.resources;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -47,6 +49,7 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +77,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("update.resource.ref")
 @PerLookup
 @ExecuteOn(value = RuntimeType.DAS)
-@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Resources.class, opType = RestEndpoint.OpType.POST, path = "update-resource-ref", description = "Update a Resource Reference on a given target")
 })
@@ -148,6 +151,24 @@ public class UpdateResourceRef implements AdminCommand {
             for (Server instance : cluster.getInstances()) {
                 ResourceRef instanceResourceRef = instance.getResourceRef(name);
                 // if the server in the cluster contains the ResourceRef
+                if (instanceResourceRef != null) {
+                    resourceRefsToChange.add(instanceResourceRef);
+                }
+            }
+        }
+        
+        //Add the ResourceRefs from a named Deployment Group if the target is a Deployment Group
+        DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+        if (dg != null) {
+            ResourceRef ref = dg.getResourceRef(name);
+            if (ref == null) {
+                report.failure(logger, LOCAL_STRINGS.getLocalString("resource.ref.not.exists", "Target {1} does not have a reference to resource {0}.", name, target));
+                return;
+            }
+            resourceRefsToChange.add(ref);
+            for (Server instance : dg.getInstances()) {
+                ResourceRef instanceResourceRef = instance.getResourceRef(name);
+                // if the server in the dg contains the ResourceRef
                 if (instanceResourceRef != null) {
                     resourceRefsToChange.add(instanceResourceRef);
                 }
