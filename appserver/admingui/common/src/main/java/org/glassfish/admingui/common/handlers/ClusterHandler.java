@@ -37,15 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
-/*
- * ClusterHandler.java
- *
- * Created on July 1,2010  9:32 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 /**
  *
  * @author anilam
@@ -467,6 +460,16 @@ public class ClusterHandler {
                     GuiUtil.getCommonMessage("LOG_DELETE_INSTANCE", new Object[]{endpoint, "null"}));
             return ex.getMessage();
         }
+    }
+    
+    
+    @Handler(id = "gf.listDeploymentGroups",
+            output = {
+                    @HandlerOutput(name = "deploymentgroups", type = List.class)
+            })
+    public static void listDeploymentGroups(HandlerContext handlerCtx) {
+        List deploymentGroups = TargetUtil.getDeploymentGroups();
+        handlerCtx.setOutputValue("deploymentgroups", deploymentGroups);
     }
 
     @Handler(id = "gf.listClusters",

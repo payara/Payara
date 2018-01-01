@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * DeploymentHandler.java
@@ -68,12 +69,16 @@ public class DeployUtil {
         try{
             String decodedName = URLDecoder.decode(appName, "UTF-8");
             List clusters =  TargetUtil.getClusters();
+            List dgs =  TargetUtil.getDeploymentGroups();
             String clusterEndpoint = GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/";
             String serverEndpoint = GuiUtil.getSessionValue("REST_URL")+"/servers/server/";
             for(String targetName : targets){
                 String endpoint ;
                 if (clusters.contains(targetName)){
                     endpoint = clusterEndpoint + targetName + "/application-ref/" + decodedName ;
+                }else if (dgs.contains(targetName)) {
+                    // do nothing as it will also be picked up for the server
+                    continue;
                 }else{
                     endpoint = serverEndpoint + targetName + "/application-ref/"  + decodedName ;
                 }
@@ -114,6 +119,14 @@ public class DeployUtil {
                 if (appRefs.contains(appName)){
                     targets.add(oneServer);
                 }
+            }
+            
+            List<String> dgs = TargetUtil.getDeploymentGroups();
+            for (String dg : dgs) {
+                List appRefs = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/" + dg + "/" + ref).keySet());
+                if (appRefs.contains(appName)){
+                    targets.add(dg);
+                }                
             }
 
         }catch(Exception ex){
@@ -165,6 +178,7 @@ public class DeployUtil {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
         List clusters = TargetUtil.getClusters();
         List standalone = TargetUtil.getStandaloneInstances();
+        List dgs = TargetUtil.getDeploymentGroups();
         String enabled = "true";
         int numEnabled = 0;
         int numDisabled = 0;
@@ -197,8 +211,10 @@ public class DeployUtil {
         for (String oneTarget : targetList) {
             if (clusters.contains(oneTarget)) {
                 enabled = (String) RestUtil.getAttributesMap(prefix + "/clusters/cluster/" + oneTarget + "/" + ref + "/" + appName).get("enabled");
-            } else {
+            } else if (standalone.contains(oneTarget)) {
                 enabled = (String) RestUtil.getAttributesMap(prefix + "/servers/server/" + oneTarget + "/" + ref + "/" + appName).get("enabled");
+            } else {
+                enabled = (String) RestUtil.getAttributesMap(prefix + "/deployment-groups/deployment-group/" + oneTarget + "/" + ref + "/" + appName).get("enabled");                
             }
             if (Boolean.parseBoolean(enabled)) {
                 numEnabled++;

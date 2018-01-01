@@ -37,16 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
-
-/*
- * ApplicationHandlers.java
- *
- * Created on August 1, 2010, 2:32 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 /**
  *
  * @author anilam
@@ -69,7 +60,6 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -417,10 +407,13 @@ public class ApplicationHandlers {
     private static String getVirtualServers(String target, String appName) {
         List clusters = TargetUtil.getClusters();
         List standalone = TargetUtil.getStandaloneInstances();
+        List dgs = TargetUtil.getDeploymentGroups();
         standalone.add("server");
         String ep = (String)GuiUtil.getSessionValue("REST_URL");
         if (clusters.contains(target)){
             ep = ep + "/clusters/cluster/" + target + "/application-ref/" + appName;
+        }else if (dgs.contains(target)) {
+            ep = ep + "/deployment-groups/deployment-group/" + target + "/application-ref/" + appName;
         }else{
             ep = ep + "/servers/server/" + target + "/application-ref/" + appName;
         }
@@ -501,7 +494,8 @@ public class ApplicationHandlers {
 
         List clusters = TargetUtil.getClusters();
         List standalone = TargetUtil.getStandaloneInstances();
-        standalone.add("server");
+        List dgs = TargetUtil.getDeploymentGroups();
+         standalone.add("server");
 
         Map attrs = new HashMap();
         attrs.put("id", appName);
@@ -512,12 +506,12 @@ public class ApplicationHandlers {
                 associatedTargets.remove(newTarget);
                 continue;
             }else{
-                AppUtil.manageAppTarget(appName, newTarget, true, status, clusters, standalone, handlerCtx);
+                AppUtil.manageAppTarget(appName, newTarget, true, status, clusters, standalone, dgs, handlerCtx);
             }
          }
 
          for(String oTarget :  associatedTargets){
-            AppUtil.manageAppTarget(appName, oTarget, false, null, clusters, standalone, handlerCtx);
+            AppUtil.manageAppTarget(appName, oTarget, false, null, clusters, standalone, dgs, handlerCtx);
         }
     }
 
@@ -579,6 +573,7 @@ public class ApplicationHandlers {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
         List clusters = TargetUtil.getClusters();
         List standalone = TargetUtil.getStandaloneInstances();
+        List dgs = TargetUtil.getDeploymentGroups();
         standalone.add("server");
         List<String> targetList = DeployUtil.getApplicationTarget(appName, "application-ref");
         List result = new ArrayList();
@@ -589,9 +584,12 @@ public class ApplicationHandlers {
             if (clusters.contains(oneTarget)){
                 endpoint = prefix + "/clusters/cluster/" + oneTarget + "/application-ref/" + appName;
                 attrs = RestUtil.getAttributesMap(endpoint);
-            }else{
+            }else if (standalone.contains(oneTarget)){
                 endpoint = prefix+"/servers/server/" + oneTarget + "/application-ref/" + appName;
                 attrs = RestUtil.getAttributesMap(endpoint);
+            } else {
+                endpoint = prefix+"/deployment-groups/deployment-group/" + oneTarget + "/application-ref/" + appName;
+                attrs = RestUtil.getAttributesMap(endpoint);                
             }
             oneRow.put("name", appName);
             oneRow.put("selected", false);
@@ -678,7 +676,13 @@ public class ApplicationHandlers {
         String ctxRoot = calContextRoot(contextRoot);
         Set<String> URLs = new TreeSet();
         List<String> targetList = DeployUtil.getApplicationTarget(appID, "application-ref");
+        List<String> dgs = TargetUtil.getDeploymentGroups();
         for(String target : targetList) {
+            if (dgs.contains(target)) {
+                // do nothing as the servers will be listed
+                continue;
+            }
+            
             String ep = TargetUtil.getTargetEndpoint(target) + "/application-ref/" + appID;
             boolean enabled = Boolean.parseBoolean((String)RestUtil.getAttributesMap(ep).get("enabled"));
             if (!enabled)
