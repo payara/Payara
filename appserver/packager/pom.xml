@@ -180,6 +180,7 @@
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>
+        <module>roles-package</module>
     </modules>
 
     <profiles>

@@ -40,26 +40,21 @@
  */
 package fish.payara.appserver.roles.api;
 
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.web.WebModule;
-import org.glassfish.webservices.SecurityService;
 import fish.payara.roles.api.Roles;
 import java.io.Serializable;
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
-import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.ejb.api.EJBInvocation;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.webservices.WebServiceContextImpl;
-import org.glassfish.webservices.WebServiceContractImpl;
+import org.glassfish.security.common.Role;
 
 /**
  *
@@ -76,38 +71,22 @@ public class RolesCDIInterceptor implements Serializable {
     @AroundInvoke
     public Object method(InvocationContext ctx) {
         InvocationManager ivm = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        SecurityManager sm = System.getSecurityManager();
-        SecurityService secServ = Globals.get(SecurityService.class);
-        ComponentInvocation ejbi = WebServiceContractImpl.getInstance().getInvocationManager().getCurrentInvocation();
-        ejbi.getInstanceName();
-        Principal p = secServ.getUserPrincipal(true);
-        // either try and find the application name for this section
-        // this appears to be the proper way of doing things
-        secServ.isUserInRole((WebModule) ivm.getCurrentInvocation().getContainer(), p, ivm.getCurrentInvocation().getAppName(), "user");
         WebModule wm = (WebModule) ivm.getCurrentInvocation().getContainerContext();
+        WebBundleDescriptor wbd = wm.getWebBundleDescriptor();
+        wbd.getRoles();
         Object result = null;
-//        WebServiceContextImpl wsci = wsci.isUserInRole("user");
-        System.out.println("within interceptor");
-
-        // or have a look at this method for ways to get the webservicecontextimpl which will do it for me
-        // along with web / ejb checks
-        WebServiceContextImpl wcsi = new WebServiceContextImpl();
-//        WebServiceContextImpl wcsi = InitialContext.doLookup(wm.);
         if (ctx.getMethod().getAnnotation(Roles.class) != null) {
             List<String> permittedRoles = Arrays.asList(ctx.getMethod().getAnnotation(Roles.class).allowed());
             for (String s : permittedRoles) {
-                if (/*secz.isUserInRole(s)*/true) {
+                if (wbd.getRoles().contains(new Role(s))) {
                     try {
-                        System.out.println("pass");
                         result = ctx.proceed();
                     } catch (Exception ex) {
-                        System.out.println("Exception within invoc");
                         Logger.getLogger(RolesCDIInterceptor.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
         }
-        System.out.println("fail");
         return result;
     }
 }
