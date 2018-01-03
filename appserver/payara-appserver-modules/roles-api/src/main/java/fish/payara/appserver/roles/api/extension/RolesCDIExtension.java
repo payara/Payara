@@ -55,7 +55,6 @@ import javax.enterprise.inject.spi.Extension;
 public class RolesCDIExtension implements Extension {
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-        System.out.println("within extension");
         bbd.addInterceptorBinding(Roles.class);
         AnnotatedType<RolesCDIInterceptor> cpat = bm.createAnnotatedType(RolesCDIInterceptor.class);
         bbd.addAnnotatedType(cpat, RolesCDIInterceptor.class.getName());

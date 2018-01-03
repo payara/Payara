@@ -45,6 +45,7 @@ import com.sun.enterprise.web.WebModule;
 import fish.payara.roles.api.Roles;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,10 +87,19 @@ public class RolesCDIInterceptor implements Serializable {
         WebBundleDescriptor wbd = wm.getWebBundleDescriptor();
         if (roles != null) {
             List<String> permittedRoles = Arrays.asList(roles.allowed());
-            for (String role : permittedRoles) {
-                if (wbd.getRoles().contains(new Role(role))) {
-                    return true;
+            if (roles.semantics().toUpperCase().equals("OR")) {
+                for (String role : permittedRoles) {
+                    if (wbd.getRoles().contains(new Role(role))) {
+                        return true;
+                    }
                 }
+            } else if (roles.semantics().toUpperCase().equals("AND")) {
+                for (String role : permittedRoles) {
+                    if (!wbd.getRoles().contains(new Role(role))) {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
         return false;

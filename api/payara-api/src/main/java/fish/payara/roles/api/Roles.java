@@ -65,4 +65,12 @@ public @interface Roles {
      */
     @Nonbinding
     String[] allowed() default "";
+    
+    /**
+     * Whether accessing users must be in all given roles (AND) or one of the given roles (OR)
+     * @return 
+     * @default OR
+     */
+    @Nonbinding
+    String semantics() default "OR";
 }
