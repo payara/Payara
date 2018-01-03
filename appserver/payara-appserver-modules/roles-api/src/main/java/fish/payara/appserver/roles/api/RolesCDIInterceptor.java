@@ -64,29 +64,34 @@ import org.glassfish.security.common.Role;
 @Roles
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class RolesCDIInterceptor implements Serializable {
-    
-//    @Inject
-//    WebServiceContextImpl wsci;
 
     @AroundInvoke
     public Object method(InvocationContext ctx) {
-        InvocationManager ivm = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        WebModule wm = (WebModule) ivm.getCurrentInvocation().getContainerContext();
-        WebBundleDescriptor wbd = wm.getWebBundleDescriptor();
-        wbd.getRoles();
         Object result = null;
-        if (ctx.getMethod().getAnnotation(Roles.class) != null) {
-            List<String> permittedRoles = Arrays.asList(ctx.getMethod().getAnnotation(Roles.class).allowed());
-            for (String s : permittedRoles) {
-                if (wbd.getRoles().contains(new Role(s))) {
-                    try {
-                        result = ctx.proceed();
-                    } catch (Exception ex) {
-                        Logger.getLogger(RolesCDIInterceptor.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+        if (checkRoles(ctx.getMethod().getAnnotation(Roles.class))
+                || (ctx.getMethod().getAnnotation(Roles.class) == null
+                && checkRoles(ctx.getClass().getAnnotation(Roles.class)))) {
+            try {
+                result = ctx.proceed();
+            } catch (Exception ex) {
+                Logger.getLogger(RolesCDIInterceptor.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return result;
+    }
+
+    public boolean checkRoles(Roles roles) {
+        InvocationManager ivm = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        WebModule wm = (WebModule) ivm.getCurrentInvocation().getContainerContext();
+        WebBundleDescriptor wbd = wm.getWebBundleDescriptor();
+        if (roles != null) {
+            List<String> permittedRoles = Arrays.asList(roles.allowed());
+            for (String role : permittedRoles) {
+                if (wbd.getRoles().contains(new Role(role))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
