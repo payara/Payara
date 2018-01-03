@@ -54,7 +54,7 @@ import javax.interceptor.InterceptorBinding;
  * @author Michael Ranaldo <michael@ranaldo.co.uk>
  */
 @InterceptorBinding
-@Target( { TYPE, METHOD } )
+@Target({ TYPE, METHOD })
 @Retention(RUNTIME)
 public @interface Roles {
     

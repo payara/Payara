@@ -40,21 +40,18 @@
  */
 package fish.payara.appserver.roles.api;
 
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.web.WebModule;
 import fish.payara.roles.api.Roles;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
+import javax.enterprise.inject.spi.CDI;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
+import javax.security.enterprise.SecurityContext;
 import org.glassfish.security.common.Role;
 
 /**
@@ -65,6 +62,14 @@ import org.glassfish.security.common.Role;
 @Roles
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class RolesCDIInterceptor implements Serializable {
+    
+    private final SecurityContext securityContext;
+
+    public RolesCDIInterceptor() {
+        this.securityContext = CDI.current().select(SecurityContext.class).get();
+    }
+    
+    
 
     @AroundInvoke
     public Object method(InvocationContext ctx) {
@@ -82,20 +87,17 @@ public class RolesCDIInterceptor implements Serializable {
     }
 
     public boolean checkRoles(Roles roles) {
-        InvocationManager ivm = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        WebModule wm = (WebModule) ivm.getCurrentInvocation().getContainerContext();
-        WebBundleDescriptor wbd = wm.getWebBundleDescriptor();
         if (roles != null) {
             List<String> permittedRoles = Arrays.asList(roles.allowed());
             if (roles.semantics().toUpperCase().equals("OR")) {
                 for (String role : permittedRoles) {
-                    if (wbd.getRoles().contains(new Role(role))) {
+                    if (securityContext.isCallerInRole(role)) {
                         return true;
                     }
                 }
             } else if (roles.semantics().toUpperCase().equals("AND")) {
                 for (String role : permittedRoles) {
-                    if (!wbd.getRoles().contains(new Role(role))) {
+                    if (!securityContext.isCallerInRole(role)) {
                         return false;
                     }
                 }
