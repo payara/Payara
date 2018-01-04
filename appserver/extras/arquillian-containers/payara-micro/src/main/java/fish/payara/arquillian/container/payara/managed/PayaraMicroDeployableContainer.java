@@ -136,6 +136,8 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
         if (archive == null) {
             throw new IllegalArgumentException("archive must not be null");
         }
+        
+        WatchKey watchKey = null;
 
         try {
             // The main directory from which we'll conduct our business
@@ -188,20 +190,19 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             ConsoleReader consoleReader = new ConsoleReader(payaraMicroProcess, consumer);
             new Thread(consoleReader).start();
 
-            WatchKey key = null;
             try {
-                key = watcher.poll(180, SECONDS);
+                watchKey = watcher.poll(180, SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;
             }
 
-            if (key == null) {
+            if (watchKey == null) {
                 // TODO: make timeout config
                 logger.info("Timeout: Payara Micro did not start after 180 seconds");
             }
 
-            for (WatchEvent<?> event : key.pollEvents()) {
+            for (WatchEvent<?> event : watchKey.pollEvents()) {
 
                 String context = event.context() != null ? event.context().toString().trim() : "";
 
@@ -256,6 +257,10 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (watchKey != null) {
+                watchKey.cancel();
+            }
         }
 
         return null;
