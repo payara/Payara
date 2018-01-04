@@ -263,7 +263,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             }
         }
 
-        return null;
+        throw new DeploymentException("No applications were deployed.");
     }
 
     @Override
