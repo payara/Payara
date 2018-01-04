@@ -196,7 +196,7 @@ public class PayaraClientService implements PayaraClient {
             if(ch.getCause() != null && ch.getCause().getMessage() != null) {
                 message = " | " + ch.getCause().getMessage();
             }
-            throw new PayaraClientException("Could not connect to DAS on: " + getDASUrl() + message;
+            throw new PayaraClientException("Could not connect to DAS on: " + getDASUrl() + message);
         }
 
         if (ADMINSERVER.equals(getTarget())) {
