@@ -116,7 +116,7 @@ public class MetricCDIExtension implements Extension {
         pat.setAnnotatedType(new AnnotatedTypeDecorator<>(pat.getAnnotatedType(), METRICS_BINDING));
     }
 
-    private <T extends Metric> void decorateMetricProducer(@Observes ProcessProducer<?, T> pp, BeanManager manager) {
+    private <T extends Metric> void filterMetricsProducer(@Observes ProcessProducer<?, T> pp, BeanManager manager) {
         Type type = pp.getAnnotatedMember().getDeclaringType().getBaseType();
         if (!type.equals(MetricProducer.class)) {
             org.eclipse.microprofile.metrics.annotation.Metric m
@@ -128,7 +128,7 @@ public class MetricCDIExtension implements Extension {
         }
     }
 
-    public void filterSpecialClassBean(@Observes ProcessBeanAttributes<?> pba, BeanManager manager) {
+    public void vetoMetricsProducer(@Observes ProcessBeanAttributes<?> pba, BeanManager manager) {
         Type declaringType;
         if(pba.getAnnotated() instanceof AnnotatedMember){
             AnnotatedMember annotatedMember = (AnnotatedMember)pba.getAnnotated();
