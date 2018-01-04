@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <base>
+	<metadata>
+		<name>thread.count</name>
+		<mbean>java.lang:type=Threading/ThreadCount</mbean>
+		<description>Number of currently deployed threads</description>
+		<unit>none</unit>
+		<type>counter</type>
+		<displayName>Current Thread count</displayName>
+	</metadata>
+	<metadata>
+		<name>memory.maxHeap</name>
+		<mbean>java.lang:type=Memory/HeapMemoryUsage#max</mbean>
+		<description>Number of threads started for this server</description>
+		<unit>bytes</unit>
+		<type>gauge</type>
+	</metadata>
+	<metadata>
+		<name>memory.usedHeap</name>
+		<mbean>java.lang:type=Memory/HeapMemoryUsage#used</mbean>
+		<type>gauge</type>
+		<unit>bytes</unit>
+	</metadata>
+	<metadata>
+		<name>memory.committedHeap</name>
+		<mbean>java.lang:type=Memory/HeapMemoryUsage#committed</mbean>
+		<type>gauge</type>
+		<unit>bytes</unit>
+	</metadata>
+	<metadata>
+		<name>thread.daemon.count</name>
+		<displayName>Daemon Thread Count</displayName>
+		<type>counter</type>
+		<unit>none</unit>
+		<description>Displays the current number of live daemon threads.</description>
+		<mbean>java.lang:type=Threading/DaemonThreadCount</mbean>
+	</metadata>
+	<metadata>
+		<name>thread.max.count</name>
+		<displayName>Peak Thread Count</displayName>
+		<type>counter</type>
+		<unit>none</unit>
+		<description>Displays the peak live thread count since the Java virtual machine started or peak was reset. This includes daemon and non-daemon threads.</description>
+		<mbean>java.lang:type=Threading/PeakThreadCount</mbean>
+	</metadata>
+	<metadata>
+		<name>classloader.currentLoadedClass.count</name>
+		<displayName>Current Loaded Class Count</displayName>
+		<type>counter</type>
+		<unit>none</unit>
+		<description>Displays the number of classes that are currently loaded in the Java virtual machine.</description>
+		<mbean>java.lang:type=ClassLoading/LoadedClassCount</mbean>
+	</metadata>
+	<metadata>
+		<name>classloader.totalLoadedClass.count</name>
+		<displayName>Total Loaded Class Count</displayName>
+		<type>counter</type>
+		<unit>none</unit>
+		<description>Displays the total number of classes that have been loaded since the Java virtual machine has started execution.</description>
+		<mbean>java.lang:type=ClassLoading/TotalLoadedClassCount</mbean>
+	</metadata>
+	<metadata>
+		<name>classloader.totalUnloadedClass.count</name>
+		<displayName>Total Unloaded Class Count</displayName>
+		<type>counter</type>
+		<unit>none</unit>
+		<description>Displays the total number of classes unloaded since the Java virtual machine has started execution.</description>
+		<mbean>java.lang:type=ClassLoading/UnloadedClassCount</mbean>
+	</metadata>
+	<metadata>
+		<name>cpu.availableProcessors</name>
+		<displayName>Available Processors</displayName>
+		<type>gauge</type>
+		<unit>none</unit>
+		<description>Displays the number of processors available to the Java virtual machine. This value may change during a particular invocation of the virtual machine.</description>
+		<mbean>java.lang:type=OperatingSystem/AvailableProcessors</mbean>
+	</metadata>
+	<metadata>
+		<name>cpu.systemLoadAverage</name>
+		<displayName>System Load Average</displayName>
+		<type>gauge</type>
+		<unit>none</unit>
+		<description>Displays the system load average for the last minute. The system load average is the sum of the number of runnable entities queued to the available processors and the number of runnable entities running on the available processors averaged over a period of time. The way in which the load average is calculated is operating system specific but is typically a damped time-dependent average. If the load average is not available, a negative value is displayed. This attribute is designed to provide a hint about the system load and may be queried frequently. The load average may be unavailable on some platform where it is expensive to implement this method.</description>
+		<mbean>java.lang:type=OperatingSystem/SystemLoadAverage</mbean>
+	</metadata>
+	<metadata>
+		<name>jvm.uptime</name>
+		<displayName>JVM Uptime</displayName>
+		<type>gauge</type>
+		<unit>milliseconds</unit>
+		<description>Displays the start time of the Java virtual machine in milliseconds. This attribute displays the approximate time when the Java virtual machine started.</description>
+		<mbean>java.lang:type=Runtime/Uptime</mbean>
+	</metadata>
+	<metadata>
+		<name>gc.%s.count</name>
+		<displayName>Garbage Collection Count</displayName>
+		<type>counter</type>
+		<unit>none</unit>
+		<multi>true</multi>
+		<description>Displays the total number of collections that have occurred. This attribute lists -1 if the collection count is undefined for this collector.</description>
+		<mbean>java.lang:type=GarbageCollector,name=%s/CollectionCount</mbean>
+	</metadata>
+	<metadata>
+		<name>gc.%s.time</name>
+		<displayName>Garbage Collection Time</displayName>
+		<type>counter</type>
+		<unit>milliseconds</unit>
+		<multi>true</multi>
+		<description>Displays the approximate accumulated collection elapsed time in milliseconds. This attribute displays -1 if the collection elapsed time is undefined for this collector. The Java virtual machine implementation may use a high resolution timer to measure the elapsed time. This attribute may display the same value even if the collection count has been incremented if the collection elapsed time is very short.</description>
+		<mbean>java.lang:type=GarbageCollector,name=%s/CollectionTime</mbean>
+	</metadata>
+    </base>
+    <vendor>
+        
+    </vendor>
+</config>
