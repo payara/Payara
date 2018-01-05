@@ -101,6 +101,9 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
     private static final Pattern servletMappingsPattern = Pattern.compile(
             "\\< (?<servletName>.*?) (?<servletMapping>.*?) \\>");
 
+    private static final Pattern startupErrorPattern = Pattern
+    .compile("[SEVERE]");
+
     private PayaraMicroContainerConfiguration configuration;
     private Process payaraMicroProcess;
     private Thread shutdownHook;
@@ -179,14 +182,26 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             ConsoleReader consoleReader = new ConsoleReader(payaraMicroProcess, consumer);
             executor.execute(consoleReader);
 
-            // Check at intervals if Payara Micro has finished starting up
+            // Check at intervals if Payara Micro has finished starting up or failed to start.
             CountDownLatch payaraMicroStarted = new CountDownLatch(1);
             executor.scheduleAtFixedRate(() -> {
                 addLogOutput(consumer.getBuffer().toString());
+                // Check for errors.
+                Matcher errorMatcher = startupErrorPattern.matcher(log);
+                if (errorMatcher.find()) {
+                    executor.shutdown();
+                    try {
+						stop();
+					} catch (LifecycleException e) {
+						e.printStackTrace();
+					}
+                }
+
+                // Check for app deployed
                 Matcher appMatcher = appPattern.matcher(log);
                 if (appMatcher.find()) {
-                    payaraMicroStarted.countDown();
                     executor.shutdown();
+                    payaraMicroStarted.countDown();
                 }
             }, 2000, 500, TimeUnit.MILLISECONDS);
 
