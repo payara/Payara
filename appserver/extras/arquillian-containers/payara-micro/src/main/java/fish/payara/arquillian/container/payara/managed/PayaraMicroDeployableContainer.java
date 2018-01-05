@@ -171,14 +171,16 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             registerShutdownHook();
             payaraMicroProcess = new ProcessBuilder(cmd).redirectErrorStream(true).start();
 
+            // Create an executor for handling the log reading and writing
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+
             // Create a consumer for reading Payara Micro output
             BufferingConsumer consumer = new BufferingConsumer(createProcessOutputConsumer());
             ConsoleReader consoleReader = new ConsoleReader(payaraMicroProcess, consumer);
-            new Thread(consoleReader).start();
+            executor.execute(consoleReader);
 
             // Check at intervals if Payara Micro has finished starting up
             CountDownLatch payaraMicroStarted = new CountDownLatch(1);
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
             executor.scheduleAtFixedRate(() -> {
                 addLogOutput(consumer.getBuffer().toString());
                 Matcher appMatcher = appPattern.matcher(log);
