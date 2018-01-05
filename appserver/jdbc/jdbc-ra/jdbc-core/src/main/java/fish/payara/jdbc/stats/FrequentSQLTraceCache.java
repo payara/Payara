@@ -39,8 +39,10 @@
  */
 // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
-package com.sun.gjc.util;
+package fish.payara.jdbc.stats;
 
+import com.sun.gjc.util.SQLTrace;
+import com.sun.gjc.util.SQLTraceCache;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
