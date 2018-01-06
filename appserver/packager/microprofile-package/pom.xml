@@ -151,7 +151,17 @@
             <artifactId>microprofile-fault-tolerance-api</artifactId>
             <version>${microprofile-fault-tolerance.version}</version>
         </dependency>
-        
+        <!-- Metrics -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.metrics</groupId>
+            <artifactId>microprofile-metrics-api</artifactId>
+            <version>${microprofile-metrics.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.metrics</groupId>
+            <artifactId>microprofile-metrics</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- JWT -->
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>

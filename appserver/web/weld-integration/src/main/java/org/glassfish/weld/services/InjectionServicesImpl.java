@@ -121,7 +121,8 @@ public class InjectionServicesImpl implements InjectionServices {
             String targetClassName = targetClass.getName();
             Object target = injectionContext.getTarget();
 
-            if ( isInterceptor( targetClass ) && ( ! componentEnv.equals(injectionEnv) ) ) {
+            if ( isInterceptor( targetClass )
+                    && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
               // Resources injected into interceptors must come from the environment in which the interceptor is
               // intercepting, not the environment in which the interceptor resides (for everything else!)
               // Must use the injectionEnv to get the injection info to determine where in jndi to look for the objects to inject.
