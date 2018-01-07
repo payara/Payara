@@ -63,6 +63,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 /**
  * Adds an instance to a deployment group
  *
+ * @since 5.0
  * @author Steve Millidge (Payara Foundation)
  */
 @Service(name = "add-instance-to-deployment-group")
