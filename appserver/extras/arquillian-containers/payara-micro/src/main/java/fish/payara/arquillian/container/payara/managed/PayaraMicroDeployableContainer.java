@@ -67,9 +67,8 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
-
-import fish.payara.arquillian.container.payara.process.BufferingConsumer;
-import fish.payara.arquillian.container.payara.process.ConsoleReader;
+import fish.payara.arquillian.container.payara.file.LogReader;
+import fish.payara.arquillian.container.payara.file.StringConsumer;
 import fish.payara.arquillian.container.payara.process.OutputLoggingConsumer;
 import fish.payara.arquillian.container.payara.process.ProcessOutputConsumer;
 import fish.payara.arquillian.container.payara.process.SilentOutputConsumer;
@@ -160,43 +159,37 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Create the deployment file itself
             archive.as(ZipExporter.class).exportTo(deploymentFile);
 
+            // Create the log file
+            File logFile = targetLogDir.resolve("log.txt").toFile();
+            logFile.createNewFile();
+
             // Create the list of commands to start Payara Micro
             List<String> cmd = asList(
                     "java",
                     "-jar", configuration.getMicroJarFile().getAbsolutePath(),
                     "--nocluster",
-                    "--logtofile", targetLogDir.toAbsolutePath().resolve("log.txt").toString(),
-                    "--deploy", deploymentFile.getAbsolutePath().toString());
-
+                    "--deploy", deploymentFile.getAbsolutePath());
             logger.info("Starting Payara Micro using cmd: " + cmd);
 
             // Allow Ctrl-C to stop the test, then start Payara Micro
             registerShutdownHook();
-            payaraMicroProcess = new ProcessBuilder(cmd).redirectErrorStream(true).start();
+            payaraMicroProcess = new ProcessBuilder(cmd)
+                .redirectErrorStream(true)
+                .redirectOutput(logFile)
+                .start();
 
             // Create an executor for handling the log reading and writing
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
             // Create a consumer for reading Payara Micro output
-            BufferingConsumer consumer = new BufferingConsumer(createProcessOutputConsumer());
-            ConsoleReader consoleReader = new ConsoleReader(payaraMicroProcess, consumer);
-            executor.execute(consoleReader);
+            StringConsumer consumer = new StringConsumer(createProcessOutputConsumer());
+            LogReader logReader = new LogReader(logFile, consumer);
+            executor.execute(logReader);
 
             // Check at intervals if Payara Micro has finished starting up or failed to start.
             CountDownLatch payaraMicroStarted = new CountDownLatch(1);
             executor.scheduleAtFixedRate(() -> {
-                addLogOutput(consumer.getBuffer().toString());
-                // Check for errors.
-                Matcher errorMatcher = startupErrorPattern.matcher(log);
-                if (errorMatcher.find()) {
-                    executor.shutdown();
-                    try {
-						stop();
-					} catch (LifecycleException e) {
-						e.printStackTrace();
-					}
-                }
-
+                log = consumer.getBuilder().toString();
                 // Check for app deployed
                 Matcher appMatcher = appPattern.matcher(log);
                 if (appMatcher.find()) {
@@ -261,10 +254,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
         }
 
         throw new DeploymentException("No applications were found deployed to Payara Micro.");
-    }
-
-    private void addLogOutput(String contents) {
-        log += contents;
     }
 
     @Override
