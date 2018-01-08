@@ -100,9 +100,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
     private static final Pattern servletMappingsPattern = Pattern.compile(
             "\\< (?<servletName>.*?) (?<servletMapping>.*?) \\>");
 
-    private static final Pattern startupErrorPattern = Pattern
-    .compile("[SEVERE]");
-
     private PayaraMicroContainerConfiguration configuration;
     private Process payaraMicroProcess;
     private Thread shutdownHook;
