@@ -225,7 +225,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                     executor.shutdown();
                     payaraMicroStarted.countDown();
                 }
-            }, 2000, 500, TimeUnit.MILLISECONDS);
+            }, 500, 500, TimeUnit.MILLISECONDS);
 
             // Wait for Payara Micro to start up, or time out after 10 seconds
             if (payaraMicroStarted.await(10, TimeUnit.SECONDS)) {
