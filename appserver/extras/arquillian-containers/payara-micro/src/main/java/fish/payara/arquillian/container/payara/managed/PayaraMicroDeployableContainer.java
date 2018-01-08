@@ -138,8 +138,8 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             throw new IllegalArgumentException("archive must not be null");
         }
 
-        // The main directory from which we'll conduct our business
         try {
+            // The main directory from which we'll conduct our business
             Path arquillianMicroDir = createTempDirectory("arquillian-payara-micro");
 
             // Create paths for the directories we'll be using
