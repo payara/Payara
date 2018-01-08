@@ -210,12 +210,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
             // Wait for the logs to be zipped.
             // TODO: implement post-post boot command or similar to properly check when Micro has finished booting up.
-            try {
-                watchKey = watcher.poll(startupTimeoutInSeconds, SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return null;
-            }
+            watchKey = watcher.poll(startupTimeoutInSeconds, SECONDS);
             if (watchKey == null) {
                 logger.severe("Timeout (" + startupTimeoutInSeconds + "s) reached waiting for Payara Micro to start.");
             }
@@ -282,9 +277,17 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
         } catch (IOException e) {
             // Occurs when there was an error starting the Payara Micro thread or the ConsoleReader thread.
             logger.severe("Failed in creating a thread for Payara Micro.\n" + e.getMessage());
+            Thread.currentThread().interrupt();
+            return null;
         } catch (InterruptedException e) {
             // Occurs when the timeout is reached in waiting for Payara Micro to start
             logger.severe("Timeout reached waiting for Payara Micro to start.\n" + e.getMessage());
+            Thread.currentThread().interrupt();
+            return null;
+        } finally {
+            if (watchKey != null) {
+                watchKey.cancel();
+            }
         }
 
         throw new DeploymentException("No applications were found deployed to Payara Micro.");
