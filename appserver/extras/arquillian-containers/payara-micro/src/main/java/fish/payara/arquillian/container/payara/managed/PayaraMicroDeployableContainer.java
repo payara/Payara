@@ -258,17 +258,17 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        // Nothing to do here, we start and deploy to Payara Micro in one step and thus don't need undeployments
-    }
-
-    @Override
-    public void stop() throws LifecycleException {
         removeShutdownHook();
         try {
             stopContainer();
         } catch (LifecycleException failedStoppingContainer) {
             logger.log(SEVERE, "Failed stopping container.", failedStoppingContainer);
         }
+    }
+
+    @Override
+    public void stop() throws LifecycleException {
+        // Nothing to do here, we start and stop Payara micro in the un/deploy phases so no need to stop the container here.
     }
 
     @Override
