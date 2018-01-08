@@ -90,8 +90,11 @@ public class FrequentSQLTraceCache extends SQLTraceCache {
                 if (cache.size() < maxStoredEntries){
                     cache.put(cacheObj.getQueryName(), cacheObj);
                 } else {
-                    _logger.log(Level.INFO, "Frequent SQL Trace Cache full, enable CONFIG log level for more info.");
-                    _logger.log(Level.CONFIG, "Frequent SQL Trace Cache full, {0} not stored.", cacheObj.getQueryName());
+                    if (_logger.isLoggable(Level.CONFIG)) {
+                        _logger.log(Level.CONFIG, "Frequent SQL Trace Cache full, {0} not stored.", cacheObj.getQueryName());
+                    } else {
+                        _logger.log(Level.INFO, "Frequent SQL Trace Cache full, enable CONFIG log level for more info.");
+                    }
                 }
             }
         }
