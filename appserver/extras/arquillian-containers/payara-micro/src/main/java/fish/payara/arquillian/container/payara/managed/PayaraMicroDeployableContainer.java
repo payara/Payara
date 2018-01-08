@@ -39,15 +39,20 @@
 package fish.payara.arquillian.container.payara.managed;
 
 import static java.lang.Runtime.getRuntime;
-import static java.nio.file.Files.createTempDirectory;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.Level.SEVERE;
 import static java.util.regex.Pattern.DOTALL;
 import static java.util.regex.Pattern.MULTILINE;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -67,6 +72,7 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+
 import fish.payara.arquillian.container.payara.file.LogReader;
 import fish.payara.arquillian.container.payara.file.StringConsumer;
 import fish.payara.arquillian.container.payara.process.OutputLoggingConsumer;
@@ -138,17 +144,30 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             throw new IllegalArgumentException("archive must not be null");
         }
 
+        WatchKey watchKey = null;
+
         try {
             // The main directory from which we'll conduct our business
-            Path arquillianMicroDir = createTempDirectory("arquillian-payara-micro");
+            Path arquillianMicroDir = Files.createTempDirectory("arquillian-payara-micro");
 
             // Create paths for the directories we'll be using
             Path targetLogDir = arquillianMicroDir.resolve("logs/");
             Path deploymentDir = arquillianMicroDir.resolve("deployments/");
+            Path targetZipDir = arquillianMicroDir.resolve("zipped-logs/");
 
             // Create the directories
             targetLogDir.toFile().mkdir();
             deploymentDir.toFile().mkdir();
+            targetZipDir.toFile().mkdir();
+
+            // Create the path for the commands.txt file, which holds the asadmin post boot commands
+            File commandFile = arquillianMicroDir.resolve("commands.txt").toFile();
+
+            // Create the commands.txt file - write a single command to zip up the log files
+            // and store this zip into the /zipped-logs/ directory.
+            Files.write(commandFile.toPath(), 
+                ("collect-log-files --retrieve true " + targetZipDir.toAbsolutePath().resolve("log.zip").toString()).getBytes()
+            );
 
             // Create the path for the deployment archive (e.g. the application war or ear)
             File deploymentFile = deploymentDir.resolve(archive.getName()).toFile();
@@ -165,8 +184,14 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                     "java",
                     "-jar", configuration.getMicroJarFile().getAbsolutePath(),
                     "--nocluster",
+                    "--logtofile", logFile.getAbsolutePath(),
+                    "--postdeploycommandfile", commandFile.getAbsolutePath(),
                     "--deploy", deploymentFile.getAbsolutePath());
             logger.info("Starting Payara Micro using cmd: " + cmd);
+
+            // Register a watch service to wait for the logs to be zipped.
+            WatchService watcher = FileSystems.getDefault().newWatchService();
+            targetZipDir.register(watcher, ENTRY_CREATE);
 
             // Allow Ctrl-C to stop the test, then start Payara Micro
             registerShutdownHook();
@@ -183,6 +208,18 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             LogReader logReader = new LogReader(logFile, consumer);
             executor.execute(logReader);
 
+            // Wait for the logs to be zipped.
+            // TODO: implement post-post boot command or similar to properly check when Micro has finished booting up.
+            try {
+                watchKey = watcher.poll(startupTimeoutInSeconds, SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
+            if (watchKey == null) {
+                logger.severe("Timeout (" + startupTimeoutInSeconds + "s) reached waiting for Payara Micro to start.");
+            }
+
             // Check at intervals if Payara Micro has finished starting up or failed to start.
             CountDownLatch payaraMicroStarted = new CountDownLatch(1);
             executor.scheduleAtFixedRate(() -> {
@@ -195,8 +232,8 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 }
             }, 2000, 500, TimeUnit.MILLISECONDS);
 
-            // Wait for Payara Micro to start up, or time out after a configured period.
-            if (payaraMicroStarted.await(startupTimeoutInSeconds, TimeUnit.SECONDS)) {
+            // Wait for Payara Micro to start up, or time out after 10 seconds
+            if (payaraMicroStarted.await(10, TimeUnit.SECONDS)) {
 
                 // Create a matcher for the 'Instance Configured' message
                 Matcher instanceConfigMatcher = instanceConfigPattern.matcher(log);
@@ -247,7 +284,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             logger.severe("Failed in creating a thread for Payara Micro.\n" + e.getMessage());
         } catch (InterruptedException e) {
             // Occurs when the timeout is reached in waiting for Payara Micro to start
-            logger.severe("Timeout (" + startupTimeoutInSeconds + "s) reached waiting for Payara Micro to start.\n" + e.getMessage());
+            logger.severe("Timeout reached waiting for Payara Micro to start.\n" + e.getMessage());
         }
 
         throw new DeploymentException("No applications were found deployed to Payara Micro.");
