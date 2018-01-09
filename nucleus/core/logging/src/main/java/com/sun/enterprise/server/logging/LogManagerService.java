@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -143,7 +143,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String logFormatDateFormatDetail = "";
     String compressOnRotationDetail = "";
     
-    //Payara
+    //Payara Notification Logging
     String payaraNotificationLogFileDetail = "";
     String payaraNotificationLogRotationOnTimeLimitInMinutesDetail = "";
     String payaraNotificationLogRotationOnDateChangeDetail = "";
@@ -171,7 +171,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
     private static final String COMPRESS_ON_ROTATION_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation";
     
-    //Payara
+    //Payara Notification Logging
     private static final String PAYARA_NOTIFICATION_LOG_FILE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file";
     private static final String PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange";
     private static final String PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes";
@@ -425,7 +425,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
             compressOnRotationDetail = props.get(COMPRESS_ON_ROTATION_PROPERTY);
             
-            //Payara
+            //Payara Notification Logging
             payaraNotificationLogFileDetail = props.get(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY);
             payaraNotificationLogRotationOnDateChangeDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY);
             payaraNotificationLogRotationOnTimeLimitInMinutesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY);
