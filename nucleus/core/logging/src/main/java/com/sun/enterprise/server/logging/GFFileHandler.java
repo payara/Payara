@@ -747,13 +747,14 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         
         synchronized (rotationLock) {
             File dir = absoluteFile.getParentFile();
+            String logFileName = absoluteFile.getName();
             if (dir == null)
                 return;
             File[] fset = dir.listFiles();
             ArrayList candidates = new ArrayList();
             for (int i = 0; fset != null && i < fset.length; i++) {
-                if (!LOG_FILE_NAME.equals(fset[i].getName()) && fset[i].isFile()
-                        && fset[i].getName().startsWith(LOG_FILE_NAME)) {
+                if (!logFileName.equals(fset[i].getName()) && fset[i].isFile()
+                        && fset[i].getName().startsWith(logFileName)) {
                     candidates.add(fset[i].getAbsolutePath());
                 }
             }
