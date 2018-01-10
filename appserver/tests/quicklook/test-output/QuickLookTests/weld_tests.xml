@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="weld_tests" failures="0" tests="6" time="0.04" errors="0">
+  <properties/>
+  <testcase name="jarExtensionBeanObserversTest" time="0.013" classname="test.web.extensions.ExtensionsTestNG"/>
+  <testcase name="extensionBeanObserversTest" time="0.012" classname="test.web.extensions.ExtensionsTestNG"/>
+  <testcase name="webBeanTest" time="0.009" classname="test.web.extensions.ExtensionsTestNG"/>
+  <testcase name="injectionTargetAdaptionTest" time="0.002" classname="test.web.extensions.ExtensionsTestNG"/>
+  <testcase name="extensionBeanReferenceTest" time="0.002" classname="test.web.extensions.ExtensionsTestNG"/>
+  <testcase name="jarExtensionBeanReferenceTest" time="0.001" classname="test.web.extensions.ExtensionsTestNG"/>
+</testsuite>

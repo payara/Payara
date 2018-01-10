@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>TestNG:  jpa_inject_emf</title>
+<link href="../testng.css" rel="stylesheet" type="text/css" />
+<link href="../my-testng.css" rel="stylesheet" type="text/css" />
+
+<style type="text/css">
+.log { display: none;} 
+.stack-trace { display: none;} 
+</style>
+<script type="text/javascript">
+<!--
+function flip(e) {
+  current = e.style.display;
+  if (current == 'block') {
+    e.style.display = 'none';
+  }
+  else {
+    e.style.display = 'block';
+  }
+}
+
+function toggleBox(szDivId)
+{
+  if (document.getElementById) {
+    flip(document.getElementById(szDivId));
+  }
+  else if (document.all) {
+    // this is the way old msie versions work
+    var style2 = document.all[szDivId].style;
+    style2.display = style2.display? "":"block";
+  }
+
+}
+
+function toggleAllBoxes() {
+  if (document.getElementsByTagName) {
+    d = document.getElementsByTagName('div');
+    for (i = 0; i < d.length; i++) {
+      if (d[i].className == 'log') {
+        flip(d[i]);
+      }
+    }
+  }
+}
+
+// -->
+</script>
+
+</head>
+<body>
+<h2 align='center'>jpa_inject_emf</h2><table border='1' align="center">
+<tr>
+<td>Tests passed/Failed/Skipped:</td><td>0/1/1</td>
+</tr><tr>
+<td>Started on:</td><td>Thu Jan 11 13:56:40 GMT 2018</td>
+</tr>
+<tr><td>Total time:</td><td>0 seconds (101 ms)</td>
+</tr><tr>
+<td>Included groups:</td><td></td>
+</tr><tr>
+<td>Excluded groups:</td><td></td>
+</tr>
+</table><p/>
+<small><i>(Hover the method name to see the test class name)</i></small><p/>
+<table width='100%' border='1' class='invocation-failed'>
+<tr><td colspan='3' align='center'><b>FAILED TESTS</b></td></tr>
+<tr><td><b>Test method</b></td>
+<td width="10%"><b>Time (seconds)</b></td>
+<td width="30%"><b>Exception</b></td>
+</tr>
+<tr>
+<td title='test.jpa.jpainjectemf.JpaInjectEMFTestNG.persistWithInjectEMF()'>persistWithInjectEMF</td>
+<td>0</td>
+<td><div><pre>java.lang.AssertionError: Unexpected Results expected:&lt;true&gt; but was:&lt;false&gt;
+	at test.jpa.jpainjectemf.JpaInjectEMFTestNG.persistWithInjectEMF(JpaInjectEMFTestNG.java:69)
+... Removed 26 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace961503948")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace961503948'><pre>java.lang.AssertionError: Unexpected Results expected:&lt;true&gt; but was:&lt;false&gt;
+	at org.testng.Assert.fail(Assert.java:84)
+	at org.testng.Assert.failNotEquals(Assert.java:438)
+	at org.testng.Assert.assertEquals(Assert.java:108)
+	at org.testng.Assert.assertEquals(Assert.java:239)
+	at test.jpa.jpainjectemf.JpaInjectEMFTestNG.persistWithInjectEMF(JpaInjectEMFTestNG.java:69)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.testng.internal.MethodHelper.invokeMethod(MethodHelper.java:604)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:470)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:564)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:830)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:125)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:109)
+	at org.testng.TestRunner.runWorkers(TestRunner.java:678)
+	at org.testng.TestRunner.privateRun(TestRunner.java:624)
+	at org.testng.TestRunner.run(TestRunner.java:495)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:300)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:295)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:275)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:190)
+	at org.testng.TestNG.createAndRunSuiteRunners(TestNG.java:792)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:765)
+	at org.testng.TestNG.run(TestNG.java:699)
+	at org.testng.TestNG.privateMain(TestNG.java:824)
+	at org.testng.TestNG.main(TestNG.java:802)
+</pre></div></td>
+</tr>
+</table><p>
+<table width='100%' border='1' class='invocation-skipped'>
+<tr><td colspan='3' align='center'><b>SKIPPED TESTS</b></td></tr>
+<tr><td><b>Test method</b></td>
+<td width="10%"><b>Time (seconds)</b></td>
+<td width="30%"><b>Exception</b></td>
+</tr>
+<tr>
+<td title='test.jpa.jpainjectemf.JpaInjectEMFTestNG.lazyLoadingByQuery()'>lazyLoadingByQuery</td>
+<td>0</td>
+<td></td>
+</tr>
+</table><p>
+</body>
+</html>

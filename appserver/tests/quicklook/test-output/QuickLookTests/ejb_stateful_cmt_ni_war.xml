@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ejb_stateful_cmt_ni_war" failures="0" tests="6" time="0.241" errors="0">
+  <properties/>
+  <testcase name="SetName" time="0.019" classname="test.ejb.sfulnoi.SfulnoiTestNG"/>
+  <testcase name="EJBInject" time="0.016" classname="test.ejb.slsbnicmt.SlsbnicmtTestNG"/>
+  <testcase name="GetName" time="0.002" classname="test.ejb.sfulnoi.SfulnoiTestNG"/>
+  <testcase name="JpaPersist" time="0.039" classname="test.ejb.slsbnicmt.SlsbnicmtTestNG"/>
+  <testcase name="JpaRemove" time="0.144" classname="test.ejb.slsbnicmt.SlsbnicmtTestNG"/>
+  <testcase name="JpaVerify" time="0.017" classname="test.ejb.slsbnicmt.SlsbnicmtTestNG"/>
+</testsuite>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="admincli_tests" failures="0" tests="4" time="1.772" errors="0">
+  <properties/>
+  <testcase name="createJDBCPool" time="0.489" classname="test.admincli.ExistStatusTests"/>
+  <testcase name="pingJDBCPool" time="0.854" classname="test.admincli.ExistStatusTests"/>
+  <testcase name="deleteJDBCPool" time="0.416" classname="test.admincli.ExistStatusTests"/>
+  <testcase name="restartDomainTest" time="0.0" classname="test.admincli.RestartDomainTests"/>
+</testsuite>

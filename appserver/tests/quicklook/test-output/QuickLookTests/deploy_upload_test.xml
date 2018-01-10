@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="deploy_upload_test" failures="0" tests="4" time="0.386" errors="0">
+  <properties/>
+  <testcase name="staticHTMLPageTest" time="0.008" classname="test.web.jsp.hello.HelloJSPTestNG"/>
+  <testcase name="testServerRunning" time="0.007" classname="test.web.jsp.hello.HelloJSPTestNG"/>
+  <testcase name="simpleServletTest" time="0.003" classname="test.web.jsp.hello.HelloJSPTestNG"/>
+  <testcase name="simpleJSPTestPage" time="0.367" classname="test.web.jsp.hello.HelloJSPTestNG"/>
+</testsuite>

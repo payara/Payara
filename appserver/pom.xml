@@ -178,7 +178,8 @@
         <!-- Microprofile version properties -->
         <microprofile-config.version>1.1</microprofile-config.version>
         <microprofile-fault-tolerance.version>1.0</microprofile-fault-tolerance.version>
-        <microprofile-jwt-auth.version>1.0</microprofile-jwt-auth.version>
+	<microprofile-jwt-auth.version>1.0</microprofile-jwt-auth.version>
+	<microprofile-healthcheck.version>1.0</microprofile-healthcheck.version>
     </properties>
 
     <modules>

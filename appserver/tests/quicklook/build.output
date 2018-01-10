@@ -1,0 +1,637 @@
+     [echo] ANT PROJECT GlassFish-V3-QuickLook
+
+build:
+
+compile-tests:
+     [echo] compiling test client to ..//classes/test
+     [echo] Listing of source files: amx\AMXConfigProxyTests.java;amx\AMXCoreTests.java;amx\AMXOtherTests.java;amx\AMXProxyTests.java;amx\AMXTestBase.java;amx\Demo.java;amx\Interfaces.java;amx\InterfacesGlassfish.java
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 8 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+compile-tests:
+     [echo] compiling test client to ..//classes/test
+     [echo] Listing of source files: admin\BaseAsadminTest.java;admin\JdbcConnectionPoolTests.java;admin\JvmOptionTests.java;admin\OsgiAsadminTest.java;admin\WebtierTests.java;admin\util\GeneralUtils.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 6 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+compile-tests:
+     [echo] compiling test client to ../classes/test
+     [echo] Listing of source files: admincli\ExistStatusTests.java;admincli\RestartDomainTests.java;admincli\util\RtExec.java;admincli\util\StreamGobbler.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 4 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+setOSConditions:
+
+restart-server:
+
+restart-server-unix:
+
+restart-server-windows:
+     [echo] Successfully restarted the domain
+     [echo] Command restart-domain executed successfully.
+
+build:
+
+compile-tests:
+     [echo] compiling test client to ..//classes/test
+     [echo] Listing of source files: admin\AdminConsoleTests.java;admin\BaseAdminConsoleTest.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 2 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+compile-tests:
+     [echo] compiling test client to ..//classes/test
+     [echo] Listing of source files: admin\RestTests.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+compile-util:
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:154: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 7 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: HelloOSGITestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/basicosgi/osgitest.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\basicosgi\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\basicosgi
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\basicosgi\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\basicosgi\app\META-INF
+     [copy] Warning: Could not find file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\osgitest\basicosgi\metadata\persistence.xml to copy.
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\basicosgi\osgitest.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: HelloJSPTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/basicweb/hellojsp.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\basicweb\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\basicweb
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\basicweb\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\basicweb\app\META-INF
+     [copy] Warning: Could not find file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\web\helloworld\metadata\persistence.xml to copy.
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\basicweb\hellojsp.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy-upload:
+
+setOSConditions:
+
+deploy-upload-v3-impl:
+     [echo] deploying hellojsp.war with --upload
+
+deploy-upload-v3-impl-unix:
+
+deploy-upload-v3-impl-windows:
+     [exec] Application deployed with name hellojsp.
+     [exec] Command deploy executed successfully.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: JSFWebTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/jsftest/jsfastrologer.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jsftest\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\jsftest
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jsftest\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jsftest\app\META-INF
+     [copy] Warning: Could not find file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\web\jsfastrologer\metadata\persistence.xml to copy.
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\jsftest\jsfastrologer.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying jsfastrologer.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] Application deployed with name jsfastrologer.
+     [exec] Command deploy executed successfully.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: JdbcUserTxTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/jdbcusertx/jdbcusertx.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jdbcusertx\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\jdbcusertx
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 6 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jdbcusertx\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jdbcusertx\app\META-INF
+     [copy] Warning: Could not find file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\jdbc\jdbcusertx\metadata\persistence.xml to copy.
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\jdbcusertx\jdbcusertx.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying jdbcusertx.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] Application deployed with name jdbcusertx.
+     [exec] Command deploy executed successfully.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: JpaInjectEMFTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/jpainjectemf/jpainjectemf.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jpainjectemf\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\jpainjectemf
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 4 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jpainjectemf\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jpainjectemf\app\META-INF
+     [copy] Copying 1 file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jpainjectemf\app\META-INF
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\jpainjectemf\jpainjectemf.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying jpainjectemf.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] 
+     [exec] PER01003: Deployment encountered SQL Exceptions:
+     [exec] 	PER01000: Got SQLException executing statement "CREATE TABLE DEPARTMENT (ID INTEGER NOT NULL, NAME VARCHAR(255), PRIMARY KEY (ID))": java.sql.SQLTransactionRollbackException: Table/View 'DEPARTMENT' already exists in Schema 'APP'.
+     [exec] 	PER01000: Got SQLException executing statement "CREATE TABLE EMPLOYEE (ID INTEGER NOT NULL, FIRSTNAME VARCHAR(255), LASTNAME VARCHAR(255), DEPARTMENT_ID INTEGER, PRIMARY KEY (ID))": java.sql.SQLTransactionRollbackException: Table/View 'EMPLOYEE' already exists in Schema 'APP'.
+     [exec] 	PER01000: Got SQLException executing statement "ALTER TABLE EMPLOYEE ADD CONSTRAINT MPLOYEEDPARTMENTID FOREIGN KEY (DEPARTMENT_ID) REFERENCES DEPARTMENT (ID)": java.sql.SQLTransactionRollbackException: Constraint 'MPLOYEEDPARTMENTID' already exists in Schema 'APP'.
+     [exec] Command deploy completed with warnings.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: JpaValidationTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/jpavalidation/jpavalidation.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jpavalidation\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\jpavalidation
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 4 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jpavalidation\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jpavalidation\app\META-INF
+     [copy] Copying 1 file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\jpavalidation\app\META-INF
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\jpavalidation\jpavalidation.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying jpavalidation.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] 
+     [exec] PER01003: Deployment encountered SQL Exceptions:
+     [exec] 	PER01000: Got SQLException executing statement "CREATE TABLE BV_PROJ (ID INTEGER NOT NULL, NAME VARCHAR(20), PRIMARY KEY (ID))": java.sql.SQLTransactionRollbackException: Table/View 'BV_PROJ' already exists in Schema 'APP'.
+     [exec] 	PER01000: Got SQLException executing statement "CREATE TABLE BV_EMPL (ID INTEGER NOT NULL, NAME VARCHAR(20), SALARY BIGINT, PRIMARY KEY (ID))": java.sql.SQLTransactionRollbackException: Table/View 'BV_EMPL' already exists in Schema 'APP'.
+     [exec] 	PER01000: Got SQLException executing statement "CREATE TABLE BV_PROJ_BV_EMPL (projects_ID INTEGER NOT NULL, employees_ID INTEGER NOT NULL, PRIMARY KEY (projects_ID, employees_ID))": java.sql.SQLTransactionRollbackException: Table/View 'BV_PROJ_BV_EMPL' already exists in Schema 'APP'.
+     [exec] 	PER01000: Got SQLException executing statement "ALTER TABLE BV_PROJ_BV_EMPL ADD CONSTRAINT BVPRJBVEMPLmplysID FOREIGN KEY (employees_ID) REFERENCES BV_EMPL (ID)": java.sql.SQLTransactionRollbackException: Constraint 'BVPRJBVEMPLMPLYSID' already exists in Schema 'APP'.
+     [exec] 	PER01000: Got SQLException executing statement "ALTER TABLE BV_PROJ_BV_EMPL ADD CONSTRAINT BVPRJBVMPLprjctsID FOREIGN KEY (projects_ID) REFERENCES BV_PROJ (ID)": java.sql.SQLTransactionRollbackException: Constraint 'BVPRJBVMPLPRJCTSID' already exists in Schema 'APP'.
+     [exec] Command deploy completed with warnings.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: HelloSecurityTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/security/hellojspsecure.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\security\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\security
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\security\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\security\app\META-INF
+     [copy] Warning: Could not find file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\security\helloworld\metadata\persistence.xml to copy.
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\security\hellojspsecure.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying hellojspsecure.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] Application deployed with name hellojspsecure.
+     [exec] Command deploy executed successfully.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: SlsbnicmtTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/EJB_slsbnicmt/slsbnicmt.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\EJB_slsbnicmt\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\EJB_slsbnicmt
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 3 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\EJB_slsbnicmt\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\EJB_slsbnicmt\app\META-INF
+     [copy] Copying 1 file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\EJB_slsbnicmt\app\META-INF
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\EJB_slsbnicmt\slsbnicmt.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying slsbnicmt.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] 
+     [exec] PER01003: Deployment encountered SQL Exceptions:
+     [exec] 	PER01000: Got SQLException executing statement "CREATE TABLE JPABEAN (ID INTEGER GENERATED BY DEFAULT AS IDENTITY NOT NULL, NAME VARCHAR(255), PRIMARY KEY (ID))": java.sql.SQLTransactionRollbackException: Table/View 'JPABEAN' already exists in Schema 'APP'.
+     [exec] Command deploy completed with warnings.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: SfulnoiTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/EJB_sfulnoi/sfulnoi.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\EJB_sfulnoi\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\EJB_sfulnoi
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:220: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 2 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\EJB_sfulnoi\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\EJB_sfulnoi\app\META-INF
+     [copy] Warning: Could not find file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\ejb\sfulnoi\metadata\persistence.xml to copy.
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\EJB_sfulnoi\sfulnoi.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying sfulnoi.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] Application deployed with name sfulnoi.
+     [exec] Command deploy executed successfully.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: test\bv\servlet\simple\SimpleBVServletTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/bv/simple-bv-servlet.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\bv\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\bv
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\bean-validator\simple-bv-servlet\build.xml:91: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 2 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\bv\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\bv\app\META-INF
+     [copy] Warning: Could not find file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\bean-validator\simple-bv-servlet\metadata\persistence.xml to copy.
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\bv\simple-bv-servlet.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying simple-bv-servlet.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] Application deployed with name simple-bv-servlet.
+     [exec] Command deploy executed successfully.
+
+build-deploy:
+
+compile-tests:
+     [echo] compiling test client to ../../classes/test
+     [echo] Listing of source files: ExtensionsTestNG.java
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\gfproject\build-impl.xml:141: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\test
+
+build:
+
+build-impl:
+
+archive-type:
+     [echo] archive-type is war
+
+build-war:
+     [echo] Now creating a war file ../../dist/weldtest/extensions.war
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\weldtest\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\weldtest\lib
+    [javac] C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\weld\extensions\build.xml:93: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 6 source files to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\weldtest\app
+    [mkdir] Created dir: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\weldtest\app\META-INF
+     [copy] Copying 1 file to C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\classes\weldtest\app\META-INF
+      [jar] Building jar: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\weldtest\lib\extensions.jar
+      [war] Building war: C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\dist\weldtest\extensions.war
+
+archive-type:
+     [echo] archive-type is war
+
+build-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-appclient-ear:
+
+archive-type:
+     [echo] archive-type is war
+
+build-jar:
+
+deploy:
+
+setOSConditions:
+
+deploy-v3-impl:
+     [echo] deploying extensions.war
+
+deploy-v3-impl-unix:
+
+deploy-v3-impl-windows:
+     [exec] Application deployed with name extensions.
+     [exec] Command deploy executed successfully.
+
+build-deploy:

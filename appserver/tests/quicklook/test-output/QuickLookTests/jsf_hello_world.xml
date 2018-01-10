@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="jsf_hello_world" failures="0" tests="2" time="0.654" errors="0">
+  <properties/>
+  <testcase name="jsfIndexPageBasicTest" time="0.174" classname="test.jsf.astrologer.JSFWebTestNG"/>
+  <testcase name="jsfAppDeployedFirstPagetest" time="0.478" classname="test.jsf.astrologer.JSFWebTestNG"/>
+</testsuite>

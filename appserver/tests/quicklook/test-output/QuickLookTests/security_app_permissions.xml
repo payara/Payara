@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="security_app_permissions" failures="0" tests="2" time="0.018" errors="0">
+  <properties/>
+  <testcase name="singletonStartup" time="0.012" classname="test.security.appperms.ApppermsTestNG"/>
+  <testcase name="singletonInjectLookup" time="0.004" classname="test.security.appperms.ApppermsTestNG"/>
+</testsuite>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="asadmin_tests" failures="0" tests="16" time="0.685" errors="0">
+  <properties/>
+  <testcase name="createListener" time="0.174" classname="test.admin.WebtierTests"/>
+  <testcase name="createPool" time="0.042" classname="test.admin.JdbcConnectionPoolTests"/>
+  <testcase name="createJoe" time="0.025" classname="test.admin.JvmOptionTests"/>
+  <testcase name="ensureCreatedJoeExists" time="0.011" classname="test.admin.JvmOptionTests"/>
+  <testcase name="deleteJoe" time="0.015" classname="test.admin.JvmOptionTests"/>
+  <testcase name="ensureCreatedListenerExists" time="0.008" classname="test.admin.WebtierTests"/>
+  <testcase name="deleteListener" time="0.067" classname="test.admin.WebtierTests"/>
+  <testcase name="ensureDeletedListenerDoesNotExist" time="0.008" classname="test.admin.WebtierTests"/>
+  <testcase name="createListenerWithOldParam" time="0.088" classname="test.admin.WebtierTests"/>
+  <testcase name="deleteListener2" time="0.08" classname="test.admin.WebtierTests"/>
+  <testcase name="pingPool" time="0.068" classname="test.admin.JdbcConnectionPoolTests"/>
+  <testcase name="deletedJoeDoesNotExist" time="0.01" classname="test.admin.JvmOptionTests"/>
+  <testcase name="ensureCreatedPoolExists" time="0.008" classname="test.admin.JdbcConnectionPoolTests"/>
+  <testcase name="deletePool" time="0.013" classname="test.admin.JdbcConnectionPoolTests"/>
+  <testcase name="deletedPoolDoesNotExist" time="0.007" classname="test.admin.JdbcConnectionPoolTests"/>
+  <testcase name="createOsgiListener" time="0.041" classname="test.admin.OsgiAsadminTest"/>
+</testsuite>

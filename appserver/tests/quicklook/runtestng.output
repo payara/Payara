@@ -1,0 +1,287 @@
+     [echo] =============Starting TestNG functional tests from testng/testng_gd.xml ============
+   [testng] [Parser] Running:
+   [testng]   C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\testng\testng_gd.xml
+   [testng] 
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\asadmin.bat create-jdbc-connection-pool --port 4848 --datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:Password=APP:User=APP QLJdbcPool
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\asadmin.bat ping-connection-pool --port 4848 DerbyPool
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\asadmin.bat ping-connection-pool --port 4848 QLJdbcPool
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\asadmin.bat delete-jdbc-connection-pool --port 4848 QLJdbcPool
+   [testng] PASSED: createJDBCPool
+   [testng] PASSED: pingJDBCPool
+   [testng] PASSED: deleteJDBCPool
+   [testng] PASSED: restartDomainTest
+   [testng] 
+   [testng] ===============================================
+   [testng]     admincli_tests
+   [testng]     Tests run: 4, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] Jan 11, 2018 1:56:22 PM com.sun.enterprise.v3.server.CommonClassLoaderServiceImpl findDerbyClient
+   [testng] INFO: Cannot find javadb client jar file, derby jdbc driver will not be available by default.
+   [testng] PASSED: bootAMX
+   [testng]         Core AMX tests
+   [testng] PASSED: iterateAllSanityCheck
+   [testng] PASSED: testForBogusConfigAnnotations
+   [testng] PASSED: testDemo
+   [testng] PASSED: testAMXComplianceMonitorFailureCount
+   [testng] PASSED: testVariousGetters
+   [testng] PASSED: testLogging
+   [testng] PASSED: testMonitoringRoot
+   [testng] PASSED: testDomainRoot
+   [testng] PASSED: testBulkAccess
+   [testng] PASSED: testExt
+   [testng] PASSED: testTools
+   [testng] PASSED: testSystemInfo
+   [testng] PASSED: testForBogusAnnotations
+   [testng] PASSED: testRuntimeRoot
+   [testng] PASSED: testPathnames
+   [testng] PASSED: testQuery
+   [testng] PASSED: testServerRuntime
+   [testng] PASSED: testJ2EEDomain
+   [testng] 
+   [testng] ===============================================
+   [testng]     amx_tests
+   [testng]     Tests run: 19, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: testDeployedAppPage
+   [testng] PASSED: testCommonTasks
+   [testng] PASSED: testRealmsList
+   [testng] 
+   [testng] ===============================================
+   [testng]     adminconsole_tests
+   [testng]     Tests run: 3, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: testManagementEndpoint
+   [testng] PASSED: testEndpointWithEncodedSlash
+   [testng] PASSED: testAdminCommandEndpoint
+   [testng] PASSED: testMonitoringEndpoint
+   [testng] PASSED: testChildConfigBeanEndpoint
+   [testng] 
+   [testng] ===============================================
+   [testng]     rest_tests
+   [testng]     Tests run: 5, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: staticHTMLPageTest
+   [testng] PASSED: testServerRunning
+   [testng] PASSED: simpleServletTest
+   [testng] PASSED: simpleJSPTestPage
+   [testng] 
+   [testng] ===============================================
+   [testng]     deploy_upload_test
+   [testng]     Tests run: 4, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: jsfIndexPageBasicTest
+   [testng] PASSED: jsfAppDeployedFirstPagetest
+   [testng] 
+   [testng] ===============================================
+   [testng]     jsf_hello_world
+   [testng]     Tests run: 2, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: testNoLeak
+   [testng] PASSED: testUserTx
+   [testng] 
+   [testng] ===============================================
+   [testng]     jdbc_user_tx
+   [testng]     Tests run: 2, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] FAILED: persistWithInjectEMF
+   [testng] java.lang.AssertionError: Unexpected Results expected:<true> but was:<false>
+   [testng] 	at test.jpa.jpainjectemf.JpaInjectEMFTestNG.persistWithInjectEMF(JpaInjectEMFTestNG.java:69)
+   [testng] ... Removed 26 stack frames
+   [testng] SKIPPED: lazyLoadingByQuery
+   [testng] 
+   [testng] ===============================================
+   [testng]     jpa_inject_emf
+   [testng]     Tests run: 2, Failures: 1, Skips: 1
+   [testng] ===============================================
+   [testng] 
+   [testng] FAILED: initialize
+   [testng] java.lang.AssertionError: Unexpected Results expected:<true> but was:<false>
+   [testng] 	at test.jpa.jpavalidation.JpaValidationTestNG.initialize(JpaValidationTestNG.java:69)
+   [testng] ... Removed 26 stack frames
+   [testng] SKIPPED: validatePersist
+   [testng] SKIPPED: validateUpdate
+   [testng] SKIPPED: validateRemove
+   [testng] SKIPPED: verify
+   [testng] 
+   [testng] ===============================================
+   [testng]     jpa_validation
+   [testng]     Tests run: 5, Failures: 1, Skips: 4
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: staticHTMLPageTest
+   [testng] PASSED: simpleServletTest
+   [testng] PASSED: simpleJSPTestPage
+   [testng] 
+   [testng] ===============================================
+   [testng]     security_hello_jsp
+   [testng]     Tests run: 3, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: singletonStartup
+   [testng] PASSED: singletonInjectLookup
+   [testng] 
+   [testng] ===============================================
+   [testng]     security_app_permissions
+   [testng]     Tests run: 2, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] Jan 11, 2018 1:56:41 PM org.glassfish.enterprise.iiop.api.GlassFishORBHelper postConstruct
+   [testng] INFO: GlassFishORBFactory service initialized.
+   [testng] PASSED: helloRemote
+   [testng] PASSED: nonPortableGlobal
+   [testng] PASSED: portableGlobal
+   [testng] 
+   [testng] ===============================================
+   [testng]     ejb_remoteview
+   [testng]     Tests run: 3, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: singletonStartup
+   [testng] PASSED: singletonInjectLookup
+   [testng] 
+   [testng] ===============================================
+   [testng]     ejb_singleton_ear_redeploy
+   [testng]     Tests run: 2, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: SetName
+   [testng] PASSED: EJBInject
+   [testng] PASSED: GetName
+   [testng] PASSED: JpaPersist
+   [testng] PASSED: JpaRemove
+   [testng] PASSED: JpaVerify
+   [testng] 
+   [testng] ===============================================
+   [testng]     ejb_stateful_cmt_ni_war
+   [testng]     Tests run: 6, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: test
+   [testng] 
+   [testng] ===============================================
+   [testng]     ejb_cmp_ear
+   [testng]     Tests run: 1, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\asadmin.bat multimode --port 4848 --file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\ejb/mdb/create_resources.asadmin
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\asadmin.bat deploy --port 4848 --retrieve=C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\./dist/mdb/ C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\./dist/mdb/ejb-ejb30-hello-mdbApp.ear 
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\appclient.bat -targetserver localhost:3700 -client C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\./dist/mdb/ejb-ejb30-hello-mdbAppClient.jar -name ejb-ejb30-hello-mdb-client 
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\asadmin.bat undeploy --port 4848 ejb-ejb30-hello-mdbApp
+   [testng] RtExec.execute: C:/Users/AndrewPielage/Downloads/PayaraReleases/4.1.2.174.2/Payara/payara41/glassfish\bin\asadmin.bat multimode --port 4848 --file C:\Users\AndrewPielage\Git\Payara\appserver\tests\quicklook\ejb/mdb/delete_resources.asadmin
+   [testng] PASSED: createJMSRscTest("ejb/mdb/create_resources.asadmin")
+   [testng] PASSED: deployJMSAppTest("./dist/mdb/")
+   [testng] PASSED: runJMSAppTest("./dist/mdb/")
+   [testng] PASSED: undeployJMSAppTest
+   [testng] PASSED: deleteJMSRscTest("ejb/mdb/delete_resources.asadmin")
+   [testng] 
+   [testng] ===============================================
+   [testng]     MDB_tests
+   [testng]     Tests run: 5, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: executeServlet
+   [testng] 
+   [testng] ===============================================
+   [testng]     bv_servlet_simple
+   [testng]     Tests run: 1, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: jarExtensionBeanObserversTest
+   [testng] PASSED: extensionBeanObserversTest
+   [testng] PASSED: webBeanTest
+   [testng] PASSED: injectionTargetAdaptionTest
+   [testng] PASSED: extensionBeanReferenceTest
+   [testng] PASSED: jarExtensionBeanReferenceTest
+   [testng] 
+   [testng] ===============================================
+   [testng]     weld_tests
+   [testng]     Tests run: 6, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: createListener
+   [testng] PASSED: createPool
+   [testng] PASSED: createJoe
+   [testng] PASSED: ensureCreatedJoeExists
+   [testng] PASSED: deleteJoe
+   [testng] PASSED: ensureCreatedListenerExists
+   [testng] PASSED: deleteListener
+   [testng] PASSED: ensureDeletedListenerDoesNotExist
+   [testng] PASSED: createListenerWithOldParam
+   [testng] PASSED: deleteListener2
+   [testng] PASSED: pingPool
+   [testng] PASSED: deletedJoeDoesNotExist
+   [testng] PASSED: ensureCreatedPoolExists
+   [testng] PASSED: deletePool
+   [testng] PASSED: deletedPoolDoesNotExist
+   [testng] PASSED: createOsgiListener
+   [testng] 
+   [testng] ===============================================
+   [testng]     asadmin_tests
+   [testng]     Tests run: 16, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: simpleOSGIDeployTest
+   [testng] PASSED: simpleJSPTestPage
+   [testng] PASSED: simpleServletTest
+   [testng] PASSED: simpleOSGIUnDeployTest
+   [testng] 
+   [testng] ===============================================
+   [testng]     osgi_test
+   [testng]     Tests run: 4, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: riOsgiTest
+   [testng] PASSED: jaxb1Exist
+   [testng] PASSED: msvDatatypeExist
+   [testng] PASSED: jaxb1Marshalling
+   [testng] 
+   [testng] ===============================================
+   [testng]     wsit_jaxb_tests
+   [testng]     Tests run: 4, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] Waiting for 5 sec...
+   [testng] #########    FAILURE   #########
+   [testng] asadmin --host localhost --port 4848 --user admin --interactive=false --echo=true --terse=true list-instances --long=false --timeoutmsec 60000 --standaloneonly=false --nostatus=false
+   [testng] eein1-with-a-very-very-very-long-name   running  
+   [testng] eein2                                   running  
+   [testng] 
+   [testng] 
+   [testng] PASSED: createClusterTest
+   [testng] PASSED: createInstanceTest
+   [testng] PASSED: startInstanceTest
+   [testng] 
+   [testng] ===============================================
+   [testng]     cluster_setup
+   [testng]     Tests run: 3, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: deleteInstanceTest
+   [testng] PASSED: deleteClusterTest
+   [testng] 
+   [testng] ===============================================
+   [testng]     cluster_teardown
+   [testng]     Tests run: 2, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] PASSED: testRequestScopedJMSContextInjection
+   [testng] PASSED: testTransactionScopedJMSContextInjection
+   [testng] 
+   [testng] ===============================================
+   [testng]     jms_injection_jmsContext
+   [testng]     Tests run: 2, Failures: 0, Skips: 0
+   [testng] ===============================================
+   [testng] 
+   [testng] 
+   [testng] ===============================================
+   [testng] QuickLookTests
+   [testng] Total tests run: 106, Failures: 2, Skips: 5
+   [testng] ===============================================
+   [testng] 

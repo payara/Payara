@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ejb_singleton_ear_redeploy" failures="0" tests="2" time="0.019" errors="0">
+  <properties/>
+  <testcase name="singletonStartup" time="0.013" classname="test.ejb.singleton.SingletonTestNG"/>
+  <testcase name="singletonInjectLookup" time="0.004" classname="test.ejb.singleton.SingletonTestNG"/>
+</testsuite>

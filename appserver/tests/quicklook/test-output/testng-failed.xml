@@ -1,0 +1,51 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite thread-count="5" verbose="2" name="Failed suite [QuickLookTests]" junit="false" annotations="JDK">
+  <parameter name="MDB_APP_DIR" value="./dist/mdb/"/>
+  <parameter name="BATCH_FILE1" value="ejb/mdb/create_resources.asadmin"/>
+  <parameter name="BATCH_FILE2" value="ejb/mdb/delete_resources.asadmin"/>
+  <parameter name="amx.debug" value="true"/>
+  <parameter name="admin.password" value=""/>
+  <parameter name="admin.console.url" value="http://localhost:4848/"/>
+  <parameter name="amx.rmiport" value="8686"/>
+  <parameter name="admin.user" value="admin"/>
+  <parameter name="resources.xml.relative.path" value="admin/resources/resources.xml"/>
+  <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
+  <test name="jpa_inject_emf(failed)" junit="false" annotations="JDK">
+    <parameter name="MDB_APP_DIR" value="./dist/mdb/"/>
+    <parameter name="BATCH_FILE1" value="ejb/mdb/create_resources.asadmin"/>
+    <parameter name="BATCH_FILE2" value="ejb/mdb/delete_resources.asadmin"/>
+    <parameter name="amx.debug" value="true"/>
+    <parameter name="admin.password" value=""/>
+    <parameter name="admin.console.url" value="http://localhost:4848/"/>
+    <parameter name="amx.rmiport" value="8686"/>
+    <parameter name="admin.user" value="admin"/>
+    <parameter name="resources.xml.relative.path" value="admin/resources/resources.xml"/>
+    <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
+    <classes>
+      <class name="test.jpa.jpainjectemf.JpaInjectEMFTestNG">
+        <methods>
+          <include name="persistWithInjectEMF"/>
+        </methods>
+      </class>
+    </classes>
+  </test>
+  <test name="jpa_validation(failed)" junit="false" annotations="JDK">
+    <parameter name="MDB_APP_DIR" value="./dist/mdb/"/>
+    <parameter name="BATCH_FILE1" value="ejb/mdb/create_resources.asadmin"/>
+    <parameter name="BATCH_FILE2" value="ejb/mdb/delete_resources.asadmin"/>
+    <parameter name="amx.debug" value="true"/>
+    <parameter name="admin.password" value=""/>
+    <parameter name="admin.console.url" value="http://localhost:4848/"/>
+    <parameter name="amx.rmiport" value="8686"/>
+    <parameter name="admin.user" value="admin"/>
+    <parameter name="resources.xml.relative.path" value="admin/resources/resources.xml"/>
+    <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
+    <classes>
+      <class name="test.jpa.jpavalidation.JpaValidationTestNG">
+        <methods>
+          <include name="initialize"/>
+        </methods>
+      </class>
+    </classes>
+  </test>
+</suite>
