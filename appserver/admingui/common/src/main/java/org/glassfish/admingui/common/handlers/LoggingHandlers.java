@@ -205,11 +205,12 @@ public class LoggingHandlers {
         try{
             for (Map.Entry<String, Object> e : attrs.entrySet()) {
                 String key=e.getKey();
-                if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")|| 
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
-                     key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ) ||
-                        key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation"))
+                if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")
+                        || key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole")
+                        || key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoFile")
+                        || key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode")
+                        || key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange")
+                        || key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation"))
                         && (e.getValue() == null)) {
                     attrs.put(key, "false");
                 }

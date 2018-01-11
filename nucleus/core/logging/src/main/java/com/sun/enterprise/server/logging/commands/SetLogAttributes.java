@@ -143,6 +143,7 @@ public class SetLogAttributes implements AdminCommand {
             "com.sun.enterprise.server.logging.GFFileHandler.formatter",
             "java.util.logging.FileHandler.limit",
             "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole",
+            "com.sun.enterprise.server.logging.GFFileHandler.logtoFile",
             ROTATION_LIMIT_IN_BYTES,
             "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging",
             "com.sun.enterprise.server.logging.GFFileHandler.alarms",

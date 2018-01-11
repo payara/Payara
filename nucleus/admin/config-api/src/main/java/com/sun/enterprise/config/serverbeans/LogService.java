@@ -181,6 +181,22 @@ public interface LogService extends ConfigBeanProxy  {
      */
     public void setLogToConsole(String value) throws PropertyVetoException;
 
+  
+    /**
+     * Gets the value of the logToFile property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    public String getLogToFile();
+
+    /**
+     * Sets the value of the logToFile property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    public void setLogToFile(String value) throws PropertyVetoException;
+
     /**
      * Gets the value of the logRotationLimitInBytes property.
      *

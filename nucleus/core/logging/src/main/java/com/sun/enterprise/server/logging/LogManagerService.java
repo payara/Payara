@@ -131,6 +131,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String flushFrequencyDetail = "";
     String filterHandlerDetails = "";
     String logToConsoleDetail = "";
+    String logToFileDetail = "";
     String rotationInTimeLimitInBytesDetail = "";
     String useSystemLoggingDetail = "";
     String fileHandlerCountDetail = "";
@@ -152,6 +153,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String FLUSHFREQUENCY_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency";
     private static final String FILEHANDLER_LIMIT_PROPERTY = "java.util.logging.FileHandler.limit";
     private static final String LOGTOCONSOLE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole";
+    private static final String LOGTOFILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoFile";
     private static final String ROTATIONLIMITINBYTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
     private static final String USESYSTEMLOGGING_PROPERTY = "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging";
     private static final String FILEHANDLER_COUNT_PROPERTY = "java.util.logging.FileHandler.count";
@@ -399,6 +401,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             flushFrequencyDetail = props.get(FLUSHFREQUENCY_PROPERTY);
             filterHandlerDetails = props.get(FILEHANDLER_LIMIT_PROPERTY);
             logToConsoleDetail = props.get(LOGTOCONSOLE_PROPERTY);
+            logToFileDetail = props.get(LOGTOFILE_PROPERTY);
             rotationInTimeLimitInBytesDetail = props.get(ROTATIONLIMITINBYTES_PROPERTY);
             useSystemLoggingDetail = props.get(USESYSTEMLOGGING_PROPERTY);
             fileHandlerCountDetail = props.get(FILEHANDLER_COUNT_PROPERTY);
@@ -554,6 +557,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(LOGTOCONSOLE_PROPERTY)) {
                                     if (!val.equals(logToConsoleDetail)) {
                                         generateAttributeChangeEvent(LOGTOCONSOLE_PROPERTY, logToConsoleDetail, props);
+                                    }
+                                } else if (a.equals(LOGTOFILE_PROPERTY)) {
+                                    if (!val.equals(logToFileDetail)) {
+                                        generateAttributeChangeEvent(LOGTOFILE_PROPERTY, logToFileDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONLIMITINBYTES_PROPERTY)) {
                                     if (!val.equals(rotationInTimeLimitInBytesDetail)) {

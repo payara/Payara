@@ -121,6 +121,7 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
             logLevels.put("log-handler", logService.getLogHandler());
             logLevels.put("log-filter", logService.getLogFilter());
             logLevels.put("log-to-console", logService.getLogToConsole());
+            logLevels.put("log-to-file", logService.getLogToFile());
             logLevels.put("log-rotation-limit-in-bytes", logService.getLogRotationLimitInBytes());
             logLevels.put("log-rotation-timelimit-in-minutes", logService.getLogRotationTimelimitInMinutes());
             logLevels.put("alarms", logService.getAlarms());
