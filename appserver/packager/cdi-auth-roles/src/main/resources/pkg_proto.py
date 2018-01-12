@@ -3,7 +3,7 @@
 #
 #  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#  Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. 
+#  Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. 
 #  All rights reserved.
 #
 #  The contents of this file are subject to the terms of either the GNU
@@ -45,11 +45,11 @@ import imp
 conf = imp.load_source("pkg_conf", "../pkg_conf.py")
 
 pkg = {
-    "name"          : "roles-package",
+    "name"          : "cdi-auth-roles",
     "version"       : conf.glassfish_version,
     "attributes"    : {
-                        "pkg.summary" : "Roles API Integration",
-                        "pkg.description" : "Roles API modules",
+                        "pkg.summary" : "CDI Auth: Roles Integration",
+                        "pkg.description" : "CDI Auth: Roles modules",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "dirtrees"      : { "glassfish/modules" : {},

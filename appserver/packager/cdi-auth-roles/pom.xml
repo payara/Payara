@@ -38,17 +38,20 @@
    only if the new code is made subject to such option by the copyright
    holder.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project 
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.1.2.181-SNAPSHOT</version>
     </parent>
-    <artifactId>roles-package</artifactId>
-    <name>Payara Roles Package</name>
+    <artifactId>cdi-auth-roles</artifactId>
+    <name>Payara CDI Auth Roles Package</name>
     <packaging>distribution-fragment</packaging>
-    <description>This pom describes how to assemble the Payara Roles package</description>
+    <description>This pom describes how to assemble the Payara CDI Auth Roles package</description>
 
     <properties>
         <temp.dir>${project.build.directory}/dependency</temp.dir>       
@@ -124,7 +127,7 @@
     <dependencies>
         <dependency>
             <groupId>fish.payara.appserver</groupId>
-            <artifactId>roles-api</artifactId>
+            <artifactId>cdi-auth-roles</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

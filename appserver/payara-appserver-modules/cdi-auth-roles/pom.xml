@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -48,10 +48,10 @@
         <version>4.1.2.181-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
-    <artifactId>roles-api</artifactId>
+    <artifactId>cdi-auth-roles</artifactId>
     <packaging>glassfish-jar</packaging>
-    <name>Roles CDI API</name>
-    <description>Roles CDI API</description>
+    <name>CDI Auth: Roles</name>
+    <description>CDI Auth: Roles</description>
     <build>
         <plugins>
             <plugin>
@@ -67,8 +67,8 @@
                         <configuration>
                             <instructions>
                                 <Export-Package>
-                                    fish.payara.appserver.roles.api,
-                                    fish.payara.appserver.roles.api.extension
+                                    fish.payara.appserver.cdi.auth.roles,
+                                    fish.payara.appserver.cdi.auth.roles.extension
                                 </Export-Package>
                             </instructions>
                         </configuration>

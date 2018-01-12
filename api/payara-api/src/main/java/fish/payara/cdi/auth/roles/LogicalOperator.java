@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *  
- *   Copyright (c) [2017] Payara Foundation and/or its affiliates. 
+ *   Copyright (c) [2018] Payara Foundation and/or its affiliates. 
  *   All rights reserved.
  *  
  *   The contents of this file are subject to the terms of either the GNU
@@ -38,39 +38,13 @@
  *   only if the new code is made subject to such option by the copyright
  *   holder.
  */
-package fish.payara.roles.api;
-
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
+package fish.payara.cdi.auth.roles;
 
 /**
  *
  * @author Michael Ranaldo <michael@ranaldo.co.uk>
  */
-@InterceptorBinding
-@Target({ TYPE, METHOD })
-@Retention(RUNTIME)
-public @interface Roles {
-    
-    /**
-     * The roles which are allowed to access this method.
-     * Defaults to none.
-     * @return A String array of permitted roles.
-     */
-    @Nonbinding
-    String[] allowed() default "";
-    
-    /**
-     * Whether accessing users must be in all given roles (AND) or one of the given roles (OR)
-     * @return 
-     * @default OR
-     */
-    @Nonbinding
-    String semantics() default "OR";
+public enum LogicalOperator {
+    OR,
+    AND
 }

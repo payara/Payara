@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *  
- *   Copyright (c) [2017] Payara Foundation and/or its affiliates. 
+ *   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. 
  *   All rights reserved.
  *  
  *   The contents of this file are subject to the terms of either the GNU
@@ -38,9 +38,11 @@
  *   only if the new code is made subject to such option by the copyright
  *   holder.
  */
-package fish.payara.appserver.roles.api;
+package fish.payara.appserver.cdi.auth.roles;
 
-import fish.payara.roles.api.Roles;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import fish.payara.cdi.auth.roles.Roles;
+import fish.payara.cdi.auth.roles.LogicalOperator;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -52,9 +54,13 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.security.enterprise.SecurityContext;
-import org.glassfish.security.common.Role;
+import javax.ws.rs.NotAuthorizedException;
 
 /**
+ * The Roles CDI Interceptor authenticates requests to methods and classes annotated with the @Roles annotation. If the
+ * security context cannot find a role within the requestor which matches either all (if using the AND semantic within
+ * the Roles annotation) or one of (if using the OR semantic within the Roles annotation), then a NotAuthorizedException
+ * is thrown.
  *
  * @author Michael Ranaldo <michael@ranaldo.co.uk>
  */
@@ -62,47 +68,58 @@ import org.glassfish.security.common.Role;
 @Roles
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class RolesCDIInterceptor implements Serializable {
-    
+
+    private final static LocalStringsImpl STRINGS = new LocalStringsImpl(RolesCDIInterceptor.class);
+
     private final SecurityContext securityContext;
 
     public RolesCDIInterceptor() {
         this.securityContext = CDI.current().select(SecurityContext.class).get();
     }
-    
-    
 
+    /**
+     * Method invoked whenever a method annotated with @Roles, or a method within a class annotated with @Roles is
+     * called.
+     *
+     * @param invocationContext Context provided by Weld.
+     * @return Proceed to next interceptor in chain.
+     */
     @AroundInvoke
-    public Object method(InvocationContext ctx) {
-        Object result = null;
-        if (checkRoles(ctx.getMethod().getAnnotation(Roles.class))
-                || (ctx.getMethod().getAnnotation(Roles.class) == null
-                && checkRoles(ctx.getClass().getAnnotation(Roles.class)))) {
+    public Object method(InvocationContext invocationContext) {
+        if (checkRoles(invocationContext.getMethod().getAnnotation(Roles.class))
+                || (invocationContext.getMethod().getAnnotation(Roles.class) == null
+                && checkRoles(invocationContext.getClass().getAnnotation(Roles.class)))) {
             try {
-                result = ctx.proceed();
+                Object result = invocationContext.proceed();
+                return result;
             } catch (Exception ex) {
                 Logger.getLogger(RolesCDIInterceptor.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return result;
+        throw new NotAuthorizedException(STRINGS.get("access.restricted.resource.failed"));
     }
 
+    /**
+     * Check that the roles allowed by the class or method match the roles currently granted to the caller.
+     *
+     * @param roles The roles declared within the @Roles annotation.
+     * @return True or False
+     */
     public boolean checkRoles(Roles roles) {
-        if (roles != null) {
-            List<String> permittedRoles = Arrays.asList(roles.allowed());
-            if (roles.semantics().toUpperCase().equals("OR")) {
-                for (String role : permittedRoles) {
-                    if (securityContext.isCallerInRole(role)) {
-                        return true;
-                    }
+        List<String> permittedRoles = Arrays.asList(roles.allowed());
+        if (roles.semantics().equals(LogicalOperator.OR)) {
+            for (String role : permittedRoles) {
+                if (securityContext.isCallerInRole(role)) {
+                    return true;
                 }
-            } else if (roles.semantics().toUpperCase().equals("AND")) {
-                for (String role : permittedRoles) {
-                    if (!securityContext.isCallerInRole(role)) {
-                        return false;
-                    }
-                }
-                return true;
             }
+        } else if (roles.semantics().equals(LogicalOperator.AND)) {
+            for (String role : permittedRoles) {
+                if (!securityContext.isCallerInRole(role)) {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }
