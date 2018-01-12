@@ -63,6 +63,8 @@ public class LoggingXMLNames {
     public static final String logFilter = "log-filter";
 
     public static final String logToConsole = "log-to-console";
+    
+    public static final String logToFile = "log-to-file";
 
     public static final String alarms = "alarms";
 
@@ -114,6 +116,7 @@ public class LoggingXMLNames {
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);
                 put(logFilter, LoggingPropertyNames.logFilter);
                 put(logToConsole, LoggingPropertyNames.logToConsole);
+                put(logToFile, LoggingPropertyNames.logToFile);
                 put(alarms, LoggingPropertyNames.alarms);
                 put(root, LogDomains.DOMAIN_ROOT + "level");
                 put(server, LogDomains.SERVER_LOGGER + ".level");

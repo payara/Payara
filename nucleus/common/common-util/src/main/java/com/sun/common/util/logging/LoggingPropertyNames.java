@@ -63,9 +63,10 @@ public class LoggingPropertyNames {
     public static final String logFilter = GFFileHandler + "logFilterClass";
 
     public static final String logToConsole = GFFileHandler + "logtoConsole";
+    
+    public static final String logToFile = GFFileHandler + "logtoFile";
 
     public static final String alarms = GFFileHandler + "alarms";
-
 
     public static final String MAX_QUEUE_SIZE = GFFileHandler + "maxQueueSize";
 
