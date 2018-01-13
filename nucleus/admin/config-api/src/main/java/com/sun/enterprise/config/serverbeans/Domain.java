@@ -1008,7 +1008,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
 
             if(c != null)
                 return c;
-
+            
             return getServerNamed(d, name);
         }
 

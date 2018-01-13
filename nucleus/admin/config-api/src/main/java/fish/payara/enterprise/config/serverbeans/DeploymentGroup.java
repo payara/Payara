@@ -124,7 +124,6 @@ public interface DeploymentGroup extends Named, Payload, RefContainer, PropertyB
      */
     @Element
     @PropertiesDesc(props={})
-    @Param(name="properties", optional=true)
     @Override
     List<Property> getProperty();
 

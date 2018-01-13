@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!--
@@ -54,7 +56,10 @@
     if ("!#{requestScope.exx}"){
         gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
     }
-    if (#{requestScope.exx}){
+    if ("!#{requestScope.exx}"){
+        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/depployment-groups/deployment-group/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
+    }
+   if (#{requestScope.exx}){
         setAttribute(key="nameAlreadyExists" value="#{true}");
     }
     if ("!#{requestScope.exx}"){

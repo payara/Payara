@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.util.InstanceStateService;
@@ -46,6 +47,7 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.cluster.InstanceInfo;
 import static com.sun.enterprise.v3.admin.cluster.Constants.*;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.util.*;
 import java.util.logging.*;
 import javax.inject.Inject;
@@ -306,7 +308,7 @@ public class ListInstancesCommand implements AdminCommand {
             l.add((Server) rc);
             return l;
         }
-        else if (rc.isCluster()) { // can't be anything else currently! (June 2010)
+        else if (rc.isCluster()) { 
             Cluster cluster = (Cluster) rc;
             return cluster.getInstances();
         }
@@ -323,6 +325,10 @@ public class ListInstancesCommand implements AdminCommand {
 
         if (list == null) {
             list = getServersForConfig();
+        }
+        
+        if (list == null) {
+            list = getServersForDeploymentGroup();
         }
 
         return list;
@@ -415,5 +421,14 @@ public class ListInstancesCommand implements AdminCommand {
     private void fail(String s) {
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         report.setMessage(s);
+    }
+
+    private List<Server> getServersForDeploymentGroup() {
+        List<Server> result = null;
+        DeploymentGroup dg = domain.getDeploymentGroupNamed(whichTarget);
+        if (dg != null) {
+            result = dg.getInstances();
+        }
+        return result;
     }
 }

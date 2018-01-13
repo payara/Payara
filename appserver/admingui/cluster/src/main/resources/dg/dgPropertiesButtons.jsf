@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -38,44 +37,27 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
--->
 
-<console-config id="cluster">
-    <integration-point
-            id="dgNode"
-            type="org.glassfish.admingui:navNode"
-            priority="300"
-            parentId="tree"
-            content="/dg/dgTreeNode.jsf"/>
-    <integration-point
-            id="standalonesNode"
-            type="org.glassfish.admingui:navNode"
-            priority="350"
-            parentId="tree"
-            content="/standalone/standaloneTreeNode.jsf"/>
-    <integration-point
-            id="nodesNode"
-            type="org.glassfish.admingui:navNode"
-            priority="400"
-            parentId="tree"
-            content="/node/nodeTreeNode.jsf"/>
-    <integration-point
-            id="clustersNode"
-            type="org.glassfish.admingui:navNode"
-            priority="410"
-            parentId="tree"
-            content="/cluster/clusterTreeNode.jsf"/>
-    <integration-point
-            id="availabilityServiceLink"
-            type="org.glassfish.admingui:configuration"
-            priority="100"
-            parentId="propSheetSection"
-            content="/availability/availabilityLink.jsf"/>
-    <integration-point
-            id="availability_service"
-            type="org.glassfish.admingui:navNode"
-            priority="100"
-            parentId="#{configNameId}"
-            content="/availability/pluginTreeNodeAvailSvc.jsf"/>
-</console-config>
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
+-->
+<sun:panelGroup id="topButtons">
+    <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
+            onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+        <!command
+            gf.isDGName(dgName="#{pageSession.dgName}" );
+            removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
+            javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+            gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+            prepareSuccessfulMsg();
+            gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+        />
+    </sun:button>
+
+    <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" text="$resource{i18n.button.Cancel}" >
+        <!command
+            gf.isDGName(dgName="#{pageSession.dgName}" );
+            gf.redirect(page="#{pageSession.parentPage}");
+        />
+    </sun:button>
+</sun:panelGroup>

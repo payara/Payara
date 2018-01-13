@@ -132,7 +132,22 @@ public class ClusterHandler {
          }
      }
 
-
+    @Handler(id = "gf.isDGName",
+        input = {
+            @HandlerInput(name = "dgName", type = String.class, required = true)
+        },
+        output = {
+            @HandlerOutput(name = "exists", type = Boolean.class)
+        })
+    public static void isDepoymentGroupName(HandlerContext handlerCtx) {
+        if( ! TargetUtil.isDeploymentGroup((String) handlerCtx.getInputValue("dgName"))){
+            GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchDG"));
+            handlerCtx.setOutputValue("exists",  false);
+        }else{
+            handlerCtx.setOutputValue("exists",  true);
+        }
+    }
+    
     @Handler(id = "gf.isClusterName",
         input = {
             @HandlerInput(name = "clusterName", type = String.class, required = true)
@@ -213,6 +228,34 @@ public class ClusterHandler {
         }
      }
 
+        @Handler(id = "gf.dgAction",
+        input = {
+            @HandlerInput(name = "rows", type = List.class, required = true),
+            @HandlerInput(name = "action", type = String.class, required = true),
+            @HandlerInput(name = "extraInfo", type = Object.class) })
+    public static void deploymentGroupAction(HandlerContext handlerCtx) {
+        String action = (String) handlerCtx.getInputValue("action");
+        List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
+        String  errorMsg = null;
+        String prefix = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/";
+
+        for (Map oneRow : rows) {
+            String dgName = (String) oneRow.get("name");
+            String endpoint = prefix + dgName + "/" + action;
+            String method = "post";
+            if (action.equals("delete-deployment-group")){
+                endpoint = prefix + dgName;
+                method = "delete";
+            }
+            try{
+                GuiUtil.getLogger().info(endpoint);
+                RestUtil.restRequest( endpoint, null, method, null, false);
+            }catch (Exception ex){
+                GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
+                return;
+            }
+        }
+     }
 
     @Handler(id = "gf.clusterAction",
         input = {
