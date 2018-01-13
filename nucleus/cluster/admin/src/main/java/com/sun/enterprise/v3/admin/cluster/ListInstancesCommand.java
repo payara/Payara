@@ -225,6 +225,11 @@ public class ListInstancesCommand implements AdminCommand {
             if (name == null) {
                 continue;   // can this happen?!?
             }
+            
+            StringBuilder deploymentGroup = new StringBuilder();
+            for (DeploymentGroup dg : server.getDeploymentGroup()) {
+                deploymentGroup.append(dg.getName()).append(' ');
+            }
 
             Cluster cluster = domain.getClusterForInstance(name);
             String clusterName = (cluster != null) ? cluster.getName() : null;
@@ -237,6 +242,7 @@ public class ListInstancesCommand implements AdminCommand {
                         port,
                         host,
                         clusterName,
+                        deploymentGroup.toString(),
                         logger,
                         timeoutInMsec,
                         tReport,
@@ -270,6 +276,7 @@ public class ListInstancesCommand implements AdminCommand {
             HashMap<String, Object> insDetails = new HashMap<String, Object>();
             insDetails.put("name", name);
             insDetails.put("status", value);
+            insDetails.put("deploymentgroup", ii.getDeploymentGroups());
             if (state == InstanceState.StateType.RESTART_REQUIRED) {
                 insDetails.put("restartReasons", failedCmds);
             }

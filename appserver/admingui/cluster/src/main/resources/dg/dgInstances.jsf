@@ -51,10 +51,71 @@
 />
 <!composition template="/templates/default.layout"
     guiTitle="$resource{i18ncs.dg.instancesTitle}"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:standaloneTreeNode');admingui.nav.refreshTree('treeForm:tree:configurations');"
 >
-
-#include "/cluster/shared/instancesExtraButtons.inc"
 #include "/cluster/shared/handlers.inc"
+
+<!define name="listTableDeleteButton">
+    <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}"
+            onClick="if ( getConfirm(this,'$pageSession{confirmDeleteMsg}') )
+                { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
+        <!command
+            getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
+            getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
+            gf.instanceAction(rows="#{requestScope.selectedRows}", action="delete-instance" );
+            gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+        />
+    </sun:button>
+</define>
+
+<!define name="extraButton2">
+   <sun:button id="button2" text="$resource{i18n.button.Start}" disabled="#{true}" primary="#{false}"
+        onClick="if ( getConfirm(this,'$resource{i18ncs.msg.JS.confirmStartInstances}') )
+            { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
+        <!command
+            getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
+            getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
+            gf.instanceAction(rows="#{requestScope.selectedRows}", action="start-instance");
+            gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+        />
+    </sun:button>
+</define>
+
+<!define name="extraButton3">
+    <sun:button id="button3" text="$resource{i18n.button.Stop}" disabled="#{true}" primary="#{false}"
+            onClick="if ( getConfirm(this,'$resource{i18ncs.msg.JS.confirmStopInstances}') )
+                    { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
+        <!command
+            getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
+            getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
+            gf.instanceAction(rows="#{requestScope.selectedRows}", action="stop-instance");
+            gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+         />
+    </sun:button>
+</define>
+
+<!define name="extraDropDown">
+    <sun:dropDown id="dropdown1" rendered="#{pageSession.clusterInstancesPage}" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.moreActionDropDown}"
+            labels={ "$resource{i18n.common.moreActionDropDown}"
+                    "$resource{i18n.button.Enable}"
+                 }
+            values={"" "remove"} >
+            <!command
+                getUIComponent(clientId="#{tableRowGroupId}", component=>$attribute{tableRowGroup});
+                getSelectedSingleMapRows(TableRowGroup="$attribute{tableRowGroup}" selectedRows=>$attribute{selectedRows});
+                setAttribute(key="click" value="$this{component}");
+                setAttribute(key="actionValue" value="#{click.selected}")
+
+                if( ${actionValue}=remove){
+                    gf.removeFromDG(selectedRows="${selectedRows}"  dgName="#{pageSession.dgName}")
+                }
+                gf.redirect(page="#{listLink}");
+            />
+    </sun:dropDown>
+</define>
+
+
+
 
 <!define name="content">
     <event>
@@ -93,7 +154,54 @@
 #include "/cluster/shared/saveInstanceWtButton.inc"
 </sun:title>
 #include "/common/shared/nameSection.inc"
-#include "/cluster/shared/instancesTable.inc"
+
+<sun:table id="instancesTable" title="#{tableTitle}"
+    deselectMultipleButton="$boolean{true}"
+    deselectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+    selectMultipleButton="$boolean{true}"
+    selectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
+     <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{tableId});
+    />
+
+#include "/common/shared/listTableButtons.inc"
+
+<sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{listOfRows}"} sourceVar="td">
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
+    />
+
+    <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col0">
+        <sun:checkbox id="select"
+            toolTip="$resource{i18n.common.select}"
+            selected="#{td.value.selected}"
+            selectedValue="$boolean{true}"
+            onClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
+        />
+    </sun:tableColumn>
+    <sun:tableColumn headerText="$resource{i18n.common.name.header}" sort="name" rowHeader="$boolean{true}" id="col1">
+        <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}&instanceName=#{td.value.name}" />
+    </sun:tableColumn>
+    <sun:tableColumn headerText="$resource{i18ncs.standalone.ColWeight}" sort="lbWeight" rowHeader="$boolean{false}" id="col2">
+        <sun:textField id="weight" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.standalone.lbWeight']}" text="#{td.value.lbWeight}" />
+    </sun:tableColumn>
+    <sun:tableColumn headerText="$resource{i18ncs.common.ConfigurationCol}" sort="configRef" rowHeader="$boolean{false}" id="col3">
+        <sun:hyperlink id="configlink" text="#{td.value.configRef}" url="/configuration/configuration.jsf?configName=#{td.value.configRef}" />
+    </sun:tableColumn>
+    <sun:tableColumn headerText="$resource{i18ncs.common.NodeCol}" sort="node" rowHeader="$boolean{false}" id="col5">
+        <sun:hyperlink id="nodeAgentlink" text="#{td.value.nodeRef}"  url="#{request.contextPath}/cluster/node/nodeEdit.jsf?nodeName=#{td.value.nodeRef}" />
+    </sun:tableColumn>
+    <sun:tableColumn headerText="$resource{i18n.common.Status}"  rowHeader="$boolean{false}" id="col6">
+        <staticText id="statusCol" value="#{requestScope.statusString}" >
+            <!beforeEncode
+                mapGet(Map="#{pageSession.instanceStatusMap}" Key="#{td.value.name}" Value="#{requestScope.status}")
+                setAttribute(key="statusString" value="$resource{i18nc.status.image.$attribute{status}}  &nbsp; $resource{i18nc.status.$attribute{status}}");
+            />
+        </staticText>
+    </sun:tableColumn>
+</sun:tableRowGroup>
+
+</sun:table>
 
 <sun:hidden id="helpKey" value="$resource{help_cluster.clusterInstances}" />
     </sun:form>

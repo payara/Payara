@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 -->
 
 <sun:form id="propertyForm">
@@ -72,6 +74,9 @@
                 if (!#{forStandalone}){
                     mapPut(map="#{requestScope.attrs}" key="cluster"  value="#{pageSession.clusterName}" )
                 }
+                if (#{forDG}){
+                    mapPut(map="#{requestScope.attrs}" key="deploymentgroup"  value="#{pageSession.dgName}" )
+                }
                 gf.restRequest(endpoint="#{sessionScope.REST_URL}/create-instance"  attrs="#{requestScope.attrs}" method="post"  result="#{requestScope.result}");
                 gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
              />
@@ -97,6 +102,10 @@
 
             <sun:property id="NameTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.instanceName}" >
                 <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.instanceName']}" required="#{true}" />
+            </sun:property>
+            <sun:property id="dg"  rendered="#{pageSession.renderDG}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusterNew.DG}" helpText="$resource{i18ncs.clusterNew.DGHelp}">
+                <sun:dropDown id="node" labels="#{pageSession.dgList}" selected="#{pageSession.dgName}" >
+                </sun:dropDown>
             </sun:property>
             <sun:property id="node"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusterNew.Node}" helpText="$resource{i18ncs.clusterNew.NodeHelp}">
                 <sun:dropDown id="node" labels="#{pageSession.nodesList}" selected="#{pageSession.node}" >

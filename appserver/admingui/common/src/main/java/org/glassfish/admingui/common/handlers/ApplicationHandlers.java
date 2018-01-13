@@ -479,6 +479,28 @@ public class ApplicationHandlers {
             }
         }
      }
+    
+         @Handler(id = "gf.changeAppRefStatus",
+        input = {
+            @HandlerInput(name = "selectedRows", type = List.class, required = true),
+            @HandlerInput(name = "Enabled", type = String.class, required = true),
+            @HandlerInput(name = "forLB", type = Boolean.class, required = true)})
+    public static void changeAppRefStatus(HandlerContext handlerCtx) {
+        String Enabled = (String) handlerCtx.getInputValue("Enabled");
+        List<Map>  selectedRows = (List) handlerCtx.getInputValue("selectedRows");
+        boolean forLB = (Boolean) handlerCtx.getInputValue("forLB");
+        for(Map oneRow : selectedRows){
+            Map attrs = new HashMap();
+            String endpoint = (String) oneRow.get("endpoint");
+            if(forLB){
+                attrs.put("lbEnabled", Enabled);
+                RestUtil.restRequest(endpoint, attrs, "post", handlerCtx, false);
+            }else{
+                attrs.put("enabled", Enabled);
+                RestUtil.restRequest(endpoint, attrs, "post", handlerCtx, false);
+            }
+        }
+     }
 
 
      @Handler(id="gf.changeAppTargets",

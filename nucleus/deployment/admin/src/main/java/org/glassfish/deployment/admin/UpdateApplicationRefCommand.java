@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +80,8 @@ import org.jvnet.hk2.config.TransactionFailure;
     @RestEndpoint(configBean = Cluster.class, opType = RestEndpoint.OpType.POST,
             path = "update-application-ref", description = "Update an Application Reference on a cluster target"),
     @RestEndpoint(configBean = Server.class, opType = RestEndpoint.OpType.POST,
+            path = "update-application-ref", description = "Update an Application Reference on a server target"),
+    @RestEndpoint(configBean = DeploymentGroup.class, opType = RestEndpoint.OpType.POST,
             path = "update-application-ref", description = "Update an Application Reference on a server target")
 })
 public class UpdateApplicationRefCommand implements AdminCommand {
@@ -127,7 +130,7 @@ public class UpdateApplicationRefCommand implements AdminCommand {
             applicationRefsToChange.add(primaryApplicationRef);
         }
 
-        // Add the implicitly targetted ApplicationRefs if the target is in a cluster
+        // Add the implicitly targetted ApplicationRefs if the target is in a cluster or deployment group
         {
             Cluster cluster = domain.getClusterNamed(target);
             // if the target is a cluster
@@ -138,6 +141,17 @@ public class UpdateApplicationRefCommand implements AdminCommand {
                     if (instanceAppRef != null) {
                         applicationRefsToChange.add(instanceAppRef);
                     }
+                }
+            }
+            
+            DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+            if (dg != null)  {
+                for (Server server: dg.getInstances()) {
+                    ApplicationRef instanceAppRef = server.getApplicationRef(name);
+                    // if the server in the dg contains the ApplicationRef
+                    if (instanceAppRef != null) {
+                        applicationRefsToChange.add(instanceAppRef);
+                    }                    
                 }
             }
         }

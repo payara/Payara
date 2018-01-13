@@ -47,25 +47,26 @@
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.standaloneInstanceNew.PageTitle}" >
-<!define name="content">
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.dg.InstanceNewPageTitle}"
+       
+>
+    <!define name="content">
     <event>
     <!beforeCreate
-        setPageSessionAttribute(key="pageTitle", value="$resource{i18ncs.standaloneInstanceNew.PageTitle}");
-        setPageSessionAttribute(key="pageTitleHelp", value="$resource{i18ncs.standaloneInstanceNew.PageTitleHelp}");
+        getRequestValue(key="dgName" value="#{pageSession.dgName}");
+        urlencode(value="#{pageSession.dgName}" encoding="UTF-8" result="#{pageSession.encodedDGName}");
+        setPageSessionAttribute(key="forStandalone" value="#{true}");
         setPageSessionAttribute(key="configOption", value="copy");
         setPageSessionAttribute(key="config", value="default-config");
-        setPageSessionAttribute(key="forStandalone" value="#{true}");
         setPageSessionAttribute(key="forDG" value="#{true}");
-        setPageSessionAttribute(key="renderDG" value="#{true}");
-        setPageSessionAttribute(key="helpId", value="standaloneInstanceNew");
-        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/standalone/standaloneInstances.jsf?");
+        setPageSessionAttribute(key="renderDG" value="#{false}");
+        setPageSessionAttribute(key="helpId", value="dgInstanceNew");
+        setPageSessionAttribute(key="pageTitle", value="$resource{i18ncs.dg.InstanceNewPageTitle}");
+        setPageSessionAttribute(key="pageTitleHelp", value="$resource{i18ncs.dgInstanceNew.PageTitleHelp}");
+        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/dg/dgInstances.jsf?dgName=#{pageSession.encodedDGName}");
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config", result="#{requestScope.tmpList}");
         listRemove(list="#{requestScope.tmpList}" value="server-config" result="#{pageSession.configsList}");
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/nodes/node", result="#{pageSession.nodesList}");
-        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group", result="#{pageSession.dgList}");
-        listAdd(list="#{pageSession.dgList}" value="", index="0", result="#{pageSession.dgList}");
-
     />
     </event>
 #include "/cluster/shared/instanceNew.inc"

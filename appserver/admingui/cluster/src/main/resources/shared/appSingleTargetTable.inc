@@ -104,16 +104,16 @@
                     setAttribute(key="actionValue" value="#{click.selected}")
 
                     if( ${actionValue}=enable){
-                        gf.changeTargetStatus(selectedRows="${selectedRows}"  Enabled="#{true}" forLB="$boolean{false}")
+                        gf.changeAppRefStatus(selectedRows="${selectedRows}"  Enabled="#{true}" forLB="$boolean{false}")
                     }
                     if( ${actionValue}=disable){
-                        gf.changeTargetStatus(selectedRows="${selectedRows}"  Enabled="#{false}" forLB="$boolean{false}")
+                        gf.changeAppRefStatus(selectedRows="${selectedRows}"  Enabled="#{false}" forLB="$boolean{false}")
                     }
                     if( ${actionValue}=lb-enable){
-                        gf.changeTargetStatus(selectedRows="${selectedRows}" Enabled="#{true}" forLB="$boolean{true}")
+                        gf.changeAppRefStatus(selectedRows="${selectedRows}" Enabled="#{true}" forLB="$boolean{true}")
                     }
                     if( ${actionValue}=lb-disable){
-                        gf.changeTargetStatus(selectedRows="${selectedRows}"  Enabled="#{false}" forLB="$boolean{true}")
+                        gf.changeAppRefStatus(selectedRows="${selectedRows}"  Enabled="#{false}" forLB="$boolean{true}")
                     }
                     gf.redirect(page="#{listPageLink}?#{extraArgs}");
                 />

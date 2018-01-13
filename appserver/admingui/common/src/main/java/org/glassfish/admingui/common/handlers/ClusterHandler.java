@@ -227,6 +227,31 @@ public class ClusterHandler {
             GuiUtil.handleError(handlerCtx, details);
         }
      }
+    
+    
+    @Handler(id="gf.removeFromDG",
+            input= {
+                @HandlerInput(name = "selectedRows", type = List.class, required = true),
+                @HandlerInput(name = "dgName", type = String.class, required = true) } )
+    public static void removeFromDG(HandlerContext ctx) {
+        String deploymentGroup = (String) ctx.getInputValue("dgName");
+        List<Map> rows = (List<Map>) ctx.getInputValue("selectedRows");
+        String endPoint = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/remove-instance-from-deployment-group";
+        for (Map oneRow : rows) {
+            String instanceName = (String) oneRow.get("name");
+            Map<String,Object> attrs = new HashMap<>(2);
+            attrs.put("deploymentGroup", deploymentGroup);
+            attrs.put("instance", instanceName);
+            GuiUtil.getLogger().info(endPoint);
+            try {
+            RestUtil.restRequest(endPoint, attrs, "post", null, false);
+            }catch (Exception ex){
+                GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
+                return;
+            }
+        }
+        
+    }
 
         @Handler(id = "gf.dgAction",
         input = {

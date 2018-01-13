@@ -63,8 +63,6 @@
             <sun:button id="newButton" text="$resource{i18n.button.OK}"
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
-                getUIComponent(clientId="#{pageSession.dgTableRowGroupId}", component="#{requestScope.tableRowGroup}");
-                getAllSingleMapRows(TableRowGroup="#{requestScope.tableRowGroup}",  Rows="#{requestScope.instances}");
                 setAttribute(key="nameToCheck" value="#{pageSession.name}");
                 gfj.checkNameExist();
                 createMap(result="#{requestScope.ct}");
@@ -91,41 +89,6 @@
             </sun:property>
         </sun:propertySheetSection>
     </sun:propertySheet>
-    <sun:table id="basicTable" style="padding: 10pt" deselectMultipleButton="$boolean{true}" selectMultipleButton="$boolean{true}"
-               title="$resource{i18ncs.dgNew.TableTitle}">
-        <!-- Actions (Top) -->
-        <!facet actionsTop>
-        <sun:panelGroup id="topActionsGroup1">
-            <sun:button id="addSharedTableButton" disabled="#{false}" text="$resource{i18n.button.New}" primary="#{true}">
-                <!command
-                getUIComponent(clientId="$pageSession{dgTableRowGroupId}", component="#{requestScope.tableRowGroup}" );
-                addRowToTable(TableRowGroup="$attribute{tableRowGroup}", NameList={"name"});
-                />
-            </sun:button>
-            <sun:button id="deleteSharedTableButton" disabled="#{false}" text="$resource{i18n.button.Delete}" primary="#{false}">
-                <!command
-                getUIComponent(clientId="$pageSession{dgTableRowGroupId}", component=>$attribute{trg});
-                getSelectedTableRowKeys(tableRowGroup="${trg}" rowKeys=>$attribute{rowKeys});
-                deleteTableRows(tableRowGroup="${trg}" rowKeys="${rowKeys}");
-                commitTableRowGroup(tableRowGroup="${trg}");
-                />
-            </sun:button>
-        </sun:panelGroup>
-        </facet>
-        <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{tableList}"} sourceVar="td">
-            <!afterCreate
-            getClientId(component="$this{component}" clientId=>$page{dgTableRowGroupId});
-            />
-            <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col1">
-                <sun:checkbox id="select" selected="#{td.value.selected}" selectedValue="$boolean{true}" />
-            </sun:tableColumn>
-            <sun:tableColumn headerText="$resource{i18ncs.clusterNew.InstanceNameCol}" rowHeader="$boolean{false}" id="col2">
-                <sun:textField columns="$int{35}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.instanceName']}" id="name" value="#{td.value.name}" />
-            </sun:tableColumn>
-        </sun:tableRowGroup>
-    </sun:table>
-
-
     <sun:hidden id="helpKey" value="$resource{help_cluster.clusterNew}" />
 </sun:form>
 </define>

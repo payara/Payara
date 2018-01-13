@@ -50,7 +50,7 @@
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
 />
 <!composition template="/templates/default.layout"
-    guiTitle="$resource{i18ncs.cluster.ApplicationsTitle}"
+    guiTitle="$resource{i18ncs.dg.ApplicationsTitle}"
     guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:applications');"
     guiOnLoad="admingui.nav.selectTreeNodeWithURL('#{request.contextPath}/cluster/dg/dgGeneral.jsf?dgName=#{pageSession.encodedDGName}');"
 >
@@ -93,8 +93,8 @@
 #include "/common/shared/alertMsg_1.inc"
                 <!-- Page Title -->
 
-<sun:title id="propertyContentPage" title="$resource{i18ncs.cluster.ApplicationsTitle}"
-                 helpText="$resource{i18ncs.cluster.ApplicationsTitleHelp}" />
+<sun:title id="propertyContentPage" title="$resource{i18ncs.dg.ApplicationsTitle}"
+                 helpText="$resource{i18ncs.dg.ApplicationsTitleHelp}" />
 
 #include "/common/shared/nameSection.inc"
 
