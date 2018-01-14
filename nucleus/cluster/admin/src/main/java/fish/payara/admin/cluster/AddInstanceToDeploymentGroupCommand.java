@@ -39,18 +39,24 @@
  */
 package fish.payara.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
+import java.util.List;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -58,6 +64,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -69,7 +76,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "add-instance-to-deployment-group")
 @I18n("add.instance.to.deployment.group")
 @PerLookup
-@ExecuteOn({RuntimeType.ALL})
+@ExecuteOn(value={RuntimeType.ALL}, ifFailure = FailurePolicy.Ignore, ifOffline = FailurePolicy.Ignore, ifNeverStarted = FailurePolicy.Ignore)
 @RestEndpoints({
     @RestEndpoint(configBean = DeploymentGroups.class,
             opType = RestEndpoint.OpType.POST,
@@ -89,6 +96,9 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
     
     @Inject
     ServerEnvironment env;
+    
+    @Inject
+    CommandRunner commandRunner;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -122,7 +132,18 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }
-
+        
+        // now run the command to add application ref to the instance
+        for (ApplicationRef applicationRef : dg.getApplicationRef()) {
+            CommandInvocation inv = commandRunner.getCommandInvocation("create-application-ref", report, context.getSubject());
+            ParameterMap parameters = new ParameterMap();
+            parameters.add("target", instanceName);
+            parameters.add("name", applicationRef.getRef());
+            parameters.add("virtualservers", applicationRef.getVirtualServers());
+            parameters.add("enabled", applicationRef.getEnabled());
+            parameters.add("lbenabled", applicationRef.getLbEnabled());
+            inv.parameters(parameters).execute();
+        }
     }
 
 }

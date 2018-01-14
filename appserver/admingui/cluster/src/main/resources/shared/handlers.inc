@@ -84,7 +84,7 @@
 <!--
  This handler calls list-instances and return a map that has the instance name as the key and the status as value.
  Input : #{requestScope.listInstanceAttrMap}     - required
- Output: #{pageSession.instanceStatusMap}
+ Output: #{pageSession.instanceStatusMap},#{pageSession.instanceStatusReasonMap} 
 -->
 <handler id="gfr.getInstancesStatus">
     gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-instances"
@@ -94,12 +94,18 @@
     setAttribute(key="insList" value="#{pageSession.props.data.extraProperties.instanceList}" );
     //println("======= insList = #{requestScope.insList}");
     createMap(result="#{pageSession.instanceStatusMap}");
-    // if( "(#{requestScope.insList} = #{null})" ){
+    createMap(result="#{pageSession.instanceStatusReasonMap}");
+    createMap(result="#{pageSession.instanceDGMap}");
+    createMap(result="#{pageSession.instanceUptimeMap}");
+   // if( "(#{requestScope.insList} = #{null})" ){
         //println("============= no instances found");
     //}
     if( "!(#{requestScope.insList} = #{null})" ){
         foreach(var="oneIns" list="#{requestScope.insList}"){
             mapPut(map="#{pageSession.instanceStatusMap}"  key="#{requestScope.oneIns.name}" value="#{requestScope.oneIns.status}");
+            mapPut(map="#{pageSession.instanceStatusReasonMap}"  key="#{requestScope.oneIns.name}" value="#{requestScope.oneIns.restartReasons}");
+            mapPut(map="#{pageSession.instanceDGMap}"  key="#{requestScope.oneIns.name}" value="#{requestScope.oneIns.deploymentgroup}");
+            mapPut(map="#{pageSession.instanceUptimeMap}"  key="#{requestScope.oneIns.name}" value="#{requestScope.oneIns.uptime}");
         }
     }
 </handler>
@@ -118,6 +124,9 @@
     mapGet(Map="#{pageSession.instanceStatusMap}" Key="#{pageSession.instanceName}" Value="#{pageSession.status}")
     setPageSessionAttribute(key="statusString" value="$resource{i18nc.status.$pageSession{status}} $resource{i18nc.status.image.$pageSession{status}} ");
     setPageSessionAttribute(key="statusImage" value="$resource{i18nc.status.image.$pageSession{status}} ");
+    mapGet(Map="#{pageSession.instanceStatusReasonMap}" Key="#{pageSession.instanceName}" Value="#{pageSession.statusReason}")
+    mapGet(Map="#{pageSession.instanceDGMap}" Key="#{pageSession.instanceName}" Value="#{pageSession.statusDG}")
+    mapGet(Map="#{pageSession.instanceUptimeMap}" Key="#{pageSession.instanceName}" Value="#{pageSession.statusUptime}")
 
 </handler>
 

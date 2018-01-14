@@ -91,6 +91,29 @@
     </sun:button>
 </define>
 
+<!define name="extraDropDown">
+    <sun:dropDown id="dropdown1" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.moreActionDropDown}"
+            labels={ "$resource{i18n.common.moreActionDropDown}"
+                    "Restart DG"
+                 }
+            values={"" "restartDG"} 
+            onClick="if ( getConfirm(this,'$resource{i18ncs.msg.JS.confirmRestartDGs}') )
+                    { return submitAndDisable(this, '$resource{i18n.button.Processing}');} else {return false;} ">
+            <!command
+                getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
+                getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
+                setAttribute(key="click" value="$this{component}");
+                setAttribute(key="actionValue" value="#{click.selected}")
+
+                if( ${actionValue}=restartDG){
+                    println("Restarting Deployment Group ....");
+                    gf.dgAction(rows="#{requestScope.selectedRows}", action="restart-deployment-group");
+                    gf.redirect(page="#{pageSession.listLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                }
+            />
+    </sun:dropDown>
+</define>
+
 
 <!define name="content">
     <event>

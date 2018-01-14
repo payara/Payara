@@ -276,7 +276,7 @@ public class ListInstancesCommand implements AdminCommand {
             HashMap<String, Object> insDetails = new HashMap<String, Object>();
             insDetails.put("name", name);
             insDetails.put("status", value);
-            insDetails.put("deploymentgroup", ii.getDeploymentGroups());
+            insDetails.put("deploymentgroup", ii.getDeploymentGroups().trim());
             if (state == InstanceState.StateType.RESTART_REQUIRED) {
                 insDetails.put("restartReasons", failedCmds);
             }

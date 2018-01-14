@@ -97,7 +97,7 @@
 <!define name="extraDropDown">
     <sun:dropDown id="dropdown1" rendered="#{pageSession.clusterInstancesPage}" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.moreActionDropDown}"
             labels={ "$resource{i18n.common.moreActionDropDown}"
-                    "$resource{i18n.button.Enable}"
+                    "Remove"
                  }
             values={"" "remove"} >
             <!command
@@ -135,10 +135,40 @@
         createMap(result="#{requestScope.listInstanceAttrMap}");
         setPageSessionAttribute(key="dgInstancesPage" value="#{true}" )
         mapPut(map="#{requestScope.listInstanceAttrMap}" key="whichtarget" value="#{pageSession.encodedDGName}")
-        gfr.getInstancesStatus();
+        
+        gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-instances"
+        attrs="#{requestScope.listInstanceAttrMap}"
+        method="GET"
+        result="#{pageSession.props}");
+        setAttribute(key="insList" value="#{pageSession.props.data.extraProperties.instanceList}" );
+        createMap(result="#{pageSession.instanceStatusMap}");
+            if( "!(#{requestScope.insList} = #{null})" ){
+                foreach(var="oneIns" list="#{requestScope.insList}"){
+                mapPut(map="#{pageSession.instanceStatusMap}"  key="#{requestScope.oneIns.name}" value="#{requestScope.oneIns.status}");
+            }
+        }
         gf.getMapKeys(Map="#{pageSession.instanceStatusMap}" Keys="#{pageSession.instancesName}");
         gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", includeList="#{pageSession.instancesName}", result="#{requestScope.listOfRows}");
         gf.isDGName(dgName="#{pageSession.dgName}" );
+        
+        
+        createMap(result="#{requestScope.listInstanceAttrMap2}");
+        mapPut(map="#{requestScope.listInstanceAttrMap2}" key="standaloneonly" value="true")
+        gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-instances"
+        attrs="#{requestScope.listInstanceAttrMap2}"
+        method="GET"
+        result="#{pageSession.props}");
+        setAttribute(key="insList" value="#{pageSession.props.data.extraProperties.instanceList}" );
+        createList(size="0" result="#{pageSession.possibleInstanceList}");
+        listAdd(list="#{pageSession.possibleInstanceList}" value="", index="0", result="#{pageSession.dgList}");
+        
+        if( "!(#{requestScope.insList} = #{null})" ){
+            foreach(var="oneIns" list="#{requestScope.insList}"){
+                if ("!(#{requestScope.oneIns.deploymentgroup} = #{pageSession.encodedDGName})") {
+                    listAdd(value="#{requestScope.oneIns.name}" list="#{pageSession.possibleInstanceList}");
+                }
+            }
+        }
         />
     
     </event>
@@ -154,6 +184,27 @@
 #include "/cluster/shared/saveInstanceWtButton.inc"
 </sun:title>
 #include "/common/shared/nameSection.inc"
+
+<sun:panelGroup id="addButtons">
+<sun:staticText id="server"text="Select a Server to add to this Deplyoment Group:"/>   
+<sun:dropDown id="servers" values="#{pageSession.possibleInstanceList}"  labels="#{pageSession.possibleInstanceList}" submitForm="#{true}" >
+            <!command
+                setAttribute(key="click" value="$this{component}");
+                setAttribute(key="actionValue" value="#{click.selected}");
+                createMap(result="#{requestScope.addToDGAttrMap}");
+                mapPut(map="#{requestScope.addToDGAttrMap}" key="deploymentGroup" value="#{pageSession.encodedDGName}");
+                mapPut(map="#{requestScope.addToDGAttrMap}" key="instance" value="${actionValue}");
+                gf.restRequest( endpoint="#{sessionScope.REST_URL}/deployment-groups/add-instance-to-deployment-group"
+                attrs="#{requestScope.addToDGAttrMap}"
+                method="POST"
+                result="#{pageSession.addResults}");
+                gf.redirect(page="#{listLink}");
+            />
+    
+</sun:dropDown>  
+</sun:panelGroup>
+"<br/><br/>    
+    
 
 <sun:table id="instancesTable" title="#{tableTitle}"
     deselectMultipleButton="$boolean{true}"

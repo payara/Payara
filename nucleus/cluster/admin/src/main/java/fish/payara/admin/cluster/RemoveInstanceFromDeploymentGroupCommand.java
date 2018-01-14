@@ -39,6 +39,7 @@
  */
 package fish.payara.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
@@ -50,13 +51,18 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -68,7 +74,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "remove-instance-from-deployment-group")
 @I18n("remove.instance.from.deployment.group")
 @PerLookup
-@ExecuteOn({RuntimeType.ALL})
+@ExecuteOn(value={RuntimeType.ALL}, ifFailure = FailurePolicy.Ignore, ifOffline = FailurePolicy.Ignore, ifNeverStarted = FailurePolicy.Ignore)
 @RestEndpoints({
     @RestEndpoint(configBean = DeploymentGroups.class,
             opType = RestEndpoint.OpType.POST,
@@ -85,6 +91,13 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
    
     @Inject
     private Domain domain;
+        
+    @Inject
+    ServerEnvironment env;
+    
+    @Inject
+    CommandRunner commandRunner;
+    
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -122,6 +135,15 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
             report.setMessage("Failed to remove instance from the deployment group");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
+        }
+        
+        // now run the command to remove application ref to the instance
+        for (ApplicationRef applicationRef : dg.getApplicationRef()) {
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("delete-application-ref", report, context.getSubject());
+            ParameterMap parameters = new ParameterMap();
+            parameters.add("target", instanceName);
+            parameters.add("name", applicationRef.getRef());
+            inv.parameters(parameters).execute();
         }
 
     }

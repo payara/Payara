@@ -104,7 +104,7 @@
                 <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.instanceName']}" required="#{true}" />
             </sun:property>
             <sun:property id="dg"  rendered="#{pageSession.renderDG}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusterNew.DG}" helpText="$resource{i18ncs.clusterNew.DGHelp}">
-                <sun:dropDown id="node" labels="#{pageSession.dgList}" selected="#{pageSession.dgName}" >
+                <sun:dropDown id="dg" labels="#{pageSession.dgList}" selected="#{pageSession.dgName}" >
                 </sun:dropDown>
             </sun:property>
             <sun:property id="node"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusterNew.Node}" helpText="$resource{i18ncs.clusterNew.NodeHelp}">
