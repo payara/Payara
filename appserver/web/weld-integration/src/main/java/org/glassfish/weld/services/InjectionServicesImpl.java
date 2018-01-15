@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -115,7 +115,9 @@ public class InjectionServicesImpl implements InjectionServices {
             JndiNameEnvironment componentEnv = compEnvManager.getCurrentJndiNameEnvironment();
             if(componentEnv == null) {
                 InvocationManager invMgr = serviceLocator.getService(InvocationManager.class);
-                componentEnv = (JndiNameEnvironment)invMgr.<ComponentInvocation>getCurrentInvocation().getJNDIEnvironment();
+                if (invMgr.<ComponentInvocation>getCurrentInvocation() != null) {
+                    componentEnv = (JndiNameEnvironment) invMgr.<ComponentInvocation>getCurrentInvocation().getJNDIEnvironment();
+                }
             }
 
             ManagedBeanDescriptor mbDesc = null;
@@ -127,7 +129,8 @@ public class InjectionServicesImpl implements InjectionServices {
             String targetClassName = targetClass.getName();
             Object target = injectionContext.getTarget();
 
-            if ( isInterceptor( targetClass ) && ( ! componentEnv.equals(injectionEnv) ) ) {
+            if ( isInterceptor( targetClass )
+                    && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
               // Resources injected into interceptors must come from the environment in which the interceptor is
               // intercepting, not the environment in which the interceptor resides (for everything else!)
               // Must use the injectionEnv to get the injection info to determine where in jndi to look for the objects to inject.
