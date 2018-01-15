@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
 
@@ -120,8 +120,8 @@
         <!-- CDI -->
         <javax.inject.version>1</javax.inject.version>
         <cdi-api.version>2.0</cdi-api.version>
-        <weld.version>3.0.1.Final</weld.version>
-        <weld-api.version>3.0.SP1</weld-api.version>
+        <weld.version>3.0.2.Final</weld.version>
+        <weld-api.version>3.0.SP2</weld-api.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
 
         <!-- Java EE Security API -->
@@ -820,7 +820,7 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-osgi-bundle</artifactId>
-                <version>${weld.version}-payara-p1</version>
+                <version>${weld.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.classfilewriter</groupId>
