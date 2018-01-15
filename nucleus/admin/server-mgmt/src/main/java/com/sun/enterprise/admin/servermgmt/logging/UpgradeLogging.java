@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.servermgmt.logging;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
@@ -120,6 +123,7 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
             //this can have multiple values so need to add
             logLevels.put("log-handler", logService.getLogHandler());
             logLevels.put("log-filter", logService.getLogFilter());
+            logLevels.put("log-to-file", logService.getLogToFile());
             logLevels.put("log-to-console", logService.getLogToConsole());
             logLevels.put("log-rotation-limit-in-bytes", logService.getLogRotationLimitInBytes());
             logLevels.put("log-rotation-timelimit-in-minutes", logService.getLogRotationTimelimitInMinutes());

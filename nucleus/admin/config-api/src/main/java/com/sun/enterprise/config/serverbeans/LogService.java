@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.Attribute;
@@ -180,6 +182,21 @@ public interface LogService extends ConfigBeanProxy  {
      *              {@link String }
      */
     public void setLogToConsole(String value) throws PropertyVetoException;
+    
+        /**
+     * Gets the value of the logToFile property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    public String getLogToFile();
+
+    /**
+     * Sets the value of the logToFile property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    public void setLogToFile(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the logRotationLimitInBytes property.

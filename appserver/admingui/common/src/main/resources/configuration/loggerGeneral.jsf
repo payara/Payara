@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <!-- common/configuration/loggerGeneral.jsf -->
 
@@ -112,6 +112,10 @@
           <sun:property id="writeSystemLogEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.WriteSystemLog}" helpText="$resource{i18nc.log.WriteSystemlogHelp}">
                 <sun:checkbox id="writeSystemLogEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging']}" selectedValue="true" />
            </sun:property> 
+          
+          <sun:property id="logtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.logtoFile']}"  selectedValue="true" />
+           </sun:property>
 
            <sun:property id="logtoConsole"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoConsole}" helpText="$resource{i18nc.log.LogtoConsoleHelp}">
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.logtoConsole']}"  selectedValue="true" />
@@ -207,6 +211,10 @@
 
         <sun:property id="PayaraNotificationlogFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
             <sun:textField id="PayaraNotificationLogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file']}"/>
+        </sun:property>
+        
+        <sun:property id="PayaraNotificationCompressOnRotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.CompressOnRotation}" helpText="$resource{i18nc.log.CompressOnRotationHelp}">
+            <sun:checkbox id="PayaraNotificationCompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation']}"  selectedValue="true" />
         </sun:property>
 
      </sun:propertySheetSection>

@@ -188,23 +188,26 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     String recordEndMarker;
     String recordFieldSeparator;
     String recordDateFormat;
-
+    
     protected String logFileProperty = "";
 
+    private LogManager manager = LogManager.getLogManager();
+    private String cname = getClass().getName();
+    
     public void postConstruct() {
 
         LogManager manager = LogManager.getLogManager();
         String cname = getClass().getName();
-
+   
         String filename = evaluateFileName();
 
-        File serverLog = new File(filename);
+        File logFile = new File(filename);
         absoluteServerLogName = filename;
-        if (!serverLog.isAbsolute()) {
-            serverLog = new File(env.getDomainRoot(), filename);
+        if (!logFile.isAbsolute()) {
+            logFile = new File(env.getDomainRoot(), filename);
             absoluteServerLogName = env.getDomainRoot() + File.separator + filename;
         }
-        changeFileName(serverLog);
+        changeFileName(logFile);
 
         // Reading just few lines of log file to get the log fomatter used.
         BufferedReader br = null;
@@ -215,7 +218,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         boolean mustRotate = false;
         
         try {
-            br = new BufferedReader(new FileReader(serverLog));            
+            br = new BufferedReader(new FileReader(logFile));            
             while ((strLine = br.readLine()) != null) {
                 strLine = strLine.trim();
                 if (!strLine.equals("")) {
@@ -878,32 +881,43 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     public void log() {
 
         LogRecord record;
-        
-        // take is blocking so we take one record off the queue
-        try {
-            record = pendingRecords.take();
-            super.publish(record);
-        } catch (InterruptedException e) {
-            return;
+        String propValue = null;
+
+        propValue = manager.getProperty(cname + ".logtoFile");
+        boolean logToFile = false;
+
+        if (propValue != null) {
+            logToFile = Boolean.parseBoolean(propValue);
         }
 
-        // now try to read more.  we end up blocking on the above take call if nothing is in the queue
-        Vector<LogRecord> v = new Vector<LogRecord>();
-        int msgs = pendingRecords.drainTo(v, flushFrequency);
-        for (int j = 0; j < msgs; j++) {
-            super.publish(v.get(j));
-        }
+        if (logToFile) {
 
-        flush();
-        if ((rotationRequested.get())
-                || ((limitForFileRotation > 0)
-                && (meter.written >= limitForFileRotation))) {
-            // If we have written more than the limit set for the
-            // file, or rotation requested from the Timer Task or LogMBean
-            // start fresh with a new file after renaming the old file.
-            synchronized (rotationLock) {
-                rotate();
-                rotationRequested.set(false);
+            // take is blocking so we take one record off the queue
+            try {
+                record = pendingRecords.take();
+                super.publish(record);
+            } catch (InterruptedException e) {
+                return;
+            }
+
+            // now try to read more.  we end up blocking on the above take call if nothing is in the queue
+            Vector<LogRecord> v = new Vector<LogRecord>();
+            int msgs = pendingRecords.drainTo(v, flushFrequency);
+            for (int j = 0; j < msgs; j++) {
+                super.publish(v.get(j));
+            }
+
+            flush();
+            if ((rotationRequested.get())
+                    || ((limitForFileRotation > 0)
+                    && (meter.written >= limitForFileRotation))) {
+                // If we have written more than the limit set for the
+                // file, or rotation requested from the Timer Task or LogMBean
+                // start fresh with a new file after renaming the old file.
+                synchronized (rotationLock) {
+                    rotate();
+                    rotationRequested.set(false);
+                }
             }
         }
 
