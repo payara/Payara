@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
  
 /*
  * InstanceHandler.java
@@ -205,7 +205,8 @@ public class LoggingHandlers {
         try{
             for (Map.Entry<String, Object> e : attrs.entrySet()) {
                 String key=e.getKey();
-                if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")|| 
+                if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")||
+                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoFile") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ) ||

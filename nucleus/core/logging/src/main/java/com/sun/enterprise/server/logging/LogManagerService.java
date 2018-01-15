@@ -130,6 +130,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String rotationOnTimeLimitInMinutesDetail = "";
     String flushFrequencyDetail = "";
     String filterHandlerDetails = "";
+    String logToFileDetail = "";
     String logToConsoleDetail = "";
     String rotationInTimeLimitInBytesDetail = "";
     String useSystemLoggingDetail = "";
@@ -158,6 +159,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String ROTATIONTIMELIMITINMINUTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
     private static final String FLUSHFREQUENCY_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency";
     private static final String FILEHANDLER_LIMIT_PROPERTY = "java.util.logging.FileHandler.limit";
+    private static final String LOGTOFILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoFile";
     private static final String LOGTOCONSOLE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole";
     private static final String ROTATIONLIMITINBYTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
     private static final String USESYSTEMLOGGING_PROPERTY = "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging";
@@ -412,6 +414,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             rotationOnTimeLimitInMinutesDetail = props.get(ROTATIONTIMELIMITINMINUTES_PROPERTY);
             flushFrequencyDetail = props.get(FLUSHFREQUENCY_PROPERTY);
             filterHandlerDetails = props.get(FILEHANDLER_LIMIT_PROPERTY);
+            logToFileDetail = props.get(LOGTOFILE_PROPERTY);
             logToConsoleDetail = props.get(LOGTOCONSOLE_PROPERTY);
             rotationInTimeLimitInBytesDetail = props.get(ROTATIONLIMITINBYTES_PROPERTY);
             useSystemLoggingDetail = props.get(USESYSTEMLOGGING_PROPERTY);
@@ -571,6 +574,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(FILEHANDLER_LIMIT_PROPERTY)) {
                                     if (!val.equals(filterHandlerDetails)) {
                                         generateAttributeChangeEvent(FILEHANDLER_LIMIT_PROPERTY, filterHandlerDetails, props);
+                                    }
+                                } else if (a.equals(LOGTOFILE_PROPERTY)) {
+                                    if (!val.equals(logToFileDetail)) {
+                                        generateAttributeChangeEvent(LOGTOFILE_PROPERTY, logToFileDetail, props);
                                     }
                                 } else if (a.equals(LOGTOCONSOLE_PROPERTY)) {
                                     if (!val.equals(logToConsoleDetail)) {
