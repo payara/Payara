@@ -212,6 +212,10 @@
         <sun:property id="PayaraNotificationlogFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
             <sun:textField id="PayaraNotificationLogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file']}"/>
         </sun:property>
+        
+        <sun:property id="PayaraNotificationCompressOnRotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.CompressOnRotation}" helpText="$resource{i18nc.log.CompressOnRotationHelp}">
+            <sun:checkbox id="PayaraNotificationCompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation']}"  selectedValue="true" />
+        </sun:property>
 
      </sun:propertySheetSection>
 

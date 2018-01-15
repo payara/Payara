@@ -210,7 +210,9 @@ public class LoggingHandlers {
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ) ||
-                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation"))
+                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation") ||
+                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation") ||
+                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange"))
                         && (e.getValue() == null)) {
                     attrs.put(key, "false");
                 }

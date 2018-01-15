@@ -71,45 +71,4 @@ public class PayaraNotificationFileHandler extends GFFileHandler {
 
         return TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
     }
-
-    @Override
-    public void cleanUpHistoryLogFiles() {
-        if (maxHistoryFiles == 0) {
-            return;
-        }
-
-        synchronized (rotationLock) {
-            File dir = absoluteFile.getParentFile();
-            if (dir == null) {
-                return;
-            }
-            File[] fset = dir.listFiles();
-            ArrayList candidates = new ArrayList();
-            for (int i = 0; fset != null && i < fset.length; i++) {
-                if (!NOTIFICATION_FILENAME.equals(fset[i].getName()) && fset[i].isFile()
-                        && fset[i].getName().startsWith(NOTIFICATION_FILENAME)) {
-                    candidates.add(fset[i].getAbsolutePath());
-                }
-            }
-            if (candidates.size() <= maxHistoryFiles) {
-                return;
-            }
-            Object[] pathes = candidates.toArray();
-            java.util.Arrays.sort(pathes);
-            try {
-                for (int i = 0; i < pathes.length - maxHistoryFiles; i++) {
-                    File logFile = new File((String) pathes[i]);
-                    boolean delFile = logFile.delete();
-                    if (!delFile) {
-                        throw new IOException("Could not delete log file: "
-                                + logFile.getAbsolutePath());
-                    }
-                }
-            } catch (Exception e) {
-                new ErrorManager().error(
-                        "FATAL ERROR: COULD NOT DELETE LOG FILE.", e,
-                        ErrorManager.GENERIC_FAILURE);
-            }
-        }
-    }
 }

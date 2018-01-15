@@ -150,6 +150,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String payaraNotificationLogRotationOnDateChangeDetail = "";
     String payaraNotificationLogRotationInTimeLimitInBytesDetail = "";
     String payaraNotificationLogmaxHistoryFilesDetail = "";
+    String payaraNotificationLogCompressOnRotationDetail = "";
 
     private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private static final String HANDLER_PROPERTY = "handlers";
@@ -179,6 +180,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes";
     private static final String PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes";
     private static final String PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles";
+    private static final String PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation";
     
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
@@ -434,6 +436,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             payaraNotificationLogRotationOnTimeLimitInMinutesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY);
             payaraNotificationLogRotationInTimeLimitInBytesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY);
             payaraNotificationLogmaxHistoryFilesDetail = props.get(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY);
+            payaraNotificationLogCompressOnRotationDetail = props.get(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY);
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
@@ -653,6 +656,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogmaxHistoryFilesDetail)) {
                                         generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY, payaraNotificationLogmaxHistoryFilesDetail, props);
+                                    }
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY)) {
+                                    if (!val.equals(payaraNotificationLogCompressOnRotationDetail)) {
+                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY, payaraNotificationLogCompressOnRotationDetail, props);
                                     }
                                 }
                             }
