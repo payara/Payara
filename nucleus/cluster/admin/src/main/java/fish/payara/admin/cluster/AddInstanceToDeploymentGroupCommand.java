@@ -41,6 +41,7 @@ package fish.payara.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
@@ -143,6 +144,17 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
             parameters.add("enabled", applicationRef.getEnabled());
             parameters.add("lbenabled", applicationRef.getLbEnabled());
             inv.parameters(parameters).execute();
+        }
+        
+        // for all resource refs add resource ref to instance
+        for (ResourceRef resourceRef : dg.getResourceRef()) {
+            CommandInvocation inv = commandRunner.getCommandInvocation("create-resource-ref", report, context.getSubject());
+            ParameterMap parameters = new ParameterMap();
+            parameters.add("target", instanceName);
+            parameters.add("reference_name", resourceRef.getRef());
+            parameters.add("enabled", resourceRef.getEnabled());
+            inv.parameters(parameters).execute();
+            
         }
     }
 

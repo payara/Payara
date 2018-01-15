@@ -41,6 +41,7 @@ package fish.payara.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
@@ -146,6 +147,16 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
             inv.parameters(parameters).execute();
         }
 
+        // now run the command to remove resource ref to the instance
+        for (ResourceRef resourceRef : dg.getResourceRef()) {
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("delete-resource-ref", report, context.getSubject());
+            ParameterMap parameters = new ParameterMap();
+            parameters.add("target", instanceName);
+            parameters.add("reference_name", resourceRef.getRef());
+            inv.parameters(parameters).execute();
+        }
+
+        
     }
 
 }

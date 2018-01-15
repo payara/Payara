@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- resourceNode/resourceHandlers.inc -->
@@ -47,11 +47,13 @@
 -->
 <handler id="gfr.getResourcesTableData">
     gf.listClusters(clusters="#{pageSession.clusterList}");
+    gf.listDeploymentGroups(deploymentgroups="#{pageSession.deploymentGroupsList}");
     gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.standaloneList}" );
     listAdd(list="#{pageSession.standaloneList}", value="server" index="0");
     setPageSessionAttribute(key="targetList" value={});
     gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.clusterList}");
     gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.standaloneList}");
+    gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.deploymentGroupsList}");
 
     setAttribute(key="one" value="$int{1}");
     setAttribute(key="zero" value="$int{0}");
@@ -93,6 +95,21 @@
                 mapPut(map="#{targetsMap}" key="#{clusterUrl}" value="#{cluster}");
                 listAdd(list="#{targetUrls}" value="#{clusterUrl}");
                 gf.getEntityAttrs(endpoint="#{clusterUrl}/resource-ref/#{oneRow['encodedName']}" valueMap="#{requestScope.refAttrs}");
+                if ("#{refAttrs.enabled} = true") {
+                    inc(number="#{enabledTargetsCount}" value="#{enabledTargetsCount}");
+                }
+            }
+        }
+        foreach (var="dg" list="#{pageSession.deploymentGroupsList}") {
+            setAttribute(key="dgUrl" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{dg}");
+            gf.getChildrenNamesList(endpoint="#{dgUrl}/resource-ref"
+                                    result=>$attribute{dgRefs});
+            gf.containedIn(list="#{dgRefs}" testStr="#{oneRow['name']}" contain=>$attribute{isTarget});
+            if (#{isTarget}) {
+                listAdd(list="#{resourceTargets}" value="#{oneRow['name']}");
+                mapPut(map="#{targetsMap}" key="#{dgUrl}" value="#{dg}");
+                listAdd(list="#{targetUrls}" value="#{dgUrl}");
+                gf.getEntityAttrs(endpoint="#{dgUrl}/resource-ref/#{oneRow['encodedName']}" valueMap="#{requestScope.refAttrs}");
                 if ("#{refAttrs.enabled} = true") {
                     inc(number="#{enabledTargetsCount}" value="#{enabledTargetsCount}");
                 }
