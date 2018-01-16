@@ -130,8 +130,13 @@ public abstract class ConnectionHolder implements Connection {
      * Returns the actual connection in this holder object.
      *
      * @return Connection object.
+     * @throws java.sql.SQLException
      */
-    public Connection getConnection() {
+    public Connection getConnection() throws SQLException {
+        //For ensure that the actual connection is always returned and not a proxy
+        if (this.wrappedAlready){
+            return unwrap(java.sql.Connection.class);
+        }
         return con;
     }
 
