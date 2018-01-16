@@ -45,6 +45,7 @@
 <!-- cluster/clusterResources.jsf -->
 
 <!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
@@ -65,6 +66,7 @@
         setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/dg/dgResources.jsf?dgName=#{encodedDGName}");
         getRequestValue(key="filterValue" value="#{pageSession.filterValue}");
         setPageSessionAttribute(key="restURL" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.encodedDGName}/resource-ref");
+        setPageSessionAttribute(key="updateEndpoint" value="#{sessionScope.REST_URL}/resources/update-resource-ref");
     />
     
     </event>
@@ -79,69 +81,184 @@
 </sun:title>
 "<br/>
 #include "/common/shared/nameSection.inc"
-#include "/common/resourceNode/targetResourceTable.inc"
-<!--#include "/common/shared/nameSection.inc"
-<sun:table id="table1" title="$resource{i18n.resourcesTable.resources}"  >
-         <!afterCreate
+<sun:table id="resourcesTable" title="$resource{i18nc.resources}"
+        deselectMultipleButton="$boolean{true}"
+        deselectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+        selectMultipleButton="$boolean{true}"
+        selectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
+        <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{tableId});
         />
-    <!facet actionsTop>
-         <sun:panelGroup id="topActionsGroup1">
-            <!afterCreate
-                getClientId(component="$this{component}" clientId=>$page{topActionGroup});
-            />
-            <sun:button id="button1" text="$resource{i18n.button.Enable}" disabled="#{true}" >
-            <!command
-            />
-            </sun:button>
 
-            <sun:button id="button2" text="$resource{i18n.button.Disable}" disabled="#{true}" primary="#{false}">
-            <!command
-            />
-            </sun:button>
 
-            <sun:dropDown id="actions" selected="#{actionValue}" submitForm="#{true}" immediate="#{true}"
-                labels={""}
-                values={""} >
-                <!command
-                />
-            </sun:dropDown>
-
-            <sun:dropDown id="filter" selected="#{filterValue}" label="$resource{i18n.common.filterDropDown}" submitForm="#{true}" immediate="#{true}"
-                    values="${values}"  labels="${labels}">
-                <!command
-                />
-            </sun:dropDown>
-         </sun:panelGroup>
-     </facet>
-
-   <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{listOfRows}"} sourceVar="td">
-    <!afterCreate
-         getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
-    />
-   <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col0">
-        <sun:checkbox id="select"
-            selected="#{td.value.selected}"
-            selectedValue="$boolean{true}"
-            onClick="setTimeout('initAllRows(); changeTwoTableButtons()', 0)"
+<!facet actionsTop>
+     <sun:panelGroup id="topActionsGroup1">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{topActionGroup});
         />
-   </sun:tableColumn>
+        <sun:button id="button1" text="$resource{i18n.button.Enable}" disabled="#{true}" primary="#{false}" >
+                <!command
+                    getUIComponent(clientId="$pageSession{tableRowGroupId}", component=>$attribute{tableRowGroup});
+                    getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
+                    foreach (var="row" list="#{requestScope.selectedRows}") {
+                       createMap(result="#{requestScope.attrsMap}");
+                       mapPut(map="#{requestScope.attrsMap}" key="id" value="#{row['Name']}");
+                       mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.encodedDGName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="enabled" value="true");
+                       gf.restRequest(endpoint="#{pageSession.updateEndpoint}"
+                                      attrs="#{requestScope.attrsMap}"
+                                      method="post");
+                    }                    
+                    setAttribute(key="selectedRows" value="${selectedRows}");
+                    prepareAlertMsg(summary="$resource{i18n.msg.enableResourceOnTargetsSuccessful}", type="success");
+                    gf.redirect(page="#{pageSession.listLink}&filterValue=#{pageSession.filterValue}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+        </sun:button>
+                 
+        <sun:button id="button2" text="$resource{i18n.button.Disable}" disabled="#{true}" primary="#{false}" >
+                <!command
+                    getUIComponent(clientId="$pageSession{tableRowGroupId}", component=>$attribute{tableRowGroup});
+                    getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
+                    foreach (var="row" list="#{requestScope.selectedRows}") {
+                       createMap(result="#{requestScope.attrsMap}");
+                       mapPut(map="#{requestScope.attrsMap}" key="id" value="#{row['Name']}");
+                       mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.encodedDGName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="enabled" value="false");
+                       gf.restRequest(endpoint="#{pageSession.updateEndpoint}"
+                                      attrs="#{requestScope.attrsMap}"
+                                      method="post");
+                    }                    
+                    setAttribute(key="selectedRows" value="${selectedRows}");
+                    prepareAlertMsg(summary="$resource{i18n.msg.disableResourceOnTargetsSuccessful}", type="success");
+                    gf.redirect(page="#{pageSession.listLink}&filterValue=#{pageSession.filterValue}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+        </sun:button>
+        
+        <sun:image id="actionTopSeparator1" 
+           align="top"
+           height="$int{18}"
+           width="$int{18}"
+           url="#{request.contextPath}/theme/com/sun/webui/jsf/suntheme/images/table/actions_separator.gif"
+        />
+        <sun:dropDown id="actions" selected="#{actionValue}" submitForm="#{true}" immediate="#{true}" toolTip="$resource{i18n.common.newDropDown}"
+                      labels="$attribute{labels}" values="$attribute{values}"
+                >
+              <!beforeCreate
+                    getContentOfIntegrationPoints(type="org.glassfish.admingui:resourceTypeDropdown" labels="#{requestScope.labels}" values="#{requestScope.values}" );
+                    listAdd(list="#{requestScope.labels}" value="$resource{i18n.common.newDropDown}",  index="0");
+                    listAdd(list="#{requestScope.values}" value=""  index="0" );
+                />
+                <!command
+                    setAttribute(key="click" value="$this{component}");
+                    setAttribute(key="actionValue" value="#{click.selected}");
+                    gf.redirect(page="#{request.contextPath}/#{click.selected}?target=#{pageSession.target}" );
+                />
+            </sun:dropDown>
 
-    <sun:tableColumn headerText="$resource{i18n.common.ResourceName}"  sort="name" rowHeader="$boolean{true}" extrahtml="nowrap" id="col1">
-        <sun:hyperlink id="link" text="#{td.value.name}" url="#{td.value.link}" />
-    </sun:tableColumn>
+            <sun:dropDown id="filter" selected="$pageSession{filterValue}" label="$resource{i18n.common.filterDropDown}" submitForm="#{true}" immediate="#{true}"
+                labels="$attribute{filterLabels}" values="$attribute{filterValues}">
+                <!beforeCreate
+                    getContentOfIntegrationPoints(type="org.glassfish.admingui:resFilterDropdown" labels="#{requestScope.filterLabels}" values="#{requestScope.filterValues}" );
+                    listAdd(list="#{requestScope.filterLabels}" value="$resource{i18n.common.showAll}",  index="0", sort="true");
+                    listAdd(list="#{requestScope.filterValues}" value=""  index="0" );
+                />
+                <!command
+                    setAttribute(key="click" value="$this{component}");
+                    setAttribute(key="filterValue" value="#{click.selected}");
+                    gf.redirect(page="$pageSession{listLink}&filterValue=${filterValue}" );
+                />
+            </sun:dropDown>
+       </sun:panelGroup>
+ </facet>
+        <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{listOfRows}"} sourceVar="td">
+            <!beforeCreate
+                //To get the resources table for a target
+                setAttribute(key="listOfRows" value={});
+                setPageSessionAttribute(key="resTypes" value={"jdbc-resource", "mail-resource", "custom-resource",
+                       "external-jndi-resource", "connector-resource", "admin-object-resource",
+                       "context-service", "managed-thread-factory", "managed-executor-service", "managed-scheduled-executor-service"});
+                setPageSessionAttribute(key="resLabels" value={
+                        "$resource{i18n.tree.jdbcResources}",
+                        "$resource{i18n.tree.javaMailSessions}",
+                        "$resource{i18n.tree.customResources}",
+                        "$resource{i18n.tree.externalResources}",
+                        "$resource{i18n.tree.connectorResources}",
+                        "$resource{i18n.tree.adminObjectResources}",
+                        "$resource{i18n.tree.ContextServices}",
+                        "$resource{i18n.tree.ManagedThreadFactories}",
+                        "$resource{i18n.tree.ManagedExecutorServices}",
+                        "$resource{i18n.tree.ManagedScheduledExecutorServices}"
+                        });
+                setPageSessionAttribute(key="editResUrls" value={
+                        "/jdbc/jdbcResourceEdit.jsf",
+                        "/full/mailResourceEdit.jsf",
+                        "/full/customResourceEdit.jsf",
+                        "/full/externalResourceEdit.jsf",
+                        "/jca/connectorResourceEdit.jsf",
+                        "/jca/adminObjectEdit.jsf",
+                        "/concurrent/contextServiceEdit.jsf",
+                        "/concurrent/managedThreadFactoryEdit.jsf",
+                        "/concurrent/managedExecutorServiceEdit.jsf",
+                        "/concurrent/managedScheduledExecutorServiceEdit.jsf"
+                        });
+                gf.createAttributeMap(keys="$pageSession{resTypes}" values="$pageSession{resLabels}" map="#{requestScope.typeMap}");
+                gf.createAttributeMap(keys="$pageSession{resTypes}" values="$pageSession{editResUrls}" map="#{requestScope.editMap}");
+                gf.getChildrenNamesList(endpoint="#{pageSession.restURL}" result="#{requestScope.resourceNames}");
+                foreach (var="resName" list="#{requestScope.resourceNames}") {
+                    urlencode(value="#{requestScope.resName}" encoding="UTF-8" result="#{requestScope.encodedResName}");
+                    foreach (var="resType" list="#{pageSession.resTypes}") {
+                        //To verify the given resource is of resType or not.
+                        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/resources/#{requestScope.resType}/#{requestScope.encodedResName}", exists="#{requestScope.isResourceLinkExists}");
+                        if (#{requestScope.isResourceLinkExists}) {
+                            if ("!#{pageSession.filterValue} | (#{pageSession.filterValue}=#{requestScope.resType})") {
+                                gf.restRequest(
+                                    endpoint="#{pageSession.restURL}/#{requestScope.encodedResName}"
+                                    method="GET"
+                                    result=>$page{resourceRefAttrs});
+                                if ("#{resourceRefAttrs.data.extraProperties.entity.enabled}=true") {
+                                    setAttribute(key="status" value="/resource/images/enabled.png");
+                                }
+                                if ("#{resourceRefAttrs.data.extraProperties.entity.enabled}=false") {
+                                    setAttribute(key="status" value="/resource/images/disabled.png");
+                                }
+                                mapGet(Map="#{requestScope.typeMap}" Key="#{requestScope.resType}" Value=>$attribute{type});
+                                mapGet(Map="#{requestScope.editMap}" Key="#{requestScope.resType}" Value=>$attribute{link});
+                                gf.createAttributeMap(keys={"Enabled", "selected", "Name", "link", "Type"}
+                                    values={"$attribute{status}",
+                                            "$boolean{false}",
+                                            "$attribute{resName}",
+                                            "$attribute{link}?name=$attribute{resName}",
+                                            "$attribute{type}"}
+                                    map="#{requestScope.oneRowMap}");
+                                listAdd(list="$attribute{listOfRows}" value="#{requestScope.oneRowMap}");
+                            }
+                        }
+                    }
+                }
+            />
+            <!afterCreate
+                getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
+            />
+            <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col0">
+                <sun:checkbox id="select"
+                              toolTip="$resource{i18n.common.select}"
+                              selected="#{td.value.selected}"
+                              selectedValue="$boolean{true}"
+                              onClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
+                              />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18n.common.ResourceName}" rowHeader="$boolean{true}" id="col1">
+                <sun:hyperlink id="link" text="#{td.value.Name}" url="#{td.value.link}" />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18n.common.Enabled}" rowHeader="$boolean{false}" id="col2">
+                <sun:image id="enablecol" value="#{td.value.Enabled}" />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18n.common.type.header}" rowHeader="$boolean{false}" id="col3">
+                <sun:staticText escape="true" id="type" value="#{td.value.Type}" />
+            </sun:tableColumn>
+       </sun:tableRowGroup>
+    </sun:table>
 
-   <sun:tableColumn headerText="$resource{i18n.common.Enabled}"  sort="enabled" rowHeader="$boolean{true}" id="enabled">
-        <staticText id="enabled" value="#{td.value.enabled}" />
-    </sun:tableColumn>
-
-    <sun:tableColumn headerText="$resource{i18n.common.Type}"  sort="resType" rowHeader="$boolean{true}" id="resType">
-        <staticText id="resType" value="#{td.value.resType}" />
-    </sun:tableColumn>
-
-   </sun:tableRowGroup>
-
-</sun:table>-->
 
 
 

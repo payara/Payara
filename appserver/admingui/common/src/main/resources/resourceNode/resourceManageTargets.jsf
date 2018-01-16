@@ -61,6 +61,12 @@
                  gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.targetName}/resource-ref/#{pageSession.encodedResName}" exists="isCluster");
                  if ("!#{requestScope.isCluster}") {
                      gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedResName}" exists="isServer");
+                     if ("!#{requestScope.isServer}") {
+                        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.targetName}/resource-ref/#{pageSession.encodedResName}" exists="isDG"); 
+                        if("#{requestScope.isDG}") {
+                          listAdd(list="#{pageSession.resTargets}" value="#{requestScope.targetName}");
+                        } 
+                     }
                      if("#{requestScope.isServer}") {
                          listAdd(list="#{pageSession.resTargets}" value="#{requestScope.targetName}");
                      }
