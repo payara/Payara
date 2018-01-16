@@ -152,6 +152,32 @@ holder.
             <displayName>Garbage Collection Time</displayName>
             <description>Displays the approximate accumulated collection elapsed time in milliseconds. This attribute displays -1 if the collection elapsed time is undefined for this collector. The JVM implementation may use a high resolution timer to measure the elapsed time. This attribute may display the same value even if the collection count has been incremented if the collection elapsed time is very short.</description>
         </metadata>
+        
+        <!--extended metadata-->
+        <metadata>
+            <name>memory.maxNonHeap</name>
+            <mbean>java.lang:type=Memory/NonHeapMemoryUsage#max</mbean>
+            <type>gauge</type>
+            <unit>bytes</unit>
+            <displayName>NonHeapMemory Max Usage</displayName>
+            <description>Displays the maximum amount of memory in bytes that can be used for NonHeapMemory.</description>
+        </metadata>
+        <metadata>
+            <name>memory.usedNonHeap</name>
+            <mbean>java.lang:type=Memory/NonHeapMemoryUsage#used</mbean>
+            <type>gauge</type>
+            <unit>bytes</unit>
+            <displayName>NonHeapMemory Used</displayName>
+            <description>Displays the amount of used memory in bytes.</description>
+        </metadata>
+        <metadata>
+            <name>memory.committedNonHeap</name>
+            <mbean>java.lang:type=Memory/NonHeapMemoryUsage#committed</mbean>
+            <type>gauge</type>
+            <unit>bytes</unit>
+            <displayName>NonHeapMemory Committed</displayName>
+            <description>Displays the amount of memory in bytes that is committed for the JVM to use.</description>
+        </metadata>
     </base>
     <vendor>
         <!--sample metadata-->

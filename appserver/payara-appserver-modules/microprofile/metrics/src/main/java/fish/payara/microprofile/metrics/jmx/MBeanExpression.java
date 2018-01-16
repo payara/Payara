@@ -65,7 +65,7 @@ public class MBeanExpression {
         if (expression == null || expression.trim().isEmpty()) {
             throw new IllegalArgumentException("MBean Expression is null");
         }
-        int slashIndex = expression.indexOf('/');
+        int slashIndex = expression.lastIndexOf('/');
         if (slashIndex < 0) {
             throw new IllegalArgumentException("MBean Expression is invalid : " + expression);
         }
