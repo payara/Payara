@@ -1298,12 +1298,12 @@ public class JavaEETransactionManagerSimplified
         try {
             Transaction tran = (Transaction) inv.getTransaction();
             if (isTransactionActive(tran)) {
-                List l = getExistingResourceList(inv.getInstance(), inv);
-                if (l == null || l.size() == 0)
+                @SuppressWarnings("unchecked")
+                List<TransactionalResource> l = getExistingResourceList(inv.getInstance(), inv);
+                if (l == null || l.isEmpty())
                     return;
 
                 int flag = (suspend)? XAResource.TMSUSPEND : XAResource.TMSUCCESS;
-                @SuppressWarnings("unchecked")
                 List<TransactionalResource> workingList = new ArrayList<>(l);
                 for(TransactionalResource h : workingList){
                     try{
@@ -1361,19 +1361,20 @@ public class JavaEETransactionManagerSimplified
         try {
             Transaction tran = (Transaction) inv.getTransaction();
             if (isTransactionActive(tran)) {
-                List l = getExistingResourceList(inv.getInstance(), inv);
-                if (l == null || l.size() == 0) return;
-                Iterator it = l.iterator();
+                @SuppressWarnings("unchecked")
+                List<TransactionalResource> l = getExistingResourceList(inv.getInstance(), inv);
+                if (l == null || l.isEmpty()) return;
+
+                List<TransactionalResource> workingList = new ArrayList<>(l);
                 // END IASRI 4705808 TTT002
-                while(it.hasNext()) {
-                    TransactionalResource h = (TransactionalResource) it.next();
+                for(TransactionalResource h : workingList) {
                     try{
                         enlistResource(tran,h);
                     }catch(Exception ex){
                         if (_logger.isLoggable(Level.FINE))
                             _logger.log(Level.WARNING, "enterprise_distributedtx.pooling_excep", ex);
 
-                        it.remove();
+                        l.remove(h);
                         handleResourceError(h,ex,tran);
                     }
                 }
