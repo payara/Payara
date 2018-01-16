@@ -498,6 +498,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         checkValidity();
         T result = null;
         if (iface.isInstance(this)) { //if iface is "java.sql.Connection"
+            
             result = iface.cast(this);
         } else if (iface.isInstance(con)) {
             //if iface is not "java.sql.Connection" & implemented by native Connection
