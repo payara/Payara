@@ -45,7 +45,6 @@ import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.IOException;
 import java.io.Writer;
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
@@ -80,11 +79,20 @@ public abstract class JsonWriter implements MetricsWriter {
         if (APPLICATION.getName().equals(registryName)) {
             JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
             for (String appRegistryName : service.getApplicationRegistryNames()) {
+                try {
                 getJsonData(appRegistryName, metricName).build()
                         .entrySet()
                         .forEach(entry -> payloadBuilder.add(entry.getKey(), entry.getValue()));
+                } catch (NoSuchMetricException e) {
+                    //ignore
+                }
             }
-            serialize(payloadBuilder.build());
+            JsonObject payload = payloadBuilder.build();
+            if(payload.isEmpty()){
+                throw new NoSuchMetricException(metricName);
+            } else {
+                serialize(payload);
+            }
         } else {
             serialize(getJsonData(registryName, metricName).build());
         }

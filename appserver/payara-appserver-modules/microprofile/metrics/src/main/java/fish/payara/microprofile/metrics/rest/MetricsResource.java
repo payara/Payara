@@ -52,7 +52,6 @@ import fish.payara.microprofile.metrics.writer.PrometheusWriter;
 import java.io.IOException;
 import java.io.Writer;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -93,6 +92,10 @@ public class MetricsResource extends HttpServlet {
         }
         MetricsRequest metricsRequest = new MetricsRequest(request);
         try {
+            if (metricsRequest.isRegistryRequested()
+                    && !REGISTRY_NAMES.contains(metricsRequest.getRegistryName())) {
+                throw new NoSuchRegistryException(metricsRequest.getRegistryName());
+            }
             MetricsWriter outputWriter = getOutputWriter(request, response);
             if (outputWriter != null) {
                 setContentType(outputWriter, response);
@@ -192,15 +195,12 @@ public class MetricsResource extends HttpServlet {
 
         private final String registryName;
         private final String metricName;
-        private final String applicationName;
         
         public MetricsRequest(HttpServletRequest request) {
                 String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
                 String[] pathInfos = pathInfo.split("/");
                 registryName = pathInfos.length > 0 ? pathInfos[0] : null;
                 metricName = pathInfos.length > 1 ? pathInfos[1] : null;
-                applicationName = request.getContextPath() != null && !request.getContextPath().trim().isEmpty() ? 
-                                    request.getContextPath().substring(1) : EMPTY_STRING;
         }
 
         public String getRegistryName() {
@@ -209,10 +209,6 @@ public class MetricsResource extends HttpServlet {
 
         public String getMetricName() {
             return metricName;
-        }
-
-        public String getApplicationName() {
-            return applicationName;
         }
         
         public boolean isRegistryRequested(){
