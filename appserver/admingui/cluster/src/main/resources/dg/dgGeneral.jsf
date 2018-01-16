@@ -173,6 +173,33 @@
             <sun:property id="dgNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.dg.dgName}" >
                 <sun:staticText id="dgName"text="#{pageSession.dgName}" />
             </sun:property>
+            <sun:property id="dgInstances"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusters.instanceCol}" >
+                    <event>
+            <!beforeEncode
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.dgName}/dg-server-ref",
+                    id="Ref" result="#{requestScope.listOfInstances}");
+            />
+        </event>
+        "<table border="0" cellpadding="10">
+        <foreach key="instance" list="#{requestScope.listOfInstances}">
+            <event>
+            <!beforeEncode
+                setAttribute(key="tmp" value="#{instance}");
+                gf.listInstances(optionKeys={"id"} optionValues={"$attribute{tmp}"}, statusMap="#{requestScope.statusMap}");
+                setAttribute(key="status" value="#{requestScope.statusMap['$attribute{tmp}']}");
+                setAttribute(key="statusString" value="$resource{i18nc.status.image.$attribute{status}}  &nbsp;  $resource{i18nc.status.$attribute{status}}");
+            />
+            </event>
+            "<tr>
+            "<td>
+            <sun:hyperlink id="iLink" url="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?instanceName=#{instance}" text="#{instance}" />
+            "&nbsp;</td> <td>
+             <staticText id="colStopped" value="#{requestScope.statusString}" />
+            "</td>
+            "</tr>
+        </foreach>
+        "</table>
+            </sun:property>
         </sun:propertySheetSection>
 
     </sun:propertySheet>

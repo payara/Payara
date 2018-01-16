@@ -195,7 +195,7 @@
             </event>
             "<tr>
             "<td>
-            <sun:hyperlink id="iLink" url="#{request.contextPath}/cluster/dg/dgInstanceEdit.jsf?dgName=#{pageSession.dgName}&instanceName=#{instance}" text="#{instance}" />
+            <sun:hyperlink id="iLink" url="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?instanceName=#{instance}" text="#{instance}" />
             "</td> <td>
              <staticText id="colStopped" value="#{requestScope.statusString}" />
             "</td>
