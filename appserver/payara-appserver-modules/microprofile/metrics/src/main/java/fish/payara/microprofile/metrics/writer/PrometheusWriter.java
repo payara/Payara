@@ -90,7 +90,14 @@ public class PrometheusWriter implements MetricsWriter {
         StringBuilder builder = new StringBuilder();
         if (APPLICATION.getName().equals(registryName)) {
             for (String appRegistryName : service.getApplicationRegistryNames()) {
-                writeMetrics(builder, appRegistryName, metricName);
+                try {
+                    writeMetrics(builder, appRegistryName, metricName);
+                } catch (NoSuchMetricException e) {
+                    //ignore
+                }
+            }
+            if(builder.length() == 0){
+                throw new NoSuchMetricException(metricName);
             }
         } else {
             writeMetrics(builder, registryName, metricName);

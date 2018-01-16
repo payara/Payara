@@ -78,10 +78,19 @@ public abstract class JsonWriter implements MetricsWriter {
     public void write(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException {
         if(APPLICATION.getName().equals(registryName)){
             JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
-            for(String appRegistryName : service.getApplicationRegistryNames()){
-                payloadBuilder.addAll(getJsonData(appRegistryName, metricName));
+            for (String appRegistryName : service.getApplicationRegistryNames()) {
+                try {
+                    payloadBuilder.addAll(getJsonData(appRegistryName, metricName));
+                } catch (NoSuchMetricException e) {
+                    //ignore
+                }
             }
-            serialize(payloadBuilder.build());
+            JsonObject payload = payloadBuilder.build();
+            if(payload.isEmpty()){
+                throw new NoSuchMetricException(metricName);
+            } else {
+                serialize(payload);
+            }
         } else {
             serialize(getJsonData(registryName, metricName).build());
         }

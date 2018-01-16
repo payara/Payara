@@ -53,7 +53,12 @@ import javax.servlet.ServletRegistration;
 public class MetricsServletContainerInitializer implements ServletContainerInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {       
+    public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {  
+        
+        if(!"".equals(ctx.getContextPath())){
+            return;
+        }
+        
         // Check if there is already a servlet for metrics
         Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
         for (ServletRegistration reg : registrations.values()) {

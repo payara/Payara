@@ -89,7 +89,7 @@ public class MBeanMetadataHelper {
              if (beanMetadata.getTypeRaw() == COUNTER) {
                  type = new MBeanCounterImpl(mBeanExpression);
             } else if (beanMetadata.getTypeRaw() == GAUGE) {
-                type = (Gauge) mBeanExpression::getNumberValue;
+                type = (Gauge<Number>) mBeanExpression::getNumberValue;
             }  else {
                 throw new IllegalStateException("Unsupported type : " + beanMetadata);
             }
