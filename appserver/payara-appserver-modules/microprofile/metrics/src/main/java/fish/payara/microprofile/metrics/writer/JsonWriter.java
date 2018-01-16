@@ -45,6 +45,7 @@ import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
@@ -53,6 +54,8 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonWriterFactory;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 import org.glassfish.internal.api.Globals;
 
 public abstract class JsonWriter implements MetricsWriter {
@@ -68,43 +71,61 @@ public abstract class JsonWriter implements MetricsWriter {
         this.service = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
     }
 
-    protected abstract JsonObject getJsonData(String registryName) throws NoSuchRegistryException;
+    protected abstract JsonObjectBuilder getJsonData(String registryName) throws NoSuchRegistryException;
 
-    protected abstract JsonObject getJsonData(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException;
+    protected abstract JsonObjectBuilder getJsonData(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException;
 
     @Override
     public void write(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException {
-        if(APPLICATION.getName().equals(registryName)){
-            for(String appRegistryName : service.getApplicationRegistryNames()){
-                serialize(getJsonData(appRegistryName, metricName));
+        if (APPLICATION.getName().equals(registryName)) {
+            JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+            for (String appRegistryName : service.getApplicationRegistryNames()) {
+                getJsonData(appRegistryName, metricName).build()
+                        .entrySet()
+                        .forEach(entry -> payloadBuilder.add(entry.getKey(), entry.getValue()));
             }
+            serialize(payloadBuilder.build());
         } else {
-            serialize(getJsonData(registryName, metricName));
+            serialize(getJsonData(registryName, metricName).build());
         }
     }
 
     @Override
     public void write(String registryName) throws NoSuchRegistryException, IOException {
         if (APPLICATION.getName().equals(registryName)) {
+            JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
             for (String appRegistryName : service.getApplicationRegistryNames()) {
-                serialize(getJsonData(appRegistryName));
+                getJsonData(appRegistryName).build()
+                        .entrySet()
+                        .forEach(entry -> payloadBuilder.add(entry.getKey(), entry.getValue()));
             }
+            serialize(payloadBuilder.build());
         } else {
-            serialize(getJsonData(registryName));
+            serialize(getJsonData(registryName).build());
         }
     }
 
     @Override
     public void write() throws IOException {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder applicationBuilder = Json.createObjectBuilder();
         for (String registryName : service.getAllRegistryNames()) {
             try {
-                JsonObject value = getJsonData(registryName);
-                if (!value.isEmpty()) {
-                    payloadBuilder.add(registryName, value);
+                JsonObjectBuilder value = getJsonData(registryName);
+                if (!BASE.getName().equals(registryName)
+                        && !VENDOR.getName().equals(registryName)) {
+                    value.build()
+                            .entrySet()
+                            .forEach(entry -> applicationBuilder.add(entry.getKey(), entry.getValue()));
+                } else {
+                    payloadBuilder.add(registryName, value.build());
                 }
             } catch (NoSuchRegistryException e) { // Ignore
             }
+        }
+        JsonObject applicationObject = applicationBuilder.build();
+        if (!applicationObject.isEmpty()) {
+            payloadBuilder.add(APPLICATION.getName(), applicationObject);
         }
         serialize(payloadBuilder.build());
     }

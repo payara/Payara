@@ -75,21 +75,21 @@ public class JsonMetadataWriter extends JsonWriter {
     }
 
     @Override
-    protected JsonObject getJsonData(String registryName) throws NoSuchRegistryException {
+    protected JsonObjectBuilder getJsonData(String registryName) throws NoSuchRegistryException {
         return getJsonFromMetadata(service.getMetadataAsMap(registryName));
     }
 
     @Override
-    protected JsonObject getJsonData(String registryName, String metric) throws NoSuchRegistryException, NoSuchMetricException {
+    protected JsonObjectBuilder getJsonData(String registryName, String metric) throws NoSuchRegistryException, NoSuchMetricException {
         return getJsonFromMetadata(service.getMetadataAsMap(registryName, metric));
     }
 
-    private JsonObject getJsonFromMetadata(Map<String, Metadata> metadataMap) {
+    private JsonObjectBuilder getJsonFromMetadata(Map<String, Metadata> metadataMap) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
         for (Entry<String, Metadata> entry : metadataMap.entrySet()) {
             payloadBuilder.add(entry.getKey(), getJsonFromMetadata(entry.getValue()));
         }
-        return payloadBuilder.build();
+        return payloadBuilder;
     }  
     
     private JsonObject getJsonFromMetadata(Metadata metadata) {

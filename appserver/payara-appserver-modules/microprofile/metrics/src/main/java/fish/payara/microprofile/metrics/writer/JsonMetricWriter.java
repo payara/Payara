@@ -57,7 +57,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
@@ -92,16 +91,16 @@ public class JsonMetricWriter extends JsonWriter {
     }
 
     @Override
-    protected JsonObject getJsonData(String registryName) throws NoSuchRegistryException {
+    protected JsonObjectBuilder getJsonData(String registryName) throws NoSuchRegistryException {
         return getJsonFromMetrics(service.getMetricsAsMap(registryName));
     }
 
     @Override
-    protected JsonObject getJsonData(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
+    protected JsonObjectBuilder getJsonData(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
         return getJsonFromMetrics(service.getMetricsAsMap(registryName, metricName));
     }
 
-    private JsonObject getJsonFromMetrics(Map<String, Metric> metricMap) {
+    private JsonObjectBuilder getJsonFromMetrics(Map<String, Metric> metricMap) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
         for (Map.Entry<String, Metric> entry : metricMap.entrySet()) {
             String metricName = entry.getKey();
@@ -133,7 +132,7 @@ public class JsonMetricWriter extends JsonWriter {
                 LOGGER.log(Level.WARNING, "Metric type '{0} for {1} is invalid", new Object[]{metric.getClass(), metricName});
             }
         }
-        return payloadBuilder.build();
+        return payloadBuilder;
     }
     
     private Map<String, Number> getTimerNumbers(Timer timer) {
