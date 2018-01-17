@@ -44,6 +44,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -132,6 +134,8 @@ public class HealthCheckService implements EventListener {
                 try {
                     healthCheckResponses.add(healthCheck.call());
                 } catch (Exception ex) {
+                    Logger.getLogger(HealthCheckService.class.getName()).log(Level.WARNING, 
+                            "Exception executing HealthCheck: " + healthCheck.getClass().getCanonicalName(), ex);
                     // If there's any issue, set the response to an error
                     response.setStatus(500);
                 }
