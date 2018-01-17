@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.base;
 
@@ -134,8 +135,7 @@ public abstract class ConnectionHolder implements Connection {
      */
     public Connection getConnection() throws SQLException {
         //To ensure that the actual connection is always returned and not a proxy
-        Connection result = con.unwrap(java.sql.Connection.class);
-        return result;
+        return con.unwrap(java.sql.Connection.class);
     }
 
     /**
