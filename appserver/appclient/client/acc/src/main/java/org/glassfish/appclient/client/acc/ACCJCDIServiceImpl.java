@@ -1,19 +1,19 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://oss.oracle.com/licenses/CDDL+GPL-1.1
+ * or LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.client.acc;
 
@@ -61,7 +61,7 @@ import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="mailto:phil.zampino@oracle.com">Phil Zampino</a>
@@ -69,7 +69,7 @@ import java.util.Set;
 @Service
 public class ACCJCDIServiceImpl implements JCDIService {
 
-    private WeldContainer weldContainer;
+    private WeldContainer weldContainer = null;
 
     @Inject
     private InjectionManager injectionMgr;
@@ -129,7 +129,9 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle, boolean invokePostConstruct) {
+    public JCDIInjectionContext createManagedObject(Class managedClass,
+                                                    BundleDescriptor bundle,
+                                                    boolean invokePostConstruct) {
         JCDIInjectionContext context = null;
 
         Object managedObject = null;
@@ -180,11 +182,11 @@ public class ACCJCDIServiceImpl implements JCDIService {
         }
     }
 
-
     @Override
-    public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle, JCDIService.JCDIInjectionContext<?> ejbContext,
-            Set<EjbInterceptor> ejbInterceptors, EjbDescriptor ejbDesc) {
-
+    public <T> T createInterceptorInstance( Class<T> interceptorClass,
+                                     EjbDescriptor ejbDesc,
+                                     JCDIService.JCDIInjectionContext ejbContext,
+                                     Set<EjbInterceptor> ejbInterceptors ) {
         T interceptorInstance = null;
 
         WeldContainer wc = getWeldContainer();
@@ -206,14 +208,19 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
 
     @Override
-    public JCDIInjectionContext createJCDIInjectionContext(EjbDescriptor ejbDesc) {
-        return createJCDIInjectionContext(ejbDesc, null);
+    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, Map<Class, Object> ejbInfo) {
+        return createJCDIInjectionContext(ejbDesc, null, null);
     }
 
 
     @Override
-    public JCDIInjectionContext createJCDIInjectionContext(EjbDescriptor ejbDesc, Object instance) {
+    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance, Map<Class, Object> ejbInfo) {
         throw new UnsupportedOperationException("Application Client Container");
+    }
+
+    @Override
+    public JCDIInjectionContext createEmptyJCDIInjectionContext() {
+        return new JCDIInjectionContextImpl();
     }
 
 
@@ -246,6 +253,9 @@ public class ACCJCDIServiceImpl implements JCDIService {
         CreationalContext cc;
         Object instance;
 
+        JCDIInjectionContextImpl() {
+        }
+
         JCDIInjectionContextImpl(InjectionTarget it, CreationalContext cc, Object i) {
             this.it = it;
             this.cc = cc;
@@ -254,6 +264,11 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
         public Object getInstance() {
             return instance;
+        }
+
+        @Override
+        public void setInstance(Object instance) {
+            this.instance = instance;
         }
 
         @SuppressWarnings("unchecked")
@@ -273,13 +288,33 @@ public class ACCJCDIServiceImpl implements JCDIService {
         }
 
         @Override
+        public void setInjectionTarget(InjectionTarget injectionTarget) {
+            this.it = injectionTarget;
+        }
+
+        @Override
         public CreationalContext getCreationalContext() {
             return cc;
         }
 
-        public void addDependentContext(JCDIInjectionContext dependentContext) {
+        @Override
+        public void setCreationalContext(CreationalContext creationalContext) {
+            this.cc = creationalContext;
+        }
+
+        public void addDependentContext( JCDIInjectionContext dependentContext ) {
             // nothing for now
         }
-    }
 
+        @Override
+        public Collection<JCDIInjectionContext> getDependentContexts() {
+            return new ArrayList<JCDIInjectionContext>();
+        }
+
+        @Override
+        public Object createEjbAfterAroundConstruct() {
+            // nothing for now
+            return null;
+        }
+    }
 }
