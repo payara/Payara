@@ -40,7 +40,6 @@
 package fish.payara.microprofile.healthcheck;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +49,6 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
@@ -58,12 +56,13 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Service that handles the registration, execution, and response of MicroProfile HealthChecks.
  * @author Andrew Pielage
  */
 @Service(name = "healthcheck-service")
@@ -77,11 +76,16 @@ public class HealthCheckService implements EventListener {
     
     @PostConstruct
     public void postConstruct() {
+        if (events == null) {
+            events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
+        }
+        
         events.register(this);
     }
     
     @Override
     public void event(Event event) {
+        // Remove healthchecks when the app is undeployed.
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = Deployment.APPLICATION_UNLOADED.getHook(event);
             if (appInfo != null) {
@@ -90,56 +94,53 @@ public class HealthCheckService implements EventListener {
         }
     }
     
+    /**
+     * Register a HealthCheck to the Set of HealthChecks to execute when performHealthChecks is called.
+     * @param appName The name of the application being deployed
+     * @param healthCheck The HealthCheck to register
+     */
     public void registerHealthCheck(String appName, HealthCheck healthCheck) {
         if (healthChecks.containsKey(appName)) {
             healthChecks.get(appName).add(healthCheck);
         } else {
+            // Sync so that we don't get clashes
             synchronized(this) {
+                // Check again so that we don't overwrite
                 if (!healthChecks.containsKey(appName)) {
+                    // Create a new Map entry and set for the Healthchecks.
                     healthChecks.put(appName, ConcurrentHashMap.newKeySet());
                 }
             }
             
+            // Add the healthcheck to the Set in the Map
             healthChecks.get(appName).add(healthCheck);
         }
-        
     }
     
-    public void performHealthChecks(HttpServletRequest request, HttpServletResponse httpResponse) throws IOException {
+    /**
+     * Execute the call method of every registered HealthCheck and generate the response.
+     * @param response The response to return
+     * @throws IOException If there's an issue writing the response
+     */
+    public void performHealthChecks(HttpServletResponse response) throws IOException {
         Set<HealthCheckResponse> healthCheckResponses = new HashSet<>();
         
+        // Iterate over every HealthCheck stored in the Map
         for (Set<HealthCheck> healthCheckSet : healthChecks.values()) {
             for (HealthCheck healthCheck : healthCheckSet) {
+                // Execute the call method of the HealthCheck and add its outcome to the set of responses
                 try {
                     healthCheckResponses.add(healthCheck.call());
                 } catch (Exception ex) {
-                    httpResponse.setStatus(500);
+                    // If there's any issue, set the response to an error
+                    response.setStatus(500);
                 }
             }
         }
         
-        if (httpResponse.getStatus() != 500) {
-            constructResponse(httpResponse, healthCheckResponses);
-        }
-    }
-    
-    public void performAppHealthChecks(HttpServletRequest request, HttpServletResponse httpResponse, String appName) 
-            throws IOException {
-        if (appName == null || !healthChecks.containsKey(appName)) {
-            performHealthChecks(request, httpResponse);
-        } else {
-            Set<HealthCheckResponse> healthCheckResponses = new HashSet<>();
-            for (HealthCheck healthCheck : healthChecks.get(appName)) {
-                try {
-                    healthCheckResponses.add(healthCheck.call());
-                } catch (Exception ex) {
-                    httpResponse.setStatus(500);
-                }
-            }
-
-            if (httpResponse.getStatus() != 500) {
-                constructResponse(httpResponse, healthCheckResponses);
-            }
+        // If we haven't encountered an exception, construct the JSON response
+        if (response.getStatus() != 500) {
+            constructResponse(response, healthCheckResponses);
         }
     }
     
@@ -147,10 +148,12 @@ public class HealthCheckService implements EventListener {
             Set<HealthCheckResponse> healthCheckResponses) throws IOException {
         httpResponse.setContentType("application/json");
         
+        // For each HealthCheckResponse we got from executing the health checks...
         JsonArrayBuilder checksArray = Json.createArrayBuilder();
         for (HealthCheckResponse healthCheckResponse : healthCheckResponses) {
             JsonObjectBuilder healthCheckObject = Json.createObjectBuilder();
             
+            // Add the name and state
             healthCheckObject.add("name", healthCheckResponse.getName());
             healthCheckObject.add("state", healthCheckResponse.getState().toString());
             
@@ -166,12 +169,14 @@ public class HealthCheckService implements EventListener {
             // Add finished Object to checks array
             checksArray.add(healthCheckObject);
             
-            // Check if we need to set the response as 503
+            // Check if we need to set the response as 503. Check against status 200 so we don't repeatedly set it
             if (httpResponse.getStatus() == 200 
                     && healthCheckResponse.getState().equals(HealthCheckResponse.State.DOWN)) {
                 httpResponse.setStatus(503);
             }
         }
+        
+        // Create the final aggregate object
         JsonObjectBuilder responseObject = Json.createObjectBuilder();
         
         // Set the aggregate outcome
@@ -181,8 +186,10 @@ public class HealthCheckService implements EventListener {
             responseObject.add("outcome", "DOWN");
         }
         
+        // Add all of the checks
         responseObject.add("checks", checksArray);
         
+        // Print the outcome
         httpResponse.getOutputStream().print(responseObject.build().toString());
     }
 

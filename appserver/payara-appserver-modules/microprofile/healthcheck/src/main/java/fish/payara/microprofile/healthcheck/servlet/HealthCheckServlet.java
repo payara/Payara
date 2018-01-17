@@ -41,17 +41,14 @@ package fish.payara.microprofile.healthcheck.servlet;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
 import java.io.IOException;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Servlet that kicks off the HealthChecks when hit.
  * @author Andrew Pielage
  */
 public class HealthCheckServlet extends HttpServlet {
@@ -68,18 +65,13 @@ public class HealthCheckServlet extends HttpServlet {
             throws ServletException, IOException {
         HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(
                 HealthCheckService.class);
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(
-                    InvocationManager.class);
         
-        // If it's null, throw an exception
+        // If we couldn't find the HealthCheckService, throw an exception
         if (healthCheckService == null) {
             throw new ServletException("Could not find Health Check Service");
-        } else {
-    
         }
         
-        healthCheckService.performAppHealthChecks(request, response, 
-                invocationManager.getCurrentInvocation().getAppName());
+        healthCheckService.performHealthChecks(response);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

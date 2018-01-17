@@ -42,6 +42,8 @@ package fish.payara.microprofile.healthcheck.servlet;
 import fish.payara.microprofile.healthcheck.HealthCheckService;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
@@ -56,39 +58,49 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Servlet Container Initialiser that registers the HealthCheckServlet, 
+ * as well as the HealthChecks of a deployed application.
  * @author Andrew Pielage
  */
 public class HealthCheckServletContainerInitializer implements ServletContainerInitializer {
-
+    
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
-        // Check if there is already a servlet for healthcheck
-        Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
-        for (ServletRegistration reg : registrations.values()) {
-            if (reg.getClass().equals(HealthCheckServlet.class)) {
-                return;
+        // Check if this context is the root one ("/")
+        if (ctx.getContextPath().isEmpty()) {
+            // Check if there is already a servlet for healthcheck
+            Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
+            for (ServletRegistration reg : registrations.values()) {
+                if (reg.getClass().equals(HealthCheckServlet.class)) {
+                    return;
+                }
             }
+            
+            // Register servlet
+            ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", 
+                    HealthCheckServlet.class);
+            reg.addMapping("/health");
         }
         
-        // Register servlet
-        ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
-        reg.addMapping("/health");
-        
-        // Check for any Beans annotated with @Health
+        // Get the BeanManager
         BeanManager beanManager = null;
         try {
             beanManager = CDI.current().getBeanManager();
         } catch (Exception ex) {
-            
+            Logger.getLogger(HealthCheckServletContainerInitializer.class.getName()).log(Level.FINE, 
+                    "Exception getting BeanManager; this probably isn't a CDI application. "
+                            + "No HealthChecks will be registered", ex);
         }
         
+        // Check for any Beans annotated with @Health
         if (beanManager != null) {
             HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(
                     HealthCheckService.class);
             InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(
                     InvocationManager.class);
             
+            // For each bean annotated with @Health and implementing the HealthCheck interface,
+            // register it to the HealthCheckService along with the application name
             Set<Bean<?>> beans = beanManager.getBeans(HealthCheck.class, new AnnotationLiteral<Health>() {});
             for (Bean<?> bean : beans) {
                 healthCheckService.registerHealthCheck(invocationManager.getCurrentInvocation().getAppName(),

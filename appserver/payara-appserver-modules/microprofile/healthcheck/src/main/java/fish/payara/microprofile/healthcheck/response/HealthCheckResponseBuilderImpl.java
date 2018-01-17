@@ -47,7 +47,7 @@ import org.eclipse.microprofile.health.HealthCheckResponse.State;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 
 /**
- *
+ * Base Implementation of HealthCheckResponseBuilder.
  * @author Andrew Pielage
  */
 public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
@@ -58,6 +58,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     
     @Override
     public HealthCheckResponseBuilder name(String name) {
+        // If the provided string isn't empty or null, set it as the name, otherwise throw an exception.
         if (!stringEmptyOrNull(name)) {
             this.name = name;
             return this;
@@ -68,6 +69,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     @Override
     public HealthCheckResponseBuilder withData(String key, String value) {
+        // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
         if (!stringEmptyOrNull(name)) {
             data.get().put(key, value);
             return this;
@@ -78,6 +80,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     @Override
     public HealthCheckResponseBuilder withData(String key, long value) {
+        // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
         if (!stringEmptyOrNull(name)) {
             data.get().put(key, value);
             return this;
@@ -88,6 +91,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     @Override
     public HealthCheckResponseBuilder withData(String key, boolean value) {
+        // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
         if (!stringEmptyOrNull(name)) {
             data.get().put(key, value);
             return this;
@@ -121,15 +125,18 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     @Override
     public HealthCheckResponse build() {
+        // Just use the basic HealthCheckResponse implementation
         HealthCheckResponse healthCheckResponse = new HealthCheckResponseImpl(name, state, data);
         return healthCheckResponse;
     }
     
+    /**
+     * Helper method that checks whether or not the provided String is empty or null
+     * @param string The String to evaluate
+     * @return True if the String is empty or null
+     */
     private boolean stringEmptyOrNull(String string) {
-        if (string == null || string.equals("")) {
-            return true;
-        } else {
-            return false;
-        }
+        return (string == null || string.isEmpty());
     }
+    
 }

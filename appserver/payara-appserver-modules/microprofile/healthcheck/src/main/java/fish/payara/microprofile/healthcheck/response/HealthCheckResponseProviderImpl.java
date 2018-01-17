@@ -43,13 +43,14 @@ import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 import org.eclipse.microprofile.health.spi.HealthCheckResponseProvider;
 
 /**
- *
+ * Base Implementation of the HealthCheckResponseProvider.
  * @author Andrew Pielage
  */
 public class HealthCheckResponseProviderImpl implements HealthCheckResponseProvider {
 
     @Override
     public HealthCheckResponseBuilder createResponseBuilder() {
+        // Just create and return the basic HealthCheckResponseBuilder implementation
         HealthCheckResponseBuilder healthCheckResponseBuilder = new HealthCheckResponseBuilderImpl();
         return healthCheckResponseBuilder;
     }

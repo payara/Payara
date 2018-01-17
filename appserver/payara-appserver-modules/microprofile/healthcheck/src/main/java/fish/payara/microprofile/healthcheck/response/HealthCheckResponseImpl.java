@@ -44,7 +44,7 @@ import java.util.Optional;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 
 /**
- *
+ * Base Implementation of HealthCheckResponse.
  * @author Andrew Pielage
  */
 public class HealthCheckResponseImpl extends HealthCheckResponse {
