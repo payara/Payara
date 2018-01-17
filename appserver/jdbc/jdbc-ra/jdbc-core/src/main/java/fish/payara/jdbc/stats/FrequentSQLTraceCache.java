@@ -39,8 +39,10 @@
  */
 // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
-package com.sun.gjc.util;
+package fish.payara.jdbc.stats;
 
+import com.sun.gjc.util.SQLTrace;
+import com.sun.gjc.util.SQLTraceCache;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -88,7 +90,11 @@ public class FrequentSQLTraceCache extends SQLTraceCache {
                 if (cache.size() < maxStoredEntries){
                     cache.put(cacheObj.getQueryName(), cacheObj);
                 } else {
-                    _logger.log(Level.WARNING, "Frequent SQL Trace Cache full, {0} not stored", cacheObj.getQueryName());
+                    if (_logger.isLoggable(Level.CONFIG)) {
+                        _logger.log(Level.CONFIG, "Frequent SQL Trace Cache full, {0} not stored.", cacheObj.getQueryName());
+                    } else {
+                        _logger.log(Level.INFO, "Frequent SQL Trace Cache full, enable CONFIG log level for more info.");
+                    }
                 }
             }
         }
