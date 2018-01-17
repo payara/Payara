@@ -154,7 +154,6 @@
         
         <!-- JWT -->
         
-        <!-- 
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
@@ -165,7 +164,6 @@
             <artifactId>microprofile-jwt-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
-         -->
         
         <dependency>
             <groupId>com.nimbusds</groupId>
