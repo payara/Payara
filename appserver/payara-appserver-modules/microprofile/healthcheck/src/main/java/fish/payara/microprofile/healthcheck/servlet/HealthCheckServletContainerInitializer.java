@@ -95,7 +95,6 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
                         (HealthCheck) beanManager.getReference(
                                 bean, bean.getBeanClass(), beanManager.createCreationalContext(bean)));
             }
-            System.out.println(beans);
         }
     }
     
