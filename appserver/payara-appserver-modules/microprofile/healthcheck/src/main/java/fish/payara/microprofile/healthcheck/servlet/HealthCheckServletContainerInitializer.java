@@ -103,9 +103,20 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             // register it to the HealthCheckService along with the application name
             Set<Bean<?>> beans = beanManager.getBeans(HealthCheck.class, new AnnotationLiteral<Health>() {});
             for (Bean<?> bean : beans) {
+                HealthCheck healthCheck = (HealthCheck) beanManager.getReference(bean, bean.getBeanClass(), beanManager.createCreationalContext(bean));
+                
+                // HACKY!!!
+                // Call the bean reference to ensure CDI is initialised in the context we store
+                // HACKY!!!
+                try {
+                    healthCheck.call();
+                } catch (Exception ex) {
+                    Logger.getLogger(HealthCheckServletContainerInitializer.class.getName()).log(Level.FINEST, 
+                    "Exception calling HealthCheck reference to hackily initialise CDI", ex);
+                }
+                
                 healthCheckService.registerHealthCheck(invocationManager.getCurrentInvocation().getAppName(),
-                        (HealthCheck) beanManager.getReference(
-                                bean, bean.getBeanClass(), beanManager.createCreationalContext(bean)));
+                        healthCheck);
             }
         }
     }
