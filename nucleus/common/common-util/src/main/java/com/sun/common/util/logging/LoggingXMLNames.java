@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.common.util.logging;
 
 import com.sun.logging.LogDomains;
@@ -61,6 +63,8 @@ public class LoggingXMLNames {
     public static final String useSystemLogging = "use-system-logging";
 
     public static final String logFilter = "log-filter";
+    
+    public static final String logToFile = "log-to-file";
 
     public static final String logToConsole = "log-to-console";
 
@@ -113,6 +117,7 @@ public class LoggingXMLNames {
                 put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);
                 put(logFilter, LoggingPropertyNames.logFilter);
+                put(logToFile, LoggingPropertyNames.logToFile);
                 put(logToConsole, LoggingPropertyNames.logToConsole);
                 put(alarms, LoggingPropertyNames.alarms);
                 put(root, LogDomains.DOMAIN_ROOT + "level");
