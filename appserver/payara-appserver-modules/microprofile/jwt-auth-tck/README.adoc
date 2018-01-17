@@ -12,7 +12,7 @@ And for the smaller, mandatory test:
 
 `mvn -Pcontainer -Dtck.container.groupId=fish.payara.microprofile -Dtck.container.artifactId=jwt-auth-tck -Dtck.container.version=4.1.2.181-SNAPSHOT test`
 
-Replace `4.1.2.181-SNAPSHOT` with the latest version of this module.
+Replace `5.Beta2-SNAPSHOT` with the latest version of this module.
 
 **NOTE** 
 
