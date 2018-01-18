@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="rest_tests" failures="0" tests="5" time="0.187" errors="0">
-  <properties/>
-  <testcase name="testManagementEndpoint" time="0.03" classname="test.admin.RestTests"/>
-  <testcase name="testEndpointWithEncodedSlash" time="0.046" classname="test.admin.RestTests"/>
-  <testcase name="testAdminCommandEndpoint" time="0.009" classname="test.admin.RestTests"/>
-  <testcase name="testMonitoringEndpoint" time="0.089" classname="test.admin.RestTests"/>
-  <testcase name="testChildConfigBeanEndpoint" time="0.008" classname="test.admin.RestTests"/>
-</testsuite>

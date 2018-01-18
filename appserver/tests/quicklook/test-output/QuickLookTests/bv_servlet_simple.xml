@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="bv_servlet_simple" failures="0" tests="1" time="0.083" errors="0">
-  <properties/>
-  <testcase name="executeServlet" time="0.083" classname="test.bv.servlet.simple.SimpleBVServletTestNG"/>
-</testsuite>

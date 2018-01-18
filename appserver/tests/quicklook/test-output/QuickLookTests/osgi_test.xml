@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="osgi_test" failures="0" tests="4" time="7.518" errors="0">
-  <properties/>
-  <testcase name="simpleOSGIDeployTest" time="0.573" classname="test.osgi.hello.HelloOSGITestNG"/>
-  <testcase name="simpleJSPTestPage" time="5.187" classname="test.osgi.hello.HelloOSGITestNG"/>
-  <testcase name="simpleServletTest" time="0.002" classname="test.osgi.hello.HelloOSGITestNG"/>
-  <testcase name="simpleOSGIUnDeployTest" time="1.753" classname="test.osgi.hello.HelloOSGITestNG"/>
-</testsuite>

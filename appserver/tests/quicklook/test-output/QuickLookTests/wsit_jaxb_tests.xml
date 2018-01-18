@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="wsit_jaxb_tests" failures="0" tests="4" time="0.615" errors="0">
-  <properties/>
-  <testcase name="riOsgiTest" time="0.192" classname="jaxbosgi.JaxbOsgiTestNG"/>
-  <testcase name="jaxb1Exist" time="0.027" classname="jaxbosgi.JaxbOsgiTestNG"/>
-  <testcase name="msvDatatypeExist" time="0.032" classname="jaxbosgi.JaxbOsgiTestNG"/>
-  <testcase name="jaxb1Marshalling" time="0.363" classname="jaxbosgi.JaxbOsgiTestNG"/>
-</testsuite>

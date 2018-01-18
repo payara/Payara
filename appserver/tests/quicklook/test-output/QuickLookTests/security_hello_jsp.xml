@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="security_hello_jsp" failures="0" tests="3" time="0.015" errors="0">
-  <properties/>
-  <testcase name="staticHTMLPageTest" time="0.01" classname="test.security.hellojsp.HelloSecurityTestNG"/>
-  <testcase name="simpleServletTest" time="0.003" classname="test.security.hellojsp.HelloSecurityTestNG"/>
-  <testcase name="simpleJSPTestPage" time="0.002" classname="test.security.hellojsp.HelloSecurityTestNG"/>
-</testsuite>

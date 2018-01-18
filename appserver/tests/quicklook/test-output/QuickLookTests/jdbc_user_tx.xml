@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="jdbc_user_tx" failures="0" tests="2" time="0.362" errors="0">
-  <properties/>
-  <testcase name="testNoLeak" time="0.241" classname="test.jdbc.jdbcusertx.JdbcUserTxTestNG"/>
-  <testcase name="testUserTx" time="0.12" classname="test.jdbc.jdbcusertx.JdbcUserTxTestNG"/>
-</testsuite>
