@@ -60,6 +60,7 @@ import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
@@ -74,7 +75,11 @@ public class HealthCheckService implements EventListener {
     @Inject
     Events events;
     
+    @Inject
+    ApplicationRegistry applicationRegistry;
+    
     private final Map<String, Set<HealthCheck>> healthChecks = new ConcurrentHashMap<>();
+    private final Map<String, ClassLoader> applicationClassLoaders = new ConcurrentHashMap<>();
     
     @PostConstruct
     public void postConstruct() {
@@ -92,6 +97,7 @@ public class HealthCheckService implements EventListener {
             ApplicationInfo appInfo = Deployment.APPLICATION_UNLOADED.getHook(event);
             if (appInfo != null) {
                 healthChecks.remove(appInfo.getName());
+                applicationClassLoaders.remove(appInfo.getName());
             }
         }
     }
@@ -102,9 +108,8 @@ public class HealthCheckService implements EventListener {
      * @param healthCheck The HealthCheck to register
      */
     public void registerHealthCheck(String appName, HealthCheck healthCheck) {
-        if (healthChecks.containsKey(appName)) {
-            healthChecks.get(appName).add(healthCheck);
-        } else {
+        // If we don't already have the app registered, we need to create a new Set for it
+        if (!healthChecks.containsKey(appName)) {
             // Sync so that we don't get clashes
             synchronized(this) {
                 // Check again so that we don't overwrite
@@ -113,9 +118,28 @@ public class HealthCheckService implements EventListener {
                     healthChecks.put(appName, ConcurrentHashMap.newKeySet());
                 }
             }
-            
-            // Add the healthcheck to the Set in the Map
-            healthChecks.get(appName).add(healthCheck);
+        }
+        
+        // Add the healthcheck to the Set in the Map
+        healthChecks.get(appName).add(healthCheck);
+    }
+    
+    /**
+     * Register a ClassLoader for an application.
+     * @param appName The name of the application being deployed
+     * @param classloader
+     */
+    public void registerClassLoader(String appName, ClassLoader classloader) {
+        // If we don't already have the app registered, we need to create a new Set for it
+        if (!applicationClassLoaders.containsKey(appName)) {
+            // Sync so that we don't get clashes
+            synchronized(this) {
+                // Check again so that we don't overwrite
+                if (!applicationClassLoaders.containsKey(appName)) {
+                    // Create a new Map entry and set for the Healthchecks.
+                    applicationClassLoaders.put(appName, classloader);
+                }
+            }
         }
     }
     
@@ -128,11 +152,20 @@ public class HealthCheckService implements EventListener {
         Set<HealthCheckResponse> healthCheckResponses = new HashSet<>();
         
         // Iterate over every HealthCheck stored in the Map
-        for (Set<HealthCheck> healthCheckSet : healthChecks.values()) {
-            for (HealthCheck healthCheck : healthCheckSet) {
+        for (Map.Entry<String, Set<HealthCheck>> healthChecksEntry : healthChecks.entrySet()) {
+            for (HealthCheck healthCheck : healthChecksEntry.getValue()) {
                 // Execute the call method of the HealthCheck and add its outcome to the set of responses
                 try {
                     healthCheckResponses.add(healthCheck.call());
+                } catch (IllegalStateException ise) {
+                    ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+                    try {
+                        Thread.currentThread().setContextClassLoader(
+                                applicationRegistry.get(healthChecksEntry.getKey()).getAppClassLoader());
+                        healthCheckResponses.add(healthCheck.call());
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(originalClassLoader);
+                    }
                 } catch (Exception ex) {
                     Logger.getLogger(HealthCheckService.class.getName()).log(Level.WARNING, 
                             "Exception executing HealthCheck: " + healthCheck.getClass().getCanonicalName(), ex);
