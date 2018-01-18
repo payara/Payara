@@ -291,7 +291,7 @@
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
         <lombok.version>1.16.14</lombok.version>
-
+        <guava.version>19.0</guava.version>
         <!-- Build -->
 
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
@@ -1286,6 +1286,11 @@ Parent is ${project.parent}</echo>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>${javassist.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
