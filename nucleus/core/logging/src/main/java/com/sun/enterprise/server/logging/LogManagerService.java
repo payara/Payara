@@ -144,8 +144,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String logFormatDateFormatDetail = "";
     String compressOnRotationDetail = "";
     
-    //Payara Notification Logging
+    //Payara Notification Logging   
     String payaraNotificationLogFileDetail = "";
+    String payaraNotificationlogToFileDetail = "";
     String payaraNotificationLogRotationOnTimeLimitInMinutesDetail = "";
     String payaraNotificationLogRotationOnDateChangeDetail = "";
     String payaraNotificationLogRotationInTimeLimitInBytesDetail = "";
@@ -175,6 +176,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     
     //Payara Notification Logging
     private static final String PAYARA_NOTIFICATION_LOG_FILE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file";
+    private static final String PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile";
     private static final String PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange";
     private static final String PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes";
     private static final String PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes";
@@ -430,6 +432,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             
             //Payara Notification Logging
             payaraNotificationLogFileDetail = props.get(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY);
+            payaraNotificationlogToFileDetail = props.get(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY);
             payaraNotificationLogRotationOnDateChangeDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY);
             payaraNotificationLogRotationOnTimeLimitInMinutesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY);
             payaraNotificationLogRotationInTimeLimitInBytesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY);
@@ -642,10 +645,14 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     if (!val.equals(payaraNotificationLogFileDetail)) {
                                         generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY, payaraNotificationLogFileDetail, props);
                                     }
-                                }else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
-                                    if (!val.equals(payaraNotificationLogRotationOnTimeLimitInMinutesDetail)) {
-                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY, payaraNotificationLogRotationOnTimeLimitInMinutesDetail, props);
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY)) {
+                                    if (!val.equals(payaraNotificationlogToFileDetail)) {
+                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY, payaraNotificationlogToFileDetail, props);
                                     }
+                                }else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
+                                        if (!val.equals(payaraNotificationLogRotationOnTimeLimitInMinutesDetail)) {
+                                            generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY, payaraNotificationLogRotationOnTimeLimitInMinutesDetail, props);
+                                        }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogRotationInTimeLimitInBytesDetail)) {
                                         generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY, payaraNotificationLogRotationInTimeLimitInBytesDetail, props);

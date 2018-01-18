@@ -167,6 +167,7 @@ public class SetLogAttributes implements AdminCommand {
         "com.sun.enterprise.server.logging.ODLLogFormatter.warnColor",
         "com.sun.enterprise.server.logging.ODLLogFormatter.severeColor",
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file",
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile",
         PAYARA_NOTIFICATION_ROTATION_TIMELIMIT_IN_MINUTES,
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange",
         PAYARA_NOTIFICATOIN_ROTATION_LIMIT_IN_BYTES,
