@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -142,6 +142,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String fileHandlerFormatterDetail = "";
     String logFormatDateFormatDetail = "";
     String compressOnRotationDetail = "";
+    
+    //Payara Notification Logging
+    String payaraNotificationLogFileDetail = "";
+    String payaraNotificationLogRotationOnTimeLimitInMinutesDetail = "";
+    String payaraNotificationLogRotationOnDateChangeDetail = "";
+    String payaraNotificationLogRotationInTimeLimitInBytesDetail = "";
+    String payaraNotificationLogmaxHistoryFilesDetail = "";
 
     private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private static final String HANDLER_PROPERTY = "handlers";
@@ -163,7 +170,14 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
     private static final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
     private static final String COMPRESS_ON_ROTATION_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation";
-
+    
+    //Payara Notification Logging
+    private static final String PAYARA_NOTIFICATION_LOG_FILE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file";
+    private static final String PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange";
+    private static final String PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes";
+    private static final String PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes";
+    private static final String PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles";
+    
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
 
@@ -410,6 +424,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
             logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
             compressOnRotationDetail = props.get(COMPRESS_ON_ROTATION_PROPERTY);
+            
+            //Payara Notification Logging
+            payaraNotificationLogFileDetail = props.get(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY);
+            payaraNotificationLogRotationOnDateChangeDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY);
+            payaraNotificationLogRotationOnTimeLimitInMinutesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY);
+            payaraNotificationLogRotationInTimeLimitInBytesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY);
+            payaraNotificationLogmaxHistoryFilesDetail = props.get(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY);
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
@@ -609,6 +630,22 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(COMPRESS_ON_ROTATION_PROPERTY)) {
                                     if (!val.equals(compressOnRotationDetail)) {
                                         generateAttributeChangeEvent(COMPRESS_ON_ROTATION_PROPERTY, compressOnRotationDetail, props);
+                                    }
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY)){
+                                    if (!val.equals(payaraNotificationLogFileDetail)) {
+                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY, payaraNotificationLogFileDetail, props);
+                                    }
+                                }else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
+                                    if (!val.equals(payaraNotificationLogRotationOnTimeLimitInMinutesDetail)) {
+                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY, payaraNotificationLogRotationOnTimeLimitInMinutesDetail, props);
+                                    }
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY)) {
+                                    if (!val.equals(payaraNotificationLogRotationInTimeLimitInBytesDetail)) {
+                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY, payaraNotificationLogRotationInTimeLimitInBytesDetail, props);
+                                    }
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY)) {
+                                    if (!val.equals(payaraNotificationLogmaxHistoryFilesDetail)) {
+                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY, payaraNotificationLogmaxHistoryFilesDetail, props);
                                     }
                                 }
                             }

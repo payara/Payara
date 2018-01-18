@@ -192,7 +192,11 @@ public class PayaraClientService implements PayaraClient {
         try {
             standaloneServers = getServersList();
         } catch (ProcessingException ch) {
-            throw new PayaraClientException("Could not connect to DAS on: " + getDASUrl() + " | " + ch.getCause().getMessage());
+            String message = "";
+            if(ch.getCause() != null && ch.getCause().getMessage() != null) {
+                message = " | " + ch.getCause().getMessage();
+            }
+            throw new PayaraClientException("Could not connect to DAS on: " + getDASUrl() + message);
         }
 
         if (ADMINSERVER.equals(getTarget())) {
