@@ -71,6 +71,7 @@
         <module>h2db</module>    
 	    <module>jmsra</module>
         <module>jaxr_ra</module>
+        <module>jcip</module>
         <module>libpam4j</module>
     </modules>
     <build>
