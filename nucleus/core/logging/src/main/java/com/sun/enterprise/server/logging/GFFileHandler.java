@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -135,11 +135,11 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
     private String absoluteServerLogName = null;
 
-    private File absoluteFile = null;
+    protected File absoluteFile = null;
 
     private int flushFrequency = 1;
 
-    private int maxHistoryFiles = 10;
+    protected int maxHistoryFiles = 10;
 
 
     private String gffileHandlerFormatter = "";
@@ -159,7 +159,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     // be fired from the publish( ) method for consistency
     private AtomicBoolean rotationRequested = new AtomicBoolean(false);
     
-    private Object rotationLock = new Object();
+    protected Object rotationLock = new Object();
 
     private static final String LOG_ROTATE_DATE_FORMAT =
             "yyyy-MM-dd'T'HH-mm-ss";
@@ -189,7 +189,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     String recordFieldSeparator;
     String recordDateFormat;
 
-    String logFileProperty = "";
+    protected String logFileProperty = "";
 
     public void postConstruct() {
 
@@ -301,7 +301,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
             Task rotationTask = new Task() {
                 public Object run() {
-                    rotate();
+                        rotate();
                     return null;
                 }
             };
@@ -747,13 +747,14 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         
         synchronized (rotationLock) {
             File dir = absoluteFile.getParentFile();
+            String logFileName = absoluteFile.getName();
             if (dir == null)
                 return;
             File[] fset = dir.listFiles();
             ArrayList candidates = new ArrayList();
             for (int i = 0; fset != null && i < fset.length; i++) {
-                if (!LOG_FILE_NAME.equals(fset[i].getName()) && fset[i].isFile()
-                        && fset[i].getName().startsWith(LOG_FILE_NAME)) {
+                if (!logFileName.equals(fset[i].getName()) && fset[i].isFile()
+                        && fset[i].getName().startsWith(logFileName)) {
                     candidates.add(fset[i].getAbsolutePath());
                 }
             }

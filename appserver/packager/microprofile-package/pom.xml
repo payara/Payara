@@ -120,7 +120,10 @@
             </build>
         </profile>
     </profiles>
+    
     <dependencies>
+    
+        <!-- Config -->
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
@@ -136,6 +139,8 @@
             <artifactId>microprofile-config</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <!-- Fault Tolerance -->
         <dependency>
             <groupId>fish.payara.microprofile.fault-tolerance</groupId>
             <artifactId>microprofile-fault-tolerance</artifactId>
@@ -146,6 +151,7 @@
             <artifactId>microprofile-fault-tolerance-api</artifactId>
             <version>${microprofile-fault-tolerance.version}</version>
         </dependency>
+      
         <!-- Metrics -->
         <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
@@ -156,6 +162,48 @@
             <groupId>fish.payara.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        
+        <!-- JWT -->
+        
+        <!-- 
+        <dependency>
+            <groupId>org.eclipse.microprofile.jwt</groupId>
+            <artifactId>microprofile-jwt-auth-api</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.jwt-auth</groupId>
+            <artifactId>microprofile-jwt-auth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+         -->
+        
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus-jose-jwt.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.glassfish.main.external</groupId>
+            <artifactId>jcip-annotations-repackaged</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>accessors-smart</artifactId>
+            <version>${accessors-smart.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>${json-smart.version}</version>
         </dependency>
     </dependencies>
         

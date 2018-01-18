@@ -120,14 +120,14 @@
         <!-- CDI -->
         <javax.inject.version>1</javax.inject.version>
         <cdi-api.version>2.0</cdi-api.version>
-        <weld.version>3.0.1.Final</weld.version>
-        <weld-api.version>3.0.SP1</weld-api.version>
+        <weld.version>3.0.2.Final</weld.version>
+        <weld-api.version>3.0.SP2</weld-api.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
 
         <!-- Java EE Security API -->
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
         <javax.security.enterprise-api.version>1.0</javax.security.enterprise-api.version>
-        <javax.security.enterprise.version>1.0</javax.security.enterprise.version>
+        <javax.security.enterprise.version>1.1-b01.payara-p1</javax.security.enterprise.version>
 
         <!-- JACC -->
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
@@ -218,6 +218,13 @@
          <microprofile-config.version>1.1-payara-p1</microprofile-config.version>
          <microprofile-fault-tolerance.version>1.0.payara-p1</microprofile-fault-tolerance.version>
          <microprofile-metrics.version>1.0.1.payara-p1</microprofile-metrics.version>
+         <microprofile-jwt-auth.version>1.0</microprofile-jwt-auth.version>
+         
+         <nimbus-jose-jwt.version>5.1</nimbus-jose-jwt.version>
+         <accessors-smart.version>1.2</accessors-smart.version>
+         <json-smart.version>2.3</json-smart.version>
+         <jcip-annotations.version>1.0-1</jcip-annotations.version>
+
     </properties>
 
 
@@ -821,7 +828,7 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-osgi-bundle</artifactId>
-                <version>${weld.version}-payara-p1</version>
+                <version>${weld.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.classfilewriter</groupId>

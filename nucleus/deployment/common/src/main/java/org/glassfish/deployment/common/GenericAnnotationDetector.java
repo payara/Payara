@@ -49,8 +49,6 @@ import java.io.InputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
@@ -152,7 +150,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                     } finally {
                         is.close();
                     }
-                } else if (!entryName.contains("/")) {
+                } else if ((entryName.endsWith(".jar") || entryName.endsWith(".rar") || entryName.endsWith(".war") || entryName.endsWith(".ear")) && !entryName.contains("/")) {
                     // scan class files inside top level jar
                     try {
                         ReadableArchive jarSubArchive = null;
@@ -175,7 +173,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                         } finally {
                             jarSubArchive.close();
                         }
-                    } catch (IOException ioe) {
+                    } catch (Exception ioe) {
                         Object args[] = { entryName, ioe.getMessage() };
                         deplLogger.log(Level.WARNING, JAR_ENTRY_ERROR, args);
                     }
