@@ -190,7 +190,11 @@
                 
     <!-- Payara Notification Logger Settings --> 
     <sun:propertySheetSection id="poolSettingSection" label="Payara Notification Logger Settings">
-    
+
+        <sun:property id="PayaraNotificationLogtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile']}"  selectedValue="true" />
+        </sun:property>
+        
         <sun:property id="PayaraNotificationRotationOnDateChange"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.rotationOnDateChange}" helpText="$resource{i18nc.log.rotationOnDateChangeHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange']}"  selectedValue="true" />
         </sun:property>
