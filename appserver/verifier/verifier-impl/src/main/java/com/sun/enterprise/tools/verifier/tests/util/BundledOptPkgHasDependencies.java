@@ -79,11 +79,13 @@ public class BundledOptPkgHasDependencies {
                     String entryPath=new File(explodedJarPath).getParent()+File.separator+entry;
                     File bundledOptPkg=new File(entryPath);
                     if(!bundledOptPkg.isDirectory()){
-                        Manifest bundledManifest=new JarFile(bundledOptPkg).getManifest();
-                        String bundledCP=bundledManifest.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
-                        if(bundledCP!=null && bundledCP.length()!=0){
-                            failed=true;
-                            result.failed(entry + " contains Class-Path in it's manifest.");
+                        try (JarFile jf = new JarFile(bundledOptPkg)) {
+                            Manifest bundledManifest = jf.getManifest();
+                            String bundledCP = bundledManifest.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+                            if (bundledCP != null && bundledCP.length() != 0) {
+                                failed = true;
+                                result.failed(entry + " contains Class-Path in it's manifest.");
+                            }
                         }
                     }
                 }

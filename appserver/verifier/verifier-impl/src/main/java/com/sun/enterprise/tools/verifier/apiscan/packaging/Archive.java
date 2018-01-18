@@ -88,8 +88,8 @@ public class Archive {
                     ext_dir.listFiles(new FileFilter() {
                         public boolean accept(File f) {
                             if (!f.isDirectory()) {
-                                try {
-                                    allPkgs.add(new Archive(new JarFile(f)));
+                                try (JarFile jf = new JarFile(f)) {
+                                    allPkgs.add(new Archive(jf));
                                     logger.logp(Level.FINE, myClassName,
                                             "getAllOptPkgsInstalledInJRE", // NOI18N
                                             "Found an installed opt pkg " + // NOI18N
