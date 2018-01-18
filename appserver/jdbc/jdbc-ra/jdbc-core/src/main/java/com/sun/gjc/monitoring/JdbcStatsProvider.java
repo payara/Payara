@@ -43,7 +43,7 @@
 package com.sun.gjc.monitoring;
 
 import com.sun.gjc.util.SQLTrace;
-import com.sun.gjc.util.FrequentSQLTraceCache;
+import fish.payara.jdbc.stats.FrequentSQLTraceCache;
 import fish.payara.jdbc.stats.SlowSqlTrace;
 import fish.payara.jdbc.stats.SlowSqlTraceCache;
 import org.glassfish.external.probe.provider.annotations.ProbeListener;

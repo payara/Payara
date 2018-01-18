@@ -115,7 +115,9 @@ public class InjectionServicesImpl implements InjectionServices {
             JndiNameEnvironment componentEnv = compEnvManager.getCurrentJndiNameEnvironment();
             if(componentEnv == null) {
                 InvocationManager invMgr = serviceLocator.getService(InvocationManager.class);
-                componentEnv = (JndiNameEnvironment)invMgr.<ComponentInvocation>getCurrentInvocation().getJNDIEnvironment();
+                if (invMgr.getCurrentInvocation() != null) {
+                    componentEnv = (JndiNameEnvironment)invMgr.<ComponentInvocation>getCurrentInvocation().getJNDIEnvironment();
+                }
             }
 
             ManagedBeanDescriptor mbDesc = null;
