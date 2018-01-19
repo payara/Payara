@@ -52,7 +52,6 @@ import java.net.URI;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.glassfish.deployment.common.DeploymentUtils;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -61,7 +60,6 @@ import org.glassfish.logging.annotation.LogMessageInfo;
  *
  *  @author Mahesh Rangamani
 */
-
 public class AutoDeployedFilesManager {
     
     public static final Logger deplLogger =
@@ -113,6 +111,8 @@ public class AutoDeployedFilesManager {
     /**
      * Create an instance from the persisted file in the specified directory.
      * @param statusDir Directory in which the status file is to read.
+     * @return 
+     * @throws Exception
     */
     public static AutoDeployedFilesManager loadStatus(File statusDir) throws Exception {
         return loadStatus(statusDir.getAbsolutePath());
@@ -134,19 +134,17 @@ public class AutoDeployedFilesManager {
     /**
      * Update the status of the file as deployed. 
      *   
+     * @param f
+     * @throws Exception
      */
     public void setDeployedFileInfo(File f) throws Exception {
       try {
         File statusFile = getStatusFile(f);
         if ( ! statusFile.createNewFile()) {
-            deplLogger.log(Level.WARNING,
-                           CREATE_FAILED,
-                           statusFile.getAbsolutePath());
+            deplLogger.log(Level.WARNING, CREATE_FAILED, statusFile.getAbsolutePath());
         }
         if ( ! statusFile.setLastModified(f.lastModified())) {
-            deplLogger.log(Level.WARNING,
-                           MODIFIED_DATE_FAILED,
-                           statusFile.getAbsolutePath());
+            deplLogger.log(Level.WARNING, MODIFIED_DATE_FAILED, statusFile.getAbsolutePath());
         }
       } catch (Exception e) { throw e; }
     }
@@ -201,6 +199,8 @@ public class AutoDeployedFilesManager {
       * Compare the list of files with the current status info 
       * and determine the files that need to be deployed 
       * 
+     * @param latestFiles
+     * @return 
       */
     public File[] getFilesForDeployment(File[] latestFiles) {
 
@@ -210,19 +210,19 @@ public class AutoDeployedFilesManager {
         for (File deployDirFile : latestFiles) {
             if (FILE_NAMES_TO_IGNORE_FOR_AUTODEPLOY.contains(deployDirFile.getName())) {
                 if (deplLogger.isLoggable(Level.FINE)) {
-                    deplLogger.fine("Skipping " + deployDirFile.getAbsolutePath() + " because its name is in the list of files to ignore");
+                    deplLogger.log(Level.FINE, "Skipping {0} because its name is in the list of files to ignore", deployDirFile.getAbsolutePath());
                 }
                 continue;
             }
             File statusFile = getStatusFile(deployDirFile);
             if (!statusFile.exists() || deployDirFile.lastModified() != statusFile.lastModified()) {
                 if (deplLogger.isLoggable(Level.FINE)) {
-                    deplLogger.fine("Including " + deployDirFile.getAbsolutePath() + " in candidate files for deployment");
+                    deplLogger.log(Level.FINE, "Including {0} in candidate files for deployment", deployDirFile.getAbsolutePath());
                 }
                 arrList.add(deployDirFile);
             } else {
                 if (deplLogger.isLoggable(Level.FINE)) {
-                    deplLogger.fine("Skipping " + deployDirFile.getAbsolutePath() + " its status file exists and the timestamps on the status file and the autodeployed file match");
+                    deplLogger.log(Level.FINE, "Skipping {0} its status file exists and the timestamps on the status file and the autodeployed file match", deployDirFile.getAbsolutePath());
                 }
             }
         }
@@ -234,6 +234,8 @@ public class AutoDeployedFilesManager {
       * Compare the list of files with the current status info 
       * and determine the apps that need to be undeployed. 
       * 
+     * @param latestFiles
+     * @return 
       */
     public File[] getFilesForUndeployment(File[] latestFiles) {
         
@@ -301,7 +303,7 @@ public class AutoDeployedFilesManager {
         if (deplLogger.isLoggable(Level.FINE) && ! appsRequested.isEmpty()) {
             StringBuilder sb = new StringBuilder("Undeployment requested using *_undeployRequested for ");
             for (File app : appsRequested) {
-                sb.append("  " + app.getName() + System.getProperty("line.separator"));
+                sb.append("  ").append(app.getName()).append(System.getProperty("line.separator"));
             }
             deplLogger.fine(sb.toString());
         }

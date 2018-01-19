@@ -158,7 +158,7 @@ public class ClusteredStore implements EventListener {
     public void event(Event event) {
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)){
             if (hzCore.isEnabled()) {
-                logger.info("Payara Clustered Store Service Enabled");
+                logger.fine("Payara Clustered Store Service Enabled");
             }
         }
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * DirectoryScanner.java
@@ -54,15 +55,14 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
-import org.glassfish.deployment.common.DeploymentUtils;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
- * Implementation of Directory scanner for autodeployment  </br>
- * Providing functionality for scanning the input source directory  </br>
- * and return the list of deployable components for autodeployment.</br>
- * Provide the list of deployable modules/application, depending upon the "type" entry </br>
+ * Implementation of Directory scanner for autodeployment  <p>
+ * Providing functionality for scanning the input source directory
+ * and return the list of deployable components for autodeployment.
+ * Provide the list of deployable modules/application, depending upon the "type" entry
  * passed to getAllDeployableEntity(File autodeployDir, String type).
  *
  *@author vikas
@@ -80,6 +80,7 @@ public class AutoDeployDirectoryScanner implements DirectoryScanner{
     public AutoDeployDirectoryScanner() {
     }
     
+    @Override
      public void deployedEntity(File autodeployDir, File deployedEntity) {
          try {
          AutoDeployedFilesManager adfm = AutoDeployedFilesManager.loadStatus(autodeployDir);
@@ -92,6 +93,7 @@ public class AutoDeployDirectoryScanner implements DirectoryScanner{
 
      }
      
+    @Override
      public void undeployedEntity(File autodeployDir, File undeployedEntity) {
          try {
          AutoDeployedFilesManager adfm = AutoDeployedFilesManager.loadStatus(autodeployDir);
@@ -108,6 +110,7 @@ public class AutoDeployDirectoryScanner implements DirectoryScanner{
      * @param autodeployDir
      * @return
      */
+    @Override
     public boolean hasNewDeployableEntity(File autodeployDir) {
         boolean newFilesExist=false;
             try {
@@ -125,6 +128,7 @@ public class AutoDeployDirectoryScanner implements DirectoryScanner{
         
     }
     // this should never be called from system dir autodeploy code...
+    @Override
     public File[] getAllFilesForUndeployment(File autodeployDir, boolean includeSubdir) {
 
         try {
@@ -139,6 +143,7 @@ public class AutoDeployDirectoryScanner implements DirectoryScanner{
     /**
      * Get the list of all deployable files
      * @param autodeployDir
+     * @param includeSubDir
      * @return  */
     public File[] getAllDeployableModules(File autodeployDir, boolean includeSubDir) {
         
