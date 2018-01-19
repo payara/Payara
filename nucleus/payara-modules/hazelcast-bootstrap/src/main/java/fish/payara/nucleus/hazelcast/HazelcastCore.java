@@ -493,12 +493,12 @@ public class HazelcastCore implements EventListener, ConfigListener {
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
             hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);
+            bindToJNDI();
             if(env.getStatus() == Status.started) {
                 // only issue this event if the server is already running,
                 // otherwise the SERVER_STARTUP event will issue this event as well
                 events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
             }
-            bindToJNDI();
             booted = true;
         }
     }
