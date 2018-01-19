@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2018] [Payara Foundation]
+// Portions Copyright [2017-2018] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.server.logging;
 
