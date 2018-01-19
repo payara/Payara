@@ -81,7 +81,7 @@ public class CleanupPostBoot implements EventListener {
     public void event(Event event) {
 
         if (event.is(EventTypes.SERVER_READY)) {
-            logger.config("Cleaning JarFileFactory Cache to prevent jar FD leaks");
+            logger.info("Cleaning JarFileFactory Cache to prevent jar FD leaks");
         try {
             // Ensure JarFile is closed
             Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
@@ -95,12 +95,13 @@ public class CleanupPostBoot implements EventListener {
                     for (JarFile file : jars) {
                         file.close();
                     }
-                }
-            } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                } 
             }
+        } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }   catch (IOException ex) {            
+                logger.log(Level.SEVERE, null, ex);
+            }            
         }
     }
 
