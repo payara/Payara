@@ -90,6 +90,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
+import fish.payara.enterprise.server.logging.PayaraNotificationLogRotationTimer;
 import java.io.FileInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -190,11 +191,11 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     String recordDateFormat;
     
     protected String logFileProperty = "";
+    private LogManager manager = LogManager.getLogManager();
+    private String cname = getClass().getName();
+    private String GFFileHander = "com.sun.enterprise.server.logging.GFFileHandler";
     
     public void postConstruct() {
-
-        LogManager manager = LogManager.getLogManager();
-        String cname = getClass().getName();
 
         String filename = evaluateFileName();
 
@@ -316,9 +317,15 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                     }
                 };
 
-                LogRotationTimer.getInstance().startTimer(
-                        new LogRotationTimerTask(rotationTask,
-                                rotationTimeLimitValue / 60000));
+                if (cname.equals(GFFileHander)) {
+                    LogRotationTimer.getInstance().startTimer(
+                            new LogRotationTimerTask(rotationTask,
+                                    rotationTimeLimitValue / 60000));
+                } else {
+                     PayaraNotificationLogRotationTimer.getInstance().startTimer(
+                             new LogRotationTimerTask(rotationTask, 
+                                     rotationTimeLimitValue / 60000));
+                }
 
             } else {
 
@@ -346,9 +353,15 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                         }
                     };
 
-                    LogRotationTimer.getInstance().startTimer(
-                            new LogRotationTimerTask(rotationTask,
-                                    rotationTimeLimitValue));
+                    if (cname.equals(GFFileHander)) {
+                        LogRotationTimer.getInstance().startTimer(
+                                new LogRotationTimerTask(rotationTask,
+                                        rotationTimeLimitValue));
+                    } else {
+                        PayaraNotificationLogRotationTimer.getInstance().startTimer(
+                                new LogRotationTimerTask(rotationTask,
+                                        rotationTimeLimitValue));
+                    }
                 }
             }
 
@@ -849,11 +862,21 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                                     // will be restarted if there is a value set
                                     // for time based log rotation
                                     if (dayBasedFileRotation) {
-                                        LogRotationTimer.getInstance()
-                                                .restartTimerForDayBasedRotation();
+                                        if (cname.equals(GFFileHander)) {
+                                            LogRotationTimer.getInstance()
+                                                    .restartTimerForDayBasedRotation();
+                                        } else {
+                                            PayaraNotificationLogRotationTimer.getInstance()
+                                                    .restartTimerForDayBasedRotation();
+                                        }
                                     } else {
-                                        LogRotationTimer.getInstance()
-                                                .restartTimer();
+                                        if (cname.equals(GFFileHander)) {
+                                            LogRotationTimer.getInstance()
+                                                    .restartTimer();
+                                        } else {
+                                            PayaraNotificationLogRotationTimer.getInstance()
+                                                    .restartTimer();
+                                        }
                                     }
 
                                     if (compressLogs) {
