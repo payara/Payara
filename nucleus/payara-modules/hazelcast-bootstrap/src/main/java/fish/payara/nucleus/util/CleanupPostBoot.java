@@ -81,20 +81,19 @@ public class CleanupPostBoot implements EventListener {
     public void event(Event event) {
 
         if (event.is(EventTypes.SERVER_READY)) {
-            logger.fine("Cleaning JarFileFactory Cache to prevent jar FD leaks");
-            try {
-                // Ensure JarFile is closed
-                Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
-                Field fields[] = clazz.getDeclaredFields();
-                for (Field field : fields) {
-                    if ("fileCache".equals(field.getName())) {
-                        field.setAccessible(true);
-                        HashMap<String, JarFile> files = (HashMap<String, JarFile>) field.get(null);
-                        Set<JarFile> jars = new HashSet<>();
-                        jars.addAll(files.values());
-                        for (JarFile file : jars) {
-                            file.close();
-                        }
+            logger.config("Cleaning JarFileFactory Cache to prevent jar FD leaks");
+        try {
+            // Ensure JarFile is closed
+            Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
+            Field fields[] = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                if ("fileCache".equals(field.getName())) {
+                    field.setAccessible(true);
+                    HashMap<String,JarFile> files = (HashMap<String,JarFile>) field.get(null);
+                    Set<JarFile> jars = new HashSet<>();
+                    jars.addAll(files.values());
+                    for (JarFile file : jars) {
+                        file.close();
                     }
                 }
             } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {

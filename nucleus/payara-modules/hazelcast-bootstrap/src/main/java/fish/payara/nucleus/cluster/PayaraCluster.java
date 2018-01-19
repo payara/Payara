@@ -51,6 +51,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.store.ClusteredStore;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -69,7 +70,7 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(StartupRunLevel.VAL)
 public class PayaraCluster implements MembershipListener, EventListener {
 
-    private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(PayaraCluster.class.getCanonicalName());
     
     @Inject
     Events events;
@@ -112,9 +113,11 @@ public class PayaraCluster implements MembershipListener, EventListener {
 
     @Override
     public void memberAdded(MembershipEvent me) {
-        for (ClusterListener myListener : myListeners) {
-            myListener.memberAdded(me.getMember().getUuid());
-        }
+            for (ClusterListener myListener : myListeners) {
+                myListener.memberAdded(me.getMember().getUuid());
+            }
+            logger.log(Level.INFO, "Cluster Member Added {0} at Address {1}", new String[]{me.getMember().getUuid(), me.getMember().getSocketAddress().toString()});
+            logClusterStatus();
     }
 
     @Override
@@ -122,6 +125,8 @@ public class PayaraCluster implements MembershipListener, EventListener {
         for (ClusterListener myListener : myListeners) {
             myListener.memberRemoved(me.getMember().getUuid());
         }
+        logger.log(Level.INFO, "Cluster Member Removed {0} from Address {1}", new String []{me.getMember().getUuid(), me.getMember().getSocketAddress().toString()});
+        logClusterStatus();
     }
 
     public String getLocalUUID() {
@@ -218,11 +223,42 @@ public class PayaraCluster implements MembershipListener, EventListener {
     public void event(Event event) {
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)){
             if (hzCore.isEnabled()) {
-                logger.fine("Payara Cluster Service Enabled");
+                logger.config("Payara Cluster Service Enabled");
+                logClusterStatus();
                 Cluster cluster = hzCore.getInstance().getCluster();
                 localUUID = cluster.getLocalMember().getUuid();
                 cluster.addMembershipListener(this);
             }          
+        }
+    }
+    
+    private void logClusterStatus() {
+        StringBuilder message = new StringBuilder();
+        String NL = System.lineSeparator();
+        message.append(NL);
+        if (hzCore.isEnabled()) {
+            Cluster cluster = hzCore.getInstance().getCluster();
+            Set<Member> members = hzCore.getInstance().getCluster().getMembers();
+            message.append("Payara Cluster State: Cluster Version: ").append(cluster.getClusterVersion().getId());
+            message.append(" Cluster Size: ").append(members.size());
+            message.append(NL);
+            message.append("Members: {").append(NL);
+            for (Member member : members) {
+
+                message.append("Address: ").append(member.getSocketAddress());
+                message.append(" UUID: ").append(member.getUuid());                message.append(" Lite: ").append(Boolean.toString(member.isLiteMember()));
+                message.append(" This: ").append(Boolean.toString(member.localMember()));
+                String name = member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+                String group = member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+                if (name != null) {
+                    message.append(" Name: ").append(name);
+                }
+                if (group != null) {
+                    message.append(" Group: ").append(group);
+                }                message.append(NL);
+            }
+            message.append("}");
+            logger.info("Cluster Status " + message);
         }
     }
 
