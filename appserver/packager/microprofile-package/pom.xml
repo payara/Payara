@@ -140,32 +140,31 @@
             <version>${project.version}</version>
         </dependency>
         
+        
         <!-- Fault Tolerance -->
-        <dependency>
-            <groupId>fish.payara.microprofile.fault-tolerance</groupId>
-            <artifactId>microprofile-fault-tolerance</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
             <artifactId>microprofile-fault-tolerance-api</artifactId>
             <version>${microprofile-fault-tolerance.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.fault-tolerance</groupId>
+            <artifactId>microprofile-fault-tolerance</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
         
         <!-- JWT -->
-        
-        <!-- 
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
-            <version>1.0</version>
+            <version>${microprofile-jwt-auth.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.microprofile.jwt-auth</groupId>
             <artifactId>microprofile-jwt-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
-         -->
         
         <dependency>
             <groupId>com.nimbusds</groupId>
