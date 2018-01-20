@@ -210,7 +210,7 @@
 
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
-        <guava.version>19.0</guava.version>
+
 
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
@@ -1257,11 +1257,6 @@
                 <artifactId>jboss-logging</artifactId>
                 <version>${jboss.logging.version}</version>
                 <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
