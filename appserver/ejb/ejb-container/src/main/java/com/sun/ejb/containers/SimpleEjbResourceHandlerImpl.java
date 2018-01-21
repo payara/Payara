@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.ejb.containers;
 
+import com.sun.appserv.connectors.internal.api.ResourceHandle;
 import org.glassfish.api.invocation.ResourceHandler;
 
 import javax.transaction.Synchronization;
@@ -59,10 +61,15 @@ import javax.transaction.Status;
 public class SimpleEjbResourceHandlerImpl
         implements ResourceHandler, Synchronization {
 
-    private static Map<Transaction, SimpleEjbResourceHandlerImpl> _resourceHandlers
-            = new ConcurrentHashMap<Transaction, SimpleEjbResourceHandlerImpl>();
+    private static final ThreadLocal<Map<Transaction, SimpleEjbResourceHandlerImpl>> _resourceHandlers
+            = new ThreadLocal<Map<Transaction, SimpleEjbResourceHandlerImpl>>() {
+        @Override
+        protected Map<Transaction, SimpleEjbResourceHandlerImpl> initialValue() {
+            return new ConcurrentHashMap<>();
+        }
+    };
 
-    private List l = null;
+    private List<ResourceHandle> l = null;
     private Transaction tx = null;
     private TransactionManager tm = null;
 
@@ -80,7 +87,7 @@ public class SimpleEjbResourceHandlerImpl
         try {
             Transaction tx = tm.getTransaction();
             if (tx != null) {
-                rh = _resourceHandlers.get(tx);
+                rh = _resourceHandlers.get().get(tx);
             }
         } catch (Exception e) {
             BaseContainer._logger.log(Level.WARNING, "Exception during Singleton ResourceHandler processing", e);
@@ -93,24 +100,27 @@ public class SimpleEjbResourceHandlerImpl
         return rh;
     }
 
-    public List getResourceList() {
+    @Override
+    public List<ResourceHandle> getResourceList() {
         if (tx == null) {
             checkTransaction();
         }
 
         if (l == null) {
-            l = new ArrayList();
+            l = new ArrayList<>();
         }
         return l;
     }
 
+    @Override
     public void beforeCompletion() {
         // do nothing
     }
 
+    @Override
     public void afterCompletion(int status) {
         if (tx != null) {
-            _resourceHandlers.remove(tx);
+            _resourceHandlers.get().remove(tx);
             tx = null;
         }
     }
@@ -122,7 +132,7 @@ public class SimpleEjbResourceHandlerImpl
                 // check whether the transaction is in a suitable state to register for synchronisation
                 if (tx.getStatus() == Status.STATUS_ACTIVE || tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
                     tx.registerSynchronization(this);
-                    _resourceHandlers.put(tx, this);
+                    _resourceHandlers.get().put(tx, this);
                 } else {
 
                     tx = null;
