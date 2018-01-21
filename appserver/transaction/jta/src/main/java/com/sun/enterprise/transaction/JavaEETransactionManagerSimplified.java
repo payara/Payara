@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.transaction;
 
@@ -1303,9 +1303,9 @@ public class JavaEETransactionManagerSimplified
                     return;
 
                 int flag = (suspend)? XAResource.TMSUSPEND : XAResource.TMSUCCESS;
-                @SuppressWarnings("unchecked")
-                List<TransactionalResource> workingList = new ArrayList<>(l);
-                for(TransactionalResource h : workingList){
+                Iterator it = l.iterator();
+                while(it.hasNext()){
+                    TransactionalResource h = (TransactionalResource)it.next();
                     try{
                         if ( h.isEnlisted() ) {
                             delistResource(tran, h, flag);
@@ -1317,7 +1317,7 @@ public class JavaEETransactionManagerSimplified
                     }catch(Exception ex){
                         if (_logger.isLoggable(Level.FINE))
                             _logger.log(Level.FINE, "TM: Exception in delistResource", ex);
-                        l.remove(h);
+                        it.remove();
                         handleResourceError(h, ex, tran);
                     }
                 }
