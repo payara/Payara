@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import org.glassfish.api.admin.ServerEnvironment;
 import java.util.logging.Logger;
@@ -57,6 +56,7 @@ import java.util.logging.Logger;
  * This class tries to work out which interface to choose as the address of the member
  * broadcast within Hazelcast
  * @author Steve Millidge (Payara Foundation)
+ * @since 5.0.181
  */
 public class MemberAddressPicker implements MemberAddressProvider {
 
