@@ -52,4 +52,5 @@ Import-Package: \
     com.sun.enterprise.config.modularity; \
     com.sun.enterprise.config.modularity.customization; \
     com.sun.enterprise.config.modularity.parser; \
+    fish.payara.enterprise.config.serverbeans; \
     org.glassfish.config.support; version=${project.osgi.version}

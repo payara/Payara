@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.connectors.admin.cli;
 
@@ -65,13 +66,12 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.Dom;
 
 /**
  * List Connector Security Maps
  *
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @Service(name="list-connector-security-maps")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

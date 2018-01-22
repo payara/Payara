@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
@@ -86,12 +86,16 @@ public class AppUtil {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
         List clusters = TargetUtil.getClusters();
         List standalone = TargetUtil.getStandaloneInstances();
+        List dgs = TargetUtil.getDeploymentGroups();
         standalone.add("server");
         Map attrs = null;
         String endpoint="";
         if (clusters.contains(target)){
             endpoint = prefix + "/clusters/cluster/" + target + "/application-ref/" + appName;
             attrs = RestUtil.getAttributesMap(prefix + endpoint);
+        }else if (dgs.contains(target)) {
+            endpoint = prefix+"/deployment-groups/deployment-group/" + target + "/application-ref/" + appName;
+            attrs = RestUtil.getAttributesMap(endpoint);
         }else{
             endpoint = prefix+"/servers/server/" + target + "/application-ref/" + appName;
             attrs = RestUtil.getAttributesMap(endpoint);
@@ -135,15 +139,19 @@ public class AppUtil {
         return (Map) modMap.get(componentName);
     }
 
-    static public void manageAppTarget(String applicationName, String targetName, boolean add, String enabled, List clusterList, List standaloneList, HandlerContext handlerCtx){
+    static public void manageAppTarget(String applicationName, String targetName, boolean add, String enabled, List clusterList, List standaloneList, List dgList, HandlerContext handlerCtx){
         List clusters = (clusterList == null) ? TargetUtil.getClusters() : clusterList;
+        List dgs = (dgList == null) ? TargetUtil.getDeploymentGroups(): dgList;
         String clusterEndpoint = GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/";
         String serverEndpoint = GuiUtil.getSessionValue("REST_URL")+"/servers/server/";
+        String dgEndpoint = GuiUtil.getSessionValue("REST_URL")+"/deployment-groups/deployment-group/";
         String endpoint ;
         Map attrs = new HashMap();
 
         if (clusters.contains(targetName)){
             endpoint = clusterEndpoint + targetName + "/application-ref" ;
+        }else if (dgs.contains(targetName)) {
+            endpoint = dgEndpoint + targetName + "/application-ref" ;
         }else{
             endpoint = serverEndpoint + targetName + "/application-ref" ;
         }

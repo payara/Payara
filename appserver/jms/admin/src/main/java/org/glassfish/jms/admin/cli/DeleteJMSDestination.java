@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -53,8 +54,8 @@ import java.util.logging.Logger;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
-import com.sun.enterprise.connectors.jms.system.ActiveJmsResourceAdapter;
 import com.sun.enterprise.config.serverbeans.*;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -77,7 +78,7 @@ import org.glassfish.config.support.TargetType;
 @PerLookup
 @I18n("delete.jms.dest")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
         opType=RestEndpoint.OpType.DELETE, 
@@ -87,6 +88,13 @@ import org.glassfish.config.support.TargetType;
             @RestParam(name="target", value="$parent")
         }),
     @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-jmsdest", 
+        description="Delete JMS Destination",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=DeploymentGroup.class,
         opType=RestEndpoint.OpType.DELETE, 
         path="delete-jmsdest", 
         description="Delete JMS Destination",

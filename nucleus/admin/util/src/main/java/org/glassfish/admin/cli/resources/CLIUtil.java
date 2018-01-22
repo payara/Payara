@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.cli.resources;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -45,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.RefContainer;
 import com.sun.enterprise.config.serverbeans.Server;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 
 /**
  *
@@ -64,6 +67,10 @@ public class CLIUtil {
             return server;
         }
         Cluster cluster = domain.getClusterNamed(target);
-        return cluster;
+        if (cluster != null) {
+            return cluster;
+        }
+        DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+        return dg;
     }
 }

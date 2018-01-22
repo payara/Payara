@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] 
  *
  */
 
@@ -51,8 +51,6 @@ import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -90,6 +88,12 @@ public class RestartClusterCommand implements AdminCommand {
 
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
+    
+    @Param(optional = true, defaultValue = "true")
+    private boolean rolling;
+    
+    @Param(optional = true, defaultValue = "0")
+    private String delay;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -97,7 +101,7 @@ public class RestartClusterCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
 
-        logger.info("Cluster {0} restarting");
+        logger.info(Strings.get("restart.cluster", clusterName));
 
         // Require that we be a DAS
         if (!env.isDas()) {
@@ -114,15 +118,16 @@ public class RestartClusterCommand implements AdminCommand {
         try {
             // Run start-instance against each instance in the cluster
             String commandName = "restart-instance";
-            clusterHelper.runCommand(commandName, null, clusterName, context,
-                    verbose);
+            ParameterMap pm = new ParameterMap();
+            pm.add("delay", delay);
+            clusterHelper.runCommand(commandName, pm, clusterName, context,
+                    verbose, rolling);
         }
         catch (CommandException e) {
             String msg = e.getLocalizedMessage();
             logger.warning(msg);
             report.setActionExitCode(ExitCode.FAILURE);
             report.setMessage(msg);
-            return;
         }
     }
 }

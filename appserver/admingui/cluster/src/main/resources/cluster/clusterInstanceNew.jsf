@@ -52,6 +52,7 @@
         getRequestValue(key="clusterName" value="#{pageSession.clusterName}");
         urlencode(value="#{pageSession.clusterName}" encoding="UTF-8" result="#{pageSession.encodedClusterName}");
         setPageSessionAttribute(key="forStandalone" value="#{false}");
+        setPageSessionAttribute(key="renderDG" value="#{false}");
         setPageSessionAttribute(key="helpId", value="clusterInstanceNew");
         setPageSessionAttribute(key="pageTitle", value="$resource{i18ncs.clusterInstanceNew.PageTitle}");
         setPageSessionAttribute(key="pageTitleHelp", value="$resource{i18ncs.clusterInstanceNew.PageTitleHelp}");

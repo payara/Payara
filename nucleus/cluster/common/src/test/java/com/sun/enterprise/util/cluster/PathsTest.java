@@ -37,6 +37,7 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.util.cluster;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
@@ -45,8 +46,6 @@ import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.SshConnector;
 import java.beans.PropertyVetoException;
 import java.util.List;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -262,6 +261,11 @@ public class PathsTest {
         public boolean isDas() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        @Override
+        public boolean isDeploymentGroup() {
+            throw new UnsupportedOperationException("Not supported yet.");            
+        }
 
         @Override
         public List<ResourceRef> getResourceRef() {
@@ -283,6 +287,11 @@ public class PathsTest {
         @Override
         public String getNodeDirAbsoluteUnixStyle() {
             return PathsTest.SPECIFIED_NODES_DIR;
+        }
+
+        @Override
+        public boolean isDeploymentGroup() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 

@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.cli.resources;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -66,7 +68,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  *
  * @author Jennifer Chou, Jagadish Ramu 
  */
-@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = Resources.class,
                 opType = RestEndpoint.OpType.DELETE,
@@ -147,6 +149,16 @@ public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Pre
                 for (Server svr : instances) {
                     svr.deleteResourceRef(refName);
                 }
+            }
+            
+            if (refContainer instanceof DeploymentGroup) {
+
+                // delete ResourceRef for all instances of Cluster
+                Target tgt = habitat.getService(Target.class);
+                List<Server> instances = tgt.getInstances(target);
+                for (Server svr : instances) {
+                    svr.deleteResourceRef(refName);
+                }                
             }
         } catch(Exception e) {
             setFailureMessage(report, e);
