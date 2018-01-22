@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -47,9 +48,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
-import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -318,7 +317,6 @@ public class DeploymentUtils {
         } else if (name.indexOf(';') != -1) {
             throw new IllegalArgumentException(localStrings.getLocalString("illegal_char_in_name", "Illegal character [{0}] in the name [{1}].", ";", name)); 
         }
-        return;
     }
 
     /**

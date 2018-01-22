@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation]
+// Portions Copyright [2017-2018] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -96,15 +96,12 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     static {
         String logSource = System.getProperty(
                 "com.sun.aas.logging.keyvalue.logsource");
-        if ((logSource != null)
-                && (logSource.equals("true"))) {
+        if ((logSource != null) && (logSource.equals("true"))) {
             LOG_SOURCE_IN_KEY_VALUE = true;
         }
 
-        String recordCount = System.getProperty(
-                "com.sun.aas.logging.keyvalue.recordnumber");
-        if ((recordCount != null)
-                && (recordCount.equals("true"))) {
+        String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
+        if ((recordCount != null) && (recordCount.equals("true"))) {
             RECORD_NUMBER_IN_KEY_VALUE = true;
         }
 
