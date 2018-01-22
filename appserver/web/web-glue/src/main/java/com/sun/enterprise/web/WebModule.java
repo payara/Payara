@@ -2188,6 +2188,18 @@ public class WebModule extends PwcWebModule implements Context {
         sessionProbeProvider.sessionPassivatedEndEvent(session.getId(),
             monitoringNodeName, vsId);
     }
+    
+    @Override
+    public void declareRoles(String... roleNames) {
+        super.declareRoles(roleNames);
+        WebBundleDescriptor bundleDescriptor = getWebBundleDescriptor();
+        
+        for (String roleName : roleNames) {
+            bundleDescriptor.addRole(new Role(roleName));
+        }
+        
+        bundleDescriptor.setPolicyModified(true);
+    }
 
 
     /*

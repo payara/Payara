@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -135,31 +135,31 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
     private String absoluteServerLogName = null;
 
-    private File absoluteFile = null;
+    protected File absoluteFile = null;
 
     private int flushFrequency = 1;
 
-    private int maxHistoryFiles = 10;
+    protected int maxHistoryFiles = 10;
 
 
     private String gffileHandlerFormatter = "";
     private String currentgffileHandlerFormatter = "";
 
-    // Initially the LogRotation will be off until the domain.xml value is read.
+    /** Initially the LogRotation will be off until the domain.xml value is read. */
     private int limitForFileRotation = 0;
 
     private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(5000);
 
-    // Rotation can be done in 3 ways
-    // 1. Based on the Size: Rotate when some Threshold number of bytes are 
-    //    written to server.log
-    // 2. Based on the Time: Rotate ever 'n' minutes, mostly 24 hrs
-    // 3. Rotate now
-    // For mechanisms 2 and 3 we will use this flag. The rotate() will always
-    // be fired from the publish( ) method for consistency
+    /**Rotation can be done in 3 ways: <ol>
+     * <li> Based on the Size: Rotate when some Threshold number of bytes are 
+     *    written to server.log </li>
+     * <li> Based on the Time: Rotate ever 'n' minutes, mostly 24 hrs </li>
+     * <li> Rotate now </li></ol>
+     * For mechanisms 2 and 3 we will use this flag. The rotate() will always
+     * be fired from the publish( ) method for consistency */
     private AtomicBoolean rotationRequested = new AtomicBoolean(false);
     
-    private Object rotationLock = new Object();
+    protected Object rotationLock = new Object();
 
     private static final String LOG_ROTATE_DATE_FORMAT =
             "yyyy-MM-dd'T'HH-mm-ss";
@@ -189,8 +189,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     String recordFieldSeparator;
     String recordDateFormat;
 
-    String logFileProperty = "";
+    protected String logFileProperty = "";
 
+    @Override
     public void postConstruct() {
 
         LogManager manager = LogManager.getLogManager();
@@ -300,8 +301,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             rotationTimeLimitValue = nextsystime - systime;
 
             Task rotationTask = new Task() {
+                @Override
                 public Object run() {
-                    rotate();
+                        rotate();
                     return null;
                 }
             };
@@ -330,6 +332,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             if (rotationTimeLimitValue > 0) {
 
                 Task rotationTask = new Task() {
+                    @Override
                     public Object run() {
                         rotate();
                         return null;
@@ -454,7 +457,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
         
         formatterName = this.getFormatter().getClass().getName();
-        lr = new LogRecord(Level.INFO, LogFacade.LOG_FORMATTER_INFO);        
+        lr = new LogRecord(Level.FINE, LogFacade.LOG_FORMATTER_INFO);        
         lr .setParameters(new Object[] {formatterName});
         lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
         lr.setThreadID((int) Thread.currentThread().getId());
@@ -562,6 +565,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     
     void initializePump() {
         pump = new Thread() {
+            @Override
             public void run() {
                 while (!done.isSignalled()) {
                     try {
@@ -578,6 +582,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         pump.start();        
     }
 
+    @Override
     public void preDestroy() {
         // stop the Queue consummer thread.
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
@@ -637,6 +642,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
      * A simple getter to access the current log file written by
      * this FileHandler.
      */
+    @Override
     public File getCurrentLogFile() {
         return absoluteFile;
     }
@@ -663,11 +669,11 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         formatterClass.setLogEventBroadcaster(this);
     }
 
-    // NOTE: This private class is copied from java.util.logging.FileHandler
-    // A metered stream is a subclass of OutputStream that
-    //   (a) forwards all its output to a target stream
-    //   (b) keeps track of how many bytes have been written
-
+    /** NOTE: This private class is copied from java.util.logging.FileHandler
+     * A metered stream is a subclass of OutputStream that
+     *   (a) forwards all its output to a target stream
+     *   (b) keeps track of how many bytes have been written
+     */ 
     private static final class MeteredStream extends OutputStream {
 
         private volatile boolean isOpen = false;
@@ -681,25 +687,30 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             isOpen = true;
         }
 
+        @Override
         public void write(int b) throws IOException {
             out.write(b);
             written++;
         }
 
+        @Override
         public void write(byte buff[]) throws IOException {
             out.write(buff);
             written += buff.length;
         }
 
+        @Override
         public void write(byte buff[], int off, int len) throws IOException {
             out.write(buff, off, len);
             written += len;
         }
 
+        @Override
         public void flush() throws IOException {
             out.flush();
         }
 
+        @Override
         public void close() throws IOException {
             if (isOpen) {
                 isOpen = false;
@@ -747,13 +758,14 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         
         synchronized (rotationLock) {
             File dir = absoluteFile.getParentFile();
+            String logFileName = absoluteFile.getName();
             if (dir == null)
                 return;
             File[] fset = dir.listFiles();
             ArrayList candidates = new ArrayList();
             for (int i = 0; fset != null && i < fset.length; i++) {
-                if (!LOG_FILE_NAME.equals(fset[i].getName()) && fset[i].isFile()
-                        && fset[i].getName().startsWith(LOG_FILE_NAME)) {
+                if (!logFileName.equals(fset[i].getName()) && fset[i].isFile()
+                        && fset[i].getName().startsWith(logFileName)) {
                     candidates.add(fset[i].getAbsolutePath());
                 }
             }
@@ -787,6 +799,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         final GFFileHandler thisInstance = this;
         java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run() {
                         synchronized (thisInstance.rotationLock) {
                             if (thisInstance.meter != null
@@ -911,6 +924,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     /**
      * Publishes the logrecord storing it in our queue
      */
+    @Override
     public void publish(LogRecord record) {
 
         // the queue has shutdown, we are not processing any more records
@@ -977,6 +991,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     }
     
     
+    @Override
     public void informLogEventListeners(LogEvent logEvent) {
         for (LogEventListener listener : logEventListeners) {
             listener.messageLogged(logEvent);

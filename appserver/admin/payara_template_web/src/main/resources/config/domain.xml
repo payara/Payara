@@ -192,6 +192,7 @@
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
+	      <jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
@@ -362,6 +363,7 @@
       <monitoring-service-configuration></monitoring-service-configuration>
          <diagnostic-service />
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
+	      <jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-XX:MetaspaceSize=256m</jvm-options>

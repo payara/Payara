@@ -64,7 +64,7 @@ import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-
+import java.security.SecureRandom;
 import javax.management.ObjectName;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;

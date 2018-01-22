@@ -439,7 +439,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      */
     @Override
     public Subject authenticate(Object credentials) {
-        String user = "", password = "";
+        String user = "";
+        char[] password = "".toCharArray();
         String host = null;
         if (credentials instanceof String[]) {
             // this is supposed to be 2-string array with user name and password
@@ -448,9 +449,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 user = up[0];
             } else if (up.length >= 2) {
                 user = up[0];
-                password = up[1];
-                if (password == null)
-                    password = "";
+                password = up[1] != null ? up[1].toCharArray() : "".toCharArray();
             }
             if (up.length > 2) {
                 host = up[2];
@@ -472,7 +471,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             realm = as.getAuthRealmName();
 
         try {
-            return loginAsAdmin(user, password, realm, host);
+            return loginAsAdmin(user, new String(password), realm, host);
         } catch (LoginException e) {
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
                 ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during JMX auth\n  user={0}\n  host={1}\n  realm={2}",

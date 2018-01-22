@@ -8,6 +8,7 @@ appserver/packager/pkg_conf.py
 target/
 *~
 *.iml
+.vscode/
 .idea
 gfbuild.log
 /nucleus/payara-modules/requesttracing-core/nbproject/
