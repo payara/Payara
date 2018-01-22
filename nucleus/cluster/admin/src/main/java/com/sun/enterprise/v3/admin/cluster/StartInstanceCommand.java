@@ -231,9 +231,8 @@ public class StartInstanceCommand implements AdminCommand {
 
         if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
             // Make sure instance is really up
-            String s = pollForLife(instance);
-            if (s != null) {
-                report.setMessage(s);
+            if (!pollForLife(instance)){
+                report.setMessage(Strings.get("start.instance.timeout", instanceName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
         }
@@ -297,8 +296,13 @@ public class StartInstanceCommand implements AdminCommand {
 
     }
 
-    // return null means A-OK
-    private String pollForLife(final Server instance) {
+    /**
+     * Poll for the specified amount of time to check if the instance is running.
+     * Returns whether the instance was started after the timeout.
+     * 
+     * @return true if the instance started up, or false otherwise.
+     */
+    private boolean pollForLife(final Server instance) {
 
         // Start a new thread to check when the instance has started
         final CountDownLatch instanceTimeout = new CountDownLatch(1);
@@ -308,15 +312,15 @@ public class StartInstanceCommand implements AdminCommand {
             }
         }, 500, 500, TimeUnit.MILLISECONDS);
 
-        // If the timeout is reached, return the timeout message. Otherwise return null (success).
+        // If the timeout is reached, the instance isn't started so return false
         try {
             instanceTimeout.await(timeout, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            return Strings.get("start.instance.timeout", instanceName);
+            return false;
         } finally {
             instancePollFuture.cancel(true);
         }
-        return null;
+        return true;
     }
 
     private String makeCommandHuman(List<String> command) {
