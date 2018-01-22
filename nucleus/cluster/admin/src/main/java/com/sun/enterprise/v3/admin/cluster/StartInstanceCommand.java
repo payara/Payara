@@ -302,14 +302,14 @@ public class StartInstanceCommand implements AdminCommand {
 
         try {
             // Schedule a task to poll for the instance status
-            executor.schedule(new Runnable() {
+            executor.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
                     if (instance.isRunning()) {
                         instanceTimeout.countDown();
                     }
                 }
-            }, 500, TimeUnit.MILLISECONDS);
+            }, 500, 500, TimeUnit.MILLISECONDS);
 
             // If the timeout is reached, return the timeout message. Otherwise return null (success).
 			instanceTimeout.await(timeout, TimeUnit.SECONDS);
