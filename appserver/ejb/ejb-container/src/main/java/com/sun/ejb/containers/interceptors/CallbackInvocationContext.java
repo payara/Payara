@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers.interceptors;
 
@@ -219,7 +220,7 @@ public class CallbackInvocationContext implements InvocationContext {
                 targetObjectInstance = targetObjectClass.newInstance();
                 interceptorInfo.setTargetObjectInstance(targetObjectInstance);
             } else {
-                container.createEjbInstance(ctorParams, ctx);
+                container.createEjbInstanceForInterceptors(ctorParams, ctx);
                 targetObjectInstance = ctx.getEJB();
             }
         } // else do nothing? XXX
