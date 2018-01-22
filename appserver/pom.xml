@@ -218,12 +218,14 @@
          <microprofile-config.version>1.1-payara-p1</microprofile-config.version>
          <microprofile-fault-tolerance.version>1.0.payara-p1</microprofile-fault-tolerance.version>
          <microprofile-jwt-auth.version>1.0.payara-p1</microprofile-jwt-auth.version>
-	 <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
-
+	       <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
+         <microprofile-metrics.version>1.0.1.payara-p1</microprofile-metrics.version>
+      
          <nimbus-jose-jwt.version>5.1</nimbus-jose-jwt.version>
          <accessors-smart.version>1.2</accessors-smart.version>
          <json-smart.version>2.3</json-smart.version>
          <jcip-annotations.version>1.0-1</jcip-annotations.version>
+
     </properties>
 
 
