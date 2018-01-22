@@ -179,6 +179,18 @@
             <version>${nimbus-jose-jwt.version}</version>
         </dependency>
         
+        <!-- Healthcheck -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.health</groupId>
+            <artifactId>microprofile-health-api</artifactId>
+            <version>${microprofile-healthcheck.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.healthcheck</groupId>
+            <artifactId>microprofile-healthcheck</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+            
         <dependency>
             <groupId>org.glassfish.main.external</groupId>
             <artifactId>jcip-annotations-repackaged</artifactId>
