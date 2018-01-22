@@ -212,7 +212,7 @@ public class SQLPersistenceManagerFactory
      * Sets database user password
      * @param       password user password
      */
-    public void setConnectionPassword(String password) {
+    public void setConnectionPassword(char[] password) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
     }
@@ -680,7 +680,7 @@ public class SQLPersistenceManagerFactory
      * @return	the persistence manager
      * @exception JDOUserException if data source info is not set
      */
-    public PersistenceManager getPersistenceManager(String username, String password) {
+    public PersistenceManager getPersistenceManager(String username, char[] password) {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
         if (_connectionFactory == null && _dataSource == null) {
@@ -809,7 +809,7 @@ public class SQLPersistenceManagerFactory
      * or creates a new one
      */
     private PersistenceManagerImpl getFromPool(javax.transaction.Transaction tx,
-                                               String username, String password) {
+                                               String username, char[] password) {
 
         boolean debug = logger.isLoggable(Logger.FINEST);
         if (debug) {
@@ -886,7 +886,7 @@ public class SQLPersistenceManagerFactory
     }
 
 
-    private void initializeSQLStoreManager(String username, String password) {
+    private void initializeSQLStoreManager(String username, char[] password) {
         Connection conn = null;
         try { 
              conn = getConnection(username, password);
@@ -918,7 +918,7 @@ public class SQLPersistenceManagerFactory
     /**
      * Get Database connection for username and password.
      */
-    private Connection getConnection(String username, String password) throws SQLException{
+    private Connection getConnection(String username, char[] password) throws SQLException{
         Connection conn = null;
 
         if (_connectionFactory != null) {
@@ -929,7 +929,7 @@ public class SQLPersistenceManagerFactory
             if (username == null) {
                 conn = ((DataSource)_dataSource).getConnection();
             } else {
-                conn = ((DataSource)_dataSource).getConnection(username, password);
+                conn = ((DataSource)_dataSource).getConnection(username, new String(password));
             }
         }
 

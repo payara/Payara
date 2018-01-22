@@ -208,7 +208,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
      * @throws java.sql.SQLException
      */
     public java.sql.Connection getNonTransactionalConnection(
-            Object resource, String username, String password) 
+            Object resource, String username, char[] password)
             throws java.sql.SQLException {
 
         java.sql.Connection rc = null;
@@ -218,7 +218,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
             if (username == null) {
                 rc = ds.getNonTxConnection();
             } else {
-                rc = ds.getNonTxConnection(username, password);
+                rc = ds.getNonTxConnection(username, new String(password));
             }
         } else {
             throw new JDOFatalInternalException(I18NHelper.getMessage(
