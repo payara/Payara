@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    Portions Copyright [2018] [nPayara Foundation and/or its affiliates]
 -->
 
 <!initPage
@@ -71,6 +71,7 @@
                 setAttribute(key="isRestartRequired" value="#{true}");
             }
             gfr.getInstanceDebugInfo();
+
        />
     </event>
     <sun:form id="propertyForm">
@@ -161,6 +162,15 @@
         </sun:property>
         <sun:property id="status" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Status}:" >
             <sun:staticText id="status" text="#{pageSession.statusString}" />
+        </sun:property>
+        <sun:property id="statusReasonProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.Reason}:" >
+            <sun:staticText id="statusReason" text="#{pageSession.statusReason}" />
+        </sun:property>
+        <sun:property id="uptimeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.Uptime}:" >
+            <sun:staticText id="uptime" text="#{pageSession.statusUptime} (ms)" />
+        </sun:property>
+        <sun:property id="deploymentGroupProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.DeploymentGroup}:" >
+            <sun:staticText id="deploymentGRoup" text="#{pageSession.statusDG}" />
         </sun:property>
         <sun:property id="jvmProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.JVMLabel}">
             <sun:hyperlink id="jvmlink" text="$resource{i18nc.inst.jvmReport}"

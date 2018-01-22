@@ -50,16 +50,16 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * @author Byron Nevins
  */
 
-final class Strings {
+public final class Strings {
     private Strings() {
         // no instances allowed!
     }
 
-    final static String get(String indexString) {
+    public final static String get(String indexString) {
         return strings.get(indexString);
     }
 
-    final static String get(String indexString, Object... objects) {
+    public final static String get(String indexString, Object... objects) {
         return strings.get(indexString, objects);
     }
 

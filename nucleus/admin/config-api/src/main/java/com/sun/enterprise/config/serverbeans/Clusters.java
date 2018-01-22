@@ -66,8 +66,6 @@ public interface Clusters extends ConfigBeanProxy {
     @Create(value="create-cluster", decorator=Cluster.Decorator.class, i18n=@I18n("create.cluster.command"))
     @Delete(value="delete-cluster", resolver= TypeAndNameResolver.class, decorator=Cluster.DeleteDecorator.class
         , i18n=@I18n("delete.cluster.command"))
-
-
     public List<Cluster> getCluster();
 
     /**

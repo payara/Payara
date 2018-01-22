@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import org.glassfish.api.admin.AdminCommand;
@@ -60,7 +61,6 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 
-import java.util.Properties;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.io.File;
@@ -77,7 +77,7 @@ import org.glassfish.api.admin.AccessRequired;
 @PerLookup
 @I18n("redeploy.command")
 @ExecuteOn(value={RuntimeType.DAS})
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @AccessRequired.Delegate(DeployCommand.class)
 public class ReDeployCommand extends DeployCommandParameters implements AdminCommand {
 

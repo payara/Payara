@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
@@ -47,7 +48,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.glassfish.api.*;
@@ -83,6 +83,34 @@ import javax.inject.Named;
         })
 })
 public class RestartInstanceCommand implements AdminCommand {
+    
+    @Param(optional = false, primary = true)
+    private String instanceName;
+    // no default value!  We use the Boolean as a tri-state.
+    @Param(name = "debug", optional = true)
+    private String debug;
+    
+    @Param(name="delay", optional = true, defaultValue = "0")
+    private int delay;
+    
+    @Inject
+    InstanceStateService stateSvc;
+    @Inject
+    private ServiceLocator habitat;
+    @Inject
+    private ServerEnvironment env;
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config dasConfig;
+    private Logger logger;
+    private RemoteInstanceCommandHelper helper;
+    private ActionReport report;
+    private final static long WAIT_TIME_MS = 600000; // 10 minutes
+    private Server instance;
+    private String host;
+    private int port;
+    private String oldPid;
+    private AdminCommandContext ctx;
+    
     @Override
     public void execute(AdminCommandContext context) {
         try {
@@ -210,13 +238,16 @@ public class RestartInstanceCommand implements AdminCommand {
         while (System.currentTimeMillis() < deadline) {
             try {
                 String newpid = getPid();
-
                 // when the next statement is true -- the server has restarted.
                 if (StringUtils.ok(newpid) && !newpid.equals(oldPid)) {
                     if (logger.isLoggable(Level.FINE))
                         logger.fine("Restarted instance pid = " + newpid);
+                    try {
+                        Thread.currentThread().sleep(delay);
+                    } catch(InterruptedException ie) {}
                     return;
                 }
+                Thread.currentThread().sleep(100);// don't busy wait
             }
             catch (Exception e) {
                 // ignore.  This is normal!
@@ -301,26 +332,5 @@ public class RestartInstanceCommand implements AdminCommand {
 
     private static class InstanceNotRunningException extends Exception {
     }
-    @Inject
-    InstanceStateService stateSvc;
-    @Inject
-    private ServiceLocator habitat;
-    @Inject
-    private ServerEnvironment env;
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config dasConfig;
-    @Param(optional = false, primary = true)
-    private String instanceName;
-    // no default value!  We use the Boolean as a tri-state.
-    @Param(name = "debug", optional = true)
-    private String debug;
-    private Logger logger;
-    private RemoteInstanceCommandHelper helper;
-    private ActionReport report;
-    private final static long WAIT_TIME_MS = 600000; // 10 minutes
-    private Server instance;
-    private String host;
-    private int port;
-    private String oldPid;
-    private AdminCommandContext ctx;
+
 }

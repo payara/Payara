@@ -69,7 +69,6 @@ import java.beans.PropertyVetoException;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.ArrayList;
-import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -387,7 +386,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @DuckTyped
     public ServerRef getServerRefByRef(String ref);
 
-    // four trivial methods that ReferenceContainer's need to implement
+    // five trivial methods that ReferenceContainer's need to implement
     @DuckTyped
     @Override
     boolean isCluster();
@@ -399,6 +398,10 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @DuckTyped
     @Override
     boolean isDas();
+    
+    @DuckTyped
+    @Override
+    boolean isDeploymentGroup();
 
     @DuckTyped
     @Override
@@ -433,6 +436,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
         public static boolean isServer(Cluster me)  { return false; }
         public static boolean isInstance(Cluster me) { return false; }
         public static boolean isDas(Cluster me) { return false; }
+        public static boolean isDeploymentGroup(Cluster me) { return false; }
 
         public static String getReference(Cluster cluster) {
             return cluster.getConfigRef();

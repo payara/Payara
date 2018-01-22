@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.connectors.admin.cli;
 
@@ -66,7 +67,7 @@ import java.beans.PropertyVetoException;
  * Delete Admin Object command
  * 
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.CONFIG, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.CONFIG, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @ExecuteOn(value={RuntimeType.ALL})
 @Service(name="delete-admin-object")
 @PerLookup
