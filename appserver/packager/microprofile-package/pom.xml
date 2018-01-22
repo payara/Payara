@@ -162,7 +162,7 @@
             <groupId>fish.payara.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics</artifactId>
             <version>${project.version}</version>
-        </dependency>       
+        </dependency>
         
         <!-- JWT -->
         <dependency>

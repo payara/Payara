@@ -126,7 +126,7 @@ public abstract class JsonWriter implements MetricsWriter {
             }
         }
         JsonObject applicationObject = applicationBuilder.build();
-        if(!applicationObject.isEmpty()){
+        if (!applicationObject.isEmpty()) {
             payloadBuilder.add(APPLICATION.getName(), applicationObject);
         }
         serialize(payloadBuilder.build());
