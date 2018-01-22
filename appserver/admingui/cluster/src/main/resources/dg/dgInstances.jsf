@@ -186,7 +186,7 @@
 #include "/common/shared/nameSection.inc"
 
 <sun:panelGroup id="addButtons">
-<sun:staticText id="server"text="Select a Server to add to this Deplyoment Group:"/>   
+<sun:staticText id="server"text="Select a Server to add to this Deployment Group:"/>   
 <sun:dropDown id="servers" values="#{pageSession.possibleInstanceList}"  labels="#{pageSession.possibleInstanceList}" submitForm="#{true}" >
             <!command
                 setAttribute(key="click" value="$this{component}");
