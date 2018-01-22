@@ -302,7 +302,7 @@ public class StartInstanceCommand implements AdminCommand {
 
         try {
             // Schedule a task to poll for the instance status
-            executor.scheduleAtFixedRate(new Runnable() {
+            executor.scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
                     if (instance.isRunning()) {
