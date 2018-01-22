@@ -63,7 +63,7 @@ import org.jvnet.hk2.annotations.*;
 public class LoginCommand extends CLICommand {
 
     private String adminUser = null;
-    private String adminPassword = null;
+    private char[] adminPassword = null;
 
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(LoginCommand.class);
@@ -76,7 +76,7 @@ public class LoginCommand extends CLICommand {
         programOpts.setInteractive(true);       // force it
         adminUser = getAdminUser();
         programOpts.setUser(adminUser);
-        adminPassword = SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD;
+        adminPassword = SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD.toCharArray();
         programOpts.setPassword(adminPassword,
             ProgramOptions.PasswordLocation.DEFAULT);
         boolean interactive = programOpts.isInteractive();      // save value
@@ -147,7 +147,7 @@ public class LoginCommand extends CLICommand {
      *  @return admin password
      *  @throws CommandValidationException if adminpassword can't be fetched 
      */
-    private String getAdminPassword() {
+    private char[] getAdminPassword() {
         final String prompt = strings.get("AdminPasswordPrompt");
 
         return readPassword(prompt);
@@ -158,7 +158,7 @@ public class LoginCommand extends CLICommand {
      * ".asadminpass" in user's home directory.
      */
     private void saveLogin(String host, final int port, 
-                           final String user, final String passwd) {
+                           final String user, final char[] passwd) {
         if (!ok(host))
             host = "localhost";
         // to avoid putting commas in the port number (e.g., "4,848")...

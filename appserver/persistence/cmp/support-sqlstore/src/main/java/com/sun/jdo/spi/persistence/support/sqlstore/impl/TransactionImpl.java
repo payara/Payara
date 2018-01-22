@@ -48,12 +48,9 @@ package com.sun.jdo.spi.persistence.support.sqlstore.impl;
 
 import javax.transaction.*;
 
-import java.util.Hashtable;
-import java.util.ArrayList;
+import java.util.*;
 import java.sql.Connection;
 import javax.sql.DataSource;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 import com.sun.jdo.api.persistence.support.ConnectionFactory;
 import com.sun.jdo.api.persistence.support.JDOException;
@@ -201,7 +198,7 @@ public class TransactionImpl
      * security connections
      */
     private String         username     = null;
-    private String         password     = null;
+    private char[]         password     = null;
 
     /**
      * Associated Connection
@@ -265,7 +262,7 @@ public class TransactionImpl
     /**
      * Constructor
      */
-    public TransactionImpl(PersistenceManager pm, String username, String password, int seconds) {
+    public TransactionImpl(PersistenceManager pm, String username, char[] password, int seconds) {
         this.status = Status.STATUS_NO_TRANSACTION;
         this.timeout = seconds;
         this.startedCommit = false;
@@ -534,11 +531,11 @@ public class TransactionImpl
      * @param password as String
      * @return true if they are equal
      */
-    public boolean verify(String username, String password)
+    public boolean verify(String username, char[] password)
     {
         if ((this.username != null && !this.username.equals(username)) ||
             (this.username == null && username != null) ||
-            (this.password != null && !this.password.equals(password)) ||
+            (this.password != null && !Arrays.equals(this.password,password)) ||
             (this.password  == null && password != null)) {
             return false;
         }
@@ -1456,7 +1453,7 @@ public class TransactionImpl
                     }
                 } else if (username != null) {
                     return ((DataSource)connectionFactory).getConnection(
-                        username, password);
+                        username, new String(password));
                 } else {
                      return ((DataSource)connectionFactory).getConnection();
                 }

@@ -59,15 +59,15 @@ public class ServerLoginCallbackHandler implements CallbackHandler
     private static final String GPCBH_UTIL = "com.sun.enterprise.security.jmac.callback.ServerLoginCBHUtil";
     private static final String GPCBH_UTIL_METHOD="processGroupPrincipal";
     private String username = null;
-    private String password = null;
+    private char[] password = null;
     private String moduleID = null;
 
-    public ServerLoginCallbackHandler(String username, String password) {
+    public ServerLoginCallbackHandler(String username, char[] password) {
 	this.username = username;
 	this.password = password;
     }
 
-    public ServerLoginCallbackHandler(String username, String password, String moduleID) {
+    public ServerLoginCallbackHandler(String username, char[] password, String moduleID) {
 	this.username = username;
 	this.password = password;
         this.moduleID = moduleID;
@@ -80,7 +80,7 @@ public class ServerLoginCallbackHandler implements CallbackHandler
 	username = user;
     }
     
-    public void setPassword(String pass){
+    public void setPassword(char[] pass){
 	password = pass;
     }
 
@@ -104,7 +104,7 @@ public class ServerLoginCallbackHandler implements CallbackHandler
 		nme.setName(username);
 	    } else if (callbacks[i] instanceof PasswordCallback){
 		PasswordCallback pswd = (PasswordCallback)callbacks[i];
-		pswd.setPassword(password.toCharArray());
+		pswd.setPassword(password);
 	    } else if (callbacks[i] instanceof CertificateRealm.AppContextCallback){
                 ((CertificateRealm.AppContextCallback) callbacks[i]).setModuleID(moduleID);
             } else if (GP_CB.equals(callbacks[i].getClass().getName())){
