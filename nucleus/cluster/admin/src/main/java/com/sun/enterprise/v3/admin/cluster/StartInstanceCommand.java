@@ -298,7 +298,7 @@ public class StartInstanceCommand implements AdminCommand {
 
     /**
      * Poll for the specified amount of time to check if the instance is running.
-     * Returns whether the instance was started after the timeout.
+     * Returns whether the instance was started before the timeout.
      * 
      * @return true if the instance started up, or false otherwise.
      */
