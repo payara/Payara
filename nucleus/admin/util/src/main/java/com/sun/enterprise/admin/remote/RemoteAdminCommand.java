@@ -172,7 +172,7 @@ public class RemoteAdminCommand {
     protected int               port;
     protected boolean           secure;
     protected String            user;
-    protected String            password;
+    protected char[]            password;
     protected Logger            logger;
     protected String            scope;
     protected String            authToken = null;
@@ -271,7 +271,7 @@ public class RemoteAdminCommand {
     }
 
     public RemoteAdminCommand(String name, String host, int port,
-            boolean secure, String user, String password, Logger logger)
+            boolean secure, String user, char[] password, Logger logger)
             throws CommandException {
         this(name, host, port, secure, user, password, logger, null, null, false);
     }
@@ -281,7 +281,7 @@ public class RemoteAdminCommand {
      * are supplied later using the execute method in the superclass.
      */
     public RemoteAdminCommand(String name, String host, int port,
-            boolean secure, String user, String password, Logger logger,
+            boolean secure, String user, char[] password, Logger logger,
             final String scope,
             final String authToken,
             final boolean prohibitDirectoryUploads)
@@ -741,7 +741,7 @@ public class RemoteAdminCommand {
                     logger.log(Level.FINER, "URL: {0}", url.toURL(uriString).toString());
                     logger.log(Level.FINER, "Password options: {0}", passwordOptions);
                     logger.log(Level.FINER, "Using auth info: User: {0}, Password: {1}", 
-                            new Object[]{user, ok(password) ? "<non-null>" : "<null>"});
+                            new Object[]{user, (password != null && password.length > 0) ? "<non-null>" : "<null>"});
                 }
                 final AuthenticationInfo authInfo = authenticationInfo();
                 if (authInfo != null) {

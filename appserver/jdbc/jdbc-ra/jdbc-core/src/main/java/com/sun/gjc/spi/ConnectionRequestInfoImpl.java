@@ -40,6 +40,8 @@
 
 package com.sun.gjc.spi;
 
+import java.util.Arrays;
+
 /**
  * ConnectionRequestInfo implementation for Generic JDBC Connector.
  *
@@ -49,7 +51,7 @@ package com.sun.gjc.spi;
 public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionRequestInfo {
 
     private String user;
-    private String password;
+    private char[] password;
 
     /**
      * Constructs a new <code>ConnectionRequestInfoImpl</code> object
@@ -57,7 +59,7 @@ public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionR
      * @param user     User Name.
      * @param password Password
      */
-    public ConnectionRequestInfoImpl(String user, String password) {
+    public ConnectionRequestInfoImpl(String user, char[] password) {
         this.user = user;
         this.password = password;
     }
@@ -76,7 +78,7 @@ public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionR
      *
      * @return Password of ConnectionRequestInfo.
      */
-    public String getPassword() {
+    public char[] getPassword() {
         return password;
     }
 
@@ -90,7 +92,7 @@ public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionR
         if (obj instanceof ConnectionRequestInfoImpl) {
             ConnectionRequestInfoImpl other = (ConnectionRequestInfoImpl) obj;
             return (isEqual(this.user, other.user) &&
-                    isEqual(this.password, other.password));
+                    Arrays.equals(this.password, other.password));
         } else {
             return false;
         }
@@ -102,7 +104,7 @@ public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionR
      * @return hashCode.
      */
     public int hashCode() {
-        String result = "" + user + password;
+        String result = "" + user + new String(password);
         return result.hashCode();
     }
 
