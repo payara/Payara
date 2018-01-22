@@ -501,6 +501,17 @@
                     <groupId>fish.payara.microprofile.fault-tolerance</groupId>
                     <artifactId>microprofile-fault-tolerance</artifactId>
                     <version>${project.version}</version>
+	        </dependency>
+                <!-- Health Check -->
+	        <dependency>
+                    <groupId>org.eclipse.microprofile.health</groupId>
+                    <artifactId>microprofile-health-api</artifactId>
+                    <version>${microprofile-healthcheck.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.microprofile.healthcheck</groupId>
+                    <artifactId>microprofile-healthcheck</artifactId>
+                    <version>${project.version}</version>
                 </dependency>
                 <!-- Metrics -->
                 <dependency>

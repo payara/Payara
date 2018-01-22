@@ -188,7 +188,8 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
 
         // See if the username / password has been passed in...
         String username = request.getParameter("j_username");
-        String password = request.getParameter("j_password");
+        char[] password = request.getParameter("j_password") != null
+                ? request.getParameter("j_password").toCharArray() : null;
         
         if (username == null || password == null || !request.getMethod().equalsIgnoreCase("post")) {
             
@@ -287,11 +288,11 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
             (host.equals("0.0.0.0") ? "localhost" : host) + ":" + port + "/management/sessions";
     }
     
-    private RestResponse validateCredentials(HttpServletRequest request, String username, String password) {
+    private RestResponse validateCredentials(HttpServletRequest request, String username, char[] password) {
         WebTarget target = RestUtil.initialize(ClientBuilder.newBuilder())
                                    .build()
                                    .target(restURL)
-                                   .register(HttpAuthenticationFeature.basic(username, password));
+                                   .register(HttpAuthenticationFeature.basic(username, new String(password)));
         
         MultivaluedMap<String, String> payLoad = new MultivaluedHashMap<>();
         payLoad.putSingle("remoteHostName", request.getRemoteHost());

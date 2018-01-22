@@ -141,9 +141,8 @@ public class RegistrationUtil {
     }
 
     public static String getGFProductURN() throws RegistrationException {
-        try {
-            InputStream is = RegistrationUtil.class.getClassLoader().getResourceAsStream(
-                    GLASSFISH_REGISTRY_PROPERTIES);
+        try (InputStream is = RegistrationUtil.class.getClassLoader().getResourceAsStream(
+          GLASSFISH_REGISTRY_PROPERTIES)){
             Properties props = new Properties();
             props.load(is);
             return props.getProperty("product_urn");

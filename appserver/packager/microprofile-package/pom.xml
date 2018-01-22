@@ -138,18 +138,18 @@
             <groupId>fish.payara.microprofile.config</groupId>
             <artifactId>microprofile-config</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>       
         
         <!-- Fault Tolerance -->
-        <dependency>
-            <groupId>fish.payara.microprofile.fault-tolerance</groupId>
-            <artifactId>microprofile-fault-tolerance</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
             <artifactId>microprofile-fault-tolerance-api</artifactId>
             <version>${microprofile-fault-tolerance.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.fault-tolerance</groupId>
+            <artifactId>microprofile-fault-tolerance</artifactId>
+            <version>${project.version}</version>
         </dependency>
       
         <!-- Metrics -->
@@ -162,22 +162,19 @@
             <groupId>fish.payara.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>       
         
         <!-- JWT -->
-        
-        <!-- 
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
-            <version>1.0</version>
+            <version>${microprofile-jwt-auth.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.microprofile.jwt-auth</groupId>
             <artifactId>microprofile-jwt-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
-         -->
         
         <dependency>
             <groupId>com.nimbusds</groupId>
@@ -185,6 +182,18 @@
             <version>${nimbus-jose-jwt.version}</version>
         </dependency>
         
+        <!-- Healthcheck -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.health</groupId>
+            <artifactId>microprofile-health-api</artifactId>
+            <version>${microprofile-healthcheck.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.healthcheck</groupId>
+            <artifactId>microprofile-healthcheck</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+            
         <dependency>
             <groupId>org.glassfish.main.external</groupId>
             <artifactId>jcip-annotations-repackaged</artifactId>
