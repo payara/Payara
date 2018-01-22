@@ -299,17 +299,19 @@ public class StartInstanceCommand implements AdminCommand {
         // Start a new thread to check when the instance has started
         final CountDownLatch instanceTimeout = new CountDownLatch(1);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.schedule(new Runnable() {
-            @Override
-            public void run() {
-                if (instance.isRunning()) {
-                    instanceTimeout.countDown();
-                }
-            }
-        }, 500, TimeUnit.MILLISECONDS);
 
-        // If the timeout is reached, return the timeout message. Otherwise return null (success).
         try {
+            // Schedule a task to poll for the instance status
+            executor.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    if (instance.isRunning()) {
+                        instanceTimeout.countDown();
+                    }
+                }
+            }, 500, TimeUnit.MILLISECONDS);
+
+            // If the timeout is reached, return the timeout message. Otherwise return null (success).
 			instanceTimeout.await(timeout, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			return Strings.get("start.instance.timeout", instanceName);
