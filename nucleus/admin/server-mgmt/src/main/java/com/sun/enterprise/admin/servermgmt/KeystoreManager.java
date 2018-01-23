@@ -293,17 +293,18 @@ public class KeystoreManager {
             throws RepositoryException {
         String javaHome = System.getProperty("java.home").concat("/").replaceAll("//", "/");
         String jreHome = (javaHome.contains("jre")) ? javaHome : javaHome + "jre/";
-        String jreTrustStoreLocation = jreHome + "lib/security/";
-        File jdkTrustStore = new File(jreTrustStoreLocation, "cacerts");
+        String javaTrustStoreLocation = jreHome + "lib/security/";
+        File javaTrustStore = new File(javaTrustStoreLocation, "cacerts");
 
         String[] keytoolCmd = {
             "-importkeystore",
-            "-srckeystore", jdkTrustStore.getAbsolutePath(),
-            "-destkeystore", trustStore.getAbsolutePath()
+            "-srckeystore", javaTrustStore.getAbsolutePath(),
+            "-destkeystore", trustStore.getAbsolutePath(),
+            "-noprompt"
         };
 
-        KeytoolExecutor keytool = new KeytoolExecutor(keytoolCmd, 30, new String[]{masterPassword});
-        keytool.execute("trustStoreNotCreated", trustStore);
+        KeytoolExecutor keytool = new KeytoolExecutor(keytoolCmd, 30, new String[]{masterPassword, "changeit"});
+        keytool.execute("trustStoreJavaImportError", trustStore);
     }
 
     private void copyCert(final File keyStore, final File trustStore,
