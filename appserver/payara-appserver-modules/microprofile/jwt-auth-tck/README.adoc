@@ -6,11 +6,11 @@ This module contains the extensions required to run the MP-JWT 1.0 TCK. In order
 
 Then from the actual TCK folder, for the full test:
 
-`mvn -Pcontainer-full -Dtck.container.groupId=fish.payara.microprofile -Dtck.container.artifactId=jwt-auth-tck -Dtck.container.version=4.1.2.181-SNAPSHOT test`
+`mvn -Pcontainer-full -Dtck.container.groupId=fish.payara.microprofile -Dtck.container.artifactId=jwt-auth-tck -Dtck.container.version=5.Beta2-SNAPSHOT test`
 
 And for the smaller, mandatory test:
 
-`mvn -Pcontainer -Dtck.container.groupId=fish.payara.microprofile -Dtck.container.artifactId=jwt-auth-tck -Dtck.container.version=4.1.2.181-SNAPSHOT test`
+`mvn -Pcontainer -Dtck.container.groupId=fish.payara.microprofile -Dtck.container.artifactId=jwt-auth-tck -Dtck.container.version=5.Beta2-SNAPSHOT test`
 
 Replace `5.Beta2-SNAPSHOT` with the latest version of this module.
 

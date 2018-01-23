@@ -42,7 +42,9 @@
 -->
 <!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> 
+    
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>fish.payara</groupId>
@@ -218,7 +220,7 @@
          <microprofile-config.version>1.1-payara-p1</microprofile-config.version>
          <microprofile-fault-tolerance.version>1.0.payara-p1</microprofile-fault-tolerance.version>
          <microprofile-jwt-auth.version>1.0.payara-p1</microprofile-jwt-auth.version>
-	       <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
+         <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.0.1.payara-p1</microprofile-metrics.version>
       
          <nimbus-jose-jwt.version>5.1</nimbus-jose-jwt.version>
