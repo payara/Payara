@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2018] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.v3.admin.cluster;
@@ -45,8 +45,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -73,6 +72,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
 
 /**
@@ -138,6 +139,9 @@ public class StartInstanceCommand implements AdminCommand {
     private Server instance;
 
     private static final String NL = System.getProperty("line.separator");
+
+    @Inject
+    private PayaraExecutorService executor;
 
     /**
      * restart-instance needs to try to start the instance from scratch if it is not
@@ -227,9 +231,8 @@ public class StartInstanceCommand implements AdminCommand {
 
         if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
             // Make sure instance is really up
-            String s = pollForLife(instance);
-            if (s != null) {
-                report.setMessage(s);
+            if (!pollForLife(instance)){
+                report.setMessage(Strings.get("start.instance.timeout", instanceName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
         }
@@ -293,32 +296,31 @@ public class StartInstanceCommand implements AdminCommand {
 
     }
 
-    // return null means A-OK
-    private String pollForLife(final Server instance) {
+    /**
+     * Poll for the specified amount of time to check if the instance is running.
+     * Returns whether the instance was started before the timeout.
+     * 
+     * @return true if the instance started up, or false otherwise.
+     */
+    private boolean pollForLife(final Server instance) {
 
         // Start a new thread to check when the instance has started
         final CountDownLatch instanceTimeout = new CountDownLatch(1);
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        ScheduledFuture<?> instancePollFuture = executor.scheduleWithFixedDelay(() -> {
+            if (instance.isRunning()) {
+                instanceTimeout.countDown();
+            }
+        }, 500, 500, TimeUnit.MILLISECONDS);
 
+        // If the timeout is reached, the instance isn't started so return false
         try {
-            // Schedule a task to poll for the instance status
-            executor.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    if (instance.isRunning()) {
-                        instanceTimeout.countDown();
-                    }
-                }
-            }, 500, TimeUnit.MILLISECONDS);
-
-            // If the timeout is reached, return the timeout message. Otherwise return null (success).
-			instanceTimeout.await(timeout, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			return Strings.get("start.instance.timeout", instanceName);
-		} finally {
-            executor.shutdown();
+            instanceTimeout.await(timeout, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            return false;
+        } finally {
+            instancePollFuture.cancel(true);
         }
-        return null;
+        return true;
     }
 
     private String makeCommandHuman(List<String> command) {
