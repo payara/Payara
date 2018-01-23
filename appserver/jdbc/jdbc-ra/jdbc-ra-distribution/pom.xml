@@ -45,7 +45,7 @@
   <parent>
     <artifactId>jdbc-ra</artifactId>
     <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
-    <version>5.Beta2-SNAPSHOT</version>
+    <version>5.Beta2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
