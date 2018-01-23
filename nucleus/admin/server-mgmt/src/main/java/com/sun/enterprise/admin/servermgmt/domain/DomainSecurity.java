@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.admin.servermgmt.domain;
@@ -43,14 +45,13 @@ package com.sun.enterprise.admin.servermgmt.domain;
 import java.io.File;
 import java.io.IOException;
 
-import org.glassfish.security.common.FileRealmHelper;
-
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.MasterPasswordFileManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
-import com.sun.enterprise.admin.util.AdminConstants;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.util.i18n.StringManager;
+
+import org.glassfish.security.common.FileRealmHelper;
 
 public class DomainSecurity extends MasterPasswordFileManager {
 
