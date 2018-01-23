@@ -283,9 +283,9 @@ public class KeystoreManager {
      }
      */
 
-     /**
-      * Copy certain certificates from the keystore into the truststore.
-      */
+    /**
+     * Copy certain certificates from the keystore into the truststore.
+    */
     protected void copyCertificates(File keyStore, File trustStore, DomainConfig config, String masterPassword)
        throws DomainException 
     {
@@ -298,7 +298,13 @@ public class KeystoreManager {
         }
     }
 
-    protected void copyCertificatesFromJdk(File trustStore, DomainConfig config, String masterPassword)
+    /**
+     * Copies all non-existing certificates from the currently used JDK to the Payara trust store.
+     * 
+     * @param trustStore the trust store to copy the certificates to.
+     * @param masterPassword the password to the trust store.
+     */
+    protected void copyCertificatesFromJdk(File trustStore, String masterPassword)
             throws RepositoryException {
         String javaHome = System.getProperty("java.home").concat("/").replaceAll("//", "/");
         String jreHome = (javaHome.contains("jre")) ? javaHome : javaHome + "jre/";
@@ -316,6 +322,14 @@ public class KeystoreManager {
         keytool.execute("trustStoreJavaImportError", trustStore);
     }
 
+    /**
+     * Copies a certificate from a keyStore to a trustStore.
+     * 
+     * @param keyStore the key store to copy the certificate from.
+     * @param trustStore the trust store to copy the certificate to.
+     * @param alias the name of the certificate to copy.
+     * @param masterPassword the password for the trust stores.
+     */
     private void copyCert(final File keyStore, final File trustStore,
             final String alias, final String masterPassword) throws RepositoryException {
 
