@@ -191,9 +191,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     String recordDateFormat;
     
     protected String logFileProperty = "";
-    private LogManager manager = LogManager.getLogManager();
-    private String cname = getClass().getName();
-    private String GFFileHander = "com.sun.enterprise.server.logging.GFFileHandler";
+    private final LogManager manager = LogManager.getLogManager();
+    private final String cname = getClass().getName();
+    private static final String GF_FILE_HANDER = "com.sun.enterprise.server.logging.GFFileHandler";
     
     public void postConstruct() {
 
@@ -317,7 +317,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                     }
                 };
 
-                if (cname.equals(GFFileHander)) {
+                if (cname.equals(GF_FILE_HANDER)) {
                     LogRotationTimer.getInstance().startTimer(
                             new LogRotationTimerTask(rotationTask,
                                     rotationTimeLimitValue / 60000));
@@ -353,7 +353,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                         }
                     };
 
-                    if (cname.equals(GFFileHander)) {
+                    if (cname.equals(GF_FILE_HANDER)) {
                         LogRotationTimer.getInstance().startTimer(
                                 new LogRotationTimerTask(rotationTask,
                                         rotationTimeLimitValue));
@@ -811,8 +811,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
      */
     public void rotate() {
         final GFFileHandler thisInstance = this;
-        java.security.AccessController.doPrivileged(
-                new java.security.PrivilegedAction() {
+        java.security.AccessController.doPrivileged(new java.security.PrivilegedAction() {
                     public Object run() {
                         synchronized (thisInstance.rotationLock) {
                             if (thisInstance.meter != null
@@ -862,7 +861,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                                     // will be restarted if there is a value set
                                     // for time based log rotation
                                     if (dayBasedFileRotation) {
-                                        if (cname.equals(GFFileHander)) {
+                                        if (cname.equals(GF_FILE_HANDER)) {
                                             LogRotationTimer.getInstance()
                                                     .restartTimerForDayBasedRotation();
                                         } else {
@@ -870,7 +869,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                                                     .restartTimerForDayBasedRotation();
                                         }
                                     } else {
-                                        if (cname.equals(GFFileHander)) {
+                                        if (cname.equals(GF_FILE_HANDER)) {
                                             LogRotationTimer.getInstance()
                                                     .restartTimer();
                                         } else {

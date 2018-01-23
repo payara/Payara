@@ -79,8 +79,6 @@ public class PayaraNotificationLogRotationTimer {
         if (rotationTimerTask != null) {
             rotationTimerTask.cancel();
             rotationTimerTask = new LogRotationTimerTask(
-                    // This is wierd, We need to have a fresh TimerTask object
-                    // to reschedule the work.
                     rotationTimerTask.task,
                     rotationTimerTask.getRotationTimerValueInMinutes());
             rotationTimer.schedule(rotationTimerTask,
@@ -94,8 +92,6 @@ public class PayaraNotificationLogRotationTimer {
         if (rotationTimerTask != null) {
             rotationTimerTask.cancel();
             rotationTimerTask = new  LogRotationTimerTask(
-                    // This is wierd, We need to have a fresh TimerTask object
-                    // to reschedule the work.
                     rotationTimerTask.task,
                     60 * 24);
             rotationTimer.schedule(rotationTimerTask,
