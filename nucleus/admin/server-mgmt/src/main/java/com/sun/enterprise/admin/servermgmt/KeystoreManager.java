@@ -274,51 +274,51 @@ public class KeystoreManager {
      }
      */
 
-    protected void copyCertificates(File configRoot, DomainConfig config, String masterPassword)
+     /**
+      * Copy certain certificates from the keystore into the truststore.
+      */
+    protected void copyCertificates(File keyStore, File trustStore, DomainConfig config, String masterPassword)
        throws DomainException 
     {
         try {
-            copyCert(configRoot, CERTIFICATE_ALIAS, masterPassword);
-            copyCert(configRoot, INSTANCE_SECURE_ADMIN_ALIAS, masterPassword);
+            copyCert(keyStore, trustStore, CERTIFICATE_ALIAS, masterPassword);
+            copyCert(keyStore, trustStore, INSTANCE_SECURE_ADMIN_ALIAS, masterPassword);
         } catch(RepositoryException re) {
             String msg = _strMgr.getString("SomeProblemWithKeytool", re.getMessage());
             throw new DomainException(msg);
-
         }
     }
 
-    private void copyCert(final File configRoot,
-            final String alias,
-            final String masterPassword) throws RepositoryException {
-    	File keystore = new File(configRoot, DomainConstants.KEYSTORE_FILE);
-    	File truststore = new File(configRoot, DomainConstants.TRUSTSTORE_FILE);
+    private void copyCert(final File keyStore, final File trustStore,
+            final String alias, final String masterPassword) throws RepositoryException {
+
         File certFile = null;
         String[] input = {masterPassword};
         String[] keytoolCmd = null;
         KeytoolExecutor p = null;
 
         try {
-            //export the newly created certificate from the keystore
-            certFile = new File(configRoot, alias + ".cer");
+            // export the newly created certificate from the first keystore
+            certFile = new File(keyStore.getParentFile(), alias + ".cer");
             keytoolCmd = new String[]{
                 "-export",
-                "-keystore", keystore.getAbsolutePath(),
+                "-keystore", keyStore.getAbsolutePath(),
                 "-alias", alias,
                 "-file", certFile.getAbsolutePath(),};
 
             p = new KeytoolExecutor(keytoolCmd, 30, input);
-            p.execute("trustStoreNotCreated", truststore);
+            p.execute("trustStoreNotCreated", trustStore);
 
-            //import the newly created certificate into the truststore
+            // import the newly created certificate into the truststore
             keytoolCmd = new String[]{
                 "-import",
                 "-noprompt",
-                "-keystore", truststore.getAbsolutePath(),
+                "-keystore", trustStore.getAbsolutePath(),
                 "-alias", alias,
                 "-file", certFile.getAbsolutePath(),};
 
             p = new KeytoolExecutor(keytoolCmd, 30, input);
-            p.execute("trustStoreNotCreated", truststore);
+            p.execute("trustStoreNotCreated", trustStore);
 
             //import the newly created certificate into the asadmin truststore
             /* commented out till asadmintruststore can be added back */
