@@ -289,6 +289,23 @@ public class KeystoreManager {
         }
     }
 
+    protected void copyCertificatesFromJdk(File trustStore, DomainConfig config, String masterPassword)
+            throws RepositoryException {
+        String javaHome = System.getProperty("java.home").concat("/").replaceAll("//", "/");
+        String jreHome = (javaHome.contains("jre")) ? javaHome : javaHome + "jre/";
+        String jreTrustStoreLocation = jreHome + "lib/security/";
+        File jdkTrustStore = new File(jreTrustStoreLocation, "cacerts");
+
+        String[] keytoolCmd = {
+            "-importkeystore",
+            "-srckeystore", jdkTrustStore.getAbsolutePath(),
+            "-destkeystore", trustStore.getAbsolutePath()
+        };
+
+        KeytoolExecutor keytool = new KeytoolExecutor(keytoolCmd, 30, new String[]{masterPassword});
+        keytool.execute("trustStoreNotCreated", trustStore);
+    }
+
     private void copyCert(final File keyStore, final File trustStore,
             final String alias, final String masterPassword) throws RepositoryException {
 

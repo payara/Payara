@@ -109,6 +109,7 @@ public class DomainSecurity extends MasterPasswordFileManager {
         createKeyStore(keyStore, config, masterPassword);
         changeKeystorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, trustStore);
         copyCertificates(keyStore, trustStore, config, masterPassword);
+        copyCertificatesFromJdk(trustStore, config, masterPassword);
     }
 
     /**
