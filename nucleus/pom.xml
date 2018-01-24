@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -282,7 +282,7 @@
         <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>5.0.3</asm.version>
+        <asm.version>6.0</asm.version>
         <ha-api.version>3.1.9</ha-api.version>      
         <hazelcast.version>3.9.1</hazelcast.version>
         <smack.version>4.1.9</smack.version>
