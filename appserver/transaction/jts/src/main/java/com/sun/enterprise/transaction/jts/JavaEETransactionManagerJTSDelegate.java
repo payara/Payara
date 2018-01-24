@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.transaction.jts;
 
 import java.util.Arrays;
@@ -83,10 +84,11 @@ import com.sun.enterprise.transaction.JavaEETransactionImpl;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import java.util.HashMap;
+import java.util.Map;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;
@@ -110,11 +112,16 @@ public class JavaEETransactionManagerJTSDelegate
     private JavaEETransactionManager javaEETM;
 
     // an implementation of the JTA TransactionManager provided by JTS.
-    private ThreadLocal<TransactionManager> tmLocal = new ThreadLocal();
+    private ThreadLocal<TransactionManager> tmLocal = new ThreadLocal<>();
 
-    private Hashtable globalTransactions;
-    private Hashtable<String, XAResourceWrapper> xaresourcewrappers =
-            new Hashtable<String, XAResourceWrapper>();
+    private final ThreadLocal<Map<TransactionInternal, JavaEETransaction>> globalTransactions =
+            new ThreadLocal<Map<TransactionInternal, JavaEETransaction>>() {
+                @Override
+                protected Map<TransactionInternal, JavaEETransaction> initialValue() {
+                    return new HashMap<>();
+                }
+            };
+    private final Hashtable<String, XAResourceWrapper> xaresourcewrappers = new Hashtable<>();
 
     private Logger _logger;
 
@@ -127,10 +134,6 @@ public class JavaEETransactionManagerJTSDelegate
     private static JavaEETransactionManagerJTSDelegate instance = null;
     private volatile TransactionManager transactionManagerImpl = null;
     private TransactionService txnService = null;
-
-    public JavaEETransactionManagerJTSDelegate() {
-        globalTransactions = new Hashtable();
-    }
 
     public void postConstruct() {
         if (javaEETM != null) {
@@ -271,13 +274,13 @@ public class JavaEETransactionManagerJTSDelegate
         else {
             // check if this JTS Transaction was previously active
             // in this JVM (possible for distributed loopbacks).
-            tx = (JavaEETransaction)globalTransactions.get(jtsTx);
+            tx = globalTransactions.get().get(jtsTx);
             if (_logger.isLoggable(Level.FINE))
                 _logger.log(Level.FINE,"TM: getTransaction: tx=" + tx + ", jtsTx=" + jtsTx);
 
             if ( tx == null ) {
                 tx = ((JavaEETransactionManagerSimplified)javaEETM).createImportedTransaction(jtsTx);
-                globalTransactions.put(jtsTx, tx);
+                globalTransactions.get().put(jtsTx, tx);
             }
             javaEETM.setCurrentTransaction(tx); // associate tx with thread
             return tx;
@@ -289,7 +292,7 @@ public class JavaEETransactionManagerJTSDelegate
             return  (JavaEETransaction)t;
         }
 
-        return (JavaEETransaction)globalTransactions.get(t);
+        return globalTransactions.get().get(t);
 
     }
     public boolean enlistDistributedNonXAResource(Transaction tx, TransactionalResource h)
@@ -372,7 +375,7 @@ public class JavaEETransactionManagerJTSDelegate
     }
 
     public void removeTransaction(Transaction tx) {
-        globalTransactions.remove(tx);
+        globalTransactions.get().remove(tx);
     }
 
     public int getOrder() {
@@ -405,7 +408,7 @@ public class JavaEETransactionManagerJTSDelegate
         }
 
         TransactionInternal jtsTx = (TransactionInternal)tmLocal.get().getTransaction();
-        globalTransactions.put(jtsTx, tx);
+        globalTransactions.get().put(jtsTx, tx);
 
         return jtsTx;
     }
@@ -581,7 +584,7 @@ public class JavaEETransactionManagerJTSDelegate
             long elapsedTime = System.currentTimeMillis() - startTime;
             String status = JavaEETransactionManagerSimplified.getStatusAsString(t.getStatus());
 
-            JavaEETransactionImpl tran = (JavaEETransactionImpl)globalTransactions.get(t);
+            JavaEETransactionImpl tran = (JavaEETransactionImpl)globalTransactions.get().get(t);
             if(tran != null) {
                 tBean = ((JavaEETransactionManagerSimplified)javaEETM).getTransactionAdminBean(tran);
 
