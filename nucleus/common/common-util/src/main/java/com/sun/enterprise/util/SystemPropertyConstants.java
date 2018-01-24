@@ -92,8 +92,7 @@ public class SystemPropertyConstants
     /**
      * Field 
      */
-    public static final String INSTALL_ROOT_PROPERTY =
-        "com.sun.aas.installRoot";
+    public static final String INSTALL_ROOT_PROPERTY = "com.sun.aas.installRoot";
 
     /**
      * Field

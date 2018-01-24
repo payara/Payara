@@ -43,6 +43,7 @@ package org.glassfish.appclient.client.acc;
 
 import com.sun.enterprise.glassfish.bootstrap.MainHelper;
 import com.sun.enterprise.module.bootstrap.StartupContext;
+import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,7 +64,7 @@ public class ACCStartupContext extends StartupContext {
 
     private static final String DERBY_ROOT_PROPERTY = "AS_DERBY_INSTALL";
     
-    private static final String H2_ROOT_PROPERTY = "AS_DERBY_INSTALL";
+    private static final String H2_ROOT_PROPERTY = "AS_H2_INSTALL";
 
     public ACCStartupContext() {
         super(accEnvironment());
@@ -77,7 +78,7 @@ public class ACCStartupContext extends StartupContext {
      */
     private static Properties accEnvironment() {
         final Properties result = MainHelper.parseAsEnv(getRootDirectory());
-        result.setProperty("com.sun.aas.installRoot", getRootDirectory().getAbsolutePath());
+        result.setProperty(INSTALL_ROOT_PROPERTY, getRootDirectory().getAbsolutePath());
         final File javadbDir = new File(getRootDirectory().getParentFile(), "javadb");
         if (javadbDir.isDirectory()) {
             result.setProperty(DERBY_ROOT_PROPERTY, javadbDir.getAbsolutePath());
