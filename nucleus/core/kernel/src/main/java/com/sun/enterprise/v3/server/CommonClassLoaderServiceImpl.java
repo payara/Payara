@@ -44,6 +44,7 @@ package com.sun.enterprise.v3.server;
 import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -239,12 +240,14 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         String h2Home = null;
 
         if (arguments != null) {
-            h2Home = arguments.getProperty(H2_HOME_PROP,
-                    System.getProperty(H2_HOME_PROP));
+            h2Home = arguments.getProperty(H2_HOME_PROP, System.getProperty(H2_HOME_PROP));
         }	
         File h2Lib = null;
         if (h2Home != null) {
             h2Lib = new File(h2Home, "bin");
+        } else if(env.isMicro() && arguments != null) {
+            h2Home = arguments.getProperty(INSTALL_ROOT_PROPERTY, System.getProperty(INSTALL_ROOT_PROPERTY));
+            h2Lib = new File(h2Home, "runtime");
         }
 
         if (h2Lib==null || !h2Lib.exists()) {
@@ -252,7 +255,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
             return Collections.EMPTY_LIST;
         }
 
-        return Arrays.asList(h2Lib.listFiles((dir, name) -> name.endsWith(".jar")));
+        return Arrays.asList(h2Lib.listFiles((dir, name) -> name.startsWith("h2") && name.endsWith(".jar")));
     }
 
     private static class JarFileFilter implements FilenameFilter {

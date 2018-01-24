@@ -199,6 +199,9 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
 
     /**
      * Create the H2 tables
+     * 
+     * Note: H2 has a configuration setting DATABASE_TO_UPPER which is set to true per default. 
+     * So any table name is converted to upper case which is why you need to query for the table in upper case (or set DATABASE_TO_UPPER to false).
      *
      * @param tableName
      * @param createTableStatement
@@ -206,9 +209,9 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
      */
     protected void createH2TableNotExists(String tableName, String createTableStatement) throws SQLException {
         logger.entering(CLASSNAME, "createIfNotExists", new Object[]{tableName, createTableStatement});
-
+        
         try (Connection connection = getConnection()) {
-            try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
+            try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName.toUpperCase(), null)) {
                 if (!resultSet.next()) {
                     logger.log(INFO, "{0} table does not exists. Trying to create it.", tableName);
                     try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
