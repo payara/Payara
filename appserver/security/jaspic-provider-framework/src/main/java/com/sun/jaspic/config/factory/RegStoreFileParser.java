@@ -349,16 +349,17 @@ public final class RegStoreFileParser {
         synchronized (confFile) {
             entries = new ArrayList<EntryInfo>();
             if (confFile.exists()) {
-                BufferedReader reader = new BufferedReader(new FileReader(confFile));
-                String line = reader.readLine();
-                while (line != null) {
-                    String trimLine = line.trim(); // can't trim readLine() result
-                    if (trimLine.startsWith(CON_ENTRY)) {
-                        entries.add(readConEntry(reader));
-                    } else if (trimLine.startsWith(REG_ENTRY)) {
-                        entries.add(readRegEntry(reader));
+                try (BufferedReader reader = new BufferedReader(new FileReader(confFile))) {
+                    String line = reader.readLine();
+                    while (line != null) {
+                        String trimLine = line.trim(); // can't trim readLine() result
+                        if (trimLine.startsWith(CON_ENTRY)) {
+                            entries.add(readConEntry(reader));
+                        } else if (trimLine.startsWith(REG_ENTRY)) {
+                            entries.add(readRegEntry(reader));
+                        }
+                        line = reader.readLine();
                     }
-                    line = reader.readLine();
                 }
             } else {
                 if (logger.isLoggable(Level.FINER)) {

@@ -1,19 +1,19 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://oss.oracle.com/licenses/CDDL+GPL-1.1
+ * or LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,21 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
-import com.sun.ejb.ComponentContext;
-import com.sun.ejb.Container;
-import static com.sun.ejb.Container.TX_NOT_INITIALIZED;
-import static com.sun.ejb.Container.TX_NOT_SUPPORTED;
-import static com.sun.ejb.Container.TX_REQUIRED;
-import static com.sun.ejb.Container.TX_REQUIRES_NEW;
-import com.sun.ejb.EJBUtils;
-import com.sun.ejb.EjbInvocation;
-import com.sun.ejb.EjbInvocationFactory;
-import com.sun.ejb.InvocationInfo;
-import com.sun.ejb.MethodLockInfo;
+import com.sun.ejb.*;
 import com.sun.ejb.codegen.EjbOptionalIntfGenerator;
 import com.sun.ejb.codegen.ServiceInterfaceGenerator;
 import com.sun.ejb.containers.interceptors.InterceptorManager;
@@ -60,12 +50,7 @@ import com.sun.ejb.containers.util.MethodMap;
 import com.sun.ejb.monitoring.probes.EjbCacheProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbMonitoringProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbTimedObjectProbeProvider;
-import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbMonitoringUtils;
-import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbThreadPoolExecutorStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbTimedObjectStatsProvider;
+import com.sun.ejb.monitoring.stats.*;
 import com.sun.ejb.portable.EJBMetaDataImpl;
 import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.enterprise.admin.monitor.callflow.CallFlowInfo;
@@ -75,15 +60,8 @@ import com.sun.enterprise.container.common.spi.JavaEEContainer;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.InterceptorDescriptor;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.SecurityManager;
@@ -92,69 +70,8 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 import fish.payara.cluster.DistributedLockType;
-import static fish.payara.cluster.DistributedLockType.INHERIT;
-import static fish.payara.cluster.DistributedLockType.LOCK_NONE;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.rmi.AccessException;
-import java.rmi.RemoteException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PreDestroy;
-import javax.ejb.AccessLocalException;
-import javax.ejb.CreateException;
-import javax.ejb.EJBAccessException;
-import javax.ejb.EJBContext;
-import javax.ejb.EJBException;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBMetaData;
-import javax.ejb.EJBObject;
-import javax.ejb.EJBTransactionRequiredException;
-import javax.ejb.EJBTransactionRolledbackException;
-import javax.ejb.FinderException;
-import javax.ejb.LockType;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.ejb.RemoveException;
-import javax.ejb.TransactionRequiredLocalException;
-import javax.ejb.TransactionRolledbackLocalException;
-import javax.enterprise.inject.Vetoed;
-import javax.interceptor.AroundConstruct;
-import javax.naming.NamingException;
-import javax.naming.Reference;
-import javax.naming.StringRefAddr;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -162,12 +79,9 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.api.EjbEndpointFacade;
-import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.*;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.ejb.spi.EjbContainerInterceptor;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
@@ -179,6 +93,25 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.logging.annotation.LogMessageInfo;
+import javax.annotation.PreDestroy;
+import javax.ejb.*;
+import javax.interceptor.AroundConstruct;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.transaction.*;
+import java.io.Serializable;
+import java.lang.reflect.*;
+import java.rmi.AccessException;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
 
 /**
  * This class implements part of the com.sun.ejb.Container interface.
@@ -1691,8 +1624,17 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         return javaGlobalPrefix.toString();
     }
 
-    public void createEjbInstance(Object[] params, EJBContextImpl ctx) throws Exception {
-        Object instance = _constructEJBInstance();
+    // This method is used to create the ejb after the around_construct interceptor chain has completed.
+    public void createEjbInstanceForInterceptors(Object[] params, EJBContextImpl ctx) throws Exception {
+        Object instance;
+        EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
+        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
+            // ejb creation for cdi is handled in JCDIServiceImpl not here.
+            instance = ctx.getJCDIInjectionContext().createEjbAfterAroundConstruct();
+        } else {
+            // this is only for non-cdi case.
+            instance = _constructEJBInstance();
+        }
         ctx.setEJB(instance);
     }
 
@@ -1708,14 +1650,23 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         try {
             ejbInv = createEjbInvocation(null, ctx);
             invocationManager.preInvoke(ejbInv);
-            
-            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
-                jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
-                if(jcdiCtx == null) {
-                    jcdiService = null;
-                }
+
+            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
+                // In cdi we need this for the interceptors to store dependent jcdi contexts.  We can't assign the
+                // other info as the ejb has not been created yet.
+                jcdiCtx = jcdiService.createEmptyJCDIInjectionContext();
+                ctx.setJCDIInjectionContext( jcdiCtx );
             }
-            if(jcdiCtx != null) {
+
+            // Interceptors must be created before the ejb so they're available for around construct.
+            createEjbInterceptors( ctx, jcdiCtx );
+
+            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
+                HashMap<Class, Object> ejbInfo = new HashMap<>();
+                ejbInfo.put( BaseContainer.class, this );
+                ejbInfo.put( EJBContextImpl.class, ctx );
+                ejbInfo.put( JCDIService.JCDIInjectionContext.class, jcdiCtx );
+                jcdiService.createJCDIInjectionContext(ejbDescriptor, ejbInfo );
                 instance = jcdiCtx.getInstance();
             } else {
                 injectEjbInstance(ctx);
@@ -1723,8 +1674,14 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 instance = ctx.getEJB();
             }
             success = true;
-            
+
         } catch (Throwable th) {
+            try {
+                if ( jcdiCtx != null ) {
+                    // protecte against memory leak
+                    jcdiCtx.cleanup( true );
+                }
+            } catch (Throwable ignore ) {}
             throw new InvocationTargetException(th);
         } finally {
             try {
@@ -1737,18 +1694,15 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     throw new InvocationTargetException(t);
                 } else {
                     _logger.log(Level.WARNING, "", t);
-                } 
+                }
             }
-            
         }
 
-        EJBContextImpl contextImpl = _constructEJBContextImpl(instance);
-        if( jcdiCtx != null ) {
-            contextImpl.setJCDIInjectionContext(jcdiCtx);
-        }
-	
-        return contextImpl;
+        ctx.setEJB( instance );
+
+        return ctx;
     }
+
 
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
 	// Overridden for any container that supports injection
@@ -1759,45 +1713,52 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 	return ejbClass.newInstance();
     }
 
-    protected void injectEjbInstance(EJBContextImpl context) throws Exception {
-
+    private void createEjbInterceptors(EJBContextImpl context,
+                                       JCDIService.JCDIInjectionContext ejbInterceptorsJCDIInjectionContext) throws Exception {
         EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 
-        Object[] interceptorInstances = null;
+        Object[] interceptorInstances;
 
-        if ((jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
-            
-            jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
+        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
             Class[] interceptorClasses = interceptorManager.getInterceptorClasses();
+
             interceptorInstances = new Object[interceptorClasses.length];
 
-            for (int i = 0; i < interceptorClasses.length; i++) {
+            for(int i = 0; i < interceptorClasses.length; i++) {
                 // 299 impl will instantiate and inject the instance, but PostConstruct
                 // is still our responsibility
                 interceptorInstances[i] =
-                        jcdiService.createInterceptorInstance(
-                            interceptorClasses[i], 
-                            ejbBundle, 
-                            context.getJCDIInjectionContext(),
-                            context.getContainer().getEjbDescriptor().getInterceptorClasses(), 
-                            ejbDescriptor);
+                        jcdiService.createInterceptorInstance(interceptorClasses[i],
+                                ejbDescriptor,
+                                ejbInterceptorsJCDIInjectionContext,
+                                context.getContainer().getEjbDescriptor().getInterceptorClasses() );
             }
 
             interceptorManager.initializeInterceptorInstances(interceptorInstances);
 
         } else {
-            if (context.getEJB() != null) {
-                injectionManager.injectInstance(context.getEJB(), ejbDescriptor, false);
-            }
-
             interceptorInstances = interceptorManager.createInterceptorInstances();
 
             for (Object interceptorInstance : interceptorInstances) {
-                injectionManager.injectInstance(interceptorInstance, ejbDescriptor, false);
-			}
+                injectionManager.injectInstance(interceptorInstance,
+                        ejbDescriptor, false);
+            }
         }
 
         context.setInterceptorInstances(interceptorInstances);
+    }
+
+    protected void injectEjbInstance(EJBContextImpl context) throws Exception {
+
+        EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
+
+        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
+            jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
+        } else {
+            if (context.getEJB() != null) {
+                injectionManager.injectInstance(context.getEJB(), ejbDescriptor, false);
+            }
+        }
     }
 
     protected void cleanupInstance(EJBContextImpl context) {
@@ -2030,8 +1991,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             throw new PreInvokeException(ejbEx);
         }
     }
-    
-    protected boolean intercept(CallbackType eventType, EJBContextImpl ctx)
+
+    public boolean intercept(CallbackType eventType, EJBContextImpl ctx)
             throws Throwable {
 
         return interceptorManager.intercept(eventType, ctx);
@@ -2086,6 +2047,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         if ( inv.ejb != null ) {
             // counterpart of invocationManager.preInvoke
             if (! inv.useFastPath) {
+                invocationManager.postInvoke(inv);
                 delistExtendedEntityManagers(inv.context);
             } else {
                 doTxProcessing = doTxProcessing && (inv.exception != null);
@@ -2101,9 +2063,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     inv.exception = (EJBException) ex;
                 else
                     inv.exception = new EJBException(ex);
-            }
-            if (! inv.useFastPath) {
-                invocationManager.postInvoke(inv);
             }
             releaseContext(inv);
         }
@@ -4851,36 +4810,45 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected abstract EjbMonitoringStatsProvider getMonitoringStatsProvider(
             String appName, String modName, String ejbName);
 
-    protected void createMonitoringRegistry() {
-	String appName = null;
-	String modName = null;
-	String ejbName = null;
-	try {
-	    appName = (ejbDescriptor.getApplication().isVirtual())
-		? null: ejbDescriptor.getApplication().getRegistrationName();
-	    if (appName == null) {
-		modName = ejbDescriptor.getApplication().getRegistrationName();
-	    } else {
-		String archiveuri = ejbDescriptor.getEjbBundleDescriptor().
-		    getModuleDescriptor().getArchiveUri();
-		modName = 
-		    com.sun.enterprise.util.io.FileUtils.makeFriendlyFilename(archiveuri);
-	    }
-	    ejbName = ejbDescriptor.getName();
-            containerInfo = new ContainerInfo(appName, modName, ejbName);
+        protected void createMonitoringRegistry() {
+        String appName = null;
+        String modName = null;
+        String ejbName = null;
+        boolean isMonitorRegistryMediatorCreated = false;
 
-            ejbProbeListener = getMonitoringStatsProvider(appName, modName, ejbName);
-            ejbProbeListener.addMethods(getContainerId(), appName, modName, ejbName, getMonitoringMethodsArray());
-            ejbProbeListener.register();
-
-            if (_logger.isLoggable(Level.FINE)) {
-	        _logger.log(Level.FINE, "Created MonitoringRegistry: " + 
-                        EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName));
+        try {
+            appName = (ejbDescriptor.getApplication().isVirtual())
+            ? null: ejbDescriptor.getApplication().getRegistrationName();
+            if (appName == null) {
+            modName = ejbDescriptor.getApplication().getRegistrationName();
+            } else {
+            String archiveuri = ejbDescriptor.getEjbBundleDescriptor().
+                getModuleDescriptor().getArchiveUri();
+            modName =
+                com.sun.enterprise.util.io.FileUtils.makeFriendlyFilename(archiveuri);
             }
-	} catch (Exception ex) {
-	    _logger.log(Level.SEVERE, COULD_NOT_CREATE_MONITORREGISTRYMEDIATOR, new Object[]{EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName), ex});
-	}
+            ejbName = ejbDescriptor.getName();
+                containerInfo = new ContainerInfo(appName, modName, ejbName);
 
+                isMonitorRegistryMediatorCreated = true;
+                registerEjbMonitoringProbeProvider(appName, modName, ejbName);
+                ejbProbeListener = getMonitoringStatsProvider(appName, modName, ejbName);
+                ejbProbeListener.addMethods(getContainerId(), appName, modName, ejbName, getMonitoringMethodsArray());
+                ejbProbeListener.register();
+
+                if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "Created MonitoringRegistry: " +
+                            EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName));
+                }
+        } catch (Exception ex) {
+            _logger.log(Level.SEVERE, COULD_NOT_CREATE_MONITORREGISTRYMEDIATOR, new Object[]{EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName), ex});
+            if (!isMonitorRegistryMediatorCreated) {
+                registerEjbMonitoringProbeProvider(appName, modName, ejbName);
+            }
+        }
+    }
+
+    private void registerEjbMonitoringProbeProvider(String appName, String modName, String ejbName) {
         // Always create to avoid NPE
         try {
             ProbeProviderFactory probeFactory = ejbContainerUtilImpl.getProbeProviderFactory();
@@ -4895,7 +4863,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 _logger.log(Level.FINE, "Error getting the EjbMonitoringProbeProvider");
             }
         }
-
     }
 
     protected String[] getMonitoringMethodsArray() {

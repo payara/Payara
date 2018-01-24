@@ -159,7 +159,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     protected boolean           secure;
     protected boolean           notify;
     protected String            user;
-    protected String            password;
+    protected char[]            password;
     protected Logger            logger;
     protected String            scope;
     protected String            authToken = null;
@@ -262,7 +262,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     }
 
     public RemoteRestAdminCommand(String name, String host, int port,
-            boolean secure, String user, String password, Logger logger,boolean notify)
+            boolean secure, String user, char[] password, Logger logger,boolean notify)
             throws CommandException {
         this(name, host, port, secure, user, password, logger, null, null, false,notify);
     }
@@ -272,7 +272,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      * are supplied later using the execute method in the superclass.
      */
     public RemoteRestAdminCommand(String name, String host, int port,
-            boolean secure, String user, String password, Logger logger,
+            boolean secure, String user, char[] password, Logger logger,
             final String scope,
             final String authToken,
             final boolean prohibitDirectoryUploads, boolean notify)

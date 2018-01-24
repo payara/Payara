@@ -304,8 +304,8 @@ public final class HttpConnectorAddress {
         return authInfo != null ? authInfo.getUser() : "";
     }
 
-    private String getPassword() {
-        return authInfo != null ? authInfo.getPassword() : "";
+    private char[] getPassword() {
+        return authInfo != null ? authInfo.getPassword() : "".toCharArray();
     }
 
     private URLConnection openConnection(URL url) throws IOException    {
@@ -343,7 +343,7 @@ public final class HttpConnectorAddress {
          * character with empty string "" works. Hence implementing the same.
          * Date: 10/10/2003.
          */
-        String cs = null, user = this.getUser(), pass = this.getPassword();
+        String cs = null, user = this.getUser(), pass = this.getPassword() != null ? new String(this.getPassword()) : null;
         String up = (user == null) ? "" : user;
         String pp = (pass == null) ? "" : pass;
         cs = up + ":" + pp;

@@ -1610,20 +1610,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
         }
     }
 
-    /**
-     * extract a entry of this archive to a file
-     *
-     * @param entryName entry name
-     * @param out file to copy the entry into
-     */
-    public void extractEntry(String entryName, File out) throws IOException {
-        ReadableArchive archive = archiveFactory.openArchive(new File(path));
-        InputStream is = archive.getEntry(entryName);
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(out));
-        ArchivistUtils.copy(new BufferedInputStream(is), os);
-        archive.close();
-    }
-
     // only copy the entry if the destination archive does not have this entry
     public void copyAnEntry(ReadableArchive in,
                                    WritableArchive out, String entryName) 

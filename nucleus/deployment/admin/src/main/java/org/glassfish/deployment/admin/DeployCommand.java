@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
@@ -106,10 +107,13 @@ import org.glassfish.deployment.versioning.VersioningService;
 @I18n("deploy.command")
 @PerLookup
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.POST, path = "deploy"),
     @RestEndpoint(configBean = Cluster.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
+        @RestParam(name = "target", value = "$parent")
+    }),
+    @RestEndpoint(configBean = DeploymentGroup.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
         @RestParam(name = "target", value = "$parent")
     }),
     @RestEndpoint(configBean = Server.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {

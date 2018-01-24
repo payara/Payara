@@ -40,7 +40,6 @@
 // Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.appserv.management.client.prefs;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -48,6 +47,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import com.sun.enterprise.util.Utility;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -267,12 +267,11 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
         }
         
         static LoginInfo line2LoginInfo(final URI uri, final String encp) throws IOException {
-            return 
-                new LoginInfo(
-                    uri.getHost(), 
-                    uri.getPort(), 
-                    uri.getUserInfo(), 
-                    new String(decoder.decode(encp), UTF_8));
+            final String host     = uri.getHost();
+            final int port        = uri.getPort();
+            final String user     = uri.getUserInfo();
+            final char[] password = Utility.convertByteArrayToCharArray(decoder.decode(encp), null);
+            return new LoginInfo(host, port, user, password);
         }
         
         static String login2Line(final LoginInfo login) throws IOException, URISyntaxException {
@@ -281,8 +280,8 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             final int port        = login.getPort();
             final String user     = login.getUser();
             final URI uri         = new URI(scheme, user, host, port, null, null, null);
-            final String password = login.getPassword();
-            final String encp     = new String(encoder.encode(password.getBytes()), UTF_8);
+            final char[] password = login.getPassword();
+            final String encp     = encoder.encodeToString(Utility.convertCharArrayToByteArray(password,null));
             final String line     = uri.toString() + ' ' + encp;
 
             return line;

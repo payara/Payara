@@ -263,7 +263,7 @@ public class ConnectionManager {
      * DBMS password.
      * @serial
      */
-    private String password;
+    private char[] password;
 
     /**
      * Expanded DBMS password.
@@ -907,7 +907,7 @@ public class ConnectionManager {
             String driverName,
             String url,
             String userName,
-            String password
+            char[] password
             ) throws ClassNotFoundException, SQLException {
         this();
         try {
@@ -946,7 +946,7 @@ public class ConnectionManager {
             String driverName,
             String url,
             String userName,
-            String password,
+            char[] password,
             int minPool,
             int maxPool
             ) throws ClassNotFoundException, SQLException {
@@ -1002,7 +1002,7 @@ public class ConnectionManager {
             String driverName,
             String url,
             String userName,
-            String password,
+            char[] password,
             int minPool,
             int maxPool,
             int msWait
@@ -1060,7 +1060,7 @@ public class ConnectionManager {
             String driverName,
             String url,
             String userName,
-            String password,
+            char[] password,
             int minPool,
             int maxPool,
             int msWait,
@@ -1205,7 +1205,7 @@ public class ConnectionManager {
     public synchronized Connection getConnection
             (
             String userName,
-            String password
+            char[] password
             ) throws SQLException {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
@@ -1243,7 +1243,7 @@ public class ConnectionManager {
                             (
                                     this.expandedUrl,
                                     this.expandAttribute(userName),
-                                    this.expandAttribute(password)
+                                    this.expandAttribute(new String(password))
                             ),
                                     this.expandedUrl,
                                     this.expandAttribute(userName),
@@ -1437,7 +1437,7 @@ public class ConnectionManager {
         if (this.expandedUserName == null) {
             this.expandedUserName = ""; // Allow null username. // NOI18N
         }
-        this.expandedPassword = this.expandAttribute(this.password);
+        this.expandedPassword = this.expandAttribute(new String(this.password));
         if (this.expandedPassword == null) {
             this.expandedPassword = ""; // Allow null password. // NOI18N
         }
@@ -1630,7 +1630,7 @@ public class ConnectionManager {
      * @see #getConnection
      * @see #setPassword
      */
-    public synchronized String getPassword() {
+    public synchronized char[] getPassword() {
         return (this.password);
     }
 
@@ -1639,7 +1639,7 @@ public class ConnectionManager {
      * @param password  the default password for the current connection manager.
      * @see #getPassword
      */
-    public synchronized void setPassword(String password) throws SQLException {
+    public synchronized void setPassword(char[] password) throws SQLException {
         this.password = password;
     }
 

@@ -1371,7 +1371,8 @@ public class CommandRunnerImpl implements CommandRunner {
                     if ((!CommandTarget.DOMAIN.isValid(habitat, targetName))
                             && (domain.getServerNamed(targetName) == null)
                             && (domain.getClusterNamed(targetName) == null)
-                            && (domain.getConfigNamed(targetName) == null)) {
+                            && (domain.getConfigNamed(targetName) == null)
+                            && (domain.getDeploymentGroupNamed(targetName) == null)) {
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtarget",
                                 "Unable to find a valid target with name {0}", targetName));
