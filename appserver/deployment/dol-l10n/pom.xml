@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>5.Beta2</version>
+        <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dol-l10n</artifactId>

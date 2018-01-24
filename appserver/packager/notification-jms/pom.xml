@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.Beta2</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
     <artifactId>notification-jms</artifactId>
     <name>JMS Notification Package</name>
