@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.resources</groupId>
         <artifactId>resources</artifactId>
-        <version>5.Beta2</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
     <artifactId>resources-connector-l10n</artifactId>
     
