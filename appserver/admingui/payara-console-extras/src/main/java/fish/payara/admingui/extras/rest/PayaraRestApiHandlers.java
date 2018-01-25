@@ -518,17 +518,17 @@ public class PayaraRestApiHandlers {
         handlerCtx.setOutputValue("result", messages);
     }
 
-    @Handler(id = "py.getHistoricRequestTracingMessages",
+    @Handler(id = "py.getRequestTracingMessages",
             input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
             output = @HandlerOutput(name = "result", type = java.util.List.class))
-    public static void getHistoricRequestTracingMessages(HandlerContext handlerCtx){
+    public static void getRequestTracingMessages(HandlerContext handlerCtx){
 
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
         String endpoint;
 
         // Check for trailing slashes
-        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-requesttraces" : parentEndpoint
-                + "/" + "list-historic-requesttraces";
+        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-requesttraces" : parentEndpoint
+                + "/" + "list-requesttraces";
 
         Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, false);
         Map data = (Map) responseMap.get("data");
@@ -538,8 +538,7 @@ public class PayaraRestApiHandlers {
         if (data != null) {
             Map extraProperties = (Map) data.get("extraProperties");
             if (extraProperties != null) {
-                messages = (List<Map>) extraProperties.get("historicmessages");
-                if (messages != null)
+                messages = (List<Map>) extraProperties.get("traces");
                 if (messages == null) {
                     // Re-initialise to empty if members is not found
                     messages = new ArrayList<>();

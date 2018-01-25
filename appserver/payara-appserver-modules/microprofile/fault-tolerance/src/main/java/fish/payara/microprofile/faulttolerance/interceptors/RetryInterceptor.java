@@ -42,7 +42,7 @@ package fish.payara.microprofile.faulttolerance.interceptors;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -221,113 +221,112 @@ public class RetryInterceptor {
             
             Exception retryException = ex;
             
-            if (maxRetries == -1 && maxDuration > 0) {
-                logger.log(Level.FINER, "Retrying until maxDuration is breached.");
-                while (System.currentTimeMillis() < timeoutTime) {
-                    try {
-                        RequestEvent requestEvent = new RequestEvent("FaultTolerance-RetryExecuting");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
-                        
-                        proceededInvocationContext = invocationContext.proceed();
-                        break;
-                    } catch (Exception caughtException) {
-                        retryException = caughtException;
-                        if (!shouldRetry(retryOn, abortOn, caughtException)) {
-                            break;
-                        }
+            faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("retryMethod"), invocationManager, 
+                    invocationContext);
+            try {
+                if (maxRetries == -1 && maxDuration > 0) {
+                    logger.log(Level.FINER, "Retrying until maxDuration is breached.");
 
-                        if (delayMillis > 0 || jitterMillis > 0) {
-                            Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                    while (System.currentTimeMillis() < timeoutTime) {
+                        try {
+                            proceededInvocationContext = invocationContext.proceed();
+                            break;
+                        } catch (Exception caughtException) {
+                            retryException = caughtException;
+                            if (!shouldRetry(retryOn, abortOn, caughtException)) {
+                                break;
+                            }
+
+                            if (delayMillis > 0 || jitterMillis > 0) {
+                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"), 
+                                        invocationManager, invocationContext);
+                                try {
+                                    Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                                } finally {
+                                    faultToleranceService.endFaultToleranceSpan();
+                                }
+                            }
                         }
-                        
-                        RequestEvent requestEvent = new RequestEvent("FaultTolerance-RetryException");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
+                    }
+                } else if (maxRetries == -1 && maxDuration == 0) {
+                    logger.log(Level.INFO, "Retrying potentially forever!");
+                    while (true) {
+                        try {
+                            proceededInvocationContext = invocationContext.proceed();
+                            break;
+                        } catch (Exception caughtException) {
+                            retryException = caughtException;
+                            if (!shouldRetry(retryOn, abortOn, caughtException)) {
+                                break;
+                            }
+
+                            if (delayMillis > 0 || jitterMillis > 0) {
+                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"), 
+                                        invocationManager, invocationContext);
+                                try {
+                                    Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                                } finally {
+                                    faultToleranceService.endFaultToleranceSpan();
+                                }
+                            }
+                        }
+                    }
+                } else if (maxRetries != -1 && maxDuration > 0) {
+                    logger.log(Level.INFO, "Retrying as long as maxDuration isn't breached, and no more than {0} times",
+                            maxRetries);
+                    while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
+                        try {
+                            proceededInvocationContext = invocationContext.proceed();
+                            break;
+                        } catch (Exception caughtException) {
+                            retryException = caughtException;
+                            if (!shouldRetry(retryOn, abortOn, caughtException)) {
+                                break;
+                            }
+
+                            if (delayMillis > 0 || jitterMillis > 0) {
+                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"), 
+                                        invocationManager, invocationContext);
+                                try {
+                                    Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                                } finally {
+                                    faultToleranceService.endFaultToleranceSpan();
+                                }
+                            }
+
+                            maxRetries--;
+                        }
+                    }
+                } else {
+                    logger.log(Level.INFO, "Retrying no more than {0} times", maxRetries);
+                    while (maxRetries > 0) {
+                        try {
+                            proceededInvocationContext = invocationContext.proceed();
+                            break;
+                        } catch (Exception caughtException) {
+                            retryException = caughtException;
+                            if (!shouldRetry(retryOn, abortOn, caughtException)) {
+                                break;
+                            }
+
+                            if (delayMillis > 0 || jitterMillis > 0) {
+                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"), 
+                                        invocationManager, invocationContext);
+                                try {
+                                    Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
+                                } finally {
+                                    faultToleranceService.endFaultToleranceSpan();
+                                }
+                            }
+
+                            maxRetries--;
+                        }
                     }
                 }
-            } else if (maxRetries == -1 && maxDuration == 0) {
-                logger.log(Level.INFO, "Retrying potentially forever!");
-                while (true) {
-                    try {
-                        RequestEvent requestEvent = new RequestEvent("FaultTolerance-RetryExecuting");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
-                        
-                        proceededInvocationContext = invocationContext.proceed();
-                        break;
-                    } catch (Exception caughtException) {
-                        retryException = caughtException;
-                        if (!shouldRetry(retryOn, abortOn, caughtException)) {
-                            break;
-                        }
-
-                        if (delayMillis > 0 || jitterMillis > 0) {
-                            Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
-                        }
-                        
-                        RequestEvent requestEvent = new RequestEvent("FaultTolerance-RetryException");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
-                    }
-                }
-            } else if (maxRetries != -1 && maxDuration > 0) {
-                logger.log(Level.INFO, "Retrying as long as maxDuration isn't breached, and no more than {0} times",
-                        maxRetries);
-                while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
-                    try {
-                        RequestEvent requestEvent = new RequestEvent("FaultTolerance-RetryExecuting");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
-                        
-                        proceededInvocationContext = invocationContext.proceed();
-                        break;
-                    } catch (Exception caughtException) {
-                        retryException = caughtException;
-                        if (!shouldRetry(retryOn, abortOn, caughtException)) {
-                            break;
-                        }
-
-                        if (delayMillis > 0 || jitterMillis > 0) {
-                            Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
-                        }
-
-                        maxRetries--;
-                        
-                        RequestEvent requestEvent = new RequestEvent("FaultTolerance-RetryException");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
-                    }
-                }
-            } else {
-                logger.log(Level.INFO, "Retrying no more than {0} times", maxRetries);
-                while (maxRetries > 0) {
-                    try {
-                        RequestEvent requestEvent = new RequestEvent("FaultTolerance-RetryExecuting");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
-                        
-                        proceededInvocationContext = invocationContext.proceed();
-                        break;
-                    } catch (Exception caughtException) {
-                        retryException = caughtException;
-                        if (!shouldRetry(retryOn, abortOn, caughtException)) {
-                            break;
-                        }
-
-                        if (delayMillis > 0 || jitterMillis > 0) {
-                            Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
-                        }
-
-                        maxRetries--;
-                        
-                        RequestEvent requestEvent = new RequestEvent("FaultTolerance-RetryException");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
-                    }
-                }
+            } finally {
+                faultToleranceService.endFaultToleranceSpan();
             }
-            
+
             if (proceededInvocationContext == null) {
                 throw retryException;
             }
