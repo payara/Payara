@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.auth.realm;
 
@@ -56,10 +57,8 @@ import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * javadoc
  *
  * @see java.security.Principal
- *
  * @author Harish Prabandham
  * @author Harpreet Singh
  * @author Jyri Virkki
@@ -335,17 +334,11 @@ public abstract class Realm implements Comparable {
             if (mgr == null) {
                 throw new BadRealmException("Unable to locate RealmsManager Service");
             }
-            _logger.log(Level.INFO, SecurityLoggerInfo.realmCreated ,new Object[]{name, className});
+            _logger.log(Level.FINER, SecurityLoggerInfo.realmCreated ,new Object[]{name, className});
             return r;
 
 
-        } catch (NoSuchRealmException ex) {
-            throw new BadRealmException(ex);
-        } catch (InstantiationException ex) {
-            throw new BadRealmException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new BadRealmException(ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (NoSuchRealmException | InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             throw new BadRealmException(ex);
         }
     }
@@ -380,7 +373,7 @@ public abstract class Realm implements Comparable {
         }
         realm.setName(oldRealm.getName());
         mgr.putIntoLoadedRealms(name, realm);
-        _logger.log(Level.INFO, SecurityLoggerInfo.realmUpdated, new Object[]{realm.getName()});
+        _logger.log(Level.FINER, SecurityLoggerInfo.realmUpdated, new Object[]{realm.getName()});
     }
 
     /**
@@ -393,6 +386,7 @@ public abstract class Realm implements Comparable {
      * instance must be fully initialized properly and it must of course
      * be of the same class as the previous instance.
      *
+     * @param configName
      * @param realm The new realm instance.
      * @param name The (previously instantiated) name for this realm.
      *
@@ -411,7 +405,7 @@ public abstract class Realm implements Comparable {
         }
         realm.setName(oldRealm.getName());
         mgr.putIntoLoadedRealms(configName, name, realm);
-        _logger.log(Level.INFO, SecurityLoggerInfo.realmUpdated, new Object[]{realm.getName()});
+        _logger.log(Level.FINER, SecurityLoggerInfo.realmUpdated, new Object[]{realm.getName()});
     }
 
     
@@ -480,6 +474,7 @@ public abstract class Realm implements Comparable {
 
      /**
      * Remove realm with given name from cache.
+     * @param configName
      * @param realmName
      * @exception NoSuchRealmException
      */
@@ -514,6 +509,7 @@ public abstract class Realm implements Comparable {
      * Get a realm property.
      *
      * @param name property name.
+     * @return 
      * @returns value.
      *
      */
@@ -524,6 +520,7 @@ public abstract class Realm implements Comparable {
 
     /**
      * Return properties of the realm.
+     * @return 
      */
     protected synchronized Properties getProperties() {
         return ctxProps;
@@ -576,6 +573,7 @@ public abstract class Realm implements Comparable {
      * which exist; it is not possible to store (or create) one
      * which is not accessible through this routine.
      *
+     * @param configName
      * @param name identifies the realm
      * @return the requested realm
      * @exception NoSuchRealmException if the realm is invalid
@@ -707,7 +705,7 @@ public abstract class Realm implements Comparable {
      }
     /**
      * Checks if the given realm name is loaded/valid.
-     * @param String name of the realm to check.
+     * @param name name of the realm to check.
      * @return true if realm present, false otherwise.
      */
     public static boolean isValidRealm(String name) {
@@ -720,7 +718,8 @@ public abstract class Realm implements Comparable {
 
     /**
      * Checks if the given realm name is loaded/valid.
-     * @param String name of the realm to check.
+     * @param configName
+     * @param name name of the realm to check.
      * @return true if realm present, false otherwise.
      */
     public static boolean isValidRealm(String configName, String name) {
@@ -735,6 +734,7 @@ public abstract class Realm implements Comparable {
      * Add assign groups to given Vector of groups.
      * To be used by getGroupNames.
      * @param grps
+     * @return 
      */
     protected String[] addAssignGroups(String[] grps) {
         String[] resultGroups = grps;
@@ -821,6 +821,7 @@ public abstract class Realm implements Comparable {
      * @exception InvalidOperationException thrown if the realm does not
      * support this operation - e.g. Certificate realm does not support this
      * operation
+     * @throws NoSuchUserException
      */
     public abstract Enumeration getGroupNames (String username)
 	throws InvalidOperationException, NoSuchUserException;
@@ -835,6 +836,7 @@ public abstract class Realm implements Comparable {
     /**
      * Refreshes the realm data so that new users/groups are visible.
      *
+     * @param configName
      * @exception BadRealmException if realm data structures are bad
      */
     public void refresh(String configName) throws BadRealmException {
@@ -848,6 +850,7 @@ public abstract class Realm implements Comparable {
      * @param password Cleartext password for the user.
      * @param groupList List of groups to which user belongs.
      * @throws BadRealmException If there are problems adding user.
+     * @throws IASSecurityException
      *
      */
     public abstract void addUser(String name, char[] password, String[] groupList)
@@ -858,6 +861,7 @@ public abstract class Realm implements Comparable {
      *
      * @param name User name.
      * @throws NoSuchUserException If user does not exist.
+     * @throws BadRealmException
      *
      */
      public abstract void removeUser(String name)
@@ -873,9 +877,10 @@ public abstract class Realm implements Comparable {
      * @param password Cleartext password for the user. If non-null the user
      *     password is changed to this value. If null, the original password
      *     is retained.
-     * @param groupList List of groups to which user belongs.
+     * @param groups Array of groups to which user belongs.
      * @throws BadRealmException If there are problems adding user.
      * @throws NoSuchUserException If user does not exist.
+     * @throws IASSecurityException
      *
      */
     public abstract void updateUser(String name, String newName, char[] password,

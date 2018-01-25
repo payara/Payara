@@ -48,6 +48,7 @@ import java.io.IOException;
 
 //import java.net.InetAddress;
 //import java.net.UnknownHostException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;

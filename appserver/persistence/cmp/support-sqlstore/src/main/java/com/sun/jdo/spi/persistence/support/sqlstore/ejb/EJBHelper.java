@@ -197,7 +197,7 @@ public class EJBHelper {
      * @throws java.sql.SQLException.
      */
     public static java.sql.Connection getConnection(Object resource, 
-        String username, String password) throws java.sql.SQLException {
+        String username, char[] password) throws java.sql.SQLException {
         return myHelper.getConnection(resource, username, password);
     }
 
@@ -213,7 +213,7 @@ public class EJBHelper {
      * @throws java.sql.SQLException.
      */
     public static java.sql.Connection getNonTransactionalConnection(
-        Object resource, String username, String password)
+        Object resource, String username, char[] password)
         throws java.sql.SQLException {
 
         return myHelper.getNonTransactionalConnection(resource, 
@@ -393,7 +393,7 @@ public class EJBHelper {
          * @throw java.sql.SQLException.
          */
         public java.sql.Connection getConnection(Object resource, 
-            String username, String password) throws java.sql.SQLException {
+            String username, char[] password) throws java.sql.SQLException {
             throw new JDOFatalInternalException(I18NHelper.getMessage(
                 messages, "ejb.ejbhelper.nonmanaged", "getConnection")); //NOI18N
         }
@@ -410,7 +410,7 @@ public class EJBHelper {
          * @throw java.sql.SQLException.
          */
         public java.sql.Connection getNonTransactionalConnection(
-            Object resource, String username, String password)
+            Object resource, String username, char[] password)
             throws java.sql.SQLException {
 
             throw new JDOFatalInternalException(I18NHelper.getMessage(

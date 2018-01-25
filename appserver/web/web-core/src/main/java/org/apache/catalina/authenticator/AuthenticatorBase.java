@@ -199,7 +199,7 @@ public abstract class AuthenticatorBase
      * The Java class name of the random number generator class to be used
      * when generating session identifiers.
      */
-    protected String randomClass = java.security.SecureRandom.class.getName();
+    protected String randomClass = SecureRandom.class.getName();
         
     /**
      * The SingleSignOn implementation in our request processing chain,

@@ -144,8 +144,12 @@
                      setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
                      gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isServer");
                      if("!#{requestScope.isServer}") {
-                         setAttribute(key="endpoint" value="");
-                     }
+                        setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
+                        gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isDG");
+                        if ("!#{requestScope.isDG}") {
+                            setAttribute(key="endpoint" value="");
+                        } 
+                    }
                  }
                  if ("#{endpoint}") {
                      gf.getEntityAttrs(endpoint="#{endpoint}" valueMap="#{requestScope.attrs}");

@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
+
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -86,7 +88,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 @I18n("delete.lifecycle.module")
 @PerLookup
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
         opType=RestEndpoint.OpType.DELETE, 

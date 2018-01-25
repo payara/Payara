@@ -99,7 +99,7 @@ public class ProgramOptions {
     private ParameterMap                    options;
     private Environment                     env;
     private boolean                         optionsSet;
-    private String                          password;
+    private char[]                          password;
     private PasswordLocation                location;
     private String                          commandName;
 
@@ -344,7 +344,7 @@ public class ProgramOptions {
     /**
      * @return the password
      */
-    public String getPassword() {
+    public char[] getPassword() {
         return password;
     }
 
@@ -358,10 +358,10 @@ public class ProgramOptions {
     /**
      * @param password the password to set
      */
-    public void setPassword(String password, PasswordLocation location) {
+    public void setPassword(char[] password, PasswordLocation location) {
         if (logger.isLoggable(Level.FINER))
             logger.finer("Setting password to: " +
-                                    (ok(password) ? "<non-null>" : "<null>"));
+                                    ((password != null && password.length > 0) ? "<non-null>" : "<null>"));
         this.password = password;
         this.location = location;
     }

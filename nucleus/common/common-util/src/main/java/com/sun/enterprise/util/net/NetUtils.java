@@ -43,6 +43,7 @@ package com.sun.enterprise.util.net;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.StringUtils;
 import java.net.*;
+import java.security.SecureRandom;
 import java.util.*;
 import java.io.*;
 import java.security.SecureRandom;

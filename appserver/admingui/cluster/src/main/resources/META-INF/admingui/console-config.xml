@@ -38,16 +38,16 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <console-config id="cluster">
     <integration-point
-            id="clustersNode"
+            id="dgNode"
             type="org.glassfish.admingui:navNode"
             priority="300"
             parentId="tree"
-            content="/cluster/clusterTreeNode.jsf"/>
+            content="/dg/dgTreeNode.jsf"/>
     <integration-point
             id="standalonesNode"
             type="org.glassfish.admingui:navNode"
@@ -60,6 +60,12 @@
             priority="400"
             parentId="tree"
             content="/node/nodeTreeNode.jsf"/>
+    <integration-point
+            id="clustersNode"
+            type="org.glassfish.admingui:navNode"
+            priority="410"
+            parentId="tree"
+            content="/cluster/clusterTreeNode.jsf"/>
     <integration-point
             id="availabilityServiceLink"
             type="org.glassfish.admingui:configuration"

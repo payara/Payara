@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <!-- common/configuration/loggerGeneral.jsf -->
 
@@ -112,6 +112,10 @@
           <sun:property id="writeSystemLogEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.WriteSystemLog}" helpText="$resource{i18nc.log.WriteSystemlogHelp}">
                 <sun:checkbox id="writeSystemLogEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging']}" selectedValue="true" />
            </sun:property> 
+          
+          <sun:property id="logtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.logtoFile']}"  selectedValue="true" />
+           </sun:property>
 
            <sun:property id="logtoConsole"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoConsole}" helpText="$resource{i18nc.log.LogtoConsoleHelp}">
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.logtoConsole']}"  selectedValue="true" />
@@ -181,8 +185,44 @@
             <sun:property id="CompressOnRotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.CompressOnRotation}" helpText="$resource{i18nc.log.CompressOnRotationHelp}">
                 <sun:checkbox id="CompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation']}"  selectedValue="true" />
             </sun:property>
-
+            "<br />
     </sun:propertySheetSection>
+                
+    <!-- Payara Notification Logger Settings --> 
+    <sun:propertySheetSection id="poolSettingSection" label="Payara Notification Logger Settings">
+
+        <sun:property id="PayaraNotificationLogtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile']}"  selectedValue="true" />
+        </sun:property>
+        
+        <sun:property id="PayaraNotificationRotationOnDateChange"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.rotationOnDateChange}" helpText="$resource{i18nc.log.rotationOnDateChangeHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange']}"  selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="PayaraNotificationFileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
+            <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes']}" />
+            <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
+        </sun:property>
+
+        <sun:property id="PayaraNotificationFileRotationTimeLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationTimeLimit}" helpText="$resource{i18nc.log.FileRotationTimeLimitHelp}">
+            <sun:textField id="PayaraNotificationFileRotationTimeLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationTimeLimit']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes']}"/>
+            <sun:staticText id="min" style="padding: 8pt" text="$resource{i18n.common.Minutes}"/>
+        </sun:property>
+
+        <sun:property id="PayaraNotificationMaxHistoryFiles"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.MaxHistoryFiles}" helpText="$resource{i18nc.log.MaxHistoryFilesHelp}">
+            <sun:textField id="PayaraNotificationMaxHistoryFiles" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.MaxHistoryFiles']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles']}"/>
+        </sun:property>
+
+        <sun:property id="PayaraNotificationlogFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
+            <sun:textField id="PayaraNotificationLogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file']}"/>
+        </sun:property>
+        
+        <sun:property id="PayaraNotificationCompressOnRotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.CompressOnRotation}" helpText="$resource{i18nc.log.CompressOnRotationHelp}">
+            <sun:checkbox id="PayaraNotificationCompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation']}"  selectedValue="true" />
+        </sun:property>
+
+     </sun:propertySheetSection>
+
 </sun:propertySheet>
 
 <sun:hidden id="helpKey" value="$resource{help_common.serverInstLogging}" />

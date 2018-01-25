@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
@@ -58,6 +60,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
+import fish.payara.enterprise.config.serverbeans.DGServerRef;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
@@ -74,6 +79,7 @@ import static org.glassfish.config.support.Constants.*;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -273,6 +279,9 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
      */
     @DuckTyped
     Cluster getCluster();
+    
+    @DuckTyped
+    List<DeploymentGroup> getDeploymentGroup();
 
     // four trivial methods that ReferenceContainer's need to implement
     @DuckTyped
@@ -336,6 +345,23 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                 }
             }
             return null;
+        }
+        
+        public static List<DeploymentGroup> getDeploymentGroup(Server server) {
+            List<DeploymentGroup> result = new LinkedList<>();
+            Dom serverDom = Dom.unwrap(server);
+            DeploymentGroups dgs = serverDom.getHabitat().getService(DeploymentGroups.class);
+            if (dgs != null) {
+                for (DeploymentGroup dg : dgs.getDeploymentGroup()) {
+                    for(DGServerRef ref : dg.getDGServerRef()) {
+                        if (ref.getRef().equals(server.getName())) {
+                            result.add(dg);
+                            break;
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         public static String getReference(Server server) {
@@ -463,6 +489,8 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
 
         @Param(name = PARAM_CLUSTER, optional = true)
         String clusterName;
+        @Param(name = PARAM_DG, optional = true)
+        String deploymentGroup;
         @Param(name = PARAM_NODE, optional = true)
         String node = null;
         @Param(name = PARAM_LBENABLED, optional = true)
@@ -490,6 +518,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
             Transaction tx = Transaction.getTransaction(instance);
             String configRef = instance.getConfigRef();
             Clusters clusters = domain.getClusters();
+            DeploymentGroups dgs = domain.getDeploymentGroups();
 
             if (tx == null) {
                 throw new TransactionFailure(localStrings.getLocalString(
@@ -516,6 +545,36 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                 PortBaseHelper pbh = new PortBaseHelper(instance, portBase, false, logger);
                 pbh.verifyPortBase();
                 pbh.setPorts();
+            }
+            
+            if (deploymentGroup != null && !deploymentGroup.trim().isEmpty()) {
+                DeploymentGroup dg = domain.getDeploymentGroupNamed(deploymentGroup);
+                if (dg == null) {
+                    throw new TransactionFailure("Deployment Group does not exist " + deploymentGroup);
+                }
+                DeploymentGroup writableDg = tx.enroll(dg);
+                DGServerRef ref = writableDg.createChild(DGServerRef.class);
+                ref.setRef(instance.getName());
+                writableDg.getDGServerRef().add(ref);
+                
+                // add application and resource refs from the deployment group
+                List<ApplicationRef> refs = dg.getApplicationRef();
+                for (ApplicationRef ref1 : refs) {
+                    ApplicationRef aref = instance.createChild(ApplicationRef.class);
+                    aref.setRef(ref1.getRef());
+                    aref.setEnabled(ref1.getEnabled());
+                    aref.setVirtualServers(ref1.getVirtualServers());
+                    instance.getApplicationRef().add(aref);
+                }
+                
+                // add resource refs on the deployment group
+                List<ResourceRef> rrefs = dg.getResourceRef();
+                for (ResourceRef rref : rrefs) {
+                    ResourceRef nrref = instance.createChild(ResourceRef.class);
+                    nrref.setRef(rref.getRef());
+                    nrref.setEnabled(rref.getEnabled());
+                    instance.getResourceRef().add(nrref);
+                }
             }
 
             // cluster instance using cluster config
@@ -807,6 +866,22 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
             }
 
             if (isStandAlone) { // remove config <instance>-config
+                
+                // remove any deployment group references
+                List<DeploymentGroup> dgs = child.getDeploymentGroup();
+                for (DeploymentGroup dg : dgs) {
+                    if (t != null) {
+                        DeploymentGroup writableDg = t.enroll(dg);
+                        List<DGServerRef> refs = writableDg.getDGServerRef();
+                        for (DGServerRef ref : refs) {
+                            if (ref.getRef().equals(child.getName())) {
+                                refs.remove(ref);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
                 String instanceConfig = child.getConfigRef();
                 final Config config = configs.getConfigByName(instanceConfig);
 

@@ -151,7 +151,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         //get password from user if not found in password file
         if (password == null) {
             if (programOpts.isInteractive()) {
-                password = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
+                char[] pArr = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
+                password = pArr != null ? new String(pArr) : null;
             }
             else {
                 throw new CommandException(Strings.get("SSHPasswordNotFound"));
@@ -177,7 +178,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         if (passphrase == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                passphrase = readPassword(Strings.get("SSHPassphrasePrompt", getSshKeyFile()));
+                char[] pArr = readPassword(Strings.get("SSHPassphrasePrompt", getSshKeyFile()));
+                passphrase = pArr != null ? new String(pArr) : null;
             }
             else {
                 passphrase = ""; //empty passphrase
@@ -196,7 +198,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         if (masterPass == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                masterPass = readPassword(Strings.get("DomainMasterPasswordPrompt", domain));
+                char[] mpArr = readPassword(Strings.get("DomainMasterPasswordPrompt", domain));
+                masterPass = mpArr != null ? new String(mpArr) : null;
             }
             else {
                 masterPass = "changeit"; //default

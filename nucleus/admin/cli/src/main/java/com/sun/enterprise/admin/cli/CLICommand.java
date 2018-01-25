@@ -763,8 +763,8 @@ public abstract class CLICommand implements PostConstruct {
             passwords = CLIUtil.readPasswordFileOptions(pwfile, true);
             logger.finer("Passwords were read from password file: " +
                                         pwfile);
-            String password = passwords.get(
-                    Environment.getPrefix() + "PASSWORD");
+            char[] password = passwords.get(Environment.getPrefix() + "PASSWORD") != null ?
+                    passwords.get(Environment.getPrefix() + "PASSWORD").toCharArray() : null;
             if (password != null && programOpts.getPassword() == null)
                 programOpts.setPassword(password,
                     ProgramOptions.PasswordLocation.PASSWORD_FILE);
@@ -1039,7 +1039,7 @@ public abstract class CLICommand implements PostConstruct {
             if (!opt.getParam().password())
                 continue;
             String pwdname = opt.getName();
-            String pwd = getPassword(opt, null, true);
+            char[] pwd = getPassword(opt, null, true);
             if (pwd == null) {
                 if (opt.getParam().optional())
                     continue;       // not required, skip it
@@ -1051,11 +1051,11 @@ public abstract class CLICommand implements PostConstruct {
                     msg = strings.get("missingPasswordAdvice", name, passwordName(opt));
                 throw new CommandValidationException(msg);
             }
-            options.set(pwdname, pwd);
+            options.set(pwdname, new String(pwd));
         }
     }
 
-    protected String getPassword(String paramname, String localizedPrompt, 
+    protected char[] getPassword(String paramname, String localizedPrompt,
             String localizedPromptConfirm, boolean create) throws CommandValidationException {
         ParamModelData po = new ParamModelData(paramname, String.class, false, null);
         po.prompt = localizedPrompt;
@@ -1074,11 +1074,11 @@ public abstract class CLICommand implements PostConstruct {
      * criteria (i.e., length) returns the password.  If defaultPassword is
      * not null, "Enter" selects this default password, which is returned.
      */
-    protected String getPassword(ParamModel opt, String defaultPassword,
+    protected char[] getPassword(ParamModel opt, String defaultPassword,
             boolean create) throws CommandValidationException {
 
         String passwordName = passwordName(opt);
-        String password = passwords.get(passwordName);
+        char[] password = passwords.get(passwordName) != null ? passwords.get(passwordName).toCharArray() : null;
         if (password != null)
             return password;
 
@@ -1122,7 +1122,7 @@ public abstract class CLICommand implements PostConstruct {
                 newprompt = strings.get("NewPasswordPrompt", passwordName);
         }
 
-        String newpassword = readPassword(newprompt);
+        char[] newpassword = readPassword(newprompt);
 
         /*
          * If we allow for a default password, and the user just hit "Enter",
@@ -1131,10 +1131,10 @@ public abstract class CLICommand implements PostConstruct {
          */
         if (defaultPassword != null) {
             if (newpassword == null)
-                newpassword = "";
-            if (newpassword.length() == 0) {
-                newpassword = defaultPassword;
-                passwords.put(passwordName, newpassword);
+                newpassword = "".toCharArray();
+            if (newpassword.length == 0) {
+                newpassword = defaultPassword.toCharArray();
+                passwords.put(passwordName, new String(newpassword));
                 return newpassword;
             }
         }
@@ -1146,7 +1146,7 @@ public abstract class CLICommand implements PostConstruct {
          * we have.
          */
         if (!create) {
-            passwords.put(passwordName, newpassword);
+            passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
             return newpassword;
         }
 
@@ -1158,13 +1158,13 @@ public abstract class CLICommand implements PostConstruct {
             confirmationPrompt =
                 strings.get("NewPasswordConfirmationPrompt", passwordName);
         }
-        String newpasswordAgain = readPassword(confirmationPrompt);
-        if (!newpassword.equals(newpasswordAgain)) {
+        char[] newpasswordAgain = readPassword(confirmationPrompt);
+        if (!Arrays.equals(newpassword,newpasswordAgain)) {
             throw new CommandValidationException(
                 strings.get("OptionsDoNotMatch",
                             ok(prompt) ? prompt : passwordName));
         }
-        passwords.put(passwordName, newpassword);
+        passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
         return newpassword;
     }
 
@@ -1176,15 +1176,14 @@ public abstract class CLICommand implements PostConstruct {
      * Display the given prompt and read a password without echoing it.
      * Returns null if no console available.
      */
-    protected String readPassword(String prompt) {
-        String password = null;
+    protected char[] readPassword(String prompt) {
+        char[] pc = null;
         Console cons = System.console();
         if (cons != null) {
-            char[] pc = cons.readPassword("%s", prompt);
+            pc = cons.readPassword("%s", prompt);
             // yes, yes, yes, it would be safer to not keep it in a String
-            password = new String(pc);
         }
-        return password;
+        return pc;
     }
 
     /**
