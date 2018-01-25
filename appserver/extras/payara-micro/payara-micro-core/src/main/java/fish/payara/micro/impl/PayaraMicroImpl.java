@@ -2368,12 +2368,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             if (props.getProperty("update_version").isEmpty() == false) {
                 output.append(props.getProperty("update_version")).append(".");
             }
-            if (props.getProperty("payara_version").isEmpty() == false) {
-                output.append(props.getProperty("payara_version"));
-            }
-            if (props.getProperty("payara_update_version").isEmpty() == false) {
-                output.append(".").append(props.getProperty("payara_update_version"));
-            }
             if (props.getProperty("build_id").isEmpty() == false) {
                 output.append(" Build Number ").append(props.getProperty("build_id"));
             }

@@ -187,10 +187,8 @@
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version></minor_version>
+        <minor_version>181-SNAPSHOT</minor_version>
         <update_version></update_version>
-        <payara_version>181-SNAPSHOT</payara_version>
-        <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
 
         <jsf-ext.version>0.2</jsf-ext.version>
