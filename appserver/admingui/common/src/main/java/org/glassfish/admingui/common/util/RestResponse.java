@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.common.util;
 
@@ -50,13 +51,17 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
+import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
  * <p>	This class abstracts the response from the admin console code so that
@@ -219,7 +224,11 @@ class JerseyRestResponse extends RestResponse {
 //                }
             } else if (contentType.startsWith("application/json")) {
                 // Decode JSON
-                result.put("data", JSONUtil.jsonToJava(responseBody));
+                JsonReader reader = javax.json.Json.createReader(new StringReader(responseBody));
+                JsonObject object = reader.readObject();
+                Map map = JsonUtil.jsonObjectToMap(object);
+                result.put("data", JsonUtil.jsonObjectToMap(object));
+                //result.put("data", JSONUtil.jsonToJava(responseBody));
             } else {
                 // Unsupported Response Format!
                 System.out.println("Unsupported Response Format: '"
