@@ -518,6 +518,18 @@
                     <artifactId>microprofile-metrics</artifactId>
                     <version>${project.version}</version>
                 </dependency>
+                <!-- JWT -->
+                <dependency>
+                    <groupId>org.eclipse.microprofile.jwt</groupId>
+                    <artifactId>microprofile-jwt-auth-api</artifactId>
+                    <version>${microprofile-jwt-auth.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.microprofile.jwt-auth</groupId>
+                    <artifactId>microprofile-jwt-auth</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                
             </dependencies>
         </profile>
     </profiles>
