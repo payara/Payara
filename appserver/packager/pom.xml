@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.Beta2-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -181,6 +181,7 @@
         <module>payara-rest-endpoints</module>
 	<module>rest-monitoring</module>
 	<module>payara-executor-service</module>
+        <module>cdi-auth-roles</module>
     </modules>
 
     <profiles>

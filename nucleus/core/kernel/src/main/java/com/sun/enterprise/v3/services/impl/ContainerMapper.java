@@ -43,6 +43,8 @@ package com.sun.enterprise.v3.services.impl;
 
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.ApplicationContainer;
@@ -63,6 +65,7 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -172,7 +175,37 @@ public class ContainerMapper extends ADBAwareHttpHandler {
                 stuckThreadsStore.registerThread(Thread.currentThread().getId());
             }
             if (requestTracing != null) {
-                requestTracing.startTrace();
+                try {
+                    // Try to get the propagated trace ID if there is one
+                    UUID propagatedTraceId = UUID.fromString(request.getHeader(PropagationHeaders.PROPAGATED_TRACE_ID));
+                    
+                    try {
+                        // Try to get the propagated parent ID if there is one
+                        UUID propagatedParentId = 
+                                UUID.fromString(request.getHeader(PropagationHeaders.PROPAGATED_PARENT_ID));
+                        // Try to get the relationship type if present
+                        RequestTraceSpan.SpanContextRelationshipType propagatedSpanContextRelationshipType = RequestTraceSpan
+                                .SpanContextRelationshipType.valueOf(request.getHeader(
+                                        PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE));
+                        requestTracing.startTrace(propagatedTraceId, propagatedParentId, 
+                                propagatedSpanContextRelationshipType, "processContainerRequest");
+                    } catch (NullPointerException | IllegalArgumentException ex) {
+                        LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.invalidPropagatedParentId, ex, 
+                                request.getHeader(PropagationHeaders.PROPAGATED_PARENT_ID));
+                        // Just try to start a normal trace
+                        requestTracing.startTrace("processContainerRequest");
+                    }
+                } catch (IllegalArgumentException ex) {
+                    if (LOGGER.isLoggable(Level.WARNING)) {
+                        LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.invalidPropagatedTraceId, ex, 
+                                request.getHeader(PropagationHeaders.PROPAGATED_TRACE_ID));
+                    }
+                    // Just try to start a normal trace
+                    requestTracing.startTrace("processContainerRequest");
+                } catch (NullPointerException ex) {
+                    // If we get a Null Pointer, just try to start a normal trace, as there isn't a propagated trace ID
+                    requestTracing.startTrace("processContainerRequest");
+                }
             }
             if (stuckThreadsStore != null){
                 stuckThreadsStore.registerThread(Thread.currentThread().getId());

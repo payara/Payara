@@ -129,7 +129,7 @@ public class StartInstanceCommand implements AdminCommand {
     @Min(message = "Timeout must be at least 1 second long.", value = 1)
     @Param(optional = true, defaultValue = "120")
     private int timeout;
-    
+
     private Logger logger;
 
     private Node   node;

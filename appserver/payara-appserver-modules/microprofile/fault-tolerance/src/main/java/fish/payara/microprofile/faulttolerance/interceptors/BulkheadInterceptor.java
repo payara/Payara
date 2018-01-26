@@ -42,7 +42,7 @@ package fish.payara.microprofile.faulttolerance.interceptors;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import java.io.Serializable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -183,21 +183,23 @@ public class BulkheadInterceptor implements Serializable {
                 // If there aren't any free permits, see if there are any free queue permits
                 if (bulkheadExecutionQueueSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                     logger.log(Level.FINER, "Acquired bulkhead queue semaphore.");
-                    RequestEvent requestEvent = new RequestEvent("FaultTolerance-BulkheadQueueing");
-                    faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
                     
                     // If there is a free queue permit, queue for an executor permit
                     try {
                         logger.log(Level.FINER, "Attempting to acquire bulkhead execution semaphore.");
-                        bulkheadExecutionSemaphore.acquire();
+                        faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("obtainBulkheadSemaphore"), 
+                                invocationManager, invocationContext);
+                        try {
+                            bulkheadExecutionSemaphore.acquire();
+                        } finally {
+                            // Make sure we end the trace right here
+                            faultToleranceService.endFaultToleranceSpan();
+                        }
+                        
                         logger.log(Level.FINER, "Acquired bulkhead queue semaphore.");
                         
                         // Release the queue permit
                         bulkheadExecutionQueueSemaphore.release();
-                        
-                        requestEvent = new RequestEvent("FaultTolerance-BulkheadExecuting");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
                         
                         // Proceed the invocation and wait for the response
                         try {
@@ -217,22 +219,13 @@ public class BulkheadInterceptor implements Serializable {
                         // Release the execution permit
                         bulkheadExecutionSemaphore.release();
                     } catch (InterruptedException ex) {
-                        requestEvent = new RequestEvent("FaultTolerance-BulkheadException");
-                        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, 
-                                invocationContext);
-                        
                         logger.log(Level.INFO, "Interrupted acquiring bulkhead semaphore", ex);
                         throw new BulkheadException(ex);
                     }
                 } else {
-                    RequestEvent requestEvent = new RequestEvent("FaultTolerance-BulkheadException");
-                    faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
                     throw new BulkheadException("No free work or queue permits.");
                 }
             } else {
-                RequestEvent requestEvent = new RequestEvent("FaultTolerance-BulkheadExecuting");
-                faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
-                
                 // Proceed the invocation and wait for the response
                 try {
                     logger.log(Level.FINER, "Proceeding bulkhead context");
@@ -270,8 +263,6 @@ public class BulkheadInterceptor implements Serializable {
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
             } else {
-                RequestEvent requestEvent = new RequestEvent("FaultTolerance-BulkheadException");
-                faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
                 throw new BulkheadException("No free work permits.");
             }
         }

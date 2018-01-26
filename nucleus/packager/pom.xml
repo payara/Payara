@@ -50,7 +50,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.Beta2-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -112,7 +112,7 @@
         <module>requesttracing-package</module>
         <module>asadmin-recorder-package</module>
         <module>notification-package</module>
-	<module>payara-api-package</module>
+        <module>payara-api-package</module>
 	<module>payara-executor-service-package</module>
     </modules>
 

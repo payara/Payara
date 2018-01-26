@@ -71,7 +71,52 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 import fish.payara.cluster.DistributedLockType;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpanLog;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Vector;
+import javax.ejb.AccessLocalException;
+import javax.ejb.CreateException;
+import javax.ejb.EJBAccessException;
+import javax.ejb.EJBContext;
+import javax.ejb.EJBException;
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBMetaData;
+import javax.ejb.EJBObject;
+import javax.ejb.EJBTransactionRequiredException;
+import javax.ejb.EJBTransactionRolledbackException;
+import javax.ejb.FinderException;
+import javax.ejb.LockType;
+import javax.ejb.NoSuchEJBException;
+import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.PostActivate;
+import javax.ejb.PrePassivate;
+import javax.ejb.RemoveException;
+import javax.ejb.TransactionRequiredLocalException;
+import javax.ejb.TransactionRolledbackLocalException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.UserTransaction;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -94,19 +139,15 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import javax.annotation.PreDestroy;
-import javax.ejb.*;
 import javax.interceptor.AroundConstruct;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.transaction.*;
 import java.io.Serializable;
-import java.lang.reflect.*;
 import java.rmi.AccessException;
 import java.rmi.RemoteException;
-import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -4176,8 +4217,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 callFlowInfo.getComponentName(),
                 method_sig);
         if (requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo, true);
-            requestTracing.traceRequestEvent(requestEvent);
+            RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(callFlowInfo, true);
+            requestTracing.addSpanLog(spanLog);
         }
         //callFlowAgent.ejbMethodStart(callFlowInfo);
     }
@@ -4191,26 +4232,26 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 method_sig);
         //callFlowAgent.ejbMethodEnd(callFlowInfo);
         if (requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo, false);
-            requestTracing.traceRequestEvent(requestEvent);
+            RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(callFlowInfo, false);
+            requestTracing.addSpanLog(spanLog);
         }    
     }
 
-    private RequestEvent constructEjbMethodRequestEvent(CallFlowInfo info, boolean callEnter) {
-        String eventName="EJBMethod-ENTER";
+    private RequestTraceSpanLog constructEjbMethodSpanLog(CallFlowInfo info, boolean callEnter) {
+        String eventName="enterEjbMethodEvent";
         if (!callEnter) {
-            eventName="EJBMethod-EXIT";
+            eventName="exitEjbMethodEvent";
         }
-        RequestEvent re = new RequestEvent(eventName);
-        re.addProperty("ApplicationName", info.getApplicationName());
-        re.addProperty("ComponentName", info.getComponentName());
-        re.addProperty("ComponentType",info.getComponentType().toString());
-        re.addProperty("ModuleName",info.getModuleName());
-        re.addProperty("EJBClass", this.ejbClass.getCanonicalName());
-        re.addProperty("EJBMethod", info.getMethod().getName());
-        re.addProperty("CallerPrincipal", info.getCallerPrincipal());
-        re.addProperty("TX-ID", info.getTransactionId());
-        return re;
+        RequestTraceSpanLog spanLog = new RequestTraceSpanLog(eventName);
+        spanLog.addLogEntry("ApplicationName", info.getApplicationName());
+        spanLog.addLogEntry("ComponentName", info.getComponentName());
+        spanLog.addLogEntry("ComponentType",info.getComponentType().toString());
+        spanLog.addLogEntry("ModuleName",info.getModuleName());
+        spanLog.addLogEntry("EJBClass", this.ejbClass.getCanonicalName());
+        spanLog.addLogEntry("EJBMethod", info.getMethod().getName());
+        spanLog.addLogEntry("CallerPrincipal", info.getCallerPrincipal());
+        spanLog.addLogEntry("TX-ID", info.getTransactionId());
+        return spanLog;
     }
 
     protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,

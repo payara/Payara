@@ -43,7 +43,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.Beta2-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
     <artifactId>microprofile-package</artifactId>
     <name>Microprofile Package</name>
@@ -162,7 +162,7 @@
             <groupId>fish.payara.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics</artifactId>
             <version>${project.version}</version>
-        </dependency>       
+        </dependency>
         
         <!-- JWT -->
         <dependency>

@@ -2,7 +2,11 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
+<<<<<<< HEAD
 Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+=======
+Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+>>>>>>> master
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +47,7 @@ holder.
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.Beta2-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.microprofile.metrics</groupId>
     <artifactId>microprofile-metrics</artifactId>

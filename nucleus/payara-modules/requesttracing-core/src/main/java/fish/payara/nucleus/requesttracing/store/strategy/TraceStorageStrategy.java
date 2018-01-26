@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,63 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.domain;
+package fish.payara.nucleus.requesttracing.store.strategy;
+
+import fish.payara.nucleus.requesttracing.RequestTrace;
+import java.util.Collection;
 
 /**
- * @author mertcaliskan
+ * An interface for objects that will choose from a collection of request traces
+ * which one needs removing.
  */
-public class HistoricRequestTracingEvent implements Comparable<HistoricRequestTracingEvent> {
+public interface TraceStorageStrategy {
 
-    private long elapsedTime;
-    private long occurringTime;
-    private String message;
+    /**
+     * Get the trace that needs removing.
+     *
+     * @param traces the list of traces.
+     * @param maxSize the maximum size of the list.
+     * @return the trace that should be removed, or null if no traces should be
+     * removed.
+     */
+    RequestTrace getTraceForRemoval(Collection<RequestTrace> traces, int maxSize);
 
-    public HistoricRequestTracingEvent(long occurringTime, long elapsedTime, String message) {
-        this.occurringTime = occurringTime;
-        this.elapsedTime = elapsedTime;
-        this.message = message;
-    }
-
-    public long getOccurringTime() {
-        return occurringTime;
-    }
-
-    public long getElapsedTime() {
-        return elapsedTime;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public int compareTo(HistoricRequestTracingEvent e) {
-        return Long.compare(e.elapsedTime, elapsedTime);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        HistoricRequestTracingEvent that = (HistoricRequestTracingEvent) o;
-
-        return elapsedTime == that.elapsedTime && (message != null ? message.equals(that.message) : that.message == null);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (elapsedTime ^ (elapsedTime >>> 32));
-        result = 31 * result + (message != null ? message.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "HistoricRequestTracingEvent{" +
-                "occurringTime=" + occurringTime +
-                ", elapsedTime=" + elapsedTime +
-                ", message='" + message + '\'' +
-                '}';
-    }
+    RequestTrace getTraceForRemoval(Collection<RequestTrace> traces, int maxSize, RequestTrace traceToRemove);
 }

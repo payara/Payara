@@ -40,10 +40,13 @@
 package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
-import java.text.DateFormat;
-import java.util.Date;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpanLog;
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -52,10 +55,11 @@ import java.util.concurrent.TimeUnit;
  * Request Event Store
  * @author steve
  */
-public class RequestTrace {
+public class RequestTrace implements Serializable, Comparable<RequestTrace> {
 
     public RequestTrace() {
         trace = new LinkedList<>();
+        spanLogs = new LinkedList<>();
     }
     
     private boolean started;
@@ -64,25 +68,35 @@ public class RequestTrace {
     private long startTimeEpoched;
     private long endTime;
     private long elapsedTime;
-    private LinkedList<RequestEvent> trace;
+    private final LinkedList<RequestTraceSpan> trace;
+    private final List<RequestTraceSpanLog> spanLogs;
     
     /**
      * Add a new event to the series being traced
-     * @param requestEvent 
+     * @param span 
      */
-    void addEvent(RequestEvent requestEvent) {
+    void addEvent(RequestTraceSpan span) {
         // Do not add trace events if completed
-        if (completed && requestEvent.getEventType() != EventType.TRACE_START) {
+        if (completed 
+                && span.getEventType() != EventType.TRACE_START 
+                && span.getEventType() != EventType.PROPAGATED_TRACE) {
             return;
         }
         
-        if (null != requestEvent.getEventType()) switch (requestEvent.getEventType()) {
+        if (null != span.getEventType()) switch (span.getEventType()) {
             case TRACE_START:
                 trace.clear();
-                startTime = requestEvent.getTimestamp();
-                startTimeEpoched = requestEvent.getTimeOccured();
-                requestEvent.setConversationId(requestEvent.getId());
-                trace.add(requestEvent);
+                startTime = span.getTimestamp();
+                startTimeEpoched = span.getTimeOccured();
+                trace.add(span);
+                started = true;
+                completed = false;
+                break;
+            case PROPAGATED_TRACE:
+                trace.clear();
+                startTime = span.getTimestamp();
+                startTimeEpoched = span.getTimeOccured();
+                trace.add(span);
                 started = true;
                 completed = false;
                 break;
@@ -90,28 +104,33 @@ public class RequestTrace {
                 if (!started) {
                     return;
                 }
-                RequestEvent startEvent = trace.getFirst();  
-                requestEvent.setConversationId(startEvent.getConversationId());
-                requestEvent.setTraceTime(requestEvent.getTimestamp()- startTime);
-                trace.add(requestEvent);
-                    break;
-                }
-            case TRACE_END:{
-                if (!started) {
-                    return;
-                }
-                RequestEvent startEvent = trace.getFirst();
-                requestEvent.setConversationId(startEvent.getConversationId());
-                requestEvent.setTraceTime(requestEvent.getTimestamp() - startTime);
-                trace.add(requestEvent);
-                elapsedTime = TimeUnit.MILLISECONDS.convert(requestEvent.getTimestamp() - startTime, TimeUnit.NANOSECONDS);
-                endTime = requestEvent.getTimeOccured();
-                completed = true;
+                RequestTraceSpan rootSpan = trace.getFirst();
+                span.setTraceId(rootSpan.getTraceId());
+                span.setSpanDuration(System.nanoTime() - span.getTimestamp());
+                span.setTraceEndTime(System.currentTimeMillis());
+                trace.add(span);
                     break;
                 }
             default:
                 break;
         }
+    }
+    
+     public void endTrace() {
+        if (!started) {
+            return;
+        }
+        
+        Collections.sort(trace);
+        
+        RequestTraceSpan startSpan = trace.getFirst();
+        endTime = System.nanoTime();
+        startSpan.setSpanDuration(endTime - startTime);
+        startSpan.setTraceEndTime(endTime);
+        elapsedTime = TimeUnit.MILLISECONDS.convert(startSpan.getSpanDuration(), TimeUnit.NANOSECONDS);
+        completed = true;
+        assignLogs();
+        assignReferences();
     }
     
     /**
@@ -125,16 +144,18 @@ public class RequestTrace {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("{\"RequestTrace\": {");
-        sb.append("\"startTime\":\"").append(DateFormat.getDateTimeInstance().format(new Date(startTimeEpoched))).append('"')
-          .append(",\"elapsedTime\":\"").append(elapsedTime).append('"').append(',');
-        for (RequestEvent re : trace) {
-            sb.append(re.toString()); 
-            if (re.getEventType() != EventType.TRACE_END) {
-                sb.append(',');
+        StringBuilder sb = new StringBuilder("{\"traceSpans\":[");
+        
+        for (RequestTraceSpan span : trace) {
+            sb.append(span.toString());
+            
+            if (trace.indexOf(span) != trace.size() - 1) {
+                sb.append(",");
             }
         }
-        sb.append("}}");
+
+        sb.append("\n]}");
+        
         return sb.toString();
     }
     
@@ -152,7 +173,7 @@ public class RequestTrace {
      * Returns a list of all the events that make up the trace.
      * @return 
      */
-    LinkedList<RequestEvent> getTrace() {
+    LinkedList<RequestTraceSpan> getTraceSpans() {
         return trace;
     }
 
@@ -181,7 +202,7 @@ public class RequestTrace {
      * See {@link System#currentTimeMillis()} for how this time is generated.
      * @return 
      */
-    public long getStartTimeEpoched(){
+    public long getStartTimeEpoched() {
         return startTimeEpoched;
     }
     
@@ -192,19 +213,8 @@ public class RequestTrace {
      * This value is 0 until the request trace in finished.
      * @return 
      */
-    public long getEndTime(){
+    public long getEndTime() {
         return endTime;
-    }
-
-    /**
-     * Sets a unique identifier for the trace.
-     * This identifier will be applied to all events within it.
-     * @param newID 
-     */
-    void setConversationID(UUID newID) {
-        for (RequestEvent requestEvent : trace) {
-            requestEvent.setConversationId(newID);
-        }
     }
 
     /**
@@ -212,13 +222,19 @@ public class RequestTrace {
      * which comes from the first event.
      * @return {@code null} if no trace started
      */
-    UUID getConversationID() {
+    UUID getTraceId() {
         UUID result = null;
-        RequestEvent re = trace.getFirst();
+        RequestTraceSpan re = trace.getFirst();
         if (re != null) {
-            result = re.getConversationId();
+            result = re.getTraceId();
         }
         return result;
+    }
+    
+    void setTraceId(UUID newID) {
+        for (RequestTraceSpan span : trace) {
+            span.setTraceId(newID);
+        }
     }
 
     /**
@@ -227,5 +243,82 @@ public class RequestTrace {
      */
     boolean isCompleted() {
         return completed;
+    }
+
+    void addSpanLog(RequestTraceSpanLog spanLog) {
+        spanLogs.add(spanLog);
+    }
+    
+    private void assignLogs() {
+        for (RequestTraceSpanLog spanLog : spanLogs) {
+            
+            ListIterator<RequestTraceSpan> iterator = trace.listIterator(trace.size());
+            
+            while (iterator.hasPrevious()) {
+                RequestTraceSpan span = iterator.previous();
+                if (spanLog.getTimeMillis() > span.getTimeOccured() 
+                        && spanLog.getTimeMillis() < span.getTraceEndTime()) {
+                    span.addSpanLog(spanLog);
+                    break;
+                }
+            }
+        }
+    }
+    
+    private void assignReferences() {
+        for (RequestTraceSpan span : trace) {
+            if (trace.indexOf(span) != 0) {
+                RequestTraceSpan bestMatchingParent = null;
+                for (RequestTraceSpan comparisonSpan : trace) {
+                    if (span.getTimeOccured() > comparisonSpan.getTimeOccured() &&
+                            span.getTraceEndTime() < comparisonSpan.getTraceEndTime()) {
+                        if (bestMatchingParent == null) {
+                            bestMatchingParent = comparisonSpan;
+                        } else {
+                            if (bestMatchingParent.getTimeOccured() < comparisonSpan.getTimeOccured()) {
+                                bestMatchingParent = comparisonSpan;
+                            }
+                        }
+                    } 
+                }
+                
+                if (bestMatchingParent != null) {
+                    span.addSpanReference(bestMatchingParent.getSpanContext(), 
+                            RequestTraceSpan.SpanContextRelationshipType.ChildOf);
+                }
+            }
+        }
+    }
+    
+    @Override
+    public int compareTo(RequestTrace requestTrace) {
+        int compareElapsedTime = Long.compare(requestTrace.elapsedTime, elapsedTime);
+        if (compareElapsedTime != 0) {
+            return compareElapsedTime;
+        }
+        return Long.compare(requestTrace.startTime, startTime);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+
+        RequestTrace that = (RequestTrace) o;
+
+        return elapsedTime == that.elapsedTime && (this.toString() != null ? 
+                this.toString().equals(that.toString()) : that.toString() == null);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = (int) (elapsedTime ^ (elapsedTime >>> 32));
+        result = 31 * result + (this.toString() != null ? this.toString().hashCode() : 0);
+        return result;
     }
 }
