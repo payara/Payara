@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,37 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing;
+package fish.payara.nucleus.requesttracing.events;
 
-import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
-import org.glassfish.internal.api.Globals;
-
-import java.util.Iterator;
-import java.util.NavigableSet;
-import java.util.concurrent.TimeUnit;
+import org.glassfish.api.event.EventTypes;
 
 /**
- * @author mertcaliskan
+ *
+ * @author Susan Rai
  */
-final public class HistoricRequestTracingCleanupTask implements Runnable {
+public class RequestTracingEvents {
 
-    private final long timeLimit;
-
-    HistoricRequestTracingCleanupTask(long timeLimit) {
-        this.timeLimit = timeLimit;
-    }
-
-    public void run() {
-        HistoricRequestTracingEventStore store = Globals.getDefaultHabitat().getService(HistoricRequestTracingEventStore.class);
-        NavigableSet<HistoricRequestTracingEvent> historicStore = store.getHistoricStore();
-        Iterator<HistoricRequestTracingEvent> iterator = historicStore.descendingIterator();
-
-        while(iterator.hasNext()) {
-            HistoricRequestTracingEvent event = iterator.next();
-            long upTimeInMillis = System.currentTimeMillis() - event.getOccurringTime();
-            if (TimeUnit.MILLISECONDS.toSeconds(upTimeInMillis) > timeLimit) {
-                historicStore.remove(event);
-            }
-        }
-    }
+    public static final EventTypes STORE_FULL = EventTypes.create("store_full");
 }

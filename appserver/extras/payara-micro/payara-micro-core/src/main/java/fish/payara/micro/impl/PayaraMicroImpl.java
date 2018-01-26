@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,7 +87,6 @@ import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -164,6 +163,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean enableRequestTracing = false;
     private String requestTracingThresholdUnit = "SECONDS";
     private long requestTracingThresholdValue = 30;
+    private boolean enableRequestTracingAdaptiveSampling = false;
+    private int requestTracingAdaptiveSamplingTargetCount = 12;
+    private int requestTracingAdaptiveSamplingTimeValue = 1;
+    private String requestTracingAdaptiveSamplingTimeUnit = "MINUTES";
     private String instanceGroup;
     private String preBootFileName;
     private String postBootFileName;
@@ -988,6 +991,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             configurePhoneHome();
             configureNotificationService();
             configureHealthCheck();
+            configureRequestTracingService();
             configureSecrets();
 
             // Add additional libraries
@@ -1012,7 +1016,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
             gf.getCommandRunner().run("initialize-all-applications");
 
-            postBootActions();
             postDeployCommands.executeCommands(gf.getCommandRunner());
 
             long end = System.currentTimeMillis();
@@ -1219,6 +1222,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case enablerequesttracing:
                         enableRequestTracing = true;
+            
                         // Check if a value has actually been given
                         // Split strings from numbers
                         if (value != null) {
@@ -1229,6 +1233,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 if (requestTracing[0].matches("\\d+")) {
                                     try {
                                         requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
+                                        
                                     } catch (NumberFormatException e) {
                                         LOGGER.log(Level.WARNING, "{0} is not a valid request tracing "
                                                 + "threshold value", requestTracing[0]);
@@ -1290,6 +1295,37 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                             throw e;
                         }
                         break;
+                    case enablerequesttracingadaptivesampling:
+                        enableRequestTracingAdaptiveSampling = true;
+                        break;
+                    case requesttracingadaptivesamplingtargetcount:
+                        enableRequestTracingAdaptiveSampling = true;
+                        try {
+                            requestTracingAdaptiveSamplingTargetCount = Integer.parseInt(value);
+                        } catch (NumberFormatException e) {
+                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingAdaptiveSamplingTargetCount", value);
+                            throw e;
+                        }
+                        break;
+                    case requesttracingadaptivesamplingtimevalue:
+                        enableRequestTracingAdaptiveSampling = true;
+                        try {
+                            requestTracingAdaptiveSamplingTimeValue = Integer.parseInt(value);
+                        } catch (NumberFormatException e) {
+                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingAdaptiveSamplingTimeValue", value);
+                            throw e;
+                        }
+                        break;
+                    case requesttracingadaptivesamplingtimeunit:
+                        enableRequestTracingAdaptiveSampling = true;
+                        try {
+                            TimeUnit.valueOf(value.toUpperCase());
+                            requestTracingAdaptiveSamplingTimeUnit = value.toUpperCase();
+                        } catch (IllegalArgumentException e) {
+                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingAdaptiveSamplingTimeUnit", value);
+                            throw e;
+                        }
+                        break;
                     case help:
                         RuntimeOptions.printHelp();
                         System.exit(1);
@@ -1324,7 +1360,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case interfaces:
                         interfaces = value;
-			break;
+			            break;
                     case secretsdir:
                         secretsDir = value;
                         break;
@@ -1334,6 +1370,40 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
         }
 
+    }
+
+    private void configureRequestTracingService() {
+        if (enableRequestTracing) {
+
+            preBootCommands.add(new BootCommand("set",
+                    "configs.config.server-config.request-tracing-service-configuration.enabled=true"));
+
+            preBootCommands.add(new BootCommand("set",
+                    "configs.config.server-config.request-tracing-service-configuration.threshold-unit="
+                            + requestTracingThresholdUnit));
+
+            preBootCommands.add(new BootCommand("set",
+                    "configs.config.server-config.request-tracing-service-configuration.threshold-value" + "="
+                            + Long.toString(requestTracingThresholdValue)));
+
+            if (enableRequestTracingAdaptiveSampling) {
+                preBootCommands.add(new BootCommand("set",
+                        "configs.config.server-config.request-tracing-service-configuration.adaptive-sampling-enabled="
+                                + Boolean.toString(enableRequestTracingAdaptiveSampling)));
+
+                preBootCommands.add(new BootCommand("set",
+                        "configs.config.server-config.request-tracing-service-configuration.adaptive-sampling-target-count="
+                                + Integer.toString(requestTracingAdaptiveSamplingTargetCount)));
+
+                preBootCommands.add(new BootCommand("set",
+                        "configs.config.server-config.request-tracing-service-configuration.adaptive-sampling-time-value="
+                                + Integer.toString(requestTracingAdaptiveSamplingTimeValue)));
+
+                preBootCommands.add(new BootCommand("set",
+                        "configs.config.server-config.request-tracing-service-configuration.adaptive-sampling-time-unit="
+                                + requestTracingAdaptiveSamplingTimeUnit));
+            }
+        }
     }
 
     /**
@@ -1518,21 +1588,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }
             }
         });
-    }
-
-    private void postBootActions() throws GlassFishException {
-        if (enableRequestTracing) {
-            RequestTracingService requestTracing = gf.getService(RequestTracingService.class);
-            requestTracing.getExecutionOptions().setEnabled(true);
-
-            if (!requestTracingThresholdUnit.equals("SECONDS")) {
-                requestTracing.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(requestTracingThresholdUnit));
-            }
-
-            if (requestTracingThresholdValue != 30) {
-                requestTracing.getExecutionOptions().setThresholdValue(requestTracingThresholdValue);
-            }
-        }
     }
 
     private void resetLogging() {
@@ -2035,6 +2090,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         enableRequestTracing = getBooleanProperty("payaramicro.enableRequestTracing");
         requestTracingThresholdUnit = getProperty("payaramicro.requestTracingThresholdUnit", "SECONDS");
         requestTracingThresholdValue = getLongProperty("payaramicro.requestTracingThresholdValue", 30L);
+        enableRequestTracingAdaptiveSampling = getBooleanProperty("payaramicro.enableRequestTracingAdaptiveSampling");
+        requestTracingAdaptiveSamplingTargetCount = getIntegerProperty("payaramicro.requestTracingAdaptiveSamplingTargetCount", requestTracingAdaptiveSamplingTargetCount);
+        requestTracingAdaptiveSamplingTimeValue = getIntegerProperty("payaramicro.requestTracingAdaptiveSamplingTimeValue", requestTracingAdaptiveSamplingTimeValue);
+        requestTracingAdaptiveSamplingTimeUnit = getProperty("payaramicro.requestTracingAdaptiveSamplingTimeUnit", requestTracingAdaptiveSamplingTimeUnit).toUpperCase();
         clustermode = getProperty("payaramicro.clusterMode");
         interfaces = getProperty("payaramicro.interfaces");
         secretsDir = getProperty("payaramicro.secretsDir");
@@ -2210,6 +2269,22 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (requestTracingThresholdValue != 30) {
             props.setProperty("payaramicro.requestTracingThresholdValue", Long.toString(requestTracingThresholdValue));
+        }
+
+        if (enableRequestTracingAdaptiveSampling) {
+            props.setProperty("payaramicro.enableRequestTracingAdaptiveSampling", Boolean.toString(enableRequestTracingAdaptiveSampling));
+        }
+
+        if (requestTracingAdaptiveSamplingTargetCount != 12) {
+            props.setProperty("payaramicro.requestTracingAdaptiveSamplingTargetCount", Integer.toString(requestTracingAdaptiveSamplingTargetCount));
+        }
+
+        if (requestTracingAdaptiveSamplingTimeValue != 1) {
+            props.setProperty("payaramicro.requestTracingAdaptiveSamplingTimeValue", Integer.toString(requestTracingAdaptiveSamplingTimeValue));
+        }
+
+        if (!requestTracingAdaptiveSamplingTimeUnit.equals("MINUTES")) {
+            props.setProperty("payaramicro.requestTracingAdaptiveSamplingTimeUnit", requestTracingAdaptiveSamplingTimeUnit);
         }
 
         // write all user defined system properties

@@ -42,7 +42,6 @@ package fish.payara.microprofile.faulttolerance.interceptors;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Future;
@@ -142,11 +141,6 @@ public class TimeoutInterceptor {
         Object proceededInvocationContext = null;
         Timeout timeout = FaultToleranceCdiUtils.getAnnotation(beanManager, Timeout.class, invocationContext);
         
-        FaultToleranceService faultToleranceService = 
-                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
-                .getService(InvocationManager.class);
-        
         Config config = null;
         try {
             config = ConfigProvider.getConfig();
@@ -174,14 +168,10 @@ public class TimeoutInterceptor {
 
             if (System.currentTimeMillis() > timeoutTime || timedOut.get()) {
                 logger.log(Level.FINE, "Execution timed out");
-                RequestEvent requestEvent = new RequestEvent("FaultTolerance-TimeoutException");
-                faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
                 throw new TimeoutException();
             }
         } catch (Exception ex) {
             stopTimeout(timeoutFuture);
-            RequestEvent requestEvent = new RequestEvent("FaultTolerance-TimeoutException");
-            faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
             throw ex;
         }
         

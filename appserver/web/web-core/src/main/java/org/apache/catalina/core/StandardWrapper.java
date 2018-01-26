@@ -147,7 +147,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.web.valve.GlassFishValve;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 
 /**
  * Standard implementation of the <b>Wrapper</b> interface that represents
@@ -1605,12 +1605,12 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
                     SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
                 } else {
+                    RequestTraceSpan span = null;
                     if (requestTracing.isRequestTracingEnabled()) {
                         if (servlet instanceof ServletContainer) {
-                            RequestEvent requestEvent = constructWebServiceRequestEvent((HttpServletRequest) request);
-                            requestTracing.traceRequestEvent(requestEvent);
+                            span = constructWebServiceRequestSpan((HttpServletRequest) request);
                         } else if (servlet instanceof Servlet) {
-                            requestTracing.traceRequestEvent(constructServletRequestEvent((HttpServletRequest) request, servlet));
+                            span = constructServletRequestSpan((HttpServletRequest) request, servlet);
                         }
                     }
 
@@ -1622,6 +1622,10 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                         servlet.service((HttpServletRequest) request, (HttpServletResponse) response);
                     }
                     finally {
+                        if (requestTracing.isRequestTracingEnabled() && span != null) {
+                            requestTracing.traceSpan(span);
+                        }
+                        
                         isInSuppressFFNFThread.set(false);
                     }
                 }
@@ -1668,39 +1672,35 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     }
     // END IASRI 4665318
 
-    private RequestEvent constructWebServiceRequestEvent(HttpServletRequest httpServletRequest) {
-        RequestEvent requestEvent = new RequestEvent("RESTWSRequest");
-        requestEvent.addProperty("URL", httpServletRequest.getRequestURL().toString());
+    private RequestTraceSpan constructWebServiceRequestSpan(HttpServletRequest httpServletRequest) {
+        RequestTraceSpan span = new RequestTraceSpan("processWebserviceRequest");
+        span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
 
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
-            requestEvent.addProperty(
-                headerName,
-                list(httpServletRequest.getHeaders(headerName)).toString());
+            span.addSpanTag(headerName, list(httpServletRequest.getHeaders(headerName)).toString());
         }
-        requestEvent.addProperty("Method", httpServletRequest.getMethod());
+        span.addSpanTag("Method", httpServletRequest.getMethod());
 
-        return requestEvent;
+        return span;
     }
 
-    private RequestEvent constructServletRequestEvent(HttpServletRequest httpServletRequest, Servlet serv) {
-        RequestEvent requestEvent  = new RequestEvent("ServletRequest");
-        requestEvent.addProperty("URL", httpServletRequest.getRequestURL().toString());
+    private RequestTraceSpan constructServletRequestSpan(HttpServletRequest httpServletRequest, Servlet serv) {
+        RequestTraceSpan span  = new RequestTraceSpan("processServletRequest");
+        span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
 
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
-            requestEvent.addProperty(
-                headerName,
-                list(httpServletRequest.getHeaders(headerName)).toString());
+            span.addSpanTag(headerName, list(httpServletRequest.getHeaders(headerName)).toString());
         }
 
-        requestEvent.addProperty("Method",httpServletRequest.getMethod());
-        requestEvent.addProperty("QueryString", httpServletRequest.getQueryString());
-        requestEvent.addProperty("Class",serv.getClass().getCanonicalName());
+        span.addSpanTag("Method",httpServletRequest.getMethod());
+        span.addSpanTag("QueryString", httpServletRequest.getQueryString());
+        span.addSpanTag("Class",serv.getClass().getCanonicalName());
 
-        return requestEvent;
+        return span;
     }
 
     /**

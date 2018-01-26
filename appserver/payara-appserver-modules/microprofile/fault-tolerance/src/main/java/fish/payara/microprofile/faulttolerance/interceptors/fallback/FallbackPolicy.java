@@ -42,7 +42,7 @@ package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FALLBACK_HANDLER_METHOD_NAME;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,25 +90,29 @@ public class FallbackPolicy {
         FaultToleranceService faultToleranceService = 
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
-                .getService(InvocationManager.class);      
-        RequestEvent requestEvent = new RequestEvent("FaultTolerance-Fallback");
-        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);    
+                .getService(InvocationManager.class);
+        faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("executeFallbackMethod"), 
+                invocationManager, invocationContext);    
         
-        if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
-            logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);
-            
-            fallbackInvocationContext = invocationContext.getMethod().getDeclaringClass()
-                    .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
-                    .invoke(invocationContext.getTarget(), invocationContext.getParameters());
-        } else {
-            logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
-            
-            ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(), 
-                    invocationContext.getParameters());
-            
-            fallbackInvocationContext = fallbackClass
-                    .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
-                    .invoke(CDI.current().select(fallbackClass).get(), executionContext);
+        try {
+            if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
+                logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);
+
+                fallbackInvocationContext = invocationContext.getMethod().getDeclaringClass()
+                        .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
+                        .invoke(invocationContext.getTarget(), invocationContext.getParameters());
+            } else {
+                logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
+
+                ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(), 
+                        invocationContext.getParameters());
+
+                fallbackInvocationContext = fallbackClass
+                        .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
+                        .invoke(CDI.current().select(fallbackClass).get(), executionContext);
+            }
+        } finally {
+            faultToleranceService.endFaultToleranceSpan();
         }
         
         return fallbackInvocationContext;
