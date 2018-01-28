@@ -105,7 +105,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     private transient ConnectionFactory connectionFactoryPM;
     private transient JavaEETransactionManager transactionManager;
 
-    private static final boolean usePMResourceInTransaction = Boolean.getBoolean("org.glassfish.jms.skip-resource-registration-in-transaction");
+    private static final boolean usePMResourceInTransaction = Boolean.parseBoolean(System.getProperty("org.glassfish.jms.skip-resource-registration-in-transaction", "true"));
 
     @Inject
     public InjectableJMSContext(InjectionPoint ip, RequestedJMSContextManager rm) {
