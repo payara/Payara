@@ -44,6 +44,7 @@ package org.glassfish.admin.rest.resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.util.*;
+import java.util.logging.Level;
 import javax.validation.ValidationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -217,7 +218,7 @@ public class PropertiesBagResource extends AbstractResource {
                 ar.setFailureCause(ex);
                 ar.setMessage(ex.getLocalizedMessage());
             } else {
-                ex.printStackTrace();
+                logger.log(Level.FINE, "Error processing properties", ex);
                 throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
             }
         }

@@ -36,9 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * 
  */
+// Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.client.utils;
 
 import java.io.StringReader;
@@ -50,22 +51,33 @@ import java.util.logging.Level;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 import org.glassfish.api.logging.LogHelper;
 
 /**
- *
+ * Methods for processing JSON
  * @author jdlee
+ * @author jcoustick
+ * @see org.glassfish.admin.rest.utils.JsonUtil
  */
 public class Util {
     
-    public static Map<String, Object> processJsonMap(String json) {
+    /**
+     * Converts a String of JSON data into a map
+     * If there is an error then an empty Map will be returned.
+     * @param json
+     * @return A {@link Map} of {@link String} || {@link Number}
+     */
+    public static Map processJsonMap(String json) {
         Map<String, Object> map;
         try {
             JsonParser parser = Json.createParser(new StringReader(json));
             if (parser.hasNext()){
+                parser.next();
                  map = processJsonObject(parser.getObject());
             } else {
                 map = new HashMap<String, Object>();
@@ -76,17 +88,39 @@ public class Util {
         return map;
     }
 
+    /**
+     * Converts a {@link JsonObject} into a {@link Map}
+     * <p>
+     * The {@link Map} entries can be of types {@link Boolean}, {@link List},
+     * {@link Map}, {@link Number}, {@code null} and/or {@link String}.
+     * </p>
+     * @param jo
+     * @return 
+     */
     public static Map processJsonObject(JsonObject jo) {
         Map<String, Object> map = new HashMap<String, Object>();
         try {
             for (String key : jo.keySet()) {
-                JsonValue value = jo.get(key);
-                if (value instanceof JsonArray) {
-                    map.put(key, processJsonArray((JsonArray) value));
-                } else if (value instanceof JsonObject) {
-                    map.put(key, processJsonObject((JsonObject) value));
-                } else {
+                 JsonValue value = jo.get(key);
+                if (null == value.getValueType()) {
                     map.put(key, value);
+                } else switch (value.getValueType()) {
+                    case ARRAY:
+                        map.put(key, processJsonArray((JsonArray) value));break;
+                    case OBJECT:
+                        map.put(key, processJsonObject((JsonObject) value));break;
+                    case NULL:
+                        map.put(key, null);break;
+                    case STRING:
+                        map.put(key, ((JsonString) value).getString());break;
+                    case NUMBER:
+                        map.put(key, ((JsonNumber) value).numberValue());break;
+                    case TRUE:
+                        map.put(key, Boolean.TRUE);break;
+                    case FALSE: 
+                        map.put(key, Boolean.FALSE);break;
+                    default:
+                        map.put(key, value);break;
                 }
             }
         } catch (JsonException e) {
@@ -96,24 +130,43 @@ public class Util {
         return map;
     }
 
+    /**
+     * Converts a {@link JsonArray} into a {@link List}
+     * <p>
+     * The {@link List} entries can be of types {@link Boolean}, {@link List},
+     * {@link Map}, {@link Number} and/or {@link String}.
+     * </p>
+     * @param ja
+     * @return 
+     */
     public static List processJsonArray(JsonArray ja) {
         List results = new ArrayList();
-
+        
         try {
             for (int i = 0; i < ja.size(); i++) {
-                Object entry = ja.get(i);
-                if (entry instanceof JsonArray) {
-                    results.add(processJsonArray((JsonArray) entry));
-                } else if (entry instanceof JsonObject) {
-                    results.add(processJsonObject((JsonObject) entry));
-                } else {
+                JsonValue entry = ja.get(i);
+                if (null == entry.getValueType()) {
                     results.add(entry);
+                } else switch (entry.getValueType()) {
+                    case ARRAY:
+                        results.add(processJsonArray((JsonArray) entry));break;
+                    case OBJECT:
+                        results.add(processJsonObject((JsonObject) entry));break;
+                    case STRING:
+                        results.add(((JsonString) entry).getString());break;
+                    case NUMBER:
+                        results.add(((JsonNumber) entry).numberValue());break;
+                    case TRUE:
+                        results.add(Boolean.TRUE);break;
+                    case FALSE:
+                        results.add(Boolean.FALSE);break;
+                    default:
+                        results.add(entry);break;
                 }
             }
         } catch (JsonException e) {
             LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
         }
-
         return results;
     }
 
