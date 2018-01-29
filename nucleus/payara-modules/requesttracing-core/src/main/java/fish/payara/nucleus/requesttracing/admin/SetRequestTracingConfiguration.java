@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -39,51 +38,63 @@
  */
 package fish.payara.nucleus.requesttracing.admin;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.util.Properties;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-
+import fish.payara.nucleus.notification.TimeUtil;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+
+import javax.inject.Inject;
+import java.beans.PropertyVetoException;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
- * Admin command to set Request Tracing services configuration
+ * Admin command to enable/disable all request tracing services defined in
+ * domain.xml.
  *
- * @author Susan Rai
+ * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "set-requesttracing-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.requesttracing.configuration")
+@I18n("set-requesttracing-configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-requesttracing-configuration",
-            description = "Set Request Tracing Services Configuration")
+            description = "Configures the Request Tracing Service")
 })
 public class SetRequestTracingConfiguration implements AdminCommand {
 
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(SetRequestTracingConfiguration.class);
+
+    @Inject
+    ServerEnvironment server;
+
+    @Inject
+    RequestTracingService service;
+
     @Inject
     protected Logger logger;
+
+    @Inject
+    protected Target targetUtil;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -94,36 +105,53 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
-    @Param(name = "thresholdUnit", optional = true)
-    private String unit;
+    @Param(name = "sampleRate", optional = true)
+    private String sampleRate;
+
+    @Param(name = "adaptiveSamplingEnabled", optional = true)
+    private Boolean adaptiveSamplingEnabled;
+
+    @Param(name = "adaptiveSamplingTargetCount", optional = true)
+    private String adaptiveSamplingTargetCount;
+
+    @Param(name = "adaptiveSamplingTimeValue", optional = true)
+    private Integer adaptiveSamplingTimeValue;
+
+    @Param(name = "adaptiveSamplingTimeUnit", optional = true)
+    private String adaptiveSamplingTimeUnit;
+
+    @Param(name = "applicationsOnlyEnabled", optional = true)
+    private Boolean applicationsOnlyEnabled;
 
     @Param(name = "thresholdValue", optional = true)
-    private String value;
+    private String thresholdValue;
 
-    @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
-    private Boolean notifierDynamic;
+    @Param(name = "thresholdUnit", optional = true)
+    private String thresholdUnit;
 
-    @Deprecated
-    @Param(name = "notifierEnabled", optional = true)
-    private Boolean notifierEnabled;
+    @Param(name = "sampleRateFirstEnabled", optional = true)
+    private Boolean sampleRateFirstEnabled;
 
-    @Param(name = "historicalTraceEnabled", optional = true)
-    private Boolean historicalTraceEnabled;
+    @Param(name = "traceStoreSize", optional = true)
+    private Integer traceStoreSize;
 
-    @Param(name = "historicalTraceStoreSize", optional = true)
-    private Integer historicalTraceStoreSize;
+    @Param(name = "traceStoreTimeout", optional = true)
+    private String traceStoreTimeout;
 
-    @Param(name = "historicalTraceStoreTimeout", optional = true)
-    private String historicalTraceStoreTimeout;
+    @Param(name = "reservoirSamplingEnabled", optional = true)
+    private Boolean reservoirSamplingEnabled;
 
-    @Inject
-    ServiceLocator serviceLocator;
+    @Param(name = "historicTraceStoreEnabled", optional = true)
+    private Boolean historicTraceStoreEnabled;
 
-    CommandRunner.CommandInvocation inv;
+    @Param(name = "historicTraceStoreSize", optional = true)
+    private Integer historicTraceStoreSize;
+
+    @Param(name = "historicTraceStoreTimeout", optional = true)
+    private String historicTraceStoreTimeout;
 
     @Override
     public void execute(AdminCommandContext context) {
-        final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
@@ -131,101 +159,171 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             actionReport.setExtraProperties(extraProperties);
         }
 
-        if (!validate(actionReport)) {
-            return;
-        }
+        Config config = targetUtil.getConfig(target);
+        final RequestTracingServiceConfiguration requestTracingServiceConfiguration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
 
-        enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
-        enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext);
-    }
-
-    private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-
-        inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
-
-        ParameterMap params = new ParameterMap();
-        params.add("enabled", enabled.toString());
-        params.add("target", target);
-        params.add("dynamic", dynamic.toString());
-        params.add("thresholdUnit", unit);
-        params.add("thresholdValue", value);
-        
-        if (historicalTraceEnabled != null) {
-            params.add("historicalTraceEnabled", historicalTraceEnabled.toString());
-        }
-        
-        if (historicalTraceStoreSize != null) {
-            params.add("historicalTraceStoreSize", historicalTraceStoreSize.toString());
-        }
-
-        if (historicalTraceStoreTimeout != null) {
-            params.add("historicalTraceStoreTimeout", historicalTraceStoreTimeout.toString());
-        }
-
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-    }
-
-    private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-
-        inv = runner.getCommandInvocation("requesttracing-log-notifier-configure", subReport, context.getSubject());
-
-        ParameterMap params = new ParameterMap();
-        params.add("dynamic", notifierDynamic.toString());
-        params.add("target", target);
-        if (notifierEnabled != null) {
-            params.add("enabled", notifierEnabled.toString());
-        }
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-    }
-
-    private boolean validate(ActionReport actionReport) {
-        boolean result = false;
-        if (value != null) {
+        if (requestTracingServiceConfiguration != null) {
             try {
-                int thresholdValue = Integer.parseInt(value);
-                if (thresholdValue <= 0 || thresholdValue > Short.MAX_VALUE * 2) {
-                    actionReport.failure(logger, "Threshold Value must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
-                    return result;
-                }
-            } catch (NumberFormatException nfe) {
-                actionReport.failure(logger, "Threshold Value is not a valid integer", nfe);
-                return result;
-            }
+                ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
+                    @Override
+                    public Object run(final RequestTracingServiceConfiguration requestTracingServiceConfigurationProxy) throws
+                            PropertyVetoException, TransactionFailure {
+                        if (enabled != null) {
+                            requestTracingServiceConfigurationProxy.enabled(enabled.toString());
+                        }
+                        
+                        if (sampleRate != null) {
+                            requestTracingServiceConfigurationProxy.setSampleRate(sampleRate);
+                        }
+                        if (adaptiveSamplingEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingEnabled(adaptiveSamplingEnabled.toString());
+                        }
+                        if (adaptiveSamplingTargetCount != null) {
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTargetCount(adaptiveSamplingTargetCount);
+                        }
+                        if (adaptiveSamplingTimeValue != null) {
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeValue(adaptiveSamplingTimeValue.toString());
+                        }
+                        if (adaptiveSamplingTimeUnit != null) {
+                            requestTracingServiceConfigurationProxy.setAdaptiveSamplingTimeUnit(adaptiveSamplingTimeUnit);
+                        }
+                        
+                        if (applicationsOnlyEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setApplicationsOnlyEnabled(applicationsOnlyEnabled.toString());
+                        }
+                        if (thresholdValue != null) {
+                            requestTracingServiceConfigurationProxy.setThresholdValue(thresholdValue);
+                        }
+                        if (thresholdUnit != null) {
+                            requestTracingServiceConfigurationProxy.setThresholdUnit(thresholdUnit);
+                        }
+                        if (sampleRateFirstEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setSampleRateFirstEnabled(sampleRateFirstEnabled.toString());
+                        }
+                        
+                        if (traceStoreSize != null) {
+                            requestTracingServiceConfigurationProxy.setTraceStoreSize(traceStoreSize.toString());
+                        }
+                        if (traceStoreTimeout != null) {
+                            requestTracingServiceConfigurationProxy.setTraceStoreTimeout(traceStoreTimeout);
+                        }
+                        if (reservoirSamplingEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setReservoirSamplingEnabled(reservoirSamplingEnabled.toString());
+                        }
+                        
+                        if (historicTraceStoreEnabled != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreEnabled(historicTraceStoreEnabled.toString());
+                        }
+                        if (historicTraceStoreSize != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreSize(historicTraceStoreSize.toString());
+                        }
+                        if (historicTraceStoreTimeout != null) {
+                            requestTracingServiceConfigurationProxy.setHistoricTraceStoreTimeout(historicTraceStoreTimeout);
+                        }
 
-        }
-
-        if (unit != null) {
-            try {
-                if (!unit.equals("NANOSECONDS")
-                        && !unit.equals("MICROSECONDS")
-                        && !unit.equals("MILLISECONDS")
-                        && !unit.equals("SECONDS")
-                        && !unit.equals("MINUTES")
-                        && !unit.equals("HOURS")
-                        && !unit.equals("DAYS")) {
-                    actionReport.failure(logger, unit + " is an invalid time unit");
-                    return result;
-                }
-            } catch (IllegalArgumentException iaf) {
-                actionReport.failure(logger, unit + " is an invalid time unit", iaf);
-                return result;
+                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        return requestTracingServiceConfigurationProxy;
+                    }
+                }, requestTracingServiceConfiguration);
+            } catch (TransactionFailure ex) {
+                actionReport.failure(logger, ex.getCause().getMessage());
+                return;
             }
         }
 
-        return true;
+        if (dynamic) {
+            if (server.isDas()) {
+                if (targetUtil.getConfig(target).isDas()) {
+                    configureDynamically(actionReport);
+                }
+            } else {
+                configureDynamically(actionReport);
+            }
+        }
+    }
+
+    private void configureDynamically(ActionReport actionReport) {
+        service.getExecutionOptions().setEnabled(enabled);
+        
+        if (sampleRate != null) {
+            service.getExecutionOptions().setSampleRate(Double.parseDouble(sampleRate));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.samplerate.success",
+                    "Request Tracing Sample Rate Value is set to {0}.", sampleRate) + "\n");
+        }
+        if (adaptiveSamplingEnabled != null) {
+            service.getExecutionOptions().setAdaptiveSamplingEnabled(adaptiveSamplingEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.enabled.success",
+                    "Request Tracing Adaptive Sampling Enabled Value is set to {0}.", adaptiveSamplingEnabled) + "\n");
+        }
+        if (adaptiveSamplingTargetCount != null) {
+            service.getExecutionOptions().setAdaptiveSamplingTargetCount(Integer.valueOf(adaptiveSamplingTargetCount));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.targetcount.success",
+                    "Request Tracing Adaptive Sampling Target Count is set to {0}.", adaptiveSamplingTargetCount) + "\n");
+        }
+        if (adaptiveSamplingTimeValue != null) {
+            service.getExecutionOptions().setAdaptiveSamplingTimeValue(adaptiveSamplingTimeValue);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.timevalue.success",
+                    "Request Tracing Adaptive Sampling Time Value is set to {0}.", adaptiveSamplingTimeValue) + "\n");
+        }
+        if (adaptiveSamplingTimeUnit != null) {
+            service.getExecutionOptions().setAdaptiveSamplingTimeUnit(TimeUnit.valueOf(adaptiveSamplingTimeUnit));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.adaptivesampling.timeunit.success",
+                    "Request Tracing Adaptive Sampling Time Unit is set to {0}.", adaptiveSamplingTimeUnit) + "\n");
+        }
+        
+        if (applicationsOnlyEnabled != null) {
+            service.getExecutionOptions().setApplicationsOnlyEnabled(applicationsOnlyEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.applicationsonly.success",
+                    "Request Tracing Service Applications Only filter is set to {0}.", applicationsOnlyEnabled) + "\n");
+        }
+        if (thresholdValue != null) {
+            service.getExecutionOptions().setThresholdValue(Long.valueOf(thresholdValue));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",
+                    "Request Tracing Service Threshold Value is set to {0}.", thresholdValue) + "\n");
+        }
+        if (thresholdUnit != null) {
+            service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(thresholdUnit));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdunit.success",
+                    "Request Tracing Service Threshold Unit is set to {0}.", thresholdUnit) + "\n");
+        }
+        if (sampleRateFirstEnabled != null) {
+            service.getExecutionOptions().setSampleRateFirstEnabled(sampleRateFirstEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.sampleratefirst.success",
+                    "Request Tracing Service Sample Rate First Enabled Value is set to {0}.", sampleRateFirstEnabled) + "\n");
+        }
+        
+        if (traceStoreSize != null) {
+            service.getExecutionOptions().setTraceStoreSize(traceStoreSize);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.store.size.success",
+                    "Request Tracing Historic Trace Store Size is set to {0}.", traceStoreSize) + "\n");
+        }
+        if (traceStoreTimeout != null) {
+            service.getExecutionOptions().setTraceStoreTimeout(TimeUtil.setStoreTimeLimit(traceStoreTimeout));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.store.timeout.success",
+                    "Request Tracing Store Timeout is set to {0}.", traceStoreTimeout) + "\n");
+        }
+        if (reservoirSamplingEnabled != null) {
+            service.getExecutionOptions().setReservoirSamplingEnabled(reservoirSamplingEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.reservoirsampling.enabled.success",
+                    "Request Tracing Service Reservoir Sampling Enabled Value is set to {0}.", reservoirSamplingEnabled) + "\n");
+        }
+        
+        if (historicTraceStoreEnabled != null) {
+            service.getExecutionOptions().setHistoricTraceStoreEnabled(historicTraceStoreEnabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historictrace.status.success",
+                    "Request Tracing Historic Trace status is set to {0}.", historicTraceStoreEnabled) + "\n");
+        }
+        if (historicTraceStoreSize != null) {
+            service.getExecutionOptions().setHistoricTraceStoreSize(historicTraceStoreSize);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historictrace.storesize.success",
+                    "Request Tracing Historic Trace Store Size is set to {0}.", historicTraceStoreSize) + "\n");
+        }
+        if (historicTraceStoreTimeout != null) {
+            service.getExecutionOptions().setHistoricTraceStoreTimeout(TimeUtil.setStoreTimeLimit(historicTraceStoreTimeout));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historictrace.timeout.success",
+                    "Request Tracing Historic Trace Store Timeout is set to {0}.", historicTraceStoreTimeout) + "\n");
+        }
+
+        service.bootstrapRequestTracingService();
     }
 }

@@ -67,6 +67,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <module>notification-eventbus-core</module>
         <module>notification-cdi-eventbus-core</module>
         <module>jsr107-repackaged</module>
+        <module>rest-client-tracing</module>
         <module>payara-executor-service</module>
     </modules>
     

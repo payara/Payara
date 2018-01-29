@@ -40,7 +40,7 @@
 package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;
@@ -56,9 +56,9 @@ import java.util.UUID;
  */
 @Service
 @Singleton
-public class RequestEventStore {
+public class RequestTraceSpanStore {
 
-    private ThreadLocal<RequestTrace> eventStore = new ThreadLocal<RequestTrace>() {
+    private ThreadLocal<RequestTrace> spanStore = new ThreadLocal<RequestTrace>() {
         @Override
         protected RequestTrace initialValue() {
             return new RequestTrace();
@@ -67,11 +67,16 @@ public class RequestEventStore {
 
     /**
      * Adds a new event to the request trace
-     * @param requestEvent 
+     * @param payaraSpan 
      */
-    void storeEvent(RequestEvent requestEvent) {       
-        RequestTrace currentTrace = eventStore.get();
-        currentTrace.addEvent(requestEvent);
+    void storeEvent(RequestTraceSpan payaraSpan) {       
+        RequestTrace currentTrace = spanStore.get();
+        currentTrace.addEvent(payaraSpan);
+    }
+    
+    void endTrace() {
+        RequestTrace currentTrace = spanStore.get();
+        currentTrace.endTrace();
     }
 
     /**
@@ -79,14 +84,14 @@ public class RequestEventStore {
      * @return 0 if the trace has not finished
      */
     long getElapsedTime() {
-        return eventStore.get().getElapsedTime();
+        return spanStore.get().getElapsedTime();
     }
 
     /**
      * Clears the stored request trace and
      */
     void flushStore() {
-        eventStore.set(new RequestTrace());
+        spanStore.set(new RequestTrace());
     }
 
     /**
@@ -94,7 +99,7 @@ public class RequestEventStore {
      * @return A JSON-style representation of the request trace
      */
     String getTraceAsString() {
-        return eventStore.get().toString();
+        return spanStore.get().toString();
     }
     
     // test methods
@@ -104,25 +109,21 @@ public class RequestEventStore {
      * @since 4.1.2.173
      */
     public RequestTrace getTrace() {
-        return eventStore.get();
-    }
-
-    /**
-     * Sets a unique identifier for the request trace
-     * @param newID 
-     */
-    void setConverstationID(UUID newID) {
-        RequestTrace rt = eventStore.get();
-        rt.setConversationID(newID);
+        return spanStore.get();
     }
 
     /**
      * Gets the unique identifier for the request trace
      * @return 
      */
-    UUID getConversationID() {
-        RequestTrace rt = eventStore.get();
-        return rt.getConversationID();
+    UUID getTraceID() {
+        RequestTrace trace = spanStore.get();
+        return trace.getTraceId();
+    }
+    
+    void setTraceId(UUID newID) {
+        RequestTrace trace = spanStore.get();
+        trace.setTraceId(newID);
     }
 
     /**
@@ -130,6 +131,6 @@ public class RequestEventStore {
      * @return 
      */
     boolean isTraceInProgress() {
-        return (eventStore.get().isStarted() && !eventStore.get().isCompleted());
+        return (spanStore.get().isStarted() && !spanStore.get().isCompleted());
     }
 }

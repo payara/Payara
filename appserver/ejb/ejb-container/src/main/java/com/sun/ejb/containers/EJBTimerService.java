@@ -76,8 +76,9 @@ import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.ejb.PersistentTimerService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
+import fish.payara.nucleus.requesttracing.domain.EventType;
 import org.glassfish.internal.api.Globals;
 
 /*
@@ -1954,15 +1955,15 @@ public class EJBTimerService {
             }
             // Delegate to Timer Service.
             if (requestTracing != null && requestTracing.isRequestTracingEnabled()){
-                requestTracing.startTrace();
-                RequestEvent re = new RequestEvent("EJBTimer-FIRE");
-                re.addProperty("TimerID", timerId_.toString());
-                requestTracing.traceRequestEvent(re);
+                RequestTraceSpan span = new RequestTraceSpan(EventType.TRACE_START, "executeEjbTimerTask");
+                span.addSpanTag("TimerID", timerId_.toString());
+                
+                requestTracing.startTrace(span);
             }          
             try {
                 timerService_.deliverTimeout(timerId_);
             }finally {
-                if (requestTracing != null && requestTracing.isRequestTracingEnabled() ){
+                if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
                     requestTracing.endTrace();
                 }
                 if (stuckThreads != null){
