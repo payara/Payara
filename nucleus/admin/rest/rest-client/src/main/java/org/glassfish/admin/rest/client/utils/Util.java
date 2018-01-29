@@ -102,9 +102,7 @@ public class Util {
         try {
             for (String key : jo.keySet()) {
                  JsonValue value = jo.get(key);
-                if (null == value.getValueType()) {
-                    map.put(key, value);
-                } else switch (value.getValueType()) {
+                switch (value.getValueType()) {
                     case ARRAY:
                         map.put(key, processJsonArray((JsonArray) value));break;
                     case OBJECT:
@@ -143,8 +141,7 @@ public class Util {
         List results = new ArrayList();
         
         try {
-            for (int i = 0; i < ja.size(); i++) {
-                JsonValue entry = ja.get(i);
+            for (JsonValue entry: ja) {
                 if (null == entry.getValueType()) {
                     results.add(entry);
                 } else switch (entry.getValueType()) {

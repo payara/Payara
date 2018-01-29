@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -224,11 +225,9 @@ class JerseyRestResponse extends RestResponse {
 //                }
             } else if (contentType.startsWith("application/json")) {
                 // Decode JSON
-                JsonReader reader = javax.json.Json.createReader(new StringReader(responseBody));
+                JsonReader reader = Json.createReader(new StringReader(responseBody));
                 JsonObject object = reader.readObject();
-                Map map = JsonUtil.jsonObjectToMap(object);
                 result.put("data", JsonUtil.jsonObjectToMap(object));
-                //result.put("data", JSONUtil.jsonToJava(responseBody));
             } else {
                 // Unsupported Response Format!
                 System.out.println("Unsupported Response Format: '"

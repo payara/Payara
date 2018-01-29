@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.common.gadget;
 
@@ -54,13 +55,11 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.admingui.common.util.JSONUtil;
 import org.glassfish.admingui.connector.GadgetModule;
 import org.glassfish.admin.rest.utils.JsonUtil;
 
@@ -244,7 +243,6 @@ public class GadgetHandlers {
 	handlerCtx.setHandler(oldHandler);
 
 	// Finally, translate the Map to JSON and set the String as an output
-	//handlerCtx.setOutputValue("values", JSONUtil.javaToJSON(outputValues, depth));
         handlerCtx.setOutputValue("values",JsonUtil.getJsonValue(outputValues).toString());
         
 	return result;

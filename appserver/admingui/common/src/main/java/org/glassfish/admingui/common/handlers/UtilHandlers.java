@@ -49,7 +49,6 @@
 package org.glassfish.admingui.common.handlers;
 
 import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.admingui.common.util.JSONUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.admin.rest.utils.JsonUtil;
 
@@ -83,7 +82,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import javax.faces.component.UIViewRoot;
-import javax.json.*;
+
 /**
  *
  * @author Jennifer Chou
@@ -1066,10 +1065,7 @@ public class UtilHandlers {
             @HandlerOutput(name="json", type=String.class)})
     public static void javaToJSON(HandlerContext handlerCtx) {
         Object obj = ((Object) handlerCtx.getInputValue("obj"));
-        int depth = ((Integer) handlerCtx.getInputValue("depth"));
-        String result = JsonUtil.getJsonValue(obj).toString();
         handlerCtx.setOutputValue("json", JsonUtil.getJsonValue(obj).toString());
-        //handlerCtx.setOutputValue("json", JSONUtil.javaToJSON(obj, depth));
     }
     
     @Handler(id="gf.createPropertyString",
