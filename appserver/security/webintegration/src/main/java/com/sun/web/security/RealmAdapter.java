@@ -164,7 +164,7 @@ import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import sun.security.x509.X500Name;
 
 /**
@@ -1452,6 +1452,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             // JSR 196 is enabled for this application
             
             Principal wrapped = null;
+            RequestTraceSpan span = null;
             try {
                 context.fireContainerEvent(BEFORE_AUTHENTICATION, null);
                 
@@ -1465,26 +1466,26 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 }
                 
                 if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-                    RequestEvent re = new RequestEvent("BEFORE JASPIC AUTH");
-                    re.addProperty("AppContext", serverAuthConfig.getAppContext());
-                    re.addProperty("Context", context.getPath());
-                    requestTracing.traceRequestEvent(re);
-                }
+                    span = new RequestTraceSpan("authenticateJaspic");
+                    span.addSpanTag("AppContext", serverAuthConfig.getAppContext());
+                    span.addSpanTag("Context", context.getPath());
                 
-                result = validate(request, response, config, authenticator, calledFromAuthenticate);
+                    result = validate(request, response, config, authenticator, calledFromAuthenticate);
                 
-                if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-                    RequestEvent re = new RequestEvent("AFTER JASPIC AUTH");
-                    re.addProperty("AuthResult", Boolean.toString(result));
+                    span.addSpanTag("AuthResult", Boolean.toString(result));
                     Principal p = requestFacade.getPrincipal();
                     String pName = "null";
                     if (p != null) {
                         pName = p.getName();
                     }
-                    re.addProperty("Principal",pName);
-                    requestTracing.traceRequestEvent(re);
+                    span.addSpanTag("Principal",pName);
+                } else {
+                    result = validate(request, response, config, authenticator, calledFromAuthenticate);
                 }
             } finally {
+                if (requestTracing != null && requestTracing.isRequestTracingEnabled() && span != null) {
+                    requestTracing.traceSpan(span);
+                }
                 SecurityContext.getCurrent().setAdditionalPrincipal(null);
                 context.fireContainerEvent(AFTER_AUTHENTICATION, null);
             }

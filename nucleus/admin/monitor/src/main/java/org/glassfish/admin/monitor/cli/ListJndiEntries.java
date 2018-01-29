@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.monitor.cli;
 
@@ -70,7 +71,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @ExecuteOn(value={RuntimeType.INSTANCE})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, 
                    CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
-                   CommandTarget.CLUSTERED_INSTANCE})
+                   CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 

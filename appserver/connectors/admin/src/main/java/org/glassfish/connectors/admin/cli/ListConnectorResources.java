@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.connectors.admin.cli;
 
@@ -62,7 +63,7 @@ import java.util.Collection;
  * 
  */
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE,
-        CommandTarget.CLUSTERED_INSTANCE })
+        CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @ExecuteOn(value={RuntimeType.DAS})
 @Service(name="list-connector-resources")
 @PerLookup

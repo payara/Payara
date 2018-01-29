@@ -357,7 +357,8 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                     npwo.promptAgain = strings.get("new.adminpw.again", auser);
                     npwo.param._password = true;
                     logger.info(strings.get("new.adminpw.prompt"));
-                    String npw = super.getPassword(npwo, null, true);
+                    char[] npwArr = super.getPassword(npwo, null, true);
+                    String npw = npwArr != null ? new String(npwArr) : null;
                     if (npw == null) {
                         throw new CommandException(strings.get("no.console"));
                     }

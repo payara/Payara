@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
 package fish.payara.nucleus.store;
 
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.MultiMap;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
@@ -72,6 +73,10 @@ public class ClusteredStore implements EventListener {
     @PostConstruct
     public void postConstruct() {
         events.register(this);
+    }
+    
+    public String getInstanceId() {
+        return hzCore.getUUID();
     }
     
     /**
@@ -158,7 +163,7 @@ public class ClusteredStore implements EventListener {
     public void event(Event event) {
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)){
             if (hzCore.isEnabled()) {
-                logger.info("Payara Clustered Store Service Enabled");
+                logger.config("Payara Clustered Store Service Enabled");
             }
         }
     }
@@ -184,4 +189,19 @@ public class ClusteredStore implements EventListener {
         return result;
     }
     
+    /**
+     * Gets the requested MultiMap from Hazelcast. Use this if you want to store a collection in Hazelcast.
+     * @param storeName The MultiMap to get
+     * @return The MultiMap matching the storeName parameter, or null if the MultiMap does not exist
+     */
+    public MultiMap<Serializable, Serializable> getMultiMap(String storeName) {
+        MultiMap<Serializable, Serializable> multiMap = null;
+        if (hzCore.isEnabled()) {
+            multiMap = hzCore.getInstance().getMultiMap(storeName);
+        } 
+        
+        
+        
+        return multiMap;
+    }
 }

@@ -58,7 +58,7 @@ import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpanLog;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -601,8 +601,8 @@ public class JavaEETransactionManagerSimplified
         setCurrentTransaction(tx);
 
         if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
-            RequestEvent requestEvent = constructJTABeginEvent(tx);
-            getRequestTracing().traceRequestEvent(requestEvent);
+            RequestTraceSpanLog spanLog = constructJTABeginSpanLog(tx);
+            getRequestTracing().addSpanLog(spanLog);
         }
         
         return tx;
@@ -889,8 +889,8 @@ public class JavaEETransactionManagerSimplified
             }
 
             if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
-                RequestEvent requestEvent = constructJTAEndEvent(tx);
-                getRequestTracing().traceRequestEvent(requestEvent);
+                RequestTraceSpanLog spanLog = constructJTAEndSpanLog(tx);
+                getRequestTracing().addSpanLog(spanLog);
             }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
@@ -926,8 +926,8 @@ public class JavaEETransactionManagerSimplified
             }
 
             if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
-                RequestEvent requestEvent = constructJTAEndEvent(tx);
-                getRequestTracing().traceRequestEvent(requestEvent);
+                RequestTraceSpanLog spanLog = constructJTAEndSpanLog(tx);
+                getRequestTracing().addSpanLog(spanLog);
             }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
@@ -1298,12 +1298,12 @@ public class JavaEETransactionManagerSimplified
         try {
             Transaction tran = (Transaction) inv.getTransaction();
             if (isTransactionActive(tran)) {
-                List l = getExistingResourceList(inv.getInstance(), inv);
-                if (l == null || l.size() == 0)
+                @SuppressWarnings("unchecked")
+                List<TransactionalResource> l = getExistingResourceList(inv.getInstance(), inv);
+                if (l == null || l.isEmpty())
                     return;
 
                 int flag = (suspend)? XAResource.TMSUSPEND : XAResource.TMSUCCESS;
-                @SuppressWarnings("unchecked")
                 List<TransactionalResource> workingList = new ArrayList<>(l);
                 for(TransactionalResource h : workingList){
                     try{
@@ -1361,19 +1361,20 @@ public class JavaEETransactionManagerSimplified
         try {
             Transaction tran = (Transaction) inv.getTransaction();
             if (isTransactionActive(tran)) {
-                List l = getExistingResourceList(inv.getInstance(), inv);
-                if (l == null || l.size() == 0) return;
-                Iterator it = l.iterator();
+                @SuppressWarnings("unchecked")
+                List<TransactionalResource> l = getExistingResourceList(inv.getInstance(), inv);
+                if (l == null || l.isEmpty()) return;
+
+                List<TransactionalResource> workingList = new ArrayList<>(l);
                 // END IASRI 4705808 TTT002
-                while(it.hasNext()) {
-                    TransactionalResource h = (TransactionalResource) it.next();
+                for(TransactionalResource h : workingList) {
                     try{
                         enlistResource(tran,h);
                     }catch(Exception ex){
                         if (_logger.isLoggable(Level.FINE))
                             _logger.log(Level.WARNING, "enterprise_distributedtx.pooling_excep", ex);
 
-                        it.remove();
+                        l.remove(h);
                         handleResourceError(h,ex,tran);
                     }
                 }
@@ -1610,38 +1611,38 @@ public class JavaEETransactionManagerSimplified
         return tx;
     }
     
-    private RequestEvent constructJTABeginEvent(JavaEETransactionImpl transaction) {
-        RequestEvent requestEvent = new RequestEvent("JTAContextBeginEvent");
+    private RequestTraceSpanLog constructJTABeginSpanLog(JavaEETransactionImpl transaction) {
+        RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jtaContextBeginEvent");
         
-        requestEvent.addProperty("Transaction ID", transaction.getTransactionId());   
-        requestEvent.addProperty("Remaining Timeout", Integer.toString(transaction.getRemainingTimeout()));    
+        spanLog.addLogEntry("Transaction ID", transaction.getTransactionId());   
+        spanLog.addLogEntry("Remaining Timeout", Integer.toString(transaction.getRemainingTimeout()));    
         
-        return requestEvent;
+        return spanLog;
     }
     
-    private RequestEvent constructJTAEndEvent(JavaEETransaction transaction) throws SystemException {
-        RequestEvent requestEvent = new RequestEvent("JTAContextEndEvent");
+    private RequestTraceSpanLog constructJTAEndSpanLog(JavaEETransaction transaction) throws SystemException {
+        RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jtaContextEndEvent");
 
         if (transaction.getClass().equals(JavaEETransactionImpl.class)) {
             JavaEETransactionImpl tx = (JavaEETransactionImpl) transaction;
-            requestEvent.addProperty("Transaction ID", (tx.getTransactionId()));
+            spanLog.addLogEntry("Transaction ID", (tx.getTransactionId()));
         }
         
         // Check if transaction was rolled back or committed
         int status = transaction.getStatus();
         switch (status) {
             case 3:
-                requestEvent.addProperty("Status", "Committed");
+                spanLog.addLogEntry("Status", "Committed");
                 break;
             case 4:
-                requestEvent.addProperty("Status", "Rolled Back");
+                spanLog.addLogEntry("Status", "Rolled Back");
                 break;
             default:
-                requestEvent.addProperty("Status", Integer.toString(status));
+                spanLog.addLogEntry("Status", Integer.toString(status));
                 break;
         }
         
-        return requestEvent;
+        return spanLog;
     }
 
 /****************************************************************************/

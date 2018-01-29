@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package fish.payara.nucleus.util;
 
 import java.io.IOException;
@@ -60,6 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * Clean up to stop a stale file handles remaining open
+ *
  * @author steve
  * @since 4.1.154
  */
@@ -69,7 +69,7 @@ public class CleanupPostBoot implements EventListener {
 
     @Inject
     Events events;
-    
+
     private static Logger logger = Logger.getLogger(CleanupPostBoot.class.getName());
 
     @PostConstruct

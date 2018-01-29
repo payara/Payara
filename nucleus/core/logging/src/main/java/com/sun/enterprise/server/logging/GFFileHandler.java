@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -135,31 +135,31 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
     private String absoluteServerLogName = null;
 
-    private File absoluteFile = null;
+    protected File absoluteFile = null;
 
     private int flushFrequency = 1;
 
-    private int maxHistoryFiles = 10;
+    protected int maxHistoryFiles = 10;
 
 
     private String gffileHandlerFormatter = "";
     private String currentgffileHandlerFormatter = "";
 
-    // Initially the LogRotation will be off until the domain.xml value is read.
+    /** Initially the LogRotation will be off until the domain.xml value is read. */
     private int limitForFileRotation = 0;
 
     private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(5000);
 
-    // Rotation can be done in 3 ways
-    // 1. Based on the Size: Rotate when some Threshold number of bytes are 
-    //    written to server.log
-    // 2. Based on the Time: Rotate ever 'n' minutes, mostly 24 hrs
-    // 3. Rotate now
-    // For mechanisms 2 and 3 we will use this flag. The rotate() will always
-    // be fired from the publish( ) method for consistency
+    /**Rotation can be done in 3 ways: <ol>
+     * <li> Based on the Size: Rotate when some Threshold number of bytes are 
+     *    written to server.log </li>
+     * <li> Based on the Time: Rotate ever 'n' minutes, mostly 24 hrs </li>
+     * <li> Rotate now </li></ol>
+     * For mechanisms 2 and 3 we will use this flag. The rotate() will always
+     * be fired from the publish( ) method for consistency */
     private AtomicBoolean rotationRequested = new AtomicBoolean(false);
     
-    private Object rotationLock = new Object();
+    protected Object rotationLock = new Object();
 
     private static final String LOG_ROTATE_DATE_FORMAT =
             "yyyy-MM-dd'T'HH-mm-ss";
@@ -188,9 +188,10 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     String recordEndMarker;
     String recordFieldSeparator;
     String recordDateFormat;
+    
+    protected String logFileProperty = "";
 
-    String logFileProperty = "";
-
+    @Override
     public void postConstruct() {
 
         LogManager manager = LogManager.getLogManager();
@@ -198,13 +199,13 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
         String filename = evaluateFileName();
 
-        File serverLog = new File(filename);
+        File logFile = new File(filename);
         absoluteServerLogName = filename;
-        if (!serverLog.isAbsolute()) {
-            serverLog = new File(env.getDomainRoot(), filename);
+        if (!logFile.isAbsolute()) {
+            logFile = new File(env.getDomainRoot(), filename);
             absoluteServerLogName = env.getDomainRoot() + File.separator + filename;
         }
-        changeFileName(serverLog);
+        changeFileName(logFile);
 
         // Reading just few lines of log file to get the log fomatter used.
         BufferedReader br = null;
@@ -213,124 +214,105 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         int uniformLogFormatter = 0;
         int otherFormatter = 0;
         boolean mustRotate = false;
-        
-        try {
-            br = new BufferedReader(new FileReader(serverLog));            
-            while ((strLine = br.readLine()) != null) {
-                strLine = strLine.trim();
-                if (!strLine.equals("")) {
-                    if (LogFormatHelper.isUniformFormatLogHeader(strLine)) {  // for ufl formatter
-                        uniformLogFormatter++;
-                    } else if (LogFormatHelper.isODLFormatLogHeader(strLine)) { 
-                        // for ODL formatter
-                        odlFormatter++;
-                    } else {
-                        otherFormatter++;  // for other formatter
-                    }
-
-                    // Rotate on startup for custom log files
-                    if (otherFormatter > 0) {
-                        mustRotate = true;
-                    }
-                    // Read only first log record line and break out of the loop
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            ErrorManager em = getErrorManager();
-            if (em != null) {
-                em.error(e.getMessage(), e, ErrorManager.GENERIC_FAILURE);
-            }
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch(Exception e) {}
-            }
-        }
-
-        if (odlFormatter > 0) {
-            currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
-        } else if (uniformLogFormatter > 0) {
-            currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
-        }
-
-        // start the Queue consumer thread.
-        initializePump();
-        
-        LogRecord lr = new LogRecord(Level.INFO, LogFacade.GF_VERSION_INFO);
-        lr.setParameters(new Object[]{ Version.getFullVersion()});        
-        lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-        lr.setThreadID((int) Thread.currentThread().getId());
-        lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-        EarlyLogHandler.earlyMessages.add(lr);
 
         String propValue = null;
-        propValue = manager.getProperty(cname + ".rotationOnDateChange");
-        boolean rotationOnDateChange = false;
+
+        propValue = manager.getProperty(cname + ".logtoFile");
+        boolean logToFile = false;
+
         if (propValue != null) {
-            rotationOnDateChange = Boolean.parseBoolean(propValue);
+            logToFile = Boolean.parseBoolean(propValue);
         }
-        if (rotationOnDateChange) {
 
-            dayBasedFileRotation = true;
-
-            Long rotationTimeLimitValue = 0L;
-
-            int MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
-            Date date = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
-
-            long systime = System.currentTimeMillis();
-            String nextDate = dateFormat.format(date.getTime() + MILLIS_IN_DAY);
-            Date nextDay = null;
+        if (logToFile) {
             try {
-                nextDay = dateFormat.parse(nextDate);
-            } catch (ParseException e) {
-                nextDay = new Date();
-                lr = new LogRecord(Level.WARNING, LogFacade.DATE_PARSING_FAILED);
-                lr.setParameters(new Object[]{nextDate});
-                lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-                lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-                EarlyLogHandler.earlyMessages.add(lr);
-            }
-            long nextsystime = nextDay.getTime();
+                br = new BufferedReader(new FileReader(logFile));
+                while ((strLine = br.readLine()) != null) {
+                    strLine = strLine.trim();
+                    if (!strLine.equals("")) {
+                        if (LogFormatHelper.isUniformFormatLogHeader(strLine)) {  // for ufl formatter
+                            uniformLogFormatter++;
+                        } else if (LogFormatHelper.isODLFormatLogHeader(strLine)) {
+                            // for ODL formatter
+                            odlFormatter++;
+                        } else {
+                            otherFormatter++;  // for other formatter
+                        }
 
-            rotationTimeLimitValue = nextsystime - systime;
+                        // Rotate on startup for custom log files
+                        if (otherFormatter > 0) {
+                            mustRotate = true;
+                        }
+                        // Read only first log record line and break out of the loop
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                ErrorManager em = getErrorManager();
+                if (em != null) {
+                    em.error(e.getMessage(), e, ErrorManager.GENERIC_FAILURE);
+                }
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (Exception e) {
+                    }
+                }
+            }
+
+            if (odlFormatter > 0) {
+                currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
+            } else if (uniformLogFormatter > 0) {
+                currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
+            }
+
+            // start the Queue consumer thread.
+            initializePump();
+
+            LogRecord lr = new LogRecord(Level.INFO, LogFacade.GF_VERSION_INFO);
+            lr.setParameters(new Object[]{Version.getFullVersion()});
+            lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+            lr.setThreadID((int) Thread.currentThread().getId());
+            lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+            EarlyLogHandler.earlyMessages.add(lr);
+
+            propValue = manager.getProperty(cname + ".rotationOnDateChange");
+            boolean rotationOnDateChange = false;
+            if (propValue != null) {
+                rotationOnDateChange = Boolean.parseBoolean(propValue);
+            }
+            if (rotationOnDateChange) {
+
+                dayBasedFileRotation = true;
+
+                Long rotationTimeLimitValue = 0L;
+
+                int MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
+                Date date = new Date();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
+
+                long systime = System.currentTimeMillis();
+                String nextDate = dateFormat.format(date.getTime() + MILLIS_IN_DAY);
+                Date nextDay = null;
+                try {
+                    nextDay = dateFormat.parse(nextDate);
+                } catch (ParseException e) {
+                    nextDay = new Date();
+                    lr = new LogRecord(Level.WARNING, LogFacade.DATE_PARSING_FAILED);
+                    lr.setParameters(new Object[]{nextDate});
+                    lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+                    lr.setThreadID((int) Thread.currentThread().getId());
+                    lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+                    EarlyLogHandler.earlyMessages.add(lr);
+                }
+                long nextsystime = nextDay.getTime();
+
+                rotationTimeLimitValue = nextsystime - systime;
 
             Task rotationTask = new Task() {
+                @Override
                 public Object run() {
-                    rotate();
-                    return null;
-                }
-            };
-
-            LogRotationTimer.getInstance().startTimer(
-                    new LogRotationTimerTask(rotationTask,
-                            rotationTimeLimitValue / 60000));
-
-        } else {
-
-            Long rotationTimeLimitValue = 0L;
-            try {
-                propValue = manager.getProperty(cname + ".rotationTimelimitInMinutes");
-                if (propValue != null) {
-                    rotationTimeLimitValue = Long.parseLong(propValue);                    
-                }
-            } catch (NumberFormatException e) {
-                lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-                lr.setParameters(new Object[]{propValue, "rotationTimelimitInMinutes"});
-                lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-                lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-                EarlyLogHandler.earlyMessages.add(lr);
-            }
-
-            if (rotationTimeLimitValue > 0) {
-
-                Task rotationTask = new Task() {
-                    public Object run() {
                         rotate();
                         return null;
                     }
@@ -338,128 +320,160 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
                 LogRotationTimer.getInstance().startTimer(
                         new LogRotationTimerTask(rotationTask,
-                                rotationTimeLimitValue));
-            } 
-        }
+                                rotationTimeLimitValue / 60000));
 
-        // Also honor the size based rotation if configured.
-        Integer rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
-        try {
-            propValue = manager.getProperty(cname + ".rotationLimitInBytes");
-            if (propValue != null) {
-                rotationLimitAttrValue = Integer.parseInt(propValue);
+            } else {
+
+                Long rotationTimeLimitValue = 0L;
+                try {
+                    propValue = manager.getProperty(cname + ".rotationTimelimitInMinutes");
+                    if (propValue != null) {
+                        rotationTimeLimitValue = Long.parseLong(propValue);
+                    }
+                } catch (NumberFormatException e) {
+                    lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+                    lr.setParameters(new Object[]{propValue, "rotationTimelimitInMinutes"});
+                    lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+                    lr.setThreadID((int) Thread.currentThread().getId());
+                    lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+                    EarlyLogHandler.earlyMessages.add(lr);
+                }
+
+                if (rotationTimeLimitValue > 0) {
+
+                    Task rotationTask = new Task() {
+                        public Object run() {
+                            rotate();
+                            return null;
+                        }
+                    };
+
+                    LogRotationTimer.getInstance().startTimer(
+                            new LogRotationTimerTask(rotationTask,
+                                    rotationTimeLimitValue));
+                }
             }
-        } catch (NumberFormatException e) {
-            lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-            lr.setParameters(new Object[]{propValue, "rotationLimitInBytes"});
-            lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-            lr.setThreadID((int) Thread.currentThread().getId());
-            lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-            EarlyLogHandler.earlyMessages.add(lr);
-        }
-        // We set the LogRotation limit here. The rotation limit is the
-        // Threshold for the number of bytes in the log file after which
-        // it will be rotated.
-        if (rotationLimitAttrValue >= MINIMUM_ROTATION_LIMIT_VALUE || rotationLimitAttrValue == DISABLE_LOG_FILE_ROTATION_VALUE ) {
-            setLimitForRotation(rotationLimitAttrValue);        
-        }
 
-        //setLevel(Level.ALL);
-        propValue = manager.getProperty(cname + ".flushFrequency");
-        if (propValue != null) {
+            // Also honor the size based rotation if configured.
+            Integer rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
             try {
-                flushFrequency = Integer.parseInt(propValue);
+                propValue = manager.getProperty(cname + ".rotationLimitInBytes");
+                if (propValue != null) {
+                    rotationLimitAttrValue = Integer.parseInt(propValue);
+                }
             } catch (NumberFormatException e) {
                 lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-                lr.setParameters(new Object[]{propValue, "flushFrequency"});
+                lr.setParameters(new Object[]{propValue, "rotationLimitInBytes"});
                 lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
                 lr.setThreadID((int) Thread.currentThread().getId());
                 lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
                 EarlyLogHandler.earlyMessages.add(lr);
             }
-        }
-        if (flushFrequency <= 0)
-            flushFrequency = 1;
-
-        propValue = manager.getProperty(cname + ".maxHistoryFiles");
-        try {
-            if (propValue != null) {
-                maxHistoryFiles = Integer.parseInt(propValue);
+            // We set the LogRotation limit here. The rotation limit is the
+            // Threshold for the number of bytes in the log file after which
+            // it will be rotated.
+            if (rotationLimitAttrValue >= MINIMUM_ROTATION_LIMIT_VALUE || rotationLimitAttrValue == DISABLE_LOG_FILE_ROTATION_VALUE) {
+                setLimitForRotation(rotationLimitAttrValue);
             }
-        } catch (NumberFormatException e) {
-            lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-            lr.setParameters(new Object[]{propValue, "maxHistoryFiles"});
+
+            //setLevel(Level.ALL);
+            propValue = manager.getProperty(cname + ".flushFrequency");
+            if (propValue != null) {
+                try {
+                    flushFrequency = Integer.parseInt(propValue);
+                } catch (NumberFormatException e) {
+                    lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+                    lr.setParameters(new Object[]{propValue, "flushFrequency"});
+                    lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+                    lr.setThreadID((int) Thread.currentThread().getId());
+                    lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+                    EarlyLogHandler.earlyMessages.add(lr);
+                }
+            }
+            if (flushFrequency <= 0) {
+                flushFrequency = 1;
+            }
+
+            propValue = manager.getProperty(cname + ".maxHistoryFiles");
+            try {
+                if (propValue != null) {
+                    maxHistoryFiles = Integer.parseInt(propValue);
+                }
+            } catch (NumberFormatException e) {
+                lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+                lr.setParameters(new Object[]{propValue, "maxHistoryFiles"});
+                lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+                lr.setThreadID((int) Thread.currentThread().getId());
+                lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+                EarlyLogHandler.earlyMessages.add(lr);
+            }
+
+            if (maxHistoryFiles < 0) {
+                maxHistoryFiles = 10;
+            }
+
+            propValue = manager.getProperty(cname + ".compressOnRotation");
+            boolean compressionOnRotation = false;
+            if (propValue != null) {
+                compressionOnRotation = Boolean.parseBoolean(propValue);
+            }
+            if (compressionOnRotation) {
+                compressLogs = true;
+            }
+
+            String formatterName = manager.getProperty(cname + ".formatter");
+            formatterName = (formatterName == null) ? DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME : formatterName;
+
+            // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
+            // log messages logged under same server.log file.
+            gffileHandlerFormatter = formatterName;
+            if (mustRotate) {
+                rotate();
+            } else if (gffileHandlerFormatter != null
+                    && !gffileHandlerFormatter
+                            .equals(currentgffileHandlerFormatter)) {
+                rotate();
+            }
+
+            String excludeFields = manager.getProperty(LogManagerService.EXCLUDE_FIELDS_PROPERTY);
+            boolean multiLineMode = Boolean.parseBoolean(manager.getProperty(LogManagerService.MULTI_LINE_MODE_PROPERTY));
+
+            if (UniformLogFormatter.class.getName().equals(formatterName)) {
+                configureUniformLogFormatter(excludeFields, multiLineMode);
+            } else if (ODLLogFormatter.class.getName().equals(formatterName)) {
+                configureODLFormatter(excludeFields, multiLineMode);
+            } else if (JSONLogFormatter.class.getName().equals(formatterName)) {
+                configureJSONFormatter(excludeFields, multiLineMode);
+            } else {
+                // Custom formatter is configured in logging.properties
+                // Check if the user specified formatter is in play else
+                // log an error message
+                Formatter currentFormatter = this.getFormatter();
+                if (currentFormatter == null || !currentFormatter.getClass().getName().equals(formatterName)) {
+                    Formatter formatter = findFormatterService(formatterName);
+                    if (formatter == null) {
+                        lr = new LogRecord(Level.SEVERE, LogFacade.INVALID_FORMATTER_CLASS_NAME);
+                        lr.setParameters(new Object[]{formatterName});
+                        lr.setThreadID((int) Thread.currentThread().getId());
+                        lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+                        lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+                        EarlyLogHandler.earlyMessages.add(lr);
+                        // Fall back to the GlassFish default
+                        configureDefaultFormatter(excludeFields, multiLineMode);
+                    } else {
+                        setFormatter(formatter);
+                    }
+                }
+            }
+
+            formatterName = this.getFormatter().getClass().getName();
+            lr = new LogRecord(Level.INFO, LogFacade.LOG_FORMATTER_INFO);
+            lr.setParameters(new Object[]{formatterName});
             lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
             lr.setThreadID((int) Thread.currentThread().getId());
             lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
             EarlyLogHandler.earlyMessages.add(lr);
         }
-
-        if (maxHistoryFiles < 0)
-            maxHistoryFiles = 10;
-
-        propValue = manager.getProperty(cname + ".compressOnRotation");
-        boolean compressionOnRotation = false;
-        if (propValue != null) {
-            compressionOnRotation = Boolean.parseBoolean(propValue);
-        }
-        if (compressionOnRotation) {
-            compressLogs = true;
-        }
-
-        String formatterName = manager.getProperty(cname + ".formatter");
-        formatterName = (formatterName == null) ? DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME : formatterName; 
-        
-        // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
-        // log messages logged under same server.log file.
-        gffileHandlerFormatter = formatterName;
-        if (mustRotate) {
-            rotate();
-        } else if (gffileHandlerFormatter != null
-                && !gffileHandlerFormatter
-                        .equals(currentgffileHandlerFormatter)) {
-            rotate();
-        }
-        
-        String excludeFields = manager.getProperty(LogManagerService.EXCLUDE_FIELDS_PROPERTY);
-        boolean multiLineMode = Boolean.parseBoolean(manager.getProperty(LogManagerService.MULTI_LINE_MODE_PROPERTY));
-                
-        if (UniformLogFormatter.class.getName().equals(formatterName)) {
-            configureUniformLogFormatter(excludeFields, multiLineMode);
-        } else if (ODLLogFormatter.class.getName().equals(formatterName)) {
-            configureODLFormatter(excludeFields, multiLineMode);
-        } else if (JSONLogFormatter.class.getName().equals(formatterName)) {
-            configureJSONFormatter(excludeFields,multiLineMode);
-        }
-        else {
-            // Custom formatter is configured in logging.properties
-            // Check if the user specified formatter is in play else
-            // log an error message
-            Formatter currentFormatter = this.getFormatter();
-            if (currentFormatter == null || !currentFormatter.getClass().getName().equals(formatterName)) {
-                Formatter formatter = findFormatterService(formatterName);
-                if (formatter == null) {
-                    lr = new LogRecord(Level.SEVERE, LogFacade.INVALID_FORMATTER_CLASS_NAME);
-                    lr.setParameters(new Object[]{formatterName});
-                    lr.setThreadID((int) Thread.currentThread().getId());
-                    lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-                    lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-                    EarlyLogHandler.earlyMessages.add(lr);
-                    // Fall back to the GlassFish default
-                    configureDefaultFormatter(excludeFields, multiLineMode);                                    
-                } else {
-                    setFormatter(formatter);
-                }
-            }
-        }
-        
-        formatterName = this.getFormatter().getClass().getName();
-        lr = new LogRecord(Level.INFO, LogFacade.LOG_FORMATTER_INFO);        
-        lr .setParameters(new Object[] {formatterName});
-        lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-        lr.setThreadID((int) Thread.currentThread().getId());
-        lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-        EarlyLogHandler.earlyMessages.add(lr);
     }
 
     protected String evaluateFileName() {
@@ -562,6 +576,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     
     void initializePump() {
         pump = new Thread() {
+            @Override
             public void run() {
                 while (!done.isSignalled()) {
                     try {
@@ -578,6 +593,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         pump.start();        
     }
 
+    @Override
     public void preDestroy() {
         // stop the Queue consummer thread.
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
@@ -637,6 +653,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
      * A simple getter to access the current log file written by
      * this FileHandler.
      */
+    @Override
     public File getCurrentLogFile() {
         return absoluteFile;
     }
@@ -663,11 +680,11 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         formatterClass.setLogEventBroadcaster(this);
     }
 
-    // NOTE: This private class is copied from java.util.logging.FileHandler
-    // A metered stream is a subclass of OutputStream that
-    //   (a) forwards all its output to a target stream
-    //   (b) keeps track of how many bytes have been written
-
+    /** NOTE: This private class is copied from java.util.logging.FileHandler
+     * A metered stream is a subclass of OutputStream that
+     *   (a) forwards all its output to a target stream
+     *   (b) keeps track of how many bytes have been written
+     */ 
     private static final class MeteredStream extends OutputStream {
 
         private volatile boolean isOpen = false;
@@ -681,25 +698,30 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             isOpen = true;
         }
 
+        @Override
         public void write(int b) throws IOException {
             out.write(b);
             written++;
         }
 
+        @Override
         public void write(byte buff[]) throws IOException {
             out.write(buff);
             written += buff.length;
         }
 
+        @Override
         public void write(byte buff[], int off, int len) throws IOException {
             out.write(buff, off, len);
             written += len;
         }
 
+        @Override
         public void flush() throws IOException {
             out.flush();
         }
 
+        @Override
         public void close() throws IOException {
             if (isOpen) {
                 isOpen = false;
@@ -747,13 +769,14 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         
         synchronized (rotationLock) {
             File dir = absoluteFile.getParentFile();
+            String logFileName = absoluteFile.getName();
             if (dir == null)
                 return;
             File[] fset = dir.listFiles();
             ArrayList candidates = new ArrayList();
             for (int i = 0; fset != null && i < fset.length; i++) {
-                if (!LOG_FILE_NAME.equals(fset[i].getName()) && fset[i].isFile()
-                        && fset[i].getName().startsWith(LOG_FILE_NAME)) {
+                if (!logFileName.equals(fset[i].getName()) && fset[i].isFile()
+                        && fset[i].getName().startsWith(logFileName)) {
                     candidates.add(fset[i].getAbsolutePath());
                 }
             }
@@ -787,6 +810,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         final GFFileHandler thisInstance = this;
         java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run() {
                         synchronized (thisInstance.rotationLock) {
                             if (thisInstance.meter != null
@@ -877,7 +901,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     public void log() {
 
         LogRecord record;
-        
+
         // take is blocking so we take one record off the queue
         try {
             record = pendingRecords.take();
@@ -905,12 +929,12 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                 rotationRequested.set(false);
             }
         }
-
     }
 
     /**
      * Publishes the logrecord storing it in our queue
      */
+    @Override
     public void publish(LogRecord record) {
 
         // the queue has shutdown, we are not processing any more records
@@ -977,6 +1001,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     }
     
     
+    @Override
     public void informLogEventListeners(LogEvent logEvent) {
         for (LogEventListener listener : logEventListeners) {
             listener.messageLogged(logEvent);

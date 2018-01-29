@@ -47,8 +47,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.xml.ws.api.server.Adapter;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
@@ -173,13 +172,12 @@ public class JAXWSServlet extends HttpServlet {
 
         // lookup registered URLs and get the appropriate adapter;
         // pass control to the adapter
+        RequestTraceSpan span = null;
         try {
             ServletAdapter targetEndpoint = (ServletAdapter) getEndpointFor(request);
             if (targetEndpoint != null) {
                 if (requestTracing.isRequestTracingEnabled()) {
-                    RequestEvent requestEvent = constructWsRequestEvent(request,
-                            targetEndpoint.getAddress());
-                    requestTracing.traceRequestEvent(requestEvent);
+                    span = constructWsRequestSpan(request, targetEndpoint.getAddress());
                 }
                 targetEndpoint.handle(getServletContext(), request, response);
             } else {
@@ -189,23 +187,27 @@ public class JAXWSServlet extends HttpServlet {
             ServletException se = new ServletException();
             se.initCause(t);
             throw se;
+        } finally {
+            if (requestTracing.isRequestTracingEnabled() && span != null) {
+                requestTracing.traceSpan(span);
+            }
         }
         endedEvent(endpoint.getEndpointAddressPath());
     }
 
-    private RequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
+    private RequestTraceSpan constructWsRequestSpan(HttpServletRequest httpServletRequest,
                                                        URI uri) {
-        RequestEvent requestEvent  = new RequestEvent("SoapWSTrace");
-        requestEvent.addProperty("URI",uri.toString());
-        requestEvent.addProperty("URL",httpServletRequest.getRequestURL().toString());
+        RequestTraceSpan span  = new RequestTraceSpan("processSoapWebserviceRequest");
+        span.addSpanTag("URI",uri.toString());
+        span.addSpanTag("URL",httpServletRequest.getRequestURL().toString());
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            requestEvent.addProperty(headerName, headers.toString());
+            span.addSpanTag(headerName, headers.toString());
         }
-        requestEvent.addProperty("Method",httpServletRequest.getMethod());
-        return requestEvent;
+        span.addSpanTag("Method",httpServletRequest.getMethod());
+        return span;
     }
 
     @Probe(name = "startedEvent")

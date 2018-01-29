@@ -3,7 +3,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -22,7 +22,7 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>5.Beta2-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>requesttracing-core</artifactId>
@@ -68,7 +68,9 @@
                                     fish.payara.nucleus.requesttracing,
                                     fish.payara.nucleus.requesttracing.domain,
                                     fish.payara.nucleus.requesttracing.domain.execoptions,
-                                    fish.payara.nucleus.requesttracing.configuration
+                                    fish.payara.nucleus.requesttracing.configuration,
+                                    fish.payara.nucleus.requesttracing.store,
+                                    fish.payara.nucleus.requesttracing.events
                                 </Export-Package>
                             </instructions>
                         </configuration>
@@ -106,6 +108,11 @@
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>payara-executor-service</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

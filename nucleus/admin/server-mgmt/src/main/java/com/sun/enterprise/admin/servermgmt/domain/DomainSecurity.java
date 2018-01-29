@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.admin.servermgmt.domain;
@@ -43,14 +45,13 @@ package com.sun.enterprise.admin.servermgmt.domain;
 import java.io.File;
 import java.io.IOException;
 
-import org.glassfish.security.common.FileRealmHelper;
-
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.MasterPasswordFileManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
-import com.sun.enterprise.admin.util.AdminConstants;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.util.i18n.StringManager;
+
+import org.glassfish.security.common.FileRealmHelper;
 
 public class DomainSecurity extends MasterPasswordFileManager {
 
@@ -104,9 +105,12 @@ public class DomainSecurity extends MasterPasswordFileManager {
      */
     void createSSLCertificateDatabase(File configDir, DomainConfig config, String masterPassword)
             throws RepositoryException {
-        createKeyStore(new File(configDir, DomainConstants.KEYSTORE_FILE), config, masterPassword);
-        changeKeystorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, new File(configDir, DomainConstants.TRUSTSTORE_FILE));
-        copyCertificates(configDir, config, masterPassword);
+        File trustStore = new File(configDir, DomainConstants.TRUSTSTORE_FILE);
+    	File keyStore = new File(configDir, DomainConstants.KEYSTORE_FILE);
+        createKeyStore(keyStore, config, masterPassword);
+        changeKeystorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, trustStore);
+        copyCertificates(keyStore, trustStore, config, masterPassword);
+        copyCertificatesFromJdk(trustStore, masterPassword);
     }
 
     /**

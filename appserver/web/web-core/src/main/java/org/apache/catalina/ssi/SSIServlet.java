@@ -231,28 +231,29 @@ public class SSIServlet extends HttpServlet {
         }
 
         URLConnection resourceInfo = resource.openConnection();
-        InputStream resourceInputStream = resourceInfo.getInputStream();
-        String encoding = resourceInfo.getContentEncoding();
-        if (encoding == null) {
-            encoding = inputEncoding;
-        }
-        InputStreamReader isr;
-        if (encoding == null) {
-            isr = new InputStreamReader(resourceInputStream);
-        } else {
-            isr = new InputStreamReader(resourceInputStream, encoding);
-        }
-        BufferedReader bufferedReader = new BufferedReader(isr);
-
-        long lastModified = ssiProcessor.process(bufferedReader,
-                resourceInfo.getLastModified(), printWriter);
-        if (lastModified > 0) {
-            res.setDateHeader("last-modified", lastModified);
-        }
-        if (buffered) {
-            printWriter.flush();
-            String text = stringWriter.toString();
-            res.getWriter().write(text);
+        try (InputStream resourceInputStream = resourceInfo.getInputStream()) {
+            String encoding = resourceInfo.getContentEncoding();
+            if (encoding == null) {
+                encoding = inputEncoding;
+            }
+            InputStreamReader isr;
+            if (encoding == null) {
+                isr = new InputStreamReader(resourceInputStream);
+            } else {
+                isr = new InputStreamReader(resourceInputStream, encoding);
+            }
+            try (BufferedReader bufferedReader = new BufferedReader(isr)) { //this should clode isr as well
+                long lastModified = ssiProcessor.process(bufferedReader,
+                  resourceInfo.getLastModified(), printWriter);
+                if (lastModified > 0) {
+                    res.setDateHeader("last-modified", lastModified);
+                }
+                if (buffered) {
+                    printWriter.flush();
+                    String text = stringWriter.toString();
+                    res.getWriter().write(text);
+                }
+            }
         }
     }
 }

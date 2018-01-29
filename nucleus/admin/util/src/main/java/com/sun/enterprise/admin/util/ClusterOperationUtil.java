@@ -355,8 +355,9 @@ public class ClusterOperationUtil {
                     CommandTarget.DOMAIN.isValid(habitat, t))
                 continue;
             parameters.set("target", t);
+            List<Server> instances = targetService.getInstances(t);
             ActionReport.ExitCode returnValue = replicateCommand(commandName,
-                    failPolicy, offlinePolicy, neverStartedPolicy, targetService.getInstances(t), context, parameters, habitat,
+                    failPolicy, offlinePolicy, neverStartedPolicy, instances, context, parameters, habitat,
                     intermediateDownloadDir);
             if(!returnValue.equals(ActionReport.ExitCode.SUCCESS)) {
                 result = returnValue;

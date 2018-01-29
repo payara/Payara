@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.cli.resources;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.beans.PropertyVetoException;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -77,7 +78,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
  * @author Jennifer Chou, Jagadish Ramu
  *
  */
-@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean=Resources.class,
                 opType=RestEndpoint.OpType.POST,
@@ -181,6 +182,14 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
                     svr.createResourceRef(enabled.toString(), refName);
                 }
             }
+            // create new ResourceRef for all instances of DG, if it's a dg
+            if (refContainer instanceof DeploymentGroup && isElegibleResource(refName)) {
+                DeploymentGroup dg = (DeploymentGroup)refContainer;
+                for (Server svr : dg.getInstances()) {
+                    svr.createResourceRef(enabled.toString(), refName);
+                }
+            }
+            
             ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
             report.setMessage(localStrings.getLocalString("create.resource.ref.success",
                     "resource-ref {0} created successfully.", refName));
@@ -269,6 +278,10 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             if (server != null) {
                 return server;
             }
+            DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+            if (dg != null) {
+                return dg;
+            }
             Cluster cluster = domain.getClusterNamed(target);
             return cluster;
         } else {
@@ -328,6 +341,8 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             return validTarget.contains(CommandTarget.CLUSTERED_INSTANCE.name());
         } else if (domain.getNodeNamed(target) != null) {
             return validTarget.contains(CommandTarget.NODE.name());
+        } else if (domain.getDeploymentGroupNamed(target) != null) {
+            return validTarget.contains(CommandTarget.DEPLOYMENT_GROUP.name());
         }
 
         return false;

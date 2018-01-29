@@ -63,7 +63,7 @@ import java.util.Properties;
  * @author jonathan coustick
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @Service(name = "bootstrap-monitoring")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup

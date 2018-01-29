@@ -45,12 +45,7 @@ import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;  
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 
 import org.glassfish.admingui.common.util.GuiUtil;
@@ -351,16 +346,17 @@ public class SecurityHandler {
 	    @HandlerInput(name="Password", type=String.class, required=true),
 	    @HandlerInput(name="CreateNew", type=String.class, required=true)})
     public static void saveUser(HandlerContext handlerCtx) {
+        char[] password = null;
         try {
             String realmName = (String) handlerCtx.getInputValue("Realm");
             String configName = (String) handlerCtx.getInputValue("configName");
             String grouplist = (String)handlerCtx.getInputValue("GroupList");
-            String password = (String)handlerCtx.getInputValue("Password");
+            password = ((String)handlerCtx.getInputValue("Password")).toCharArray();
             String userid = (String)handlerCtx.getInputValue("UserId");
             String createNew = (String)handlerCtx.getInputValue("CreateNew");
 
             if (password == null) {
-                password = "";
+                password = "".toCharArray();
             }
             // before save user synchronize realm, for the case if keyfile is changed
             String tmpEP = GuiUtil.getSessionValue("REST_URL") + "/configs/config/"
@@ -378,7 +374,8 @@ public class SecurityHandler {
 
             attrs = new HashMap<>();
             attrs.put("id", userid);
-            attrs.put("userpassword", password);
+            // Converting the password back to string as this is passed directly as payload in REST request
+            attrs.put("userpassword", new String(password));
             attrs.put("target", configName);
             if (grouplist != null && grouplist.contains(",")) {
                 grouplist = grouplist.replace(',', ':');
@@ -391,6 +388,11 @@ public class SecurityHandler {
             RestUtil.restRequest(endpoint, attrs, "POST", null, true, true );
         } catch(Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
+        }
+        finally {
+            if (password != null) {
+                Arrays.fill(password, ' ');
+            }
         }
     }
 

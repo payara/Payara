@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.jta.admin.cli;
 
@@ -69,7 +70,7 @@ import org.glassfish.api.admin.RuntimeType;
 
 
 @Service(name = "unfreeze-transaction-service")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @ExecuteOn(RuntimeType.INSTANCE)
 @PerLookup
 @I18n("unfreeze.transaction.service")
