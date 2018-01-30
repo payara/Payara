@@ -75,7 +75,7 @@ import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpanLog;
 
 /**
  * 
@@ -1790,9 +1790,10 @@ public class JBatchJDBCPersistenceManager implements
 		jobExecution.setCreateTime(now);
 		jobExecution.setLastUpdateTime(now);
                 
-                if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-                    RequestEvent requestEvent = constructJBatchExecutionEvent(jobExecution);
-                    requestTracing.traceRequestEvent(requestEvent);
+                if (requestTracing != null && requestTracing.isRequestTracingEnabled() 
+                        && requestTracing.isTraceInProgress()) {
+                    RequestTraceSpanLog spanLog = constructJBatchExecutionSpanLog(jobExecution);
+                    requestTracing.addSpanLog(spanLog);
                 }
                 
 		return jobExecution;
@@ -2805,24 +2806,24 @@ public class JBatchJDBCPersistenceManager implements
 
 	}
         
-    private RequestEvent constructJBatchExecutionEvent(RuntimeJobExecution jobExecution) {
-        RequestEvent requestEvent = new RequestEvent("JBatchExecutionContextEvent");
+    private RequestTraceSpanLog constructJBatchExecutionSpanLog(RuntimeJobExecution jobExecution) {
+        RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jBatchExecutionContextEvent");
         
         try {
-            requestEvent.addProperty("Execution ID", Long.toString(jobExecution.getExecutionId()));
-            requestEvent.addProperty("Job ID", Long.toString(jobExecution.getInstanceId()));
-            requestEvent.addProperty("Job Name", jobExecution.getJobInstance().getJobName());
-            requestEvent.addProperty("Batch Status", jobExecution.getJobOperatorJobExecution().getBatchStatus().toString());
+            spanLog.addLogEntry("Execution ID", Long.toString(jobExecution.getExecutionId()));
+            spanLog.addLogEntry("Job ID", Long.toString(jobExecution.getInstanceId()));
+            spanLog.addLogEntry("Job Name", jobExecution.getJobInstance().getJobName());
+            spanLog.addLogEntry("Batch Status", jobExecution.getJobOperatorJobExecution().getBatchStatus().toString());
 
             if (jobExecution.getJobParameters() != null) {
-                requestEvent.addProperty("Job Parameters", jobExecution.getJobParameters().toString());
+                spanLog.addLogEntry("Job Parameters", jobExecution.getJobParameters().toString());
             } else {
-                requestEvent.addProperty("Job Parameters", "null");
+                spanLog.addLogEntry("Job Parameters", "null");
             } 
         } catch (NullPointerException e) {
             logger.log(Level.INFO, "NullPointerException when creating request tracing JBatchExecutionContextEvent");
         }                   
         
-        return requestEvent;
+        return spanLog;
     }
 }

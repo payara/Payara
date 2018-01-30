@@ -39,10 +39,10 @@
 package fish.payara.nucleus.requesttracing.admin;
 
 import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.requesttracing.HistoricRequestTracingEventStore;
+import fish.payara.nucleus.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-import fish.payara.nucleus.requesttracing.domain.HistoricRequestTracingEvent;
+import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -62,17 +62,17 @@ import java.util.*;
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
-@Service(name = "list-historic-requesttraces")
+@Service(name = "list-requesttraces")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
 @I18n("requesttracing.configure")
 @RestEndpoints({
         @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "list-historic-requesttraces",
-                description = "List slowest request traces stored historically.")
+                path = "list-requesttraces",
+                description = "List slowest request traces stored.")
 })
-public class ListHistoricRequestTraces implements AdminCommand {
+public class ListRequestTraces implements AdminCommand {
 
     private static final String headers[] = {"Occurring Time", "Elapsed Time", "Traced Message"};
 
@@ -84,12 +84,12 @@ public class ListHistoricRequestTraces implements AdminCommand {
 
     @Param(name = "first", optional = true)
     private Integer first;
+    
+    @Param(name = "historicTraces", optional = true, alias = "historictraces")
+    private Boolean historicTraces;
 
     @Inject
     private RequestTracingService service;
-
-    @Inject
-    private HistoricRequestTracingEventStore eventStore;
 
     @Inject
     ServerEnvironment server;
@@ -99,10 +99,9 @@ public class ListHistoricRequestTraces implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
 
         RequestTracingExecutionOptions executionOptions = service.getExecutionOptions();
-        if (!executionOptions.isHistoricalTraceEnabled()) {
-            actionReport.setMessage("Request Tracing Historical Trace is not enabled!");
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+        if ((historicTraces == null || historicTraces) && !executionOptions.isHistoricTraceStoreEnabled()) {
+            actionReport.setMessage("Request Trace Store is not enabled!");
+            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
         else {
             if (server.isDas()) {
@@ -120,28 +119,38 @@ public class ListHistoricRequestTraces implements AdminCommand {
         RequestTracingExecutionOptions executionOptions = service.getExecutionOptions();
 
         if (first == null) {
-            first = executionOptions.getHistoricalTraceStoreSize();
+            first = executionOptions.getTraceStoreSize();
         }
+        
+        RequestTraceStoreInterface eventStore;
+        
+        if (historicTraces == null || historicTraces) {
+            eventStore = service.getHistoricRequestTraceStore();
+        } else {
+            eventStore = service.getRequestTraceStore();
+        }
+        
+        
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         Properties extrasProps = new Properties();
-        List<Map<String, String>> historic = new ArrayList<>();
+        List<Map<String, String>> tracesList = new ArrayList<>();
 
-        HistoricRequestTracingEvent[] traces = eventStore.getTraces(first);
-        for (HistoricRequestTracingEvent historicRequestEvent : traces) {
+        Collection<RequestTrace> traces = eventStore.getTraces(first);
+        for (RequestTrace requestTrace : traces) {
             Map<String, String> messages = new LinkedHashMap<>();
             Object values[] = new Object[3];
-            values[0] = historicRequestEvent.getOccurringTime();
-            values[1] = historicRequestEvent.getElapsedTime();
-            values[2] = historicRequestEvent.getMessage();
+            values[0] = requestTrace.getStartTimeEpoched();
+            values[1] = requestTrace.getElapsedTime();
+            values[2] = requestTrace.toString();
             messages.put("occuringTime",values[0].toString());
             messages.put("elapsedTime",values[1].toString());
             messages.put("message", (String) values[2]);
-            historic.add(messages);
+            tracesList.add(messages);
             columnFormatter.addRow(values);
         }
 
         actionReport.setMessage(columnFormatter.toString());
-        extrasProps.put("historicmessages", historic);
+        extrasProps.put("traces", tracesList);
         actionReport.setExtraProperties(extrasProps);
 
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,6 +88,10 @@ public enum RUNTIME_OPTION {
     enablerequesttracing(false),
     requesttracingthresholdunit(true),
     requesttracingthresholdvalue(true),
+    enablerequesttracingadaptivesampling(false),
+    requesttracingadaptivesamplingtargetcount(true),
+    requesttracingadaptivesamplingtimevalue(true),
+    requesttracingadaptivesamplingtimeunit(true),
     prebootcommandfile(true, new FileValidator(true, true, false)),
     postbootcommandfile(true, new FileValidator(true, true, false)),
     postdeploycommandfile(true, new FileValidator(true,true,false)),

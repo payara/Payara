@@ -65,8 +65,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
+import fish.payara.nucleus.requesttracing.domain.EventType;
 import org.glassfish.internal.api.Globals;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
@@ -220,8 +221,8 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
         
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = constructConcurrentContextEvent(invocation);
-            requestTracing.traceRequestEvent(requestEvent);
+            RequestTraceSpan span = constructConcurrentContextSpan(invocation);
+            requestTracing.startTrace(span);
         }
         
         if (stuckThreads != null){
@@ -231,17 +232,16 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
 
-    private RequestEvent constructConcurrentContextEvent(ComponentInvocation invocation) {
-        requestTracing.startTrace();
-        RequestEvent requestEvent = new RequestEvent("ConcurrentContextTrace");
+    private RequestTraceSpan constructConcurrentContextSpan(ComponentInvocation invocation) {
+        RequestTraceSpan span = new RequestTraceSpan(EventType.TRACE_START, "executeConcurrentContext");
         
-        requestEvent.addProperty("App Name", invocation.getAppName());
-        requestEvent.addProperty("Component ID", invocation.getComponentId());
-        requestEvent.addProperty("Module Name", invocation.getModuleName());
-        requestEvent.addProperty("Class Name", invocation.getInstance().getClass().getName());
-        requestEvent.addProperty("Thread Name", Thread.currentThread().getName());
+        span.addSpanTag("App Name", invocation.getAppName());
+        span.addSpanTag("Component ID", invocation.getComponentId());
+        span.addSpanTag("Module Name", invocation.getModuleName());
+        span.addSpanTag("Class Name", invocation.getInstance().getClass().getName());
+        span.addSpanTag("Thread Name", Thread.currentThread().getName());
         
-        return requestEvent;
+        return span;
     }
     
     @Override
