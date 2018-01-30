@@ -46,10 +46,10 @@
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
-/>
+    />
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.standaloneInstanceNew.PageTitle}" >
 <!define name="content">
-    <event>
+<event>
     <!beforeCreate
         setPageSessionAttribute(key="pageTitle", value="$resource{i18ncs.standaloneInstanceNew.PageTitle}");
         setPageSessionAttribute(key="pageTitleHelp", value="$resource{i18ncs.standaloneInstanceNew.PageTitleHelp}");
@@ -66,8 +66,24 @@
         gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group", result="#{pageSession.dgList}");
         listAdd(list="#{pageSession.dgList}" value="", index="0", result="#{pageSession.dgList}");
 
-    />
-    </event>
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/deployment-groups/list-deployment-group" method="GET" result="#{requestScope.respAllDeploymentGroups}");
+        setPageSessionAttribute(key="allDeploymentGroups", value="#{requestScope.respAllDeploymentGroups.data.extraProperties.listOfDeploymentGroups}");
+        setAttribute(key="one" value="$int{1}");
+	setAttribute(key="deploymentGroupSize" value="#{pageSession.dgList.size()}");
+
+        if (#{requestScope.deploymentGroupSize}>#{requestScope.one}){
+            setPageSessionAttribute(key="showDeploymentGroupSection",  value="#{true}");
+            convertListToArray(list="#{requestScope.respAllDeploymentGroups.data.extraProperties.listOfDeploymentGroups}" array="#{pageSession.allDeploymentGroupsArray}");
+            gf.convertListToOptionArray(list="#{pageSession.allDeploymentGroups}", optionArray="#{pageSession.allDeploymentGroup}");        
+            py.sortInstanceSelectedDeploymentGroupStatus(avaliableDeploymentGroups="#{pageSession.allDeploymentGroups}" enabled="#{pageSession.enabledDeploymentGroupsList}" disabled="#{pageSession.disabledDeploymentGroupsList}");
+            convertListToArray(list="#{pageSession.enabledDeploymentGroupsList}" array="#{pageSession.enabledDeploymentGroupsArr}");
+        } 
+        
+        if (#{requestScope.deploymentGroupSize}=#{requestScope.one}){
+            setPageSessionAttribute(key="showDeploymentGroupSection",  value="#{false}");
+        }
+        />
+</event>
 #include "/cluster/shared/instanceNew.inc"
 </define>
 </composition>
