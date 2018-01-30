@@ -48,12 +48,23 @@ import static com.sun.enterprise.admin.servermgmt.SLogger.getLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
@@ -299,27 +310,91 @@ public class KeystoreManager {
     }
 
     /**
-     * Copies all non-existing certificates from the currently used JDK to the Payara trust store.
+     * Copies all non-expired certificates from the currently used JDK to the Payara trust store.
      * 
      * @param trustStore the trust store to copy the certificates to.
      * @param masterPassword the password to the trust store.
      */
     protected void copyCertificatesFromJdk(File trustStore, String masterPassword)
             throws RepositoryException {
+        // Gets the location of the JDK trust store.
         String javaHome = System.getProperty("java.home").concat("/").replaceAll("//", "/");
         String jreHome = (javaHome.contains("jre")) ? javaHome : javaHome + "jre/";
         String javaTrustStoreLocation = jreHome + "lib/security/";
-        File javaTrustStore = new File(javaTrustStoreLocation, "cacerts");
+        File javaTrustStoreFile = new File(javaTrustStoreLocation, "cacerts");
 
-        String[] keytoolCmd = {
-            "-importkeystore",
-            "-srckeystore", javaTrustStore.getAbsolutePath(),
-            "-destkeystore", trustStore.getAbsolutePath(),
-            "-noprompt"
-        };
+        // Load the java trust store
+        KeyStore javaTrustStore;
+        KeyStore destTrustStore;
+        try {
+            javaTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            javaTrustStore.load(new FileInputStream(javaTrustStoreFile), "changeit".toCharArray());
+            
+            destTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            destTrustStore.load(new FileInputStream(trustStore), masterPassword.toCharArray());
+        } catch (KeyStoreException ex) {
+            throw new RepositoryException("Unable to get Keystore instance.", ex);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new RepositoryException("Unable to read Keystore instance.", ex);
+        } catch (CertificateException ex) {
+            throw new RepositoryException("Unable to load certificate from Keystore instance.", ex);
+        } catch (FileNotFoundException ex) {
+            throw new RepositoryException("Unable to find Keystore instance.", ex);
+        } catch (IOException ex) {
+            throw new RepositoryException("Unexpected exception reading Keystore instance.", ex);
+        }
 
-        KeytoolExecutor keytool = new KeytoolExecutor(keytoolCmd, 30, new String[]{masterPassword, "changeit"});
-        keytool.execute("trustStoreJavaImportError", trustStore);
+        // Load the valid certificates to the store
+        Map<String, Certificate> validCerts = getValidCertificateAliases(javaTrustStore, "changeit");
+        try {
+            for(String alias : validCerts.keySet()) {
+                Certificate cert = validCerts.get(alias);
+                if (!destTrustStore.containsAlias(alias)) {
+                    destTrustStore.setCertificateEntry(alias, cert);
+                }
+            }
+        } catch (KeyStoreException ex) {
+            throw new RepositoryException("Keystore hasn't been initialized.", ex);
+        }
+
+        // Load the store back to the initial file
+        try {
+            FileOutputStream out = new FileOutputStream(trustStore);
+            destTrustStore.store(out, masterPassword.toCharArray());
+            out.close();
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
+            throw new RepositoryException("Unexpected exception writing certificates to the Keystore instance.", ex);
+        }
+
+    }
+
+    protected Map<String, Certificate> getValidCertificateAliases(KeyStore keyStore, String keyStorePassword)
+            throws RepositoryException {
+
+        Map<String, Certificate> validCerts = new HashMap<>();
+
+        try {
+            Enumeration<String> aliases = keyStore.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                Certificate cert = keyStore.getCertificate(alias);
+                if (cert.getType().equals("X.509")) {
+                    X509Certificate xCert = (X509Certificate) cert;
+                    try {
+                        xCert.checkValidity();
+                        validCerts.put(alias, cert);
+                    } catch (CertificateExpiredException ex) {
+                        // Ignore expired certificates
+                    } catch (CertificateNotYetValidException e) {
+                        // Ignore invalid certificates
+                    }
+                }
+            }
+        } catch (KeyStoreException ex) {
+            throw new RepositoryException("Keystore hasn't been initialized.", ex);
+        }
+
+        return validCerts;
     }
 
     /**
