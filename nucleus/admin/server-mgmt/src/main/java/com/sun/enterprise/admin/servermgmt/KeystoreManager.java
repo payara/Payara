@@ -361,8 +361,9 @@ public class KeystoreManager {
         try {
             FileOutputStream out = new FileOutputStream(trustStore);
             destTrustStore.store(out, masterPassword.toCharArray());
+	    out.flush();
             out.close();
-		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
+	} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
             throw new RepositoryException("Unexpected exception writing certificates to the Keystore instance.", ex);
         }
 
