@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jms.injection;
 
@@ -105,7 +106,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     private transient ConnectionFactory connectionFactoryPM;
     private transient JavaEETransactionManager transactionManager;
 
-    private static final boolean usePMResourceInTransaction = Boolean.getBoolean("org.glassfish.jms.skip-resource-registration-in-transaction");
+    private static final boolean usePMResourceInTransaction = Boolean.parseBoolean(System.getProperty("org.glassfish.jms.skip-resource-registration-in-transaction", "true"));
 
     @Inject
     public InjectableJMSContext(InjectionPoint ip, RequestedJMSContextManager rm) {
