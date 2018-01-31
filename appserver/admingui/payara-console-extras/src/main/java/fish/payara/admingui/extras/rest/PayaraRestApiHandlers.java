@@ -110,7 +110,7 @@ public class PayaraRestApiHandlers {
                             }
                         }
                     } catch (ClassCastException ex) {
-                        // This exception should only be caught if Hazelcast is not enabled, as the command returns a 
+                        // This exception should only be caught if Hazelcast is not selected, as the command returns a 
                         // String instead of a List. In such a case, re-initialise to an empty List
                         instances = new ArrayList<>();
                     } 
@@ -371,6 +371,66 @@ public class PayaraRestApiHandlers {
                 
     }
     
+    /**
+     * Sort selected and disabled Instances
+     * @param handlerctx 
+     */
+    @Handler(id = "py.sortDeploymentGroupSelectedInstancesStatus",
+            input = {
+                @HandlerInput(name = "avaliableInstances", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "enabled", type = List.class),
+                @HandlerOutput(name = "disabled", type = List.class)})
+    public static void sortDeploymentGroupSelectedInstancesStatus(HandlerContext handlerctx) {
+        List<String> enabled = new ArrayList<String>();
+        List<String> disabled = new ArrayList<String>();
+        List<String> avaliable = (List) handlerctx.getInputValue("avaliableInstances");
+
+        for (String unused : avaliable){
+            disabled.add(unused);
+        }
+        handlerctx.setOutputValue("disabled", disabled);
+        handlerctx.setOutputValue("enabled", enabled);
+
+    }
+    
+     /**
+     * Add selected Instances to Deployment Groups
+     * @param handlerCtx 
+     */
+    @Handler(id="py.addSelectedInstancesToDeploymentGroup",
+            input={
+                @HandlerInput(name="endpoint", type=String.class, required=true),
+                @HandlerInput(name="selected", type=String[].class, required=true),
+                @HandlerInput(name="instances", type=String[].class, required=true),
+                @HandlerInput(name="deploymentGroup", type=String.class, required=true),
+                @HandlerInput(name="quiet", type=boolean.class, defaultValue="false"),
+                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true"),
+            })
+    public static void addSelectedInstancesToDeploymentGroup(HandlerContext handlerCtx) {
+        String[] instances = (String[]) handlerCtx.getInputValue("instances");
+        String[] selected = (String[]) handlerCtx.getInputValue("selected");
+        String deploymentGroup = (String) handlerCtx.getInputValue("deploymentGroup");
+        String endpoint = (String) handlerCtx.getInputValue("endpoint");
+        Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
+        Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
+        List<String> enabledDeploymentGroups = Arrays.asList(selected);
+        
+        if (selected.length > 0) {
+            HashMap<String, Object> attrs = new HashMap<>();
+            attrs.put("deploymentGroup", deploymentGroup);
+
+            for (String selectedInstance : instances) {
+                if (enabledDeploymentGroups.contains(selectedInstance)) {
+                    attrs.put("instance", selectedInstance);
+                    RestUtil.restRequest(endpoint, attrs, "post", handlerCtx, quiet, throwException);
+                }
+            }
+     
+        }
+    }
+
+    
         @Handler(id="py.sortHealthcheckEnabledNotifierStatus",
     	input={
             @HandlerInput(name="specifiedNotifiers", type=String.class, required=true),
@@ -412,7 +472,7 @@ public class PayaraRestApiHandlers {
     }
     
     /**
-     * Updates the request tracing notifiers to be enabled or disabled
+     * Updates the request tracing notifiers to be selected or disabled
      * @param handlerCtx 
      */
     @Handler(id="py.updateNotifiers",
@@ -472,7 +532,7 @@ public class PayaraRestApiHandlers {
             RestUtil.restRequest(restEndpoint, attrs, "post", handlerCtx, quiet, throwException);
         }
         // PAYARA-1616
-        // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for enabled notifier.
+        // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for selected notifier.
         if (dynamic){
             if (forRequestTracing) {
                 String restEndpoint = endpoint + "/bootstrap-requesttracing";
