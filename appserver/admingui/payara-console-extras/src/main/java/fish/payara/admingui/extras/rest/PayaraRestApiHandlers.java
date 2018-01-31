@@ -472,7 +472,7 @@ public class PayaraRestApiHandlers {
     }
     
     /**
-     * Updates the request tracing notifiers to be selected or disabled
+     * Updates the request tracing notifiers to be enabled or disabled
      * @param handlerCtx 
      */
     @Handler(id="py.updateNotifiers",
@@ -532,7 +532,7 @@ public class PayaraRestApiHandlers {
             RestUtil.restRequest(restEndpoint, attrs, "post", handlerCtx, quiet, throwException);
         }
         // PAYARA-1616
-        // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for selected notifier.
+        // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for enabled notifier.
         if (dynamic){
             if (forRequestTracing) {
                 String restEndpoint = endpoint + "/bootstrap-requesttracing";
