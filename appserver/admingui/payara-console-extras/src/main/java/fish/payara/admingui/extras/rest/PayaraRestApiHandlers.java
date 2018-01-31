@@ -110,7 +110,7 @@ public class PayaraRestApiHandlers {
                             }
                         }
                     } catch (ClassCastException ex) {
-                        // This exception should only be caught if Hazelcast is not selected, as the command returns a 
+                        // This exception should only be caught if Hazelcast is not enabled, as the command returns a 
                         // String instead of a List. In such a case, re-initialise to an empty List
                         instances = new ArrayList<>();
                     } 
