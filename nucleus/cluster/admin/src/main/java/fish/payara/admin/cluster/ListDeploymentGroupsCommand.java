@@ -62,14 +62,14 @@ import org.jvnet.hk2.annotations.Service;
  * @since 5.0
  * @author Susan Rai
  */
-@Service(name = "list-deployment-group")
+@Service(name = "list-deployment-groups")
 @I18n("list.deployment.group.command")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean = DeploymentGroups.class,
             opType = RestEndpoint.OpType.GET,
-            path = "list-deployment-group",
+            path = "list-deployment-groups",
             description = "Command to list Deployment Groups")
 })
 public class ListDeploymentGroupsCommand implements AdminCommand {
@@ -98,7 +98,6 @@ public class ListDeploymentGroupsCommand implements AdminCommand {
             extrasProps.put("listOfDeploymentGroups", deploymentGroupNames);
             report.setMessage(sb.toString());
             report.setExtraProperties(extrasProps);
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
     }
 
