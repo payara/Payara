@@ -42,9 +42,6 @@ package fish.payara.enterprise.server.logging;
 import com.sun.enterprise.server.logging.GFFileHandler;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.logging.ErrorManager;
 import java.util.logging.LogManager;
 import org.glassfish.config.support.TranslatedConfigView;
 
