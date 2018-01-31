@@ -327,11 +327,15 @@ public class KeystoreManager {
         KeyStore javaTrustStore;
         KeyStore destTrustStore;
         try {
+            FileInputStream javaIn = new FileInputStream(javaTrustStoreFile);
             javaTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            javaTrustStore.load(new FileInputStream(javaTrustStoreFile), "changeit".toCharArray());
+            javaTrustStore.load(javaIn, "changeit".toCharArray());
+            javaIn.close();
             
+            FileInputStream destIn = new FileInputStream(trustStore);
             destTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            destTrustStore.load(new FileInputStream(trustStore), masterPassword.toCharArray());
+            destTrustStore.load(destIn, masterPassword.toCharArray());
+            destIn.close();
         } catch (KeyStoreException ex) {
             throw new RepositoryException("Unable to get Keystore instance.", ex);
         } catch (NoSuchAlgorithmException ex) {
@@ -361,7 +365,7 @@ public class KeystoreManager {
         try {
             FileOutputStream out = new FileOutputStream(trustStore);
             destTrustStore.store(out, masterPassword.toCharArray());
-	    out.flush();
+            out.flush();
             out.close();
 	} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
             throw new RepositoryException("Unexpected exception writing certificates to the Keystore instance.", ex);
