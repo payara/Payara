@@ -78,6 +78,10 @@ public class RequestTracingExecutionOptions {
     private final Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = new HashMap<>();
 
     public Boolean isEnabled() {
+        if (enabled == null) {
+            return false;
+        }
+        
         return enabled;
     }
 
@@ -210,6 +214,10 @@ public class RequestTracingExecutionOptions {
     }
     
     public Boolean isHistoricTraceStoreEnabled() {
+        if (historicTraceStoreEnabled == null) {
+            return false;
+        }
+        
         return historicTraceStoreEnabled;
     }
     
