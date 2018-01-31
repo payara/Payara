@@ -239,6 +239,7 @@
         <ant-launcher.version>1.8.2</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
         <maven-processor-plugin.version>2.0.4</maven-processor-plugin.version>
+        <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
         <org.apache.felix.shell.version>1.4.1</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>0.8.0</org.apache.felix.gogo.runtime.version>
         <org.apache.felix.gogo.shell.version>0.8.0</org.apache.felix.gogo.shell.version>
@@ -341,7 +342,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>${maven-dependency-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
@@ -474,34 +475,6 @@
         </pluginManagement>
 
         <plugins>
-            <!-- force cleaning of the local repository
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>purge-local-dependencies</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>purge-local-repository</goal>
-                        </goals>
-                        <configuration>
-                            <resolutionFuzziness>groupId</resolutionFuzziness>
-                            <includes>
-                                <include>javax.ejb</include>
-                                <include>javax.transaction</include>
-                                <include>javax.resource</include>
-                                <include>javax.enterprise.concurrent</include>
-                                <include>javax.ws.rs</include>
-                                <include>javax.xml.registry</include>
-                                <include>javax.websocket</include>
-                                <include>org.glassfish.jersey</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-	    -->
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
