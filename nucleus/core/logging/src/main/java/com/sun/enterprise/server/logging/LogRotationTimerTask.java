@@ -46,7 +46,7 @@ import java.util.TimerTask;
 
 public class LogRotationTimerTask extends TimerTask {
     private long timerValue;
-    Task task;
+    public Task task;
 
 
     public LogRotationTimerTask(Task task, long timeInMinutes ) {
