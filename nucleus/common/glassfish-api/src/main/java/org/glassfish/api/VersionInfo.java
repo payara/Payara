@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 package org.glassfish.api;
 
@@ -73,11 +73,5 @@ public interface VersionInfo {
      * @return The minor version of Payara.
      */
     public String getMinorVersion();
-
-    /**
-     * Returns the Payara version, e.g. for Payara 5.1.2.181 return 181.
-     * @return The Payara version.
-     */
-    public String getPayaraVersion();
 
 }
