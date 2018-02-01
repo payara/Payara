@@ -429,6 +429,66 @@ public class PayaraRestApiHandlers {
      
         }
     }
+    
+    /**
+     * Sort selected and disabled Instances
+     *
+     * @param handlerctx
+     */
+    @Handler(id = "py.sortDeploymentGroupSelectedInstancesStatus",
+            input = {
+                @HandlerInput(name = "availableInstances", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "enabled", type = List.class),
+                @HandlerOutput(name = "disabled", type = List.class)})
+    public static void sortDeploymentGroupSelectedInstancesStatus(HandlerContext handlerctx) {
+        List<String> enabled = new ArrayList<>();
+        List<String> disabled = new ArrayList<>();
+        List<String> available = (List) handlerctx.getInputValue("availableInstances");
+
+        for (String unused : available) {
+            disabled.add(unused);
+        }
+        handlerctx.setOutputValue("disabled", disabled);
+        handlerctx.setOutputValue("enabled", enabled);
+
+    }
+
+    /**
+     * Add selected Instances to Deployment Groups
+     *
+     * @param handlerCtx
+     */
+    @Handler(id = "py.addSelectedInstancesToDeploymentGroup",
+            input = {
+                @HandlerInput(name = "endpoint", type = String.class, required = true),
+                @HandlerInput(name = "selected", type = String[].class, required = true),
+                @HandlerInput(name = "instances", type = String[].class, required = true),
+                @HandlerInput(name = "deploymentGroup", type = String.class, required = true),
+                @HandlerInput(name = "quiet", type = boolean.class, defaultValue = "false"),
+                @HandlerInput(name = "throwException", type = boolean.class, defaultValue = "true"),})
+    public static void addSelectedInstancesToDeploymentGroup(HandlerContext handlerCtx) {
+        String[] instances = (String[]) handlerCtx.getInputValue("instances");
+        String[] selected = (String[]) handlerCtx.getInputValue("selected");
+        String deploymentGroup = (String) handlerCtx.getInputValue("deploymentGroup");
+        String endpoint = (String) handlerCtx.getInputValue("endpoint");
+        Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
+        Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
+        List<String> enabledDeploymentGroups = Arrays.asList(selected);
+
+        if (selected.length > 0) {
+            HashMap<String, Object> attributes = new HashMap<>();
+            attributes.put("deploymentGroup", deploymentGroup);
+
+            for (String selectedInstance : instances) {
+                if (enabledDeploymentGroups.contains(selectedInstance)) {
+                    attributes.put("instance", selectedInstance);
+                    RestUtil.restRequest(endpoint, attributes, "post", handlerCtx, quiet, throwException);
+                }
+            }
+
+        }
+    }
 
         @Handler(id="py.sortHealthcheckEnabledNotifierStatus",
     	input={
