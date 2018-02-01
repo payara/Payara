@@ -79,9 +79,9 @@
         <temp.dir>${project.build.directory}/dependency</temp.dir>
         <include.group.ids>org.glassfish.main.packager,org.glassfish.main.registration</include.group.ids>
         <template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar</template.jar>
-        <payara.template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/payara-domain.jar</payara.template.jar>
+        <production-domain.template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/production-domain.jar</production-domain.template.jar>
         <create-gf-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-gf-domain.args>
-        <create-domain.payara.args>--user admin create-domain --template=${payara.template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost payaradomain</create-domain.payara.args>
+        <create-domain.production.args>--user admin create-domain --template=${production-domain.template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost production</create-domain.production.args>
     </properties>
 
     <build>
@@ -153,11 +153,11 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <id>create-payara-domain</id>
+                            <id>create-production-domain</id>
                             <phase>process-resources</phase>
                             <configuration>
                                 <executable>${stage.dir}/${install.dir.name}/bin/asadmin</executable>
-                                <commandlineArgs>${create-domain.payara.args}</commandlineArgs>
+                                <commandlineArgs>${create-domain.production.args}</commandlineArgs>
                             </configuration>
                         </execution>
                     </executions>
