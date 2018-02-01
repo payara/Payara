@@ -61,8 +61,8 @@
                 <exclude>glassfish/lib/nadmin*</exclude>
                 <!-- Exclude appserver-domain files except for original -->
                 <exclude>glassfish/common/templates/gf/*appserver-domain-*.jar</exclude>
-                <!-- Exclude payara-domain files except for original -->
-                <exclude>glassfish/common/templates/gf/*payara-domain-*.jar</exclude>
+                <!-- Exclude production-domain files except for original -->
+                <exclude>glassfish/common/templates/gf/*production-domain-*.jar</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>

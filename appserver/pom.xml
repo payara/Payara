@@ -182,7 +182,7 @@
 
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
-        <payara_domain_template>payara-domain.jar</payara_domain_template>
+        <production_domain_template>production-domain.jar</production_domain_template>
         <version_prefix />
 
         <version_suffix>#badassfish</version_suffix>
