@@ -243,7 +243,7 @@ public class GadgetHandlers {
 	handlerCtx.setHandler(oldHandler);
 
 	// Finally, translate the Map to JSON and set the String as an output
-        handlerCtx.setOutputValue("values",JsonUtil.getJsonValue(outputValues).toString());
+        handlerCtx.setOutputValue("values", JsonUtil.getJsonValue(outputValues).toString());
         
 	return result;
     }
