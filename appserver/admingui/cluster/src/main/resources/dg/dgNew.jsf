@@ -62,8 +62,8 @@
         
         if( #{requestScope.instancesSize}>#{requestScope.zero} ){
             setPageSessionAttribute(key="showInstancesSection",  value="#{true}");
-             convertListToArray(list="#{pageSession.instanceList}" array="#{pageSession.allInstancesArray}");
-            gf.convertListToOptionArray(list="#{pageSession.instanceList}", optionArray="#{pageSession.availableInstances}");
+            convertListToArray(list="#{pageSession.instanceList}" array="#{pageSession.allInstancesArray}");
+            gf.convertListToOptionArray(list="#{pageSession.instanceList}", optionArray="#{pageSession.allAvailableInstances}");
             py.sortDeploymentGroupSelectedInstancesStatus(availableInstances="#{pageSession.instanceList}" enabled="#{pageSession.enabledInstancesList}" disabled="#{pageSession.disabledInstancesList}");
             convertListToArray(list="#{pageSession.enabledInstancesList}" array="#{pageSession.enabledInstancesArr}");
         }
@@ -111,10 +111,10 @@
                 <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.dg.dgName']}" required="#{true}" />
             </sun:property>
             
-              <sun:property id="avaliableInstances" visible="#{pageSession.showInstanceSection}" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
+              <sun:property id="avaliableInstances" visible="#{pageSession.showInstancesSection}" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
                 <sun:addRemove id="deploymentGroupAddRemove"
                                selectAll="$boolean{true}"
-                               items="#{pageSession.availableInstances}"
+                               items="#{pageSession.allAvailableInstances}"
                                selected="#{pageSession.enabledInstancesArr}"
                                availableItemsLabel="$resource{i18ncs.dg.AvailableInstances}"
                                selectedItemsLabel="$resource{i18ncs.dg.SelectedInstances}">
