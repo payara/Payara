@@ -102,7 +102,7 @@
 	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
 	  <fileset dir="${gfdir}" includes="**/appserver-domain*.jar"/>
 	  <fileset dir="${gfdir}" includes="**/nucleus-domain.jar"/>
-          <fileset dir="${gfdir}" includes="**/payara-domain*.jar"/>
+          <fileset dir="${gfdir}" includes="**/production-domain*.jar"/>
 	  <fileset dir="${gfdir}" includes="**/weld-se-shaded.jar"/>
 	  <fileset dir="${gfdir}" includes="**/weld-environment-common.jar"/>
 	</delete>
