@@ -86,7 +86,7 @@
         <!-- JSF -->
         <javax.faces-spec.version>2.3</javax.faces-spec.version>
         <javax.faces-api.version>2.3</javax.faces-api.version>
-        <mojarra.version>2.4.0-m01.payara-p5</mojarra.version>
+        <mojarra.version>2.4.0-m01.payara-p6</mojarra.version>
 
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
@@ -182,15 +182,13 @@
 
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
-        <payara_domain_template>payara-domain.jar</payara_domain_template>
+        <production_domain_template>production-domain.jar</production_domain_template>
         <version_prefix />
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version></minor_version>
+        <minor_version>181-SNAPSHOT</minor_version>
         <update_version></update_version>
-        <payara_version>181-SNAPSHOT</payara_version>
-        <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
 
         <jsf-ext.version>0.2</jsf-ext.version>
