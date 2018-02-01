@@ -61,6 +61,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -326,32 +327,30 @@ public class KeystoreManager {
         // Load the java trust store
         KeyStore javaTrustStore;
         KeyStore destTrustStore;
-        try {
-            FileInputStream javaIn = new FileInputStream(javaTrustStoreFile);
+        try (FileInputStream javaIn = new FileInputStream(javaTrustStoreFile);
+                FileInputStream destIn = new FileInputStream(trustStore)) {
+
             javaTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
             javaTrustStore.load(javaIn, "changeit".toCharArray());
-            javaIn.close();
-            
-            FileInputStream destIn = new FileInputStream(trustStore);
+
             destTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
             destTrustStore.load(destIn, masterPassword.toCharArray());
-            destIn.close();
         } catch (KeyStoreException ex) {
-            throw new RepositoryException("Unable to get Keystore instance.", ex);
+            throw new RepositoryException("Unable to create Keystore object.", ex);
         } catch (NoSuchAlgorithmException ex) {
-            throw new RepositoryException("Unable to read Keystore instance.", ex);
+            throw new RepositoryException("Unable to read Keystore file.", ex);
         } catch (CertificateException ex) {
             throw new RepositoryException("Unable to load certificate from Keystore instance.", ex);
         } catch (FileNotFoundException ex) {
-            throw new RepositoryException("Unable to find Keystore instance.", ex);
+            throw new RepositoryException("Unable to find Keystore file.", ex);
         } catch (IOException ex) {
-            throw new RepositoryException("Unexpected exception reading Keystore instance.", ex);
+            throw new RepositoryException("Unexpected exception reading Keystore file.", ex);
         }
 
         // Load the valid certificates to the store
         Map<String, Certificate> validCerts = getValidCertificateAliases(javaTrustStore, "changeit");
         try {
-            for(String alias : validCerts.keySet()) {
+            for (String alias : validCerts.keySet()) {
                 Certificate cert = validCerts.get(alias);
                 if (!destTrustStore.containsAlias(alias)) {
                     destTrustStore.setCertificateEntry(alias, cert);
@@ -362,15 +361,12 @@ public class KeystoreManager {
         }
 
         // Load the store back to the initial file
-        try {
-            FileOutputStream out = new FileOutputStream(trustStore);
+        try (FileOutputStream out = new FileOutputStream(trustStore)) {
             destTrustStore.store(out, masterPassword.toCharArray());
             out.flush();
-            out.close();
-	} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
-            throw new RepositoryException("Unexpected exception writing certificates to the Keystore instance.", ex);
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
+            throw new RepositoryException("Unexpected exception writing certificates to the Keystore file.", ex);
         }
-
     }
 
     protected Map<String, Certificate> getValidCertificateAliases(KeyStore keyStore, String keyStorePassword)
@@ -379,18 +375,14 @@ public class KeystoreManager {
         Map<String, Certificate> validCerts = new HashMap<>();
 
         try {
-            Enumeration<String> aliases = keyStore.aliases();
-            while (aliases.hasMoreElements()) {
-                String alias = aliases.nextElement();
+            for (String alias : Collections.list(keyStore.aliases())) {
                 Certificate cert = keyStore.getCertificate(alias);
                 if (cert.getType().equals("X.509")) {
                     X509Certificate xCert = (X509Certificate) cert;
                     try {
                         xCert.checkValidity();
                         validCerts.put(alias, cert);
-                    } catch (CertificateExpiredException ex) {
-                        // Ignore expired certificates
-                    } catch (CertificateNotYetValidException e) {
+                    } catch (CertificateExpiredException | CertificateNotYetValidException e) {
                         // Ignore invalid certificates
                     }
                 }
