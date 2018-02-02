@@ -85,20 +85,19 @@ public final class H2Control extends DBControl {
     }
 
     /**
-     * This method invokes the H2's org.h2.tools.Server to start/stop/ping the
-     * database.
+     * This method invokes the H2's org.h2.tools.Server to start/stop/ping/sysinfo the database.
      */
     private void invokeServer() {
         try {
             Class serverClass = Class.forName("org.h2.tools.Server");
-            String password = getDbUser() == null ? "" : getDbUser();
+            String dbPassword = getDbPassword() == null ? "" : getDbPassword();
             String url = "tcp://localhost:" + getDbPort();
             if (null != getDbCommand()) 
                 switch (getDbCommand()) {
                     case "start": {
                         Method createTcpServer = serverClass.getDeclaredMethod("createTcpServer", 
                                 new Class[]{String[].class});
-                        Object[] paramObj = new Object[]{new String[]{"-tcpPort", getDbPort(), "-tcpPassword", password, "-tcpAllowOthers"}};
+                        Object[] paramObj = new Object[]{new String[]{"-tcpPort", getDbPort(), "-tcpPassword", dbPassword, "-tcpAllowOthers"}};
                         Object server = createTcpServer.invoke(serverClass, paramObj);
                         serverClass.getDeclaredMethod("start").invoke(server);
                         System.out.println(serverClass.getDeclaredMethod("getStatus").invoke(server));
@@ -108,7 +107,7 @@ public final class H2Control extends DBControl {
                         Class.forName(JDBC_DRIVER);
                         try {
                             DriverManager
-                                    .getConnection(String.format("jdbc:h2:%s/mem:management_db_%s", url, getDbPort()), "", password)
+                                    .getConnection(String.format("jdbc:h2:%s/mem:management_db_%s", url, getDbPort()), "", dbPassword)
                                     .close();
                         } catch (SQLException sqle) {
                             Runtime.getRuntime().exit(2);
@@ -125,7 +124,7 @@ public final class H2Control extends DBControl {
                     case "shutdown": {
                         Method shutdownTcpServer = serverClass.getDeclaredMethod("shutdownTcpServer", 
                                 new Class[]{String.class, String.class, boolean.class, boolean.class});
-                        Object[] paramObj = new Object[]{url, password, true, true};
+                        Object[] paramObj = new Object[]{url, dbPassword, true, true};
                         shutdownTcpServer.invoke(serverClass, paramObj);
                         break;
                     }

@@ -40,6 +40,8 @@
 
 -->
 
+<!--Portions Copyright [2018] [Payara Foundation and/or its affiliates]-->
+
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications">
   <applications>
     <web-module context-root="/web1" location="${com.sun.aas.installRoot}/lib/install/applications/adminapp/adminapp_war" directory-deployed="true" name="adminapp" object-type="system-admin"></web-module>
@@ -55,7 +57,8 @@
   <resources>
     <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin"></jdbc-resource>
     <jdbc-resource pool-name="__CallFlowPool" jndi-name="jdbc/__CallFlowPool" object-type="system-all"></jdbc-resource>
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default"></jdbc-resource>
+    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__derby"></jdbc-resource>
+    <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default"></jdbc-resource>
     <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource" name="__CallFlowPool">
       <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/sun-callflow"></property>
       <property name="connectionAttributes" value=";create=true"></property>
@@ -70,6 +73,9 @@
       <property name="serverName" value="localhost"></property>
       <property name="DatabaseName" value="sun-appserv-samples"></property>
       <property name="connectionAttributes" value=";create=true"></property>
+    </jdbc-connection-pool>
+    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource">
+       <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
     </jdbc-connection-pool>
   </resources>
   <servers>
