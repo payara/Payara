@@ -222,7 +222,7 @@
          <microprofile-metrics.version>1.0.1.payara-p1</microprofile-metrics.version>
       
          <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
-         <accessors-smart.version>1.2-payara-p1</accessors-smart.version>
+         <accessors-smart.version>1.2.payara-p1</accessors-smart.version>
          <json-smart.version>2.3</json-smart.version>
          <jcip-annotations.version>1.0-1</jcip-annotations.version>
 
