@@ -102,7 +102,7 @@
             target="${glassfish.image.dir}" />
         <create.images type="web" name="Web"/>
         <antcall target="create-glassfish-domain" />
-        <antcall target="create-payara-domain" />
+        <antcall target="create-production-domain" />
         <!--<antcall target="create-domain-ml" />-->
     </target>
     <target name="create-glassfish-images">
@@ -111,7 +111,7 @@
             target="${glassfish.image.dir}" />
         <create.images  type="glassfish" name="GlassFish"/>
          <antcall target="create-glassfish-domain" />
-        <antcall target="create-payara-domain" />
+        <antcall target="create-production-domain" />
         <!--<antcall target="create-domain-ml" />-->
     </target>
          
@@ -390,30 +390,30 @@
         </exec>
     </target>
 
-   <!-- Payara domain creation -->
+   <!-- Production domain creation -->
 
-    <target name="create-payara-domain" depends="init-payara-home, create-payara-domain-on-windows, create-payara-domain-on-unix"/>
-       <target name="init-payara-home">
+    <target name="create-production-domain" depends="init-production-home, create-production-domain-on-windows, create-production-domain-on-unix"/>
+       <target name="init-production-home">
         <property name="glassfish.home" value="${basedir}/${glassfish.image.dir}/${install.dir.name}/glassfish" />
     </target>
 
-    <target name="create-payara-domain-on-windows" if="windows">
-        <antcall target="_create-payara-domain">
+    <target name="create-production-domain-on-windows" if="windows">
+        <antcall target="_create-production-domain">
             <param name="exec.dir" value="${glassfish.home}/bin"/>
             <param name="exec.executable" value="${glassfish.home}/bin/asadmin.bat"/>
         </antcall>
     </target>
-    <target name="create-payara-domain-on-unix" if="unix">
-        <antcall target="_create-payara-domain">
+    <target name="create-production-domain-on-unix" if="unix">
+        <antcall target="_create-production-domain">
             <param name="exec.dir" value="${glassfish.home}/bin"/>
             <param name="exec.executable" value="${glassfish.home}/bin/asadmin"/>
         </antcall>
     </target>
-    <target name="_create-payara-domain">
+    <target name="_create-production-domain">
         <echo message="Directory to run command from: ${exec.dir}"/>
         <echo message="Command to run: ${exec.executable}"/>
         <exec dir="${exec.dir}" executable="${exec.executable}" failonerror="true" >
-            <arg line="--user admin create-domain --template=${glassfish.home}/common/templates/gf/payara-domain.jar --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost payaradomain"/>
+            <arg line="--user admin create-domain --template=${glassfish.home}/common/templates/gf/production-domain.jar --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost production"/>
         </exec>
     </target>
 

@@ -70,7 +70,7 @@
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>create-payara-domain</id>
+                        <id>create-production-domain</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>

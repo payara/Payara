@@ -113,7 +113,7 @@
 	  <fileset dir="${runtimedir}" includes="console-**-plugin.jar"/>
 	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
 	  <fileset dir="${runtimedir}" includes="**/appserver-domain*.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/payara-domain*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/production-domain*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/nucleus-domain.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-se-shaded.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
@@ -187,7 +187,7 @@
     <target name="addKeystores">
         <unzip dest="${tempdir}">
             <fileset dir="${runtimedir}/${install.dir.name}/glassfish/common/templates/gf">
-                <include name="payara-domain.jar"/>      
+                <include name="production-domain.jar"/>
             </fileset>
         </unzip>
         <copy todir="${domaindir}">
