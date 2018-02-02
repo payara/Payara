@@ -3,7 +3,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -65,14 +65,18 @@
   <system-applications />
   <resources>
     <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-all" />
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" object-type="system-all" />
+    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__derby" object-type="system-all" />
+    <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default" object-type="system-all" />
     <jdbc-connection-pool name="__TimerPool" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource">
       <property value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" name="databaseName" />
       <property value=";create=true" name="connectionAttributes" />
     </jdbc-connection-pool>
     <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.EmbeddedDataSource" res-type="javax.sql.DataSource">
-      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_default" />
+      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/derby_default" />
       <property name="connectionAttributes" value=";create=true" />
+    </jdbc-connection-pool>
+    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource">
+       <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
     </jdbc-connection-pool>
   </resources>
   <servers>
