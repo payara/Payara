@@ -144,21 +144,33 @@ public class DomainDiscoveryService implements DiscoveryService {
         } else {
             // ok this is the DAS
             logger.fine("We are the DAS therefore we will add all known nodes with start port as IP addresses to connect to");
-            for (Node node : domain.getNodes().getNode()) {
+            
+            // Embedded runtimese don't have nodes
+            if (domain.getNodes() == null) {
                 try {
-                    InetAddress address = InetAddress.getByName(node.getNodeHost());
-                    if (!address.isLoopbackAddress()) {
-                        logger.log(Level.FINE, "Adding Node {0}", address);
-                        nodes.add(new SimpleDiscoveryNode(new Address(address.getHostAddress(), Integer.valueOf(hzConfig.getStartPort()))));
-                    } else {
-                        // we need to add our IP address so add each interface address with the start port
-                        addLocalNodes(nodes, Integer.valueOf(hzConfig.getStartPort()));
-                    }
+                    addLocalNodes(nodes, Integer.valueOf(hzConfig.getStartPort()));
                 } catch (IOException ex) {
                     Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            } else {
+                for (Node node : domain.getNodes().getNode()) {
+                    try {
+                        InetAddress address = InetAddress.getByName(node.getNodeHost());
+                        if (!address.isLoopbackAddress()) {
+                            logger.log(Level.FINE, "Adding Node {0}", address);
+                            nodes.add(new SimpleDiscoveryNode(new Address(address.getHostAddress(), 
+                                    Integer.valueOf(hzConfig.getStartPort()))));
+                        } else {
+                            // we need to add our IP address so add each interface address with the start port
+                            addLocalNodes(nodes, Integer.valueOf(hzConfig.getStartPort()));
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         }
+        
         return nodes;
     }
 
