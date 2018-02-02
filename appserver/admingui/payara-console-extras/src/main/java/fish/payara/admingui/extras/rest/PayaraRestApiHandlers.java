@@ -763,4 +763,42 @@ public class PayaraRestApiHandlers {
             GuiUtil.handleException(handlerCtx, ex);
         }
     }
+    
+     /**
+     * Create Deployment Group with Instances
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.createDeploymentGroupInstances",
+        input = {
+            @HandlerInput(name = "deploymentGroupName", type = String.class, required = true),
+            @HandlerInput(name = "instanceRow", type = List.class, required = true)})
+    public static void createClusterInstances(HandlerContext handlerCtx) {
+        String deploymentGroupName = (String) handlerCtx.getInputValue("deploymentGroupName");
+        List<Map> instanceRow = (List<Map>) handlerCtx.getInputValue("instanceRow");
+        Map instanceAttributesMap = new HashMap();
+        String endpointForCreateInstance = GuiUtil.getSessionValue("REST_URL") + "/create-instance";
+        for (Map Instance : instanceRow) {
+            instanceAttributesMap.put("name", Instance.get("name"));
+            instanceAttributesMap.put("deploymentgroup", deploymentGroupName);
+            instanceAttributesMap.put("node", Instance.get("node"));
+            try {
+                GuiUtil.getLogger().info(endpointForCreateInstance);
+                GuiUtil.getLogger().info(instanceAttributesMap.toString());
+                RestUtil.restRequest(endpointForCreateInstance, instanceAttributesMap, "post", null, false);
+                //set  load balancing weight
+                String instanceLoadBalancingWeight = (String) Instance.get("weight");
+                if (!GuiUtil.isEmpty(instanceLoadBalancingWeight)) {
+                    String encodedInstanceName = URLEncoder.encode((String) Instance.get("name"), "UTF-8");
+                    String endpoint = GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + encodedInstanceName;
+                    Map loadBalancingWeightAttribute = new HashMap();
+                    loadBalancingWeightAttribute.put("lbWeight", instanceLoadBalancingWeight);
+                    RestUtil.restRequest(endpoint, loadBalancingWeightAttribute, "post", null, false);
+                }
+            } catch (Exception ex) {
+                GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("LOG_CREATE_DEPLOYMENT_GROUP_INSTANCE", new Object[]{deploymentGroupName, endpointForCreateInstance, instanceAttributesMap}));
+                GuiUtil.prepareException(handlerCtx, ex);
+            }
+        }
+
+    }
 }
