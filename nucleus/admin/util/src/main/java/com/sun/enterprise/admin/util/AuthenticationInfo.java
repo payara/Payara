@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
-
-import com.sun.enterprise.util.StringUtils;
 
 /**
  * A class that holds the user and password for the connection to the server.
@@ -50,9 +49,18 @@ import com.sun.enterprise.util.StringUtils;
 public final class AuthenticationInfo {
     private final String user;
     private final char[] password;
+    
+    /**
+     * 
+     * @param user the user name for the connection
+     * @param password the clear text password for the connection
+     */
+    public AuthenticationInfo(String user, String password) {
+        this(user,password.toCharArray());
+    }
 
     /**
-     * The only way to construct the instances of this class.
+     * 
      * @param user      the user name for the connection
      * @param password  the clear text password for the connection
      */
@@ -73,8 +81,8 @@ public final class AuthenticationInfo {
      * Returns the password in clear text.
      * @return String
      */
-    public char[] getPassword() {
-        return password;
+    public String getPassword() {
+        return new String(password);
     }
     
     @Override
