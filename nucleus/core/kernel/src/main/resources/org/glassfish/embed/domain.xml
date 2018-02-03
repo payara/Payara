@@ -72,6 +72,7 @@
     <server name="server" config-ref="server-config"> 
       <resource-ref ref="jdbc/__TimerPool" />
       <resource-ref ref="jdbc/__default" />
+      <resource-ref ref="jdbc/__derby" />
     </server>
   </servers>
  <configs>

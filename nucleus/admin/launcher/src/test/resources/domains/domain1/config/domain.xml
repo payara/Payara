@@ -88,6 +88,7 @@
       <resource-ref ref="jdbc/__TimerPool"></resource-ref>
       <resource-ref ref="jdbc/__CallFlowPool"></resource-ref>
       <resource-ref ref="jdbc/__default"></resource-ref>
+      <resource-ref ref="jdbc/__derby"></resource-ref>
     </server>
   </servers>
   <configs>

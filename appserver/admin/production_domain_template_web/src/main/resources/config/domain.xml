@@ -83,6 +83,7 @@
     <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%">
       <resource-ref ref="jdbc/__TimerPool" />
       <resource-ref ref="jdbc/__default" />
+      <resource-ref ref="jdbc/__derby" />
     </server>
   </servers>
   <nodes>
