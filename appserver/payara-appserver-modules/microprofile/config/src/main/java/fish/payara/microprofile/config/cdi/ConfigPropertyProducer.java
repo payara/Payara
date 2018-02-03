@@ -71,7 +71,7 @@ public class ConfigPropertyProducer {
         Object result = null;
         ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
         PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
-        Type type = (Type) ip.getType();
+        
         String name = property.name();
         if (name.isEmpty()) {
             // derive the property name from the injection point
@@ -89,6 +89,7 @@ public class ConfigPropertyProducer {
             name =  sb.toString();
         }
         
+        Type type = ip.getType();
         if (type instanceof Class) {
             result = config.getValue(name, property.defaultValue(),(Class<?>)type);
         } else if ( type instanceof ParameterizedType) {
