@@ -98,6 +98,8 @@ import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import java.security.AccessController;
 import javax.enterprise.inject.spi.Extension;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.glassfish.weld.connector.WeldUtils;
