@@ -217,7 +217,7 @@
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
         <grizzly.version>2.4.1</grizzly.version>
-        <grizzly.npn.version>1.7</grizzly.npn.version>
+        <grizzly.npn.version>1.7.payara-p1</grizzly.npn.version>
 
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
