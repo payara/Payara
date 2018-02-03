@@ -40,50 +40,69 @@
 
 package org.glassfish.web.admin.cli;
 
+import static org.glassfish.api.admin.CommandLock.LockType.NONE;
+import static org.glassfish.api.admin.RestEndpoint.OpType.GET;
+import static org.glassfish.config.support.CommandTarget.CLUSTER;
+import static org.glassfish.config.support.CommandTarget.CONFIG;
+import static org.glassfish.config.support.CommandTarget.DAS;
+import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
+
 import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.ActionReport.MessagePart;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.internal.api.Target;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.PerLookup;
 
 /**
  * List virtual server command
  */
 @Service(name = "list-virtual-servers")
 @PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@I18n("list.virtual.servers")  
+@CommandLock(NONE)
+@I18n("list.virtual.servers")
 @ExecuteOn(RuntimeType.DAS)
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG })
 @RestEndpoints({
-    @RestEndpoint(configBean=HttpService.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="list-virtual-servers", 
-        description="list-virtual-servers")
+        @RestEndpoint(
+                configBean = HttpService.class, 
+                opType = GET, 
+                path = "list-virtual-servers", 
+                description = "list-virtual-servers")
 })
 public class ListVirtualServers implements AdminCommand {
-    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    
+	@Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    
+    @Inject 
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
+    
     @Inject
     Domain domain;
+    
     @Inject
     ServiceLocator services;
 
@@ -95,16 +114,20 @@ public class ListVirtualServers implements AdminCommand {
      */
     public void execute(AdminCommandContext context) {
         Target targetUtil = services.getService(Target.class);
+        
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {
             config = newConfig;
         }
-        final ActionReport report = context.getActionReport();
+        
+        ActionReport report = context.getActionReport();
         List<VirtualServer> list = config.getHttpService().getVirtualServer();
-        for (final VirtualServer virtualServer : list) {
-            final MessagePart part = report.getTopMessagePart().addChild();
-            part.setMessage(virtualServer.getId());
+        for (VirtualServer virtualServer : list) {
+            report.getTopMessagePart()
+                  .addChild()
+                  .setMessage(virtualServer.getId());
         }
+        
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }
