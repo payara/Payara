@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
 
@@ -305,7 +305,7 @@ public final class HttpConnectorAddress {
     }
 
     private char[] getPassword() {
-        return authInfo != null ? authInfo.getPassword() : "".toCharArray();
+        return authInfo != null ? authInfo.getPassword().toCharArray() : "".toCharArray();
     }
 
     private URLConnection openConnection(URL url) throws IOException    {
