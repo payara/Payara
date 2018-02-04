@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.admin.cli;
 
@@ -54,6 +55,7 @@ import java.util.logging.Level;
 
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.EjbContainerUtil;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -78,9 +80,13 @@ import org.glassfish.hk2.api.ServiceLocator;
 @PerLookup
 @I18n("migrate.timers")
 @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted = FailurePolicy.Error)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="migrate-timers", 
+        description="Migrate Timers"),
+    @RestEndpoint(configBean=DeploymentGroup.class,
         opType=RestEndpoint.OpType.POST, 
         path="migrate-timers", 
         description="Migrate Timers")

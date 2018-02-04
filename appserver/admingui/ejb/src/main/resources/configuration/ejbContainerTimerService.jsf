@@ -101,6 +101,10 @@
                 <sun:dropDown id="EjbTimerService" selected="#{pageSession.valueMap['ejbTimerService']}" required="#{false}" value="#{pageSession.valueMap['ejbTimerService']}" labels={"Database","DataGrid"} values={"Database","DataGrid"} >
                 </sun:dropDown>
             </sun:property>            
+            <sun:property id="clusterFiringModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.clusterFiringModeLabel}"  helpText="$resource{i18n_ejb.ejbTimerSettings.clusterFiringModeHelp}" visible="#{true}" >
+                <sun:dropDown id="ClusterFiringMode" selected="#{pageSession.valueMap['clusterFiringMode']}" required="#{false}" value="#{pageSession.valueMap['clusterFiringMode']}" labels={"One Per Data Grid","One Per Deployment Group","All Instances"} values={"OnePerCluster","OnePerDeploymentGroup","AllInstances"} >
+                </sun:dropDown>
+            </sun:property>            
             <sun:property id="TimerDatasourceProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.timerDatasourceLabel}" helpText="$resource{i18n_ejb.ejbTimerSettings.timerDatasourceLabelHelp}">
                 <sun:textField id="TimerDatasource"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbTimerSettings.timerDatasource']}" text="#{pageSession.valueMap['timerDatasource']}" />
             </sun:property>

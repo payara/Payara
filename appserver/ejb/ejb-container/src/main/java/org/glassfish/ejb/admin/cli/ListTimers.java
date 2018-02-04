@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -72,7 +72,7 @@ import org.glassfish.hk2.api.PerLookup;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.timers")
 @ExecuteOn(value={RuntimeType.DAS})
-@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 
@@ -103,7 +103,7 @@ public class ListTimers implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         String[] serverIds = null;
-        if(targetUtil.isCluster(target)) {
+        if(targetUtil.isCluster(target) || targetUtil.isDeploymentGroup(target)) {
             List<Server> serversInCluster = targetUtil.getInstances(target);
             serverIds = new String[serversInCluster.size()];
             for(int i = 0; i < serverIds.length; i++) {
