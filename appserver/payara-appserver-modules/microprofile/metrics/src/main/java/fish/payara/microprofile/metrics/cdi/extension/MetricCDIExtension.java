@@ -54,6 +54,7 @@
  */
 package fish.payara.microprofile.metrics.cdi.extension;
 
+import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
 import fish.payara.microprofile.metrics.cdi.MetricsHelper;
 import fish.payara.microprofile.metrics.cdi.MetricsResolver;
@@ -96,6 +97,7 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.glassfish.internal.api.Globals;
 
 public class MetricCDIExtension implements Extension {
 
@@ -159,7 +161,8 @@ public class MetricCDIExtension implements Extension {
     }
 
     private void registerCustomMetrics(@Observes AfterDeploymentValidation adv, BeanManager manager) {
-        MetricRegistry registry = getReference(manager, MetricRegistry.class);
+        MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
+        MetricRegistry registry = metricsService.getOrAddRegistry(metricsService.getApplicationName());
         MetricsHelper helper = getReference(manager, MetricsHelper.class);
         for (Map.Entry<Producer<?>, AnnotatedMember<?>> entry : metrics.entrySet()) {
             AnnotatedMember<?> annotatedMember = entry.getValue();
