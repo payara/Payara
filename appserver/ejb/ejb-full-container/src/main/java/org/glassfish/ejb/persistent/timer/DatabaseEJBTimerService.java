@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -57,7 +58,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 @Service
-public class DistributedEJBTimerService
+public class DatabaseEJBTimerService
     implements PersistentTimerService, RecoveryEventListener, PostConstruct, ClusterListener {
 
     private static Logger logger = EjbContainerUtilImpl.getLogger();

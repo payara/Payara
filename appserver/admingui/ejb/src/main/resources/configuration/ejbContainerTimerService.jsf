@@ -97,6 +97,10 @@
                 <sun:textField id="RedeliveryIntr" styleClass="integer"  columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbTimerSettings.redeliveryIntr']}" text="#{pageSession.valueMap['redeliveryIntervalInternalInMillis']}" />
                 <sun:staticText id="msecs" style="padding: 8pt" text="$resource{i18n.common.Milliseconds}"/>
             </sun:property>
+            <sun:property id="persistenceServiceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.persistenceServiceLabel}"  helpText="$resource{i18n_ejb.ejbTimerSettings.persistenceServiceHelp}" visible="#{true}" >
+                <sun:dropDown id="EjbTimerService" selected="#{pageSession.valueMap['ejbTimerService']}" required="#{false}" value="#{pageSession.valueMap['ejbTimerService']}" labels={"Database","DataGrid"} values={"Database","DataGrid"} >
+                </sun:dropDown>
+            </sun:property>            
             <sun:property id="TimerDatasourceProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.timerDatasourceLabel}" helpText="$resource{i18n_ejb.ejbTimerSettings.timerDatasourceLabelHelp}">
                 <sun:textField id="TimerDatasource"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbTimerSettings.timerDatasource']}" text="#{pageSession.valueMap['timerDatasource']}" />
             </sun:property>

@@ -49,7 +49,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author steve
  */
 @Service
-public class HazelcastEJBTimerService implements PersistentTimerService {
+public class DataGridEJBTimerService implements PersistentTimerService {
     
     
     @Inject

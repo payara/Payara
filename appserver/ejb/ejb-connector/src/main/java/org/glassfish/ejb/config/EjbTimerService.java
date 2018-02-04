@@ -164,7 +164,7 @@ public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="Distributed")
+    @Attribute (defaultValue="Database")
     String getEjbTimerService();
 
     /**
