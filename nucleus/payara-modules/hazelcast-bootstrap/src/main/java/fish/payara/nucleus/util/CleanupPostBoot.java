@@ -81,7 +81,7 @@ public class CleanupPostBoot implements EventListener {
     public void event(Event event) {
 
         if (event.is(EventTypes.SERVER_READY)) {
-            logger.info("Cleaning JarFileFactory Cache to prevent jar FD leaks");
+            logger.config("Cleaning JarFileFactory Cache to prevent jar FD leaks");
         try {
             // Ensure JarFile is closed
             Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());

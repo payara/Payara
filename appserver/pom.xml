@@ -145,8 +145,8 @@
 
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
-        <com.ibm.jbatch.container.version>1.0.1.payara-p2</com.ibm.jbatch.container.version>
-        <com.ibm.jbatch.spi.version>1.0.1</com.ibm.jbatch.spi.version>
+        <com.ibm.jbatch.container.version>1.0.3.payara-p2</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
 
         <!-- EJB -->
         <javax.ejb-api.version>3.2</javax.ejb-api.version>
@@ -221,8 +221,8 @@
          <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.0.1.payara-p1</microprofile-metrics.version>
       
-         <nimbus-jose-jwt.version>5.1</nimbus-jose-jwt.version>
-         <accessors-smart.version>1.2</accessors-smart.version>
+         <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
+         <accessors-smart.version>1.2.payara-p1</accessors-smart.version>
          <json-smart.version>2.3</json-smart.version>
          <jcip-annotations.version>1.0-1</jcip-annotations.version>
 
