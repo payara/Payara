@@ -117,7 +117,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     protected void _createTimer(TimerPrimaryKey timerId, long containerId, long applicationId, Object timedObjectPrimaryKey, String server_name, Date initialExpiration, long intervalDuration, EJBTimerSchedule schedule, TimerConfig timerConfig) throws Exception {
         if (timerConfig.isPersistent()) {
             
-            pkCache.put(timerId.timerId, new HZTimer(timerId, containerId, applicationId, timedObjectPrimaryKey, this.serverName, ownerIdOfThisServer_, initialExpiration, intervalDuration, schedule, timerConfig));
+            pkCache.put(timerId.timerId, new HZTimer(timerId, containerId, applicationId, timedObjectPrimaryKey, server_name, server_name, initialExpiration, intervalDuration, schedule, timerConfig));
 
             // add to container cache
             HashSet<TimerPrimaryKey> keysForContainer = (HashSet<TimerPrimaryKey>) containerCache.get(containerId);

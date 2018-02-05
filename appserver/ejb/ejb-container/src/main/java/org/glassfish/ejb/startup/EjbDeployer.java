@@ -65,7 +65,9 @@ import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.security.SecureRandom;
+import java.util.Collections;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -571,33 +573,37 @@ public class EjbDeployer
     }
 
     private String getOwnerId(String target) {
-        // If target is a cluster, replace it with the instance
-        ReferenceContainer ref = domain.getReferenceContainerNamed(target);
-
-        if(ref != null && ref.isCluster()) {
-            Cluster cluster = (Cluster) ref; // guaranteed safe cast!!
-            List<Server>  instances = cluster.getInstances();
-
-            // Try a random instance in a cluster
-            int useInstance = random.nextInt(instances.size());
-            Server s0 = instances.get(useInstance);
-            if (s0.isRunning()) {
-                return s0.getName();
+        // If target is a cluster or deployment group replace it with the instance
+        List<Server> instances = Collections.EMPTY_LIST;
+        Cluster c = domain.getClusterNamed(target);
+        if (c != null) {
+            instances = c.getInstances();
+        } else {
+            DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+            if (dg != null) {
+                instances = dg.getInstances();
             } else {
-                // Pick the first running instead
-                for (Server s : instances) {
-                    if (s.isRunning()) {
-                        return s.getName();
-                    }
-                }
+                return target;
             }
-            // If none of the instances is running, return a random instance in a
-            // cluster
-            return s0.getName();
         }
 
-
-        return target;
+        // Try a random instance in a cluster
+        int useInstance = random.nextInt(instances.size());
+        Server s0 = instances.get(useInstance);
+        if (s0.isRunning()) {
+            return s0.getName();
+        } else {
+            // Pick the first running instead
+            for (Server s : instances) {
+                if (s.isRunning()) {
+                    return s.getName();
+                }
+            }
+        }
+        // If none of the instances is running, return a random instance in a
+        // cluster
+        return s0.getName();
+            
     }
 
     private long getNextEjbAppUniqueId() {

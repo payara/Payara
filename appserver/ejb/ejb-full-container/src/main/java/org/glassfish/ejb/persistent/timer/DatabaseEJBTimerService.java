@@ -48,6 +48,7 @@ import com.sun.ejb.containers.EJBTimerService;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
 import com.sun.enterprise.transaction.spi.RecoveryEventListener;
 import fish.payara.nucleus.cluster.ClusterListener;
+import fish.payara.nucleus.cluster.MemberEvent;
 import fish.payara.nucleus.cluster.PayaraCluster;
 
 import org.jvnet.hk2.annotations.Service;
@@ -132,12 +133,12 @@ public class DatabaseEJBTimerService
     }
 
     @Override
-    public void memberAdded(String memberUUID) {
+    public void memberAdded(MemberEvent event) {
     }
 
     @Override
-    public void memberRemoved(String memberUUID) {
-        migrateTimers(cluster.getMemberName(memberUUID));
+    public void memberRemoved(MemberEvent event) {
+        migrateTimers(event.getServer());
     }
 
 } //DistributedEJBTimerService.java
