@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.common.util.logging;
 
 public class LoggingPropertyNames {
@@ -61,6 +63,8 @@ public class LoggingPropertyNames {
     public static final String retainErrorStatisticsForHours = GFFileHandler + "retainErrorsStasticsForHours";
 
     public static final String logFilter = GFFileHandler + "logFilterClass";
+    
+    public static final String logToFile = GFFileHandler + "logtoFile";
 
     public static final String logToConsole = GFFileHandler + "logtoConsole";
 

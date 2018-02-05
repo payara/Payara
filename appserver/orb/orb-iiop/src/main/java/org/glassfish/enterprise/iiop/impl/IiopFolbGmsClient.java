@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -75,6 +76,7 @@ import com.sun.enterprise.ee.cms.core.CallBack;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import static org.glassfish.api.naming.NamingClusterInfo.IIOP_CLUSTER_UPDATE_PROPERTY;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.gms.bootstrap.GMSAdapter;
@@ -496,7 +498,8 @@ public class IiopFolbGmsClient implements CallBack {
             fineLog( "internalClusterInstanceInfo: currentMembers {0}",
                 currentMembers ) ;
 
-            if (currentMembers == null) {
+            boolean disableClusterUpdate = !Boolean.parseBoolean(System.getProperty(IIOP_CLUSTER_UPDATE_PROPERTY, "true"));
+            if (currentMembers == null || disableClusterUpdate) {
                 return new ArrayList<ClusterInstanceInfo>() ;
             } else {
                 return new ArrayList<ClusterInstanceInfo>(

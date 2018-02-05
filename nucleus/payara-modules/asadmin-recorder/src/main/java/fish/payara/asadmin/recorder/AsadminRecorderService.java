@@ -57,6 +57,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
@@ -192,9 +193,15 @@ public class AsadminRecorderService implements EventListener {
             asadminCommand = constructAsadminCommand(commandName, parameters);
         }
 
+        // Substitution is needed for fetching the output location, so enable it temporarily
+        boolean substitutionEnabled = TranslatedConfigView.doSubstitution.get();
+        TranslatedConfigView.doSubstitution.set(true);
+        String asadminRecorderFileLocation = asadminRecorderConfiguration.getOutputLocation();
+        TranslatedConfigView.doSubstitution.set(substitutionEnabled);
+
         // Append to file
         try (Writer writer = new BufferedWriter(new FileWriter(new File(
-                asadminRecorderConfiguration.getOutputLocation()), true))) {
+                asadminRecorderFileLocation), true))) {
             writer.write(asadminCommand);
         } catch (IOException ex) {
             Logger.getLogger(AsadminRecorderService.class.getName()).log(Level.SEVERE, null, ex);

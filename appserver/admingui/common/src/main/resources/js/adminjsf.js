@@ -1028,7 +1028,7 @@ admingui.help = {
     },
 
     launchHelp: function(url) {
-        var helpLink = "https://payara.gitbooks.io/payara-server/content/";
+        var helpLink = "https://docs.payara.fish/";
         var helpKeys = admingui.util.findNodes(document,
             function(node, name) {
                 if ((typeof(node.id) === "undefined") || (node.id == null)) {

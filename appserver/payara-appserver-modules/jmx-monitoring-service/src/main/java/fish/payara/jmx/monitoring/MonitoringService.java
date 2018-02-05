@@ -39,6 +39,7 @@
  */
 package fish.payara.jmx.monitoring;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.Notifier;
@@ -81,6 +82,7 @@ import java.util.ArrayList;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
+import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
@@ -91,6 +93,8 @@ import org.jvnet.hk2.config.ConfigView;
 @Service(name = "payara-monitoring")
 @RunLevel(StartupRunLevel.VAL)
 public class MonitoringService implements EventListener {
+    
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(MonitoringService.class);
 
     private final String PREFIX = "payara-monitoring-service(";
 
@@ -244,13 +248,13 @@ public class MonitoringService implements EventListener {
     private List<MonitoringJob> buildJobs() {
         List<MonitoringJob> jobs = new LinkedList<>();
 
-        for (Property prop : configuration.getProperty()) {
+        for (MonitoredAttribute mbean : configuration.getMonitoredAttributes()) {
             boolean exists = false;
 
             for (MonitoringJob job : jobs) {
                 if (job.getMBean().getCanonicalKeyPropertyListString()
-                        .equals(prop.getValue())) {
-                    job.addAttribute(prop.getName());
+                        .equals(mbean.getObjectName())) {
+                    job.addAttribute(mbean.getAttributeName());
                     exists = true;
                     break;
                 }
@@ -260,9 +264,9 @@ public class MonitoringService implements EventListener {
                 ObjectName name;
                 List<String> list;
                 try {
-                    name = new ObjectName(prop.getValue());
+                    name = new ObjectName(mbean.getObjectName());
                     list = new LinkedList<>();
-                    list.add(prop.getName());
+                    list.add(mbean.getAttributeName());
                     jobs.add(new MonitoringJob(name, list));
                 } catch (MalformedObjectNameException ex) {
                     Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
@@ -306,5 +310,9 @@ public class MonitoringService implements EventListener {
                 Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    public LocalStringManagerImpl getLocalStringManager() {
+        return strings;
     }
 }

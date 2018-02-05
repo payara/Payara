@@ -56,12 +56,12 @@ final class Strings {
     }
 
     static String get(String indexString) {
-        return strings.get(indexString);
+        return STRINGS.get(indexString);
     }
 
     static String get(String indexString, Object... objects) {
-        return strings.get(indexString, objects);
+        return STRINGS.get(indexString, objects);
     }
 
-    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
+    final private static LocalStringsImpl STRINGS = new LocalStringsImpl(Strings.class);
 }

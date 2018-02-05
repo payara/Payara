@@ -36,31 +36,43 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates] 
  */
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.util.SystemPropertyConstants;
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.StringUtils;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.config.serverbeans.Node;
+import org.jvnet.hk2.annotations.Service;
 
 
 /**
@@ -85,6 +97,7 @@ import com.sun.enterprise.config.serverbeans.Node;
         })
 })
 public class StartInstanceCommand implements AdminCommand {
+
     @Inject
     ServiceLocator habitat;
 
@@ -111,7 +124,11 @@ public class StartInstanceCommand implements AdminCommand {
 
     @Param(optional = true, obsolete = true)
     private String setenv;
-    
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "120")
+    private int timeout;
+
     private Logger logger;
 
     private Node   node;
@@ -277,21 +294,31 @@ public class StartInstanceCommand implements AdminCommand {
     }
 
     // return null means A-OK
-    private String pollForLife(Server instance) {
-        int counter = 0;  // 120 seconds
+    private String pollForLife(final Server instance) {
 
-        while (++counter < 240) {
-            if (instance.isRunning())
-                return null;
+        // Start a new thread to check when the instance has started
+        final CountDownLatch instanceTimeout = new CountDownLatch(1);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-            try {
-                Thread.sleep(500);
-            }
-            catch (Exception e) {
-                // ignore
-            }
+        try {
+            // Schedule a task to poll for the instance status
+            executor.scheduleWithFixedDelay(new Runnable() {
+                @Override
+                public void run() {
+                    if (instance.isRunning()) {
+                        instanceTimeout.countDown();
+                    }
+                }
+            }, 500, 500, TimeUnit.MILLISECONDS);
+
+            // If the timeout is reached, return the timeout message. Otherwise return null (success).
+			instanceTimeout.await(timeout, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			return Strings.get("start.instance.timeout", instanceName);
+		} finally {
+            executor.shutdown();
         }
-        return Strings.get("start.instance.timeout", instanceName);
+        return null;
     }
 
     private String makeCommandHuman(List<String> command) {

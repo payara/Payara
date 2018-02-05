@@ -43,15 +43,13 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
 
 /**
  * @since 4.1.1.163
  * @author savage
  */
 @Configured
-public interface MonitoringServiceConfiguration extends ConfigBeanProxy, ConfigExtension, PropertyBag {
+public interface MonitoringServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
     /**
      * Boolean value determining if the service is enabled or disabled.
@@ -88,15 +86,9 @@ public interface MonitoringServiceConfiguration extends ConfigBeanProxy, ConfigE
     @Attribute(defaultValue="SECONDS")
     String getLogFrequencyUnit();
     void setLogFrequencyUnit(String value) throws PropertyVetoException;
-  
-    /**
-     * Properties listed in the domain.xml.
-     *  Returns a list of properties which are present in the configuration block
-     * @return 
-     */
+    
     @Element
-    @Override
-    List<Property> getProperty();
+    List<MonitoredAttribute> getMonitoredAttributes();
     
     /**
      * Returns a list of the notifiers configured with the monitoring service

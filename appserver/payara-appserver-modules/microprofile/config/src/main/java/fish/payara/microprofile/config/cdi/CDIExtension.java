@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.config.cdi;
 
-import fish.payara.microprofile.config.spi.PayaraConfig;
+import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

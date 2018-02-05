@@ -40,8 +40,7 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
@@ -58,6 +57,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * asAdmin command to the get the ordinal for one of the built in Config Sources
+ *
  * @since 4.1.2.173
  * @author Steve Millidge (Payara Foundation)
  */
@@ -66,7 +66,7 @@ import org.jvnet.hk2.annotations.Service;
 @ExecuteOn(RuntimeType.DAS)
 @TargetType()
 @RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface
-    
+
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
             path = "get-config-ordinal",
@@ -74,14 +74,11 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetConfigOrdinal implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
     String target;
-
-    @Inject
-    MicroprofileConfigService service;
 
     @Inject
     Target targetUtil;
@@ -116,10 +113,16 @@ public class GetConfigOrdinal implements AdminCommand {
                 case "cluster": {
                     result = serviceConfig.getClusterOrdinality();
                     break;
-                }case "jndi": {
+                }
+                case "jndi": {
                     result = serviceConfig.getJNDIOrdinality();
                     break;
                 }
+                case "secrets": {
+                    result = serviceConfig.getSecretDirOrdinality();
+                    break;
+                }
+
             }
             context.getActionReport().setMessage(result.toString());
         } else {

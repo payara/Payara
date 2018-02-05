@@ -39,8 +39,10 @@
  */
 package fish.payara.microprofile.config.cdi;
 
-import fish.payara.microprofile.config.spi.PayaraConfig;
+import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import java.lang.reflect.Member;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.DeploymentException;
@@ -69,7 +71,7 @@ public class ConfigPropertyProducer {
         Object result = null;
         ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
         PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
-        Class<?> type = (Class<?>) ip.getType();
+        
         String name = property.name();
         if (name.isEmpty()) {
             // derive the property name from the injection point
@@ -86,7 +88,14 @@ public class ConfigPropertyProducer {
             sb.append(ip.getMember().getName());
             name =  sb.toString();
         }
-        result = config.getValue(name, property.defaultValue(),type);
+        
+        Type type = ip.getType();
+        if (type instanceof Class) {
+            result = config.getValue(name, property.defaultValue(),(Class<?>)type);
+        } else if ( type instanceof ParameterizedType) {
+            result = config.getValue(name, (Class<?>)((ParameterizedType)type).getRawType());
+        }
+        
         if (result == null) {
             throw new DeploymentException("Microprofile Config Property " + property.name() + " can not be found");
         }

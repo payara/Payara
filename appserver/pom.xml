@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -85,7 +85,7 @@
         <javax.validation-api.version>1.1.0.Final</javax.validation-api.version>
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
         <javax.security.enterprise-api.version>1.0</javax.security.enterprise-api.version>
-        <javax.security.enterprise.version>1.0</javax.security.enterprise.version>
+        <javax.security.enterprise.version>1.1-b01.payara-p1</javax.security.enterprise.version>
 
         <product.name>Payara Server Blue</product.name>
         <brief_product_name>Payara Server Blue</brief_product_name>
@@ -114,9 +114,15 @@
 
         <jsftemplating.version>2.1.2</jsftemplating.version>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
+        
+        <nimbus-jose-jwt.version>5.1</nimbus-jose-jwt.version>
+        <accessors-smart.version>1.2</accessors-smart.version>
+        <json-smart.version>2.3</json-smart.version>
+        
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
         <webservices.version>2.3.2-b608.payara-p3</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
+        <jcip-annotations.version>1.0-1</jcip-annotations.version>
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
         <jaxb.version>2.2.12-b141219.1637</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
@@ -127,11 +133,11 @@
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
         <schema2beans.version>3.1.1</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
-        <mq.version>5.1.1.final-payara-p2</mq.version>
+        <mq.version>5.1.1.final.payara-p3</mq.version>
         <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld-api.version>2.4.Final</weld-api.version>
-        <weld.version>2.4.5.Final</weld.version>
+        <weld.version>2.4.6.Final</weld.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
@@ -171,6 +177,10 @@
 
         <!-- Microprofile version properties -->
         <microprofile-config.version>1.1</microprofile-config.version>
+        <microprofile-fault-tolerance.version>1.0</microprofile-fault-tolerance.version>
+	<microprofile-jwt-auth.version>1.0</microprofile-jwt-auth.version>
+	<microprofile-healthcheck.version>1.0</microprofile-healthcheck.version>
+        <microprofile-metrics.version>1.0</microprofile-metrics.version>
     </properties>
 
     <modules>

@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
 import com.sun.corba.ee.spi.folb.GroupInfoService;
 import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.api.naming.NamingObjectsProvider;
-import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -94,22 +94,24 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
 
     @Override
     public void initGroupInfoService(Hashtable<?, ?> myEnv, String defaultHost, String defaultPort,
-                                     ORB orb, ServiceLocator services) {
+                                     ORB orb, ServiceLocator services, boolean updateCluster) {
         // Always create one rrPolicy to be shared, if needed.
         final List<String> epList = getEndpointList(myEnv, defaultHost, defaultPort);
         rrPolicy = new RoundRobinPolicy(epList);
 
-        GroupInfoService gis = null ;
-        try {
-            gis = (GroupInfoService) (orb.resolve_initial_references(ORBLocator.FOLB_CLIENT_GROUP_INFO_SERVICE));
-        } catch (InvalidName ex) {
-            logger.log(Level.SEVERE, FAILED_TO_RESOLVE_GROUPINFOSERVICE, ORBLocator.FOLB_CLIENT_GROUP_INFO_SERVICE);
-            logger.log(Level.SEVERE, "", ex);
+        if(updateCluster) {
+            GroupInfoService gis = null;
+            try {
+                gis = (GroupInfoService) (orb.resolve_initial_references(ORBLocator.FOLB_CLIENT_GROUP_INFO_SERVICE));
+            } catch (InvalidName ex) {
+                logger.log(Level.SEVERE, FAILED_TO_RESOLVE_GROUPINFOSERVICE, ORBLocator.FOLB_CLIENT_GROUP_INFO_SERVICE);
+                logger.log(Level.SEVERE, "", ex);
+            }
+
+            giso = new GroupInfoServiceObserverImpl(gis, rrPolicy);
+
+            gis.addObserver(giso);
         }
-
-        giso = new GroupInfoServiceObserverImpl( gis, rrPolicy );
-
-        gis.addObserver(giso);
 
         // fineLog( "getInitialContext: rrPolicy = {0}", rrPolicy );
 
@@ -123,11 +125,13 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
 //                            services.getAllByContract(NamingObjectsProvider.class)) {
 //                            // no-op
 //                        }
-        }
 
-        // Get the actual content, not just the configured
-        // endpoints.
-        giso.forceMembershipChange();
+            // Get the actual content, not just the configured
+            // endpoints.
+            if(updateCluster) {
+                giso.forceMembershipChange();
+            }
+        }
 
         if(logger.isLoggable(Level.FINE))
             logger.log(Level.FINE, "NamingClusterInfoImpl.initGroupInfoService RoundRobinPolicy {0}", rrPolicy);
@@ -138,7 +142,7 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
                                       boolean membershipChangeForced) {
         final List<String> list = getEndpointList(myEnv, defaultHost, defaultPort) ;
         rrPolicy.setClusterInstanceInfoFromString(list);
-        if (!membershipChangeForced) {
+        if (!membershipChangeForced && giso != null) {
             giso.forceMembershipChange() ;
         }
     }
