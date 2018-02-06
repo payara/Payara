@@ -145,8 +145,8 @@
 
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
-        <com.ibm.jbatch.container.version>1.0.1.payara-p2</com.ibm.jbatch.container.version>
-        <com.ibm.jbatch.spi.version>1.0.1</com.ibm.jbatch.spi.version>
+        <com.ibm.jbatch.container.version>1.0.3.payara-p2</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
 
         <!-- EJB -->
         <javax.ejb-api.version>3.2</javax.ejb-api.version>

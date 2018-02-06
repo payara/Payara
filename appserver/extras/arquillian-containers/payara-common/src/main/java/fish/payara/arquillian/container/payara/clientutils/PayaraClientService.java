@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -90,6 +90,7 @@ public class PayaraClientService implements PayaraClient {
     private static final String SERVLET = "Servlet";
     private static final String RUNNING_STATUS = "RUNNING";
     
+    
     /**
      * the REST resource path template to retrieve the version of the server
      */
@@ -126,6 +127,8 @@ public class PayaraClientService implements PayaraClient {
      */
     private static final String SERVER_RESOURCE             = "/servers/server/{server}";
     
+    private static final String SERVER_VM_REPORT             = "/servers/server/{server}/generate-jvm-report";
+    
     private static final String SERVER_PROPERTY             = "/servers/server/{server}/system-property/{system-property}";
     
     /**
@@ -157,7 +160,7 @@ public class PayaraClientService implements PayaraClient {
 
     private final CommonPayaraConfiguration configuration;
 
-    // GlassFish client service constructor
+    // Payara client service constructor
     public PayaraClientService(CommonPayaraConfiguration configuration) {
         this.configuration = configuration;
         target = configuration.getTarget();
@@ -225,7 +228,7 @@ public class PayaraClientService implements PayaraClient {
         // Fetch the HOST address & HTTP port info from the DAS server
         List<NodeAddress> nodeAddressList = serverInstance.getNodeAddressList();
 
-        if (ADMINSERVER.equals(configuration.getTarget())) {
+        if (ADMINSERVER.equals(target)) {
             // Admin Server must be running, otherwise we can not be here
             nodeAddress = nodeAddressList.get(0);
         } else {
@@ -233,6 +236,17 @@ public class PayaraClientService implements PayaraClient {
             // In case of cluster, returns the first RUNNING instance (if any) from the list
             nodeAddress = runningInstanceFilter(nodeAddressList);
         }
+        
+        // Sets the location of the installed Payara / GlassFish server, if not already specified and 
+        // if available.
+        if (System.getProperty("glassfishRemote_gfHome") == null) {
+            Map<String, String> systemProperties = getServerSystemProperties(target);
+            String gfHome = systemProperties.get("com.sun.aas.productRoot");
+            if (gfHome != null) {
+                System.setProperty("glassfishRemote_gfHome", gfHome);
+            }
+        }
+        
     }
 
     public Integer getPayaraVersion() {
@@ -473,6 +487,11 @@ public class PayaraClientService implements PayaraClient {
         return clientUtil.getAttributes(SERVER_RESOURCE.replace("{server}", server));
     }
 
+    protected Map<String, String> getServerSystemProperties(String server) {
+        return clientUtil.getServerSystemProperties(SERVER_VM_REPORT.replace("{server}", server));
+    }
+    
+    
     /**
      * Get the clusterAttributes map of a cluster
      *
