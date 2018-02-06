@@ -775,7 +775,7 @@ public class PayaraRestApiHandlers {
     public static void createClusterInstances(HandlerContext handlerCtx) {
         String deploymentGroupName = (String) handlerCtx.getInputValue("deploymentGroupName");
         List<Map> instanceRow = (List<Map>) handlerCtx.getInputValue("instanceRow");
-        Map instanceAttributesMap = new HashMap();
+        Map<String, Object> instanceAttributesMap = new HashMap<>();
         String endpointForCreateInstance = GuiUtil.getSessionValue("REST_URL") + "/create-instance";
         for (Map Instance : instanceRow) {
             instanceAttributesMap.put("name", Instance.get("name"));
