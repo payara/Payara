@@ -54,7 +54,7 @@ import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.internal.api.Globals;
 
-public abstract class AbstractInterceptor {
+/* package-private */ abstract class AbstractInterceptor {
 
     @Inject
     protected MetricRegistry registry;

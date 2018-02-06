@@ -67,16 +67,13 @@ import fish.payara.microprofile.metrics.cdi.producer.MetricRegistryProducer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedParameter;
-import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
@@ -161,7 +158,8 @@ public class MetricCDIExtension implements Extension {
     }
 
     private void registerCustomMetrics(@Observes AfterDeploymentValidation adv, BeanManager manager) {
-        MetricRegistry registry = getReference(manager, MetricRegistry.class);
+        MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
+        MetricRegistry registry = metricsService.getOrAddRegistry(metricsService.getApplicationName());
         MetricsHelper helper = getReference(manager, MetricsHelper.class);
         for (Map.Entry<Producer<?>, AnnotatedMember<?>> entry : metrics.entrySet()) {
             AnnotatedMember<?> annotatedMember = entry.getValue();

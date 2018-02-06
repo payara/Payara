@@ -57,6 +57,7 @@ import fish.payara.nucleus.eventbus.MessageReceiver;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -335,6 +336,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     private void initialiseInstanceDescriptor() {
         boolean liteMember = false;
         int hazelcastPort = 5900;
+        InetAddress hostname = null;
         
         // Get the Hazelcast specific information
         if (hazelcast.isEnabled()) {
@@ -343,6 +345,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
             myCurrentID = hazelcast.getUUID();
             liteMember = hazelcast.isLite();
             hazelcastPort = hazelcast.getPort();
+            hostname = hazelcast.getInstance().getCluster().getLocalMember().getSocketAddress().getAddress();
         } else {
             instanceName = "payara-micro";
             instanceGroup = "no-cluster";
@@ -411,6 +414,10 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
             me.setHazelcastPort(hazelcastPort);
             me.setLiteMember(liteMember);
             me.setInstanceType(instanceType);
+            
+            if (hostname != null) {
+                me.setHostName(hostname);
+            }
             
             // If there were some deployed applications from the previous instance descriptor, register them with the new 
             // one

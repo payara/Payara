@@ -110,7 +110,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "microprofile-config-provider") // this specifies that the classis an HK2 service
 @RunLevel(StartupRunLevel.VAL)
-public class ConfigProviderResolverImpl extends ConfigProviderResolver implements EventListener {
+public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
     private static final String CUSTOM_SOURCES_KEY = "MICROPROFILE_CUSTOM_SOURCES";
@@ -126,11 +126,6 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
     // Gives access to deployed applications
     @Inject
     ApplicationRegistry applicationRegistry;
-
-    //Provides access to the event manager to hook into server lifecycle events
-    // or to raise various events
-    @Inject
-    private Events events;
 
     // This injects the configuration from the domain.xml magically
     // and for the correct server configuation
@@ -148,39 +143,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
     @PostConstruct
     public void postConstruct() {
         ConfigProviderResolver.setInstance(this);
-
-        // we need to listen for application deployment events so that we can read customer properties etc.
-        events.register(this);
     }
 
-    /**
-     * Event handler needed to capture application load events
-     *
-     * @param event
-     */
-    @Override
-    public void event(Event event) {
-        if (event.is(Deployment.APPLICATION_LOADED)) {
-
-            ApplicationInfo info = (ApplicationInfo) event.hook();
-            LinkedList<Properties> appConfigProperties = new LinkedList<>();
-            info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
-            try {
-                // Read application defined properties and add as transient metadata
-                Enumeration<URL> resources = info.getAppClassLoader().getResources("META-INF/microprofile-config.properties");
-                while (resources.hasMoreElements()) {
-                    URL url = resources.nextElement();
-                    Properties p = new Properties();
-                    try (InputStream is = url.openStream()) {
-                        p.load(url.openStream());
-                    }
-                    appConfigProperties.add(p);
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(ConfigProviderResolverImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
 
     public MicroprofileConfigConfiguration getMPConfig() {
         if (configuration == null) {
@@ -261,6 +225,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
             result = appInfo.getTransientAppMetaData(METADATA_KEY, Config.class);
             if (result == null) {
                 // build an application specific configuration
+                initialiseApplicationConfig(appInfo);
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 LinkedList<Converter> converters = new LinkedList<>();
                 sources.addAll(getDefaultSources());
@@ -432,6 +397,25 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
             appInfo.addTransientAppMetaData(CUSTOM_CONVERTERS_KEY, converters);
         }
         return converters;
+    }
+    
+    private void initialiseApplicationConfig(ApplicationInfo info) {
+        LinkedList<Properties> appConfigProperties = new LinkedList<>();
+        info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
+        try {
+            // Read application defined properties and add as transient metadata
+            Enumeration<URL> resources = info.getAppClassLoader().getResources("META-INF/microprofile-config.properties");
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                Properties p = new Properties();
+                try (InputStream is = url.openStream()) {
+                    p.load(url.openStream());
+                }
+                appConfigProperties.add(p);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ConfigProviderResolverImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

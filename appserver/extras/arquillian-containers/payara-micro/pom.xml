@@ -64,11 +64,11 @@
     <parent>
         <groupId>fish.payara.arquillian</groupId>
         <artifactId>parent-payara-containers</artifactId>
-        <version>1.0.Beta2</version>
+        <version>1.0.Beta3-m1</version>
     </parent>
 
-    <artifactId>arquillian-payara-micro-4-managed</artifactId>
-    <name>Arquillian Container Payara Managed</name>
+    <artifactId>arquillian-payara-micro-5-managed</artifactId>
+    <name>Arquillian Container Payara Micro</name>
 
     <description>
         Payara Managed Container integration for the Arquillian Project.
@@ -138,59 +138,4 @@
 
     </dependencies>
 
-<!-- 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>setup-glassfish</id>
-                        <phase>process-test-classes</phase>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>${groupId}</groupId>
-                                    <artifactId>${artifactId}</artifactId>
-                                    <version>${version.payara}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <systemPropertyVariables>
-                        <glassfish.home>${glassfish.home}</glassfish.home>
-                        <enableDerby>${enableDerby}</enableDerby>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>payara-4</id>
-             <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <groupId>fish.payara.distributions</groupId>
-                <artifactId>payara</artifactId>
-                <version.payara>4.1.1.171.1</version.payara>
-                <glassfish.home>payara41</glassfish.home>
-            </properties>
-        </profile>
-    </profiles>
-     -->
 </project>

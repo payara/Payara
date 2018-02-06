@@ -82,15 +82,18 @@ import org.glassfish.internal.api.Globals;
 @Priority(Interceptor.Priority.LIBRARY_BEFORE)
 public class MetricsInterceptor {
 
-    @Inject
-    public MetricRegistry registry;
+    private MetricRegistry registry;
 
-    @Inject
     private MetricsResolver resolver;
 
+    private Bean<?> bean;
+    
     @Inject
-    @Intercepted
-    protected Bean<?> bean;
+    private MetricsInterceptor(MetricRegistry registry, MetricsResolver resolver, @Intercepted Bean<?> bean) {
+        this.registry = registry;
+        this.resolver = resolver;
+        this.bean = bean;
+    }
 
     @AroundConstruct
     private Object constructorInvocation(InvocationContext context) throws Exception {
