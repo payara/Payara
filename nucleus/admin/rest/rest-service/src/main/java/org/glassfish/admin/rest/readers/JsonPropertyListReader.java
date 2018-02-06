@@ -49,6 +49,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -88,6 +90,7 @@ public class JsonPropertyListReader implements MessageBodyReader<List<Map<String
             return MarshallingUtils.getPropertiesFromJson(sb.toString());
 
         } catch (Exception exception) {
+            Logger.getLogger("org.glassfish.admin.rest").log(Level.SEVERE, null, exception);
             throw new WebApplicationException(exception, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }

@@ -239,14 +239,17 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Converts a {@link Collection} of {@link JsonValue}s or other Json-compatible types into a {@link JsonAray}
+     * @param c
+     * @return
+     * @throws JsonException 
+     */
     public static JsonArray processCollection(Collection c) throws JsonException {
         JsonArrayBuilder result = Json.createArrayBuilder();
-        Iterator i = c.iterator();
-        while (i.hasNext()) {
-            JsonValue item = getJsonValue(i.next());
+        for (Object item: c){
             result.add(JsonUtil.getJsonValue(item));
         }
-
         return result.build();
     }
 

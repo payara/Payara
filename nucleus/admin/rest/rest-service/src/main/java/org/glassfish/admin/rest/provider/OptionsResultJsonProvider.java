@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017-2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.provider;
 
@@ -47,7 +47,6 @@ import org.glassfish.admin.rest.results.OptionsResult;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.json.Json;
@@ -93,11 +92,8 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
     public JsonArray getRespresenationForMethodMetaData(OptionsResult proxy) {
         JsonArrayBuilder arr = Json.createArrayBuilder();
         Set<String> methods = proxy.methods();
-        Iterator<String> iterator = methods.iterator();
-        String methodName;
-        while (iterator.hasNext()) {
+        for (String methodName : methods){
             try {
-                methodName = iterator.next();
                 MethodMetaData methodMetaData = proxy.getMethodMetaData(methodName);
                 JsonObjectBuilder method = Json.createObjectBuilder();
                 method.add(NAME, methodName);
@@ -108,7 +104,6 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
                 RestLogging.restLogger.log(Level.SEVERE, null, ex);
             }
         }
-
         return arr.build();
     }
 
@@ -131,12 +126,11 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
 
     private JsonObject getParameter(ParameterMetaData parameterMetaData) throws JsonException {
         JsonObjectBuilder result = Json.createObjectBuilder();
-        Iterator<String> iterator = parameterMetaData.attributes().iterator();
-        String attributeName;
-        while (iterator.hasNext()) {
-            attributeName = iterator.next();
+        
+        for (String attributeName: parameterMetaData.attributes()){
             result.add(attributeName, parameterMetaData.getAttributeValue(attributeName));
         }
+        
         return result.build();
     }
 
@@ -144,11 +138,8 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
         JsonObjectBuilder result = Json.createObjectBuilder();
         if (methodMetaData.sizeParameterMetaData() > 0) {
             Set<String> parameters = methodMetaData.parameters();
-            Iterator<String> iterator = parameters.iterator();
-            String parameter;
-            while (iterator.hasNext()) {
-                parameter = iterator.next();
-                ParameterMetaData parameterMetaData = methodMetaData.getParameterMetaData(parameter);
+            for (String parameter: parameters){
+                 ParameterMetaData parameterMetaData = methodMetaData.getParameterMetaData(parameter);
                 result.add(parameter, getParameter(parameterMetaData));
             }
         }
