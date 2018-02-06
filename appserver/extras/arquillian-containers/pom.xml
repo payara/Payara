@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-  Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,7 @@
 
     <groupId>fish.payara.arquillian</groupId>
     <artifactId>parent-payara-containers</artifactId>
-    <version>1.0.Beta2</version>
+    <version>1.0.Beta3-m1</version>
     <packaging>pom</packaging>
 
     <name>Arquillian Container Parent Payara</name>
@@ -161,18 +161,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
-        <repository>
-            <id>jvnet-nexus-1074</id>
-            <name>Java.net orgglassfish-1074 Repositories</name>
-            <url>https://maven.java.net/content/repositories/orgglassfish-1074/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
     </repositories>
 
     <modules>
@@ -180,6 +168,9 @@
         <module>payara-managed</module>
         <module>payara-remote</module>
         <module>payara-embedded</module>
+        <module>payara-micro</module>
+        <module>payara-client-ee7</module>
+        <module>payara-client-ee8</module>
     </modules>
 
     <dependencyManagement>
@@ -238,14 +229,13 @@
                 <version>${version.jersey}</version>
             </dependency>
             
-
             <dependency>
                 <groupId>javax</groupId>
                 <artifactId>javaee-api</artifactId>
                 <version>7.0</version>
-                <scope>provided</scope>
+                <scope>test</scope>
             </dependency>
-
+            
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
@@ -337,7 +327,7 @@
                     <autoReleaseAfterClose>false</autoReleaseAfterClose>
                 </configuration>
             </plugin>
-        
+        		
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
@@ -346,6 +336,105 @@
                     <localCheckout>true</localCheckout>
                 </configuration>
             </plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<includes>
+									<include>org.glassfish:*</include>
+									<include>org.glassfish.hk2</include>
+									<include>org.glassfish.hk2.external:*</include>
+									<include>org.glassfish.jersey.core:*</include>
+									<include>org.glassfish.jersey.inject:*</include>
+									<include>org.glassfish.jersey.media:*</include>
+									<include>org.glassfish.jersey.ext:*</include>
+									<include>org.jvnet:*</include>
+									<include>org.jvnet.mimepull:*</include>
+			
+									<include>com.fasterxml.jackson.core:*</include>
+									<include>com.fasterxml.jackson.module:*</include>
+									<include>javax.json-api:*</include>
+									<include>javax.validation:*</include>
+									<include>javax.annotation:*</include>
+									<include>javax.ws.rs:*</include>
+								</includes>
+							</artifactSet>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+							</transformers>
+			
+							<relocations>
+								<relocation>
+									<pattern>org.glassfish.json</pattern>
+									<shadedPattern>fish.payara.arquillian.json</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.glassfish.hk2</pattern>
+									<shadedPattern>fish.payara.arquillian.hk2</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.glassfish.jersey</pattern>
+									<shadedPattern>fish.payara.arquillian.jersey</shadedPattern>
+								</relocation>
+			
+								<relocation>
+									<pattern>com.fasterxml</pattern>
+									<shadedPattern>fish.payara.arquillian.faster</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>jersey.repackaged</pattern>
+									<shadedPattern>fish.payara.arquillian.jersey.repackaged</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>com.sun.research</pattern>
+									<shadedPattern>fish.payara.arquillian.research</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.jvnet</pattern>
+									<shadedPattern>fish.payara.arquillian.jvnet</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.aopalliance</pattern>
+									<shadedPattern>fish.payara.arquillian.aopalliance</shadedPattern>
+								</relocation>
+			
+								<relocation>
+									<pattern>javax.json</pattern>
+									<shadedPattern>fish.payara.arquillian.javax.json</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>javax.validation</pattern>
+									<shadedPattern>fish.payara.arquillian.validation</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>javax.annotation</pattern>
+									<shadedPattern>fish.payara.arquillian.annotation</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>javax.ws</pattern>
+									<shadedPattern>fish.payara.arquillian.ws</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>javax.inject</pattern>
+									<shadedPattern>fish.payara.arquillian.inject</shadedPattern>
+								</relocation>
+							</relocations>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
         </plugins>
     </build>
     

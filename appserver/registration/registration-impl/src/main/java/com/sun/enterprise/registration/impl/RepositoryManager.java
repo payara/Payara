@@ -103,7 +103,6 @@ public class RepositoryManager {
         try {
             logger.fine("RepositoryManager created for file " + registrationFile.getCanonicalPath());
             documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            documentBuilderFactory.setValidating(true);
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
             transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
