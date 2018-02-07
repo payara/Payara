@@ -244,7 +244,7 @@
         <!-- Other -->
 
         <hk2.version>2.5.0-b61.payara-p1</hk2.version>
-        <hk2.plugin.version>2.5.0-b61.payara-p1</hk2.plugin.version>
+        <hk2.plugin.version>2.5.0-b61.payara-p2</hk2.plugin.version>
 
         <!-- 4.1.1-b001  -->
         <glassfish-corba.version>4.1.1.payara-p1</glassfish-corba.version>
