@@ -49,8 +49,9 @@
     </parent>
     <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-boot</artifactId>
-    <description>Payara Micro Boot</description>
     <packaging>glassfish-jar</packaging>
+    <name>Payara Micro Boot</name>
+    <description>Payara Micro Edition Boot</description>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -62,7 +63,7 @@
 	<dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
+            <version>8.0</version>
             <type>jar</type>
             <optional>true</optional>
         </dependency>

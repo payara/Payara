@@ -9,8 +9,8 @@
     <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-core</artifactId>
     <packaging>glassfish-jar</packaging>
-    <name>Payara Micro Edition Core</name>
-    <description>Payara Micro Edition Modules</description>
+    <name>Payara Micro Core</name>
+    <description>Payara Micro Edition Core</description>
     <developers>
         <developer>
             <id>smillidge</id>
