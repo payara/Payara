@@ -57,57 +57,57 @@ public interface InstanceDescriptor extends Serializable {
      * @param obj
      * @return
      */
-    public boolean equals(Object obj);
+    boolean equals(Object obj);
 
     /**
      * Gets the admin port number for this instance descriptor
      *
      * @return the admin port number in use by this instance
      */
-    public int getAdminPort();
+    int getAdminPort();
 
-    public List<URL> getApplicationURLS();
+    List<URL> getApplicationURLS();
 
     /**
      * @return the deployedApplications
      */
-    public Collection<ApplicationDescriptor> getDeployedApplications();
+    Collection<ApplicationDescriptor> getDeployedApplications();
 
     /**
      * Gets the Hazelcast port number of this instance descriptor
      *
      * @return the port number in use by Hazelcast
      */
-    public int getHazelcastPort();
+    int getHazelcastPort();
 
     /**
      * @return the hostName
      */
-    public InetAddress getHostName();
+    InetAddress getHostName();
 
     /**
      * @return the httpPorts
      */
-    public List<Integer> getHttpPorts();
+    List<Integer> getHttpPorts();
 
     /**
      * @return the httpsPorts
      */
-    public List<Integer> getHttpsPorts();
+    List<Integer> getHttpsPorts();
 
-    public String getInstanceName();
+    String getInstanceName();
 
     /**
      * Gets the instance type that this descriptor describes
      *
      * @return the instance type that this descriptor describes
      */
-    public String getInstanceType();
+    String getInstanceType();
 
     /**
      * @return the memberUUID
      */
-    public String getMemberUUID();
+    String getMemberUUID();
 
     /**
      * Checks whether or not this instance is described as a Lite Hazelcast
@@ -115,14 +115,14 @@ public interface InstanceDescriptor extends Serializable {
      *
      * @return true if this instance describes a Hazelcast Lite member
      */
-    public boolean isLiteMember();
+    boolean isLiteMember();
 
     /**
      * Checks whether or not this descriptor describes a Payara Micro instance
      *
      * @return true if this descriptor describes a Payara Micro instances
      */
-    public boolean isMicroInstance();
+    boolean isMicroInstance();
 
     /**
      * Checks whether or not this descriptor describes a Payara Server instance
@@ -131,13 +131,19 @@ public interface InstanceDescriptor extends Serializable {
      * @return true if this descriptor describes a Payara Server instance or the
      * DAS
      */
-    public boolean isPayaraInstance();
+    boolean isPayaraInstance();
 
 
     /**
      * Returns the instance group name of the instance
      * @return 
      */
-    public String getInstanceGroup();
+    String getInstanceGroup();
+
+    /**
+     * @param verbose whether to include servlet mappings in the returned object.
+     * @return a JSON formatted string representing the instance.
+     */
+    String toJsonString(boolean verbose);
 
 }

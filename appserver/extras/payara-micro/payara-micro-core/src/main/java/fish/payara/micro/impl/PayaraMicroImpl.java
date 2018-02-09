@@ -2437,7 +2437,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private void dumpFinalStatus(long bootTime) {
         InstanceDescriptor id = getRuntime().getLocalDescriptor();
-        LOGGER.log(Level.INFO, id.toString());
+        LOGGER.log(Level.INFO, id.toJsonString(false));
         StringBuilder sb = new StringBuilder();
         sb.append("\nPayara Micro URLs\n");
         List<URL> urls = id.getApplicationURLS();
