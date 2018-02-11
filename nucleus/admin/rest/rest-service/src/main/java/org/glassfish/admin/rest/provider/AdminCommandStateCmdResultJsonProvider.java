@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 import javax.json.JsonException;
 import javax.json.JsonObject;
-import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
@@ -65,7 +65,7 @@ import org.glassfish.admin.rest.utils.JsonUtil;
 public class AdminCommandStateCmdResultJsonProvider extends AdminCommandStateJsonProvider {
     
     @Override
-    protected void addActionReporter(ActionReporter ar, JsonObject json) throws JsonException {
+    protected void addActionReporter(ActionReporter ar, JsonObjectBuilder json) throws JsonException {
         if (ar != null) {
             CommandResult cr = CompositeUtil.instance().getModel(CommandResult.class);
             cr.setMessage(ar.getMessage());
@@ -78,7 +78,7 @@ public class AdminCommandStateCmdResultJsonProvider extends AdminCommandStateJso
                 }
                 cr.setExtraProperties(map);
             }
-            json.put("command-result", (JsonObject) JsonUtil.getJsonValue(cr));
+            json.add("command-result", (JsonObject) JsonUtil.getJsonValue(cr));
         }
     }
     
