@@ -37,8 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.remote.reader;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
@@ -83,6 +84,7 @@ public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader
         String str = baos.toString("UTF-8");
         try {
             JsonParser parser = Json.createParser(new StringReader(str));
+            parser.next();
             JsonObject json = parser.getObject();
             return readAdminCommandState(json);
         } catch (JsonException ex) {

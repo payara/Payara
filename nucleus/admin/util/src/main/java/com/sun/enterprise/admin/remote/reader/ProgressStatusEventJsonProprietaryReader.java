@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.remote.reader;
 
 import java.io.IOException;
@@ -70,8 +72,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
 
     @Override
     public ProgressStatusEvent readFrom(final InputStream is, final String contentType) throws IOException {
-        JsonParser jp = factory.createJsonParser(is);
-        try {
+        try (JsonParser jp = factory.createJsonParser(is)) {
             JsonToken token = jp.nextToken(); //sorounding object
             jp.nextToken(); //Name progress-status-event
             JsonToken token2 = jp.nextToken();
@@ -81,8 +82,6 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
                 throw new IOException("Not expected type (progress-status-event) but (" + jp.getCurrentName() + ")");
             }
             return readProgressStatusEvent(jp);
-        } finally {
-            jp.close();
         }
     }
 
