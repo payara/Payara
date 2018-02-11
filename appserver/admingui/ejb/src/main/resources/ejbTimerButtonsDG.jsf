@@ -40,7 +40,7 @@
 
 -->
 
-<sun:button id="migrateTimesButton" text="$resource{i18ncs.button.migrateEjbTimer}"  disabled="#{disableEjb}" primary="false">
+<sun:button id="migrateTimesButton" text="$resource{i18ncs.button.migrateEjbTimer}"  primary="false">
     <!command
         gf.redirect(page="#{request.contextPath}/dg/migrateEjbTimersDG.jsf?dgName=#{pageSession.encodedDGName}");
     />
