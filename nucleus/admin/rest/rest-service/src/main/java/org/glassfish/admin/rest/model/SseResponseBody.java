@@ -82,7 +82,7 @@ public class SseResponseBody extends ResponseBody {
 
     @Override
     public JsonObject toJson() throws JsonException {
-        JsonObject json = Json.createObjectBuilder(super.toJson()).build();
+        JsonObject json = super.toJson();
 
         if (!headers.isEmpty()) {
             JsonObject o = Json.createObjectBuilder().build();
@@ -92,7 +92,7 @@ public class SseResponseBody extends ResponseBody {
                     JsonUtil.accumalate(o, key, JsonUtil.getJsonValue(value));
                 }
             }
-            JsonUtil.accumalate(json, "headers", o);
+            json = JsonUtil.accumalate(json, "headers", o);
         }
 
         return json;

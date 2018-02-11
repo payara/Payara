@@ -84,9 +84,12 @@
                 listAdd(list="#{pageSession.dgList}" value="", index="0", result="#{pageSession.dgList}");
                 setAttribute(key="one" value="$int{1}");
                 setAttribute(key="deploymentGroupSize" value="#{pageSession.dgList.size()}");
- 
-                if (#{requestScope.deploymentGroupSize}>#{requestScope.one}){                 
-                    py.updateDeploymentGroups(endpoint="#{sessionScope.REST_URL}/deployment-groups/add-instance-to-deployment-group" selected="#{pageSession.enabledDeploymentGroupsArr}" deploymentGroups="#{pageSession.allDeploymentGroupsArray}" instance="#{pageSession.name}");
+                setPageSessionAttribute(key="isSelectedInstanceEmpty", value="#{empty pageSession.enabledDeploymentGroupsArr}");
+
+                if (#{requestScope.deploymentGroupSize}>#{requestScope.one}){ 
+                    if('!#{pageSession.isSelectedInstanceEmpty} = true'){                
+                        py.updateDeploymentGroups(endpoint="#{sessionScope.REST_URL}/deployment-groups/add-instance-to-deployment-group" selected="#{pageSession.enabledDeploymentGroupsArr}" deploymentGroups="#{pageSession.allDeploymentGroupsArray}" instance="#{pageSession.name}");
+                    }
                 }
                 gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
              />

@@ -55,7 +55,7 @@
          gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.instanceList}" );   
         setAttribute(key="zero" value="$int{0}");
         setAttribute(key="instancesSize" value="#{pageSession.instanceList.size()}");         
-         
+       
         if( #{requestScope.instancesSize}=#{requestScope.zero} ){
             setPageSessionAttribute(key="showInstancesSection",  value="#{false}");
         }
@@ -67,6 +67,8 @@
             py.sortDeploymentGroupSelectedInstancesStatus(availableInstances="#{pageSession.instanceList}" enabled="#{pageSession.enabledInstancesList}" disabled="#{pageSession.disabledInstancesList}");
             convertListToArray(list="#{pageSession.enabledInstancesList}" array="#{pageSession.enabledInstancesArr}");
         }
+        
+          gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/nodes/node", result="#{pageSession.nodesList}");
     />
     </event>
     <sun:form id="propertyForm" autoComplete="off">
@@ -84,6 +86,9 @@
                 mapPut(map="#{requestScope.ct}" key="id" value="#{pageSession.name}" );
                 gf.createEntity( endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group"   attrs="#{requestScope.ct}")
                 
+                getUIComponent(clientId="#{pageSession.dgTableRowGroupId}", component="#{requestScope.tableRowGroup}");
+                getAllSingleMapRows(TableRowGroup="#{requestScope.tableRowGroup}",  Rows="#{requestScope.instances}");
+                
                 gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.instanceList}" );   
                 setAttribute(key="zero" value="$int{0}");
                 setAttribute(key="instancesSize" value="#{pageSession.instanceList.size()}"); 
@@ -91,6 +96,7 @@
                     py.addSelectedInstancesToDeploymentGroup(endpoint="#{sessionScope.REST_URL}/deployment-groups/add-instance-to-deployment-group" selected="#{pageSession.enabledInstancesArr}" instances="#{pageSession.allInstancesArray}" deploymentGroup="#{pageSession.name}");
                 }
                 
+                py.createDeploymentGroupInstances(deploymentGroupName="#{pageSession.name}", instanceRow="#{instances}");            
                 gf.redirect(page="#{request.contextPath}/cluster/dg/dgs.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
              />
             </sun:button>
@@ -122,6 +128,9 @@
             </sun:property>
         </sun:propertySheetSection>
     </sun:propertySheet>
+        
+#include "dgCreateNewInstance.jsf"
+
     <sun:hidden id="helpKey" value="$resource{help_cluster.clusterNew}" />
 </sun:form>
 </define>
