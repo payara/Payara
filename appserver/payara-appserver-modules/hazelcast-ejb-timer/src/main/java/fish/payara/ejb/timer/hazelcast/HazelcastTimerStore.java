@@ -585,7 +585,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     @Override
     protected Map<TimerPrimaryKey, Method> recoverAndCreateSchedules(long containerId, long applicationId, Map<Method, List<ScheduledTimerDescriptor>> schedules, boolean deploy) {
         Map<TimerPrimaryKey, Method> result = new HashMap<TimerPrimaryKey, Method>();
-
+        boolean lostCluster = false;
         Set<HZTimer> activeTimers = new HashSet<>();
 
         // get all timers for this container
@@ -612,7 +612,8 @@ public class HazelcastTimerStore extends EJBTimerService {
             // we are in trouble as we are not deploying but our keys are null
             // looks like we lost the whole cluster storage
             // recreate timers
-            deploy = true;
+            logger.log(Level.INFO, "Looks like we lost the data grid storage will recreate timers");
+            lostCluster = true;
         }
 
         Set<HZTimer> timers = _restoreTimers(activeTimers);
@@ -648,7 +649,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         try {
             if (!schedules.isEmpty()) {
                 createSchedules(containerId, applicationId, schedules, result, serverName, true,
-                    (deploy && isDas));
+                    (deploy && isDas) || lostCluster);
             }
         } catch (Exception ex) {
             Logger.getLogger(HazelcastTimerStore.class.getName()).log(Level.SEVERE, null, ex);
