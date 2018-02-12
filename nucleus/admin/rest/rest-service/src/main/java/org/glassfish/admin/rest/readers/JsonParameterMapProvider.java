@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -104,6 +106,7 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
             return map;
 
         } catch (Exception ex) {
+            Logger.getLogger("org.glassfish.admin.rest").log(Level.SEVERE, null, ex);
             ParameterMap map = new ParameterMap();
             map.add("error", "Entity Parsing Error: " + ex.getMessage());
 

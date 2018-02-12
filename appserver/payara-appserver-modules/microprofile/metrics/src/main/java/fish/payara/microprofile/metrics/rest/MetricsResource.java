@@ -87,7 +87,7 @@ public class MetricsResource extends HttpServlet {
             return;
         }
         if(!request.isSecure() && !metricsService.isInsucreMetricEnabled()){
-            response.sendError(SC_FORBIDDEN, "MP Metrics security is enbaled");
+            response.sendError(SC_FORBIDDEN, "MP Metrics security is enabled");
             return;
         }
         MetricsRequest metricsRequest = new MetricsRequest(request);

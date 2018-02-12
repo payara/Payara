@@ -87,13 +87,13 @@ public class AdminCommandStateJsonProvider extends BaseProvider<AdminCommandStat
         result.add("id", state.getId());
         result.add("empty-payload", state.isOutboundPayloadEmpty());
         ActionReporter ar = (ActionReporter) state.getActionReport();
-        addActionReporter(ar, result.build());
+        addActionReporter(ar, result);
         return result.build();
     }
     
-    protected void addActionReporter(ActionReporter ar, JsonObject json) throws JsonException {
+    protected void addActionReporter(ActionReporter ar, JsonObjectBuilder json) throws JsonException {
         if (ar != null) {
-            json.put("action-report", actionReportJsonProvider.processReport(ar));
+            json.add("action-report", actionReportJsonProvider.processReport(ar));
         }
     }
     

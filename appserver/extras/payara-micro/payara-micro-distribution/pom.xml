@@ -221,21 +221,25 @@
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>ejb.security</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-inbound-runtime</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
             <version>2.0.1</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.jms</groupId>
             <artifactId>gf-jms-injection</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <!-- End of JMS Client Dependencies -->
         <dependency>
@@ -432,12 +436,14 @@
             <groupId>org.glassfish.main.jms</groupId>
             <artifactId>jms-handlers</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
     </dependencies>
     <profiles>
@@ -480,49 +486,58 @@
                     <groupId>org.eclipse.microprofile.config</groupId>
                     <artifactId>microprofile-config-api</artifactId>
                     <version>${microprofile-config.version}</version>
+                    <optional>true</optional>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.nucleus.microprofile.config</groupId>
                     <artifactId>microprofile-config-service</artifactId>
                     <version>${project.version}</version>
+                    <optional>true</optional>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.microprofile.config</groupId>
                     <artifactId>microprofile-config</artifactId>
                     <version>${project.version}</version>
+                    <optional>true</optional>
                 </dependency>
                 <!-- Fault Tolerance -->
                 <dependency>
                     <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
                     <artifactId>microprofile-fault-tolerance-api</artifactId>
                     <version>${microprofile-fault-tolerance.version}</version>
+                    <optional>true</optional>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.microprofile.fault-tolerance</groupId>
                     <artifactId>microprofile-fault-tolerance</artifactId>
                     <version>${project.version}</version>
+                    <optional>true</optional>
 	        </dependency>
                 <!-- Health Check -->
 	        <dependency>
                     <groupId>org.eclipse.microprofile.health</groupId>
                     <artifactId>microprofile-health-api</artifactId>
                     <version>${microprofile-healthcheck.version}</version>
+                    <optional>true</optional>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.microprofile.healthcheck</groupId>
                     <artifactId>microprofile-healthcheck</artifactId>
                     <version>${project.version}</version>
+                    <optional>true</optional>
                 </dependency>
                 <!-- Metrics -->
                 <dependency>
                     <groupId>org.eclipse.microprofile.metrics</groupId>
                     <artifactId>microprofile-metrics-api</artifactId>
                     <version>${microprofile-metrics.version}</version>
+                    <optional>true</optional>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.microprofile.metrics</groupId>
                     <artifactId>microprofile-metrics</artifactId>
                     <version>${project.version}</version>
+                    <optional>true</optional>
                 </dependency>
             </dependencies>
         </profile>

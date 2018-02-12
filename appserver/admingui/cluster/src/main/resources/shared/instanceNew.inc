@@ -77,7 +77,20 @@
                 if (#{forDG}){
                     mapPut(map="#{requestScope.attrs}" key="deploymentgroup"  value="#{pageSession.dgName}" )
                 }
+
                 gf.restRequest(endpoint="#{sessionScope.REST_URL}/create-instance"  attrs="#{requestScope.attrs}" method="post"  result="#{requestScope.result}");
+
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group", result="#{pageSession.dgList}");
+                listAdd(list="#{pageSession.dgList}" value="", index="0", result="#{pageSession.dgList}");
+                setAttribute(key="one" value="$int{1}");
+                setAttribute(key="deploymentGroupSize" value="#{pageSession.dgList.size()}");
+                setPageSessionAttribute(key="isSelectedInstanceEmpty", value="#{empty pageSession.enabledDeploymentGroupsArr}");
+
+                if (#{requestScope.deploymentGroupSize}>#{requestScope.one}){ 
+                    if('!#{pageSession.isSelectedInstanceEmpty} = true'){                
+                        py.updateDeploymentGroups(endpoint="#{sessionScope.REST_URL}/deployment-groups/add-instance-to-deployment-group" selected="#{pageSession.enabledDeploymentGroupsArr}" deploymentGroups="#{pageSession.allDeploymentGroupsArray}" instance="#{pageSession.name}");
+                    }
+                }
                 gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
              />
             </sun:button>
@@ -103,10 +116,17 @@
             <sun:property id="NameTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.instanceName}" >
                 <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.instanceName']}" required="#{true}" />
             </sun:property>
-            <sun:property id="dg"  rendered="#{pageSession.renderDG}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusterNew.DG}" helpText="$resource{i18ncs.clusterNew.DGHelp}">
-                <sun:dropDown id="dg" labels="#{pageSession.dgList}" selected="#{pageSession.dgName}" >
-                </sun:dropDown>
+
+            <sun:property id="avaliableDeploymentGroups" visible="#{pageSession.showDeploymentGroupSection}" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
+                <sun:addRemove id="instancesAddRemove"
+                     selectAll="$boolean{true}"
+                     items="#{pageSession.allDeploymentGroup}"
+                     selected="#{pageSession.enabledDeploymentGroupsArr}"
+                     availableItemsLabel="$resource{i18ncs.dg.AvailableDeploymentGroup}"
+                     selectedItemsLabel="$resource{i18ncs.dg.SelectedDeploymentGroup}">
+                </sun:addRemove>
             </sun:property>
+
             <sun:property id="node"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusterNew.Node}" helpText="$resource{i18ncs.clusterNew.NodeHelp}">
                 <sun:dropDown id="node" labels="#{pageSession.nodesList}" selected="#{pageSession.node}" >
                 </sun:dropDown>

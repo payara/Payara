@@ -1,5 +1,5 @@
 /* 
- *     Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *     Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -371,6 +371,125 @@ public class PayaraRestApiHandlers {
                 
     }
     
+    /**
+     * Sort enabled and disabled Deployment Groups
+     * @param handlerctx 
+     */
+    @Handler(id = "py.sortInstanceSelectedDeploymentGroupStatus",
+            input = {
+                @HandlerInput(name = "avaliableDeploymentGroups", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "enabled", type = List.class),
+                @HandlerOutput(name = "disabled", type = List.class)})
+    public static void sortInstanceSelectedDeploymentGroupStatus(HandlerContext handlerctx) {
+        List<String> enabled = new ArrayList<String>();
+        List<String> disabled = new ArrayList<String>();
+        List<String> avaliable = (List) handlerctx.getInputValue("avaliableDeploymentGroups");
+
+        for (String unused : avaliable) {
+            disabled.add(unused);
+        }
+        handlerctx.setOutputValue("disabled", disabled);
+        handlerctx.setOutputValue("enabled", enabled);
+
+    }
+    
+    /**
+     * Updates the Deployment Groups to be enabled or disabled
+     * @param handlerCtx 
+     */
+    @Handler(id="py.updateDeploymentGroups",
+            input={
+                @HandlerInput(name="endpoint", type=String.class, required=true),
+                @HandlerInput(name="selected", type=String[].class, required=true),
+                @HandlerInput(name="deploymentGroups", type=String[].class, required=true),
+                @HandlerInput(name="instance", type=String.class, required=true),
+                @HandlerInput(name="quiet", type=boolean.class, defaultValue="false"),
+                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true"),
+            })
+    public static void updateDeploymentGroups(HandlerContext handlerCtx) {
+        String[] deploymentGroups = (String[]) handlerCtx.getInputValue("deploymentGroups");
+        String[] enabled = (String[]) handlerCtx.getInputValue("selected");
+        String instance = (String) handlerCtx.getInputValue("instance");
+        String endpoint = (String) handlerCtx.getInputValue("endpoint");
+        Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
+        Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
+        List<String> enabledDeploymentGroups = Arrays.asList(enabled);
+        
+        if (enabled.length > 0) {
+            HashMap<String, Object> attrs = new HashMap<>();
+            attrs.put("instance", instance);
+
+            for (String deploymentGroup : deploymentGroups) {
+                if (enabledDeploymentGroups.contains(deploymentGroup)) {
+                    attrs.put("deploymentGroup", deploymentGroup);
+                    RestUtil.restRequest(endpoint, attrs, "post", handlerCtx, quiet, throwException);
+                }
+            }
+     
+        }
+    }
+    
+    /**
+     * Sort selected and disabled Instances
+     *
+     * @param handlerctx
+     */
+    @Handler(id = "py.sortDeploymentGroupSelectedInstancesStatus",
+            input = {
+                @HandlerInput(name = "availableInstances", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "enabled", type = List.class),
+                @HandlerOutput(name = "disabled", type = List.class)})
+    public static void sortDeploymentGroupSelectedInstancesStatus(HandlerContext handlerctx) {
+        List<String> enabled = new ArrayList<>();
+        List<String> disabled = new ArrayList<>();
+        List<String> available = (List) handlerctx.getInputValue("availableInstances");
+
+        for (String unused : available) {
+            disabled.add(unused);
+        }
+        handlerctx.setOutputValue("disabled", disabled);
+        handlerctx.setOutputValue("enabled", enabled);
+
+    }
+
+    /**
+     * Add selected Instances to Deployment Groups
+     *
+     * @param handlerCtx
+     */
+    @Handler(id = "py.addSelectedInstancesToDeploymentGroup",
+            input = {
+                @HandlerInput(name = "endpoint", type = String.class, required = true),
+                @HandlerInput(name = "selected", type = String[].class, required = true),
+                @HandlerInput(name = "instances", type = String[].class, required = true),
+                @HandlerInput(name = "deploymentGroup", type = String.class, required = true),
+                @HandlerInput(name = "quiet", type = boolean.class, defaultValue = "false"),
+                @HandlerInput(name = "throwException", type = boolean.class, defaultValue = "true"),})
+    public static void addSelectedInstancesToDeploymentGroup(HandlerContext handlerCtx) {
+        String[] instances = (String[]) handlerCtx.getInputValue("instances");
+        String[] selected = (String[]) handlerCtx.getInputValue("selected");
+        String deploymentGroup = (String) handlerCtx.getInputValue("deploymentGroup");
+        String endpoint = (String) handlerCtx.getInputValue("endpoint");
+        Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
+        Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
+        List<String> enabledDeploymentGroups = Arrays.asList(selected);
+
+        if (selected.length > 0) {
+            HashMap<String, Object> attributes = new HashMap<>();
+            attributes.put("deploymentGroup", deploymentGroup);
+
+            for (String selectedInstance : instances) {
+                if (enabledDeploymentGroups.contains(selectedInstance)) {
+                    attributes.put("instance", selectedInstance);
+                    RestUtil.restRequest(endpoint, attributes, "post", handlerCtx, quiet, throwException);
+                }
+            }
+
+        }
+    }
+
         @Handler(id="py.sortHealthcheckEnabledNotifierStatus",
     	input={
             @HandlerInput(name="specifiedNotifiers", type=String.class, required=true),
@@ -643,5 +762,43 @@ public class PayaraRestApiHandlers {
         } catch (Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
         }
+    }
+    
+     /**
+     * Create Deployment Group with Instances
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.createDeploymentGroupInstances",
+        input = {
+            @HandlerInput(name = "deploymentGroupName", type = String.class, required = true),
+            @HandlerInput(name = "instanceRow", type = List.class, required = true)})
+    public static void createClusterInstances(HandlerContext handlerCtx) {
+        String deploymentGroupName = (String) handlerCtx.getInputValue("deploymentGroupName");
+        List<Map> instanceRow = (List<Map>) handlerCtx.getInputValue("instanceRow");
+        Map<String, Object> instanceAttributesMap = new HashMap<>();
+        String endpointForCreateInstance = GuiUtil.getSessionValue("REST_URL") + "/create-instance";
+        for (Map Instance : instanceRow) {
+            instanceAttributesMap.put("name", Instance.get("name"));
+            instanceAttributesMap.put("deploymentgroup", deploymentGroupName);
+            instanceAttributesMap.put("node", Instance.get("node"));
+            try {
+                GuiUtil.getLogger().info(endpointForCreateInstance);
+                GuiUtil.getLogger().info(instanceAttributesMap.toString());
+                RestUtil.restRequest(endpointForCreateInstance, instanceAttributesMap, "post", null, false);
+                //set  load balancing weight
+                String instanceLoadBalancingWeight = (String) Instance.get("weight");
+                if (!GuiUtil.isEmpty(instanceLoadBalancingWeight)) {
+                    String encodedInstanceName = URLEncoder.encode((String) Instance.get("name"), "UTF-8");
+                    String endpoint = GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + encodedInstanceName;
+                    Map loadBalancingWeightAttribute = new HashMap();
+                    loadBalancingWeightAttribute.put("lbWeight", instanceLoadBalancingWeight);
+                    RestUtil.restRequest(endpoint, loadBalancingWeightAttribute, "post", null, false);
+                }
+            } catch (Exception ex) {
+                GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("LOG_CREATE_DEPLOYMENT_GROUP_INSTANCE", new Object[]{deploymentGroupName, endpointForCreateInstance, instanceAttributesMap}));
+                GuiUtil.prepareException(handlerCtx, ex);
+            }
+        }
+
     }
 }

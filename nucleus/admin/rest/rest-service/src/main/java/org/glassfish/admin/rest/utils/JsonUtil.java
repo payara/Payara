@@ -246,14 +246,17 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Converts a {@link Collection} of {@link JsonValue}s or other Json-compatible types into a {@link JsonAray}
+     * @param c
+     * @return
+     * @throws JsonException 
+     */
     public static JsonArray processCollection(Collection c) throws JsonException {
         JsonArrayBuilder result = Json.createArrayBuilder();
-        Iterator i = c.iterator();
-        while (i.hasNext()) {
-            JsonValue item = getJsonValue(i.next());
+        for (Object item: c){
             result.add(JsonUtil.getJsonValue(item));
         }
-
         return result.build();
     }
 
@@ -299,38 +302,6 @@ public class JsonUtil {
             return dflt;
         }
     }
-
-    /**
-     * Puts a value into the specified jsonObject
-     * <p>
-     * This method is synchronised on the jsonObject
-     * @param jsonObject
-     * @param key
-     * @param value 
-     */
-    public static void put(JsonObject jsonObject, String key, Object value) {
-        try {
-            synchronized(jsonObject) {
-                jsonObject.put(key, value!=null?getJsonValue(value):JsonObject.NULL);
-            }
-        } catch (JsonException e) {
-            // ignore. The exception is thrown only if the value is non-finite number
-            // or if the key is null.
-        }
-    }
-
-    /**
-     * Puts a {@link JsonObject} into a {@link JsonArray}
-     * <p>
-     * This method is synchronised on the jsonArray
-     * @param jsonArray
-     * @param item 
-     */
-    public static void put(JsonArray jsonArray, JsonObject item) {
-        synchronized(jsonArray) {
-            jsonArray.add(item);
-        }
-    }
     
     /**
      * Puts a value into a {@link JsonObject} with the specified key. 
@@ -340,22 +311,27 @@ public class JsonUtil {
      * @param jsonObject
      * @param key
      * @param value
+     * @return 
      * @since 5.0
      */
-    public static void accumalate(JsonObject jsonObject, String key, JsonValue value){
+    public static JsonObject accumalate(JsonObject jsonObject, String key, JsonValue value){
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder(jsonObject);
         if (jsonObject.containsKey(key)){
             JsonValue previous = jsonObject.get(key);
             if (previous instanceof JsonArray){
-                ((JsonArray) previous).add(value);
+                JsonArrayBuilder prev = Json.createArrayBuilder((JsonArray)previous);
+                prev.add(value);
+                jsonBuilder.add(key, prev);
             } else {
                 JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
                 arrayBuilder.add(previous);
                 arrayBuilder.add(value);
-                jsonObject.put(key, arrayBuilder.build());
+                jsonBuilder.add(key, arrayBuilder);
             }
         } else {
-            jsonObject.put(key, value);
+            jsonBuilder.add(key, value);
         }
+        return jsonBuilder.build();
     }
     
     /**

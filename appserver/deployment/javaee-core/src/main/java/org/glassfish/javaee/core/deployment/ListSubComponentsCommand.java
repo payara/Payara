@@ -37,8 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2018] Payara Foundation and/or affiliates
 package org.glassfish.javaee.core.deployment;
+
+import static org.glassfish.api.admin.CommandLock.LockType.NONE;
+import static org.glassfish.api.admin.RestEndpoint.OpType.GET;
+import static org.glassfish.api.admin.RuntimeType.DAS;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,18 +51,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Module;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -71,52 +66,60 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
-import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
-
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
+
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
  * list-sub-components command
  */
-@Service(name="list-sub-components")
+@Service(name = "list-sub-components")
 @I18n("list.sub.components")
 @PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@ExecuteOn(value={RuntimeType.DAS})
-@RestEndpoints({
-    @RestEndpoint(configBean=Application.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="list-sub-components", 
-        description="List subcomponents",
-        params={
-            @RestParam(name="modulename", value="$parent")
-        })
-})
+@CommandLock(NONE)
+@ExecuteOn(DAS)
+@RestEndpoints(
+        @RestEndpoint(
+                configBean = Application.class, 
+                opType = GET,
+                path = "list-sub-components", 
+                description = "List subcomponents", 
+                params = @RestParam(name = "modulename", value = "$parent")) 
+)
 public class ListSubComponentsCommand implements AdminCommand {
 
-    @Param(primary=true)
-    private String modulename = null;
+    @Param(primary = true)
+    private String modulename;
 
-    @Param(optional=true)
-    private String appname = null;
+    @Param(optional = true)
+    private String appname;
 
-    @Param(optional=true)
-    private String type = null;
+    @Param(optional = true)
+    private String type;
 
     @Inject
     public ApplicationRegistry appRegistry;
 
-    @Param(optional=true, defaultValue="false")
+    @Param(optional = true, defaultValue = "false")
     private Boolean resources = false;
 
-    @Param(optional=true, defaultValue="false", shortName="t")
+    @Param(optional = true, defaultValue = "false", shortName = "t")
     public Boolean terse = false;
 
     @Inject
@@ -128,7 +131,7 @@ public class ListSubComponentsCommand implements AdminCommand {
     @Inject
     private CommandRunner commandRunner;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListSubComponentsCommand.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListSubComponentsCommand.class);    
 
     public void execute(AdminCommandContext context) {
         

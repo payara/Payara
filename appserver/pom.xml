@@ -86,7 +86,7 @@
         <!-- JSF -->
         <javax.faces-spec.version>2.3</javax.faces-spec.version>
         <javax.faces-api.version>2.3</javax.faces-api.version>
-        <mojarra.version>2.4.0-m01.payara-p5</mojarra.version>
+        <mojarra.version>2.4.0-m01.payara-p6</mojarra.version>
 
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
@@ -98,7 +98,7 @@
 
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
-        <yasson.version>1.0</yasson.version>
+        <yasson.version>1.0.1</yasson.version>
 
         <!-- JSON-P -->
         <jsonp-api.version>1.1</jsonp-api.version>
@@ -145,8 +145,8 @@
 
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
-        <com.ibm.jbatch.container.version>1.0.1.payara-p2</com.ibm.jbatch.container.version>
-        <com.ibm.jbatch.spi.version>1.0.1</com.ibm.jbatch.spi.version>
+        <com.ibm.jbatch.container.version>1.0.3.payara-p2</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
 
         <!-- EJB -->
         <javax.ejb-api.version>3.2</javax.ejb-api.version>
@@ -182,15 +182,13 @@
 
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
-        <payara_domain_template>payara-domain.jar</payara_domain_template>
+        <production_domain_template>production-domain.jar</production_domain_template>
         <version_prefix />
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version></minor_version>
+        <minor_version>181-SNAPSHOT</minor_version>
         <update_version></update_version>
-        <payara_version>181-SNAPSHOT</payara_version>
-        <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
 
         <jsf-ext.version>0.2</jsf-ext.version>
@@ -223,8 +221,8 @@
          <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.0.1.payara-p1</microprofile-metrics.version>
       
-         <nimbus-jose-jwt.version>5.1</nimbus-jose-jwt.version>
-         <accessors-smart.version>1.2</accessors-smart.version>
+         <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
+         <accessors-smart.version>1.2.payara-p1</accessors-smart.version>
          <json-smart.version>2.3</json-smart.version>
          <jcip-annotations.version>1.0-1</jcip-annotations.version>
 

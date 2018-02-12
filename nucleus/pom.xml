@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -165,8 +165,8 @@
         <repository>
            <id>payara-patched-externals</id>
 	       <name>Payara Patched Externals</name>
-	       <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	       <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
            	<releases>
            		<enabled>true</enabled>
            	</releases>
@@ -192,8 +192,8 @@
         <pluginRepository>
            <id>payara-patched-externals</id>
 	       <name>Payara Patched Externals</name>
-	       <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	       <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
            	<releases>
            		<enabled>true</enabled>
            	</releases>
@@ -216,7 +216,7 @@
 
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
-        <grizzly.version>2.4.1</grizzly.version>
+        <grizzly.version>2.4.3</grizzly.version>
         <grizzly.npn.version>1.7</grizzly.npn.version>
 
         <!-- JAX-RS -->
@@ -243,8 +243,8 @@
 
         <!-- Other -->
 
-        <hk2.version>2.5.0-b45-SNAPSHOT</hk2.version>
-        <hk2.plugin.version>2.5.0-b44</hk2.plugin.version>
+        <hk2.version>2.5.0-b61.payara-p1</hk2.version>
+        <hk2.plugin.version>2.5.0-b61.payara-p2</hk2.plugin.version>
 
         <!-- 4.1.1-b001  -->
         <glassfish-corba.version>4.1.1.payara-p1</glassfish-corba.version>
@@ -267,7 +267,7 @@
         <antlr.version>2.7.7</antlr.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.8.9</jackson.version>
+        <jackson.version>2.9.4</jackson.version>
         <!-- A StAX implementation for JSON. -->
 
         <jsonp.version>1.1</jsonp.version>
@@ -282,7 +282,7 @@
         <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>5.0.3</asm.version>
+        <asm.version>6.0</asm.version>
         <ha-api.version>3.1.9</ha-api.version>      
         <hazelcast.version>3.9.1</hazelcast.version>
         <smack.version>4.1.9</smack.version>
@@ -294,7 +294,7 @@
         <guava.version>19.0</guava.version>
         <!-- Build -->
 
-        <glassfishbuild.version>3.2.20</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20.payara-p1</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.8</command-security-plugin.version>
@@ -331,6 +331,7 @@
         <module>diagnostics</module>
         <module>resources</module>
         <module>resources-l10n</module>
+        <module>hk2</module>
     </modules>
 
     <build>
@@ -502,7 +503,7 @@
                 <plugin>
                     <groupId>org.glassfish.hk2</groupId>
                     <artifactId>config-generator</artifactId>
-                    <version>${hk2.plugin.version}</version>
+                    <version>2.5.0-b53</version>
                 </plugin>
 
                 <plugin>
@@ -684,6 +685,7 @@
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>config-generator</artifactId>
+                <version>2.5.0-b53</version>
                 <configuration>
                     <excludes>**/.ade_path/**</excludes>
                     <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
@@ -1279,7 +1281,7 @@ Parent is ${project.parent}</echo>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>asm-all-repackaged</artifactId>
+                <artifactId>asm-repackaged</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
             <dependency>
