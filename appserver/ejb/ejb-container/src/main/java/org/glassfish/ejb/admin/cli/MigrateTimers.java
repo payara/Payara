@@ -160,6 +160,39 @@ public class MigrateTimers implements AdminCommand {
     }
 
     private String validate() {
+        
+        if (targetUtil.isCluster(target)) {
+            return validateCluster();
+        } else {
+            return validateDG();
+        }
+    }
+
+    private boolean isServerRunning(String serverName) {
+        Server server = domain.getServerNamed(serverName);
+        return (server == null) ? false : server.isRunning();
+    }
+
+    private int migrateTimers( String serverId ) {
+        if (logger.isLoggable(Level.INFO)) {
+            logger.log(Level.INFO, "[MigrateTimers] migrating timers from " + serverId);
+        }
+
+        int result = 0;
+        if (EJBTimerService.isEJBTimerServiceLoaded()) {
+            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
+            if (ejbTimerService != null) {
+                result = ejbTimerService.migrateTimers( serverId );
+            }
+        } else {
+            //throw new IllegalStateException("EJB Timer service is null. "
+                    //+ "Cannot migrate timers for: " + serverId);
+        }
+
+        return result;
+    }
+    
+    private String validateCluster() {
         //verify fromServer is clusteredInstance
         Cluster fromServerCluster = targetUtil.getClusterForInstance(fromServer);
         if(fromServerCluster == null) {
@@ -204,27 +237,55 @@ public class MigrateTimers implements AdminCommand {
         return null;
     }
 
-    private boolean isServerRunning(String serverName) {
-        Server server = domain.getServerNamed(serverName);
-        return (server == null) ? false : server.isRunning();
-    }
 
-    private int migrateTimers( String serverId ) {
-        if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, "[MigrateTimers] migrating timers from " + serverId);
+    private String validateDG() {
+        List<DeploymentGroup> dgs = targetUtil.getDGForInstance(fromServer);
+        if(dgs == null) {
+            return localStrings.getString("migrate.timers.fromServerNotDG", fromServer);
         }
-
-        int result = 0;
-        if (EJBTimerService.isEJBTimerServiceLoaded()) {
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
-            if (ejbTimerService != null) {
-                result = ejbTimerService.migrateTimers( serverId );
+        
+        //verify fromServer is not running
+        if (isServerRunning(fromServer)) {
+            return localStrings.getString(
+                    "migrate.timers.migrateFromServerStillRunning", fromServer);
+        }
+        
+        //if destinationServer is not set, or set to DAS, pick a running instance
+        //in the same cluster as fromServer
+        if(target.equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
+            List<Server> instances = dgs.get(0).getInstances();
+            for(Server instance : instances) {
+                if(instance.isRunning()) {
+                    target = instance.getName();
+                    needRedirect = true;
+                }
+            }
+            //if destination is still DAS, that means no running server is available
+            if(target.equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
+                return localStrings.getString("migrate.timers.noRunningInstanceToChoose",
+                        target);
             }
         } else {
-            //throw new IllegalStateException("EJB Timer service is null. "
-                    //+ "Cannot migrate timers for: " + serverId);
-        }
+            //verify fromServer and destinationServer are in the same dg, and
+            boolean inSameDG = false;
+            for (DeploymentGroup dg : dgs) {
+                for (Server instance : dg.getInstances()) {
+                    if (instance.getName().equals(target)) {
+                        inSameDG = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!inSameDG) {
+                return localStrings.getString("migrate.timers.destinationIsNotInDG", target);                
+            }
 
-        return result;
+            //verify destinationServer is running
+            if (!isServerRunning(target)) {
+                return localStrings.getString("migrate.timers.destinationServerIsNotAlive", target);
+            }
+        }
+        return null;
     }
 }

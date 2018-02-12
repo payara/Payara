@@ -494,7 +494,7 @@ public class EjbDeployer
                 List<String> targets = (List<String>)context.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class);
                 for (String ref: targets) {
                     target = ref;
-                    if (domain.getClusterNamed(target) != null) {
+                    if (domain.getClusterNamed(target) != null || domain.getDeploymentGroupNamed(target) != null) {
                         break; // prefer cluster target
                     }
                  }

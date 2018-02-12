@@ -45,8 +45,12 @@ import com.sun.ejb.PersistentTimerService;
 import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBTimerService;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
 import com.sun.enterprise.transaction.spi.RecoveryEventListener;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.nucleus.cluster.ClusterListener;
 import fish.payara.nucleus.cluster.MemberEvent;
 import fish.payara.nucleus.cluster.PayaraCluster;
@@ -57,6 +61,7 @@ import org.glassfish.hk2.api.PostConstruct;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.glassfish.api.admin.ServerEnvironment;
 
 @Service
 public class DatabaseEJBTimerService
@@ -69,6 +74,12 @@ public class DatabaseEJBTimerService
 
     @Inject
     PayaraCluster cluster;
+    
+    @Inject
+    Domain domain;
+    
+    @Inject
+    ServerEnvironment serverEnv;
 
     @Inject
     RecoveryResourceRegistry recoveryResourceRegistry;
@@ -138,7 +149,42 @@ public class DatabaseEJBTimerService
 
     @Override
     public void memberRemoved(MemberEvent event) {
-        migrateTimers(event.getServer());
+        
+        // work out whether we should be attempting to migrate timers
+        String server = event.getServer();
+        String group = event.getServerGroup();
+        String thisServer = serverEnv.getInstanceName();
+        
+        
+        // check whether the server is any of the same clusters or deployment groups 
+        // as the disappeared server and if so migrate timers
+        boolean migrate = false;
+        Cluster forServer = domain.getClusterForInstance(server);
+        if (forServer != null) {
+            for (Server instance : forServer.getInstances()) {
+                if (instance.getName().equals(thisServer)) {
+                    // if I am in the same cluster
+                    migrate = true; 
+                    break;
+                }
+            }
+        }
+        
+        if (!migrate) {
+            for (DeploymentGroup deploymentGroup : domain.getDeploymentGroupsForInstance(server)) {
+                for (Server instance : deploymentGroup.getInstances()) {
+                    if (instance.getName().equals(thisServer)) {
+                        // if I am in the same cluster
+                        migrate = true; 
+                        break;
+                    }                    
+                }
+            }
+        }
+        
+        if (migrate) {
+            migrateTimers(event.getServer());
+        }
     }
 
 } //DistributedEJBTimerService.java
