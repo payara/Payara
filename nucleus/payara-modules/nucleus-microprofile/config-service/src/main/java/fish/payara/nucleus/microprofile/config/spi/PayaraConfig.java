@@ -168,7 +168,23 @@ public class PayaraConfig implements Config {
         } else if (type.equals(boolean.class)) {
             type = Boolean.class;
         }
-        return converters.get(type);
+        Converter<T> converter = converters.get(type);
+
+            
+        if (converter == null) {
+            // search for a matching raw type
+            for (Type type1 : converters.keySet()) {
+                if (type1 instanceof ParameterizedType) {
+                    ParameterizedType ptype = (ParameterizedType)type1;
+                    if (ptype.getRawType().equals(propertyType)) {
+                        converter = converters.get(type1);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return converter;
     }
     
     private int getPriority(Converter converter) {

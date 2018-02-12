@@ -48,6 +48,7 @@
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common</artifactId>
         <version>5.181-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>container-common</artifactId>

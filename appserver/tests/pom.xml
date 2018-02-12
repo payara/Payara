@@ -47,6 +47,7 @@
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
         <version>5.181-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.glassfish.main.tests</groupId>

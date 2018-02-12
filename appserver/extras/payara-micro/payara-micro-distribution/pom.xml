@@ -476,10 +476,70 @@
         </profile>
 
         <profile>
+            <id>jdk7</id>
+            <activation>
+                <jdk>1.7</jdk>
+            </activation>
+            <build>
+                <defaultGoal>install</defaultGoal>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                        <artifactId>maven-antrun-extended-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <ant dir="." antfile="build-jdk7.xml" target="new.create">
+                                            <property name="bundlename" value="fish.payara.micro" />
+                                            <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
+                                            <property name="install.dir.name" value="${install.dir.name}" />                            
+                                        </ant>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
             <id>jdk8</id>
             <activation>
                 <jdk>1.8</jdk>
             </activation>
+            <build>
+                <defaultGoal>install</defaultGoal>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                        <artifactId>maven-antrun-extended-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <ant dir="." antfile="build.xml" target="new.create">
+                                            <property name="bundlename" value="fish.payara.micro" />
+                                            <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
+                                            <property name="install.dir.name" value="${install.dir.name}" />                            
+                                        </ant>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            
             <dependencies>
                 <!-- Add Microprofile 1.1 apis -->
                 <dependency>

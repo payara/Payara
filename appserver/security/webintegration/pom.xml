@@ -48,7 +48,8 @@
         <groupId>org.glassfish.main.security</groupId>
         <artifactId>securitymodule</artifactId>
         <version>5.181-SNAPSHOT</version>
-    </parent>
+        <relativePath>../pom.xml</relativePath>        
+    </parent>    
 
     <artifactId>websecurity</artifactId>
     <packaging>glassfish-jar</packaging>

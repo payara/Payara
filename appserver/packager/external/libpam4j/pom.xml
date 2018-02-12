@@ -48,6 +48,7 @@
         <groupId>org.glassfish.main.external</groupId>
         <artifactId>external</artifactId>
         <version>5.181-SNAPSHOT</version>
+        <version>4.1.2.182-SNAPSHOT</version>
     </parent>
 
     <artifactId>libpam4j-repackaged</artifactId>

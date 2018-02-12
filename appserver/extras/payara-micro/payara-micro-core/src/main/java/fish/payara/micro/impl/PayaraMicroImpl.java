@@ -90,6 +90,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -1529,7 +1530,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             
             // Get all files in the directory, and sort them by file type
             List<File> deploymentDirEntries = Arrays.asList(deploymentRoot.listFiles());
-            deploymentDirEntries.sort(new DeploymentComparator());
+            Collections.sort(deploymentDirEntries, new DeploymentComparator());
             
             for (File entry : deploymentDirEntries) {
                 String entryPath = entry.getAbsolutePath();

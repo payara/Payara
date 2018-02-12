@@ -24,6 +24,7 @@
         <groupId>org.glassfish.main.batch</groupId>
         <artifactId>batch</artifactId>
         <version>5.181-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>payara-jbatch</artifactId>

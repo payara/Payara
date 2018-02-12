@@ -46,8 +46,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-	      <groupId>org.glassfish.main.web</groupId>
-    	  <artifactId>web</artifactId>
+	 <groupId>org.glassfish.main.web</groupId>
+    	 <artifactId>web</artifactId>
         <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
