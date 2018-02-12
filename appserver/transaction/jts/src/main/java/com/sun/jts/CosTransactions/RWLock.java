@@ -91,7 +91,7 @@ import com.sun.logging.LogDomains;
 
 public class RWLock {
 
-  private static Logger _logger = LogDomains.getLogger(RWLock.class, LogDomains.TRANSACTION_LOGGER, false);
+  private static Logger _logger = LogDomains.getLogger(RWLock.class, LogDomains.TRANSACTION_LOGGER);
 
   int currentReaders;
   int pendingReaders;
