@@ -48,6 +48,7 @@
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>deployment</artifactId>
         <version>5.181-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>dol</artifactId>

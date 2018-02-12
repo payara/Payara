@@ -46,8 +46,9 @@
 
     <parent>
         <groupId>org.glassfish.main.web</groupId>
-    	  <artifactId>web</artifactId>
+    	<artifactId>web</artifactId>
         <version>5.181-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>web-naming</artifactId>

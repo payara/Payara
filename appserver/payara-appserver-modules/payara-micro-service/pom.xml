@@ -56,12 +56,6 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>

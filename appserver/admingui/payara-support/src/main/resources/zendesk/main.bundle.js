@@ -90,7 +90,7 @@ var AddFileComponent = (function () {
                 group: 'reports',
                 uploaded: false,
                 type: 'traces'
-            },
+            }
         ];
         this.fileButtons = [];
         this.filesLoaded = false;
@@ -106,8 +106,7 @@ var AddFileComponent = (function () {
     /**
      * ngAfterViewInit - AfterViewInit method of the component
      */
-    AddFileComponent.prototype.ngAfterViewInit = function () {
-    };
+    AddFileComponent.prototype.ngAfterViewInit = function () { };
     /**
      * ngOnDestroy - OnDestroy method of the component
      */
@@ -133,8 +132,7 @@ var AddFileComponent = (function () {
         this.groups.push('general');
         this.groups.push('reports');
         this.fileButtons = Object.assign([], this.staticFileButtons);
-        this.payaraService.getServerInstances()
-            .then(function (responseData) {
+        this.payaraService.getServerInstances().then(function (responseData) {
             if (responseData !== undefined && responseData !== null) {
                 _this.filesLoaded = true;
                 var responseArray_1 = Object.keys(responseData);
@@ -142,54 +140,112 @@ var AddFileComponent = (function () {
                     if (responseArray_1[prop] === 'server') {
                         _this.groups.push('DAS');
                         _this.fileButtons.push({
-                            title: _this.translate.instant('JVM Report') + ': ' + responseArray_1[prop],
-                            url: 'servers/server/' + responseArray_1[prop] + '/generate-jvm-report.json?type=summary',
+                            title: _this.translate.instant('JVM Report') +
+                                ': ' +
+                                responseArray_1[prop],
+                            url: 'servers/server/' +
+                                responseArray_1[prop] +
+                                '/generate-jvm-report.json?type=summary',
                             group: 'DAS',
                             uploaded: false,
                             type: 'json'
                         });
                         _this.fileButtons.push({
-                            title: _this.translate.instant('Thread Dump') + ': ' + responseArray_1[prop],
-                            url: 'servers/server/' + responseArray_1[prop] + '/generate-jvm-report.json?type=thread',
+                            title: _this.translate.instant('Thread Dump') +
+                                ': ' +
+                                responseArray_1[prop],
+                            url: 'servers/server/' +
+                                responseArray_1[prop] +
+                                '/generate-jvm-report.json?type=thread',
                             group: 'DAS',
                             uploaded: false,
                             type: 'json'
                         });
                         _this.fileButtons.push({
                             title: 'Log: ' + responseArray_1[prop],
-                            url: 'logs_' + responseArray_1[prop] + '.zip?contentSourceId=LogFiles&target=' + responseArray_1[prop] + '&restUrl=' + window.location.protocol + '//' + window.location.hostname + ':' + window["globalPort"] + '/management/domain',
+                            url: 'logs_' +
+                                responseArray_1[prop] +
+                                '.zip?contentSourceId=LogFiles&target=' +
+                                responseArray_1[prop] +
+                                '&restUrl=' +
+                                window.location.protocol +
+                                '//' +
+                                window.location.hostname +
+                                ':' +
+                                window['globalPort'] +
+                                '/management/domain',
                             group: 'DAS',
                             file: 'logs_' + responseArray_1[prop] + '.zip',
                             uploaded: false,
                             type: 'zip'
                         });
+                        _this.fileButtons.push({
+                            title: _this.translate.instant('Monitoring Data') +
+                                ': ' +
+                                responseArray_1[prop],
+                            url: 'get.json?pattern=' + responseArray_1[prop] + '*&monitor=true',
+                            group: 'DAS',
+                            uploaded: false,
+                            type: 'json'
+                        });
                     }
                     else {
-                        _this.payaraService.getInstanceStatus(responseArray_1[prop])
-                            .then(function (responseData) {
+                        _this.payaraService.getInstanceStatus(responseArray_1[prop]).then(function (responseData) {
                             _this.groups.push('Instance: ' + responseArray_1[prop]);
-                            if (responseArray_1[prop] === 'server' || (responseData !== undefined && responseData !== null && responseData === 'RUNNING')) {
+                            if (responseArray_1[prop] === 'server' ||
+                                (responseData !== undefined &&
+                                    responseData !== null &&
+                                    responseData === 'RUNNING')) {
                                 _this.fileButtons.push({
-                                    title: _this.translate.instant('JVM Report') + ': ' + responseArray_1[prop],
-                                    url: 'servers/server/' + responseArray_1[prop] + '/generate-jvm-report.json?type=summary',
+                                    title: _this.translate.instant('JVM Report') +
+                                        ': ' +
+                                        responseArray_1[prop],
+                                    url: 'servers/server/' +
+                                        responseArray_1[prop] +
+                                        '/generate-jvm-report.json?type=summary',
                                     group: 'Instance: ' + responseArray_1[prop],
                                     uploaded: false,
                                     type: 'json'
                                 });
                                 _this.fileButtons.push({
-                                    title: _this.translate.instant('Thread Dump') + ': ' + responseArray_1[prop],
-                                    url: 'servers/server/' + responseArray_1[prop] + '/generate-jvm-report.json?type=thread',
+                                    title: _this.translate.instant('Thread Dump') +
+                                        ': ' +
+                                        responseArray_1[prop],
+                                    url: 'servers/server/' +
+                                        responseArray_1[prop] +
+                                        '/generate-jvm-report.json?type=thread',
                                     group: 'Instance: ' + responseArray_1[prop],
                                     uploaded: false,
                                     type: 'json'
                                 });
                                 _this.fileButtons.push({
                                     title: 'Log: ' + responseArray_1[prop],
-                                    url: 'Log: ' + responseArray_1[prop] + '.zip?contentSourceId=LogFiles&target=' + responseArray_1[prop] + '&restUrl=' + window.location.protocol + '//' + window.location.hostname + ':' + window["globalPort"] + '/management/domain',
+                                    url: 'Log: ' +
+                                        responseArray_1[prop] +
+                                        '.zip?contentSourceId=LogFiles&target=' +
+                                        responseArray_1[prop] +
+                                        '&restUrl=' +
+                                        window.location.protocol +
+                                        '//' +
+                                        window.location.hostname +
+                                        ':' +
+                                        window['globalPort'] +
+                                        '/management/domain',
                                     group: 'Instance: ' + responseArray_1[prop],
                                     file: 'Log: ' + responseArray_1[prop] + '.zip',
                                     uploaded: false,
                                     type: 'zip'
+                                });
+                                _this.fileButtons.push({
+                                    title: _this.translate.instant('Monitoring Data') +
+                                        ': ' +
+                                        responseArray_1[prop],
+                                    url: 'get.json?pattern=' +
+                                        responseArray_1[prop] +
+                                        '*&monitor=true',
+                                    group: 'Instance: ' + responseArray_1[prop],
+                                    uploaded: false,
+                                    type: 'json'
                                 });
                             }
                         }, function (error) {
@@ -220,11 +276,11 @@ var AddFileComponent = (function () {
             _this.errorMessage = res;
             var timer = __WEBPACK_IMPORTED_MODULE_2_rxjs_Rx__["Observable"].timer(1000, 50);
             _this.sub = timer.subscribe(function (t) {
-                _this.errorMessage = "";
+                _this.errorMessage = '';
                 _this.sub.unsubscribe();
             });
             _this.loadingMessage = null;
-            _this.successMessage = "";
+            _this.successMessage = '';
         });
     };
     /**
@@ -237,32 +293,33 @@ var AddFileComponent = (function () {
         this.saved.emit(file);
         this.filesSaved = true;
         this.loadingMessage = null;
-        this.successMessage = "";
+        this.successMessage = '';
         this.translate.get('File added successfully!').subscribe(function (res) {
             _this.successMessage = res;
         });
         var timer = __WEBPACK_IMPORTED_MODULE_2_rxjs_Rx__["Observable"].timer(1000, 50);
         this.sub = timer.subscribe(function (t) {
-            _this.successMessage = "";
+            _this.successMessage = '';
             _this.sub.unsubscribe();
         });
     };
     /**
-    * searchFile - Event to get the data for the file when the button is pressed
-    *
-    * @param {any}  fileButton Object with the data of the fileButton
-    */
+     * searchFile - Event to get the data for the file when the button is pressed
+     *
+     * @param {any}  fileButton Object with the data of the fileButton
+     */
     AddFileComponent.prototype.searchFile = function (fileButton) {
         var _this = this;
-        this.errorMessage = "";
-        this.loadingMessage = "";
-        this.successMessage = "";
+        this.errorMessage = '';
+        this.loadingMessage = '';
+        this.successMessage = '';
         if (fileButton.uploaded) {
             this.removed.emit(fileButton.title);
             fileButton.uploaded = false;
         }
         else {
-            this.loadingMessage = this.translate.instant("Loading file ...") + fileButton.title;
+            this.loadingMessage =
+                this.translate.instant('Loading file ...') + fileButton.title;
             if (fileButton.url && fileButton.url !== '') {
                 switch (fileButton.type) {
                     case 'log':
@@ -276,7 +333,7 @@ var AddFileComponent = (function () {
                                     else {
                                         fileButton.uploaded = false;
                                         _this.loadingMessage = null;
-                                        _this.successMessage = "";
+                                        _this.successMessage = '';
                                     }
                                 });
                             }
@@ -288,7 +345,10 @@ var AddFileComponent = (function () {
                         break;
                     case 'traces':
                         this.payaraService.postFile(fileButton.url).then(function (responseData) {
-                            if (responseData !== false && responseData.message !== "" && responseData.exit_code !== 'FAIULRE' && responseData.message.indexOf('is not enabled') < 0) {
+                            if (responseData !== false &&
+                                responseData.message !== '' &&
+                                responseData.exit_code !== 'FAIULRE' &&
+                                responseData.message.indexOf('is not enabled') < 0) {
                                 _this.addFile(responseData.message, fileButton.title + '.txt', 'application/octet-stream', function (response) {
                                     if (response) {
                                         _this.fileUploaded(response);
@@ -297,7 +357,7 @@ var AddFileComponent = (function () {
                                     else {
                                         fileButton.uploaded = false;
                                         _this.loadingMessage = null;
-                                        _this.successMessage = "";
+                                        _this.successMessage = '';
                                     }
                                 });
                             }
@@ -312,8 +372,10 @@ var AddFileComponent = (function () {
                         break;
                     case 'health':
                         this.getFile(fileButton.url, false, function (response) {
-                            var healthData = JSON.parse(response["_body"]);
-                            if (healthData !== false && healthData.extraProperties !== undefined && healthData.extraProperties.historicmessages.length > 0) {
+                            var healthData = JSON.parse(response['_body']);
+                            if (healthData !== false &&
+                                healthData.extraProperties !== undefined &&
+                                healthData.extraProperties.historicmessages.length > 0) {
                                 _this.addFile(JSON.stringify(healthData.extraProperties.historicmessages), fileButton.title + '.txt', 'application/octet-stream', function (response) {
                                     if (response) {
                                         _this.fileUploaded(response);
@@ -322,7 +384,7 @@ var AddFileComponent = (function () {
                                     else {
                                         fileButton.uploaded = false;
                                         _this.loadingMessage = null;
-                                        _this.successMessage = "";
+                                        _this.successMessage = '';
                                     }
                                 });
                             }
@@ -334,8 +396,13 @@ var AddFileComponent = (function () {
                         break;
                     case 'json':
                         this.getFile(fileButton.url, false, function (response) {
-                            if (response !== false && response.json().message !== undefined && response.json().message !== "") {
-                                _this.addFile(response.json().message, fileButton.title + '.txt', 'application/octet-stream', function (response) {
+                            if (response !== false &&
+                                response.json().message !== undefined &&
+                                (response.json().message !== '' ||
+                                    response.json().exit_code === 'SUCCESS')) {
+                                _this.addFile(fileButton.url.indexOf('get.json?') < 0
+                                    ? response.json().message
+                                    : JSON.stringify('' + response.json().children), fileButton.title + '.txt', 'application/octet-stream', function (response) {
                                     if (response) {
                                         _this.fileUploaded(response);
                                         fileButton.uploaded = true;
@@ -343,7 +410,7 @@ var AddFileComponent = (function () {
                                     else {
                                         fileButton.uploaded = false;
                                         _this.loadingMessage = null;
-                                        _this.successMessage = "";
+                                        _this.successMessage = '';
                                     }
                                 });
                             }
@@ -356,7 +423,9 @@ var AddFileComponent = (function () {
                     case 'zip':
                         this.getFile(fileButton.url, true, function (response2) {
                             if (response2 !== false) {
-                                _this.addFile(new File([response2], fileButton.file, { type: 'application/zip' }), fileButton.file, 'application/zip', function (result) {
+                                _this.addFile(new File([response2], fileButton.file, {
+                                    type: 'application/zip'
+                                }), fileButton.file, 'application/zip', function (result) {
                                     if (result) {
                                         _this.fileUploaded(result);
                                         fileButton.uploaded = true;
@@ -364,7 +433,7 @@ var AddFileComponent = (function () {
                                     else {
                                         fileButton.uploaded = false;
                                         _this.loadingMessage = null;
-                                        _this.successMessage = "";
+                                        _this.successMessage = '';
                                     }
                                 });
                             }
@@ -379,9 +448,10 @@ var AddFileComponent = (function () {
         }
     };
     /**
-    * cleanFiles - Method to clean the add file buttons and enable it
-    */
+     * cleanFiles - Method to clean the add file buttons and enable it
+     */
     AddFileComponent.prototype.cleanFiles = function () {
+        this.otherfiles = [];
         this.filesSaved = false;
         this.filesLoaded = false;
         this.xmlLoaded = false;
@@ -394,19 +464,18 @@ var AddFileComponent = (function () {
         }
     };
     /**
-    * searchFile - Event to get the data for the file when the button is pressed
-    *
-    * @param {any}      content Object with file's data
-    * @param {string}   name String with file's name
-    * @param {string}   type String with file's mimetype
-    * @param {any}      back Callback function to return sync value
-    */
+     * searchFile - Event to get the data for the file when the button is pressed
+     *
+     * @param {any}      content Object with file's data
+     * @param {string}   name String with file's name
+     * @param {string}   type String with file's mimetype
+     * @param {any}      back Callback function to return sync value
+     */
     AddFileComponent.prototype.addFile = function (content, name, type, back) {
         var _this = this;
         var fileDate = this.datePipe.transform(new Date(), 'yyyy-MM-ddTHH:mm:ss');
         if (!(content instanceof String)) {
-            this.zendeskService.addNewFile(content, fileDate + '_' + name, type)
-                .then(function (responseData) {
+            this.zendeskService.addNewFile(content, fileDate + '_' + name, type).then(function (responseData) {
                 if (responseData !== undefined && responseData !== null) {
                     back(JSON.parse(responseData).upload);
                 }
@@ -417,8 +486,7 @@ var AddFileComponent = (function () {
         }
         else {
             if (content.indexOf('offline') < 0) {
-                this.zendeskService.addNewFile(content, name, type)
-                    .then(function (responseData) {
+                this.zendeskService.addNewFile(content, name, type).then(function (responseData) {
                     if (responseData !== undefined && responseData !== null) {
                         back(JSON.parse(responseData).upload);
                     }
@@ -434,12 +502,12 @@ var AddFileComponent = (function () {
         }
     };
     /**
-    * searchFile - Event to get the data for the file when the button is pressed
-    *
-    * @param {string}   url String with the endpoint to call
-    * @param {boolean}  parse Boolean to know if parse data is needed
-    * @param {any}      back Callback function to return sync value
-    */
+     * searchFile - Event to get the data for the file when the button is pressed
+     *
+     * @param {string}   url String with the endpoint to call
+     * @param {boolean}  parse Boolean to know if parse data is needed
+     * @param {any}      back Callback function to return sync value
+     */
     AddFileComponent.prototype.getFile = function (url, parse, back) {
         var _this = this;
         if (parse) {
@@ -454,8 +522,7 @@ var AddFileComponent = (function () {
             });
         }
         else {
-            this.payaraService.getFile(url)
-                .then(function (responseData) {
+            this.payaraService.getFile(url).then(function (responseData) {
                 if (responseData !== undefined && responseData !== null) {
                     back(responseData);
                 }
@@ -521,16 +588,28 @@ var AddFileComponent = (function () {
                     toolbar: false,
                     statusbar: false,
                     forced_root_block: false,
-                    setup: function (editor) { _this.editor = editor; },
+                    setup: function (editor) {
+                        _this.editor = editor;
+                    }
                 };
                 if (_this.environment.production) {
                     initObject.relative_urls = false;
                     initObject.remove_script_host = false;
-                    initObject.document_base_url = window.location.protocol + '//' + window.location.hostname + ':' + window["globalPort"] + '/resource/payara_support/zendesk/';
+                    initObject.document_base_url =
+                        window.location.protocol +
+                            '//' +
+                            window.location.hostname +
+                            ':' +
+                            window['globalPort'] +
+                            '/resource/payara_support/zendesk/';
                     initObject.skin_url = './assets/skins/lightgray';
                 }
                 _this.tinymce.init(initObject);
-                _this.tinymce.activeEditor.setContent(response.json().message.replace(/>/g, '&gt;').replace(/</g, '<br>&lt;').replace('<br>', ''));
+                _this.tinymce.activeEditor.setContent(response
+                    .json()
+                    .message.replace(/>/g, '&gt;')
+                    .replace(/</g, '<br>&lt;')
+                    .replace('<br>', ''));
             }
         });
     };
@@ -539,8 +618,13 @@ var AddFileComponent = (function () {
      */
     AddFileComponent.prototype.saveXml = function () {
         var _this = this;
-        this.loadingMessageXml = this.translate.instant("Loading file ...") + " Domain.xml";
-        this.addFile(this.editor.getContent().replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/<br \/>/g, '\n'), 'Domain.xml', 'application/binary', function (response) {
+        this.loadingMessageXml =
+            this.translate.instant('Loading file ...') + ' Domain.xml';
+        this.addFile(this.editor
+            .getContent()
+            .replace(/&gt;/g, '>')
+            .replace(/&lt;/g, '<')
+            .replace(/<br \/>/g, '\n'), 'Domain.xml', 'application/binary', function (response) {
             _this.fileUploaded(response);
             _this.isVisibleEditor = false;
             _this.xmlColor = 'success';
@@ -550,31 +634,38 @@ var AddFileComponent = (function () {
         });
     };
     /**
-    * otherFile - Method to attach a file selected from the file system
-    *
-    * @param {any}   event Object with the event data of the file selected
-    */
+     * otherFile - Method to attach one or more files selected from the file system
+     *
+     * @param {any}   event Object with the event data of the files selected
+     */
     AddFileComponent.prototype.otherFile = function (event) {
         var _this = this;
         var fileList = event.target.files;
-        if (fileList.length > 0 && fileList[0].size < 20971520) {
-            var file = fileList[0];
-            var formData = new FormData();
-            formData.append('upload', file, file.name);
-            this.otherfiles.push(file);
-            this.addFile(formData, file.name, 'application/binary', function (response) {
-                _this.fileUploaded(response);
-            });
+        if (fileList.length > 0) {
+            for (var i = 0; i < fileList.length; i++) {
+                var file = fileList[i];
+                if (file.size < 20971520) {
+                    var formData = new FormData();
+                    formData.append('upload', file, file.name);
+                    this.otherfiles.push(file);
+                    this.addFile(formData, file.name, 'application/binary', function (response) {
+                        _this.fileUploaded(response);
+                    });
+                }
+                else {
+                    this.showErrorMessage('Error! File ' + file.name + ' size bigger than 20 MB');
+                }
+            }
         }
         else {
-            this.showErrorMessage('Error! File not exist or size bigger than 20 MB');
+            this.showErrorMessage('Error! File not exist');
         }
     };
     /**
-    * removeFile - Method to remove a file to attach
-    *
-    * @param {any}   file File object with the file to remove
-    */
+     * removeFile - Method to remove a file to attach
+     *
+     * @param {any}   file File object with the file to remove
+     */
     AddFileComponent.prototype.removeFile = function (file) {
         this.otherfiles = this.otherfiles.filter(function (data) { return data.name !== file.name; });
         this.removed.emit(file.name);
@@ -598,7 +689,7 @@ AddFileComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'app-add-file',
         template: __webpack_require__(409),
-        styles: [__webpack_require__(373)],
+        styles: [__webpack_require__(373)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_8__ngx_translate_core__["c" /* TranslateService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_8__ngx_translate_core__["c" /* TranslateService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_10__services_zendesk_service__["a" /* ZendeskService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_10__services_zendesk_service__["a" /* ZendeskService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_11__services_payara_service__["a" /* PayaraService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_11__services_payara_service__["a" /* PayaraService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1__angular_common__["DatePipe"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_common__["DatePipe"]) === "function" && _d || Object])
 ], AddFileComponent);
@@ -2295,6 +2386,7 @@ var CommentDataComponent = (function () {
         this.zendeskService = zendeskService;
         this.datePipe = datePipe;
         this.saved = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
+        this.showFiles = true;
     }
     /**
      * ngOnDestroy - OnDestroy method of the component
@@ -2320,8 +2412,7 @@ var CommentDataComponent = (function () {
      */
     CommentDataComponent.prototype.getComments = function () {
         var _this = this;
-        this.zendeskService.getTicketComments(this.ticket.id)
-            .then(function (responseData) {
+        this.zendeskService.getTicketComments(this.ticket.id).then(function (responseData) {
             if (responseData !== undefined && responseData !== null) {
                 responseData.sort(function (a, b) {
                     if (a['created_at'] > b['created_at'])
@@ -2333,20 +2424,23 @@ var CommentDataComponent = (function () {
                 });
                 _this.comments = responseData;
                 _this.comments.forEach(function (comment) {
-                    _this.zendeskService.getUserIdentity('' + comment.author_id)
-                        .then(function (responseData) {
+                    _this.zendeskService.getUserIdentity('' + comment.author_id).then(function (responseData) {
                         if (responseData !== undefined && responseData !== null) {
                             comment.author_name = responseData.name;
                         }
                     }, function (error) {
-                        _this.translate.get('Error! Service Unavailable').subscribe(function (res) {
+                        _this.translate
+                            .get('Error! Service Unavailable')
+                            .subscribe(function (res) {
                             _this.errorMessage = res;
                         });
                     });
                 });
             }
         }, function (error) {
-            _this.translate.get('Error! Service Unavailable').subscribe(function (res) {
+            _this.translate
+                .get('Error! Service Unavailable')
+                .subscribe(function (res) {
                 _this.errorMessage = res;
             });
         });
@@ -2424,7 +2518,9 @@ var CommentDataComponent = (function () {
      */
     CommentDataComponent.prototype.saveComment = function () {
         var _this = this;
-        if (this.newCommentText !== undefined && this.newCommentText !== null && this.newCommentText !== '') {
+        if (this.newCommentText !== undefined &&
+            this.newCommentText !== null &&
+            this.newCommentText !== '') {
             var newComment_1 = new __WEBPACK_IMPORTED_MODULE_8__classes_comment__["a" /* Comment */]();
             newComment_1.body = this.newCommentText;
             newComment_1.created_at = this.datePipe.transform(new Date(), 'yyyy-MM-ddTHH:mm:ss');
@@ -2449,13 +2545,15 @@ var CommentDataComponent = (function () {
             this.addFilecomponent.cleanFiles();
             this.newCommentText = '';
             this.newAttachments = [];
-            this.successMessage = "";
-            this.translate.get('Comment added successfully!').subscribe(function (res) {
+            this.successMessage = '';
+            this.translate
+                .get('Comment added successfully!')
+                .subscribe(function (res) {
                 _this.successMessage = res;
             });
             var timer = __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["Observable"].timer(1000, 50);
             this.sub = timer.subscribe(function (t) {
-                _this.successMessage = "";
+                _this.successMessage = '';
                 _this.sub.unsubscribe();
             });
         }
@@ -2685,7 +2783,7 @@ exports = module.exports = __webpack_require__(15)();
 
 
 // module
-exports.push([module.i, "span.glyphicon.glyphicon-paperclip{\n  background-color: transparent;\n}\n.btn.btn-sm.btn-default.btn-block.add-file-button{\n  margin-bottom:.5rem;\n  background-color: transparent;\n}\n.btn.btn-sm.btn-default.btn-block.add-file-button span.glyphicon.glyphicon-paperclip{\n  background-color: transparent;\n}\n.add-file-server-button{\n  width: 19rem;\n  height: 2.75rem;\n  white-space: normal;\n  font-size: smaller;\n}\nspan.sr-only{\n  position: relative;\n  background-color: transparent;\n  color: #f0981b;\n}\n.panel-footer{\n  background-color: #FFF;\n  border-top: none;\n}\n.domain-block{\n  margin-top: 2rem;\n\n}\n.objectVisible{\n  display:block;;\n}\n.objectNoVisible{\n  display: none;\n}\n.groupSeparation{\n  border:none;\n}\n\n.attached-file {\n  color: #f0981b;\n  background-color: #325764;\n  padding: .5rem;\n  border-radius: .25rem;\n  margin: .25rem;\n  width: 19rem;\n  height: 2.75rem;\n}\n.attached-file span > span{\n  color: #ffffff;\n  background-color: #325764;\n  font-style: oblique;\n  font-size: small;\n  font-family: Arial, Helvetica, sans-serif;\n}\n\n.groupTitle{\n  margin-bottom: 1rem;\n  text-decoration: underline;\n  text-transform: uppercase;\n  font-weight: bolder;\n  font-family: Arial, Helvetica, sans-serif;\n}\n\n.instance-offline{\n  width: 19rem;\n  height: 2.75rem;\n  padding: .5rem;\n  border-radius: .25rem;\n  margin: .25rem;\n  margin: 0 auto;\n  color: #fff;\n  font-family: Arial, Helvetica, sans-serif;\n  font-weight: bold;\n}\n\n.group-border{\n  width: 50%;\n  min-height: 15rem;\n  height: 100%;\n  min-width: 21.75rem;\n}\n", ""]);
+exports.push([module.i, "span.glyphicon.glyphicon-paperclip {\n  background-color: transparent;\n}\n.btn.btn-sm.btn-default.btn-block.add-file-button {\n  margin-bottom: 0.5rem;\n  background-color: transparent;\n}\n.btn.btn-sm.btn-default.btn-block.add-file-button\n  span.glyphicon.glyphicon-paperclip {\n  background-color: transparent;\n}\n.add-file-server-button {\n  width: 19rem;\n  height: 2.75rem;\n  white-space: normal;\n  font-size: smaller;\n}\nspan.sr-only {\n  position: relative;\n  background-color: transparent;\n  color: #f0981b;\n}\n.panel-footer {\n  background-color: #fff;\n  border-top: none;\n}\n.domain-block {\n  margin-top: 2rem;\n}\n.objectVisible {\n  display: block;\n}\n.objectNoVisible {\n  display: none;\n}\n.groupSeparation {\n  border: none;\n}\n\n.attached-file {\n  color: #f0981b;\n  background-color: #325764;\n  padding: 0.5rem;\n  border-radius: 0.25rem;\n  margin: 0.25rem;\n  width: 19rem;\n  height: 2.75rem;\n}\n.attached-file span > span {\n  color: #ffffff;\n  background-color: #325764;\n  font-style: oblique;\n  font-size: small;\n  font-family: Arial, Helvetica, sans-serif;\n}\n\n.groupTitle {\n  margin-bottom: 1rem;\n  text-decoration: underline;\n  text-transform: uppercase;\n  font-weight: bolder;\n  font-family: Arial, Helvetica, sans-serif;\n}\n\n.instance-offline {\n  width: 19rem;\n  height: 2.75rem;\n  padding: 0.5rem;\n  border-radius: 0.25rem;\n  margin: 0.25rem;\n  margin: 0 auto;\n  color: #fff;\n  font-family: Arial, Helvetica, sans-serif;\n  font-weight: bold;\n}\n\n.group-border {\n  width: 50%;\n  min-height: 15rem;\n  height: 100%;\n  min-width: 21.75rem;\n}\n", ""]);
 
 // exports
 
@@ -2703,7 +2801,7 @@ exports = module.exports = __webpack_require__(15)();
 
 
 // module
-exports.push([module.i, ".new_comment{\n  resize: none;\n  outline: none;\n  width: 100%;\n  padding: 10px;\n  height: 100%;\n  border-radius: 5px;\n  background-color: #ffffff;\n  margin-bottom: .5rem;\n  height: 9rem;\n}\n\n.comment_box{\n  border: .15rem solid #cfcfcf;\n  box-shadow: 0.5rem 0.5rem #cfcfcf;\n  margin-bottom: 1rem;\n  padding: .25rem;\n  text-align: left;\n}\n\npre code {\n    padding: 0;\n    font-size: 1.25rem;\n    margin-left: -1.5rem;\n}\n\n.attached-file {\n  color: #f0981b;\n  background-color: #325764;\n  padding: .5rem;\n  border-radius: .25rem;\n  margin: .25rem;\n}\n.attached-file span{\n  color: #ffffff;\n  background-color: #325764;\n  font-style: oblique;\n  font-size: small;\n  font-family: Arial, Helvetica, sans-serif;\n}\n.authorName{\n  white-space: nowrap;\n}\n", ""]);
+exports.push([module.i, ".new_comment {\n  resize: none;\n  outline: none;\n  width: 100%;\n  padding: 10px;\n  height: 100%;\n  border-radius: 5px;\n  background-color: #ffffff;\n  margin-bottom: 0.5rem;\n  height: 9rem;\n}\n\n.comment_box {\n  border: 0.15rem solid #cfcfcf;\n  box-shadow: 0.5rem 0.5rem #cfcfcf;\n  margin-bottom: 1rem;\n  padding: 0.25rem;\n  text-align: left;\n}\n\npre code {\n  padding: 0;\n  font-size: 1.25rem;\n  margin-left: -1.5rem;\n}\n\n.attached-file {\n  color: #f0981b;\n  background-color: #325764;\n  padding: 0.5rem;\n  border-radius: 0.25rem;\n  margin: 0.25rem;\n}\n.attached-file span {\n  color: #ffffff;\n  background-color: #325764;\n  font-style: oblique;\n  font-size: small;\n  font-family: Arial, Helvetica, sans-serif;\n}\n.authorName {\n  white-space: nowrap;\n}\n.objectVisible {\n  display: block;\n}\n.objectNoVisible {\n  display: none;\n}\n\n/* The switch - the box around the slider */\n.switch-files {\n  text-align: right;\n  margin-bottom: 2rem;\n}\n.switch-label {\n  position: relative;\n  top: -1rem;\n}\n.switch {\n  position: relative;\n  display: inline-block;\n  top: 0.5rem;\n  width: 6rem;\n  height: 3rem;\n}\n\n/* Hide default HTML checkbox */\n.switch input {\n  display: none;\n}\n\n/* The slider */\n.slider {\n  position: absolute;\n  cursor: pointer;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  background-color: #ccc;\n  transition: 0.3s;\n}\n\n.slider:before {\n  position: absolute;\n  content: '';\n  height: 2.25rem;\n  width: 2.25rem;\n  left: 0.5rem;\n  bottom: 0.4rem;\n  background-color: #325764;\n  transition: 0.3s;\n}\n\ninput:checked + .slider {\n  background-color: #ccc;\n}\n\ninput:focus + .slider {\n  box-shadow: 0 0 0.15rem #ccc;\n}\n\ninput:checked + .slider:before {\n  -webkit-transform: translateX(2.25rem);\n  transform: translateX(2.25rem);\n}\n\n/* Rounded sliders */\n.slider.round {\n  border-radius: 3rem;\n}\n\n.slider.round:before {\n  border-radius: 3rem;\n}\n", ""]);
 
 // exports
 
@@ -3053,14 +3151,14 @@ module.exports = "\n<div class=\"app_header\">\n  <h1 class=\"appTittle\">{{'Pay
 /***/ 409:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"panel panel-default\">\n  <div class=\"panel-heading\">\n    <h4>{{title | translate}}</h4>\n  </div>\n  <div class=\"panel-body\">\n    <div class=\"row\">\n      <div class=\"col-xs-6 group-border\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">Domain.xml</h5>\n        </div>\n        <div class=\"col-xs-12\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Edit or deattach' | translate}} Domain.xml\">\n            <bSwitch\n                      [switch-label-text]=\"'Domain.xml'\"\n                      [(ngModel)]=\"xmlLoaded\"\n                      [switch-handle-width]=\"80\"\n                      [switch-label-width]=\"100\"\n                      [switch-animate]=\"true\"\n                      [switch-inverse]=\"true\"\n                      [switch-off-text]=\"'NO'\"\n                      [switch-on-text]=\"xmlLoading\"\n                      [switch-on-color]=\"xmlColor\"\n                      [switch-off-color]=\"'default'\"\n                      [switch-size]=\"'small'\"\n                      (onChangeState)=\"showEditor()\">\n              </bSwitch>\n          </div>\n          <div class=\"col-xs-12\">\n            <hr class=\"groupSeparation\">\n          </div>\n      </div>\n\n      <div class=\"col-xs-12 domain-block group-border\" [ngClass]=\"{\n                                              'objectVisible': isVisibleEditor,\n                                              'objectNoVisible': !isVisibleEditor\n                                            }\">\n        <div class=\"panel panel-default\">\n          <div class=\"panel-heading\">\n            <h5>{{'Edit' | translate}} Domain.xml</h5>\n          </div>\n          <div class=\"panel-body\">\n            <div class=\"row\"\n                placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Remove or change sensitive data from' | translate}} Domain.xml\">\n              <textarea id=\"{{elementId}}\"></textarea>\n            </div>\n          </div>\n          <div class=\"panel-footer\">\n            <div class=\"row\">\n              <div class=\"col-xs-8\">\n                <div *ngIf=\"loadingMessageXml\" class=\"progress\">\n                  <div class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width: 100%\">\n                    <span class=\"sr-only\">{{loadingMessageXml | translate}}</span>\n                  </div>\n                </div>\n              </div>\n              <div class=\"col-xs-4\">\n                <button class=\"btn btn-default pull-right\" (click)=\"saveXml()\"\n                        placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach to request' | translate}} Domain.xml\">{{'Save' | translate}}</button>\n                <button class=\"btn btn-primary pull-right\" (click)=\"discardXml()\"\n                        placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Discard changes on' | translate}} Domain.xml\">{{'Discard' | translate}}</button>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n      <div class=\"col-xs-6 group-border\" *ngFor=\"let group of groups\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">{{group}}</h5>\n        </div>\n        <div class=\"col-xs-12\" *ngIf=\"filter(fileButtons,group).length === 0\">\n          <div class=\"alert alert-info instance-offline\" role=\"alert0\">\n            {{'Instance offline' | translate}}\n          </div>\n        </div>\n        <div class=\"col-xs-12\" *ngFor=\"let fileButton of filter(fileButtons,group)\"\n             placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach or deattach to request' | translate}} {{fileButton.title}}\">\n          <bSwitch\n                    [switch-label-text]=\"fileButton.title\"\n                    [(ngModel)]=\"fileButton.uploaded\"\n                    [switch-handle-width]=\"40\"\n                    [switch-label-width]=\"140\"\n                    [switch-animate]=\"true\"\n                    [switch-inverse]=\"true\"\n                    [switch-off-text]=\"'NO'\"\n                    [switch-on-text]=\"'OK'\"\n                    [switch-on-color]=\"'success'\"\n                    [switch-off-color]=\"'default'\"\n                    [switch-size]=\"'small'\"\n                    (onChangeState)=\"searchFile(fileButton)\">\n            </bSwitch>\n      </div>\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n      </div>\n    </div>\n    <div class=\"col-xs-12\">\n      <hr class=\"groupSeparation\">\n    </div>\n    <div class=\"col-xs-6 group-border\">\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n        <h5 class=\"groupTitle\">{{'File Upload' | translate}}</h5>\n      </div>\n      <div class=\"col-xs-12\">\n          <label class=\"btn btn-sm btn-file add-file-server-button\"\n                 placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach to request' | translate}} {{'a file selected from local file system' | translate}}\">\n              <span class=\"glyphicon glyphicon-paperclip\" aria-hidden=\"true\"></span>\n              {{'Browse' | translate}}\n              <input type=\"file\" class=\"hidden\" (change)=\"otherFile($event)\">\n          </label>\n      </div>\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n      </div>\n    </div>\n      <div class=\"col-xs-6 group-border\" *ngIf=\"otherfiles.length > 0\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">{{'Files to be added' | translate}}</h5>\n        </div>\n        <div class=\"col-xs-12\" *ngFor=\"let file of otherfiles\">\n          <label class=\"btn btn-sm btn-file attached-file\" (click)=\"removeFile(file)\"\n                 placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Remove file to upload' | translate}}\">\n              <span class=\"glyphicon glyphicon-trash\"  aria-hidden=\"true\">\n                  <span>{{file.name}}</span>\n              </span>\n          </label>\n        </div>\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n        </div>\n      </div>\n    </div>\n    <div class=\"row\">\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n        <div *ngIf=\"loadingMessage\" class=\"progress\">\n          <div class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width: 100%\">\n            <span class=\"sr-only\">{{loadingMessage | translate}}</span>\n          </div>\n        </div>\n        <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n          {{errorMessage}}\n        </div>\n        <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n          {{successMessage}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+module.exports = "<div class=\"panel panel-default\">\n  <div class=\"panel-heading\">\n    <h4>{{title | translate}}</h4>\n  </div>\n  <div class=\"panel-body\">\n    <div class=\"row\">\n      <div class=\"col-xs-6 group-border\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">Domain.xml</h5>\n        </div>\n        <div class=\"col-xs-12\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Edit or deattach' | translate}} Domain.xml\">\n          <bSwitch [switch-label-text]=\"'Domain.xml'\" [(ngModel)]=\"xmlLoaded\" [switch-handle-width]=\"80\" [switch-label-width]=\"100\"\n            [switch-animate]=\"true\" [switch-inverse]=\"true\" [switch-off-text]=\"'NO'\" [switch-on-text]=\"xmlLoading\" [switch-on-color]=\"xmlColor\"\n            [switch-off-color]=\"'default'\" [switch-size]=\"'small'\" (onChangeState)=\"showEditor()\">\n          </bSwitch>\n        </div>\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n        </div>\n      </div>\n\n      <div class=\"col-xs-12 domain-block group-border\" [ngClass]=\"{\n                                              'objectVisible': isVisibleEditor,\n                                              'objectNoVisible': !isVisibleEditor\n                                            }\">\n        <div class=\"panel panel-default\">\n          <div class=\"panel-heading\">\n            <h5>{{'Edit' | translate}} Domain.xml</h5>\n          </div>\n          <div class=\"panel-body\">\n            <div class=\"row\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Remove or change sensitive data from' | translate}} Domain.xml\">\n              <textarea id=\"{{elementId}}\"></textarea>\n            </div>\n          </div>\n          <div class=\"panel-footer\">\n            <div class=\"row\">\n              <div class=\"col-xs-8\">\n                <div *ngIf=\"loadingMessageXml\" class=\"progress\">\n                  <div class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\"\n                    style=\"width: 100%\">\n                    <span class=\"sr-only\">{{loadingMessageXml | translate}}</span>\n                  </div>\n                </div>\n              </div>\n              <div class=\"col-xs-4\">\n                <button class=\"btn btn-default pull-right\" (click)=\"saveXml()\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach to request' | translate}} Domain.xml\">{{'Save' | translate}}</button>\n                <button class=\"btn btn-primary pull-right\" (click)=\"discardXml()\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Discard changes on' | translate}} Domain.xml\">{{'Discard' | translate}}</button>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n      <div class=\"col-xs-6 group-border\" *ngFor=\"let group of groups\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">{{group}}</h5>\n        </div>\n        <div class=\"col-xs-12\" *ngIf=\"filter(fileButtons,group).length === 0\">\n          <div class=\"alert alert-info instance-offline\" role=\"alert0\">\n            {{'Instance offline' | translate}}\n          </div>\n        </div>\n        <div class=\"col-xs-12\" *ngFor=\"let fileButton of filter(fileButtons,group)\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach or deattach to request' | translate}} {{fileButton.title}}\">\n          <bSwitch [switch-label-text]=\"fileButton.title\" [(ngModel)]=\"fileButton.uploaded\" [switch-handle-width]=\"50\" [switch-label-width]=\"155\"\n            [switch-animate]=\"true\" [switch-inverse]=\"true\" [switch-off-text]=\"'NO'\" [switch-on-text]=\"'OK'\" [switch-on-color]=\"'success'\"\n            [switch-off-color]=\"'default'\" [switch-size]=\"'small'\" (onChangeState)=\"searchFile(fileButton)\">\n          </bSwitch>\n        </div>\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n        </div>\n      </div>\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n      </div>\n      <div class=\"col-xs-6 group-border\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">{{'File Upload' | translate}}</h5>\n        </div>\n        <div class=\"col-xs-12\">\n          <label class=\"btn btn-sm btn-file add-file-server-button\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Attach to request' | translate}} {{'a file selected from local file system' | translate}}\">\n            <span class=\"glyphicon glyphicon-paperclip\" aria-hidden=\"true\"></span>\n            {{'Browse' | translate}}\n            <input type=\"file\" multiple class=\"hidden\" (change)=\"otherFile($event)\">\n          </label>\n        </div>\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n        </div>\n      </div>\n      <div class=\"col-xs-6 group-border\" *ngIf=\"otherfiles.length > 0\">\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n          <h5 class=\"groupTitle\">{{'Files to be added' | translate}}</h5>\n        </div>\n        <div class=\"col-xs-12\" *ngFor=\"let file of otherfiles\">\n          <label class=\"btn btn-sm btn-file attached-file\" (click)=\"removeFile(file)\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Remove file to upload' | translate}}\">\n            <span class=\"glyphicon glyphicon-trash\" aria-hidden=\"true\">\n              <span>{{file.name}}</span>\n            </span>\n          </label>\n        </div>\n        <div class=\"col-xs-12\">\n          <hr class=\"groupSeparation\">\n        </div>\n      </div>\n    </div>\n    <div class=\"row\">\n      <div class=\"col-xs-12\">\n        <hr class=\"groupSeparation\">\n        <div *ngIf=\"loadingMessage\" class=\"progress\">\n          <div class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\"\n            style=\"width: 100%\">\n            <span class=\"sr-only\">{{loadingMessage | translate}}</span>\n          </div>\n        </div>\n        <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n          {{errorMessage}}\n        </div>\n        <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n          {{successMessage}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
 /***/ 410:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"row\">\n  <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n    {{errorMessage}}\n  </div>\n  <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n    {{successMessage}}\n  </div>\n</div>\n\n<div class=\"newCommentContainer\" *ngIf=\"ticket.status!=='closed' && ticket.status!=='solved'\">\n  <div class=\"row\">\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <textarea class=\"new_comment\" [(ngModel)]=\"newCommentText\" (keyup)=\"keyUpEvent($event)\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Insert comment text' | translate}}\"></textarea>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <button class=\"btn btn-sm btn-default btn-block\" type=\"submit\" (click)=\"saveComment()\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Send comment with attachements' | translate}}\">\n        {{'Submit' | translate}}\n        <span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\">\n        </span>\n      </button>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <app-add-file class=\"addFile\"\n                    (saved)=\"onSavedAttachment($event)\"\n                    (removed)=\"onRemovedAttachment($event)\"\n                    [title]=\"'Attach files to new comment of the request'\">\n      </app-add-file>\n    </div>\n  </div>\n</div>\n\n<div class=\"commentContainer\" *ngFor=\"let comment of comments\">\n  <div class=\"row\">\n    <div class=\"col-sm-9\">\n      <pre class=\"comment_box\">\n        <markdown>{{comment.body}}</markdown>\n      </pre>\n    </div>\n    <div class=\"col-sm-3\">\n      <p class=\"authorName\">{{comment.author_name}}</p>\n      <p placement=\"bottom\" delay=\"1500\" tooltip=\"{{comment.created_at}}\">{{comment.created_at | dayTime}}</p>\n    </div>\n  </div>\n  <div class=\"row\" *ngIf=\"comment.attachments !== undefined && comment.attachments.length>0\">\n    <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-2\" *ngFor=\"let file of comment.attachments\">\n      <a href=\"{{file.content_url}}\">\n        <span class=\"\tglyphicon glyphicon-download-alt attached-file\" aria-hidden=\"true\"\n              placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download file' | translate}} {{file.file_name}}\">\n          <span>{{file.file_name}}</span>\n        </span>\n      </a>\n    </div>\n  </div>\n  <hr>\n</div>\n"
+module.exports = "<div class=\"row\">\n  <div *ngIf=\"errorMessage\" class=\"alert alert-danger alert-dismissible\" role=\"alert1\">\n    {{errorMessage}}\n  </div>\n  <div *ngIf=\"successMessage\" class=\"alert alert-success alert-dismissible\" role=\"alert2\">\n    {{successMessage}}\n  </div>\n</div>\n\n<div class=\"newCommentContainer\" *ngIf=\"ticket.status!=='closed' && ticket.status!=='solved'\">\n  <div class=\"row\">\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <textarea class=\"new_comment\" [(ngModel)]=\"newCommentText\" (keyup)=\"keyUpEvent($event)\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Insert comment text' | translate}}\"></textarea>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12\">\n      <button class=\"btn btn-sm btn-default btn-block\" type=\"submit\" (click)=\"saveComment()\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Send comment with attachements' | translate}}\">\n        {{'Submit' | translate}}\n        <span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\">\n        </span>\n      </button>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12 switch-files\">\n      <span class=\"switch-label\">Show Files</span>\n      <label class=\"switch\">\n        <input type=\"checkbox\" [(ngModel)]=\"showFiles\">\n        <span class=\"slider round\"></span>\n      </label>\n    </div>\n    <div class=\"col-md-12 col-sm-12 col-xs-12\" [ngClass]=\"{\n      'objectVisible': showFiles,\n      'objectNoVisible': !showFiles\n    }\">\n      <app-add-file class=\"addFile\" (saved)=\"onSavedAttachment($event)\" (removed)=\"onRemovedAttachment($event)\" [title]=\"'Attach files to new comment of the request'\">\n      </app-add-file>\n    </div>\n  </div>\n</div>\n\n<div class=\"commentContainer\" *ngFor=\"let comment of comments\">\n  <div class=\"row\">\n    <div class=\"col-sm-9\">\n      <pre class=\"comment_box\">\n        <markdown>{{comment.body}}</markdown>\n      </pre>\n    </div>\n    <div class=\"col-sm-3\">\n      <p class=\"authorName\">{{comment.author_name}}</p>\n      <p placement=\"bottom\" delay=\"1500\" tooltip=\"{{comment.created_at}}\">{{comment.created_at | dayTime}}</p>\n    </div>\n  </div>\n  <div class=\"row\" *ngIf=\"comment.attachments !== undefined && comment.attachments.length>0\">\n    <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-2\" *ngFor=\"let file of comment.attachments\">\n      <a href=\"{{file.content_url}}\">\n        <span class=\"\tglyphicon glyphicon-download-alt attached-file\" aria-hidden=\"true\" placement=\"bottom\" delay=\"1500\" tooltip=\"{{'Download file' | translate}} {{file.file_name}}\">\n          <span>{{file.file_name}}</span>\n        </span>\n      </a>\n    </div>\n  </div>\n  <hr>\n</div>\n"
 
 /***/ }),
 
