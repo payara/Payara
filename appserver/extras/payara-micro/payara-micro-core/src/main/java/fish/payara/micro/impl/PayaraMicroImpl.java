@@ -2101,7 +2101,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         clustermode = getProperty("payaramicro.clusterMode");
         interfaces = getProperty("payaramicro.interfaces");
         secretsDir = getProperty("payaramicro.secretsDir");
-        showServletMappings = getBooleanProperty("payaramicro.showservletmappings", "false");
+        showServletMappings = getBooleanProperty("payaramicro.showServletMappings", "false");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
