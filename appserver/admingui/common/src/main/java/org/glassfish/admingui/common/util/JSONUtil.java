@@ -726,8 +726,6 @@ public class JSONUtil {
                 case NULL:
                     val = null;
                     break;
-                default:
-                    break;
             }
 	}
 	return val;

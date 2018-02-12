@@ -94,31 +94,38 @@ public class Util {
      * The {@link Map} entries can be of types {@link Boolean}, {@link List},
      * {@link Map}, {@link Number}, {@code null} and/or {@link String}.
      * </p>
-     * @param jo
+     * @param jsonObject
      * @return 
      */
-    public static Map processJsonObject(JsonObject jo) {
+    public static Map processJsonObject(JsonObject jsonObject) {
         Map<String, Object> map = new HashMap<String, Object>();
         try {
-            for (String key : jo.keySet()) {
-                 JsonValue value = jo.get(key);
+            for (String key : jsonObject.keySet()) {
+                 JsonValue value = jsonObject.get(key);
                 switch (value.getValueType()) {
                     case ARRAY:
-                        map.put(key, processJsonArray((JsonArray) value));break;
+                        map.put(key, processJsonArray((JsonArray) value));
+                        break;
                     case OBJECT:
-                        map.put(key, processJsonObject((JsonObject) value));break;
+                        map.put(key, processJsonObject((JsonObject) value));
+                        break;
                     case NULL:
                         map.put(key, null);break;
                     case STRING:
-                        map.put(key, ((JsonString) value).getString());break;
+                        map.put(key, ((JsonString) value).getString());
+                        break;
                     case NUMBER:
-                        map.put(key, ((JsonNumber) value).numberValue());break;
+                        map.put(key, ((JsonNumber) value).numberValue());
+                        break;
                     case TRUE:
-                        map.put(key, Boolean.TRUE);break;
+                        map.put(key, Boolean.TRUE);
+                        break;
                     case FALSE: 
-                        map.put(key, Boolean.FALSE);break;
+                        map.put(key, Boolean.FALSE);
+                        break;
                     default:
-                        map.put(key, value);break;
+                        map.put(key, value);
+                        break;
                 }
             }
         } catch (JsonException e) {
@@ -134,14 +141,14 @@ public class Util {
      * The {@link List} entries can be of types {@link Boolean}, {@link List},
      * {@link Map}, {@link Number} and/or {@link String}.
      * </p>
-     * @param ja
+     * @param jsonArray
      * @return 
      */
-    public static List processJsonArray(JsonArray ja) {
+    public static List processJsonArray(JsonArray jsonArray) {
         List results = new ArrayList();
         
         try {
-            for (JsonValue entry: ja) {
+            for (JsonValue entry: jsonArray) {
                 if (null == entry.getValueType()) {
                     results.add(entry);
                 } else switch (entry.getValueType()) {
