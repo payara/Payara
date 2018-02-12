@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2018] [Payara Foundation]
 
 package org.apache.catalina.connector;
 
@@ -142,6 +142,7 @@ import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.grizzly.http.util.MessageBytes;
 import org.glassfish.grizzly.memory.Buffers;
+import org.glassfish.grizzly.threadpool.DefaultWorkerThread;
 import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.web.valve.GlassFishValve;
 
@@ -4214,11 +4215,44 @@ public class Request
     void asyncComplete() {
         asyncStarted.set(false);
         
-        if (asyncStartedThread != Thread.currentThread() ||
-                !asyncContext.isOkToConfigure()) {
-            // it's not safe to just mark response as resumed
-            coyoteRequest.getResponse().resume();
+        if (asyncStartedThread != Thread.currentThread() || !asyncContext.isOkToConfigure()) {
+            // It's not safe to just mark response as resumed
+            
+            // Check if the current thread is not a Grizzly worker thread, i.e. one
+            // that processes HTTP requests. Resuming the stored async request
+            // on such thread may confuse the ThreadLocal storage of this HTTP
+            // processing thread which are associated with the current Request object
+            // with those of the async request. This is particularly the case with 
+            // the Weld init which the code down the line explicitly invokes if available.
+            //
+            // See also PAYARA-2212
+            if (Thread.currentThread() instanceof DefaultWorkerThread) {
+                
+                // Create a new thread (and not use a thread pool) to make sure we don't introduce
+                // new ThreadLocal storage that sticks behind
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        coyoteRequest.getResponse().resume();
+                    }
+                });
+                thread.start();
+                try {
+                    thread.join(60000); // Wait for 60 seconds at most
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interupted while waiting", e);
+                }
+            } else {
+                coyoteRequest.getResponse().resume();
+            }
+            
         } else {
+            
+            // NOTE: asyncStartedThread == Thread.currentThread() may be true, even if it's actually
+            // different requests; a next request might be picked up by the same thread from the thead pool
+            // And the AsyncContext could be used in a request processing thread
+            
             // This code is called if we startAsync and complete in the service() thread.
             // So instead of resuming the suspendedContext (which will finish the response processing),
             // we just have to mark the context as resumed like it has never been suspended.
