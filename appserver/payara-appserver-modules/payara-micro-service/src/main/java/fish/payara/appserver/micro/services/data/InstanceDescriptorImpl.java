@@ -17,6 +17,9 @@
  */
 package fish.payara.appserver.micro.services.data;
 
+import static java.lang.Boolean.TRUE;
+import static javax.json.stream.JsonGenerator.PRETTY_PRINTING;
+
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -37,7 +40,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonWriter;
-import javax.json.stream.JsonGenerator;
 
 import org.glassfish.internal.data.ApplicationInfo;
 
@@ -301,7 +303,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     public String toJsonString(boolean verbose) {
         StringWriter writer = new StringWriter();
         Map<String, Object> writerConfig = new HashMap<>();
-        writerConfig.put(JsonGenerator.PRETTY_PRINTING, Boolean.TRUE);
+        writerConfig.put(PRETTY_PRINTING, TRUE);
         try (JsonWriter jsonWriter = Json.createWriterFactory(writerConfig).createWriter(writer)) {
             jsonWriter.writeObject(toJsonObject(verbose));
             return writer.toString();
