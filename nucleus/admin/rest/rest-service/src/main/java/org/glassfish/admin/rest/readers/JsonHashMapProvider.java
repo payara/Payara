@@ -37,8 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/affiliates
  */
+// Portions Copyright [2017-2018] Payara Foundation and/affiliates
+
 package org.glassfish.admin.rest.readers;
 
 import java.io.BufferedReader;
@@ -51,7 +52,9 @@ import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParser;
 
 import javax.ws.rs.Consumes;
@@ -88,7 +91,12 @@ public class JsonHashMapProvider implements MessageBodyReader<HashMap<String, St
             }
             
             for (String k : obj.keySet()) {
-                map.put(k, ""+obj.get(k));
+                JsonValue value = obj.get(k);
+                if (value.getValueType() == ValueType.STRING){
+                    map.put(k, ((JsonString) value).getString());
+                } else {
+                    map.put(k, value.toString());
+                }
             }
             return map;
 

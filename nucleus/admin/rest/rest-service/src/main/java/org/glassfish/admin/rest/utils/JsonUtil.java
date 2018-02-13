@@ -36,9 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * 
  */
+// Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.utils;
 
 import java.lang.reflect.Array;
@@ -46,19 +47,25 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.json.*;
+import javax.json.JsonValue.ValueType;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.composite.metadata.Confidential;
 import org.glassfish.admin.rest.model.ResponseBody;
 
 /**
- *
+ * Various utility methods for processing JSON.
+ * 
  * @author jdlee
+ * @author jcoustick
  */
 public class JsonUtil {
     public static final String CONFIDENTIAL_PROPERTY_SET = "@_Oracle_Confidential_Property_Set_V1.1_#";
@@ -326,4 +333,76 @@ public class JsonUtil {
         }
         return jsonBuilder.build();
     }
+    
+    /**
+     * Converts a {@link JsonObject} to a {@link Map}&lt;{@link String}, {@link Object}&gt;
+     * where the values of all of the basic type ({@link Integer}, {@link String} etc.), and not {@link JsonValue}.
+     * @param object The JsonObject to convert to a Map
+     * @return 
+     * @since 5.0
+     * @see #jsonValueToRaw
+     */
+    public static Map<String, Object> jsonObjectToMap(JsonObject object){
+        Map<String, Object> result = new HashMap<>();
+        Set<String> keys =object.keySet();
+        for (String key: keys) {
+            result.put(key, jsonValueToRaw(object.get(key)));
+        }
+        return result;
+    }
+    
+    /**
+     * Converts a {@link JsonArray} to a {@link List}&lt;{@link Object}&gt;
+     * where the objects are all the standard java types represented by the values
+     * in the array
+     * @param array The JsonArray to convert to {@link List}
+     * @return 
+     * @since 5.0
+     * @see #jsonValueToRaw
+     */
+    public static List<Object> jsonArraytoArray(JsonArray array){
+        List<Object> result = new ArrayList<>();
+        for (JsonValue instance : array){
+            result.add(jsonValueToRaw(instance));
+        }    
+        return result;
+    }
+    
+    /**
+     * Converts a JsonValue to the java standard type it represents.
+     * <p>
+     * {@link JsonArray} -> {@link List}&lt;{@link Object}&gt; <br>
+     * {@link JsonObject} -> {@link Map}&lt;{@link String}, {@link Object}&gt; <br>
+     * {@link JsonString} -> {@link String} <br>
+     * {@link JsonNumber} -> {@link BigDecimal} <br>
+     * {@link JsonValue#TRUE} -> {@link Boolean#TRUE} <br>
+     * {@link JsonValue#FALSE} -> {@link Boolean#FALSE} <br>
+     * {@link JsonValue#NULL} -> {@code null}
+     * </p>
+     * @param value
+     * @return The java standard type represented by the {@link JsonValue}
+     * @since 5.0
+     */
+    public static Object jsonValueToRaw(JsonValue value){
+        ValueType type = value.getValueType();
+        switch (type) {
+            case STRING:
+                return (String) ((JsonString) value).getString();
+            case NUMBER:
+                return ((JsonNumber) value).bigDecimalValue();
+            case TRUE:
+                return Boolean.TRUE;
+            case FALSE:
+                return Boolean.FALSE;
+            case NULL:
+                return null;
+            case OBJECT:
+                return jsonObjectToMap((JsonObject) value);
+            case ARRAY:
+                return jsonArraytoArray((JsonArray) value);
+            default:
+                throw new JsonException("JsonValue is not a recognised ValueType");
+        }
+    }
+    
 }
