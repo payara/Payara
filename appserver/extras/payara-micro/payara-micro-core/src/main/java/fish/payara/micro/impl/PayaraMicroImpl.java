@@ -175,7 +175,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String clustermode;
     private String interfaces;
     private String secretsDir;
-    private boolean showServletMappings = false;
+    private boolean showServletMappings;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
