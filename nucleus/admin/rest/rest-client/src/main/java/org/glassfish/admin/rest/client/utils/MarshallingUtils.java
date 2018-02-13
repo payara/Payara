@@ -37,8 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+//  Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.client.utils;
 
 import java.io.ByteArrayInputStream;
@@ -53,10 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -77,12 +75,12 @@ public class MarshallingUtils {
         json = json.trim();
         if (json.startsWith("{")) {
             properties = new ArrayList<Map<String, String>>();
-            properties.add(processJsonMap(json));
+            properties.add(Util.processJsonMap(json));
         } else if (json.startsWith("[")) {
             try {
                 JsonParser parser = Json.createParser(new StringReader(json));
                 parser.next();
-                properties = processJsonArray(parser.getArray());
+                properties = Util.processJsonArray(parser.getArray());
             } catch (JsonException e) {
                 LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
             }
@@ -200,7 +198,7 @@ public class MarshallingUtils {
         text = text.trim();
 
         if (text.startsWith("{")) {
-            map = processJsonMap(text);
+            map = Util.processJsonMap(text);
         } else if (text.startsWith("<")) {
             InputStream input = null;
             try {
@@ -248,62 +246,6 @@ public class MarshallingUtils {
     /**
      * ***********************************************************************
      */
-    private static Map processJsonMap(String json) {
-        Map map;
-        try {
-            JsonParser parser = Json.createParser(new StringReader(json));
-            parser.next();
-            map = processJsonObject(parser.getObject());
-        } catch (JsonException e) {
-            map = new HashMap();
-        }
-        return map;
-    }
-
-    private static Map processJsonObject(JsonObject jo) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        try {
-            for (String key : jo.keySet()) {
-                JsonValue value = jo.get(key);
-                if (value instanceof JsonArray) {
-                    map.put(key, processJsonArray((JsonArray) value));
-                } else if (value instanceof JsonObject) {
-                    map.put(key, processJsonObject((JsonObject) value));
-                } else if (value.getClass().getSimpleName().equalsIgnoreCase("null")) {
-                    // The Map may not store null values, but we shouldn't rely on
-                    // that behavior, just to be safe
-                    map.put(key, null);
-                } else {
-                    map.put(key, value);
-                }
-            }
-        } catch (JsonException e) {
-            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
-        }
-
-        return map;
-    }
-
-    private static List processJsonArray(JsonArray ja) {
-        List results = new ArrayList();
-
-        try {
-            for (int i = 0; i < ja.size(); i++) {
-                Object entry = ja.get(i);
-                if (entry instanceof JsonArray) {
-                    results.add(processJsonArray((JsonArray) entry));
-                } else if (entry instanceof JsonObject) {
-                    results.add(processJsonObject((JsonObject) entry));
-                } else {
-                    results.add(entry);
-                }
-            }
-        } catch (JsonException e) {
-            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
-        }
-
-        return results;
-    }
 
     private static Map processXmlMap(XMLStreamReader parser) throws XMLStreamException {
         boolean endOfMap = false;
