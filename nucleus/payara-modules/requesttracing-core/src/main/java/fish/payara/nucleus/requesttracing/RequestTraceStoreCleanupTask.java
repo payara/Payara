@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,17 +39,18 @@
 package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
-
-import java.util.Iterator;
-import java.util.NavigableSet;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author mertcaliskan
  */
 final public class RequestTraceStoreCleanupTask implements Runnable {
 
+    /**
+     * Limit for how long traces can remain in store in seconds
+     */
     private final long timeLimit;
     private final RequestTraceStoreInterface requestTraceStore;
 
@@ -61,12 +62,10 @@ final public class RequestTraceStoreCleanupTask implements Runnable {
     @Override
     public void run() {
         Collection<RequestTrace> traces = requestTraceStore.getTraces();
-        Iterator<RequestTrace> iterator = traces.iterator();
-
-        while(iterator.hasNext()) {
-            RequestTrace event = iterator.next();
-            long upTimeInMillis = System.currentTimeMillis() - event.getStartTime();
-            if (TimeUnit.MILLISECONDS.toSeconds(upTimeInMillis) > timeLimit) {
+        
+        for (RequestTrace event: traces){
+            long upTimeInSeconds = event.getStartTime().until(Instant.now(), ChronoUnit.SECONDS);
+            if (upTimeInSeconds > timeLimit){
                 traces.remove(event);
             }
         }
