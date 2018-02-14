@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.adapter;
 
@@ -77,6 +78,7 @@ import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.util.Parameters;
 import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -152,7 +154,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     @Override
     public void service(Request req, Response res) {
         RestLogging.restLogger.log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
-
+        
         try {
             res.setCharacterEncoding(Constants.ENCODING);
             if (latch.await(20L, TimeUnit.SECONDS)) {
@@ -227,7 +229,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             if (userAgent != null) {
                 String accept = req.getHeader(HEADER_ACCEPT);
                 if (accept != null) {
-                    if (accept.indexOf("html") != -1) {//html is possible so get it...
+                    if (accept.contains("html")) {//html is possible so get it...
                         return "html";
                     }
                     StringTokenizer st = new StringTokenizer(accept, ",");
@@ -291,6 +293,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
      * dynamically load the class that contains all references to Jersey APIs
      * so that Jersey is not loaded when the RestAdapter is loaded at boot time
      * gain a few 100 millis at GlassFish startup time
+     * @return 
+     * @throws org.glassfish.api.container.EndpointRegistrationException
      */
     protected JerseyContainer exposeContext() throws EndpointRegistrationException {
         Set<Class<?>> classes = getRestResourceProvider().getResourceClasses(habitat);
@@ -330,15 +334,22 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             report.setMessage(msg);
             BaseProvider<ActionReportResult> provider;
             String type = getAcceptedMimeType(req);
-            if ("xml".equals(type)) {
-                res.setContentType("application/xml");
-                provider = new ActionReportResultXmlProvider();
-            } else if ("json".equals(type)) {
-                res.setContentType("application/json");
-                provider = new ActionReportResultJsonProvider();
-            } else {
+            if (null == type) {
                 res.setContentType("text/html");
                 provider = new ActionReportResultHtmlProvider();
+            } else switch (type) {
+                case "xml":
+                    res.setContentType("application/xml");
+                    provider = new ActionReportResultXmlProvider();
+                    break;
+                case "json":
+                    res.setContentType("application/json");
+                    provider = new ActionReportResultJsonProvider();
+                    break;
+                default:
+                    res.setContentType("text/html");
+                    provider = new ActionReportResultHtmlProvider();
+                    break;
             }
             res.setStatus(statusCode);
             res.getOutputStream().write(provider.getContent(new ActionReportResult(report)).getBytes());

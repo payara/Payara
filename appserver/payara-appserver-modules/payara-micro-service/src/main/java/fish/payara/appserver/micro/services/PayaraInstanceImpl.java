@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,9 +68,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import lombok.extern.java.Log;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -94,7 +94,6 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "payara-instance")
 @RunLevel(StartupRunLevel.VAL)
 @Contract
-@Log
 public class PayaraInstanceImpl implements EventListener, MessageReceiver, PayaraInstance {
 
     public static final String INSTANCE_STORE_NAME = "payara.instance.store";
@@ -103,7 +102,9 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     public static final String CDI_EVENTS_NAME = "payara.micro.cdi.event";
 
-    public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";    
+    public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";
+    
+    private static final Logger logger = Logger.getLogger(PayaraInstanceImpl.class.getName());
     
     @Inject
     private PayaraCluster cluster;
@@ -241,7 +242,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                     initialiseInstanceDescriptor();
                 }
                 me.addApplication(new ApplicationDescriptorImpl(applicationInfo));
-                log.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
+                logger.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
                     myCurrentID, applicationInfo.getName() });
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
@@ -263,7 +264,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         // When Hazelcast is bootstrapped, update the instance descriptor with any new information
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
             initialiseInstanceDescriptor();
-            log.log(Level.FINE, "Hz Bootstrap Complete, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(), myCurrentID });
+            logger.log(Level.FINE, "Hz Bootstrap Complete, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(), myCurrentID });
             // remove listener first
             cluster.getEventBus().removeMessageReceiver(INTERNAL_EVENTS_NAME, this);
             cluster.getEventBus().removeMessageReceiver(CDI_EVENTS_NAME, this);
@@ -432,7 +433,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }  
         } catch (UnknownHostException ex) {
-            log.log(Level.SEVERE, "Could not find local hostname", ex);
+            logger.log(Level.SEVERE, "Could not find local hostname", ex);
         }
     }
     
