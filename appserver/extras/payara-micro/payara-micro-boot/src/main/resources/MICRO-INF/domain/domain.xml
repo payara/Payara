@@ -54,7 +54,7 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
     <resources>
         <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default" object-type="system-all" />
         <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource"> 
-            <property name="URL" value="jdbc:h2:~/test" />
+            <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
         </jdbc-connection-pool>
         <context-service description="context service" jndi-name="concurrent/__defaultContextService" object-type="system-all"></context-service>
         <managed-executor-service maximum-pool-size="200" core-pool-size="2" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" task-queue-capacity="20000" jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all"></managed-executor-service>
