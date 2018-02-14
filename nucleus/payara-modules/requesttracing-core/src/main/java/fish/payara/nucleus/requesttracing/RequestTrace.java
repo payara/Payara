@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,8 @@ import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.domain.RequestTraceSpanLog;
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,9 +66,8 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     
     private boolean started;
     private boolean completed;
-    private long startTime;
-    private long startTimeEpoched;
-    private long endTime;
+    private Instant startTime;
+    private Instant endTime;
     private long elapsedTime;
     private final LinkedList<RequestTraceSpan> trace;
     private final List<RequestTraceSpanLog> spanLogs;
@@ -86,16 +87,14 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         if (null != span.getEventType()) switch (span.getEventType()) {
             case TRACE_START:
                 trace.clear();
-                startTime = span.getTimestamp();
-                startTimeEpoched = span.getTimeOccured();
+                startTime = span.getStartInstant();
                 trace.add(span);
                 started = true;
                 completed = false;
                 break;
             case PROPAGATED_TRACE:
                 trace.clear();
-                startTime = span.getTimestamp();
-                startTimeEpoched = span.getTimeOccured();
+                startTime = span.getStartInstant();
                 trace.add(span);
                 started = true;
                 completed = false;
@@ -106,8 +105,8 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
                 }
                 RequestTraceSpan rootSpan = trace.getFirst();
                 span.setTraceId(rootSpan.getTraceId());
-                span.setSpanDuration(System.nanoTime() - span.getTimestamp());
-                span.setTraceEndTime(System.currentTimeMillis());
+                span.setSpanDuration(span.getStartInstant().until(Instant.now(), ChronoUnit.NANOS));
+                span.setTraceEndTime(Instant.now());
                 trace.add(span);
                     break;
                 }
@@ -124,8 +123,8 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         Collections.sort(trace);
         
         RequestTraceSpan startSpan = trace.getFirst();
-        endTime = System.nanoTime();
-        startSpan.setSpanDuration(endTime - startTime);
+        endTime = Instant.now();
+        startSpan.setSpanDuration(startTime.until(endTime, ChronoUnit.NANOS));
         startSpan.setTraceEndTime(endTime);
         elapsedTime = TimeUnit.MILLISECONDS.convert(startSpan.getSpanDuration(), TimeUnit.NANOSECONDS);
         completed = true;
@@ -178,32 +177,12 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     }
 
     /**
-     * Gets the start time of the request trace in nanoseconds. 
-     * 
-     * This time is NOT related to the epoch or start time of anything, but an
-     * arbitrary point. This is only to be used for comparison.
-     * <p>
-     * See {@link System#nanoTime()} for how this time is generated.
-     * <p>
-     * See {@link #getStartTimeEpoched} for a time that can be used for an absolute value.
+     * Gets the Instant  when the span was started
+     * See {@link java.time.Instant#now()} for how this time is generated.
      * @return 
-     * 
      */
-    long getStartTime() {
+    public Instant getStartTime() {
         return startTime;
-    }
-    
-    
-    
-    /**
-     * Gets the time in milliseconds since the epoch (midnight, January 1st 1970)
-     * when the the request trace started.
-     * <p>
-     * See {@link System#currentTimeMillis()} for how this time is generated.
-     * @return 
-     */
-    public long getStartTimeEpoched() {
-        return startTimeEpoched;
     }
     
     /**
@@ -213,7 +192,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
      * This value is 0 until the request trace in finished.
      * @return 
      */
-    public long getEndTime() {
+    public Instant getEndTime() {
         return endTime;
     }
 
@@ -257,7 +236,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
             while (iterator.hasPrevious()) {
                 RequestTraceSpan span = iterator.previous();
                 if (spanLog.getTimeMillis() > span.getTimeOccured() 
-                        && spanLog.getTimeMillis() < span.getTraceEndTime()) {
+                        && spanLog.getTimeMillis() < span.getTraceEndTime().toEpochMilli()) {
                     span.addSpanLog(spanLog);
                     break;
                 }
@@ -271,7 +250,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
                 RequestTraceSpan bestMatchingParent = null;
                 for (RequestTraceSpan comparisonSpan : trace) {
                     if (span.getTimeOccured() > comparisonSpan.getTimeOccured() &&
-                            span.getTraceEndTime() < comparisonSpan.getTraceEndTime()) {
+                            span.getTraceEndTime().compareTo(comparisonSpan.getTraceEndTime()) < 0) {
                         if (bestMatchingParent == null) {
                             bestMatchingParent = comparisonSpan;
                         } else {
@@ -296,7 +275,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         if (compareElapsedTime != 0) {
             return compareElapsedTime;
         }
-        return Long.compare(requestTrace.startTime, startTime);
+        return requestTrace.startTime.compareTo(startTime);
     }
     
     @Override
