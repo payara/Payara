@@ -234,7 +234,7 @@
         <javax.el-api.version>3.0.1-b04</javax.el-api.version>
 
         <!-- JavaMail -->
-        <mail.version>1.6.0</mail.version>
+        <mail.version>1.6.1</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
