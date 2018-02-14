@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,9 @@
 package fish.payara.nucleus.requesttracing.domain;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.ArrayList;;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +57,8 @@ import java.util.UUID;
 public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSpan> {
     
     private final SpanContext spanContext;
-    private final long timestamp;
-    private final long startTime;
-    private long endTime;
+    private final Instant startTime;
+    private Instant endTime;
     private long spanDuration;
     private final EventType eventType;
     private Map<String, String> spanTags;
@@ -72,9 +71,8 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     }
 
     public RequestTraceSpan(EventType eventType, String eventName) {
-        this.spanContext = new SpanContext();
-        this.timestamp = System.nanoTime();
-        this.startTime = System.currentTimeMillis();
+        this.spanContext = new SpanContext();;
+        this.startTime = Instant.now();
         this.eventType = eventType;
         this.eventName = eventName;
         this.spanTags = new HashMap<>();
@@ -85,8 +83,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     public RequestTraceSpan(EventType eventType, String eventName, UUID propagatedTraceId, UUID propagatedParentId, 
             SpanContextRelationshipType spanContextRelationship) {
         this.spanContext = new SpanContext(propagatedTraceId);
-        this.timestamp = System.nanoTime();
-        this.startTime = System.currentTimeMillis();
+        this.startTime = Instant.now();
         this.eventType = eventType;
         this.eventName = eventName;
         this.spanTags = new HashMap<>();
@@ -111,28 +108,19 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     public SpanContext getSpanContext() {
         return spanContext;
     }
-
-    /**
-     * Gets the nanotime when the event occurred.
-     * 
-     * This time is NOT related to the epoch or start time of anything, but an
-     * arbitrary point. This is only to be used for comparison.
-     * <p>
-     * See also {@link System#nanoTime()}
-     * @return 
-     */
-    public long getTimestamp() {
-        return timestamp;
+    
+    public Instant getStartInstant(){
+        return startTime;
     }
     
     /**
      * Gets the time in milliseconds since the epoch (midnight, January 1st 1970)
      * when the the request event occurred.
      * 
-     * @return the time the trace occured
+     * @return the time the trace occurred
      */
     public long getTimeOccured(){
-        return startTime;
+        return startTime.toEpochMilli();
     }
 
     /**
@@ -184,11 +172,11 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         return spanReferences;
     }
     
-    public long getTraceEndTime() {
+    public Instant getTraceEndTime() {
         return endTime;
     }
     
-    public void setTraceEndTime(long endTime) {
+    public void setTraceEndTime(Instant endTime) {
         this.endTime = endTime;
     }
     
@@ -203,9 +191,9 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         
         result.append("},");
         
-        result.append("\"startTime\":\"").append(DateFormat.getDateTimeInstance().format(new Date(startTime)))
+        result.append("\"startTime\":\"").append(startTime.atZone(ZoneId.systemDefault()).toString())
                 .append("\",");
-        result.append("\"endTime\":\"").append(DateFormat.getDateTimeInstance().format(new Date(endTime)))
+        result.append("\"endTime\":\"").append(endTime.atZone(ZoneId.systemDefault()).toString())
                 .append("\",");
         result.append("\"traceDuration\":\"").append(spanDuration).append("\"");
         
@@ -263,7 +251,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
 
     @Override
     public int compareTo(RequestTraceSpan span) {
-        return Long.compare(this.startTime, span.startTime);
+        return startTime.compareTo(span.startTime);
     }
     
     public class SpanContext implements Serializable {
