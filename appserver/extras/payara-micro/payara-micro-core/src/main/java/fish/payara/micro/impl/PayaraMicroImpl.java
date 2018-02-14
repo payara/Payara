@@ -175,6 +175,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String clustermode;
     private String interfaces;
     private String secretsDir;
+    private boolean showServletMappings;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -1364,6 +1365,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case secretsdir:
                         secretsDir = value;
                         break;
+                    case showservletmappings:
+                        showServletMappings = true;
+                        break;
                     default:
                         break;
                 }
@@ -2097,6 +2101,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         clustermode = getProperty("payaramicro.clusterMode");
         interfaces = getProperty("payaramicro.interfaces");
         secretsDir = getProperty("payaramicro.secretsDir");
+        showServletMappings = getBooleanProperty("payaramicro.showServletMappings", "false");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2246,6 +2251,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
         props.setProperty("payaramicro.hostAware", Boolean.toString(hostAware));
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
+        props.setProperty("payaramicro.showServletMappings", Boolean.toString(showServletMappings));
 
         if (userLogFile != null) {
             props.setProperty("payaramicro.userLogFile", userLogFile);
@@ -2437,7 +2443,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private void dumpFinalStatus(long bootTime) {
         InstanceDescriptor id = getRuntime().getLocalDescriptor();
-        LOGGER.log(Level.INFO, id.toString());
+        LOGGER.log(Level.INFO, id.toJsonString(showServletMappings));
         StringBuilder sb = new StringBuilder();
         sb.append("\nPayara Micro URLs\n");
         List<URL> urls = id.getApplicationURLS();
