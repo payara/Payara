@@ -122,7 +122,7 @@
         <!-- CDI -->
         <javax.inject.version>1</javax.inject.version>
         <cdi-api.version>2.0</cdi-api.version>
-        <weld.version>3.0.2.Final</weld.version>
+        <weld.version>3.0.3.Final</weld.version>
         <weld-api.version>3.0.SP2</weld-api.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
 
