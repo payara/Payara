@@ -52,8 +52,7 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
 
     private boolean clusterEnabled = Boolean.parseBoolean(System.getenv("MICRO_CLUSTER_ENABLED"));
 
-    private boolean outputToConsole = System.getenv("MICRO_CONSOLE_OUTPUT") == null ? true
-            : Boolean.parseBoolean(System.getenv("MICRO_CONSOLE_OUTPUT"));
+    private boolean outputToConsole = Boolean.parseBoolean(System.getenv().getOrDefault("MICRO_CONSOLE_OUTPUT", "true"));
 
     private boolean debug; // TODO
 
