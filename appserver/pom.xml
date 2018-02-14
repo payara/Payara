@@ -295,7 +295,7 @@
                             </artifact>
                             <jarType>impl</jarType>
                             <specVersion>1.6</specVersion>
-                            <implVersion>1.6.0</implVersion>
+                            <implVersion>${mail.version}</implVersion>
                             <apiPackage>javax.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
                         </spec>
