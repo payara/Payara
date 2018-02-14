@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,15 +50,38 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
 
     private String microJar = System.getenv("MICRO_JAR");
 
-    private boolean outputToConsole = true;
+    private boolean clusterEnabled = Boolean.parseBoolean(System.getenv("MICRO_CLUSTER_ENABLED"));
+
+    private boolean outputToConsole = Boolean.parseBoolean(System.getenv().getOrDefault("MICRO_CONSOLE_OUTPUT", "true"))
+            || System.getenv("MICRO_CONSOLE_OUTPUT").equals("");
+
     private boolean debug; // TODO
 
     public String getMicroJar() {
         return microJar;
     }
 
-    public void setMicroJar(String glassFishHome) {
-        this.microJar = glassFishHome;
+    public File getMicroJarFile() {
+        return new File(getMicroJar());
+    }
+
+    /**
+     * @param microJar the location of the Payara Micro Jar. This is a required field.
+     */
+    public void setMicroJar(String microJar) {
+        this.microJar = microJar;
+    }
+
+    public boolean isClusterEnabled() {
+        return clusterEnabled;
+    }
+
+    /**
+     * @param clusterEnabled Enable clustering on the instance.
+     * Disabled by default.
+     */
+    public void setClusterEnabled(boolean clusterEnabled) {
+        this.clusterEnabled = clusterEnabled;
     }
 
     public boolean isOutputToConsole() {
@@ -66,8 +89,8 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
     }
 
     /**
-     * @param outputToConsole Show the output of the admin commands on the console. By default
-     *            enabled
+     * @param outputToConsole Show the output of the admin commands on the console.
+     * Enabled by default.
      */
     public void setOutputToConsole(boolean outputToConsole) {
         this.outputToConsole = outputToConsole;
@@ -82,10 +105,6 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
      */
     public void setDebug(boolean debug) {
         this.debug = debug;
-    }
-
-    public File getMicroJarFile() {
-        return new File(getMicroJar());
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,6 +53,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -180,13 +181,18 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             logFile.createNewFile();
 
             // Create the list of commands to start Payara Micro
-            List<String> cmd = asList(
-                    "java",
-                    "-jar", configuration.getMicroJarFile().getAbsolutePath(),
-                    "--nocluster",
+            List<String> cmd = new ArrayList<>(asList(
+                    "java", "-jar", configuration.getMicroJarFile().getAbsolutePath(),
                     "--logtofile", logFile.getAbsolutePath(),
                     "--postdeploycommandfile", commandFile.getAbsolutePath(),
-                    "--deploy", deploymentFile.getAbsolutePath());
+                    "--deploy", deploymentFile.getAbsolutePath()
+                    ));
+
+            // Disable clustering if it's not explicitly enabled
+            if (!configuration.isClusterEnabled()) {
+                cmd.add("--nocluster");
+            }
+
             logger.info("Starting Payara Micro using cmd: " + cmd);
 
             // Register a watch service to wait for the logs to be zipped.
