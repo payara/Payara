@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import fish.payara.nucleus.requesttracing.store.strategy.TraceStorageStrategy;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -85,7 +86,13 @@ public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, S
         if (traceToRemove == null) {
             return null;
         }
-        store.remove(traceToRemove);
+        
+        Set<String> keys = store.localKeySet();
+        for (String key : keys){
+                if (store.remove(key, trace)){
+                    break;
+                }
+        }
         
         return traceToRemove;
     }
