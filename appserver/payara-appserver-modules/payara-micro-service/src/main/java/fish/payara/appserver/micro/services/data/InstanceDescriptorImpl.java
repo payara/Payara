@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2018 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,11 +17,16 @@
  */
 package fish.payara.appserver.micro.services.data;
 
+import static java.lang.Boolean.TRUE;
+import static javax.json.stream.JsonGenerator.PRETTY_PRINTING;
+
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +34,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
 
 import org.glassfish.internal.data.ApplicationInfo;
 
@@ -286,6 +297,90 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     @Override
     public int getAdminPort() {
         return adminPort;
+    }
+
+    @Override
+    public String toJsonString(boolean verbose) {
+        StringWriter writer = new StringWriter();
+        Map<String, Object> writerConfig = new HashMap<>();
+        writerConfig.put(PRETTY_PRINTING, TRUE);
+        try (JsonWriter jsonWriter = Json.createWriterFactory(writerConfig).createWriter(writer)) {
+            jsonWriter.writeObject(toJsonObject(verbose));
+            return writer.toString();
+        }
+    }
+
+    private JsonObject toJsonObject(boolean verbose) {
+        // Create a builder to store the object
+        JsonObjectBuilder configBuilder = Json.createObjectBuilder();
+
+        // Add all the instance information
+        configBuilder.add("Host", hostName.getCanonicalHostName());
+        configBuilder.add("Http Port(s)", Arrays.toString(getHttpPorts().toArray()).replaceAll("[\\[\\]]", ""));
+        configBuilder.add("Https Port(s)", Arrays.toString(getHttpsPorts().toArray()).replaceAll("[\\[\\]]", ""));
+        configBuilder.add("Instance Name", this.instanceName);
+        configBuilder.add("Instance Group", this.instanceGroup);
+        if (memberUUID != null) {
+            configBuilder.add("Hazelcast Member UUID", this.memberUUID);
+        }
+
+        // Create array of applications
+        JsonArrayBuilder deploymentBuilder = Json.createArrayBuilder();
+        getDeployedApplications().forEach(app -> {
+            // Construct object for each application
+            JsonObjectBuilder appBuilder = Json.createObjectBuilder();
+
+            // Add the name of the application
+            appBuilder.add("Name", app.getName());
+
+            // If there's only one module in the application, print the module info with the application name
+            if (app.getModuleDescriptors().size() == 1) {
+                ModuleDescriptor module = app.getModuleDescriptors().get(0);
+                appBuilder.add("Type", module.getType());
+                appBuilder.add("Context Root", module.getContextRoot());
+
+                // List the module mappings if verbose is specified
+                if (verbose) {
+                    JsonObjectBuilder servletMappings = Json.createObjectBuilder();
+                    module.getServletMappings().forEach((key, value) -> {
+                        servletMappings.add(key, value);
+                    });
+                    appBuilder.add("Mappings", servletMappings.build());
+                }
+            
+            // If there's more modules, print info for each module
+            } else {
+                JsonArrayBuilder modules = Json.createArrayBuilder();
+                // Construct object for each module
+                app.getModuleDescriptors().forEach(module -> {
+                    JsonObjectBuilder moduleBuilder = Json.createObjectBuilder();
+
+                    // Add basic information for the module
+                    moduleBuilder.add("Name", module.getName());
+                    moduleBuilder.add("Type", module.getType());
+                    moduleBuilder.add("Context Root",
+                            (module.getContextRoot() == null) ? "***" : module.getContextRoot());
+
+                    // Create an object of mappings if verbose is specified
+                    if (verbose) {
+                        JsonObjectBuilder servletMappings = Json.createObjectBuilder();
+                        module.getServletMappings().forEach((key, value) -> {
+                            servletMappings.add(key, value);
+                        });
+                        moduleBuilder.add("Mappings", servletMappings.build());
+                    }
+
+                    modules.add(moduleBuilder.build());
+                });
+                appBuilder.add("Modules", modules.build());
+            }
+            deploymentBuilder.add(appBuilder.build());
+        });
+        configBuilder.add("Deployed", deploymentBuilder.build());
+
+        return Json.createObjectBuilder()
+            .add("Instance Configuration", configBuilder.build())
+            .build();
     }
 
     @Override
