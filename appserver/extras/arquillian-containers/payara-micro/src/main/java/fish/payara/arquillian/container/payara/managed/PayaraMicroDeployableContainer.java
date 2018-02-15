@@ -199,9 +199,14 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 cmd.add("--nocluster");
             }
 
-            // Enabled --showServletMappings if it's supported
+            // Enable --showServletMappings if it's supported
             if (configuration.getMicroVersion().isMoreRecentThan(new PayaraVersion("5.181-SNAPSHOT"))) {
                 cmd.add("--showServletMappings");
+            }
+
+            // Start Payara Micro in debug mode if it's been enabled
+            if (configuration.isDebug()) {
+                cmd.add(1, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006");
             }
 
             logger.info("Starting Payara Micro using cmd: " + cmd);

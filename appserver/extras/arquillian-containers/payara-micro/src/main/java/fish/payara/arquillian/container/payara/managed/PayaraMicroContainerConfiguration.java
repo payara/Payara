@@ -63,7 +63,7 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
     private boolean outputToConsole = Boolean.parseBoolean(System.getenv().getOrDefault("MICRO_CONSOLE_OUTPUT", "true"))
             || System.getenv("MICRO_CONSOLE_OUTPUT").equals("");
 
-    private boolean debug; // TODO
+    private boolean debug = Boolean.parseBoolean(System.getenv("MICRO_DEBUG"));
 
     public String getMicroJar() {
         return microJar;
