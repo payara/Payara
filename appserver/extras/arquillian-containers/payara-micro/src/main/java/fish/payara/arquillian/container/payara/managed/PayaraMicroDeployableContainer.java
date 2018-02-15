@@ -84,6 +84,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
+import fish.payara.arquillian.container.payara.PayaraVersion;
 import fish.payara.arquillian.container.payara.file.LogReader;
 import fish.payara.arquillian.container.payara.file.StringConsumer;
 import fish.payara.arquillian.container.payara.process.OutputLoggingConsumer;
@@ -195,6 +196,11 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Disable clustering if it's not explicitly enabled
             if (!configuration.isClusterEnabled()) {
                 cmd.add("--nocluster");
+            }
+
+            // Enabled --showServletMappings if it's supported
+            if (configuration.getMicroVersion().isMoreRecentThan(new PayaraVersion("5.181-SNAPSHOT"))) {
+                cmd.add("--showServletMappings");
             }
 
             logger.info("Starting Payara Micro using cmd: " + cmd);

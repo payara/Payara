@@ -41,14 +41,22 @@ package fish.payara.arquillian.container.payara.managed;
 import static org.jboss.arquillian.container.spi.client.deployment.Validate.notNull;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
+
+import fish.payara.arquillian.container.payara.PayaraVersion;
 
 
 public class PayaraMicroContainerConfiguration implements ContainerConfiguration {
 
     private String microJar = System.getenv("MICRO_JAR");
+
+    private PayaraVersion microVersion = null;
 
     private boolean clusterEnabled = Boolean.parseBoolean(System.getenv("MICRO_CLUSTER_ENABLED"));
 
@@ -63,6 +71,10 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
 
     public File getMicroJarFile() {
         return new File(getMicroJar());
+    }
+
+    public PayaraVersion getMicroVersion() {
+        return microVersion;
     }
 
     /**
@@ -113,10 +125,20 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
      */
     public void validate() throws ConfigurationException {
         notNull(getMicroJar(), "The property microJar must be specified or the MICRO_JAR environment variable must be set");
-
         if (!getMicroJarFile().isFile()) {
-            throw new IllegalArgumentException("Could not locate the Payra Micro jar file " + getMicroJar());
+            throw new IllegalArgumentException("Could not locate the Payara Micro Jar file " + getMicroJar());
         }
 
+        try (JarFile microJarFile = new JarFile(getMicroJarFile())) {
+            ZipEntry pomProperties = microJarFile
+                    .getEntry("META-INF/maven/fish.payara.micro/payara-micro-boot/pom.properties");
+            Properties microProperties = new Properties();
+            microProperties.load(microJarFile.getInputStream(pomProperties));
+            this.microVersion = new PayaraVersion(microProperties.getProperty("version"));
+        } catch (IOException e) {
+            throw new IllegalArgumentException(
+                    "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.", e);
+        }
+        notNull(getMicroVersion(), "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.");
     }
 }
