@@ -63,6 +63,8 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
 
     private boolean debug = Boolean.parseBoolean(getConfigurableVariable("payara.debug", "MICRO_DEBUG", "false"));
 
+    private String cmdOptions = getConfigurableVariable("payara.cmdOptions", "MICRO_CMD_OPTIONS", null);
+
     public String getMicroJar() {
         return microJar;
     }
@@ -115,6 +117,17 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
      */
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public String getCmdOptions() {
+        return cmdOptions;
+    }
+
+    /**
+     * @param cmdOptions extra command line options to pass to the Payara Micro instance.
+     */
+    public void setCmdOptions(String cmdOptions) {
+        this.cmdOptions = cmdOptions;
     }
 
     /**

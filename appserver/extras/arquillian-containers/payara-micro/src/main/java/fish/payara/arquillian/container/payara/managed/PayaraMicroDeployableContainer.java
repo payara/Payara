@@ -209,6 +209,11 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 cmd.add(1, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006");
             }
 
+            // Add the extra cmd options to the Payara Micro instance
+            if (configuration.getCmdOptions() != null) {
+                cmd.add(1, configuration.getCmdOptions());
+            }
+
             logger.info("Starting Payara Micro using cmd: " + cmd);
 
             // Register a watch service to wait for the logs to be zipped.
