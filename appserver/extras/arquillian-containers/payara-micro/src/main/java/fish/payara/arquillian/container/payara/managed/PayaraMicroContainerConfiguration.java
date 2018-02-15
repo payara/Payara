@@ -65,6 +65,8 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
 
     private String cmdOptions = getConfigurableVariable("payara.cmdOptions", "MICRO_CMD_OPTIONS", null);
 
+    private String extraMicroOptions = getConfigurableVariable("payara.extraMicroOptions", "EXTRA_MICRO_OPTIONS", null);
+
     public String getMicroJar() {
         return microJar;
     }
@@ -124,10 +126,21 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
     }
 
     /**
-     * @param cmdOptions extra command line options to pass to the Payara Micro instance.
+     * @param cmdOptions extra command line options to pass to the Payara Micro instance (between java and -jar).
      */
     public void setCmdOptions(String cmdOptions) {
         this.cmdOptions = cmdOptions;
+    }
+
+    public String getExtraMicroOptions() {
+        return extraMicroOptions;
+    }
+
+    /**
+     * @param extraMicroOptions extra command line options to pass to the Payara Micro instance (at the end of the command).
+     */
+    public void setExtraMicroOptions(String extraMicroOptions) {
+        this.extraMicroOptions = extraMicroOptions;
     }
 
     /**
