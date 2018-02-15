@@ -525,7 +525,7 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>3.5.0</version>
                 </plugin>
 
                 <plugin>
@@ -1018,7 +1018,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.main</artifactId>
-                <version>5.6.6</version>
+                <version>5.6.10</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
@@ -1028,7 +1028,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.eventadmin</artifactId>
-                <version>1.4.8</version>
+                <version>1.4.10</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
@@ -1038,7 +1038,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.gogo.runtime</artifactId>
-                <version>1.0.6</version>
+                <version>1.0.10</version>
             </dependency>
             <dependency>
                <groupId>org.apache.felix</groupId>
@@ -1053,7 +1053,7 @@ Parent is ${project.parent}</echo>
             <dependency> <!-- A utility to automatically install bundles from a directory.-->
                <groupId>org.apache.felix</groupId>
                <artifactId>org.apache.felix.fileinstall</artifactId>
-               <version>3.6.0</version>
+               <version>3.6.4</version>
             </dependency>
             <dependency>
                <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
@@ -1063,7 +1063,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                <groupId>org.apache.felix</groupId> <!-- Implementation of the Declarative Services specification 1.3 -->
                <artifactId>org.apache.felix.scr</artifactId>
-               <version>2.0.12</version>
+               <version>2.0.14</version>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId> <!-- OSGi Companion Code for org.osgi.dto Version 1.0.0. -->
