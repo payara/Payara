@@ -140,38 +140,42 @@
         </repository>
 
         <repository>
-          <id>eclipse.microprofile</id>
-          <name>Eclipse MicroProfile Repository</name>
-          <url>https://repo.eclipse.org/content/groups/microprofile/</url>
-          <releases><enabled>true</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
+            <id>eclipse.microprofile</id>
+            <name>Eclipse MicroProfile Repository</name>
+            <url>https://repo.eclipse.org/content/groups/microprofile/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
 
-        <!--
+        <!--  
         <repository>
            <id>payara-patched-externals-local</id>
            <name>Payara Patched Externals local</name>
            <url>file:///opt/PayaraDev/Payara_PatchedProjects</url>
             <releases>
                 <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
             </snapshots>
         </repository>
-         -->
+        -->
 
         <repository>
            <id>payara-patched-externals</id>
 	       <name>Payara Patched Externals</name>
             <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
            	<releases>
            		<enabled>true</enabled>
            	</releases>
             	<snapshots>
-                	<enabled>true</enabled> <!-- TEMP for HK2 until b45 released -->
+                	<enabled>false</enabled>
             	</snapshots>
         </repository>
 
