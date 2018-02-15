@@ -41,27 +41,37 @@ package fish.payara.arquillian.container.payara.managed;
 import static java.lang.Runtime.getRuntime;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.Level.SEVERE;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.DOTALL;
 import static java.util.regex.Pattern.MULTILINE;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
@@ -74,6 +84,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
+import fish.payara.arquillian.container.payara.PayaraVersion;
 import fish.payara.arquillian.container.payara.file.LogReader;
 import fish.payara.arquillian.container.payara.file.StringConsumer;
 import fish.payara.arquillian.container.payara.process.OutputLoggingConsumer;
@@ -89,17 +100,11 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
     private static final Logger logger = Logger.getLogger(PayaraMicroDeployableContainer.class.getName());
 
-    // Regexps parse the server log for config info and deployment info of Payara Micro.
-    // This should be in sync with fish.payara.appserver.micro.services.data.InstanceDescriptorImpl#toString
-
     private static final Pattern instanceConfigPattern = Pattern
-            .compile("Instance Configuration.*Host: (?<host>.*)$.*HTTP Port\\(s\\):(?<ports>.*)$.*HTTPS", DOTALL | MULTILINE);
-
-    // The following regexps parse a line such as this one:
-    // Deployed: 1284c7bc-4733-4b44-8d50-a0ad8a42a1a4 ( 1284c7bc-4733-4b44-8d50-a0ad8a42a1a4 war
-    // /1284c7bc-4733-4b44-8d50-a0ad8a42a1a4 [ < jsp *.jspx >< ArquillianServletRunner /ArquillianServletRunner >< jsp *.jsp
-    // >< default / > ] )
-
+            .compile("Instance Configuration(?<jsonFormat>\")?.*Host\"?: \"?(?<host>.*?)\"?,{0,1}$.*HTTP Port\\(s\\)\"?: \"?(?<ports>.*?)\"?,?$.*HTTPS", DOTALL | MULTILINE | CASE_INSENSITIVE);
+    
+    private static final Pattern jsonPattern = Pattern.compile(
+            "Deployed\": (?<jsonArray>\\[.+?\\])", DOTALL | MULTILINE);
     private static final Pattern appPattern = Pattern.compile(
             "Deployed: (?<appName>.*) \\( (?<modules>.*) \\)");
     private static final Pattern modulePattern = Pattern.compile(
@@ -193,6 +198,26 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 cmd.add("--nocluster");
             }
 
+            // Enable --showServletMappings if it's supported
+            if (configuration.getMicroVersion().isMoreRecentThan(new PayaraVersion("5.181-SNAPSHOT"))) {
+                cmd.add("--showServletMappings");
+            }
+
+            // Start Payara Micro in debug mode if it's been enabled
+            if (configuration.isDebug()) {
+                cmd.add(1, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006");
+            }
+
+            // Add the extra cmd options to the Payara Micro instance
+            if (configuration.getCmdOptions() != null) {
+                cmd.add(1, configuration.getCmdOptions());
+            }
+
+            // Add the extra micro options to the Payara Micro instance
+            if (configuration.getExtraMicroOptions() != null) {
+                cmd.add(configuration.getExtraMicroOptions());
+            }
+
             logger.info("Starting Payara Micro using cmd: " + cmd);
 
             // Register a watch service to wait for the logs to be zipped.
@@ -226,15 +251,15 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             executor.scheduleAtFixedRate(() -> {
                 log = consumer.getBuilder().toString();
                 // Check for app deployed
-                Matcher appMatcher = appPattern.matcher(log);
-                if (appMatcher.find()) {
-                    executor.shutdown();
+                Matcher startupMatcher = instanceConfigPattern.matcher(log);
+                if (startupMatcher.find()) {
                     payaraMicroStarted.countDown();
+                    executor.shutdown();
                 }
-            }, 500, 500, TimeUnit.MILLISECONDS);
+            }, 500, 500, MILLISECONDS);
 
             // Wait for Payara Micro to start up, or time out after 10 seconds
-            if (payaraMicroStarted.await(10, TimeUnit.SECONDS)) {
+            if (payaraMicroStarted.await(10, SECONDS)) {
 
                 // Create a matcher for the 'Instance Configured' message
                 Matcher instanceConfigMatcher = instanceConfigPattern.matcher(log);
@@ -245,33 +270,16 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                     String host = instanceConfigMatcher.group("host").trim();
                     String[] ports = instanceConfigMatcher.group("ports").trim().split(" ");
                     int firstPort = Integer.parseInt(ports[0].trim());
-                    logger.info("Payara Micro running on host:" + host + " port: " + firstPort);
+                    logger.info("Payara Micro running on host: " + host + " port: " + firstPort);
 
                     HTTPContext httpContext = new HTTPContext(host, firstPort);
 
-                    // For all application that are deployed
-                    Matcher appMatcher = appPattern.matcher(log.substring(instanceConfigMatcher.start()));
-                    while (appMatcher.find()) {
-
-                        logger.info("Deployed application detected. Name: " + appMatcher.group("appName"));
-
-                        // For all modules within a single application
-                        Matcher moduleMatcher = modulePattern.matcher(appMatcher.group("modules"));
-                        while (moduleMatcher.find()) {
-
-                            logger.info("\tModule name: " + moduleMatcher.group("modName") + " root: "
-                                    + moduleMatcher.group("modContextRoot"));
-
-                            Matcher servletMappingsMatcher = servletMappingsPattern.matcher(moduleMatcher.group("servletMappings"));
-
-                            // For all Servlet mappings within a single module
-                            while (servletMappingsMatcher.find()) {
-                                logger.info("\t\tServlet name:" + servletMappingsMatcher.group("servletName"));
-                                httpContext.add(
-                                        new Servlet(servletMappingsMatcher.group("servletName"), moduleMatcher.group("modContextRoot")));
-                            }
-                        }
-
+                    // If the instance config is in the new JSON format, parse the JSON object.
+                    if (instanceConfigMatcher.group("jsonFormat") != null) {
+                        processDeploymentAsJson(log.substring(instanceConfigMatcher.start()), httpContext);
+                    } else {
+                        // Otherwise, parse it the old way
+                        processDeploymentOldMethod(log.substring(instanceConfigMatcher.start()), httpContext);
                     }
 
                     ProtocolMetaData protocolMetaData = new ProtocolMetaData();
@@ -297,6 +305,93 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
         }
 
         throw new DeploymentException("No applications were found deployed to Payara Micro.");
+    }
+
+    private void processDeploymentAsJson(String deploymentInformation, HTTPContext httpContext) {
+        Matcher jsonMatcher = jsonPattern.matcher(deploymentInformation);
+        if (jsonMatcher.find()) {
+            // Convert the deployment information into a JsonArray
+            String jsonString = jsonMatcher.group("jsonArray");
+            try (JsonReader reader = Json.createReader(new StringReader(jsonString))) {
+                JsonArray array = reader.readArray();
+
+                // For each deployed application
+                for (JsonObject app : array.getValuesAs(JsonObject.class)) {
+
+                    // Print the application details
+                    printApplicationFound(app.getString("Name"));
+
+                    // Store all application servlet mappings
+                    Map<String, JsonObject> allMappings = new HashMap<>();
+
+                    // If there's only one module, the mappings and context root are directly under the application
+                    JsonObject appMappings = app.getJsonObject("Mappings");
+                    if (appMappings != null) {
+                        // Get the context root and store the relevant servlets
+                        String contextRoot = app.getString("Context Root");
+                        allMappings.put(contextRoot, app.getJsonObject("Mappings"));
+                    } else {
+                        JsonArray modules = app.getJsonArray("Modules");
+                        modules.forEach(moduleValue -> {
+                            // Get the context root and store the relevant servlets
+                            JsonObject module = (JsonObject) moduleValue;
+                            String contextRoot = module.getString("Context Root");
+                            printModuleFound(module.getString("Name"), contextRoot);
+                            allMappings.put(contextRoot, module);
+                        });
+                    }
+
+                    // Handle each set of servlet mappings
+                    for (String contextRoot : allMappings.keySet()) {
+                        JsonObject mappings = allMappings.get(contextRoot);
+                        mappings.values().forEach(name -> {
+                            String servletName = name.toString().replaceAll("\"", "");
+                            printServletFound(servletName);
+                            httpContext.add(new Servlet(servletName, contextRoot));
+                        });
+                    }
+                    
+                }
+            }
+        }
+    }
+
+    private void processDeploymentOldMethod(String deploymentInformation, HTTPContext httpContext) {
+        Matcher appMatcher = appPattern.matcher(deploymentInformation);
+        // For each deployed application
+        while (appMatcher.find()) {
+
+            printApplicationFound(appMatcher.group("appName"));
+
+            // For all modules within a single application
+            Matcher moduleMatcher = modulePattern.matcher(appMatcher.group("modules"));
+            while (moduleMatcher.find()) {
+
+                printModuleFound(moduleMatcher.group("modName"), moduleMatcher.group("modContextRoot"));
+
+                Matcher servletMappingsMatcher = servletMappingsPattern.matcher(moduleMatcher.group("servletMappings"));
+
+                // For all Servlet mappings within a single module
+                while (servletMappingsMatcher.find()) {
+                    printServletFound(servletMappingsMatcher.group("servletName"));
+                    httpContext.add(
+                            new Servlet(servletMappingsMatcher.group("servletName"), moduleMatcher.group("modContextRoot")));
+                }
+            }
+
+        }
+    }
+
+    private void printApplicationFound(String appName) {
+        logger.log(Level.INFO, "Deployed application detected. Name: \"{0}\".", appName);
+    }
+
+    private void printModuleFound(String moduleName, String contextRoot) {
+        logger.log(Level.INFO, "\tModule found. Name: \"{0}\". Context root: \"{1}\".", new Object[]{moduleName, contextRoot});
+    }
+
+    private void printServletFound(String servletName) {
+        logger.log(Level.INFO, "\t\tServlet found. Name: \"{0}\".", servletName);
     }
 
     @Override
