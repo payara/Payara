@@ -54,16 +54,14 @@ import fish.payara.arquillian.container.payara.PayaraVersion;
 
 public class PayaraMicroContainerConfiguration implements ContainerConfiguration {
 
-    private String microJar = System.getenv("MICRO_JAR");
-
+    private String microJar = getConfigurableVariable("payara.microJar", "MICRO_JAR", null);
     private PayaraVersion microVersion = null;
 
-    private boolean clusterEnabled = Boolean.parseBoolean(System.getenv("MICRO_CLUSTER_ENABLED"));
+    private boolean clusterEnabled = Boolean.parseBoolean(getConfigurableVariable("payara.clusterEnabled", "MICRO_CLUSTER_ENABLED", "false"));
 
-    private boolean outputToConsole = Boolean.parseBoolean(System.getenv().getOrDefault("MICRO_CONSOLE_OUTPUT", "true"))
-            || System.getenv("MICRO_CONSOLE_OUTPUT").equals("");
+    private boolean outputToConsole = Boolean.parseBoolean(getConfigurableVariable("payara.consoleOutput", "MICRO_CONSOLE_OUTPUT", "true"));
 
-    private boolean debug = Boolean.parseBoolean(System.getenv("MICRO_DEBUG"));
+    private boolean debug = Boolean.parseBoolean(getConfigurableVariable("payara.debug", "MICRO_DEBUG", "false"));
 
     public String getMicroJar() {
         return microJar;
@@ -140,5 +138,21 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
                     "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.", e);
         }
         notNull(getMicroVersion(), "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.");
+    }
+
+    private static String getConfigurableVariable(String systemPropertyName, String environmentVariableName, String defaultValue) {
+        String systemProperty = System.getProperty(systemPropertyName);
+        String environmentProperty = System.getenv(environmentVariableName);
+
+        if (systemProperty == null || systemProperty.isEmpty()) {
+            if (environmentProperty == null || environmentProperty.isEmpty()) {
+                if (defaultValue == null || defaultValue.isEmpty()) {
+                    return null;
+                }
+                return defaultValue;
+            }
+            return environmentProperty;
+        }
+        return systemProperty;
     }
 }
