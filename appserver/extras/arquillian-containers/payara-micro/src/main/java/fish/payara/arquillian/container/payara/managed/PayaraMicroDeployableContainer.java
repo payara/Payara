@@ -211,12 +211,18 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
             // Add the extra cmd options to the Payara Micro instance
             if (configuration.getCmdOptions() != null) {
-                cmd.add(1, configuration.getCmdOptions());
+                int index = 1;
+                for (String option : configuration.getCmdOptions().split(" ")) {
+                    cmd.add(index, option);
+                    index++;
+                }
             }
 
             // Add the extra micro options to the Payara Micro instance
             if (configuration.getExtraMicroOptions() != null) {
-                cmd.add(configuration.getExtraMicroOptions());
+                for (String option : configuration.getExtraMicroOptions().split(" ")) {
+                    cmd.add(option);
+                }
             }
 
             logger.info("Starting Payara Micro using cmd: " + cmd);
