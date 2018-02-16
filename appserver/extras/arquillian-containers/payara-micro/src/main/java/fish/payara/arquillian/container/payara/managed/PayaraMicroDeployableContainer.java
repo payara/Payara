@@ -188,6 +188,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Create the list of commands to start Payara Micro
             List<String> cmd = new ArrayList<>(asList(
                     "java", "-jar", configuration.getMicroJarFile().getAbsolutePath(),
+                    "--autoBindHttp", "--autoBindRange", "1000",
                     "--logtofile", logFile.getAbsolutePath(),
                     "--postdeploycommandfile", commandFile.getAbsolutePath(),
                     "--deploy", deploymentFile.getAbsolutePath()
