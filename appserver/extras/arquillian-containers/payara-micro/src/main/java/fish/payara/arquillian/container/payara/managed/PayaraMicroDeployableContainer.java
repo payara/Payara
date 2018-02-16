@@ -209,6 +209,11 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 cmd.add(1, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006");
             }
 
+            // If autoBindHttp has been disabled, remove the option
+            if (!configuration.isAutoBindHttp()) {
+                cmd.removeIf(option -> option.equals("--autoBindHttp"));
+            }
+
             // Add the extra cmd options to the Payara Micro instance
             if (configuration.getCmdOptions() != null) {
                 int index = 1;
