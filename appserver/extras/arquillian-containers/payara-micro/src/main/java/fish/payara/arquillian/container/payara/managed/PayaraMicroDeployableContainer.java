@@ -188,6 +188,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Create the list of commands to start Payara Micro
             List<String> cmd = new ArrayList<>(asList(
                     "java", "-jar", configuration.getMicroJarFile().getAbsolutePath(),
+                    "--autoBindHttp", "--autoBindRange", "1000",
                     "--logtofile", logFile.getAbsolutePath(),
                     "--postdeploycommandfile", commandFile.getAbsolutePath(),
                     "--deploy", deploymentFile.getAbsolutePath()
@@ -210,12 +211,18 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
             // Add the extra cmd options to the Payara Micro instance
             if (configuration.getCmdOptions() != null) {
-                cmd.add(1, configuration.getCmdOptions());
+                int index = 1;
+                for (String option : configuration.getCmdOptions().split(" ")) {
+                    cmd.add(index, option);
+                    index++;
+                }
             }
 
             // Add the extra micro options to the Payara Micro instance
             if (configuration.getExtraMicroOptions() != null) {
-                cmd.add(configuration.getExtraMicroOptions());
+                for (String option : configuration.getExtraMicroOptions().split(" ")) {
+                    cmd.add(option);
+                }
             }
 
             logger.info("Starting Payara Micro using cmd: " + cmd);
