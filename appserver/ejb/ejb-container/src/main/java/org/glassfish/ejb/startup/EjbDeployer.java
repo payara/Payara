@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016/2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
@@ -575,9 +575,9 @@ public class EjbDeployer
     private String getOwnerId(String target) {
         // If target is a cluster or deployment group replace it with the instance
         List<Server> instances = Collections.EMPTY_LIST;
-        Cluster c = domain.getClusterNamed(target);
-        if (c != null) {
-            instances = c.getInstances();
+        Cluster cluster = domain.getClusterNamed(target);
+        if (cluster != null) {
+            instances = cluster.getInstances();
         } else {
             DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
             if (dg != null) {

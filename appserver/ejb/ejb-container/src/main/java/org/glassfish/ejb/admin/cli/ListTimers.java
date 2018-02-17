@@ -124,14 +124,14 @@ public class ListTimers implements AdminCommand {
                 extraProperties = new Properties();
                 actionReport.setExtraProperties(extraProperties);
             }
-            List<Map<String,String>> property = new LinkedList <>();
+            List<Map<String,String>> property = new LinkedList<>();
             extraProperties.put("ejbTimers", property);
             for (int i = 0; i < serverIds.length; i++) {
                 final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                 part.setMessage(serverIds[i] + ": " + timerCounts[i]);
                 HashMap<String,String> values = new HashMap<>();
                 values.put("server", serverIds[i]);
-                values.put("timerCount",timerCounts[i]);
+                values.put("timerCount", timerCounts[i]);
                 property.add(values);
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
