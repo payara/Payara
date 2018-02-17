@@ -45,6 +45,7 @@
         <artifactId>packages</artifactId>
         <version>5.181-SNAPSHOT</version>
     </parent>
+    
     <artifactId>microprofile-package</artifactId>
     <name>Microprofile Package</name>
     <packaging>distribution-fragment</packaging>
@@ -79,6 +80,7 @@
             </plugin>
         </plugins>
     </build>
+    
     <profiles>
         <profile>
             <id>ips</id>
@@ -194,6 +196,7 @@
             <version>${project.version}</version>
         </dependency>
             
+        <!-- Nimbus -->
         <dependency>
             <groupId>org.glassfish.main.external</groupId>
             <artifactId>jcip-annotations-repackaged</artifactId>
