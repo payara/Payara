@@ -192,6 +192,11 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                     "--postdeploycommandfile", commandFile.getAbsolutePath(),
                     "--deploy", deploymentFile.getAbsolutePath()
                     ));
+            
+            // Add --autoBindHttp if it's enabled
+            if (configuration.isAutoBindHttp()) {
+                cmd.addAll(asList("--autoBindHttp", "--autoBindRange", "1000"));
+            }
 
             // Disable clustering if it's not explicitly enabled
             if (!configuration.isClusterEnabled()) {
@@ -210,12 +215,18 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
             // Add the extra cmd options to the Payara Micro instance
             if (configuration.getCmdOptions() != null) {
-                cmd.add(1, configuration.getCmdOptions());
+                int index = 1;
+                for (String option : configuration.getCmdOptions().split(" ")) {
+                    cmd.add(index, option);
+                    index++;
+                }
             }
 
             // Add the extra micro options to the Payara Micro instance
             if (configuration.getExtraMicroOptions() != null) {
-                cmd.add(configuration.getExtraMicroOptions());
+                for (String option : configuration.getExtraMicroOptions().split(" ")) {
+                    cmd.add(option);
+                }
             }
 
             logger.info("Starting Payara Micro using cmd: " + cmd);

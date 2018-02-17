@@ -58,6 +58,8 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
 
     private boolean clusterEnabled = Boolean.parseBoolean(getConfigurableVariable("payara.clusterEnabled", "MICRO_CLUSTER_ENABLED", "false"));
 
+    private boolean autoBindHttp = Boolean.parseBoolean(getConfigurableVariable("payara.autoBindHttp", "MICRO_AUTOBIND_HTTP", "true"));
+
     private boolean outputToConsole = Boolean.parseBoolean(getConfigurableVariable("payara.consoleOutput", "MICRO_CONSOLE_OUTPUT", "true"));
 
     private boolean debug = Boolean.parseBoolean(getConfigurableVariable("payara.debug", "MICRO_DEBUG", "false"));
@@ -95,6 +97,18 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
      */
     public void setClusterEnabled(boolean clusterEnabled) {
         this.clusterEnabled = clusterEnabled;
+    }
+
+    public boolean isAutoBindHttp() {
+        return autoBindHttp;
+    }
+
+    /**
+     * @param autoBindHttp Enable/disable adding the --autoBindHttp option.
+     * Disabled by default.
+     */
+    public void setAutoBindHttp(boolean autoBindHttp) {
+        this.autoBindHttp = autoBindHttp;
     }
 
     public boolean isOutputToConsole() {
