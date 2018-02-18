@@ -84,7 +84,14 @@ import org.jvnet.hk2.annotations.Service;
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET,
         path="list-instances",
-        description="List Instances")
+        description="List Instances"),
+    @RestEndpoint(configBean=DeploymentGroup.class,
+        opType=RestEndpoint.OpType.GET,
+        path="list-instances",
+        description="List Cluster Instances",
+        params={
+            @RestParam(name="id", value="$parent")
+        })
 })
 public class ListInstancesCommand implements AdminCommand {
 

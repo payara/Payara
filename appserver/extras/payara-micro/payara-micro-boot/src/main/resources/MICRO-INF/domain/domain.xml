@@ -64,6 +64,10 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
     <servers>
         <server name="server" config-ref="server-config">
             <resource-ref ref="jdbc/__default" />
+            <resource-ref ref="concurrent/__defaultContextService"></resource-ref>
+            <resource-ref ref="concurrent/__defaultManagedExecutorService"></resource-ref>
+            <resource-ref ref="concurrent/__defaultManagedScheduledExecutorService"></resource-ref>
+            <resource-ref ref="concurrent/__defaultManagedThreadFactory"></resource-ref>        
         </server>
     </servers>
     <configs>
@@ -93,7 +97,7 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
             <connector-service class-loading-policy="global" shutdown-timeout-in-seconds="30">
             </connector-service>
             <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
-                <ejb-timer-service ejb-timer-service="Hazelcast"></ejb-timer-service>
+                <ejb-timer-service ejb-timer-service="DataGrid"></ejb-timer-service>
             </ejb-container>
             <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
                 <module-log-levels />
