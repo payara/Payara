@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -48,6 +48,10 @@ import java.util.List;
 
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.EjbContainerUtil;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Properties;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -72,7 +76,7 @@ import org.glassfish.hk2.api.PerLookup;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.timers")
 @ExecuteOn(value={RuntimeType.DAS})
-@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 
@@ -103,7 +107,7 @@ public class ListTimers implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         String[] serverIds = null;
-        if(targetUtil.isCluster(target)) {
+        if(targetUtil.isCluster(target) || targetUtil.isDeploymentGroup(target)) {
             List<Server> serversInCluster = targetUtil.getInstances(target);
             serverIds = new String[serversInCluster.size()];
             for(int i = 0; i < serverIds.length; i++) {
@@ -114,9 +118,21 @@ public class ListTimers implements AdminCommand {
         }
         try {
             String[] timerCounts = listTimers(serverIds);
+            ActionReport actionReport = context.getActionReport();
+            Properties extraProperties = actionReport.getExtraProperties();
+            if (extraProperties == null) {
+                extraProperties = new Properties();
+                actionReport.setExtraProperties(extraProperties);
+            }
+            List<Map<String,String>> property = new LinkedList<>();
+            extraProperties.put("ejbTimers", property);
             for (int i = 0; i < serverIds.length; i++) {
                 final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                 part.setMessage(serverIds[i] + ": " + timerCounts[i]);
+                HashMap<String,String> values = new HashMap<>();
+                values.put("server", serverIds[i]);
+                values.put("timerCount", timerCounts[i]);
+                property.add(values);
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (Exception e) {
@@ -129,20 +145,11 @@ public class ListTimers implements AdminCommand {
 
     private String[] listTimers( String[] serverIds ) {
         String[] result = new String[serverIds.length];
-        if (EJBTimerService.isEJBTimerServiceLoaded()) {
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
-            if (ejbTimerService != null) {
-                result = ejbTimerService.listTimers( serverIds );
-            }
-        } else {
-            //FIXME: Should throw IllegalStateException
-            for (int i=0; i<serverIds.length; i++) {
-                result[i] = "0";
-            }
-            //throw new com.sun.enterprise.admin.common.exception.AFException("EJB Timer service is null. "
-                    //+ "Cannot list timers.");
-        }
 
+        EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
+        if (ejbTimerService != null) {
+            result = ejbTimerService.listTimers( serverIds );
+        }
         return result;
     }
 
