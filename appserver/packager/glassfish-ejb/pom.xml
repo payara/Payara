@@ -159,6 +159,11 @@
             <artifactId>console-corba-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.ejb.timer</groupId>
+            <artifactId>hazelcast-ejb-timer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

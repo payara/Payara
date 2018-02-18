@@ -68,6 +68,7 @@ import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Node;
 import fish.payara.nucleus.cluster.PayaraCluster;
 import fish.payara.nucleus.cluster.ClusterListener;
+import fish.payara.nucleus.cluster.MemberEvent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -430,18 +431,18 @@ public class IiopFolbGmsClient implements ClusterListener {
     }
 
     @Override
-    public void memberAdded(String guid) {
+    public void memberAdded(MemberEvent event) {
         // if member added into my group
-        if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(cluster.getMemberGroup(guid))) {
-            addMember(cluster.getMemberName(guid));
+        if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(event.getServerGroup())) {
+            addMember(event.getServer());
         }
     }
 
     @Override
-    public void memberRemoved(String guid) {
+    public void memberRemoved(MemberEvent event) {
         // if member disappeared from my group in the cluster
-        if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(cluster.getMemberGroup(guid))) {
-            removeMember(cluster.getMemberName(guid));
+        if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(event.getServerGroup())) {
+            removeMember(event.getServer());
         }
     }
 
