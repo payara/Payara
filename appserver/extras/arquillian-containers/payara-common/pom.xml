@@ -126,10 +126,16 @@
             <artifactId>jersey-media-json-jackson</artifactId>
         </dependency>
         
-
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

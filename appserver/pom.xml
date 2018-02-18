@@ -129,7 +129,7 @@
         <!-- Java EE Security API -->
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
         <javax.security.enterprise-api.version>1.0</javax.security.enterprise-api.version>
-        <javax.security.enterprise.version>1.1-b01.payara-p1</javax.security.enterprise.version>
+        <javax.security.enterprise.version>1.1-b01.payara-p2</javax.security.enterprise.version>
 
         <!-- JACC -->
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
@@ -145,7 +145,7 @@
 
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
-        <com.ibm.jbatch.container.version>1.0.3.payara-p2</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.container.version>1.0.3.payara-p3</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
 
         <!-- EJB -->

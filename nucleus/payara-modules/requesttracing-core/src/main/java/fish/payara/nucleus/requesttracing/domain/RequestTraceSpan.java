@@ -147,6 +147,11 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         return eventName;
     }
     
+    /**
+     * Adds more information about a span
+     * @param name
+     * @param value 
+     */
     public void addSpanTag(String name, String value) {
         if (spanTags == null) {
             spanTags = new HashMap<>();
@@ -154,7 +159,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         
         if (value != null) {
             // Escape any quotes
-            spanTags.put(name, value.replaceAll("\"", "\\\""));
+            spanTags.put(name, value.replaceAll("\"", "\\\\\""));
         } else {
             spanTags.put(name, value);
         }
