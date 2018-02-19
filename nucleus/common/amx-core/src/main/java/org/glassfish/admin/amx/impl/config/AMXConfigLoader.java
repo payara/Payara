@@ -346,7 +346,7 @@ public final class AMXConfigLoader
             // Now the Config subsystem is ready: after the first queue of ConfigBeans are registered as MBeans
             // and after the above MBeans are registered.
             final ObjectName domainObjectName = ConfigBeanRegistry.getInstance().getObjectNameForProxy(getDomain());
-            mLogger.log(Level.INFO,"amx.domain.config.registered", domainObjectName);
+            mLogger.log(Level.INFO,"AMX Config Loader: Domain started: `{0}`.", domainObjectName);
             FeatureAvailability.getInstance().registerFeature(AMXConfigConstants.AMX_CONFIG_READY_FEATURE, domainObjectName);
         }
         return null;
