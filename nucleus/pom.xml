@@ -221,7 +221,8 @@
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
         <grizzly.version>2.4.3</grizzly.version>
-        <grizzly.npn.version>1.7</grizzly.npn.version>
+        <!-- Requires JDK8u161 or above-->
+        <grizzly.npn.version>1.8</grizzly.npn.version>
 
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
