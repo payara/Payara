@@ -75,11 +75,21 @@ public class PayaraUtilHandlers {
      */
     @Handler(id = "py.prettyDateTimeFormat",
             input={@HandlerInput(name="milliseconds", type = String.class, required = true)},
-            output=@HandlerOutput(name="prettyString", type=String.class))
+            output=@HandlerOutput(name="prettyString", type = String.class))
     public static void prettyDateTimeFormat(HandlerContext context){
         String value = (String) context.getInputValue("milliseconds");
-        String result = DateFormat.getDateTimeInstance().format(new Date(Long.valueOf(value)));
-        context.setOutputValue("prettyString", result);
+        String result = null;
+        try {
+            result = DateFormat.getDateTimeInstance().format(new Date(Long.valueOf(value)));
+        } catch (NullPointerException ex) {
+            result = "The input value was null.";
+            ex.printStackTrace();
+        } catch (NumberFormatException ex) {
+            result = "The input value was not a long.";
+            ex.printStackTrace();
+        } finally {
+            context.setOutputValue("prettyString", result);
+        }
     }
     
 }
