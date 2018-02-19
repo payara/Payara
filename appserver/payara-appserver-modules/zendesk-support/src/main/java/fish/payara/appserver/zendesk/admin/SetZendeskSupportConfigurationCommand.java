@@ -104,7 +104,7 @@ public class SetZendeskSupportConfigurationCommand implements AdminCommand {
                     public Object run(ZendeskSupportConfiguration config) {
                         
                          if(enabled != null) {
-                            config.setEnabled(enabled);
+                            config.setEnabled(Boolean.toString(enabled));
                         }
                          if (!Strings.isNullOrEmpty(emailAddress)){
                              config.setEmailAddress(emailAddress);

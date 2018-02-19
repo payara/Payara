@@ -71,7 +71,7 @@ public class ClusterConfigSource extends PayaraConfigSource implements ConfigSou
 
     @Override
     public int getOrdinal() {
-        return configService.getMPConfig().getClusterOrdinality();
+        return Integer.parseInt(configService.getMPConfig().getClusterOrdinality());
     }
 
     @Override

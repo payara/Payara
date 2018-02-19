@@ -80,7 +80,7 @@ public class ServerConfigSource extends PayaraConfigSource implements ConfigSour
 
     @Override
     public int getOrdinal() {
-        return configService.getMPConfig().getServerOrdinality();
+        return Integer.parseInt(configService.getMPConfig().getServerOrdinality());
     }
 
     @Override

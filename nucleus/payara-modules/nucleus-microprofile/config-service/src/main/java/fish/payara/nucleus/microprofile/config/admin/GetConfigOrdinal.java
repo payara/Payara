@@ -91,35 +91,35 @@ public class GetConfigOrdinal implements AdminCommand {
             Integer result = -1;
             switch (source) {
                 case "domain": {
-                    result = serviceConfig.getDomainOrdinality();
+                    result = Integer.parseInt(serviceConfig.getDomainOrdinality());
                     break;
                 }
                 case "config": {
-                    result = serviceConfig.getConfigOrdinality();
+                    result = Integer.parseInt(serviceConfig.getConfigOrdinality());
                     break;
                 }
                 case "server": {
-                    result = serviceConfig.getServerOrdinality();
+                    result = Integer.parseInt(serviceConfig.getServerOrdinality());
                     break;
                 }
                 case "application": {
-                    result = serviceConfig.getApplicationOrdinality();
+                    result = Integer.parseInt(serviceConfig.getApplicationOrdinality());
                     break;
                 }
                 case "module": {
-                    result = serviceConfig.getModuleOrdinality();
+                    result = Integer.parseInt(serviceConfig.getModuleOrdinality());
                     break;
                 }
                 case "cluster": {
-                    result = serviceConfig.getClusterOrdinality();
+                    result = Integer.parseInt(serviceConfig.getClusterOrdinality());
                     break;
                 }
                 case "jndi": {
-                    result = serviceConfig.getJNDIOrdinality();
+                    result = Integer.parseInt(serviceConfig.getJNDIOrdinality());
                     break;
                 }
                 case "secrets": {
-                    result = serviceConfig.getSecretDirOrdinality();
+                    result = Integer.parseInt(serviceConfig.getSecretDirOrdinality());
                     break;
                 }
 

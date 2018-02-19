@@ -71,7 +71,7 @@ public class DomainConfigSource extends PayaraConfigSource implements ConfigSour
 
     @Override
     public int getOrdinal() {
-        return configService.getMPConfig().getDomainOrdinality();
+        return Integer.parseInt(configService.getMPConfig().getDomainOrdinality());
     }
 
     @Override

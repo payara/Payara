@@ -254,7 +254,7 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
     @Attribute(defaultValue="6000", dataType = Integer.class)
     @Min(value=0)    
     @Max(value=30000)
-    Integer getMaxWaitTimeInMillis();
+    String getMaxWaitTimeInMillis();
 
     /**
      * Sets the value of the maxWaitTimeInMillis property.
@@ -262,7 +262,7 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @param value allowed object is
      *              {@link Integer }
      */
-    void setMaxWaitTimeInMillis(Integer value) throws PropertyVetoException;
+    void setMaxWaitTimeInMillis(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the limitInstancesEnabled property.
@@ -271,7 +271,7 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      *         {@link Boolean }
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    Boolean getLimitInstancesEnabled();
+    String getLimitInstancesEnabled();
 
     /**
      * Sets the value of the limitInstancesEnabled property.
@@ -279,7 +279,7 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @param value allowed object is
      *              {@link Boolean }
      */
-    void setLimitInstancesEnabled(Boolean value) throws PropertyVetoException;
+    void setLimitInstancesEnabled(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the cacheIdleTimeoutInSeconds property.

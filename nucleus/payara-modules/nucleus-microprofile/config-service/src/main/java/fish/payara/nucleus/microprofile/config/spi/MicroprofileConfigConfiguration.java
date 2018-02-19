@@ -52,39 +52,39 @@ import org.jvnet.hk2.config.Configured;
 public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, ConfigExtension {
     
     @Attribute(defaultValue = "110", dataType = Integer.class)
-    Integer getDomainOrdinality();
-    public void setDomainOrdinality(Integer message);
+    String getDomainOrdinality();
+    public void setDomainOrdinality(String message);
 
     @Attribute(defaultValue = "120", dataType = Integer.class)
-    Integer getConfigOrdinality();
-    public void setConfigOrdinality(Integer message);    
+    String getConfigOrdinality();
+    public void setConfigOrdinality(String message);    
     
     @Attribute(defaultValue = "130", dataType = Integer.class)
-    Integer getServerOrdinality();
-    public void setServerOrdinality(Integer message);
+    String getServerOrdinality();
+    public void setServerOrdinality(String message);
 
     @Attribute(defaultValue = "140", dataType = Integer.class)
-    Integer getApplicationOrdinality();
-    public void setApplicationOrdinality(Integer message);    
+    String getApplicationOrdinality();
+    public void setApplicationOrdinality(String message);    
 
     @Attribute(defaultValue = "150", dataType = Integer.class)
-    Integer getModuleOrdinality();
-    public void setModuleOrdinality(Integer message);    
+    String getModuleOrdinality();
+    public void setModuleOrdinality(String message);    
 
     @Attribute(defaultValue = "160", dataType = Integer.class)
-    Integer getClusterOrdinality();
-    public void setClusterOrdinality(Integer message);    
+    String getClusterOrdinality();
+    public void setClusterOrdinality(String message);    
     
     @Attribute(defaultValue = "115", dataType = Integer.class)
-    Integer getJNDIOrdinality();
-    public void setJNDIOrdinality(Integer message);  
+    String getJNDIOrdinality();
+    public void setJNDIOrdinality(String message);  
     
     @Attribute(defaultValue = "secrets", dataType = String.class)
     String getSecretDir();
     public void setSecretDir(String directory);
     
     @Attribute(defaultValue = "90", dataType = Integer.class)
-    Integer getSecretDirOrdinality();
-    public void setSecretDirOrdinality(Integer message);  
+    String getSecretDirOrdinality();
+    public void setSecretDirOrdinality(String message);  
     
 }

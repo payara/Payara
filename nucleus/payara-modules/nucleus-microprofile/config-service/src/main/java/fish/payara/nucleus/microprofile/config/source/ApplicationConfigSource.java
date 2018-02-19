@@ -80,7 +80,7 @@ public class ApplicationConfigSource extends PayaraConfigSource implements Confi
 
     @Override
     public int getOrdinal() {
-        return configService.getMPConfig().getApplicationOrdinality();
+        return Integer.parseInt(configService.getMPConfig().getApplicationOrdinality());
     }
 
     @Override

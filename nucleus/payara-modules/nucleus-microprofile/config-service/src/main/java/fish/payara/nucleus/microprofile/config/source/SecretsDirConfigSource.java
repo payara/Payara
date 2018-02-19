@@ -88,7 +88,7 @@ public class SecretsDirConfigSource extends PayaraConfigSource implements Config
 
     @Override
     public int getOrdinal() {
-        return configService.getMPConfig().getSecretDirOrdinality();
+        return Integer.parseInt(configService.getMPConfig().getSecretDirOrdinality());
     }
 
     @Override
