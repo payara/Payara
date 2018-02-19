@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 4.1.2.174!
+Thank you for downloading Payara Server 4.1.2.181!
 
 Here are a few short steps to get you started...
 
@@ -17,7 +17,7 @@ For IBM J9 support, please download Payara Blue from http://www.payara.fish/down
 1. Installing Payara Server
 ===========================
 
-Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-4.1.2.174.zip
+Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-4.1.2.181.zip
 
 The default domain called 'domain1' is already installed and preconfigured.
 
@@ -50,13 +50,13 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://docs.payara.fish/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 4.1.2.174 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-174.html
+Make sure to also check the Payara Server 4.1.2.181 Release Notes as they contain important information: https://docs.payara.fish/release-notes/release-notes-181.html
 
 
 5. Documentation 
 ================
 
-Payara Server 4.1.2.174 Release Notes: https://docs.payara.fish/release-notes/release-notes-174.html
+Payara Server 4.1.2.181 Release Notes: https://docs.payara.fish/release-notes/release-notes-181.html
 
 Payara Server Documentation: https://docs.payara.fish/
 
