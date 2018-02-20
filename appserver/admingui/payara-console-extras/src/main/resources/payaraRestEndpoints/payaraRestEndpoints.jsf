@@ -50,6 +50,7 @@
         urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
         getRequestValue(key="compName" value="#{pageSession.compName}");
         urlencode(value="#{pageSession.compName}" encoding="UTF-8" result="#{pageSession.encodedCompName}");
+        py.getFirstDeploymentUrl(appId="#{pageSession.encodedAppName}" deploymentUrl="#{pageSession.deploymentUrl}");
         />
 </event>
 
@@ -91,7 +92,7 @@
     <sun:tableRowGroup id="rowGroup1"  data={"$attribute{listOfEndpoints}"} sourceVar="td">
 
         <sun:tableColumn headerText="$resource{i18nhc.payaraRestEndpoint.endpointPath}" sort="endpointName" rowHeader="$boolean{true}" id="colPath">
-            <staticText id="namePath" value="#{td.value.endpointPath}" />
+            <sun:hyperlink id="namePath" text="#{td.value.endpointPath}" url="#" onClick="javascript:var win=window.open('#{pageSession.deploymentUrl}#{td.value.endpointPath}');win.focus(); return false;" />
         </sun:tableColumn>
 
         <sun:tableColumn headerText="$resource{i18nhc.payaraRestEndpoint.requestMethod}" sort="requestMethod" rowHeader="$boolean{true}" id="colMethod">
