@@ -37,24 +37,38 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
+package fish.payara.microprofile.metrics.admin;
 
-package fish.payara.microprofile.metrics;
+import java.beans.PropertyVetoException;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
-import java.util.Arrays;
-import java.util.List;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+/**
+ * Configuration for the Metrics Service.
+ *
+ * @author Gaurav Gupta
+ */
+@Configured(name = "microprofile-metrics-configuration")
+public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
-public class Constants {
-    
-    public static final String ENDPOINT_PATTERN = "/metrics/*";
-    
-    public static final String EMPTY_STRING = "";
-    
-    // Registry Names
-    public static final List<String> REGISTRY_NAMES = Arrays.asList(
-            BASE.getName(), VENDOR.getName(), APPLICATION.getName()
-    );
+    /**
+     * Boolean value determining if the service is enabled or disabled.
+     *
+     * @return
+     */
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getEnabled();
+    void setEnabled(String value) throws PropertyVetoException;
+
+    /**
+     * Boolean value determining if the metrics service is secure or not
+     *
+     * @return
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getSecure();
+    void setSecure(String value) throws PropertyVetoException;
 
 }
