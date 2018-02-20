@@ -704,15 +704,12 @@ public class ApplicationHandlers {
             @HandlerOutput(name="URLList", type=List.class)})
 
     public void getTargetURLList(HandlerContext handlerCtx) {
-	    
         String appID = (String) handlerCtx.getInputValue("AppID");
         String contextRoot = (String) handlerCtx.getInputValue("contextRoot");
         String ctxRoot = calContextRoot(contextRoot);
 
         List<Map<String, String>> list = getTargetURLList(appID, ctxRoot);
-                
         handlerCtx.setOutputValue("URLList", list);
-
     }
 
     private List<Map<String, String>> getTargetURLList(String appId, String contextRoot) {
