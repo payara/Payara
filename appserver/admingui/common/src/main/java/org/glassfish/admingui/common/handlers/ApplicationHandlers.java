@@ -684,9 +684,12 @@ public class ApplicationHandlers {
         handlerCtx.setOutputValue("filters", new ArrayList(filters));
     }
 
-    @Handler(id = "py.getFirstDeploymentUrl", input = {
-            @HandlerInput(name = "appId", type = String.class, required = true) }, output = {
-                    @HandlerOutput(name = "deploymentUrl", type = String.class) })
+    @Handler(id = "py.getFirstDeploymentUrl",
+        input = {
+            @HandlerInput(name = "appId", type = String.class, required = true)
+        }, output = {
+            @HandlerOutput(name = "deploymentUrl", type = String.class)
+        })
     public void getFirstDeploymentUrl(HandlerContext ctx) {
         String appId = (String) ctx.getInputValue("appId");
 
