@@ -64,6 +64,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.core.StandardWrapper;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -133,7 +134,14 @@ public class ListRestEndpointsCommand implements AdminCommand {
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
         // Get the endpoints for the application
-        Map<String, Set<String>> endpoints = getEndpointMap(appName); // Map of endpoint -> HTTP methods
+        Map<String, Set<String>> endpoints = null;
+        try {
+            endpoints = getEndpointMap(appName); // Map of endpoint -> HTTP methods
+        } catch (IllegalArgumentException ex) {
+            report.setMessage(ex.getMessage());
+            report.setActionExitCode(FAILURE);
+            return;
+        }
 
         // Error out in the case of an empty application
         if (endpoints.isEmpty()) {
