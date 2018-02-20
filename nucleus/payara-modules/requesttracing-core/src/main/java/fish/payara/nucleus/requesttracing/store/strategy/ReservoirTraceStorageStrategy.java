@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -110,7 +110,7 @@ public class ReservoirTraceStorageStrategy implements TraceStorageStrategy {
         } else {
             // Pick a random item in the list
             int itemToReplace = random.nextInt(traces.size());
-            return traces.toArray(new RequestTrace[]{})[itemToReplace];
+            return traces.toArray(new RequestTrace[0])[itemToReplace];
         }
     }
 }

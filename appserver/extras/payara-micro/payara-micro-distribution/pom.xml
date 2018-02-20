@@ -40,19 +40,20 @@
     holder.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>fish.payara.extras.payara-micro</groupId>
+        <artifactId>payara-micro-parent</artifactId>
+        <version>5.181-SNAPSHOT</version>
+    </parent>
 
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>fish.payara.extras.payara-micro</groupId>
-    <artifactId>payara-micro-parent</artifactId>
-    <version>5.181-SNAPSHOT</version>
-  </parent>
-
-  <groupId>fish.payara.extras</groupId>
-  <artifactId>payara-micro</artifactId>
-  <name>Payara Micro Distribution</name>
-  <packaging>jar</packaging>
+    <groupId>fish.payara.extras</groupId>
+    <artifactId>payara-micro</artifactId>
+    <packaging>jar</packaging>
+    
+    <name>Payara Micro Distribution</name>
+    
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -90,8 +91,10 @@
                             <tasks>
                                 <ant dir="." antfile="build.xml" target="new.create">
                                     <property name="bundlename" value="fish.payara.micro" />
-                                    <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
-                                    <property name="install.dir.name" value="${install.dir.name}" />
+                                    <property name="finaljar"
+                                        value="${project.build.directory}/payara-micro.jar" />
+                                    <property name="install.dir.name"
+                                        value="${install.dir.name}" />
                                 </ant>
                             </tasks>
                         </configuration>
@@ -114,14 +117,14 @@
         </plugins>
     </build>
 
-      <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-hk2</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-	</dependency>
+        </dependency>
 
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -131,7 +134,7 @@
             <optional>true</optional>
         </dependency>
 
-	<!-- additional grizzly modules package which includes websockets -->
+        <!-- Additional grizzly modules package which includes websockets -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-grizzly-full</artifactId>
@@ -209,7 +212,8 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        <!-- JMS Clilent dependencies -->
+        
+        <!-- JMS Client dependencies -->
         <dependency>
             <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>ejb-full-container</artifactId>
@@ -242,6 +246,7 @@
             <optional>true</optional>
         </dependency>
         <!-- End of JMS Client Dependencies -->
+        
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jsf</artifactId>
@@ -291,6 +296,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- hazelcast package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -299,7 +305,8 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-          <!-- healthcheck package -->
+        
+        <!-- healthcheck package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>healthcheck</artifactId>
@@ -307,23 +314,26 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-          <!-- request tracing package -->
-          <dependency>
-              <groupId>org.glassfish.main.packager</groupId>
-              <artifactId>requesttracing</artifactId>
-              <version>${project.version}</version>
-              <type>zip</type>
-              <optional>true</optional>
-          </dependency>
-          <!-- notification package -->
-          <dependency>
-              <groupId>org.glassfish.main.packager</groupId>
-              <artifactId>notification</artifactId>
-              <version>${project.version}</version>
-              <type>zip</type>
-              <optional>true</optional>
-          </dependency>
-          <!-- phonehome package -->
+        
+        <!-- request tracing package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>requesttracing</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        
+        <!-- notification package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        
+        <!-- phonehome package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>phonehome</artifactId>
@@ -331,15 +341,17 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-          <!-- payara api package -->
-          <dependency>
-              <groupId>org.glassfish.main.packager</groupId>
-              <artifactId>payara-api</artifactId>
-              <version>${project.version}</version>
-              <type>zip</type>
-              <optional>true</optional>
-          </dependency>
-          <!-- ha package -->
+        
+        <!-- payara api package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        
+        <!-- ha package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-ha</artifactId>
@@ -347,7 +359,8 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-          <!-- payara rest endpoint package -->
+        
+        <!-- payara rest endpoint package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>payara-rest-endpoints</artifactId>
@@ -355,6 +368,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- Add Payara Micro Core -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -363,6 +377,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- Add Payara Micro Services -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -371,6 +386,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- Add Boot classes -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -379,6 +395,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+       
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -387,6 +404,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- Add JBatch -->
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>
@@ -409,6 +427,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+       
         <!-- Add Hazelcast EJB Timer Store -->
         <dependency>
             <groupId>fish.payara.ejb.timer</groupId>
@@ -424,6 +443,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- PAYARA-1081 -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
@@ -431,6 +451,7 @@
             <version>${jackson.version}</version>
             <optional>true</optional>
         </dependency>
+        
         <!-- JMS Annotation handlers -->
         <dependency>
             <groupId>org.glassfish.main.jms</groupId>
@@ -445,7 +466,17 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+
+        <!-- Microprofile APIs -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>microprofile-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>             
     </dependencies>
+    
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->
@@ -473,73 +504,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>1.8</jdk>
-            </activation>
-            <dependencies>
-                <!-- Add Microprofile 1.1 apis -->
-                <dependency>
-                    <groupId>org.eclipse.microprofile.config</groupId>
-                    <artifactId>microprofile-config-api</artifactId>
-                    <version>${microprofile-config.version}</version>
-                    <optional>true</optional>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.nucleus.microprofile.config</groupId>
-                    <artifactId>microprofile-config-service</artifactId>
-                    <version>${project.version}</version>
-                    <optional>true</optional>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.microprofile.config</groupId>
-                    <artifactId>microprofile-config</artifactId>
-                    <version>${project.version}</version>
-                    <optional>true</optional>
-                </dependency>
-                <!-- Fault Tolerance -->
-                <dependency>
-                    <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
-                    <artifactId>microprofile-fault-tolerance-api</artifactId>
-                    <version>${microprofile-fault-tolerance.version}</version>
-                    <optional>true</optional>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.microprofile.fault-tolerance</groupId>
-                    <artifactId>microprofile-fault-tolerance</artifactId>
-                    <version>${project.version}</version>
-                    <optional>true</optional>
-	        </dependency>
-                <!-- Health Check -->
-	        <dependency>
-                    <groupId>org.eclipse.microprofile.health</groupId>
-                    <artifactId>microprofile-health-api</artifactId>
-                    <version>${microprofile-healthcheck.version}</version>
-                    <optional>true</optional>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.microprofile.healthcheck</groupId>
-                    <artifactId>microprofile-healthcheck</artifactId>
-                    <version>${project.version}</version>
-                    <optional>true</optional>
-                </dependency>
-                <!-- Metrics -->
-                <dependency>
-                    <groupId>org.eclipse.microprofile.metrics</groupId>
-                    <artifactId>microprofile-metrics-api</artifactId>
-                    <version>${microprofile-metrics.version}</version>
-                    <optional>true</optional>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.microprofile.metrics</groupId>
-                    <artifactId>microprofile-metrics</artifactId>
-                    <version>${project.version}</version>
-                    <optional>true</optional>
-                </dependency>
-            </dependencies>
         </profile>
     </profiles>
 </project>

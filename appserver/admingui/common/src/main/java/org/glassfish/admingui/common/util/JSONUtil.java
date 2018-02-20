@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.common.util;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.StringCharacterIterator;
@@ -51,8 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -63,6 +61,9 @@ import java.util.logging.Logger;
  *
  *  <ul><li>{@link #jsonToJava(String json)}</li>
  *	<li>{@link #javaToJSON(Object obj, int depth)}</li></ul>
+ * 
+ * @see org.glassfish.admin.rest.utils.JsonUtil
+ * @deprecated Use the JSON-P library instead, or the JsonUtil class in nucleus
  */
 public class JSONUtil {
     private static final String	ABORT_PROCESSING    =	"____EnD___";
@@ -75,6 +76,8 @@ public class JSONUtil {
      *	    String.  The Java data structure created will be created using
      *	    Map's, String's, Long's, Float's, Boolean's, and List's as
      *	    specified by the JSON String.</p>
+     * @param json
+     * @return 
      */
     public static Object jsonToJava(String json) {
 	return replaceSpecial(jsonToJava(new JsonChars(json)));
@@ -92,6 +95,9 @@ public class JSONUtil {
      *	    child Objects.  Objects which have a public no-argument getXYZ()
      *	    method are considered to be child Objects.  Maps and Collections
      *	    will be walked.</p>
+     * @param obj
+     * @param depth
+     * @return 
      */
     public static String javaToJSON(Object obj, int depth) {
 	if (depth == 0) {
@@ -199,7 +205,7 @@ public class JSONUtil {
 		    builder.append(',');
 		}
 		key = it.next().toString();
-		builder.append(javaToJSON(key, 1) + ":");
+		builder.append(javaToJSON(key, 1)).append(":");
 		if (depth == 1) {
 		    // Treat as String, but don't try to go deeper...
 		    builder.append(javaToJSON(map.get(key).toString(), 1));
@@ -245,7 +251,7 @@ public class JSONUtil {
 		}
 		methodName = it.next();
 		// Drop "get"...
-		builder.append(javaToJSON(methodName.substring(3), 1) + ":");
+                builder.append(javaToJSON(methodName.substring(3), 1)).append(":");
 		result = invokeGetter(obj, methodName);
 		if ((result != null) && (depth == 1)) {
 		    // Treat as String, but don't try to go deeper...
@@ -710,13 +716,17 @@ public class JSONUtil {
     private static Object replaceSpecial(Object val) {
 	if (val instanceof String) {
 	    String strVal = (String) val;
-	    if (COLON.equals(strVal)) {
-		val = ':';
-	    } else if (COMMA.equals(strVal)) {
-		val = ',';
-	    } else if (NULL.equals(strVal)) {
-		val = null;
-	    }
+            switch (strVal) {
+                case COLON:
+                    val = ':';
+                    break;
+                case COMMA:
+                    val = ',';
+                    break;
+                case NULL:
+                    val = null;
+                    break;
+            }
 	}
 	return val;
     }

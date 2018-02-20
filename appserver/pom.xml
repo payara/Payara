@@ -86,7 +86,7 @@
         <!-- JSF -->
         <javax.faces-spec.version>2.3</javax.faces-spec.version>
         <javax.faces-api.version>2.3</javax.faces-api.version>
-        <mojarra.version>2.4.0-m01.payara-p6</mojarra.version>
+        <mojarra.version>2.4.0-m01.payara-p7</mojarra.version>
 
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
@@ -122,14 +122,14 @@
         <!-- CDI -->
         <javax.inject.version>1</javax.inject.version>
         <cdi-api.version>2.0</cdi-api.version>
-        <weld.version>3.0.2.Final</weld.version>
+        <weld.version>3.0.3.Final</weld.version>
         <weld-api.version>3.0.SP2</weld-api.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
 
         <!-- Java EE Security API -->
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
         <javax.security.enterprise-api.version>1.0</javax.security.enterprise-api.version>
-        <javax.security.enterprise.version>1.1-b01.payara-p1</javax.security.enterprise.version>
+        <javax.security.enterprise.version>1.1-b01.payara-p2</javax.security.enterprise.version>
 
         <!-- JACC -->
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
@@ -145,7 +145,7 @@
 
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
-        <com.ibm.jbatch.container.version>1.0.3.payara-p2</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.container.version>1.0.3.payara-p3</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
 
         <!-- EJB -->
@@ -295,7 +295,7 @@
                             </artifact>
                             <jarType>impl</jarType>
                             <specVersion>1.6</specVersion>
-                            <implVersion>1.6.0</implVersion>
+                            <implVersion>${mail.version}</implVersion>
                             <apiPackage>javax.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
                         </spec>

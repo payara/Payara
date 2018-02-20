@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,50 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.appserver.context;
+package fish.payara.ejb.timer.hazelcast;
 
-import com.sun.enterprise.util.Utility;
-import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.JavaEEContextUtil;
-import org.jboss.weld.context.bound.BoundRequestContext;
+import com.sun.ejb.PersistentTimerService;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * JavaEE context holder implementation
  *
- * @author lprimak
+ * @author steve
  */
-class ContextImpl {
-    @RequiredArgsConstructor
-    public static class Context implements JavaEEContextUtil.Context {
-        @Override
-        public void close() {
-            if (invocation != null) {
-                invMgr.postInvoke(invocation);
-                Utility.setContextClassLoader(oldClassLoader);
-            }
-        }
+@Service
+public class DataGridEJBTimerService implements PersistentTimerService {
+    
+    
+    @Inject
+    HazelcastCore hazelcast;
+    
+    
 
-        private final ClassLoader oldClassLoader;
-        private final ComponentInvocation invocation;
-        private final InvocationManager invMgr;
+    @Override
+    public void initPersistentTimerService(String target) {
+            HazelcastTimerStore.init(hazelcast);
     }
-
-    @RequiredArgsConstructor
-    public static class RequestContext implements JavaEEContextUtil.Context {
-        @Override
-        public void close() {
-            if (ctx != null) {
-                ctx.deactivate();
-                ctx.dissociate(storage);
-            }
-            rootCtx.close();
-        }
-
-        private final JavaEEContextUtil.Context rootCtx;
-        final BoundRequestContext ctx;
-        final Map<String, Object> storage;
-    }
+    
 }

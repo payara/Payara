@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -34,31 +34,81 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
  */
 package fish.payara.arquillian.container.payara.managed;
 
 import static org.jboss.arquillian.container.spi.client.deployment.Validate.notNull;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
+import fish.payara.arquillian.container.payara.PayaraVersion;
+
 
 public class PayaraMicroContainerConfiguration implements ContainerConfiguration {
 
-    private String microJar = System.getenv("MICRO_JAR");
+    private String microJar = getConfigurableVariable("payara.microJar", "MICRO_JAR", null);
+    private PayaraVersion microVersion = null;
 
-    private boolean outputToConsole = true;
-    private boolean debug; // TODO
+    private boolean clusterEnabled = Boolean.parseBoolean(getConfigurableVariable("payara.clusterEnabled", "MICRO_CLUSTER_ENABLED", "false"));
+
+    private boolean autoBindHttp = Boolean.parseBoolean(getConfigurableVariable("payara.autoBindHttp", "MICRO_AUTOBIND_HTTP", "true"));
+
+    private boolean outputToConsole = Boolean.parseBoolean(getConfigurableVariable("payara.consoleOutput", "MICRO_CONSOLE_OUTPUT", "true"));
+
+    private boolean debug = Boolean.parseBoolean(getConfigurableVariable("payara.debug", "MICRO_DEBUG", "false"));
+
+    private String cmdOptions = getConfigurableVariable("payara.cmdOptions", "MICRO_CMD_OPTIONS", null);
+
+    private String extraMicroOptions = getConfigurableVariable("payara.extraMicroOptions", "EXTRA_MICRO_OPTIONS", null);
 
     public String getMicroJar() {
         return microJar;
     }
 
-    public void setMicroJar(String glassFishHome) {
-        this.microJar = glassFishHome;
+    public File getMicroJarFile() {
+        return new File(getMicroJar());
+    }
+
+    public PayaraVersion getMicroVersion() {
+        return microVersion;
+    }
+
+    /**
+     * @param microJar the location of the Payara Micro Jar. This is a required field.
+     */
+    public void setMicroJar(String microJar) {
+        this.microJar = microJar;
+    }
+
+    public boolean isClusterEnabled() {
+        return clusterEnabled;
+    }
+
+    /**
+     * @param clusterEnabled Enable clustering on the instance.
+     * Disabled by default.
+     */
+    public void setClusterEnabled(boolean clusterEnabled) {
+        this.clusterEnabled = clusterEnabled;
+    }
+
+    public boolean isAutoBindHttp() {
+        return autoBindHttp;
+    }
+
+    /**
+     * @param autoBindHttp Enable/disable adding the --autoBindHttp option.
+     * Disabled by default.
+     */
+    public void setAutoBindHttp(boolean autoBindHttp) {
+        this.autoBindHttp = autoBindHttp;
     }
 
     public boolean isOutputToConsole() {
@@ -66,8 +116,8 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
     }
 
     /**
-     * @param outputToConsole Show the output of the admin commands on the console. By default
-     *            enabled
+     * @param outputToConsole Show the output of the admin commands on the console.
+     * Enabled by default.
      */
     public void setOutputToConsole(boolean outputToConsole) {
         this.outputToConsole = outputToConsole;
@@ -84,8 +134,26 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
         this.debug = debug;
     }
 
-    public File getMicroJarFile() {
-        return new File(getMicroJar());
+    public String getCmdOptions() {
+        return cmdOptions;
+    }
+
+    /**
+     * @param cmdOptions extra command line options to pass to the Payara Micro instance (between java and -jar).
+     */
+    public void setCmdOptions(String cmdOptions) {
+        this.cmdOptions = cmdOptions;
+    }
+
+    public String getExtraMicroOptions() {
+        return extraMicroOptions;
+    }
+
+    /**
+     * @param extraMicroOptions extra command line options to pass to the Payara Micro instance (at the end of the command).
+     */
+    public void setExtraMicroOptions(String extraMicroOptions) {
+        this.extraMicroOptions = extraMicroOptions;
     }
 
     /**
@@ -94,10 +162,36 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
      */
     public void validate() throws ConfigurationException {
         notNull(getMicroJar(), "The property microJar must be specified or the MICRO_JAR environment variable must be set");
-
         if (!getMicroJarFile().isFile()) {
-            throw new IllegalArgumentException("Could not locate the Payra Micro jar file " + getMicroJar());
+            throw new IllegalArgumentException("Could not locate the Payara Micro Jar file " + getMicroJar());
         }
 
+        try (JarFile microJarFile = new JarFile(getMicroJarFile())) {
+            ZipEntry pomProperties = microJarFile
+                    .getEntry("META-INF/maven/fish.payara.micro/payara-micro-boot/pom.properties");
+            Properties microProperties = new Properties();
+            microProperties.load(microJarFile.getInputStream(pomProperties));
+            this.microVersion = new PayaraVersion(microProperties.getProperty("version"));
+        } catch (IOException e) {
+            throw new IllegalArgumentException(
+                    "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.", e);
+        }
+        notNull(getMicroVersion(), "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.");
+    }
+
+    private static String getConfigurableVariable(String systemPropertyName, String environmentVariableName, String defaultValue) {
+        String systemProperty = System.getProperty(systemPropertyName);
+        String environmentProperty = System.getenv(environmentVariableName);
+
+        if (systemProperty == null || systemProperty.isEmpty()) {
+            if (environmentProperty == null || environmentProperty.isEmpty()) {
+                if (defaultValue == null || defaultValue.isEmpty()) {
+                    return null;
+                }
+                return defaultValue;
+            }
+            return environmentProperty;
+        }
+        return systemProperty;
     }
 }
