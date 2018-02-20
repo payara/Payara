@@ -39,8 +39,7 @@
  */
 package fish.payara.microprofile.metrics;
 
-import static fish.payara.microprofile.metrics.Constants.INSECURE_METRIC_PROPERTY;
-import static fish.payara.microprofile.metrics.Constants.METRIC_ENABLED_PROPERTY;
+import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import fish.payara.microprofile.metrics.cdi.MetricsHelper;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -73,6 +72,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -83,25 +83,27 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(StartupRunLevel.VAL)
 public class MetricsService implements EventListener {
 
-    private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
-
     @Inject
     Events events;
 
     @Inject
     private ServerEnvironment serverEnv;
-
-    private final Map<String, Boolean> enabledMap;
     
+    @Inject
+    ServiceLocator habitat;
+    
+    private MetricsServiceConfiguration metricsServiceConfiguration;
+
     private final Map<String, MetricRegistry> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
 
     public MetricsService() {
-        enabledMap = new ConcurrentHashMap<>();
+        
     }
 
     @PostConstruct
     public void init() {
         events.register(this);
+        metricsServiceConfiguration = habitat.getService(MetricsServiceConfiguration.class);
         initMetadataConfig(JAXB.unmarshal(getConfigStream(), MBeanMetadataConfig.class));
     }
 
@@ -149,78 +151,12 @@ public class MetricsService implements EventListener {
         return configStream;
     }
 
-    public Boolean isMetricEnabled() {
-        return isMetricEnabled(getApplicationName());
-    }
-    
-    public Boolean isMetricEnabled(String applicationName) {
-        Config config = null;
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            LOGGER.log(Level.INFO, "No config could be found", ex);
-        }
-        return isMetricEnabled(applicationName, config);
+    public Boolean isMetricsEnabled() {
+        return Boolean.valueOf(metricsServiceConfiguration.getEnabled());
     }
 
-    /**
-     * Checks whether metric is enabled for a given application
-     *
-     * @param applicationName The application to check if metric is enabled for.
-     * @param config The application config to check for any override values
-     * @return true if metric is enabled for the given application name
-     */
-    public Boolean isMetricEnabled(String applicationName, Config config) {
-        if (applicationName == null) {
-            if (config != null) {
-                return config.getOptionalValue(METRIC_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE);
-            } else {
-                return Boolean.TRUE;
-            }
-        }
-        if (enabledMap.containsKey(applicationName)) {
-            return enabledMap.get(applicationName);
-        } else {
-            setMetricEnabled(applicationName, config);
-            return enabledMap.get(applicationName);
-        }
-    }
-    
-    public boolean isInsucreMetricEnabled() {
-        Config config = null;
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            LOGGER.log(Level.INFO, "No config could be found", ex);
-        }
-        
-        if (config != null) {
-            return config.getOptionalValue(INSECURE_METRIC_PROPERTY, Boolean.class).orElse(Boolean.TRUE);
-        } else {
-            return Boolean.TRUE;
-        }
-    }
-
-    /**
-     * Helper method that sets the enabled status for a given application.
-     *
-     * @param applicationName The name of the application to register
-     * @param config The config to check for override values
-     */
-    private synchronized void setMetricEnabled(String applicationName, Config config) {
-        // Double lock as multiple methods can get inside the calling if at the same time
-        LOGGER.log(Level.FINER, "Checking double lock to see if something else has added the application");
-        if (!enabledMap.containsKey(applicationName)) {
-            if (config != null) {
-                // Set the enabled value to the override value from the config, or true if it isn't configured
-                enabledMap.put(applicationName,
-                        config.getOptionalValue(METRIC_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE));
-            } else {
-                LOGGER.log(Level.FINE, "No config found, so enabling metric for application: {0}",
-                        applicationName);
-                enabledMap.put(applicationName, Boolean.TRUE);
-            }
-        }
+    public Boolean isMetricsSecure() {
+        return Boolean.valueOf(metricsServiceConfiguration.getSecure());
     }
 
     public Map<String, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
@@ -314,7 +250,6 @@ public class MetricsService implements EventListener {
      * @param applicationName The name of the application to remove
      */
     private void registerApplication(String applicationName) {
-        enabledMap.put(applicationName, isMetricEnabled(applicationName));
         getOrAddRegistry(applicationName);
     }
 
@@ -324,7 +259,6 @@ public class MetricsService implements EventListener {
      * @param applicationName The name of the application to remove
      */
     private void deregisterApplication(String applicationName) {
-        enabledMap.remove(applicationName);
         removeRegistry(applicationName);
     }
 
