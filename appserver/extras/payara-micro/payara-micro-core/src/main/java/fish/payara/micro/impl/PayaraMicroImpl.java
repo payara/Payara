@@ -2452,7 +2452,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         // Get Payara Micro endpoints
         StringBuilder sb = new StringBuilder();
-        sb.append("\nPayara Micro URLs\n");
+        sb.append("\nPayara Micro URLs:\n");
         List<URL> urls = id.getApplicationURLS();
         for (URL url : urls) {
             sb.append(url.toString()).append('\n');
@@ -2470,7 +2470,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     endpoints = null;
                 }
                 if (endpoints != null) {
-                    sb.append("\n'" + app.getName() + "' REST Endpoints\n");
+                    sb.append("\n'" + app.getName() + "' REST Endpoints:\n");
                     endpoints.forEach((path, methods) -> {
                         methods.forEach(method -> {
                             sb.append(method + "\t" + path + "\n");
