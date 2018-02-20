@@ -162,6 +162,7 @@ public class ListRestEndpointsCommand implements AdminCommand {
     /**
      * Returns a list of a map of endpoint -> list of methods.
      * @param appName the name of the application.
+     * @throws IllegalArgumentException if the application does not contain endpoints. Specifies the reason.
      */
     public Map<String, Set<String>> getEndpointMap(String appName) {
         // Create an initial array
