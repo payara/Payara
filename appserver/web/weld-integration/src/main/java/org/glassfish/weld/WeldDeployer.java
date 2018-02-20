@@ -37,42 +37,72 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
 import static java.util.logging.Level.FINE;
+import static java.util.stream.StreamSupport.stream;
 import static org.glassfish.cdi.CDILoggerInfo.ADDING_INJECTION_SERVICES;
 
-import java.util.*;
+import java.security.AccessController;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionTarget;
+import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpSessionListener;
+import javax.servlet.jsp.tagext.JspTag;
 
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ApplicationEnvironment;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.SimpleDeployer;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
-import org.glassfish.weld.services.*;
+import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
+import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
+import org.glassfish.weld.connector.WeldUtils;
+import org.glassfish.weld.services.BootstrapConfigurationImpl;
+import org.glassfish.weld.services.EjbServicesImpl;
+import org.glassfish.weld.services.ExternalConfigurationImpl;
+import org.glassfish.weld.services.InjectionServicesImpl;
+import org.glassfish.weld.services.NonModuleInjectionServices;
+import org.glassfish.weld.services.ProxyServicesImpl;
+import org.glassfish.weld.services.SecurityServicesImpl;
+import org.glassfish.weld.services.TransactionServicesImpl;
 import org.glassfish.weld.util.Util;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environments;
@@ -80,20 +110,23 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BootstrapConfiguration;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
+import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.bootstrap.spi.helpers.EEModuleDescriptorImpl;
+import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
+import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.ejb.spi.EjbServices;
+import org.jboss.weld.exceptions.WeldException;
 import org.jboss.weld.injection.spi.InjectionServices;
+import org.jboss.weld.probe.ProbeExtension;
+import org.jboss.weld.resources.spi.ResourceLoader;
+import org.jboss.weld.security.NewInstanceAction;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
-import javax.inject.Inject;
-import javax.servlet.jsp.tagext.JspTag;
-
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.PostConstruct;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
@@ -103,22 +136,6 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import java.security.AccessController;
-import javax.enterprise.inject.spi.Extension;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
-import org.glassfish.internal.api.JavaEEContextUtil;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
-import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
-import org.glassfish.weld.connector.WeldUtils;
-import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
-import org.jboss.weld.configuration.spi.ExternalConfiguration;
-import org.jboss.weld.exceptions.WeldException;
-import org.jboss.weld.probe.ProbeExtension;
-import org.jboss.weld.resources.spi.ResourceLoader;
-import org.jboss.weld.security.NewInstanceAction;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer>
@@ -168,6 +185,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "javax.servlet.http.*";
 
     private static final String PROBE_ALLOW_REMOTE_ADDRESS = "";
+
+    private static final String JERSEY_PROCESS_ALL_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessAllAnnotatedTypes";
+    private static final String JERSEY_HK2_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.spi.Hk2CustomBoundTypesProvider";
+    private static final String JERSEY_PROCESS_JAXRS_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessJAXRSAnnotatedTypes";
+
 
     @Inject
     private Events events;
@@ -270,8 +292,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 BundleDescriptor bd = DOLUtils.getCurrentBundleForContext(deployment.getCurrentDeploymentContext());
                 ComponentInvocation inv = new ComponentInvocation(DOLUtils.getComponentEnvId((JndiNameEnvironment)bd), ComponentInvocationType.SERVLET_INVOCATION, appInfo, fAppName, fAppName);
                 inv.setJNDIEnvironment(bd);
+
                 try {
-                    bootstrap.startExtensions(deploymentImpl.getExtensions());
+                    bootstrap.startExtensions(postProcessExtensions(deploymentImpl.getExtensions(), archives));
                     bootstrap.startContainer(deploymentImpl.getAppName() + ".bda", Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
                     bootstrap.startInitialization();
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
@@ -357,6 +380,72 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 deploymentImpl.cleanup();
             }
         }
+    }
+
+    private Iterable<Metadata<Extension>> postProcessExtensions(Iterable<Metadata<Extension>> extensions, List<BeanDeploymentArchive> archives) {
+
+            // See if the Jersey extension that scans all classes in the bean archives is present. Normally
+            // Normally this should always be the case as this extension is statically included with Jersey,
+            // but who knows whether we'll once have distributions without Jersey
+            Optional<Metadata<Extension>> optionaProcessAllAnnotatedTypes = findJerseyProcessAll(extensions);
+
+            if (optionaProcessAllAnnotatedTypes.isPresent()) {
+
+                // Get the Metadata instance containing the above mentioned extension
+                Metadata<Extension> processAllMeta = optionaProcessAllAnnotatedTypes.get();
+
+                // Get the class loader used by the JAX_RS (Jersey) archive, so we can use this to load
+                // other classes from that same archive
+                ClassLoader jaxRsClassLoader = processAllMeta.getValue().getClass().getClassLoader();
+
+                try {
+                    // The reason Jersey scans ALL classes is that a Hk2CustomBoundTypesProvider may be present. But if this
+                    // is not there Jersey only has to scan the known JAX-RS classes (@Path etc)
+                    if (!hasJerseyHk2Provider(archives, jaxRsClassLoader)) {
+                        // Hk2CustomBoundTypesProvider not found, replace the extension that scans everything with
+                        // the one that only scans JAX-RS classes
+                        return replaceWith(extensions, processAllMeta, newProcessJaxRsMeta(jaxRsClassLoader));
+                    }
+                } catch (Exception e) {
+                    // Just log, the net result is only that the extension does a little extra scanning and logs a warning
+                    // about that
+                    logger.log(Level.FINE, "Exception trying to replace JaxRs scan all extension", e);
+                }
+            }
+
+            // If the scan-all extension shouldn't or couldn't be replaced, just return the existing unmodified list
+            return extensions;
+    }
+
+    private Optional<Metadata<Extension>> findJerseyProcessAll(Iterable<Metadata<Extension>> extensions) {
+        return stream(extensions.spliterator(), false)
+                    .filter(e -> e.getValue().getClass().getName().equals(JERSEY_PROCESS_ALL_CLASS_NAME))
+                    .findAny();
+    }
+
+    private boolean hasJerseyHk2Provider(List<BeanDeploymentArchive> archives, ClassLoader jaxRsClassLoader) throws ClassNotFoundException {
+        Class<?> hk2Provider = Class.forName(JERSEY_HK2_CLASS_NAME, false, jaxRsClassLoader);
+
+        for (BeanDeploymentArchive archive : archives) {
+            archive.getBeanClasses(); // implicitly sets thread class loader
+            if (ServiceLoader.load(hk2Provider).iterator().hasNext()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Iterable<Metadata<Extension>> replaceWith(Iterable<Metadata<Extension>> extensions, Metadata<Extension> processAllMeta, Metadata<Extension> processJaxRsMeta) {
+        return stream(extensions.spliterator(), false)
+                .map(e -> e.equals(processAllMeta)? processJaxRsMeta : e)
+                .collect(Collectors.toList());
+    }
+
+    private Metadata<Extension> newProcessJaxRsMeta(ClassLoader jaxRsClassLoader) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        Extension processJAXRSAnnotatedTypes = (Extension) Class.forName(JERSEY_PROCESS_JAXRS_CLASS_NAME, false, jaxRsClassLoader).newInstance();
+
+        return new MetadataImpl<>(processJAXRSAnnotatedTypes);
     }
 
     private void deploymentComplete(DeploymentImpl deploymentImpl) {
