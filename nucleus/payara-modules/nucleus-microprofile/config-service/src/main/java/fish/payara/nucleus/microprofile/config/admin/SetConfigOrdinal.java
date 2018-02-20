@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -102,35 +102,35 @@ public class SetConfigOrdinal implements AdminCommand {
 
                         switch (source) {
                             case "domain": {
-                                config.setDomainOrdinality(ordinal);
+                                config.setDomainOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "config": {
-                                config.setConfigOrdinality(ordinal);
+                                config.setConfigOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "server": {
-                                config.setServerOrdinality(ordinal);
+                                config.setServerOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "application": {
-                                config.setApplicationOrdinality(ordinal);
+                                config.setApplicationOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "module": {
-                                config.setModuleOrdinality(ordinal);
+                                config.setModuleOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "cluster": {
-                                config.setClusterOrdinality(ordinal);
+                                config.setClusterOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "jndi": {
-                                config.setJNDIOrdinality(ordinal);
+                                config.setJNDIOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "secrets": {
-                                config.setSecretDirOrdinality(ordinal);
+                                config.setSecretDirOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                         }
