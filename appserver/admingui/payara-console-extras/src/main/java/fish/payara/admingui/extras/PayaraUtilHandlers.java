@@ -39,20 +39,24 @@
  */
 package fish.payara.admingui.extras;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Map;
+import java.util.logging.Level;
+
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Map;
+
+import org.glassfish.admingui.common.util.GuiUtil;
 
 /**
  *
  * @author jonathan coustick
  */
 public class PayaraUtilHandlers {
-    
+
     /**
      * 
      * @param context 
@@ -83,10 +87,12 @@ public class PayaraUtilHandlers {
             result = DateFormat.getDateTimeInstance().format(new Date(Long.valueOf(value)));
         } catch (NullPointerException ex) {
             result = "The input value was null.";
-            ex.printStackTrace();
+            GuiUtil.getLogger().log(Level.WARNING, result, ex);
+            GuiUtil.prepareException(context, ex);
         } catch (NumberFormatException ex) {
             result = "The input value was not a long.";
-            ex.printStackTrace();
+            GuiUtil.getLogger().log(Level.WARNING, result, ex);
+            GuiUtil.prepareException(context, ex);
         } finally {
             context.setOutputValue("prettyString", result);
         }
