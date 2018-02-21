@@ -748,7 +748,7 @@ public abstract class AbstractSingletonContainer
                         clusteredLookup.getClusteredSingletonMap().delete(clusteredLookup.getClusteredSessionKey());
                         count.destroy();
                     }
-                    else if(sessDesc.dontCallPreDestroyOnDetach()){
+                    else if(sessDesc.dontCallPreDestroyOnDetach()) {
                         doPreDestroy = false;
                     }
                 }
