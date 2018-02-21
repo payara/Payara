@@ -54,6 +54,7 @@ import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
+import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -70,7 +71,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "set-metrics-configuration")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({DAS, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
+@TargetType({DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = MetricsServiceConfiguration.class,
             opType = POST,
