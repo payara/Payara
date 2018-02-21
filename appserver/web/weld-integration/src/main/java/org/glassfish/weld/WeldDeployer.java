@@ -595,10 +595,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return componentInvocation;
     }
 
-    private Iterable<Metadata<Extension>> postProcessExtensions(Iterable<Metadata<Extension>> extensions,
-            List<BeanDeploymentArchive> archives) {
+    private Iterable<Metadata<Extension>> postProcessExtensions(Iterable<Metadata<Extension>> extensions, List<BeanDeploymentArchive> archives) {
 
-        // See if the Jersey extension that scans all classes in the bean archives is present. Normally
+        // See if the Jersey extension that scans all classes in the bean archives is present.
         // Normally this should always be the case as this extension is statically included with Jersey,
         // but who knows whether we'll once have distributions without Jersey
         Optional<Metadata<Extension>> optionaProcessAllAnnotatedTypes = findJerseyProcessAll(extensions);
