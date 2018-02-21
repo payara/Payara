@@ -684,6 +684,20 @@ public class ApplicationHandlers {
         handlerCtx.setOutputValue("filters", new ArrayList(filters));
     }
 
+    @Handler(id = "py.getFirstDeploymentUrl",
+        input = {
+            @HandlerInput(name = "appId", type = String.class, required = true)
+        }, output = {
+            @HandlerOutput(name = "deploymentUrl", type = String.class)
+        })
+    public void getFirstDeploymentUrl(HandlerContext ctx) {
+        String appId = (String) ctx.getInputValue("appId");
+
+        List<Map<String, String>> list = getTargetURLList(appId, "");
+        Map<String, String> firstEntry = list.get(0);
+        String url = firstEntry.get("url");
+        ctx.setOutputValue("deploymentUrl", url);
+    }
 
     @Handler(id="getTargetURLList",
         input={
@@ -693,29 +707,35 @@ public class ApplicationHandlers {
             @HandlerOutput(name="URLList", type=List.class)})
 
     public void getTargetURLList(HandlerContext handlerCtx) {
-	String appID = (String)handlerCtx.getInputValue("AppID");
-        String contextRoot = (String)handlerCtx.getInputValue("contextRoot");
+        String appID = (String) handlerCtx.getInputValue("AppID");
+        String contextRoot = (String) handlerCtx.getInputValue("contextRoot");
         String ctxRoot = calContextRoot(contextRoot);
+
+        List<Map<String, String>> list = getTargetURLList(appID, ctxRoot);
+        handlerCtx.setOutputValue("URLList", list);
+    }
+
+    private List<Map<String, String>> getTargetURLList(String appId, String contextRoot) {
         Set<String> URLs = new TreeSet();
-        List<String> targetList = DeployUtil.getApplicationTarget(appID, "application-ref");
+        List<String> targetList = DeployUtil.getApplicationTarget(appId, "application-ref");
         List<String> dgs = TargetUtil.getDeploymentGroups();
-        for(String target : targetList) {
+        for (String target : targetList) {
             if (dgs.contains(target)) {
                 // do nothing as the servers will be listed
                 continue;
             }
-            
-            String ep = TargetUtil.getTargetEndpoint(target) + "/application-ref/" + appID;
-            boolean enabled = Boolean.parseBoolean((String)RestUtil.getAttributesMap(ep).get("enabled"));
+
+            String ep = TargetUtil.getTargetEndpoint(target) + "/application-ref/" + appId;
+            boolean enabled = Boolean.parseBoolean((String) RestUtil.getAttributesMap(ep).get("enabled"));
             if (!enabled)
                 continue;
 
-            String virtualServers = getVirtualServers(target, appID);
+            String virtualServers = getVirtualServers(target, appId);
             String configName = TargetUtil.getConfigName(target);
 
             List clusters = TargetUtil.getClusters();
             List<String> instances = new ArrayList();
-            if (clusters.contains(target)){
+            if (clusters.contains(target)) {
                 instances = TargetUtil.getClusteredInstances(target);
             } else {
                 instances.add(target);
@@ -727,27 +747,25 @@ public class ApplicationHandlers {
             }
         }
 
-	Iterator it = URLs.iterator();
-	String url = null;
-        ArrayList list = new ArrayList();
+        Iterator it = URLs.iterator();
+        String url = null;
+        List<Map<String, String>> list = new ArrayList();
 
-	while (it.hasNext()) {
-	    url = (String)it.next();
+        while (it.hasNext()) {
+            url = (String) it.next();
             String target = "";
             int i = url.indexOf("@@@");
             if (i >= 0) {
                 target = url.substring(0, i);
-                url = url.substring(i + 3);                
+                url = url.substring(i + 3);
             }
-                
-            HashMap<String, String> m = new HashMap();
-            m.put("url", url + ctxRoot);
+
+            Map<String, String> m = new HashMap<>();
+            m.put("url", url + contextRoot);
             m.put("target", target);
             list.add(m);
-	}
-                
-        handlerCtx.setOutputValue("URLList", list);
-
+        }
+        return list;
     }
 
 

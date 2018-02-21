@@ -118,5 +118,11 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-appserver-modules</groupId>
+            <artifactId>payara-rest-endpoints</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

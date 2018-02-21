@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.impl;
 
+import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
 import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.boot.runtime.BootCommand;
@@ -56,6 +57,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -65,6 +67,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.net.JarURLConnection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -2442,30 +2445,55 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void dumpFinalStatus(long bootTime) {
+
+        // Print instance descriptor
         InstanceDescriptor id = getRuntime().getLocalDescriptor();
         LOGGER.log(Level.INFO, id.toJsonString(showServletMappings));
+
+        // Get Payara Micro endpoints
         StringBuilder sb = new StringBuilder();
-        sb.append("\nPayara Micro URLs\n");
+        sb.append("\nPayara Micro URLs:\n");
         List<URL> urls = id.getApplicationURLS();
         for (URL url : urls) {
             sb.append(url.toString()).append('\n');
         }
-        // Count through applications and print out their REST endpoints
-        for (ApplicationDescriptor app : id.getDeployedApplications()) {
-            sb.append("\n").append("'" + app.getName()).append("' REST Endpoints\n");
-            try {
-                CommandResult result = gf.getCommandRunner().run("list-rest-endpoints", app.getName());
-                sb.append(result.getOutput().replaceAll("PlainTextActionReporter(SUCCESS|FAILURE)", ""));
-            } catch (GlassFishException ex) {
-                // Really shouldn't happen, the command catches it's own errors most of the time
-                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, "Failed to get REST endpoints for application", ex);
-            }
-            sb.append("\n\n");
+
+        // Count through applications and add their REST endpoints
+        try {
+            ListRestEndpointsCommand cmd = gf.getService(ListRestEndpointsCommand.class);
+            id.getDeployedApplications().forEach(app -> {
+                Map<String, Set<String>> endpoints = null;
+                try {
+                    endpoints = cmd.getEndpointMap(app.getName());
+                } catch (IllegalArgumentException ex) {
+                    // The application has no endpoints
+                    endpoints = null;
+                }
+                if (endpoints != null) {
+                    sb.append("\n'" + app.getName() + "' REST Endpoints:\n");
+                    endpoints.forEach((path, methods) -> {
+                        methods.forEach(method -> {
+                            sb.append(method + "\t" + path + "\n");
+                        });
+                    });
+                }
+            });
+        } catch (GlassFishException ex) {
+            // Really shouldn't happen, the command catches it's own errors most of the time
+            Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE,
+                    "Failed to get REST endpoints for application", ex);
         }
+        sb.append("\n");
+
+        // Print out all endpoints
         LOGGER.log(Level.INFO, sb.toString());
+
+        // Print the logo if it's enabled
         if (generateLogo) {
             generateLogo();
         }
+
+        // Print final ready message
         LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), bootTime});
     }
 
