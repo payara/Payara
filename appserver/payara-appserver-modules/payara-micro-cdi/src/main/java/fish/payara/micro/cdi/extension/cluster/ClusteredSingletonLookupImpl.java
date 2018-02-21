@@ -68,7 +68,9 @@ public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBa
     }
 
     void setClusteredSessionKey(Class<?> beanClass) {
-        Bean<?> bean = Iterables.getOnlyElement(bm.getBeans(beanClass));
-        sessionKey.set(getBeanName(bean, getAnnotation(bean)));
+        Bean<?> bean = Iterables.getOnlyElement(bm.getBeans(beanClass), null);
+        if(bean != null) {
+            sessionKey.set(getBeanName(bean, getAnnotation(bean)));
+        }
     }
 }
