@@ -97,7 +97,7 @@ class ClusterScopeContext implements Context {
         TT rv = (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
         if(clusteredAnnotation.callPostConstructOnAttach() && rv != null &&
                 getFromApplicationScoped(contextual, Optional.<CreationalContext<TT>>absent()) == null) {
-            bm.getInjectionTargetFactory(bm.createAnnotatedType((Class<TT>)bean.getBeanClass())).createInjectionTarget(bean).postConstruct(rv);
+            bm.getContext(ApplicationScoped.class).get(contextual, bm.createCreationalContext(contextual));
         }
         return rv;
     }
