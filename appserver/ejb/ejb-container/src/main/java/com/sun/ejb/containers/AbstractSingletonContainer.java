@@ -154,7 +154,6 @@ public abstract class AbstractSingletonContainer
         preDestroyInvInfo.ejbName = ejbDescriptor.getName();
         preDestroyInvInfo.methodIntf = MethodDescriptor.LIFECYCLE_CALLBACK;
         preDestroyInvInfo.txAttr = getTxAttrForLifecycleCallback(ejbDescriptor.getPreDestroyDescriptors());
-
     }
 
     public String getMonitorAttributeValues() {
@@ -179,6 +178,45 @@ public abstract class AbstractSingletonContainer
         setResourceHandler(inv);
 
         return inv;
+    }
+
+    @Override
+    protected ComponentContext _getContext(EjbInvocation inv) throws EJBException {
+        checkInit();
+        if(clusteredLookup.isClusteredEnabled()) {
+            AbstractSessionContextImpl sc = (AbstractSessionContextImpl) singletonCtx;
+            try {
+                invocationManager.preInvoke(inv);
+                inv.context = sc;
+                sc.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
+                if(isJCDIEnabled() && sc.getEJB() != null) {
+                    sc.setJCDIInjectionContext(jcdiService.createJCDIInjectionContext(ejbDescriptor, sc.getEJB()));
+                    injectEjbInstance(sc);
+                }
+            } catch (Exception ex) {
+                throw new EJBException(ex);
+            }
+            finally {
+                inv.context = null;
+                invocationManager.postInvoke(inv);
+            }
+        }
+        return singletonCtx;
+    }
+
+    @Override
+    protected void releaseContext(EjbInvocation inv) throws EJBException {
+        if(clusteredLookup.isClusteredEnabled()) {
+            try {
+                invocationManager.preInvoke(inv);
+                if(clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
+                    clusteredLookup.getClusteredSingletonMap().put(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
+                }
+            }
+            finally {
+                invocationManager.postInvoke(inv);
+            }
+        }
     }
 
     private void setResourceHandler(EjbInvocation inv) {

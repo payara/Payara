@@ -565,7 +565,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected EJBContainerStateManager containerStateManager;
     protected EJBContainerTransactionManager containerTransactionManager;
     
-    private JCDIService jcdiService;
+    protected JCDIService jcdiService;
 
     /**
      * This constructor is called from ContainerFactoryImpl when an
