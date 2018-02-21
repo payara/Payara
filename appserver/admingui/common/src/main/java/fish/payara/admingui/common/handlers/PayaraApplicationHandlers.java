@@ -77,8 +77,8 @@ public class PayaraApplicationHandlers {
 
         List<String> instancesInDeploymentGroup = getInstancesInDeploymentGroup(targetList);
 
-        Boolean addToResult = false;
         for (String oneTarget : targetList) {
+            Boolean addToResult = false;
             HashMap<String, Object> oneRow = new HashMap<>();
             if (clusters.contains(oneTarget)) {
                 endpoint = prefix + "/clusters/cluster/" + oneTarget + "/application-ref/" + applicationName;

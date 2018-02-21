@@ -210,10 +210,10 @@ public class DeployUtil {
         } catch (Exception ex) {
             //ignore
         }
-        List<String> instancesInDeploymentGroup = getInstancesInDeploymentGroup(targetList);
-        
-        Boolean isValidTarget = false;
+        List<String> instancesInDeploymentGroup = getInstancesInDeploymentGroup(targetList);   
+       
         for (String oneTarget : targetList) {
+            Boolean isValidTarget = false;
             if (clusters.contains(oneTarget)) {
                 enabled = (String) RestUtil.getAttributesMap(prefix + "/clusters/cluster/" + oneTarget + "/" + ref + "/" + appName).get("enabled");
                 numTargets++;
