@@ -337,7 +337,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
             if (app.getModuleDescriptors().size() == 1) {
                 ModuleDescriptor module = app.getModuleDescriptors().get(0);
                 appBuilder.add("Type", module.getType());
-                appBuilder.add("Context Root", module.getContextRoot());
+                appBuilder.add("Context Root", (module.getContextRoot() == null)? "N/A": module.getContextRoot());
 
                 // List the module mappings if verbose is specified
                 if (verbose) {
