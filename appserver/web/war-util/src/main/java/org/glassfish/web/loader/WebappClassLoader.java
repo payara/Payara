@@ -98,6 +98,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.*;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -391,6 +392,7 @@ public class WebappClassLoader
     private Class<?> jdbcLeakPreventionResourceClass = null;
 
     private final Application application;
+    private final Date dtCreated = new Date();
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -1012,7 +1014,9 @@ public class WebappClassLoader
                 }
             }
         }
-        sb.append(")");
+        sb.append(") ");
+        sb.append("Object: ").append(Integer.toHexString(System.identityHashCode(this)));
+        sb.append(" Created: ").append(SimpleDateFormat.getDateTimeInstance().format(dtCreated));
         return (sb.toString());
     }
 
