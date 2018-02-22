@@ -278,20 +278,16 @@ public class GrizzlyProxy implements NetworkProxy {
         try {
             grizzlyListener.start();
         } catch (BindException e) {
-            if (logger.isLoggable(Level.SEVERE)) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.grizzlyUnableToBind,
-                    new Object[]{Grizzly.getDotedVersion(),
-                    grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
-            }
+            logger.log(Level.SEVERE, KernelLoggerInfo.listenerUnableToBind,
+                new Object[]{Grizzly.getDotedVersion(),
+                grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
             throw e;
         }
 
-        if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,
-                    new Object[]{Grizzly.getDotedVersion(),
-                    System.currentTimeMillis() - t1,
-                    grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
-        }
+        logger.log(Level.INFO, KernelLoggerInfo.listenerStarted,
+                new Object[]{grizzlyListener.getName(),
+                System.currentTimeMillis() - t1,
+                grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
     }
     
     @Override
