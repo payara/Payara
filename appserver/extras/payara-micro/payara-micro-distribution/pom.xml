@@ -444,14 +444,6 @@
             <optional>true</optional>
         </dependency>
         
-        <!-- PAYARA-1081 -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>${jackson.version}</version>
-            <optional>true</optional>
-        </dependency>
-        
         <!-- JMS Annotation handlers -->
         <dependency>
             <groupId>org.glassfish.main.jms</groupId>
