@@ -183,7 +183,7 @@ public abstract class AbstractSingletonContainer
     @Override
     protected ComponentContext _getContext(EjbInvocation inv) throws EJBException {
         checkInit();
-        if(clusteredLookup.isClusteredEnabled()) {
+        if(clusteredLookup.isClusteredEnabled() && !isStopped()) {
             AbstractSessionContextImpl sc = (AbstractSessionContextImpl) singletonCtx;
             try {
                 invocationManager.preInvoke(inv);
@@ -206,7 +206,7 @@ public abstract class AbstractSingletonContainer
 
     @Override
     protected void releaseContext(EjbInvocation inv) throws EJBException {
-        if(clusteredLookup.isClusteredEnabled()) {
+        if(clusteredLookup.isClusteredEnabled() && !isStopped()) {
             try {
                 invocationManager.preInvoke(inv);
                 if(clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
@@ -470,6 +470,7 @@ public abstract class AbstractSingletonContainer
         boolean doPostConstruct = true;
 
         try {
+            ctxUtil.setApplicationClassLoader();
             String sessionKey = clusteredLookup.getClusteredSessionKey();
             EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
             if(clusteredLookup.isClusteredEnabled()) {
