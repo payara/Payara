@@ -72,12 +72,16 @@ public class MicroNetworkListener extends GlassfishNetworkListener {
 
     @Override
     public void start() throws IOException {
+        // Check if Payara Micro has already allocated the socket
         if (reservedSocketMap.containsKey(port)) {
             ServerSocket reservedSocket = reservedSocketMap.get(port);
-            LOGGER.log(Level.INFO, "Found reserved socket on port: {0,number,#}.", port);
+            LOGGER.log(Level.FINEST, "Found reserved socket on port: {0,number,#}.", port);
+
+            // Release it for Grizzly to bind to
             if (reservedSocket.isBound()) {
                 reservedSocket.close();
                 reservedSocketMap.remove(port);
+                LOGGER.log(Level.FINEST, "Closed socket bound to port: {0,number,#}.", reservedSocket.getLocalPort());
             }
         }
         super.start();
@@ -87,7 +91,7 @@ public class MicroNetworkListener extends GlassfishNetworkListener {
      * Adds a currently open socket to be allocated to a listener.
      */
     public static void addReservedSocket(int boundPort, ServerSocket socket) {
-        LOGGER.log(Level.INFO, "Reserving port: {0,number,#}", boundPort);
+        LOGGER.log(Level.FINER, "Reserving port: {0,number,#}.", boundPort);
         reservedSocketMap.put(boundPort, socket);
     }
 
@@ -98,6 +102,7 @@ public class MicroNetworkListener extends GlassfishNetworkListener {
         for (ServerSocket socket : reservedSocketMap.values()) {
             if (!socket.isClosed()) {
                 socket.close();
+                LOGGER.log(Level.FINEST, "Closed socket bound to port: {0,number,#}.", socket.getLocalPort());
             }
         }
         reservedSocketMap.clear();
