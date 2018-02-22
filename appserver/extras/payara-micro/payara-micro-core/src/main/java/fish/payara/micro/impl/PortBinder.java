@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;
 
+import fish.payara.kernel.services.impl.MicroNetworkListener;
+
 /**
  *
  * @author Andrew Pielage
@@ -40,9 +42,11 @@ public class PortBinder {
         boolean foundAvailablePort = false;
 
         for (int i = 0; i <= autoBindRange; i++) {   
-            try (ServerSocket serverSocket = new ServerSocket(port);) {
+            try {
+                ServerSocket serverSocket = new ServerSocket(port);
                 returnPort = port;
                 foundAvailablePort = true;
+                MicroNetworkListener.addReservedSocket(port, serverSocket);
                 break;
             } catch (IOException ex) {
                 port++;
