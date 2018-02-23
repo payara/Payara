@@ -150,8 +150,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             throw new IllegalArgumentException("archive must not be null");
         }
 
-        WatchKey watchKey = null;
-
         try {
             // The main directory from which we'll conduct our business
             Path arquillianMicroDir = Files.createTempDirectory("arquillian-payara-micro");
@@ -159,21 +157,14 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Create paths for the directories we'll be using
             Path targetLogDir = arquillianMicroDir.resolve("logs/");
             Path deploymentDir = arquillianMicroDir.resolve("deployments/");
-            Path targetZipDir = arquillianMicroDir.resolve("zipped-logs/");
 
             // Create the directories
             targetLogDir.toFile().mkdir();
             deploymentDir.toFile().mkdir();
-            targetZipDir.toFile().mkdir();
 
-            // Create the path for the commands.txt file, which holds the asadmin post boot commands
+            // Create the commands.txt file, which holds the asadmin post boot commands
             File commandFile = arquillianMicroDir.resolve("commands.txt").toFile();
-
-            // Create the commands.txt file - write a single command to zip up the log files
-            // and store this zip into the /zipped-logs/ directory.
-            Files.write(commandFile.toPath(), 
-                ("collect-log-files --retrieve true " + targetZipDir.toAbsolutePath().resolve("log.zip").toString()).getBytes()
-            );
+            commandFile.createNewFile();
 
             // Create the path for the deployment archive (e.g. the application war or ear)
             File deploymentFile = deploymentDir.resolve(archive.getName()).toFile();
@@ -231,10 +222,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
             logger.info("Starting Payara Micro using cmd: " + cmd);
 
-            // Register a watch service to wait for the logs to be zipped.
-            WatchService watcher = FileSystems.getDefault().newWatchService();
-            targetZipDir.register(watcher, ENTRY_CREATE);
-
             // Allow Ctrl-C to stop the test, then start Payara Micro
             registerShutdownHook();
             payaraMicroProcess = new ProcessBuilder(cmd)
@@ -250,13 +237,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             LogReader logReader = new LogReader(logFile, consumer);
             executor.execute(logReader);
 
-            // Wait for the logs to be zipped.
-            // TODO: implement post-post boot command or similar to properly check when Micro has finished booting up.
-            watchKey = watcher.poll(startupTimeoutInSeconds, SECONDS);
-            if (watchKey == null) {
-                logger.severe("Timeout (" + startupTimeoutInSeconds + "s) reached waiting for Payara Micro to start.");
-            }
-
             // Check at intervals if Payara Micro has finished starting up or failed to start.
             CountDownLatch payaraMicroStarted = new CountDownLatch(1);
             executor.scheduleAtFixedRate(() -> {
@@ -267,10 +247,10 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                     payaraMicroStarted.countDown();
                     executor.shutdown();
                 }
-            }, 500, 500, MILLISECONDS);
+            }, 500, 200, MILLISECONDS);
 
-            // Wait for Payara Micro to start up, or time out after 10 seconds
-            if (payaraMicroStarted.await(10, SECONDS)) {
+            // Wait for Payara Micro to start up, or time out after 60 seconds
+            if (payaraMicroStarted.await(60, SECONDS)) {
 
                 // Create a matcher for the 'Instance Configured' message
                 Matcher instanceConfigMatcher = instanceConfigPattern.matcher(log);
@@ -309,10 +289,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             logger.severe("Timeout reached waiting for Payara Micro to start.\n" + e.getMessage());
             Thread.currentThread().interrupt();
             return null;
-        } finally {
-            if (watchKey != null) {
-                watchKey.cancel();
-            }
         }
 
         throw new DeploymentException("No applications were found deployed to Payara Micro.");
