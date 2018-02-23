@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright 2018 [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.backup;
 
 import com.sun.enterprise.backup.util.BackupUtils;
@@ -75,6 +77,7 @@ public class RestoreManager extends BackupRestoreManager {
             atomicSwap(request.domainDir, request.domainName, isConfigBackup);
             setPermissions();
             String mesg = readAndDeletePropsFile(isConfigBackup);
+            readLoggingProperties(); 
             return mesg;
         }
         catch(BackupException be) {
@@ -310,6 +313,73 @@ public class RestoreManager extends BackupRestoreManager {
         return mesg;
     }
 
+    private void readLoggingProperties() throws BackupException {
+        File loggingPropertiesFile = new File(request.domainDir, Constants.CONFIG_DIR
+                + "/" + Constants.LOGGING_CONFIG);
+        StringBuilder stringBuilder = new StringBuilder();
+       
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(loggingPropertiesFile))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+                stringBuilder.append(System.lineSeparator());
+            }
+        } catch (IOException ex) {
+            throw new BackupException("Can't find logging property file", ex);
+        }
+        
+        checkForLoggingProperties(stringBuilder);
+    }
+
+    private void checkForLoggingProperties(StringBuilder loggingProperties) throws BackupException {
+        if (!loggingProperties.toString().contains(Constants.GF_FILE_HANDLER_LOG_TO_FILE)) {
+            loggingProperties.append(Constants.GF_FILE_HANDLER_LOG_TO_FILE_VALUE);
+            loggingProperties.append(System.lineSeparator());
+        }
+
+        if (!loggingProperties.toString().contains(Constants.PAYARA_HANDLER_LOG_TO_FILE)) {
+            loggingProperties.append(Constants.PAYARA_HANDLER_LOG_TO_FILE_VALUE);
+            loggingProperties.append(System.lineSeparator());
+        }
+
+        if (!loggingProperties.toString().contains(Constants.PAYARA_HANDLER_ROTATION_ON_DATE_CHANGE)) {
+            loggingProperties.append(Constants.PAYARA_HANDLER_ROTATION_ON_DATE_CHANGE_VALUE);
+            loggingProperties.append(System.lineSeparator());
+        }
+
+        if (!loggingProperties.toString().contains(Constants.PAYARA_HANDLER_ROTATION_ON_TIME_LIMIT)) {
+            loggingProperties.append(Constants.PAYARA_HANDLER_ROTATION_ON_TIME_LIMIT_VALUE);
+            loggingProperties.append(System.lineSeparator());
+        }
+
+        if (!loggingProperties.toString().contains(Constants.PAYARA_HANDLER_ROTATION_ON_FILE_SIZE)) {
+            loggingProperties.append(Constants.PAYARA_HANDLER_ROTATION_ON_FILE_SIZE_VALUE);
+            loggingProperties.append(System.lineSeparator());
+        }
+
+        if (!loggingProperties.toString().contains(Constants.PAYARA_HANDLER_MAXIMUM_FILES)) {
+            loggingProperties.append(Constants.PAYARA_HANDLER_MAXIMUM_FILES_VALUE);
+            loggingProperties.append(System.lineSeparator());
+        }
+        if (!loggingProperties.toString().contains(Constants.PAYARA_HANDLER_LOG_FILE)) {
+            loggingProperties.append(Constants.PAYARA_HANDLER_LOG_FILE_VALUE);
+            loggingProperties.append(System.lineSeparator());
+        }
+        
+        writeToLoggingPropertyFile(loggingProperties.toString());
+    }
+    
+    public void writeToLoggingPropertyFile(String loggingProperties) throws BackupException {
+        File loggingPropertiesFile = new File(request.domainDir, Constants.CONFIG_DIR
+                + "/" + Constants.LOGGING_CONFIG);
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(loggingPropertiesFile.toString()))) {
+            bufferedWriter.write(loggingProperties);
+        } catch (IOException ex) {
+            throw new BackupException("Can't find logging property file", ex);
+        }
+    }
+
     /** zip is platform dependent -- so non-default permissions are gone!
      */
     
@@ -356,7 +426,7 @@ public class RestoreManager extends BackupRestoreManager {
                 "backup-res.RestoreError.CorruptBackupFile.NoStatusFile",
                 request.domainName);
         }
-    }    
+    }
     
     //////////////////////////////////////////////////////////////////////////
 

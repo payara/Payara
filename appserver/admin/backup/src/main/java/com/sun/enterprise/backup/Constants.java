@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright 2018 [Payara Foundation and/or its affiliates]
+
 /*
  * Constants.java
  *
@@ -71,6 +73,21 @@ public interface Constants
     final static String    PROPS_FILENAME = "backup.properties";
     final static String    CONFIG_ONLY ="configOnly";
     final static String    FULL ="full";
-    final static String    CONFIG_DIR="config";
-    final static String    NO_CONFIG=" ";
+    final static String    CONFIG_DIR = "config";
+    final static String    NO_CONFIG = " ";
+    final static String    LOGGING_CONFIG = "logging.properties";
+    final static String    GF_FILE_HANDLER_LOG_TO_FILE = "com.sun.enterprise.server.logging.GFFileHandler.logtoFile";
+    final static String    PAYARA_HANDLER_LOG_TO_FILE = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile";
+    final static String    PAYARA_HANDLER_ROTATION_ON_DATE_CHANGE = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange";
+    final static String    PAYARA_HANDLER_ROTATION_ON_TIME_LIMIT = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes";
+    final static String    PAYARA_HANDLER_ROTATION_ON_FILE_SIZE = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes";
+    final static String    PAYARA_HANDLER_MAXIMUM_FILES = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles";
+    final static String    PAYARA_HANDLER_LOG_FILE = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file";
+    final static String    GF_FILE_HANDLER_LOG_TO_FILE_VALUE = GF_FILE_HANDLER_LOG_TO_FILE + "=true";
+    final static String    PAYARA_HANDLER_LOG_TO_FILE_VALUE = PAYARA_HANDLER_LOG_TO_FILE + "=true";
+    final static String    PAYARA_HANDLER_ROTATION_ON_DATE_CHANGE_VALUE = PAYARA_HANDLER_ROTATION_ON_DATE_CHANGE + "=false";
+    final static String    PAYARA_HANDLER_ROTATION_ON_TIME_LIMIT_VALUE = PAYARA_HANDLER_ROTATION_ON_TIME_LIMIT + "=0";
+    final static String    PAYARA_HANDLER_ROTATION_ON_FILE_SIZE_VALUE = PAYARA_HANDLER_ROTATION_ON_FILE_SIZE + "=2000000";
+    final static String    PAYARA_HANDLER_MAXIMUM_FILES_VALUE = PAYARA_HANDLER_MAXIMUM_FILES + "=0";
+    final static String    PAYARA_HANDLER_LOG_FILE_VALUE = PAYARA_HANDLER_LOG_FILE + "=${com.sun.aas.instanceRoot}/logs/notification.log";
 }
