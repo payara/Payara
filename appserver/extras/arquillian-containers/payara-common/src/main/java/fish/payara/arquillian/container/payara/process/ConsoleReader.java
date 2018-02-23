@@ -71,16 +71,21 @@ public class ConsoleReader implements Runnable, Closeable {
     private final ProcessOutputConsumer consumer;
     private final BufferedReader reader;
 
+    private boolean closing;
+
     public ConsoleReader(final Process process, ProcessOutputConsumer consumer) {
         this.reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         this.consumer = consumer;
+        closing = false;
     }
 
     public void run() {
         String line;
         try {
-            while ((line = reader.readLine()) != null) {
-                consumer.consume(line);
+            while (!isClosing()) {
+                if ((line = reader.readLine()) != null) {
+                    consumer.consume(line);
+                }
             }
         } catch (IOException failOnReading) {
             logger.log(SEVERE, failOnReading.getMessage(), failOnReading);
@@ -92,13 +97,16 @@ public class ConsoleReader implements Runnable, Closeable {
         return (T) consumer;
     }
 
+    public boolean isClosing() {
+        try {
+			return closing && !reader.ready();
+		} catch (IOException e) {
+            return true;
+		}
+    }
+
     public void close() {
-        if (reader != null) {
-            try {
-                reader.close();
-            } catch (IOException failOnClose) {
-                logger.log(SEVERE, failOnClose.getMessage(), failOnClose);
-            }
-        }
+        closing = true;
+        Thread.currentThread().interrupt();
     }
 }

@@ -233,12 +233,14 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 Matcher startupMatcher = instanceConfigPattern.matcher(log);
                 if (startupMatcher.find()) {
                     payaraMicroStarted.countDown();
-                    executor.shutdown();
                 }
             }, 500, 200, MILLISECONDS);
 
             // Wait for Payara Micro to start up, or time out after the specified timeout
             if (payaraMicroStarted.await(startupTimeoutInSeconds, SECONDS)) {
+
+                // Shutdown log reading executor
+                executor.shutdown();
 
                 // Create a matcher for the 'Instance Configured' message
                 Matcher instanceConfigMatcher = instanceConfigPattern.matcher(log);
