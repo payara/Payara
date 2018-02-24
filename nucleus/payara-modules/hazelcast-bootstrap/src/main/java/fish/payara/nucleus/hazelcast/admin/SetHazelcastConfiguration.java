@@ -49,6 +49,7 @@ import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.beans.PropertyVetoException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -132,7 +133,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "dasPort", optional = true)
     private String dasPort;
 
-    @Param(name = "clusterMode", optional = true)
+    @Param(name = "clusterMode", optional = true, acceptableValues = "domain,multicast,tcpip")
     private String clusterMode;
 
     @Param(name = "tcpIpMembers", optional = true)
@@ -177,10 +178,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "licenseKey", shortName = "lk", optional = true)
     private String licenseKey;
 
-    @Param(name = "lite", optional = true, defaultValue = "false")
+    @Param(name = "lite", optional = true)
     private Boolean lite;
 
-    @Param(name = "hostawarePartitioning", optional = true, defaultValue = "false")
+    @Param(name = "hostawarePartitioning", optional = true)
     private Boolean hostawarePartitioning;
 
     @Param(name = "memberName", optional = true)
@@ -200,7 +201,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
         final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
-        Config config = targetUtil.getConfig(target);
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -268,10 +268,18 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
                 }, hazelcastRuntimeConfiguration);
                 
-                // get the local config to be applied to
+                // get the configs that need the change applied if target is domain it is all configs
+                Config config = targetUtil.getConfig(target);
+                List<Config> configsToApply = new ArrayList<>(5);
+                if (config == null && target.equals("domain")) {
+                    configsToApply.addAll(domain.getConfigs().getConfig());
+                } else if (config != null) {
+                    configsToApply.add(config);
+                }
 
-                if (config != null) {
-                    HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
+                for(Config configToApply : configsToApply) {
+                    
+                    HazelcastConfigSpecificConfiguration nodeConfiguration = configToApply.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
 
                     ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
                         @Override
