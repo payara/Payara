@@ -1,7 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,29 +35,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.timer.hazelcast;
+package fish.payara.arquillian.container.payara;
 
-import com.sun.ejb.PersistentTimerService;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
+import static org.junit.Assert.assertTrue;
 
-/**
- *
- * @author steve
- */
-@Service
-public class HazelcastEJBTimerService implements PersistentTimerService {
-    
-    
-    @Inject
-    HazelcastCore hazelcast;
-    
-    
+import org.junit.Test;
 
-    @Override
-    public void initPersistentTimerService(String target) {
-            HazelcastTimerStore.init(hazelcast);
+public class PayaraVersionTest {
+
+    private PayaraVersion v1;
+    private PayaraVersion v2;
+
+    @Test
+    public void moreRecentVersionTest() {
+        v1 = new PayaraVersion("4.1.2.174");
+        v2 = new PayaraVersion("4.1.2.181");
+        assertTrue("The version check failed.", v2.isMoreRecentThan(v1));
+
+        v1 = new PayaraVersion("4.1.2.181");
+        v2 = new PayaraVersion("4.1.3.181");
+        assertTrue("The version check failed.", v2.isMoreRecentThan(v1));
+
+        v1 = new PayaraVersion("4.1.2.181");
+        v2 = new PayaraVersion("4.2.2.181");
+        assertTrue("The version check failed.", v2.isMoreRecentThan(v1));
+
+        v1 = new PayaraVersion("4.1.2.174");
+        v2 = new PayaraVersion("4.1.2.181-SNAPSHOT");
+        assertTrue("The version check failed.", v2.isMoreRecentThan(v1));
+
+        v1 = new PayaraVersion("4.1.2.181-SNAPSHOT");
+        v2 = new PayaraVersion("4.1.2.181");
+        assertTrue("The version check failed.", v2.isMoreRecentThan(v1));
+
+        v1 = new PayaraVersion("5.Beta2");
+        v2 = new PayaraVersion("5.181-SNAPSHOT");
+        assertTrue("The version check failed.", v2.isMoreRecentThan(v1));
+
+        v1 = new PayaraVersion("5.181-SNAPSHOT");
+        v2 = new PayaraVersion("5.181");
+        assertTrue("The version check failed.", v2.isMoreRecentThan(v1));
     }
-    
 }

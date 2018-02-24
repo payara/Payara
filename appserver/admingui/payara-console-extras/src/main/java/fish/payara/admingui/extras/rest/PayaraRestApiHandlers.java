@@ -37,11 +37,8 @@
  */
 package fish.payara.admingui.extras.rest;
 
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.jsftemplating.annotation.Handler;
-import com.sun.jsftemplating.annotation.HandlerInput;
-import com.sun.jsftemplating.annotation.HandlerOutput;
-import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import static org.glassfish.weld.WeldDeployer.DEV_MODE_PROPERTY;
+
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,10 +46,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
+
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.jsftemplating.annotation.Handler;
+import com.sun.jsftemplating.annotation.HandlerInput;
+import com.sun.jsftemplating.annotation.HandlerOutput;
+import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
-import static org.glassfish.weld.WeldDeployer.DEV_MODE_PROPERTY;
 
 /**
  * A class containing Payara specific handler methods for the REST API
@@ -203,7 +207,7 @@ public class PayaraRestApiHandlers {
         output = {
             @HandlerOutput(name = "result", type = java.util.List.class)})
     public static void getRestEndpoints(HandlerContext handlerCtx) {
-        List result = new ArrayList();
+        List<Map<String, String>> result = new ArrayList<>();
         try{
             String appName = (String) handlerCtx.getInputValue("appName");
             String encodedAppName = URLEncoder.encode(appName, "UTF-8");
@@ -218,8 +222,16 @@ public class PayaraRestApiHandlers {
             Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
             // Check if the command returned any endpoints
-            if((List)payaraEndpointsExtraProps.get("endpointList") != null) {
-                result = (List<Map<String, String>>)payaraEndpointsExtraProps.get("endpointList");
+            if(payaraEndpointsExtraProps.get("endpoints") != null) {
+                Map<String, List<String>> output = (Map<String, List<String>>) payaraEndpointsExtraProps.get("endpoints");
+                output.forEach((path, methods) -> {
+                    methods.forEach(method -> {
+                        Map<String, String> endpointDetails = new TreeMap<>();
+                        endpointDetails.put("endpointPath", path);
+                        endpointDetails.put("requestMethod", method);
+                        result.add(endpointDetails);
+                    });
+                });
             }
           }catch(Exception ex){
             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getRestEndpoints") + ex.getLocalizedMessage());
@@ -261,7 +273,7 @@ public class PayaraRestApiHandlers {
 
                 // Enter into the map the key of the component and whether it has endpoints or not
                 result.put(componentName, false);
-                if((List)payaraEndpointsExtraProps.get("endpointList") != null) {
+                if(payaraEndpointsExtraProps.get("endpoints") != null) {
                     result.put(componentName, true);
                      // Change the component type to JAX-RS. Couldn't be obtained at an earlier point since JAX-RS resources are compiled to JSP.
                     rowMap.put("type", "JAX-RS");

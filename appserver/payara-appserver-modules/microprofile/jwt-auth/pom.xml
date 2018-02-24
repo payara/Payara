@@ -101,6 +101,18 @@ holder.
           <groupId>org.glassfish.soteria</groupId>
           <artifactId>javax.security.enterprise</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>

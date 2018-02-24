@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,9 @@
  */
 package fish.payara.micro.impl;
 
+import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
 import fish.payara.deployment.util.GAVConvertor;
+import fish.payara.kernel.services.impl.MicroNetworkListener;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.boot.runtime.BootCommand;
 import fish.payara.micro.cmd.options.RuntimeOptions;
@@ -56,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -84,7 +87,6 @@ import fish.payara.micro.boot.loader.OpenURLClassLoader;
 import fish.payara.micro.boot.runtime.BootCommands;
 import fish.payara.micro.cmd.options.RUNTIME_OPTION;
 import fish.payara.micro.cmd.options.ValidationException;
-import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.FileNotFoundException;
@@ -93,7 +95,6 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
-import org.glassfish.embeddable.CommandResult;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -1003,11 +1004,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             HazelcastCore.setThreadLocalDisabled(true);
             try {
                 gf.start();
+
+                // Attempt paranoid unbinding of all reserved ports.
+                MicroNetworkListener.clearReservedSockets();
+
+                // Execute post boot commands
                 postBootCommands.executeCommands(gf.getCommandRunner());
+                
                 this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
                 // load all applications, but do not start them until Hazelcast gets a chance to initialize
                 deployAll();
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "Error unbinding reserved port.", ex);
             } finally {
                 HazelcastCore.setThreadLocalDisabled(false);
             }
@@ -1026,7 +1035,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             try {
                 gf.dispose();
             } catch (GlassFishException ex1) {
-                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex1);
+                LOGGER.log(Level.SEVERE, null, ex1);
             }
             throw new BootstrapException(ex.getMessage(), ex);
         }
@@ -1658,7 +1667,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 try {
                     formatterClass = (Formatter) Class.forName(formatter).newInstance();
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-                    Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, "Specified Formatter class could not be loaded " + formatter, ex);
+                    LOGGER.log(Level.SEVERE, "Specified Formatter class could not be loaded " + formatter, ex);
                 }
                 Logger rootLogger = Logger.getLogger("");
                 for (Handler handler : rootLogger.getHandlers()) {
@@ -2442,30 +2451,54 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void dumpFinalStatus(long bootTime) {
+
+        // Print instance descriptor
         InstanceDescriptor id = getRuntime().getLocalDescriptor();
         LOGGER.log(Level.INFO, id.toJsonString(showServletMappings));
+
+        // Get Payara Micro endpoints
         StringBuilder sb = new StringBuilder();
-        sb.append("\nPayara Micro URLs\n");
+        sb.append("\nPayara Micro URLs:\n");
         List<URL> urls = id.getApplicationURLS();
         for (URL url : urls) {
             sb.append(url.toString()).append('\n');
         }
-        // Count through applications and print out their REST endpoints
-        for (ApplicationDescriptor app : id.getDeployedApplications()) {
-            sb.append("\n").append("'" + app.getName()).append("' REST Endpoints\n");
-            try {
-                CommandResult result = gf.getCommandRunner().run("list-rest-endpoints", app.getName());
-                sb.append(result.getOutput().replaceAll("PlainTextActionReporter(SUCCESS|FAILURE)", ""));
-            } catch (GlassFishException ex) {
-                // Really shouldn't happen, the command catches it's own errors most of the time
-                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, "Failed to get REST endpoints for application", ex);
-            }
-            sb.append("\n\n");
+
+        // Count through applications and add their REST endpoints
+        try {
+            ListRestEndpointsCommand cmd = gf.getService(ListRestEndpointsCommand.class);
+            id.getDeployedApplications().forEach(app -> {
+                Map<String, Set<String>> endpoints = null;
+                try {
+                    endpoints = cmd.getEndpointMap(app.getName());
+                } catch (IllegalArgumentException ex) {
+                    // The application has no endpoints
+                    endpoints = null;
+                }
+                if (endpoints != null) {
+                    sb.append("\n'" + app.getName() + "' REST Endpoints:\n");
+                    endpoints.forEach((path, methods) -> {
+                        methods.forEach(method -> {
+                            sb.append(method + "\t" + path + "\n");
+                        });
+                    });
+                }
+            });
+        } catch (GlassFishException ex) {
+            // Really shouldn't happen, the command catches it's own errors most of the time
+            LOGGER.log(Level.SEVERE, "Failed to get REST endpoints for application", ex);
         }
+        sb.append("\n");
+
+        // Print out all endpoints
         LOGGER.log(Level.INFO, sb.toString());
+
+        // Print the logo if it's enabled
         if (generateLogo) {
             generateLogo();
         }
+
+        // Print final ready message
         LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), bootTime});
     }
 
@@ -2544,7 +2577,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     addLibrary(lib);
                 }
             } catch (SecurityException | IllegalArgumentException ex) {
-                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -2557,7 +2590,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 loader.addURL(lib.toURI().toURL());
                 LOGGER.log(Level.INFO, "Added " + lib.getAbsolutePath() + " to classpath");
             } catch (MalformedURLException ex) {
-                Logger.getLogger(PayaraMicroImpl.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         } else {
             LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());

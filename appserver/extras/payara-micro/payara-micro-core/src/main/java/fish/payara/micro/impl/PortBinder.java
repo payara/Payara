@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) [2016-2018] Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;
 
+import fish.payara.kernel.services.impl.MicroNetworkListener;
+
 /**
  *
  * @author Andrew Pielage
@@ -40,9 +42,11 @@ public class PortBinder {
         boolean foundAvailablePort = false;
 
         for (int i = 0; i <= autoBindRange; i++) {   
-            try (ServerSocket serverSocket = new ServerSocket(port);) {
+            try {
+                ServerSocket serverSocket = new ServerSocket(port);
                 returnPort = port;
                 foundAvailablePort = true;
+                MicroNetworkListener.addReservedSocket(port, serverSocket);
                 break;
             } catch (IOException ex) {
                 port++;

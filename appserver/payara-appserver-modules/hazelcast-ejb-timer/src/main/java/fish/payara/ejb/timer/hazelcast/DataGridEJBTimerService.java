@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,50 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.tck;
+package fish.payara.ejb.timer.hazelcast;
 
-import java.util.logging.Logger;
-
-import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
-import org.jboss.arquillian.test.spi.TestClass;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.Node;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import com.sun.ejb.PersistentTimerService;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * This archive processor adds the files <code>payara-mp-jwt.properties</code>
- * and <code>web.xml</code> to each archive being created by the MP-JWT TCK.
- * 
- * <p>
- * <code>payara-mp-jwt.properties</code> configures the valid issuer, while
- * <code>web.xml</code> contains a fix for a TCK bug, and a fix for a Payara bug
- * (see inside that file for more details).
- * 
- * @author Arjan Tijms
  *
+ * @author steve
  */
-public class ArquillianArchiveProcessor implements ApplicationArchiveProcessor {
+@Service
+public class DataGridEJBTimerService implements PersistentTimerService {
     
-    private static Logger log = Logger.getLogger(ArquillianArchiveProcessor.class.getName());
+    
+    @Inject
+    HazelcastCore hazelcast;
+    
+    
 
     @Override
-    public void process(Archive<?> archive, TestClass testClass) {
-        if (!(archive instanceof WebArchive)) {
-            return;
-        }
-        
-        WebArchive webArchive = WebArchive.class.cast(archive);
-        Node publicKeyNode = webArchive.get("/WEB-INF/classes/publicKey.pem");
-        if (publicKeyNode == null) {
-            return;
-        }
-        
-        log.info("Augmenting virtual web archive: " + archive);
-        
-        webArchive.addAsResource("payara-mp-jwt.properties")
-                  .addAsWebInfResource("web.xml")
-                  ;
-        
-        log.info("Virtually augmented web archive: \n" + webArchive.toString(true));
+    public void initPersistentTimerService(String target) {
+            HazelcastTimerStore.init(hazelcast);
     }
+    
 }

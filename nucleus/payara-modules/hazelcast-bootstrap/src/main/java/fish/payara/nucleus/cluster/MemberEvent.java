@@ -37,65 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.tck;
+package fish.payara.nucleus.cluster;
 
-import java.lang.annotation.Annotation;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
-import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
-import org.jboss.arquillian.container.test.impl.enricher.resource.OperatesOnDeploymentAwareProvider;
-import org.jboss.arquillian.core.api.Instance;
-import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import com.hazelcast.core.Member;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
- * A minimal replacement for the base URL provider backing the URL injection
- * in tests. This is needed to compensate for an ending slash difference.
- * 
- * @author Arjan Tijms
  *
+ * @author Steve Millidge (Payara Foundation)
  */
-public class URLResourceProvider extends OperatesOnDeploymentAwareProvider {
-
-    @Inject
-    private Instance<ProtocolMetaData> protocolMetadataInstance;
-
-    @Override
-    public Object doLookup(ArquillianResource resource, Annotation... qualifiers) {
-        try {
-            
-            return removeTrailingSlash(
-                    protocolMetadataInstance
-                            .get()
-                            .getContexts(HTTPContext.class)
-                            .iterator()
-                            .next()
-                            .getServlets()
-                            .get(0)
-                            .getBaseURI()
-                            .toURL());
-            
-        } catch (MalformedURLException e) {
-            throw new IllegalStateException("Error converting to URL", e);
-        }
+public class MemberEvent {
+    
+    public MemberEvent(Member member) {
+        this.member = member;
     }
     
-    private URL removeTrailingSlash(URL url) throws MalformedURLException {
-        if (url.getPath().endsWith("/")) {
-            String urlString = url.toExternalForm();
-            urlString = urlString.substring(0, urlString.length() - 1);
-
-            url = new URL(urlString);
-        }
-
-        return url;
+    public String getUuid() {
+        return member.getUuid();
     }
     
-    @Override
-    public boolean canProvide(Class<?> type) {
-        return type.isAssignableFrom(URL.class);
+    public String getServer() {
+        return member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
     }
-
+    
+    public String getServerGroup() {
+        return member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+    }
+    
+    private Member member;
+    
 }

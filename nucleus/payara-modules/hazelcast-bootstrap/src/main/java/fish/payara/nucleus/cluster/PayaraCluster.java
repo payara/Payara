@@ -114,7 +114,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
     @Override
     public void memberAdded(MembershipEvent me) {
             for (ClusterListener myListener : myListeners) {
-                myListener.memberAdded(me.getMember().getUuid());
+                myListener.memberAdded(new MemberEvent(me.getMember()));
             }
             logger.log(Level.INFO, "Data Grid Instance Added {0} at Address {1}", new String[]{me.getMember().getUuid(), me.getMember().getSocketAddress().toString()});
             logClusterStatus();
@@ -123,7 +123,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
     @Override
     public void memberRemoved(MembershipEvent me) {
         for (ClusterListener myListener : myListeners) {
-            myListener.memberRemoved(me.getMember().getUuid());
+            myListener.memberRemoved(new MemberEvent(me.getMember()));
         }
         logger.log(Level.INFO, "Data Grid Instance Removed {0} from Address {1}", new String []{me.getMember().getUuid(), me.getMember().getSocketAddress().toString()});
         logClusterStatus();

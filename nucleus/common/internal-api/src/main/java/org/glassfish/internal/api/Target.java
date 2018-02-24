@@ -151,6 +151,10 @@ public class Target {
         }
         return null;
     }
+    
+    public List<DeploymentGroup> getDGForInstance(String targetName) {
+        return domain.getDeploymentGroupsForInstance(targetName);
+    }
 
     /**
      * Given an instance that is part of a cluster, returns the Cluster element of the cluster to which the
