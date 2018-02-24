@@ -72,6 +72,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
+import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -93,7 +94,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             path = "set-hazelcast-configuration",
             description = "Set Hazelcast Configuration")
 })
-public class SetHazelcastConfiguration implements AdminCommand {
+public class SetHazelcastConfiguration implements AdminCommand, DeploymentTargetResolver {
 
     @Inject
     protected Logger logger;
@@ -107,10 +108,10 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Inject
     private Target targetUtil;
 
-    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true, defaultValue = "domain")
     String target;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
@@ -322,13 +323,19 @@ public class SetHazelcastConfiguration implements AdminCommand {
             }
 
             if (dynamic) {
+                boolean isEnabled = false;
+                if (enabled != null) {
+                    isEnabled = enabled;
+                } else {
+                    isEnabled = hazelcast.isEnabled();
+                }
                 // this command runs on all instances so they can update their configuration.
                 if ("domain".equals(target)) {
-                    hazelcast.setEnabled(enabled);
+                    hazelcast.setEnabled(isEnabled);
                 } else {
                     for (Server targetServer : targetUtil.getInstances(target)    ) {
                         if (server.getInstanceName().equals(targetServer.getName())) {
-                            hazelcast.setEnabled(enabled);  
+                            hazelcast.setEnabled(isEnabled);  
                         }
                     }
                 }
@@ -403,5 +410,14 @@ public class SetHazelcastConfiguration implements AdminCommand {
         }
 
         return true;
+    }
+
+    @Override
+    public String getTarget(ParameterMap pm) {
+        String result = pm.getOne("target");
+        if (result == null) {
+            result = target;
+        }
+        return result;
     }
 }
