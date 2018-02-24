@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -45,25 +45,20 @@ package org.glassfish.weld;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 
-public class WeldApplicationContainer implements ApplicationContainer {
-
-    public WeldApplicationContainer() {
-    }
+public class WeldApplicationContainer implements ApplicationContainer<Object> {
 
     @Override
     public Object getDescriptor() {
         return null;
     }
-   
+
     @Override
     public boolean start(ApplicationContext startupContxt) {
-
         return true;
     }
 
     @Override
     public boolean stop(ApplicationContext stopContext) {
-
         return true;
     }
 
@@ -82,4 +77,3 @@ public class WeldApplicationContainer implements ApplicationContainer {
         return null;
     }
 }
-
