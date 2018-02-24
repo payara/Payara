@@ -37,18 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.descriptor;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.util.ComponentPostVisitor;
-import com.sun.enterprise.deployment.util.ComponentVisitor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.web.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
@@ -61,7 +66,52 @@ import org.glassfish.web.deployment.util.WebBundleTracerVisitor;
 import org.glassfish.web.deployment.util.WebBundleValidator;
 import org.glassfish.web.deployment.util.WebBundleVisitor;
 
-import java.util.*;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.InjectionInfo;
+import com.sun.enterprise.deployment.InjectionTarget;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.LocaleEncodingMappingDescriptor;
+import com.sun.enterprise.deployment.LocaleEncodingMappingListDescriptor;
+import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.MetadataSource;
+import com.sun.enterprise.deployment.NamedReferencePair;
+import com.sun.enterprise.deployment.OrderedSet;
+import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
+import com.sun.enterprise.deployment.ResourceDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.deployment.SecurityRoleDescriptor;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.WebService;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.web.AppListenerDescriptor;
+import com.sun.enterprise.deployment.web.ContextParameter;
+import com.sun.enterprise.deployment.web.EnvironmentEntry;
+import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.deployment.web.MimeMapping;
+import com.sun.enterprise.deployment.web.ResourceReference;
+import com.sun.enterprise.deployment.web.SecurityConstraint;
+import com.sun.enterprise.deployment.web.SecurityRole;
+import com.sun.enterprise.deployment.web.SecurityRoleReference;
+import com.sun.enterprise.deployment.web.ServletFilter;
+import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import com.sun.enterprise.deployment.web.SessionConfig;
+import com.sun.enterprise.deployment.web.WebResourceCollection;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
  /**
  *
@@ -139,6 +189,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private Set<String> conflictedMimeMappingExtensions = null;
     private boolean servletInitializersEnabled = true;
+    private boolean jaxrsRolesAllowedEnabled = true;
 
     /**
      * Construct an empty web app [{0}].
@@ -355,7 +406,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 	/**
 	 * Set the name of my context root.
 	 */
-	public void setContextRoot(String contextRoot) {
+	@Override
+    public void setContextRoot(String contextRoot) {
 		if (getModuleDescriptor() != null) {
 			getModuleDescriptor().setContextRoot(contextRoot);
 		}
@@ -365,28 +417,32 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 	/**
 	 * return the request encoding
 	 */
-	public String getRequestCharacterEncoding() {
+	@Override
+    public String getRequestCharacterEncoding() {
 		return requestCharacterEncoding;
 	}
 
 	/**
 	 * Set the request encoding
 	 */
-	public void setRequestCharacterEncoding(String requestCharacterEncoding) {
+	@Override
+    public void setRequestCharacterEncoding(String requestCharacterEncoding) {
 		this.requestCharacterEncoding = requestCharacterEncoding;
 	}
 
 	/**
 	 * return the response encoding
 	 */
-	public String getResponseCharacterEncoding() {
+	@Override
+    public String getResponseCharacterEncoding() {
 		return responseCharacterEncoding;
 	}
 
 	/**
 	 * Set the response encoding
 	 */
-	public void setResponseCharacterEncoding(String responseCharacterEncoding) {
+	@Override
+    public void setResponseCharacterEncoding(String responseCharacterEncoding) {
 		this.responseCharacterEncoding = responseCharacterEncoding;
 	}
 
@@ -585,7 +641,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 (ServiceReferenceDescriptor)oserviceRef;
             ServiceReferenceDescriptor sr = _getServiceReferenceByName(serviceRef.getName());
             if (sr != null) {
-                combineInjectionTargets(sr, (EnvironmentProperty)serviceRef);
+                combineInjectionTargets(sr, serviceRef);
             } else {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).isConflictServiceReference()) {
@@ -1855,7 +1911,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public WebComponentDescriptor getWebComponentByName(String name) {
         for (WebComponentDescriptor next : getWebComponentDescriptors()) {
             if (next.getName().equals(name)) {
-                return (WebComponentDescriptor) next;
+                return next;
             }
         }
         return null;
@@ -1870,7 +1926,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public WebComponentDescriptor getWebComponentByCanonicalName(String name) {
         for (WebComponentDescriptor next : getWebComponentDescriptors()) {
             if (next.getCanonicalName().equals(name)) {
-                return (WebComponentDescriptor) next;
+                return next;
             }
         }
         return null;
@@ -2533,6 +2589,16 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public void setServletInitializersEnabled(boolean tf) {
         servletInitializersEnabled = tf;
+    }
+
+    @Override
+    public boolean isJaxrsRolesAllowedEnabled() {
+        return jaxrsRolesAllowedEnabled;
+    }
+
+    @Override
+    public void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled) {
+        this.jaxrsRolesAllowedEnabled = jaxrsRolesAllowedEnabled;
     }
 
     private static final class ServletFilterMappingInfo {
