@@ -258,14 +258,22 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         try {
             Application app = applications.getApplication(name()); 
             ApplicationRef appRef = domain.getApplicationRefInServer(server.getName(), name());
+            
+            // update enabled so anything that triggers an action during startup can see the 
+            // application is enabled.
+            try {
+                deployment.updateAppEnabledAttributeInDomainXML(name(), target, true);
+            } catch(TransactionFailure e) {
+                    logger.log(Level.WARNING, "failed to set enable attribute for " + name(), e);
+            }
 
             DeploymentContext dc = deployment.enable(target, app, appRef, report, logger);
             suppInfo.setDeploymentContext((ExtendedDeploymentContext)dc);
 
-            if (!report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
+            if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
                 // update the domain.xml
                 try {
-                    deployment.updateAppEnabledAttributeInDomainXML(name(), target, true);
+                    deployment.updateAppEnabledAttributeInDomainXML(name(), target, false);
                 } catch(TransactionFailure e) {
                     logger.log(Level.WARNING, "failed to set enable attribute for " + name(), e);
                 }
