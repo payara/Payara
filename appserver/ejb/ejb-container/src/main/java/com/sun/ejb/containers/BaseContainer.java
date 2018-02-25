@@ -178,7 +178,6 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
@@ -548,7 +547,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     private Set<Class> monitoredGeneratedClasses = new HashSet<Class>();
 
     protected InvocationManager invocationManager;
-    protected JavaEEContextUtil ctxUtil;
 
     protected InjectionManager injectionManager;
 
@@ -615,7 +613,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             logParams = new Object[1];
             logParams[0] =  ejbDesc.getName();
             invocationManager = ejbContainerUtilImpl.getInvocationManager();
-            ctxUtil = ejbContainerUtilImpl.getServices().getService(JavaEEContextUtil.class);
             injectionManager = ejbContainerUtilImpl.getInjectionManager();
             namingManager = ejbContainerUtilImpl.getGlassfishNamingManager();
             transactionManager = ejbContainerUtilImpl.getTransactionManager();
@@ -4012,7 +4009,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         SafeProperties safeProps = new SafeProperties();
         safeProps.copy(env);
         envProps = safeProps;
-        ctxUtil.setInstanceComponentId(componentId);
     }
     
     /**
