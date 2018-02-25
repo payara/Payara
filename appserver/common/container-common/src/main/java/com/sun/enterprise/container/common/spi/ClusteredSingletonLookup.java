@@ -42,6 +42,7 @@ package com.sun.enterprise.container.common.spi;
 import com.hazelcast.core.IAtomicLong;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
  * Common methods for Clustered Singletons
@@ -56,6 +57,7 @@ public interface ClusteredSingletonLookup {
     String getClusteredSessionKey();
     boolean isClusteredEnabled();
     IAtomicLong getClusteredUsageCount();
+    HazelcastCore getHazelcastCore();
 
     enum SingletonType {
         EJB, CDI

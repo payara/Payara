@@ -99,7 +99,12 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     public boolean isDistributedLockEnabled() {
         return isClusteredEnabled();
     }
-    
+
+    @Override
+    public HazelcastCore getHazelcastCore() {
+        return hzCore;
+    }
+
     private String makeKeyPrefix() {
         return String.format("Payara/%s/singleton/", singletonType.name().toLowerCase());
     }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -57,7 +57,6 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -74,7 +73,6 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.startup.SingletonLifeCycleManager;
-import org.glassfish.internal.api.Globals;
 
 
 public abstract class AbstractSingletonContainer
@@ -183,7 +181,7 @@ public abstract class AbstractSingletonContainer
     @Override
     protected ComponentContext _getContext(EjbInvocation inv) throws EJBException {
         checkInit();
-        if(clusteredLookup.isClusteredEnabled() && !isStopped()) {
+        if(clusteredLookup.isClusteredEnabled()) {
             AbstractSessionContextImpl sc = (AbstractSessionContextImpl) singletonCtx;
             try {
                 invocationManager.preInvoke(inv);
@@ -209,7 +207,7 @@ public abstract class AbstractSingletonContainer
 
     @Override
     protected void releaseContext(EjbInvocation inv) throws EJBException {
-        if(clusteredLookup.isClusteredEnabled() && !isStopped()) {
+        if(clusteredLookup.isClusteredEnabled()) {
             try {
                 invocationManager.preInvoke(inv);
                 if(clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
@@ -473,7 +471,6 @@ public abstract class AbstractSingletonContainer
         boolean doPostConstruct = true;
 
         try {
-            ctxUtil.setApplicationClassLoader();
             String sessionKey = clusteredLookup.getClusteredSessionKey();
             EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
             if(clusteredLookup.isClusteredEnabled()) {
@@ -495,7 +492,7 @@ public abstract class AbstractSingletonContainer
                 clusteredLookup.getClusteredUsageCount().incrementAndGet();
             }
             else {
-                if(sessDesc.isClustered() && !Globals.getDefaultHabitat().getService(HazelcastCore.class).isEnabled()) {
+                if(sessDesc.isClustered() && !clusteredLookup.getHazelcastCore().isEnabled()) {
                     _logger.log(Level.WARNING, "Clustered Singleton {0} not available - Hazelcast is Disabled", sessionKey);
                 }
                 // a dummy invocation will be created by the BaseContainer to support
