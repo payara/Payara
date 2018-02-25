@@ -190,6 +190,9 @@ public abstract class AbstractSingletonContainer
                 inv.context = sc;
                 sc.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
                 if(isJCDIEnabled() && sc.getEJB() != null) {
+                    if(sc.getJCDIInjectionContext() != null) {
+                        sc.getJCDIInjectionContext().cleanup(false);
+                    }
                     sc.setJCDIInjectionContext(jcdiService.createJCDIInjectionContext(ejbDescriptor, sc.getEJB()));
                     injectEjbInstance(sc);
                 }

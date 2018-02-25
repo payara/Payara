@@ -163,6 +163,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         if(componentId != null) {
             createInvocationContext();
         }
+        else {
+            capturedInvocation = null;
+        }
         return this;
     }
 
