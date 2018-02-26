@@ -1671,8 +1671,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     // This method is used to create the ejb after the around_construct interceptor chain has completed.
     public void createEjbInstanceForInterceptors(Object[] params, EJBContextImpl ctx) throws Exception {
         Object instance;
-        EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
-        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
+        if(isJCDIEnabled()) {
             // ejb creation for cdi is handled in JCDIServiceImpl not here.
             instance = ctx.getJCDIInjectionContext().createEjbAfterAroundConstruct();
         } else {
@@ -1680,6 +1679,19 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             instance = _constructEJBInstance();
         }
         ctx.setEJB(instance);
+    }
+
+    protected void createEmptyContextAndInterceptors(EJBContextImpl ctx) throws Exception {
+        JCDIService.JCDIInjectionContext<?> jcdiCtx = null;
+        if (isJCDIEnabled()) {
+            // In cdi we need this for the interceptors to store dependent jcdi contexts.  We can't assign the
+            // other info as the ejb has not been created yet.
+            jcdiCtx = jcdiService.createEmptyJCDIInjectionContext();
+            ctx.setJCDIInjectionContext(jcdiCtx);
+        }
+
+        // Interceptors must be created before the ejb so they're available for around construct.
+        createEjbInterceptors(ctx, jcdiCtx);
     }
 
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
@@ -1692,18 +1704,12 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         try {
             ejbInv = createEjbInvocation(null, ctx);
             invocationManager.preInvoke(ejbInv);
-            if(isJCDIEnabled()) {
-                // In cdi we need this for the interceptors to store dependent jcdi contexts.  We can't assign the
-                // other info as the ejb has not been created yet.
-                jcdiCtx = jcdiService.createEmptyJCDIInjectionContext();
-                ctx.setJCDIInjectionContext( jcdiCtx );
-            }
 
-            // Interceptors must be created before the ejb so they're available for around construct.
-            createEjbInterceptors( ctx, jcdiCtx );
+            createEmptyContextAndInterceptors(ctx);
 
             if(isJCDIEnabled()) {
-                _createJCDIInjectionContext(ctx, null, jcdiCtx);
+                ctx.setJCDIInjectionContext(_createJCDIInjectionContext(ctx, null, jcdiCtx));
+                jcdiCtx = ctx.getJCDIInjectionContext();
                 if(jcdiCtx != null) {
                     instance = jcdiCtx.getInstance();
                 }
@@ -1746,15 +1752,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         return (jcdiService != null) && jcdiService.isJCDIEnabled(ejbDescriptor.getEjbBundleDescriptor()) && (this.ejbClass.getAnnotation(Vetoed.class) == null);
     }
 
-    protected JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext(EJBContextImpl ctx) {
-        return _createJCDIInjectionContext(ctx, null, null);
-    }
-
     protected JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext(EJBContextImpl ctx, Object instance) {
         return _createJCDIInjectionContext(ctx, instance, null);
     }
 
-    private JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext(EJBContextImpl ejbContext, Object instance, JCDIService.JCDIInjectionContext<?> cdiInjectionContext) {
+    protected JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext(EJBContextImpl ejbContext, Object instance, JCDIService.JCDIInjectionContext<?> cdiInjectionContext) {
         JCDIService.JCDIInjectionContext<?> rv = jcdiService.createJCDIInjectionContext(ejbDescriptor, instance, buildJCDIInjectionEjbInfo(ejbContext, cdiInjectionContext));
         if (rv == null) {
             jcdiService = null;
@@ -1785,7 +1787,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         Object[] interceptorInstances;
 
         if (isJCDIEnabled()) {
-            jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
             Class[] interceptorClasses = interceptorManager.getInterceptorClasses();
 
             interceptorInstances = new Object[interceptorClasses.length];
@@ -1815,10 +1816,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     protected void injectEjbInstance(EJBContextImpl context) throws Exception {
-
-        EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
-
-        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
+        if(isJCDIEnabled()) {
             jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
         } else {
             if (context.getEJB() != null) {
