@@ -37,20 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.xml;
 
-/** 
- * I hold the tag names of the runtime binding information of a J2EE 
+/**
+ * I hold the tag names of the runtime binding information of a J2EE
  * application.
  * @author Danny Coward
  */
 
 public interface RuntimeTagNames extends TagNames {
-	
+
     public final static String S1AS_EJB_RUNTIME_TAG = "sun-ejb-jar";
-    public final static String S1AS_APPCLIENT_RUNTIME_TAG = "sun-application-client";    
+    public final static String S1AS_APPCLIENT_RUNTIME_TAG = "sun-application-client";
     public final static String S1AS_APPLICATION_RUNTIME_TAG = "sun-application";
     public final static String S1AS_WEB_RUNTIME_TAG = "sun-web-app";
     public final static String S1AS_CONNECTOR_RUNTIME_TAG = "sun-connector";
@@ -65,12 +65,14 @@ public interface RuntimeTagNames extends TagNames {
     public final static String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
     public final static String GF_APPLICATION_RUNTIME_TAG = "glassfish-application";
     public final static String GF_WEB_RUNTIME_TAG = "glassfish-web-app";
-    
+
     public final static String PAYARA_CLASSLOADING_DELEGATE = "classloading-delegate";
     public final static String PAYARA_ENABLE_IMPLICIT_CDI = "enable-implicit-cdi";
     public final static String PAYARA_SCANNING_EXCLUDE = "scanning-exclude";
     public final static String PAYARA_SCANNING_INCLUDE = "scanning-include";
     public final static String PAYARA_WHITELIST_PACKAGE = "whitelist-package";
+    public final static String PAYARA_JAXRS_ROLES_ALLOWED_ENABLED = "jaxrs-roles-allowed-enabled";
+
     // The name of the deployment context property used to disable implicit bean discovery for a
     // particular application deployment.
     public final static String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
@@ -103,8 +105,8 @@ public interface RuntimeTagNames extends TagNames {
     String ACTIVATION_CONFIG_PROPERTY = "activation-config-property";
     String ACTIVATION_CONFIG_PROPERTY_NAME = "activation-config-property-name";
     String ACTIVATION_CONFIG_PROPERTY_VALUE = "activation-config-property-value";
-    
-    public static final String APPLICATION_CLIENT = "app-client";    
+
+    public static final String APPLICATION_CLIENT = "app-client";
     public static final String CMP = "cmp";
     public static final String CMPRESOURCE = "cmpresource";
     public static final String DEFAULT_RESOURCE_PRINCIPAL = "default-resource-principal";
@@ -133,11 +135,11 @@ public interface RuntimeTagNames extends TagNames {
     public static final String PRINCIPALS = "principals";
     public static final String PRINCIPAL = "principal";
     public static final String REMOTE_ENTITY = "remote-entity";
-    public static final String ROLE = "role";    
+    public static final String ROLE = "role";
     public static final String ROLE_MAPPING = "rolemapping";
     public static final String ROLE_ENTRY = "role";
     public static final String SERVER_NAME = "server-name";
-    
+
     public static final String SERVLET = "servlet";
     public static final String SERVLET_NAME = "servlet-name";
     public static final String SOURCE = "source";
@@ -160,11 +162,11 @@ public interface RuntimeTagNames extends TagNames {
     public static final String LOCAL_HOME_IMPL = "local-home-impl";
     public static final String STATE_IMPL = "state-impl";
     public static final String GEN_CLASSES = "gen-classes";
-    
+
     // acceptable values
     public static final String TRUE = "true";
     public static final String FALSE = "false";
-    
+
     // SECURITY related
     public static final String SECURITY_ROLE_MAPPING = "security-role-mapping";
     public static final String SECURITY_ROLE_ASSIGNMENT = "security-role-assignment";
@@ -172,26 +174,26 @@ public interface RuntimeTagNames extends TagNames {
     public static final String PRINCIPAL_NAME = "principal-name";
     public static final String GROUP_NAME = "group-name";
     public static final String EXTERNALLY_DEFINED = "externally-defined";
-    
+
     // common
     public static final String EJB_REF = "ejb-ref";
     public static final String RESOURCE_REF = "resource-ref";
     public static final String RESOURCE_ENV_REF = "resource-env-ref";
-    
+
     // S1AS specific
     public static final String PASS_BY_REFERENCE = "pass-by-reference";
     public static final String JMS_MAX_MESSAGES_LOAD = "jms-max-messages-load";
     public static final String IS_READ_ONLY_BEAN = "is-read-only-bean";
     public static final String REFRESH_PERIOD_IN_SECONDS = "refresh-period-in-seconds";
-    public static final String COMMIT_OPTION = "commit-option";    
-    public static final String CMT_TIMEOUT_IN_SECONDS = "cmt-timeout-in-seconds";    
-    public static final String USE_THREAD_POOL_ID = "use-thread-pool-id";    
+    public static final String COMMIT_OPTION = "commit-option";
+    public static final String CMT_TIMEOUT_IN_SECONDS = "cmt-timeout-in-seconds";
+    public static final String USE_THREAD_POOL_ID = "use-thread-pool-id";
     public static final String AVAILABILITY_ENABLED = "availability-enabled";
     public static final String DISABLE_NONPORTABLE_JNDI_NAMES = "disable-nonportable-jndi-names";
     public static final String PER_REQUEST_LOAD_BALANCING = "per-request-load-balancing";
 
     // CMP related
-    public static final String CMP_RESOURCE = "cmp-resource";    
+    public static final String CMP_RESOURCE = "cmp-resource";
     public static final String MAPPING_PROPERTIES = "mapping-properties";
     public static final String IS_ONE_ONE_CMP = "is-one-one-cmp";
     public static final String ONE_ONE_FINDERS = "one-one-finders";
@@ -205,8 +207,8 @@ public interface RuntimeTagNames extends TagNames {
     public static final String DROP_TABLES_AT_UNDEPLOY = "drop-tables-at-undeploy";
     public static final String DATABASE_VENDOR_NAME = "database-vendor-name";
     public static final String SCHEMA_GENERATOR_PROPERTIES = "schema-generator-properties";
-    
-    
+
+
     // PM-DESCRIPTORS related
     public static final String PM_DESCRIPTORS = "pm-descriptors";
     public static final String PM_DESCRIPTOR = "pm-descriptor";
@@ -216,7 +218,7 @@ public interface RuntimeTagNames extends TagNames {
     public static final String PM_CLASS_GENERATOR = "pm-class-generator";
     public static final String PM_MAPPING_FACTORY = "pm-mapping-factory";
     public static final String PM_INUSE = "pm-inuse";
-    
+
     // BEAN-POOL related
     public static final String BEAN_POOL = "bean-pool";
     public static final String STEADY_POOL_SIZE = "steady-pool-size";
@@ -224,7 +226,7 @@ public interface RuntimeTagNames extends TagNames {
     public static final String MAX_POOL_SIZE = "max-pool-size";
     public static final String POOL_IDLE_TIMEOUT_IN_SECONDS = "pool-idle-timeout-in-seconds";
     public static final String MAX_WAIT_TIME_IN_MILLIS = "max-wait-time-in-millis";
-    
+
     // BEAN-CACHE related
     public static final String BEAN_CACHE = "bean-cache";
     public static final String MAX_CACHE_SIZE = "max-cache-size";
@@ -233,7 +235,7 @@ public interface RuntimeTagNames extends TagNames {
     public static final String CACHE_IDLE_TIMEOUT_IN_SECONDS = "cache-idle-timeout-in-seconds";
     public static final String REMOVAL_TIMEOUT_IN_SECONDS = "removal-timeout-in-seconds";
     public static final String VICTIM_SELECTION_POLICY = "victim-selection-policy";
-    
+
     // thread-pool related
     public static final String THREAD_CORE_POOL_SIZE = "thread-core-pool-size";
     public static final String THREAD_MAX_POOL_SIZE  = "thread-max-pool-size";
@@ -241,18 +243,18 @@ public interface RuntimeTagNames extends TagNames {
     public static final String THREAD_QUEUE_CAPACITY = "thread-queue-capacity";
     public static final String ALLOW_CORE_THREAD_TIMEOUT = "allow-core-thread-timeout";
     public static final String PRESTART_ALL_CORE_THREADS = "prestart-all-core-threads";
-    
+
     // flush-at-end-of-method
     public static final String FLUSH_AT_END_OF_METHOD =
         "flush-at-end-of-method";
     // checkpointed-methods, support backward compatibility with 7.1
     public static final String CHECKPOINTED_METHODS =
         "checkpointed-methods";
-    // checkpoint-at-end-of-method, equivalent element of 
+    // checkpoint-at-end-of-method, equivalent element of
     // checkpointed-methods in 8.1 and later releases
     public static final String CHECKPOINT_AT_END_OF_METHOD =
         "checkpoint-at-end-of-method";
-    // prefetch-disabled 
+    // prefetch-disabled
     public static final String PREFETCH_DISABLED =
         "prefetch-disabled";
 
@@ -261,14 +263,14 @@ public interface RuntimeTagNames extends TagNames {
     // Connector related
     public static final String RESOURCE_ADAPTER = "resource-adapter";
     public static final String ROLE_MAP = "role-map";
-    public static final String IDLE_TIMEOUT_IN_SECONDS = "idle-timeout-in-seconds"; 
+    public static final String IDLE_TIMEOUT_IN_SECONDS = "idle-timeout-in-seconds";
     public static final String PROPERTY = "property";
     public static final String MAP_ELEMENT = "map-element";
     public static final String MAP_ID = "map-id";
     public static final String BACKEND_PRINCIPAL = "backend-principal";
     public static final String USER_NAME = "user-name";
     public static final String CREDENTIAL = "credential";
-    
+
     // application related
     public static final String WEB_URI = "web-uri";
     public static final String CONTEXT_ROOT = "context-root"; // also used in java web start support
@@ -327,18 +329,18 @@ public interface RuntimeTagNames extends TagNames {
     public static final String CACHE_ON_MATCH = "cache-on-match";
     public static final String CACHE_ON_MATCH_FAILURE = "cache-on-match-failure";
     public static final String MATCH_EXPR = "match-expr";
-    public static final String VALUE = "value";   
+    public static final String VALUE = "value";
     public static final String IDEMPOTENT_URL_PATTERN = "idempotent-url-pattern";
     public static final String ERROR_URL = "error-url";
     public static final String HTTPSERVLET_SECURITY_PROVIDER = "httpservlet-security-provider";
-    public static final String NUM_OF_RETRIES = "num-of-retries";   
+    public static final String NUM_OF_RETRIES = "num-of-retries";
 
     public static final String JAVA_METHOD = "java-method";
     public final static String METHOD_PARAMS = "method-params";
     public final static String METHOD_PARAM = "method-param";
 
     public final static String VALVE = "valve";
-    
+
     // Java Web Start-support related
     public final static String JAVA_WEB_START_ACCESS = "java-web-start-access";
     public final static String ELIGIBLE = "eligible";
