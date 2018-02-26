@@ -37,42 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension;
+package com.sun.enterprise.container.common.spi;
 
-import fish.payara.micro.cdi.extension.cluster.ClusteredAnnotationProcessor;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import com.hazelcast.core.IAtomicLong;
+import com.hazelcast.core.ILock;
+import com.hazelcast.core.IMap;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
- * A CDI Extension for integrating with Payara Micro
+ * Common methods for Clustered Singletons
+ * Both CDI and EJB implementations use these methods
  *
- * @author steve
+ * @author lprimak
  */
-public class PayaraMicroCDIExtension implements Extension {
-    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
+public interface ClusteredSingletonLookup {
+    ILock getDistributedLock();
+    boolean isDistributedLockEnabled();
+    IMap<String, Object> getClusteredSingletonMap();
+    String getClusteredSessionKey();
+    boolean isClusteredEnabled();
+    IAtomicLong getClusteredUsageCount();
+    HazelcastCore getHazelcastCore();
 
-
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-
-        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
-        bbd.addAnnotatedType(at, PayaraMicroProducer.class.getName());
-        
-        AnnotatedType<ClusteredCDIEventBusImpl> at3 = bm.createAnnotatedType(ClusteredCDIEventBusImpl.class);
-        bbd.addAnnotatedType(at3, ClusteredCDIEventBusImpl.class.getName());
-
-        clusteredAnnotationProcessor.beforeBeanDiscovery(bbd, bm);
-    }
-
-    public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-        clusteredAnnotationProcessor.afterBeanDiscovery(event, manager);
-    }
-
-    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat, BeanManager bm) {
-         clusteredAnnotationProcessor.processAnnotatedType(pat, bm);
+    enum SingletonType {
+        EJB, CDI
     }
 }

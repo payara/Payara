@@ -37,42 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension;
+package fish.payara.micro.cdi.extension.cluster.annotations;
 
-import fish.payara.micro.cdi.extension.cluster.ClusteredAnnotationProcessor;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import java.lang.annotation.Documented;
+import static java.lang.annotation.ElementType.TYPE;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.interceptor.InterceptorBinding;
 
 /**
- * A CDI Extension for integrating with Payara Micro
+ * Interceptor binding that forces the singleton to refresh the cluster
+ * upon every method call
  *
- * @author steve
+ * @author lprimak
  */
-public class PayaraMicroCDIExtension implements Extension {
-    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
+@Inherited
+@InterceptorBinding
+@Retention(RetentionPolicy.RUNTIME)
+@Target(TYPE)
+@Documented
+public @interface ClusterScopedIntercepted {
 
-
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-
-        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
-        bbd.addAnnotatedType(at, PayaraMicroProducer.class.getName());
-        
-        AnnotatedType<ClusteredCDIEventBusImpl> at3 = bm.createAnnotatedType(ClusteredCDIEventBusImpl.class);
-        bbd.addAnnotatedType(at3, ClusteredCDIEventBusImpl.class.getName());
-
-        clusteredAnnotationProcessor.beforeBeanDiscovery(bbd, bm);
-    }
-
-    public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-        clusteredAnnotationProcessor.afterBeanDiscovery(event, manager);
-    }
-
-    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat, BeanManager bm) {
-         clusteredAnnotationProcessor.processAnnotatedType(pat, bm);
-    }
 }

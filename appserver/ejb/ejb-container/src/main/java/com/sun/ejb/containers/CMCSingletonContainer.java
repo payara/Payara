@@ -77,7 +77,7 @@ public class CMCSingletonContainer
 
         // In absence of any method lock info default is WRITE lock with no timeout.
         defaultMethodLockInfo = new MethodLockInfo();
-        defaultMethodLockInfo.setLockType(LockType.WRITE, isDistributedLockEnabled());
+        defaultMethodLockInfo.setLockType(LockType.WRITE, clusteredLookup.isDistributedLockEnabled());
     }
 
     /*
@@ -111,15 +111,17 @@ public class CMCSingletonContainer
      * before every bean method.
      *
      */
+    @Override
     protected ComponentContext _getContext(EjbInvocation inv) {
-        checkInit();
+        super._getContext(inv);
+
         InvocationInfo invInfo = inv.invocationInfo;
 
         MethodLockInfo lockInfo = (invInfo.methodLockInfo == null)
                 ? defaultMethodLockInfo : invInfo.methodLockInfo;
         Lock theLock;
         if(lockInfo.isDistributed()) {
-            theLock = getDistributedLock();
+            theLock = clusteredLookup.getDistributedLock();
         }
         else {
             theLock = lockInfo.isReadLockedMethod() ? readLock : writeLock;
@@ -183,9 +185,8 @@ public class CMCSingletonContainer
      */
     @Override
     public void releaseContext(EjbInvocation inv) {
-        if(isClusteredEnabled()) {
-            getClusteredSingletonMap().put(getClusteredSessionKey(), inv.context.getEJB());
-        }
+        super.releaseContext(inv);
+
         Lock theLock = inv.getCMCLock();
         if (theLock != null) {
             theLock.unlock();

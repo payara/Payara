@@ -70,10 +70,11 @@ public interface JCDIService {
     <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle);
     <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle, boolean invokePostConstruct);
 
-    void injectManagedObject(Object managedObject, BundleDescriptor bundle);
+    <T> void injectManagedObject(T managedObject, BundleDescriptor bundle);
 
     /**
      * Create an interceptor instance for an ejb.
+     * @param <T> instance type
      * @param interceptorClass The interceptor class.
      * @param ejbDesc The ejb descriptor of the ejb for which the interceptor is created.
      * @param ejbContext The ejb context.
@@ -83,29 +84,30 @@ public interface JCDIService {
      */
     <T> T createInterceptorInstance( Class<T> interceptorClass,
                                      EjbDescriptor ejbDesc,
-                                     JCDIService.JCDIInjectionContext ejbContext,
+                                     JCDIService.JCDIInjectionContext<T> ejbContext,
                                      Set<EjbInterceptor> ejbInterceptors );
 
     /**
      * Create an ejb via CDI.
      *
+     * @param <T> instance type
      * @param ejbDesc The ejb descriptor
      * @param ejbInfo Information about the ejb.  Entries are the com.sun.ejb.containers.BaseContainer
      *                and com.sun.ejb.containers.EJBContextImpl
      * @return The created EJB.
      */
-    <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, Map<Class, Object> ejbInfo);
+    <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, Map<Class<?>, Object> ejbInfo);
 
-    //todo: This should be removed as it is not used.
-    <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance, Map<Class, Object> ejbInfo);
+    <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance, Map<Class<?>, Object> ejbInfo);
 
     <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx);
 
     /**
      * Create an empty JCDIInjectionContext.
+     * @param <T> instance type
      * @return The empty JCDIInjectionContext.
      */
-    JCDIInjectionContext createEmptyJCDIInjectionContext();
+    <T> JCDIInjectionContext<T> createEmptyJCDIInjectionContext();
 
     public interface JCDIInjectionContext<T> {
 
@@ -151,18 +153,19 @@ public interface JCDIService {
          * @param dependentContext
          *            The dependenct context.
          */
-        void addDependentContext( JCDIInjectionContext dependentContext );
+        void addDependentContext( JCDIInjectionContext<T> dependentContext );
 
         /**
          * @return The dependent contexts.
          */
-        Collection<JCDIInjectionContext> getDependentContexts();
+        Collection<JCDIInjectionContext<T>> getDependentContexts();
 
         /**
          * Create the EJB and perform constructor injection, if applicable.  This should only happen when the
          * last interceptor method in the AroundConstruct interceptor chain invokes the InvocationContext.proceed
          * method. If the InvocationContext.proceed method is not invoked by an interceptor method,
          * the target instance will not be created.
+         * @return ejb
          */
         T createEjbAfterAroundConstruct();
     }

@@ -37,42 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension;
+package com.sun.ejb.containers;
 
-import fish.payara.micro.cdi.extension.cluster.ClusteredAnnotationProcessor;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
+import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.EJB;
+import fish.payara.cluster.DistributedLockType;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 
 /**
- * A CDI Extension for integrating with Payara Micro
+ * EJB container implementation of clustered singleton lookups
  *
- * @author steve
+ * @author lprimak
  */
-public class PayaraMicroCDIExtension implements Extension {
-    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
+public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
+    private final EjbSessionDescriptor ejbDescriptor;
 
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-
-        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
-        bbd.addAnnotatedType(at, PayaraMicroProducer.class.getName());
-        
-        AnnotatedType<ClusteredCDIEventBusImpl> at3 = bm.createAnnotatedType(ClusteredCDIEventBusImpl.class);
-        bbd.addAnnotatedType(at3, ClusteredCDIEventBusImpl.class.getName());
-
-        clusteredAnnotationProcessor.beforeBeanDiscovery(bbd, bm);
+    public ClusteredSingletonLookupImpl(EjbDescriptor ejbDescriptor, String componentId) {
+        super(componentId, EJB);
+        this.ejbDescriptor = (EjbSessionDescriptor)ejbDescriptor;
     }
 
-    public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-        clusteredAnnotationProcessor.afterBeanDiscovery(event, manager);
+    @Override
+    public boolean isDistributedLockEnabled() {
+        DistributedLockType distLockType = ejbDescriptor.isClustered()?
+                    ejbDescriptor.getClusteredLockType() : DistributedLockType.LOCK_NONE;
+        return super.isDistributedLockEnabled() && distLockType != DistributedLockType.LOCK_NONE;
+    }
+    
+    @Override
+    public String getClusteredSessionKey() {
+        return ejbDescriptor.getClusteredKeyValue().isEmpty()? ejbDescriptor.getName() : ejbDescriptor.getClusteredKeyValue();
     }
 
-    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat, BeanManager bm) {
-         clusteredAnnotationProcessor.processAnnotatedType(pat, bm);
+    @Override
+    public boolean isClusteredEnabled() {
+        return ejbDescriptor.isClustered() && super.isClusteredEnabled();
     }
 }

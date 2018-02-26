@@ -37,42 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension;
+package fish.payara.micro.cdi.extension.cluster;
 
-import fish.payara.micro.cdi.extension.cluster.ClusteredAnnotationProcessor;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AnnotatedType;
+import com.google.common.collect.Iterables;
+import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
+import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
+import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
+import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
 
 /**
- * A CDI Extension for integrating with Payara Micro
+ * implements CDI-based clustered singleton lookups
  *
- * @author steve
+ * @author lprimak
  */
-public class PayaraMicroCDIExtension implements Extension {
-    private final ClusteredAnnotationProcessor clusteredAnnotationProcessor = new ClusteredAnnotationProcessor();
+public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
+    private final BeanManager bm;
+    private final ThreadLocal<String> sessionKey = new ThreadLocal<>();
 
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-
-        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
-        bbd.addAnnotatedType(at, PayaraMicroProducer.class.getName());
-        
-        AnnotatedType<ClusteredCDIEventBusImpl> at3 = bm.createAnnotatedType(ClusteredCDIEventBusImpl.class);
-        bbd.addAnnotatedType(at3, ClusteredCDIEventBusImpl.class.getName());
-
-        clusteredAnnotationProcessor.beforeBeanDiscovery(bbd, bm);
+    public ClusteredSingletonLookupImpl(BeanManager bm, String componentId) {
+        super(componentId, CDI);
+        this.bm = bm;
     }
 
-    public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-        clusteredAnnotationProcessor.afterBeanDiscovery(event, manager);
+    @Override
+    public String getClusteredSessionKey() {
+        return sessionKey.get();
     }
 
-    <TT> void processAnnotatedType(@Observes ProcessAnnotatedType<TT> pat, BeanManager bm) {
-         clusteredAnnotationProcessor.processAnnotatedType(pat, bm);
+    void setClusteredSessionKey(Class<?> beanClass) {
+        Bean<?> bean = Iterables.getOnlyElement(bm.getBeans(beanClass), null);
+        if(bean != null) {
+            sessionKey.set(getBeanName(bean, getAnnotation(bean)));
+        }
     }
 }

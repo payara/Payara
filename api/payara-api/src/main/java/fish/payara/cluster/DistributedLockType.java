@@ -56,7 +56,7 @@ public enum DistributedLockType {
      */
     LOCK_NONE,
     /**
-     * DIstributed locking is performed on this object
+     * Distributed locking is performed on this object
      */
     LOCK
 }

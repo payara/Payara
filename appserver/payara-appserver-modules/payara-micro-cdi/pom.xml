@@ -85,6 +85,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
