@@ -229,7 +229,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 if (startupMatcher.find()) {
                     payaraMicroStarted.countDown();
                 }
-            }, 500, 200, MILLISECONDS);
+            }, 1500, 200, MILLISECONDS);
 
             // Wait for Payara Micro to start up, or time out after the specified timeout
             if (payaraMicroStarted.await(startupTimeoutInSeconds, SECONDS)) {
