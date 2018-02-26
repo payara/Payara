@@ -533,9 +533,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
                 appInfo.initialize();
-                appInfo.start(context, tracker);
                 appInfo.getModuleInfos().forEach(moduleInfo -> moduleInfo.getEngineRefs()
                         .forEach(engineRef -> tracker.add("initialized", EngineRef.class, engineRef)));
+                appInfo.start(context, tracker);
                 notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
             } catch (Throwable loadException) {
                 logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
