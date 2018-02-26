@@ -455,6 +455,15 @@ public abstract class AbstractSingletonContainer
 	return new SingletonContextImpl(instance, this);
     }
 
+    private EjbInvocation createInvocationAndPreInvoke(EjbInvocation ejbInv, Object ejb, SingletonContextImpl context) {
+        // this allows JNDI lookups from setSessionContext, ejbCreate
+        if(ejbInv == null) {
+            ejbInv = createEjbInvocation(ejb, context);
+            invocationManager.preInvoke(ejbInv);
+        }
+        return ejbInv;
+    }
+
     private SingletonContextImpl createSingletonEJB()
         throws CreateException
     {
@@ -483,6 +492,7 @@ public abstract class AbstractSingletonContainer
                 else {
                     context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessionKey));
                     ejb = context.getEJB();
+                    ejbInv = createInvocationAndPreInvoke(ejbInv, ejb, context);
                     createEmptyContextAndInterceptors(context);
                     if(isJCDIEnabled()) {
                         _createJCDIInjectionContext(context, ejb, context.getJCDIInjectionContext());
@@ -503,9 +513,7 @@ public abstract class AbstractSingletonContainer
                 ejb = context.getEJB();
             }
 
-            // this allows JNDI lookups from setSessionContext, ejbCreate
-            ejbInv = createEjbInvocation(ejb, context);
-            invocationManager.preInvoke(ejbInv);
+            ejbInv = createInvocationAndPreInvoke(ejbInv, ejb, context);
 
             // Perform injection right after where setSessionContext
             // would be called.  This is important since injection methods
