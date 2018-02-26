@@ -191,7 +191,7 @@ public abstract class AbstractSingletonContainer
                     if(sc.getJCDIInjectionContext() != null) {
                         sc.getJCDIInjectionContext().cleanup(false);
                     }
-                    sc.setJCDIInjectionContext(jcdiService.createJCDIInjectionContext(ejbDescriptor, sc.getEJB()));
+                    sc.setJCDIInjectionContext(_createJCDIInjectionContext(sc, sc.getEJB()));
                 }
                 if(sc.getEJB() != null) {
                     injectEjbInstance(sc);
@@ -452,9 +452,9 @@ public abstract class AbstractSingletonContainer
 
     @Override
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
-	    EJBContextImpl rv = new SingletonContextImpl(instance, this);
+	EJBContextImpl rv = new SingletonContextImpl(instance, this);
         if(rv.getJCDIInjectionContext() == null && isJCDIEnabled()) {
-            rv.setJCDIInjectionContext(_createJCDIInjectionContext());
+            rv.setJCDIInjectionContext(_createJCDIInjectionContext(rv));
         }
         return rv;
     }

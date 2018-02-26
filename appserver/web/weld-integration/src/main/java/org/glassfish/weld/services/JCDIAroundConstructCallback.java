@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.weld.services;
 
 import com.sun.ejb.containers.BaseContainer;
@@ -54,14 +56,15 @@ import java.util.concurrent.atomic.*;
 /**
  * This calls back into the ejb container to perform the around construct interception.  When that's finished the
  * ejb itself is then created.
+ * @param <T> instance type
  */
 public class JCDIAroundConstructCallback<T> implements AroundConstructCallback<T> {
-    private BaseContainer container;
-    private EJBContextImpl ejbContext;
+    private final BaseContainer container;
+    private final EJBContextImpl ejbContext;
 
     // The AroundConstruct interceptor method can access the constructed instance using
     // InvocationContext.getTarget method after the InvocationContext.proceed completes.
-    private final AtomicReference<T> target = new AtomicReference<T>();
+    private final AtomicReference<T> target = new AtomicReference<>();
 
     private ConstructionHandle<T> handle;
     private Object[] parameters;
@@ -81,7 +84,7 @@ public class JCDIAroundConstructCallback<T> implements AroundConstructCallback<T
 
             // all the interceptors were invoked, call the constructor now
             if ( target.get() == null ) {
-                ejb = handle.proceed( parameters, new HashMap<String, Object>() );
+                ejb = handle.proceed( parameters, new HashMap<>() );
                 target.set( ejb );
             }
         } catch (RuntimeException e) {
@@ -95,7 +98,7 @@ public class JCDIAroundConstructCallback<T> implements AroundConstructCallback<T
     public T createEjb() {
 	T instance =null;
 	if( null != handle ) {
-            instance = handle.proceed(parameters, new HashMap<String, Object>() );
+            instance = handle.proceed(parameters, new HashMap<>() );
 	}        
 	target.set(instance);
         return instance;
