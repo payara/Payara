@@ -59,31 +59,42 @@ package fish.payara.arquillian.container.payara.process;
 import static java.util.logging.Level.SEVERE;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Logger;
 
-public class ConsoleReader implements Runnable, Closeable {
+public class ConsoleReader implements Runnable, AutoCloseable {
     
     private static final Logger logger = Logger.getLogger(ConsoleReader.class.getName());
 
     private final ProcessOutputConsumer consumer;
     private final BufferedReader reader;
 
+    private volatile boolean closing;
+
     public ConsoleReader(final Process process, ProcessOutputConsumer consumer) {
         this.reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         this.consumer = consumer;
+        closing = false;
     }
 
+    @Override
     public void run() {
         String line;
         try {
-            while ((line = reader.readLine()) != null) {
-                consumer.consume(line);
+            while (!closing) {
+                if ((line = reader.readLine()) != null) {
+                    consumer.consume(line);
+                }
             }
         } catch (IOException failOnReading) {
-            logger.log(SEVERE, failOnReading.getMessage(), failOnReading);
+            // Swallow exceptions from the log reader failing, then close the reader.
+        } finally {
+            try {
+				reader.close();
+			} catch (IOException ex) {
+                logger.log(SEVERE, "An error occurred while closing the ConsoleReader.", ex);
+			}
         }
     }
 
@@ -92,13 +103,8 @@ public class ConsoleReader implements Runnable, Closeable {
         return (T) consumer;
     }
 
+    @Override
     public void close() {
-        if (reader != null) {
-            try {
-                reader.close();
-            } catch (IOException failOnClose) {
-                logger.log(SEVERE, failOnClose.getMessage(), failOnClose);
-            }
-        }
+        closing = true;
     }
 }
