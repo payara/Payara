@@ -153,6 +153,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
+import javax.enterprise.inject.Vetoed;
 
 /**
  * This class implements part of the com.sun.ejb.Container interface.
@@ -1682,8 +1683,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
-        EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
-
         JCDIService.JCDIInjectionContext<?> jcdiCtx = null;
         Object instance = null;
 
@@ -1703,13 +1702,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             // Interceptors must be created before the ejb so they're available for around construct.
             createEjbInterceptors( ctx, jcdiCtx );
 
-            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
-                HashMap<Class, Object> ejbInfo = new HashMap<>();
-                ejbInfo.put( BaseContainer.class, this );
-                ejbInfo.put( EJBContextImpl.class, ctx );
-                ejbInfo.put( JCDIService.JCDIInjectionContext.class, jcdiCtx );
-                jcdiService.createJCDIInjectionContext(ejbDescriptor, ejbInfo );
-                instance = jcdiCtx.getInstance();
+            if(isJCDIEnabled()) {
+                _createJCDIInjectionContext(ctx, null, jcdiCtx);
+                if(jcdiCtx != null) {
+                    instance = jcdiCtx.getInstance();
+                }
             } else {
                 injectEjbInstance(ctx);
                 intercept(CallbackType.AROUND_CONSTRUCT, ctx);
@@ -1749,12 +1746,28 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         return (jcdiService != null) && jcdiService.isJCDIEnabled(ejbDescriptor.getEjbBundleDescriptor()) && (this.ejbClass.getAnnotation(Vetoed.class) == null);
     }
 
-    protected JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext() {
-        JCDIService.JCDIInjectionContext<?> rv = jcdiService.createJCDIInjectionContext(ejbDescriptor);
+    protected JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext(EJBContextImpl ctx) {
+        return _createJCDIInjectionContext(ctx, null, null);
+    }
+
+    protected JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext(EJBContextImpl ctx, Object instance) {
+        return _createJCDIInjectionContext(ctx, instance, null);
+    }
+
+    private JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext(EJBContextImpl ejbContext, Object instance, JCDIService.JCDIInjectionContext<?> cdiInjectionContext) {
+        JCDIService.JCDIInjectionContext<?> rv = jcdiService.createJCDIInjectionContext(ejbDescriptor, instance, buildJCDIInjectionEjbInfo(ejbContext, cdiInjectionContext));
         if (rv == null) {
             jcdiService = null;
         }
         return rv;
+    }
+
+    private HashMap<Class<?>, Object> buildJCDIInjectionEjbInfo(EJBContextImpl ejbContext, JCDIService.JCDIInjectionContext<?> cdiInjectionContext) {
+        HashMap<Class<?>, Object> ejbInfo = new HashMap<>();
+        ejbInfo.put(BaseContainer.class, this);
+        ejbInfo.put(EJBContextImpl.class, ejbContext);
+        ejbInfo.put(JCDIService.JCDIInjectionContext.class, cdiInjectionContext == null? jcdiService.createEmptyJCDIInjectionContext() : cdiInjectionContext);
+        return ejbInfo;
     }
 
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
@@ -1766,10 +1779,9 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 	return ejbClass.newInstance();
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void createEjbInterceptors(EJBContextImpl context,
-                                       JCDIService.JCDIInjectionContext ejbInterceptorsJCDIInjectionContext) throws Exception {
-        EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
-
+                                       JCDIService.JCDIInjectionContext<?> ejbInterceptorsJCDIInjectionContext) throws Exception {
         Object[] interceptorInstances;
 
         if (isJCDIEnabled()) {
