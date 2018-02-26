@@ -156,10 +156,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Create the directories
             deploymentDir.toFile().mkdir();
 
-            // Create the commands.txt file, which holds the asadmin post boot commands
-            File commandFile = arquillianMicroDir.resolve("commands.txt").toFile();
-            commandFile.createNewFile();
-
             // Create the path for the deployment archive (e.g. the application war or ear)
             File deploymentFile = deploymentDir.resolve(archive.getName()).toFile();
 
@@ -169,7 +165,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Create the list of commands to start Payara Micro
             List<String> cmd = new ArrayList<>(asList(
                     "java", "-jar", configuration.getMicroJarFile().getAbsolutePath(),
-                    "--postdeploycommandfile", commandFile.getAbsolutePath(),
                     "--deploy", deploymentFile.getAbsolutePath()
                     ));
             
