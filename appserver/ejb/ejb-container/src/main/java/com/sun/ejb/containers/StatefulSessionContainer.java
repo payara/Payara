@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -394,13 +394,14 @@ public final class StatefulSessionContainer
     protected void initializeHome()
             throws Exception {
         super.initializeHome();
-
-	    initSessionSyncMethods();
-
+        initSessionSyncMethods();
         loadCheckpointInfo();
+    }
 
+    @Override
+    public void startApplication(boolean deploy) {
+        super.startApplication(deploy);
         registerMonitorableComponents();
-
     }
 
     private void initSessionSyncMethods() throws Exception {
