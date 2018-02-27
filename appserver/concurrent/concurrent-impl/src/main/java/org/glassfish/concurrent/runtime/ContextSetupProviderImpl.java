@@ -297,8 +297,12 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 // if app is null then it is likely that appId is still deploying
                 // and its enabled status has not been written to the domain.xml yet
                 // this can happen for example with a Startup EJB submitting something
-                // it its startup method. Reference Payara GitHub issue 204              
-                logger.info("Job submitted for " + appId + " likely during deployment. Continuing...");
+                // it its startup method. Reference Payara GitHub issue 204
+                if(applications.getApplications().stream().filter(it -> it.getName().startsWith(appId))
+                        .noneMatch(versionedApp -> deployment.isAppEnabled(versionedApp))) {
+                    // if any version application is enabled, don't print this message
+                    logger.log(Level.INFO, "Job submitted for {0} likely during deployment. Continuing...", appId);
+                }
                 result = true;
             }
         }
