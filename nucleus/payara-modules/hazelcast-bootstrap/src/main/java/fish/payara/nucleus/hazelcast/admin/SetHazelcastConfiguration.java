@@ -49,6 +49,7 @@ import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.beans.PropertyVetoException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -72,6 +73,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
+import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -93,7 +95,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             path = "set-hazelcast-configuration",
             description = "Set Hazelcast Configuration")
 })
-public class SetHazelcastConfiguration implements AdminCommand {
+public class SetHazelcastConfiguration implements AdminCommand, DeploymentTargetResolver {
 
     @Inject
     protected Logger logger;
@@ -107,10 +109,10 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Inject
     private Target targetUtil;
 
-    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true, defaultValue = "domain")
     String target;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
@@ -131,7 +133,7 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Param(name = "dasPort", optional = true)
     private String dasPort;
 
-    @Param(name = "clusterMode", optional = true)
+    @Param(name = "clusterMode", optional = true, acceptableValues = "domain,multicast,tcpip")
     private String clusterMode;
 
     @Param(name = "tcpIpMembers", optional = true)
@@ -176,10 +178,10 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Param(name = "licenseKey", shortName = "lk", optional = true)
     private String licenseKey;
 
-    @Param(name = "lite", optional = true, defaultValue = "false")
+    @Param(name = "lite", optional = true)
     private Boolean lite;
 
-    @Param(name = "hostawarePartitioning", optional = true, defaultValue = "false")
+    @Param(name = "hostawarePartitioning", optional = true)
     private Boolean hostawarePartitioning;
 
     @Param(name = "memberName", optional = true)
@@ -199,7 +201,6 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
         final AdminCommandContext theContext = context;
         final ActionReport actionReport = context.getActionReport();
-        Config config = targetUtil.getConfig(target);
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -267,10 +268,18 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
                 }, hazelcastRuntimeConfiguration);
                 
-                // get the local config to be applied to
+                // get the configs that need the change applied if target is domain it is all configs
+                Config config = targetUtil.getConfig(target);
+                List<Config> configsToApply = new ArrayList<>(5);
+                if (config == null && target.equals("domain")) {
+                    configsToApply.addAll(domain.getConfigs().getConfig());
+                } else if (config != null) {
+                    configsToApply.add(config);
+                }
 
-                if (config != null) {
-                    HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
+                for(Config configToApply : configsToApply) {
+                    
+                    HazelcastConfigSpecificConfiguration nodeConfiguration = configToApply.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
 
                     ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
                         @Override
@@ -322,13 +331,19 @@ public class SetHazelcastConfiguration implements AdminCommand {
             }
 
             if (dynamic) {
+                boolean isEnabled = false;
+                if (enabled != null) {
+                    isEnabled = enabled;
+                } else {
+                    isEnabled = hazelcast.isEnabled();
+                }
                 // this command runs on all instances so they can update their configuration.
                 if ("domain".equals(target)) {
-                    hazelcast.setEnabled(enabled);
+                    hazelcast.setEnabled(isEnabled);
                 } else {
                     for (Server targetServer : targetUtil.getInstances(target)    ) {
                         if (server.getInstanceName().equals(targetServer.getName())) {
-                            hazelcast.setEnabled(enabled);  
+                            hazelcast.setEnabled(isEnabled);  
                         }
                     }
                 }
@@ -403,5 +418,14 @@ public class SetHazelcastConfiguration implements AdminCommand {
         }
 
         return true;
+    }
+
+    @Override
+    public String getTarget(ParameterMap pm) {
+        String result = pm.getOne("target");
+        if (result == null) {
+            result = target;
+        }
+        return result;
     }
 }
