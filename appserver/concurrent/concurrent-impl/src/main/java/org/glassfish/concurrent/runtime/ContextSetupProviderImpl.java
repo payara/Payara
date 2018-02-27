@@ -208,7 +208,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         requestEvent.addProperty("App Name", invocation.getAppName());
         requestEvent.addProperty("Component ID", invocation.getComponentId());
         requestEvent.addProperty("Module Name", invocation.getModuleName());
-        requestEvent.addProperty("Class Name", invocation.getInstance().getClass().getName());
+        Object instance = invocation.getInstance();
+        if (instance != null) {
+        requestEvent.addProperty("Class Name", instance.getClass().getName());
+        }
         requestEvent.addProperty("Thread Name", Thread.currentThread().getName());
         
         return requestEvent;
