@@ -58,6 +58,8 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
 
     private boolean clusterEnabled = Boolean.parseBoolean(getConfigurableVariable("payara.clusterEnabled", "MICRO_CLUSTER_ENABLED", "false"));
 
+    private boolean randomHttpPort = Boolean.parseBoolean(getConfigurableVariable("payara.randomHttpPort", "MICRO_RANDOM_HTTP_PORT", "true"));
+
     private boolean autoBindHttp = Boolean.parseBoolean(getConfigurableVariable("payara.autoBindHttp", "MICRO_AUTOBIND_HTTP", "true"));
 
     private boolean outputToConsole = Boolean.parseBoolean(getConfigurableVariable("payara.consoleOutput", "MICRO_CONSOLE_OUTPUT", "true"));
@@ -99,13 +101,27 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
         this.clusterEnabled = clusterEnabled;
     }
 
+
+    /**
+     * @param randomHttpPort Enable/disable using a random port between 8080 and 9080.
+     * Enabled by default.
+     */
+    public void setRandomHttpPort(boolean randomHttpPort) {
+        this.randomHttpPort = randomHttpPort;
+    }
+
+    public boolean isRandomHttpPort() {
+        return randomHttpPort;
+    }
+
+
     public boolean isAutoBindHttp() {
         return autoBindHttp;
     }
 
     /**
      * @param autoBindHttp Enable/disable adding the --autoBindHttp option.
-     * Disabled by default.
+     * Enabled by default.
      */
     public void setAutoBindHttp(boolean autoBindHttp) {
         this.autoBindHttp = autoBindHttp;
@@ -128,7 +144,7 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
     }
 
     /**
-     * @param debug Flag to start the server in debug mode 
+     * @param debug Flag to start the server in debug mode
      */
     public void setDebug(boolean debug) {
         this.debug = debug;
@@ -160,6 +176,7 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
      * Validates if current configuration is valid, that is if all required properties are set and
      * have correct values
      */
+    @Override
     public void validate() throws ConfigurationException {
         notNull(getMicroJar(), "The property microJar must be specified or the MICRO_JAR environment variable must be set");
         if (!getMicroJarFile().isFile()) {

@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +99,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
     private static final Pattern instanceConfigPattern = Pattern
             .compile("Instance Configuration(?<jsonFormat>\")?.*Host\"?: \"?(?<host>.*?)\"?,{0,1}$.*HTTP Port\\(s\\)\"?: \"?(?<ports>.*?)\"?,?$.*HTTPS", DOTALL | MULTILINE | CASE_INSENSITIVE);
-    
+
     private static final Pattern jsonPattern = Pattern.compile(
             "Deployed\": (?<jsonArray>\\[.+?\\])", DOTALL | MULTILINE);
     private static final Pattern appPattern = Pattern.compile(
@@ -167,7 +168,12 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                     "java", "-jar", configuration.getMicroJarFile().getAbsolutePath(),
                     "--deploy", deploymentFile.getAbsolutePath()
                     ));
-            
+
+            // Start at a random port so multiple instances won't run in to eachother all the time
+            if (configuration.isRandomHttpPort()) {
+                cmd.addAll(asList("--port", (8080 + new SecureRandom().nextInt(1000)) + ""));
+            }
+
             // Add --autoBindHttp if it's enabled
             if (configuration.isAutoBindHttp()) {
                 cmd.addAll(asList("--autoBindHttp", "--autoBindRange", "1000"));
@@ -239,7 +245,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
                 // Create a matcher for the 'Instance Configured' message
                 Matcher instanceConfigMatcher = instanceConfigPattern.matcher(log);
-                
+
                 if (instanceConfigMatcher.find()) {
 
                     // Get the host and port that the application started on.
@@ -322,7 +328,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                             httpContext.add(new Servlet(servletName, contextRoot));
                         });
                     }
-                    
+
                 }
             }
         }
