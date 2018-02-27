@@ -1,1 +1,1 @@
-fish.payara.appserver.roles.api.extension.RolesCDIExtension
+fish.payara.appserver.cdi.auth.roles.extension.RolesCDIExtension

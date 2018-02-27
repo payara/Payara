@@ -1,9 +1,9 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *  
- *   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. 
+ *
+ *   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates.
  *   All rights reserved.
- *  
+ *
  *   The contents of this file are subject to the terms of either the GNU
  *   General Public License Version 2 only ("GPL") or the Common Development
  *   and Distribution License("CDDL") (collectively, the "License").  You
@@ -12,20 +12,20 @@
  *   https://github.com/payara/Payara/blob/master/LICENSE.txt
  *   See the License for the specific
  *   language governing permissions and limitations under the License.
- *  
+ *
  *   When distributing the software, include this License Header Notice in each
  *   file and include the License file at glassfish/legal/LICENSE.txt.
- *  
+ *
  *   GPL Classpath Exception:
- *   The Payara Foundation designates this particular file as subject to the 
- *   "Classpath" exception as provided by the Payara Foundation in the GPL 
+ *   The Payara Foundation designates this particular file as subject to the
+ *   "Classpath" exception as provided by the Payara Foundation in the GPL
  *   Version 2 section of the License file that accompanied this code.
- *  
+ *
  *   Modifications:
  *   If applicable, add the following below the License Header, with the fields
  *   enclosed by brackets [] replaced by your own identifying information:
  *   "Portions Copyright [year] [name of copyright owner]"
- *  
+ *
  *   Contributor(s):
  *   If you wish your version of this file to be governed by only the CDDL or
  *   only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -47,20 +47,21 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
 import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
 import javax.validation.constraints.NotNull;
 
 /**
  * Defines a list of roles which a caller must be in to access either methods within an annotated class, or a singular
- * annotated method. Roles defined on a method level will always add to or overrule those defined on a class level.
+ * annotated method. Roles defined on a method level will always overrule those defined on a class level.
  *
  * @author Michael Ranaldo <michael@ranaldo.co.uk>
  */
 @InterceptorBinding
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
-public @interface Roles {
+public @interface RolesPermitted {
 
     /**
      * The roles which are allowed to access this method. Defaults to an empty string.
@@ -69,13 +70,13 @@ public @interface Roles {
      */
     @Nonbinding
     @NotNull
-    String[] allowed() default "";
+    String[] value() default "";
 
     /**
-     * Whether accessing users must be in any one of the given roles (OR) or all given roles (AND). Uses the
-     * LogicalOperator enum defined in the same package (fish.payara.cdi.auth.roles.LogicalOperator).
+     * Whether accessing caller must be in any one of the given roles (OR) or all given roles (AND).
+     * @see LogicalOperator
      *
-     * @return
+     * @return the operator used to determine access
      * @default OR
      */
     @Nonbinding
