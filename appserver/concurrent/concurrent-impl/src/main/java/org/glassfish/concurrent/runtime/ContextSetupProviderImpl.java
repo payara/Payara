@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package org.glassfish.concurrent.runtime;
 
@@ -210,7 +210,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         requestEvent.addProperty("Module Name", invocation.getModuleName());
         Object instance = invocation.getInstance();
         if (instance != null) {
-        requestEvent.addProperty("Class Name", instance.getClass().getName());
+            requestEvent.addProperty("Class Name", instance.getClass().getName());
         }
         requestEvent.addProperty("Thread Name", Thread.currentThread().getName());
         
