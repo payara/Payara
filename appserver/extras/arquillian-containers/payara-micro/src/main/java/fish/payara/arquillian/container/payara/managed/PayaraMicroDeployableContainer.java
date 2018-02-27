@@ -115,8 +115,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
     private String log = "";
 
-    private int startupTimeoutInSeconds = 180;
-
     @Override
     public Class<PayaraMicroContainerConfiguration> getConfigurationClass() {
         return PayaraMicroContainerConfiguration.class;
@@ -237,8 +235,18 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 }
             }, 1500, 200, MILLISECONDS);
 
+            int startupTimeoutInSeconds = configuration.isDebug()? -1 : configuration.getStartupTimeoutInSeconds();
+            boolean microStarted = false;
+
             // Wait for Payara Micro to start up, or time out after the specified timeout
-            if (payaraMicroStarted.await(startupTimeoutInSeconds, SECONDS)) {
+            if (startupTimeoutInSeconds == -1) {
+                payaraMicroStarted.await();
+                microStarted = true;
+            } else {
+                microStarted = payaraMicroStarted.await(startupTimeoutInSeconds, SECONDS);
+            }
+
+            if (microStarted) {
 
                 // Shutdown log reading executor
                 executor.shutdownNow();
