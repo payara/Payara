@@ -572,8 +572,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
         } catch (Throwable e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(e.getMessage());
-            report.setFailureCause(e);
+            if(e.getMessage() != null) {
+                report.setMessage(e.getMessage());
+                report.setFailureCause(e);
+            }
+            else {
+                report.setFailureCause(null);
+            }
         } finally {
             events.unregister(this);
             try {
