@@ -235,7 +235,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                 }
             }, 1500, 200, MILLISECONDS);
 
-            int startupTimeoutInSeconds = configuration.isDebug()? -1 : configuration.getStartupTimeoutInSeconds();
+            int startupTimeoutInSeconds = configuration.isDebug() ? -1 : configuration.getStartupTimeoutInSeconds();
             boolean microStarted = false;
 
             // Wait for Payara Micro to start up, or time out after the specified timeout
