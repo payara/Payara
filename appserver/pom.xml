@@ -170,7 +170,6 @@
 
         <!-- Management API (JRS 77) -->
         <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
-        <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
 
         <!-- Application Server / Implementation -->
         <product.name>Payara Server</product.name>
