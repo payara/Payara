@@ -38,28 +38,47 @@
  *   only if the new code is made subject to such option by the copyright
  *   holder.
  */
-package fish.payara.appserver.cdi.auth.roles.extension;
+package fish.payara.cdi.auth.roles;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
+import static fish.payara.cdi.auth.roles.LogicalOperator.OR;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import fish.payara.appserver.cdi.auth.roles.RolesCDIInterceptor;
-import fish.payara.cdi.auth.roles.RolesPermitted;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import javax.enterprise.util.Nonbinding;
+import javax.interceptor.InterceptorBinding;
+import javax.validation.constraints.NotNull;
 
 /**
- * Extension to get the runtime to find the Roles Interceptor.
+ * Defines a list of roles which a caller must be in to access either methods within an annotated class, or a singular
+ * annotated method. Roles defined on a method level will always overrule those defined on a class level.
  *
  * @author Michael Ranaldo <michael@ranaldo.co.uk>
  */
-public class RolesCDIExtension implements Extension {
+@InterceptorBinding
+@Target({TYPE, METHOD})
+@Retention(RUNTIME)
+public @interface RolesPermitted {
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        beforeBeanDiscovery.addInterceptorBinding(RolesPermitted.class);
+    /**
+     * The roles which are allowed to access this method. Defaults to an empty string.
+     *
+     * @return A String array of permitted roles.
+     */
+    @Nonbinding
+    @NotNull
+    String[] value() default "";
 
-        beforeBeanDiscovery.addAnnotatedType(
-            beanManager.createAnnotatedType(RolesCDIInterceptor.class),
-            "RolesCDIExtension " + RolesCDIInterceptor.class.getName());
-    }
+    /**
+     * Whether accessing caller must be in any one of the given roles (OR) or all given roles (AND).
+     * @see LogicalOperator
+     *
+     * @return the operator used to determine access
+     * @default OR
+     */
+    @Nonbinding
+    LogicalOperator semantics() default OR;
 }
