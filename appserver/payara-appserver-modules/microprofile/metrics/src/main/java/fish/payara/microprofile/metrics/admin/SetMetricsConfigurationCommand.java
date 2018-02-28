@@ -94,7 +94,7 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
     private String target;
     
     @Override
-    public void execute(AdminCommandContext acc) {
+    public void execute(AdminCommandContext adminCommandContext) {
         Config targetConfig = targetUtil.getConfig(target);
         MetricsServiceConfiguration metricsConfiguration = targetConfig.getExtensionByType(MetricsServiceConfiguration.class);
         
@@ -109,7 +109,7 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
                 return metricsConfigurationProxy;
             }, metricsConfiguration);
         } catch (TransactionFailure ex) {
-            acc.getActionReport().failure(LOGGER, "Failed to update Metrics configuration", ex);
+            adminCommandContext.getActionReport().failure(LOGGER, "Failed to update Metrics configuration", ex);
         }
     }
     
