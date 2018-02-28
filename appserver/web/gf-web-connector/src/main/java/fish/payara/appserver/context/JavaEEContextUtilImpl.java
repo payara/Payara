@@ -92,13 +92,13 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         ClassLoader oldClassLoader = Utility.getClassLoader();
         InvocationManager invMgr = serverContext.getInvocationManager();
         boolean invocationCreated = false;
-        if(invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
+        if (invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
             ComponentInvocation newInvocation = capturedInvocation.clone();
             newInvocation.clearRegistry();
             invMgr.preInvoke(newInvocation);
             invocationCreated = true;
         }
-        if(invocationCreated) {
+        if (invocationCreated) {
             Utility.setContextClassLoader(getInvocationClassLoader());
         }
         return new ContextImpl.Context(oldClassLoader, invocationCreated? invMgr.getCurrentInvocation() : null, invMgr);
@@ -115,7 +115,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         Context rootCtx = pushContext();
         BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
         ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<String, Object>());
-        if(context.ctx != null) {
+        if (context.ctx != null) {
             context.ctx.associate(context.storage);
             context.ctx.activate();
         }
@@ -128,13 +128,13 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     @Override
     public void setApplicationClassLoader() {
         ClassLoader cl = null;
-        if(capturedInvocation != null && capturedInvocation.getJNDIEnvironment() != null) {
+        if (capturedInvocation != null && capturedInvocation.getJNDIEnvironment() != null) {
             cl = getClassLoaderForEnvironment((JndiNameEnvironment)capturedInvocation.getJNDIEnvironment());
         }
-        else if(componentId != null) {
+        else if (componentId != null) {
             cl = getClassLoaderForEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
         }
-        if(cl != null) {
+        if (cl != null) {
             Utility.setContextClassLoader(cl);
         }
     }
@@ -160,7 +160,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     @Override
     public JavaEEContextUtil setInstanceComponentId(String componentId) {
         this.componentId = componentId;
-        if(componentId != null) {
+        if (componentId != null) {
             createInvocationContext();
         }
         else {
@@ -171,18 +171,18 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
 
     private void doSetInstanceContext() {
         capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
-        if(capturedInvocation != null) {
+        if (capturedInvocation != null) {
             capturedInvocation = capturedInvocation.clone();
             componentId = capturedInvocation.getComponentId();
         }
-        else if(componentId != null) {
+        else if (componentId != null) {
             // deserialized version
             createInvocationContext();
         }
     }
 
     private ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
-        if(componentEnv instanceof BundleDescriptor) {
+        if (componentEnv instanceof BundleDescriptor) {
             BundleDescriptor bd = (BundleDescriptor)componentEnv;
             return bd.getClassLoader();
         } else if (componentEnv instanceof EjbDescriptor) {
