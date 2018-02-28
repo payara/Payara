@@ -13,3 +13,4 @@ gfbuild.log
 /nucleus/payara-modules/requesttracing-core/nbproject/
 nb-configuration.xml
 /nucleus/payara-modules/nucleus-microprofile/config-service/nbproject/
+appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
