@@ -13,8 +13,8 @@ body {
 	padding: 20px;
 }
 .appTittle[_ngcontent-c0] {
-	margin-left: 0;
-	color: #fff;
+	margin-left: 0 !important;
+	color: #fff !important;
 }
 .appTittle .username {
 	color: rgba(255,255,255,0.5);
@@ -215,11 +215,11 @@ app-comment-data a span {
 	display: none;
 }
 .commentContainer .comment_box {
-	box-shadow: none;
-	border: solid 1px rgba(255,255,255,0.25);
+	box-shadow: none !important;
+	border: solid 1px rgba(255,255,255,0.25) !important;
 	border-radius: 0;
-	padding: 0 10px 10px 10px;
-	margin: 0;
+	padding: 0 10px 10px 10px !important;
+	margin: 0 !important;
 }
 
 .commentContainer, 
