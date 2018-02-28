@@ -39,7 +39,6 @@
 package fish.payara.arquillian.container.payara.managed;
 
 import static java.lang.Runtime.getRuntime;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -51,11 +50,9 @@ import static java.util.regex.Pattern.MULTILINE;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,8 +82,8 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
 import fish.payara.arquillian.container.payara.PayaraVersion;
-import fish.payara.arquillian.container.payara.file.LogReader;
-import fish.payara.arquillian.container.payara.file.StringConsumer;
+import fish.payara.arquillian.container.payara.process.BufferingConsumer;
+import fish.payara.arquillian.container.payara.process.ConsoleReader;
 import fish.payara.arquillian.container.payara.process.OutputLoggingConsumer;
 import fish.payara.arquillian.container.payara.process.ProcessOutputConsumer;
 import fish.payara.arquillian.container.payara.process.SilentOutputConsumer;
@@ -102,7 +99,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
     private static final Pattern instanceConfigPattern = Pattern
             .compile("Instance Configuration(?<jsonFormat>\")?.*Host\"?: \"?(?<host>.*?)\"?,{0,1}$.*HTTP Port\\(s\\)\"?: \"?(?<ports>.*?)\"?,?$.*HTTPS", DOTALL | MULTILINE | CASE_INSENSITIVE);
-    
+
     private static final Pattern jsonPattern = Pattern.compile(
             "Deployed\": (?<jsonArray>\\[.+?\\])", DOTALL | MULTILINE);
     private static final Pattern appPattern = Pattern.compile(
@@ -117,8 +114,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
     private Thread shutdownHook;
 
     private String log = "";
-
-    private int startupTimeoutInSeconds = 180;
 
     @Override
     public Class<PayaraMicroContainerConfiguration> getConfigurationClass() {
@@ -150,30 +145,15 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             throw new IllegalArgumentException("archive must not be null");
         }
 
-        WatchKey watchKey = null;
-
         try {
             // The main directory from which we'll conduct our business
             Path arquillianMicroDir = Files.createTempDirectory("arquillian-payara-micro");
 
             // Create paths for the directories we'll be using
-            Path targetLogDir = arquillianMicroDir.resolve("logs/");
             Path deploymentDir = arquillianMicroDir.resolve("deployments/");
-            Path targetZipDir = arquillianMicroDir.resolve("zipped-logs/");
 
             // Create the directories
-            targetLogDir.toFile().mkdir();
             deploymentDir.toFile().mkdir();
-            targetZipDir.toFile().mkdir();
-
-            // Create the path for the commands.txt file, which holds the asadmin post boot commands
-            File commandFile = arquillianMicroDir.resolve("commands.txt").toFile();
-
-            // Create the commands.txt file - write a single command to zip up the log files
-            // and store this zip into the /zipped-logs/ directory.
-            Files.write(commandFile.toPath(), 
-                ("collect-log-files --retrieve true " + targetZipDir.toAbsolutePath().resolve("log.zip").toString()).getBytes()
-            );
 
             // Create the path for the deployment archive (e.g. the application war or ear)
             File deploymentFile = deploymentDir.resolve(archive.getName()).toFile();
@@ -181,18 +161,17 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Create the deployment file itself
             archive.as(ZipExporter.class).exportTo(deploymentFile);
 
-            // Create the log file
-            File logFile = targetLogDir.resolve("log.txt").toFile();
-            logFile.createNewFile();
-
             // Create the list of commands to start Payara Micro
             List<String> cmd = new ArrayList<>(asList(
                     "java", "-jar", configuration.getMicroJarFile().getAbsolutePath(),
-                    "--logtofile", logFile.getAbsolutePath(),
-                    "--postdeploycommandfile", commandFile.getAbsolutePath(),
                     "--deploy", deploymentFile.getAbsolutePath()
                     ));
-            
+
+            // Start at a random port so multiple instances won't run in to eachother all the time
+            if (configuration.isRandomHttpPort()) {
+                cmd.addAll(asList("--port", (8080 + new SecureRandom().nextInt(1000)) + ""));
+            }
+
             // Add --autoBindHttp if it's enabled
             if (configuration.isAutoBindHttp()) {
                 cmd.addAll(asList("--autoBindHttp", "--autoBindRange", "1000"));
@@ -231,50 +210,50 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
             logger.info("Starting Payara Micro using cmd: " + cmd);
 
-            // Register a watch service to wait for the logs to be zipped.
-            WatchService watcher = FileSystems.getDefault().newWatchService();
-            targetZipDir.register(watcher, ENTRY_CREATE);
-
             // Allow Ctrl-C to stop the test, then start Payara Micro
             registerShutdownHook();
             payaraMicroProcess = new ProcessBuilder(cmd)
                 .redirectErrorStream(true)
-                .redirectOutput(logFile)
                 .start();
 
             // Create an executor for handling the log reading and writing
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
             // Create a consumer for reading Payara Micro output
-            StringConsumer consumer = new StringConsumer(createProcessOutputConsumer());
-            LogReader logReader = new LogReader(logFile, consumer);
+            BufferingConsumer consumer = new BufferingConsumer(createProcessOutputConsumer());
+            ConsoleReader logReader = new ConsoleReader(payaraMicroProcess, consumer);
             executor.execute(logReader);
-
-            // Wait for the logs to be zipped.
-            // TODO: implement post-post boot command or similar to properly check when Micro has finished booting up.
-            watchKey = watcher.poll(startupTimeoutInSeconds, SECONDS);
-            if (watchKey == null) {
-                logger.severe("Timeout (" + startupTimeoutInSeconds + "s) reached waiting for Payara Micro to start.");
-            }
 
             // Check at intervals if Payara Micro has finished starting up or failed to start.
             CountDownLatch payaraMicroStarted = new CountDownLatch(1);
             executor.scheduleAtFixedRate(() -> {
-                log = consumer.getBuilder().toString();
+                log = consumer.getBuffer().toString();
                 // Check for app deployed
                 Matcher startupMatcher = instanceConfigPattern.matcher(log);
                 if (startupMatcher.find()) {
                     payaraMicroStarted.countDown();
-                    executor.shutdown();
                 }
-            }, 500, 500, MILLISECONDS);
+            }, 1500, 200, MILLISECONDS);
 
-            // Wait for Payara Micro to start up, or time out after 10 seconds
-            if (payaraMicroStarted.await(10, SECONDS)) {
+            int startupTimeoutInSeconds = configuration.isDebug() ? -1 : configuration.getStartupTimeoutInSeconds();
+            boolean microStarted = false;
+
+            // Wait for Payara Micro to start up, or time out after the specified timeout
+            if (startupTimeoutInSeconds == -1) {
+                payaraMicroStarted.await();
+                microStarted = true;
+            } else {
+                microStarted = payaraMicroStarted.await(startupTimeoutInSeconds, SECONDS);
+            }
+
+            if (microStarted) {
+
+                // Shutdown log reading executor
+                executor.shutdownNow();
 
                 // Create a matcher for the 'Instance Configured' message
                 Matcher instanceConfigMatcher = instanceConfigPattern.matcher(log);
-                
+
                 if (instanceConfigMatcher.find()) {
 
                     // Get the host and port that the application started on.
@@ -309,10 +288,6 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             logger.severe("Timeout reached waiting for Payara Micro to start.\n" + e.getMessage());
             Thread.currentThread().interrupt();
             return null;
-        } finally {
-            if (watchKey != null) {
-                watchKey.cancel();
-            }
         }
 
         throw new DeploymentException("No applications were found deployed to Payara Micro.");
@@ -361,7 +336,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
                             httpContext.add(new Servlet(servletName, contextRoot));
                         });
                     }
-                    
+
                 }
             }
         }

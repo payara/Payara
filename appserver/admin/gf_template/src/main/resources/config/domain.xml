@@ -100,6 +100,7 @@
    <config name="%%%CONFIG_MODEL_NAME%%%">
       <!--%%%TOKENS_HERE%%%-->
       <!--%%%PORT_BASE%%%-->
+      <payara-executor-service-configuration/>
       <http-service>
         <access-log/>
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"/>
@@ -288,6 +289,7 @@
       </thread-pools>
     </config>
      <config name="default-config" dynamic-reconfiguration-enabled="true" >
+         <payara-executor-service-configuration/>
          <http-service>
              <access-log/>
              <virtual-server id="server" network-listeners="http-listener-1, http-listener-2" >

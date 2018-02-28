@@ -72,6 +72,7 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
     </servers>
     <configs>
         <config name="server-config">
+            <payara-executor-service-configuration/>
             <hazelcast-config-specific-configuration enabled="true"></hazelcast-config-specific-configuration>
             <health-check-service-configuration enabled="false">
                 <log-notifier enabled="true"/>
