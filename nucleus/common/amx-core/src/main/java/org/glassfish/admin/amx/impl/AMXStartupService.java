@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 package org.glassfish.admin.amx.impl;
 
@@ -126,7 +128,7 @@ public final class AMXStartupService
 
 
     private void shutdown() {
-        logger.fine("AMXStartupService: shutting down AMX MBeans");
+        logger.fine("AMX Startup Service: Shutting down AMX MBeans");
         unloadAMXMBeans();
 
         final ObjectName allAMXPattern = AMXUtil.newObjectName(AMXGlassfish.DEFAULT.amxJMXDomain(), "*");
@@ -139,7 +141,7 @@ public final class AMXStartupService
             }
         }
         FeatureAvailability.getInstance().deRegisterFeatures();
-        logger.log(Level.INFO,"amx.shutdown.unregistered",mMBeanServer.queryNames(allAMXPattern, null));
+        logger.log(Level.INFO,"AMX Startup Service: AMX MBeans shutdown: {0}.",mMBeanServer.queryNames(allAMXPattern, null));
     }
 
 
@@ -149,7 +151,7 @@ public final class AMXStartupService
         SingletonEnforcer.register(this.getClass(), this);
 
         if (mMBeanServer == null) {
-            throw new Error("AMXStartup: null MBeanServer");
+            throw new Error("AMX Startup Service: MBeanServer was null.");
         }
 
         try {
@@ -164,18 +166,18 @@ public final class AMXStartupService
             //final StandardMBean supportMBean = new StandardMBean(mMBeanTracker, MBeanTrackerMBean.class);
             mMBeanServer.registerMBean(mMBeanTracker, MBeanTrackerMBean.MBEAN_TRACKER_OBJECT_NAME);
         } catch (final Exception e) {
-            logger.log(Level.INFO, "amx.fatal.error", e);
+            logger.log(Level.WARNING, "AMX Startup Service: Initialisation error.", e);
             throw new Error(e);
         }
         //debug( "AMXStartupService.postConstruct(): registered: " + OBJECT_NAME );
-        logger.log(Level.INFO,"amx.startupService",new Object[] {delta.elapsedMillis(),OBJECT_NAME});
+        logger.log(Level.INFO,"AMX Startup Service: Created in {0}ms. MBean: `{1}`.",new Object[] {delta.elapsedMillis(),OBJECT_NAME});
 
         mEvents.register(new ShutdownListener());
     }
 
 
     public void preDestroy() {
-        logger.log(Level.INFO,"amx.preDestroy");
+        logger.log(Level.INFO,"AMX Startup Service: Destroying service.");
         unloadAMXMBeans();
     }
 
@@ -225,7 +227,7 @@ public final class AMXStartupService
             try {
                 objectName = _loadAMXMBeans();
             } catch (final Exception e) {
-                logger.log(Level.SEVERE,"amx.error.loadAMXBeans",e);
+                logger.log(Level.SEVERE,"AMX Startup Service: Error loading AMX Beans.",e);
                 throw new RuntimeException(e);
             }
         }
@@ -247,7 +249,7 @@ public final class AMXStartupService
             loadSystemInfo();
         } catch (final Exception e) {
             final Throwable rootCause = ExceptionUtil.getRootCause(e);
-            logger.log(Level.INFO, "amx.error.load.DomainRoot", rootCause);
+            logger.log(Level.INFO, "AMX Startup Service: Error loading domain root.", rootCause);
             throw new RuntimeException(rootCause);
         }
 

@@ -65,6 +65,11 @@
         </snapshotRepository>
     </distributionManagement>
     
+    <properties>
+        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
+    </properties>
+
     <profiles>
         <profile>
             <id>release-phase2</id>
@@ -122,7 +127,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.0.1</version>
+                        <version>${maven.source.plugin.version}</version>
                         <configuration>
                             <excludeResources>true</excludeResources>
                             <excludes>**/*.properties</excludes>
@@ -172,13 +177,13 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.4</version>
+                        <version>${maven.javadoc.plugin.version}</version>
                         <configuration>
                             <!-- Default configuration for all reports -->
                             <docencoding>UTF-8</docencoding>
                             <includeDependencySources>false</includeDependencySources>
                             <!-- This parameter is to be added when using JDK8 -->
-                            <!-- <additionalparam>-Xdoclint:none</additionalparam> -->
+                            <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                         <executions>
                             <execution>

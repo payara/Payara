@@ -117,13 +117,13 @@
         </sun:property>
             
         <sun:property id="deploymentTimeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentTime}" helpText="$resource{i18n.deploy.deploymentTimeHelp}">
-            <sun:staticText id="deploymentOrder" text="#{pageSession.valueMap['deploymentTime']}" />
+            <sun:staticText id="deploymentTime" text="#{pageSession.valueMap['deploymentTime']}" />
         </sun:property>
-                
+
         <sun:property id="deploymentOccuranceTime" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOccuranceTime}" helpText="$resource{i18n.deploy.deploymentOccuranceTimeHelp}">
-            <sun:staticText id="deploymentOccured" text="#{pageSession.valueMap['deploymentOccured']}" />
+            <sun:staticText id="deploymentOccured" text="#{pageSession.deploymentOccured}" />
             <!beforeCreate
-                py.prettyDateTimeFormat(milliseconds="#{pageSession.valueMap['timeDeployed']}" prettyString="#{pageSession.valueMap['deploymentOccured']}");
+                py.prettyDateTimeFormat(milliseconds="#{pageSession.valueMap['timeDeployed']}" prettyString="#{pageSession.deploymentOccured}");
             />
         </sun:property>
 

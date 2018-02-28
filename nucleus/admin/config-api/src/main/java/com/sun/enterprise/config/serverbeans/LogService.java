@@ -93,6 +93,25 @@ public interface LogService extends ConfigBeanProxy  {
      *              {@link String }
      */
     public void setFile(String value) throws PropertyVetoException;
+    
+     /**
+     * Gets the value of the Payara Notification file property.
+     *
+     * Can be used to rename or relocate notification.log using absolute path.
+     * 
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute
+    public String getPayaraNotificationFile();
+
+    /**
+     * Sets the value of the  Payara Notification file property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setPayaraNotificationFile(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the useSystemLogging property.
@@ -183,7 +202,7 @@ public interface LogService extends ConfigBeanProxy  {
      */
     public void setLogToConsole(String value) throws PropertyVetoException;
     
-        /**
+    /**
      * Gets the value of the logToFile property.
      *
      * @return possible object is {@link String }
@@ -197,6 +216,22 @@ public interface LogService extends ConfigBeanProxy  {
      * @param value allowed object is {@link String }
      */
     public void setLogToFile(String value) throws PropertyVetoException;
+    
+     /**
+     * Gets the value of the  Payara Notification logToFile property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    public String getPayaraNotificationLogToFile();
+
+    /**
+     * Sets the value of the  Payara Notification logToFile property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    public void setPayaraNotificationLogToFile(String value) throws PropertyVetoException;
+
 
     /**
      * Gets the value of the logRotationLimitInBytes property.
@@ -217,6 +252,26 @@ public interface LogService extends ConfigBeanProxy  {
      *              {@link String }
      */
     public void setLogRotationLimitInBytes(String value) throws PropertyVetoException;
+    
+    /**
+     * Gets the value of the  Payara Notification logRotationLimitInBytes property.
+     *
+     * Log Files will be rotated when the file size reaches the limit.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="1")
+    @Min(value=1)
+    public String getPayaraNotificationLogRotationLimitInBytes();
+
+    /**
+     * Sets the value of the  Payara Notification logRotationLimitInBytes property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setPayaraNotificationLogRotationLimitInBytes(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the logRotationTimelimitInMinutes property.
@@ -242,6 +297,31 @@ public interface LogService extends ConfigBeanProxy  {
      *              {@link String }
      */
     public void setLogRotationTimelimitInMinutes(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the  Payara Notification logRotationTimelimitInMinutes property.
+     *
+     * This is a new attribute to enable time based log rotation.
+     * The Log File will be rotated only if this value is non-zero and the valid
+     * range is 60 minutes (1 hour) to 10*24*60 minutes (10 days). If the value
+     * is zero then the files will be rotated based on size specified in
+     * log-rotation-limit-in-bytes.
+     * 
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="0")
+    @Min(value=0)
+    @Max(value=14400)
+    public String getPayaraNotificationLogRotationTimelimitInMinutes();
+
+    /**
+     * Sets the value of the  Payara Notification logRotationTimelimitInMinutes property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setPayaraNotificationLogRotationTimelimitInMinutes(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the alarms property.
@@ -304,8 +384,5 @@ public interface LogService extends ConfigBeanProxy  {
      *              {@link ModuleLogLevels }
      */
     public void setModuleLogLevels(ModuleLogLevels value) throws PropertyVetoException;
-
-
-
 
 }
