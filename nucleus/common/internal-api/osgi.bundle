@@ -45,7 +45,6 @@
                         org.glassfish.internal.deployment; \
                         org.glassfish.transaction.api; \
                         org.glassfish.flashlight.datatree; \
-                        org.glassfish.j2ee.statistics; \
                         org.glassfish.internal.grizzly; \
                         org.glassfish.internal.embedded; \
                         org.glassfish.internal.embedded.admin; \

@@ -495,6 +495,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected EjbMonitoringProbeProvider    ejbProbeNotifier;
     protected EjbTimedObjectStatsProvider   timerProbeListener;
     protected EjbTimedObjectProbeProvider   timerProbeNotifier;
+    private   boolean                       timersStarted = false;
     protected EjbPoolStatsProvider          poolProbeListener;
     protected EjbCacheProbeProvider         cacheProbeNotifier;
     protected EjbCacheStatsProvider         cacheProbeListener;
@@ -849,6 +850,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 EJBTimerService timerService = EJBTimerService.getEJBTimerService();
                 if (timerService != null) {
                     timerService.timedObjectCount();
+                    timersStarted = true;
                 }
             } else {
                 isTimedObject_ = false;
@@ -2503,7 +2505,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     private void stopTimers() {
-        if( isTimedObject() ) {
+        if( isTimedObject() && timersStarted ) {
             EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
             if( ejbTimerService != null ) {
                 ejbTimerService.stopTimers(getContainerId());
