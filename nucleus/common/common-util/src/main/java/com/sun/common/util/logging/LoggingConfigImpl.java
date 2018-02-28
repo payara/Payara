@@ -360,6 +360,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                 //System.out.println("Debug "+key+ " " + props.getProperty(key));
                 m.put(key, props.getProperty(key));
             }
+            m = checkForLoggingProperties(m, targetConfigName);
             return m;
         } catch (IOException ex) {
             throw ex;
@@ -386,12 +387,90 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                 //System.out.println("Debug "+key+ " " + props.getProperty(key));
                 m.put(key, props.getProperty(key));
             }
+            m = checkForLoggingProperties(m, "");
             return m;
         } catch (IOException ex) {
             throw ex;
         }
     }
+    
+    public synchronized Map<String, String> checkForLoggingProperties(Map<String, String> loggingProperties, String targetConfigName) throws IOException {
 
+        if (!loggingProperties.containsKey(Constants.GF_HANDLER_LOG_TO_FILE)) {
+            loggingProperties.put(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
+
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_TO_FILE)) {
+            loggingProperties.put(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_FILE)) {
+            loggingProperties.put(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_MAXIMUM_FILES)) {
+            loggingProperties.put(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE)) {
+            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE)) {
+            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT)) {
+            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_COMPRESS_ON_ROTATION)) {
+            loggingProperties.put(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+        return loggingProperties;
+    }
+    
     /* delete the properties from logging.properties file.  properties is a Map of names of properties and
       * their cooresponding value.
       *
@@ -711,6 +790,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             }
             m.put(key, propsLoggingTempleate.getProperty(key));
         }
+        m = checkForLoggingProperties(m, "");
         return m;
     }
 }
