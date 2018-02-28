@@ -211,10 +211,10 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
 
         // Escape spaces in paths for the cmd options
         if (cmdOptions != null) {
-            cmdOptions = cmdOptions.replaceAll("(\\/\\w+) ", "$1\\\\ ");
+            cmdOptions = cmdOptions.replaceAll("([\\/\\\\]\\w+) ", "$1\\\\ ");
         }
         if (extraMicroOptions != null) {
-            extraMicroOptions = extraMicroOptions.replaceAll("(\\/\\w+) ", "$1\\\\ ");
+            extraMicroOptions = extraMicroOptions.replaceAll("([\\/\\\\]\\w+) ", "$1\\\\ ");
         }
     }
 
