@@ -52,6 +52,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.soteria.cdi.CdiUtils;
 
 /**
  * @Clustered singleton CDI context implementation
@@ -80,7 +81,8 @@ class ClusterScopeContext implements Context {
         if (beanInstance == null) {
             beanInstance = getFromApplicationScoped(contextual, Optional.of(creationalContext));
             final Bean<TT> bean = (Bean<TT>) contextual;
-            if (clusteredLookup.getClusteredSingletonMap().putIfAbsent(getBeanName(bean, getAnnotation(bean)), beanInstance) != null) {
+            if (clusteredLookup.getClusteredSingletonMap()
+                    .putIfAbsent(getBeanName(bean, getAnnotation(beanManager, bean)), beanInstance) != null) {
                 bean.destroy(beanInstance, creationalContext);
                 beanInstance = get(contextual);
             }
@@ -92,7 +94,7 @@ class ClusterScopeContext implements Context {
     @SuppressWarnings("unchecked")
     public <TT> TT get(Contextual<TT> contextual) {
         final Bean<TT> bean = (Bean<TT>) contextual;
-        Clustered clusteredAnnotation = getAnnotation(bean);
+        Clustered clusteredAnnotation = getAnnotation(beanManager, bean);
         String beanName = getBeanName(bean, clusteredAnnotation);
         TT beanInstance = (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
         if (clusteredAnnotation.callPostConstructOnAttach() && beanInstance != null &&
@@ -120,7 +122,11 @@ class ClusterScopeContext implements Context {
         return annotation.keyName().isEmpty()? bean.getName() : annotation.keyName();
     }
 
-    static <TT> Clustered getAnnotation(Bean<TT> bean) {
-        return bean.getBeanClass().getAnnotation(Clustered.class);
+    static <TT> Clustered getAnnotation(BeanManager beanManager, Bean<TT> bean) {
+        return getAnnotation(beanManager, bean.getBeanClass());
+    }
+
+    static <TT> Clustered getAnnotation(BeanManager beanManager, Class<?> clazz) {
+        return CdiUtils.getAnnotation(beanManager, clazz, Clustered.class).get();
     }
 }

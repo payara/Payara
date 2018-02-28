@@ -71,7 +71,7 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor @ClusterScopedIntercepted @Log @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class ClusterScopedInterceptor implements Serializable {
-    private final BeanManager bm = CDI.current().getBeanManager();
+    private final BeanManager beanManager = CDI.current().getBeanManager();
     private transient ClusteredSingletonLookupImpl clusteredLookup;
     private static final long serialVersionUID = 1L;
 
@@ -83,7 +83,7 @@ public class ClusterScopedInterceptor implements Serializable {
     @AroundInvoke
     public Object lockAndRefresh(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getMethod().getDeclaringClass();
-        Clustered clusteredAnnotation = beanClass.getAnnotation(Clustered.class);
+        Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
         try {
             lock(beanClass, clusteredAnnotation);
             return invocationContext.proceed();
@@ -105,7 +105,7 @@ public class ClusterScopedInterceptor implements Serializable {
     @PreDestroy
     Object preDestroy(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
-        Clustered clusteredAnnotation = beanClass.getAnnotation(Clustered.class);
+        Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKey(beanClass);
         IAtomicLong count = clusteredLookup.getClusteredUsageCount();
         if (count.decrementAndGet() <= 0) {
@@ -133,15 +133,15 @@ public class ClusterScopedInterceptor implements Serializable {
     }
 
     private void refresh(Class<?> beanClass) {
-        Bean<?> bean = Iterables.getOnlyElement(bm.getBeans(beanClass));
-        String beanName = getBeanName(bean, getAnnotation(bean));
-        Context ctx = bm.getContext(ClusterScoped.class);
+        Bean<?> bean = Iterables.getOnlyElement(beanManager.getBeans(beanClass));
+        String beanName = getBeanName(bean, getAnnotation(beanManager, bean));
+        Context ctx = beanManager.getContext(ClusterScoped.class);
         clusteredLookup.getClusteredSingletonMap().put(beanName, ctx.get(bean));
     }
 
     private void init() {
         String moduleName = Globals.getDefaultHabitat().getService(InvocationManager.class).getCurrentInvocation().getAppName();
-        clusteredLookup = new ClusteredSingletonLookupImpl(bm, moduleName);
+        clusteredLookup = new ClusteredSingletonLookupImpl(beanManager, moduleName);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
