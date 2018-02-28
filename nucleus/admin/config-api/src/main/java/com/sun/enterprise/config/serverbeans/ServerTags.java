@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -131,8 +131,12 @@ public class ServerTags  {
     static public final String LOG_HANDLER = "log-handler";
     static public final String LOG_FILTER = "log-filter";
     static public final String LOG_TO_CONSOLE = "log-to-console";
+    static public final String LOG_TO_FILE = "log-to-file";
+    static public final String PAYARA_NOTIFICATION_LOG_TO_CONSOLE = "payara-notification-log-to-file";
     static public final String LOG_ROTATION_LIMIT_IN_BYTES = "log-rotation-limit-in-bytes";
+    static public final String PAYARA_NOTIFICATIONLOG_ROTATION_LIMIT_IN_BYTES = "payara-notification-log-rotation-limit-in-bytes";
     static public final String LOG_ROTATION_TIMELIMIT_IN_MINUTES = "log-rotation-timelimit-in-minutes";
+    static public final String PAYARA_NOTIFICATIONLOG_ROTATION_TIMELIMIT_IN_MINUTES = "payara-notification-log-rotation-timelimit-in-minutes";
     static public final String ALARMS = "alarms";
     static public final String RETAIN_ERROR_STATISTICS_FOR_HOURS = "retain-error-statistics-for-hours";
     // Tags for Element module-log-levels
