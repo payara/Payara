@@ -41,7 +41,9 @@ package fish.payara.nucleus.eventbus;
 
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -68,13 +70,13 @@ public class EventBus implements EventListener {
     @Inject
     private Events events;
     
-    private HashMap<String,TopicListener> messageReceivers;
+    private Map<String, TopicListener> messageReceivers;
     
     
     @PostConstruct
     public void postConstruct() {
         events.register(this);
-        messageReceivers = new HashMap<String, TopicListener>(2);
+        messageReceivers = new ConcurrentHashMap<>(2);
     }
     
     /**
@@ -143,6 +145,14 @@ public class EventBus implements EventListener {
     public void event(Event event) {
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE) && hzCore.isEnabled()) {
             logger.config("Payara Clustered Event Bus Enabled");
+            // add message receivers if any as this maybe a
+            for (String topic : messageReceivers.keySet()) {
+                TopicListener tl = messageReceivers.get(topic);
+                if (tl != null) {
+                    String regId = hzCore.getInstance().getTopic(topic).addMessageListener(tl);
+                    tl.setRegistrationID(regId);
+                }
+            }
         }
     }
     
