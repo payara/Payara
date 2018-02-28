@@ -507,7 +507,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             try {
                 bootstrap.startExtensions(postProcessExtensions(deploymentImpl.getExtensions(), archives));
-                bootstrap.startContainer(deploymentImpl.getAppName() + ".bda", SERVLET, deploymentImpl);
+                bootstrap.startContainer(deploymentImpl.getContextId() + ".bda", SERVLET, deploymentImpl);
                 bootstrap.startInitialization();
                 fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                 bootstrap.deployBeans();

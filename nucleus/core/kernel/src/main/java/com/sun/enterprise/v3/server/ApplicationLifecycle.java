@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
@@ -534,6 +533,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
                 appInfo.initialize();
+                appInfo.getModuleInfos().forEach(moduleInfo -> moduleInfo.getEngineRefs()
+                        .forEach(engineRef -> tracker.add("initialized", EngineRef.class, engineRef)));
                 appInfo.start(context, tracker);
                 notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
             } catch (Throwable loadException) {
