@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,52 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.cluster;
+package com.sun.ejb.containers;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
+import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.EJB;
+import fish.payara.cluster.DistributedLockType;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 
 /**
- * This annotation can be added to @Singleton EJB beans
- * and @ApplicationScoped CDI beans to specify that they are
- * cluster-wide singletons, not just a singleton per server instance
+ * EJB container implementation of clustered singleton lookups
  *
  * @author lprimak
  */
-@Documented
-@Inherited
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Clustered {
-    /**
-     * key in the distributed map to bind this clustered object to.
-     * Default is the name of the bean
-     */
-    String keyName() default "";
+public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
+    private final EjbSessionDescriptor ejbDescriptor;
 
-    /**
-     * specifies the type of distributed locking to be performed
-     * For EJB beans, only INHERIT and LOCK_NONE are valid
-     * for CDI beans, INHERIT is equivalent to NONE,
-     * and the other valid value for CDI beans is LOCK
-     */
-    DistributedLockType lock() default DistributedLockType.INHERIT;
 
-    /**
-     * Specifies whether to call @PostConstruct when the singleton is attached to a cluster
-     * and this singleton already exists on the other node. (not truly created)
-     * Default is true
-     */
-    boolean callPostConstructOnAttach() default true;
+    public ClusteredSingletonLookupImpl(EjbDescriptor ejbDescriptor, String componentId) {
+        super(componentId, EJB);
+        this.ejbDescriptor = (EjbSessionDescriptor)ejbDescriptor;
+    }
 
-    /**
-     * Specifies whether to call @PreDestroy when the singleton is detached from a cluster
-     * and this singleton also exists on the other node. (not truly destroyed)
-     * Default is true
-     */
-    boolean callPreDestoyOnDetach () default true;
+    @Override
+    public boolean isDistributedLockEnabled() {
+        DistributedLockType distLockType = ejbDescriptor.isClustered()?
+                    ejbDescriptor.getClusteredLockType() : DistributedLockType.LOCK_NONE;
+        return super.isDistributedLockEnabled() && distLockType != DistributedLockType.LOCK_NONE;
+    }
+    
+    @Override
+    public String getClusteredSessionKey() {
+        return ejbDescriptor.getClusteredKeyValue().isEmpty()? ejbDescriptor.getName() : ejbDescriptor.getClusteredKeyValue();
+    }
+
+    @Override
+    public boolean isClusteredEnabled() {
+        return ejbDescriptor.isClustered() && super.isClusteredEnabled();
+    }
 }
