@@ -82,11 +82,11 @@ public class MetricsResource extends HttpServlet {
             throws ServletException, IOException {
         
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        if (!metricsService.isMetricEnabled()) {
+        if (!metricsService.isMetricsEnabled()) {
             response.sendError(SC_FORBIDDEN, "MP Metrics is disabled");
             return;
         }
-        if(!request.isSecure() && !metricsService.isInsucreMetricEnabled()){
+        if(!request.isSecure() && metricsService.isMetricsSecure()){
             response.sendError(SC_FORBIDDEN, "MP Metrics security is enabled");
             return;
         }
