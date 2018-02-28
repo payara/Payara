@@ -179,29 +179,29 @@ public abstract class AbstractSingletonContainer
     }
 
     @Override
-    protected ComponentContext _getContext(EjbInvocation inv) throws EJBException {
+    protected ComponentContext _getContext(EjbInvocation invocation) throws EJBException {
         checkInit();
-        if(clusteredLookup.isClusteredEnabled()) {
-            AbstractSessionContextImpl sc = (AbstractSessionContextImpl) singletonCtx;
+        if (clusteredLookup.isClusteredEnabled()) {
+            AbstractSessionContextImpl sessionContext = (AbstractSessionContextImpl) singletonCtx;
             try {
-                invocationManager.preInvoke(inv);
-                inv.context = sc;
-                sc.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
-                if(isJCDIEnabled()) {
-                    if(sc.getJCDIInjectionContext() != null) {
-                        sc.getJCDIInjectionContext().cleanup(false);
+                invocationManager.preInvoke(invocation);
+                invocation.context = sessionContext;
+                sessionContext.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
+                if (isJCDIEnabled()) {
+                    if (sessionContext.getJCDIInjectionContext() != null) {
+                        sessionContext.getJCDIInjectionContext().cleanup(false);
                     }
-                    sc.setJCDIInjectionContext(jcdiService.createJCDIInjectionContext(ejbDescriptor, sc.getEJB()));
+                    sessionContext.setJCDIInjectionContext(_createJCDIInjectionContext(sessionContext, sessionContext.getEJB()));
                 }
-                if(sc.getEJB() != null) {
-                    injectEjbInstance(sc);
+                if (sessionContext.getEJB() != null) {
+                    injectEjbInstance(sessionContext);
                 }
             } catch (Exception ex) {
                 throw new EJBException(ex);
             }
             finally {
-                inv.context = null;
-                invocationManager.postInvoke(inv);
+                invocation.context = null;
+                invocationManager.postInvoke(invocation);
             }
         }
         return singletonCtx;

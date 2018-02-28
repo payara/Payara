@@ -392,7 +392,7 @@ public class WebappClassLoader
     private Class<?> jdbcLeakPreventionResourceClass = null;
 
     private final Application application;
-    private final Date dtCreated = new Date();
+    private final Date creationTime = new Date();
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -1016,7 +1016,7 @@ public class WebappClassLoader
         }
         sb.append(") ");
         sb.append("Object: ").append(Integer.toHexString(System.identityHashCode(this)));
-        sb.append(" Created: ").append(SimpleDateFormat.getDateTimeInstance().format(dtCreated));
+        sb.append(" Created: ").append(SimpleDateFormat.getDateTimeInstance().format(creationTime));
         return (sb.toString());
     }
 
