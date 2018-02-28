@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
@@ -208,6 +210,26 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
                     "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.", e);
         }
         notNull(getMicroVersion(), "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.");
+
+        // Escape spaces in paths for the cmd options
+        if (cmdOptions != null) {
+            cmdOptions = escapePaths(cmdOptions);
+        }
+        if (extraMicroOptions != null) {
+            extraMicroOptions = escapePaths(extraMicroOptions);
+        }
+    }
+
+    private String escapePaths(String input) {
+        Pattern pathPattern = Pattern.compile("((?>[\\/\\\\]|\\\\ )[\\w ]+) ([^-])");
+
+        Matcher matcher = pathPattern.matcher(input);
+        String output = input;
+        while (matcher.find()) {
+            output = matcher.replaceAll("$1\\\\ $2");
+            matcher = pathPattern.matcher(output);
+        }
+        return output;
     }
 
     private static String getConfigurableVariable(String systemPropertyName, String environmentVariableName, String defaultValue) {
