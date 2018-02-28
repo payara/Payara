@@ -208,6 +208,14 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
                     "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.", e);
         }
         notNull(getMicroVersion(), "Unable to find Payara Micro Jar version. Please check the file is a valid Payara Micro Jar.");
+
+        // Escape spaces in paths for the cmd options
+        if (cmdOptions != null) {
+            cmdOptions = cmdOptions.replaceAll("(\\/\\w+) ", "$1\\\\ ");
+        }
+        if (extraMicroOptions != null) {
+            extraMicroOptions = extraMicroOptions.replaceAll("(\\/\\w+) ", "$1\\\\ ");
+        }
     }
 
     private static String getConfigurableVariable(String systemPropertyName, String environmentVariableName, String defaultValue) {
