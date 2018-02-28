@@ -115,6 +115,9 @@ public class RestartInstanceCommand implements AdminCommand {
 
     @Param(name = "sync", optional = true, defaultValue = "normal", acceptableValues = "none, normal, full")
     private String sync;
+    
+    @Param(name="delay", optional = true, defaultValue = "0")
+    private int delay;
 
     private Logger logger;
 
@@ -133,7 +136,7 @@ public class RestartInstanceCommand implements AdminCommand {
     private String oldPid;
 
     private AdminCommandContext context;
-
+    
     @Override
     public void execute(AdminCommandContext ctx) {
         try {
