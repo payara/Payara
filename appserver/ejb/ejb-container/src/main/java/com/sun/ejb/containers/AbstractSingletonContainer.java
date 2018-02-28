@@ -209,10 +209,10 @@ public abstract class AbstractSingletonContainer
 
     @Override
     protected void releaseContext(EjbInvocation inv) throws EJBException {
-        if(clusteredLookup.isClusteredEnabled()) {
+        if (clusteredLookup.isClusteredEnabled()) {
             try {
                 invocationManager.preInvoke(inv);
-                if(clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
+                if (clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
                     clusteredLookup.getClusteredSingletonMap().put(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
                 }
             }
@@ -237,7 +237,7 @@ public abstract class AbstractSingletonContainer
         super.initializeHome();
 
         if ( isRemote ) {
-            if( hasRemoteBusinessView ) {
+            if ( hasRemoteBusinessView ) {
 
                 theRemoteBusinessObjectImpl =
                     instantiateRemoteBusinessObjectImpl();
@@ -256,7 +256,7 @@ public abstract class AbstractSingletonContainer
 
         if ( isLocal ) {
 
-            if( hasLocalBusinessView ) {
+            if ( hasLocalBusinessView ) {
                 theEJBLocalBusinessObjectImpl =
                     instantiateEJBLocalBusinessObjectImpl();
             }
@@ -397,7 +397,7 @@ public abstract class AbstractSingletonContainer
     }
 
     protected void checkInit() {
-        if( singletonInitializationFailed ) {
+        if ( singletonInitializationFailed ) {
             throw new NoSuchEJBException("Singleton " + ejbDescriptor.getName() + " is unavailable " +
                                    "because its original initialization failed.");
         }
@@ -420,7 +420,7 @@ public abstract class AbstractSingletonContainer
 
                     // All other locks must be grabbed first.  This check prevents
                     // synchronous loopback attempts during Singleton PostConstruct
-                    if( initializationInProgress ) {
+                    if ( initializationInProgress ) {
                         throw new EJBException("Illegal synchronous loopback call during Singleton " +
                             ejbDescriptor.getName() + " initialization would have resulted in deadlock");
 
@@ -439,7 +439,7 @@ public abstract class AbstractSingletonContainer
                         //this allows _getContext() to proceed
                         singletonInitialized.set(true);
                     } finally {
-                        if( originalCCL != null ) {
+                        if ( originalCCL != null ) {
                             Utility.setContextClassLoader(originalCCL);
                         }
                     }
@@ -457,7 +457,7 @@ public abstract class AbstractSingletonContainer
 
     private EjbInvocation createInvocationAndPreInvoke(EjbInvocation ejbInv, Object ejb, SingletonContextImpl context) {
         // this allows JNDI lookups from setSessionContext, ejbCreate
-        if(ejbInv == null) {
+        if (ejbInv == null) {
             ejbInv = createEjbInvocation(ejb, context);
             invocationManager.preInvoke(ejbInv);
         }
@@ -480,12 +480,12 @@ public abstract class AbstractSingletonContainer
         try {
             String sessionKey = clusteredLookup.getClusteredSessionKey();
             EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
-            if(clusteredLookup.isClusteredEnabled()) {
+            if (clusteredLookup.isClusteredEnabled()) {
                 IMap<String, Object> singletonMap = clusteredLookup.getClusteredSingletonMap();
-                if(!singletonMap.containsKey(sessionKey)) {
+                if (!singletonMap.containsKey(sessionKey)) {
                     context = (SingletonContextImpl) createEjbInstanceAndContext();
                     ejb = singletonMap.putIfAbsent(sessionKey, context.getEJB());
-                    if((ejb != null) && (ejb != context.getEJB()) && sessDesc.dontCallPostConstructOnAttach()) {
+                    if ((ejb != null) && (ejb != context.getEJB()) && sessDesc.dontCallPostConstructOnAttach()) {
                         doPostConstruct = false;
                     }
                 }
@@ -494,17 +494,17 @@ public abstract class AbstractSingletonContainer
                     ejb = context.getEJB();
                     ejbInv = createInvocationAndPreInvoke(ejbInv, ejb, context);
                     createEmptyContextAndInterceptors(context);
-                    if(isJCDIEnabled()) {
+                    if (isJCDIEnabled()) {
                         _createJCDIInjectionContext(context, ejb, context.getJCDIInjectionContext());
                     }
-                    if(sessDesc.dontCallPostConstructOnAttach()) {
+                    if (sessDesc.dontCallPostConstructOnAttach()) {
                         doPostConstruct = false;
                     }
                 }
                 clusteredLookup.getClusteredUsageCount().incrementAndGet();
             }
             else {
-                if(sessDesc.isClustered() && !clusteredLookup.getHazelcastCore().isEnabled()) {
+                if (sessDesc.isClustered() && !clusteredLookup.getHazelcastCore().isEnabled()) {
                     _logger.log(Level.WARNING, "Clustered Singleton {0} not available - Hazelcast is Disabled", sessionKey);
                 }
                 // a dummy invocation will be created by the BaseContainer to support
@@ -524,7 +524,7 @@ public abstract class AbstractSingletonContainer
             if ( isRemote ) {
 
 
-                if( hasRemoteBusinessView ) {
+                if ( hasRemoteBusinessView ) {
                     context.setEJBRemoteBusinessObjectImpl
                         (theRemoteBusinessObjectImpl);
                 }
@@ -532,11 +532,11 @@ public abstract class AbstractSingletonContainer
             }
             if ( isLocal ) {
 
-                if( hasLocalBusinessView ) {
+                if ( hasLocalBusinessView ) {
                     context.setEJBLocalBusinessObjectImpl
                         (theEJBLocalBusinessObjectImpl);
                 }
-                if( hasOptionalLocalBusinessView ) {
+                if ( hasOptionalLocalBusinessView ) {
                     context.setOptionalEJBLocalBusinessObjectImpl
                         (theOptionalEJBLocalBusinessObjectImpl);
                 }
@@ -551,7 +551,7 @@ public abstract class AbstractSingletonContainer
 
             context.setInstanceKey(singletonInstanceKey);
 
-            if(doPostConstruct) {
+            if (doPostConstruct) {
                 intercept(CallbackType.POST_CONSTRUCT, context);
             }
 
@@ -569,7 +569,7 @@ public abstract class AbstractSingletonContainer
             if (ejbInv != null) {
                 try {
                     invocationManager.postInvoke(ejbInv);
-                    if( initGotToPreInvokeTx ) {
+                    if ( initGotToPreInvokeTx ) {
                         postInvokeTx(ejbInv);
                     }
                 } catch(Exception pie) {
@@ -596,7 +596,7 @@ public abstract class AbstractSingletonContainer
 
     protected void doTimerInvocationInit(EjbInvocation inv, Object primaryKey)
             throws Exception {
-        if( isRemote ) {
+        if ( isRemote ) {
 
             // @@@ Revisit setting ejbObject in invocation.
             // What about if bean doesn't expose a remote or local view?
@@ -612,8 +612,8 @@ public abstract class AbstractSingletonContainer
 
     public boolean userTransactionMethodsAllowed(ComponentInvocation inv) {
         boolean utMethodsAllowed = false;
-        if( isBeanManagedTran ) {
-            if( inv instanceof EjbInvocation ) {
+        if ( isBeanManagedTran ) {
+            if ( inv instanceof EjbInvocation ) {
 
                 EjbInvocation ejbInv = (EjbInvocation) inv;
                 AbstractSessionContextImpl sc = (AbstractSessionContextImpl) ejbInv.context;
@@ -680,7 +680,7 @@ public abstract class AbstractSingletonContainer
             }
 
             /*TODO
-            if( isWebServiceEndpoint && (webServiceEndpoint != null) ) {
+            if ( isWebServiceEndpoint && (webServiceEndpoint != null) ) {
                 String endpointAddress =
                     webServiceEndpoint.getEndpointAddressUri();
                 WebServiceEjbEndpointRegistry.getRegistry().
@@ -755,11 +755,11 @@ public abstract class AbstractSingletonContainer
                 if (clusteredLookup.isClusteredEnabled()) {
                     EjbSessionDescriptor sessDesc = (EjbSessionDescriptor)ejbDescriptor;
                     IAtomicLong count = clusteredLookup.getClusteredUsageCount();
-                    if(count.decrementAndGet() <= 0) {
+                    if (count.decrementAndGet() <= 0) {
                         clusteredLookup.getClusteredSingletonMap().delete(clusteredLookup.getClusteredSessionKey());
                         count.destroy();
                     }
-                    else if(sessDesc.dontCallPreDestroyOnDetach()) {
+                    else if (sessDesc.dontCallPreDestroyOnDetach()) {
                         doPreDestroy = false;
                     }
                 }
@@ -778,18 +778,18 @@ public abstract class AbstractSingletonContainer
                     ejbInv.invocationInfo = preDestroyInvInfo;
                     preInvokeTx(ejbInv);
 
-                    if(doPreDestroy) {
+                    if (doPreDestroy) {
                         intercept(CallbackType.PRE_DESTROY, singletonCtx);
                     }
 
                 } catch ( Throwable t ) {
-                    if( ejbInv != null ) {
+                    if ( ejbInv != null ) {
                         ejbInv.exception = t;
                     }
                     _logger.log(Level.FINE, "ejbRemove exception", t);
                 } finally {
                     singletonCtx.setInEjbRemove(false);
-                    if( ejbInv != null ) {
+                    if ( ejbInv != null ) {
                         invocationManager.postInvoke(ejbInv);
                         try {
                             postInvokeTx(ejbInv);

@@ -119,14 +119,14 @@ public class ClusterScopedInterceptor implements Serializable {
     }
 
     private void lock(Class<?> beanClass, Clustered clusteredAnnotation) {
-        if(clusteredAnnotation.lock() == DistributedLockType.LOCK) {
+        if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
             clusteredLookup.setClusteredSessionKey(beanClass);
             clusteredLookup.getDistributedLock().lock();
         }
     }
 
     private void unlock(Class<?> beanClass, Clustered clusteredAnnotation) {
-        if(clusteredAnnotation.lock() == DistributedLockType.LOCK) {
+        if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
             clusteredLookup.setClusteredSessionKey(beanClass);
             clusteredLookup.getDistributedLock().unlock();
         }
