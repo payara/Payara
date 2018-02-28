@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,14 +59,14 @@ import org.glassfish.internal.deployment.Deployment;
  * @author lprimak
  */
 class ClusterScopeContext implements Context {
-    private final BeanManager bm;
+    private final BeanManager beanManager;
     private final ClusteredSingletonLookupImpl clusteredLookup;
 
 
-    public ClusterScopeContext(BeanManager bm, Deployment deployment) {
-        this.bm = bm;
+    public ClusterScopeContext(BeanManager beanManager, Deployment deployment) {
+        this.beanManager = beanManager;
         Application app = deployment.getCurrentDeploymentContext().getModuleMetaData(Application.class);
-        clusteredLookup = new ClusteredSingletonLookupImpl(bm, DOLUtils.getApplicationName(app));
+        clusteredLookup = new ClusteredSingletonLookupImpl(beanManager, DOLUtils.getApplicationName(app));
     }
 
     @Override
@@ -76,16 +76,16 @@ class ClusterScopeContext implements Context {
 
     @Override
     public <TT> TT get(Contextual<TT> contextual, CreationalContext<TT> creationalContext) {
-        TT rv = get(contextual);
-        if(rv == null) {
-            rv = getFromApplicationScoped(contextual, Optional.of(creationalContext));
+        TT beanInstance = get(contextual);
+        if (beanInstance == null) {
+            beanInstance = getFromApplicationScoped(contextual, Optional.of(creationalContext));
             final Bean<TT> bean = (Bean<TT>) contextual;
-            if(clusteredLookup.getClusteredSingletonMap().putIfAbsent(getBeanName(bean, getAnnotation(bean)), rv) != null) {
-                bean.destroy(rv, creationalContext);
-                rv = get(contextual);
+            if (clusteredLookup.getClusteredSingletonMap().putIfAbsent(getBeanName(bean, getAnnotation(bean)), beanInstance) != null) {
+                bean.destroy(beanInstance, creationalContext);
+                beanInstance = get(contextual);
             }
         }
-        return rv;
+        return beanInstance;
     }
 
     @Override
@@ -94,12 +94,12 @@ class ClusterScopeContext implements Context {
         final Bean<TT> bean = (Bean<TT>) contextual;
         Clustered clusteredAnnotation = getAnnotation(bean);
         String beanName = getBeanName(bean, clusteredAnnotation);
-        TT rv = (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
-        if(clusteredAnnotation.callPostConstructOnAttach() && rv != null &&
+        TT beanInstance = (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
+        if (clusteredAnnotation.callPostConstructOnAttach() && beanInstance != null &&
                 getFromApplicationScoped(contextual, Optional.<CreationalContext<TT>>absent()) == null) {
-            bm.getContext(ApplicationScoped.class).get(contextual, bm.createCreationalContext(contextual));
+            beanManager.getContext(ApplicationScoped.class).get(contextual, beanManager.createCreationalContext(contextual));
         }
-        return rv;
+        return beanInstance;
     }
 
     @Override
@@ -108,11 +108,11 @@ class ClusterScopeContext implements Context {
     }
 
     private<TT> TT getFromApplicationScoped(Contextual<TT> contextual, Optional<CreationalContext<TT>> creationalContext) {
-        if(creationalContext.isPresent()) {
-            return bm.getContext(ApplicationScoped.class).get(contextual, creationalContext.get());
+        if (creationalContext.isPresent()) {
+            return beanManager.getContext(ApplicationScoped.class).get(contextual, creationalContext.get());
         }
         else {
-            return bm.getContext(ApplicationScoped.class).get(contextual);
+            return beanManager.getContext(ApplicationScoped.class).get(contextual);
         }
     }
     

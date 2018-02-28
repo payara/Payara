@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,30 +65,30 @@ public class ClusteredAnnotationProcessor {
     private Deployment deployment;
 
 
-    public void beforeBeanDiscovery(BeforeBeanDiscovery bbd, BeanManager bm) {
-        bbd.addScope(ClusterScoped.class, true, true);
+    public void beforeBeanDiscovery(BeforeBeanDiscovery event, BeanManager beanManager) {
+        event.addScope(ClusterScoped.class, true, true);
         deployment = Globals.getDefaultHabitat().getService(Deployment.class);
-        bbd.addAnnotatedType(bm.createAnnotatedType(ClusterScopedInterceptor.class), ClusterScopedInterceptor.class.getName());
+        event.addAnnotatedType(beanManager.createAnnotatedType(ClusterScopedInterceptor.class), ClusterScopedInterceptor.class.getName());
     }
 
     public void afterBeanDiscovery(AfterBeanDiscovery event, BeanManager manager) {
         event.addContext(new ClusterScopeContext(manager, deployment));
     }
 
-    public <X> void processAnnotatedType(ProcessAnnotatedType<X> pat, BeanManager bm) {
-        Clustered clusteredAnnotation = pat.getAnnotatedType().getAnnotation(Clustered.class);
-        if(clusteredAnnotation != null && !isEJB(pat)) {
-            validate(pat.getAnnotatedType(), bm);
-            pat.setAnnotatedType(new ClusteredAnnotatedType<>(pat.getAnnotatedType()));
+    public <X> void processAnnotatedType(ProcessAnnotatedType<X> annotatedType, BeanManager beanManager) {
+        Clustered clusteredAnnotation = annotatedType.getAnnotatedType().getAnnotation(Clustered.class);
+        if (clusteredAnnotation != null && !isEJB(annotatedType)) {
+            validate(annotatedType.getAnnotatedType(), beanManager);
+            annotatedType.setAnnotatedType(new ClusteredAnnotatedType<>(annotatedType.getAnnotatedType()));
         }
     }
 
-    private <X> boolean isEJB(ProcessAnnotatedType<X> pat) {
-        EjbBundleDescriptor bd = deployment.getCurrentDeploymentContext().getModuleMetaData(EjbBundleDescriptorImpl.class);
-        return bd != null && bd.getEjbByClassName(pat.getAnnotatedType().getJavaClass().getName()).length > 0;
+    private <X> boolean isEJB(ProcessAnnotatedType<X> annotatedType) {
+        EjbBundleDescriptor bundleDescriptor = deployment.getCurrentDeploymentContext().getModuleMetaData(EjbBundleDescriptorImpl.class);
+        return bundleDescriptor != null && bundleDescriptor.getEjbByClassName(annotatedType.getAnnotatedType().getJavaClass().getName()).length > 0;
     }
 
-    private <X> void validate(AnnotatedType<X> annotatedType, BeanManager bm) {
+    private <X> void validate(AnnotatedType<X> annotatedType, BeanManager beanManager) {
         if (annotatedType.isAnnotationPresent(ApplicationScoped.class)) { }
         else {
             throw new IllegalArgumentException("Only @ApplicationScoped beans can be @Clustered: " + annotatedType.toString());
