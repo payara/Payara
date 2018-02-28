@@ -41,6 +41,7 @@ package fish.payara.nucleus.eventbus;
 
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -69,7 +70,7 @@ public class EventBus implements EventListener {
     @Inject
     private Events events;
     
-    private ConcurrentHashMap<String,TopicListener> messageReceivers;
+    private Map<String, TopicListener> messageReceivers;
     
     
     @PostConstruct
