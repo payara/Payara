@@ -222,6 +222,7 @@
         <jdk.version>1.7.0-09</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <javadoc.skip>false</javadoc.skip>
+        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
         <osgi-resource-locator.version>1.0.1</osgi-resource-locator.version>
         <sjsxp.version>1.0</sjsxp.version>
         <org.apache.felix.main.version>4.2.1</org.apache.felix.main.version>
@@ -350,7 +351,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${javadoc.version}</version>
+                    <version>${maven.javadoc.plugin.version}</version>
                     <configuration>
                         <additionalparam>${javadoc.options}</additionalparam>
                     </configuration>
