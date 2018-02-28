@@ -42,42 +42,54 @@
 
 package org.glassfish.cdi.transaction;
 
-import org.glassfish.logging.annotation.LoggerInfo;
+import static java.util.logging.Level.FINE;
+import static javax.transaction.Transactional.TxType.NEVER;
 
+import java.util.logging.Logger;
+
+import javax.annotation.Priority;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.transaction.InvalidTransactionException;
+import javax.transaction.Transactional;
 import javax.transaction.TransactionalException;
-import java.util.logging.Logger;
 
 /**
- * Transactional annotation Interceptor class for Never transaction type,
- * ie javax.transaction.Transactional.TxType.NEVER
- * If called outside a transaction context, managed bean method execution will then
- * continue outside a transaction context.
- * If called inside a transaction context, InvalidTransactionException will be thrown
+ * Transactional annotation Interceptor class for Never transaction type, ie
+ * javax.transaction.Transactional.TxType.NEVER If called outside a transaction context, managed
+ * bean method execution will then continue outside a transaction context. If called inside a
+ * transaction context, InvalidTransactionException will be thrown
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
+@Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
 @Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.NEVER)
+@Transactional(NEVER)
 public class TransactionalInterceptorNever extends TransactionalInterceptorBase {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME, SHARED_LOGMESSAGE_RESOURCE);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.log(java.util.logging.Level.FINE, CDI_JTA_NEVER);
-        if (isLifeCycleMethod(ctx)) return proceed(ctx);
+        _logger.log(FINE, CDI_JTA_NEVER);
+
+        if (isLifeCycleMethod(ctx)) {
+            return proceed(ctx);
+        }
+
         setTransactionalTransactionOperationsManger(true);
+
         try {
-            if (getTransactionManager().getTransaction() != null)
+            if (getTransactionManager().getTransaction() != null) {
                 throw new TransactionalException(
                         "InvalidTransactionException thrown from TxType.NEVER transactional interceptor.",
-                        new InvalidTransactionException("Managed bean with Transactional annotation and TxType of NEVER " +
+                        new InvalidTransactionException(
+                                "Managed bean with Transactional annotation and TxType of NEVER " +
                                 "called inside a transaction context"));
+            }
+
             return proceed(ctx);
         } finally {
             resetTransactionOperationsManager();

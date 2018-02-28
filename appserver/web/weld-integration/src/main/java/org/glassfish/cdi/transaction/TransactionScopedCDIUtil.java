@@ -41,25 +41,34 @@
 
 package org.glassfish.cdi.transaction;
 
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
-import org.glassfish.logging.annotation.LoggerInfo;
+import static java.util.logging.Level.WARNING;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.*;
-import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.InjectionTarget;
+import javax.enterprise.inject.spi.InjectionTargetFactory;
+import javax.enterprise.util.AnnotationLiteral;
+
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * This class contains utility methods used for TransactionScoped related CDI event processing.
+ *
  * @author <a href="mailto:arjav.desai@oracle.com">Arjav Desai</a>
  */
 public class TransactionScopedCDIUtil {
@@ -72,23 +81,21 @@ public class TransactionScopedCDIUtil {
 
     @LoggerInfo(subsystem = "AS-CDI-JTA", description = "CDI-JTA", publish = true)
     public static final String CDI_JTA_LOGGER_SUBSYSTEM_NAME = "javax.enterprise.resource.jta";
-    private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME,
-            SHARED_LOGMESSAGE_RESOURCE);
+    private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME, SHARED_LOGMESSAGE_RESOURCE);
 
-    public static void log(String message){
-        _logger.log(Level.WARNING,message);
+    public static void log(String message) {
+        _logger.log(WARNING, message);
     }
 
     /* Copied from JSF */
-    @SuppressWarnings("unchecked")
-    public static Bean createHelperBean(BeanManager beanManager, Class beanClass) {
-        BeanWrapper result = null;
-        AnnotatedType annotatedType = beanManager.createAnnotatedType(beanClass);
-        result = new BeanWrapper(beanClass);
+    public static Bean<?> createHelperBean(BeanManager beanManager, Class<? extends Object> beanClass) {
+        AnnotatedType<? extends Object> annotatedType = beanManager.createAnnotatedType(beanClass);
+        BeanWrapper result = new BeanWrapper(beanClass);
 
-        //use this to create the class and inject dependencies
-        InjectionTargetFactory factory = beanManager.getInjectionTargetFactory(annotatedType);
-        final InjectionTarget injectionTarget = factory.createInjectionTarget(result);
+        // Use this to create the class and inject dependencies
+        @SuppressWarnings("unchecked")
+        InjectionTargetFactory<Object> factory = (InjectionTargetFactory<Object>) beanManager.getInjectionTargetFactory(annotatedType);
+        InjectionTarget<Object> injectionTarget = factory.createInjectionTarget(result);
         result.setInjectionTarget(injectionTarget);
 
         return result;
@@ -98,37 +105,42 @@ public class TransactionScopedCDIUtil {
         BeanManager beanManager = null;
         try {
             beanManager = CDI.current().getBeanManager();
-        } catch (Exception e){
-            TransactionScopedCDIUtil.log("Can't get instance of BeanManager to process TransactionScoped CDI Event!");
+        } catch (Exception e) {
+            log("Can't get instance of BeanManager to process TransactionScoped CDI Event!");
         }
+
         if (beanManager != null) {
-            //TransactionScopedCDIEventHelperImpl AnnotatedType is created in Extension
+            // TransactionScopedCDIEventHelperImpl AnnotatedType is created in Extension
             Set<Bean<?>> availableBeans = beanManager.getBeans(TransactionScopedCDIEventHelperImpl.class);
+
             if (null != availableBeans && !availableBeans.isEmpty()) {
                 Bean<?> bean = beanManager.resolve(availableBeans);
-                TransactionScopedCDIEventHelper eventHelper =
-                        (TransactionScopedCDIEventHelper) beanManager.getReference(bean, bean.getBeanClass(),
-                                beanManager.createCreationalContext(null));
-                if (eventType.equalsIgnoreCase(INITIALIZED_EVENT))
+                TransactionScopedCDIEventHelper eventHelper = (TransactionScopedCDIEventHelper)
+                        beanManager.getReference(bean, bean.getBeanClass(), beanManager.createCreationalContext(null));
+
+                if (eventType.equalsIgnoreCase(INITIALIZED_EVENT)) {
                     eventHelper.fireInitializedEvent(new TransactionScopedCDIEventPayload());
-                else
+                }
+                else {
                     eventHelper.fireDestroyedEvent(new TransactionScopedCDIEventPayload());
+                }
             }
         } else {
-            TransactionScopedCDIUtil.log("Can't get instance of BeanManager to process TransactionScoped CDI Event!");
+            log("Can't get instance of BeanManager to process TransactionScoped CDI Event!");
         }
     }
+
     /* Copied from JSF */
-    private static class BeanWrapper implements Bean {
-        private Class beanClass;
-        private InjectionTarget injectionTarget = null;
+    private static class BeanWrapper implements Bean<Object> {
 
-        public BeanWrapper(Class beanClass) {
+        private Class<?> beanClass;
+        private InjectionTarget<Object> injectionTarget = null;
+
+        public BeanWrapper(Class<?> beanClass) {
             this.beanClass = beanClass;
-
         }
 
-        private void setInjectionTarget(InjectionTarget injectionTarget) {
+        private void setInjectionTarget(InjectionTarget<Object> injectionTarget) {
             this.injectionTarget = injectionTarget;
         }
 
@@ -138,7 +150,6 @@ public class TransactionScopedCDIUtil {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public Set<InjectionPoint> getInjectionPoints() {
             return injectionTarget.getInjectionPoints();
         }
@@ -194,8 +205,7 @@ public class TransactionScopedCDIUtil {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        public Object create(CreationalContext ctx) {
+        public Object create(CreationalContext<Object> ctx) {
             Object instance = injectionTarget.produce(ctx);
             injectionTarget.inject(instance, ctx);
             injectionTarget.postConstruct(instance);
@@ -203,8 +213,7 @@ public class TransactionScopedCDIUtil {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        public void destroy(Object instance, CreationalContext ctx) {
+        public void destroy(Object instance, CreationalContext<Object> ctx) {
             injectionTarget.preDestroy(instance);
             injectionTarget.dispose(instance);
             ctx.release();

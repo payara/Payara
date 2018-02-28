@@ -42,37 +42,43 @@
 
 package org.glassfish.cdi.transaction;
 
-import org.glassfish.logging.annotation.LoggerInfo;
+import static java.util.logging.Level.FINE;
 
-import javax.interceptor.AroundInvoke;
-//import javax.interceptor.Interceptor;
-//import javax.interceptor.Interceptor.Priority;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
 import java.util.logging.Logger;
 
+import javax.annotation.Priority;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+import javax.transaction.Transactional;
+
 /**
- * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
+ * Transactional annotation Interceptor class for Supports transaction type, ie
+ * javax.transaction.Transactional.TxType.SUPPORT If called outside a transaction context, managed
+ * bean method execution will then continue outside a transaction context. If called inside a
+ * transaction context, the managed bean method execution will then continue inside this transaction
+ * context.
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
+@Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
 @Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
+@Transactional(Transactional.TxType.SUPPORTS)
 public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME, SHARED_LOGMESSAGE_RESOURCE);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.log(java.util.logging.Level.FINE, CDI_JTA_SUPPORTS);
-        if (isLifeCycleMethod(ctx)) return proceed(ctx);
+        _logger.log(FINE, CDI_JTA_SUPPORTS);
+
+        if (isLifeCycleMethod(ctx)) {
+            return proceed(ctx);
+        }
+
         setTransactionalTransactionOperationsManger(false);
+
         try {
             return proceed(ctx);
         } finally {
