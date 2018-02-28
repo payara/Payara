@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
-import javax.enterprise.inject.spi.*;
-
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 
 /**
@@ -52,24 +53,23 @@ import javax.enterprise.inject.spi.Extension;
 public class TransactionalExtension implements Extension {
 
     public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscoveryEvent, final BeanManager beanManager) {
-        // Register the interceptors so no beans.xml is needed
-        AnnotatedType<TransactionalInterceptorMandatory> timat = beanManager.createAnnotatedType( TransactionalInterceptorMandatory.class );
-        beforeBeanDiscoveryEvent.addAnnotatedType( timat, TransactionalInterceptorMandatory.class.getName() );
+        AnnotatedType<TransactionalInterceptorMandatory> timat = beanManager.createAnnotatedType(TransactionalInterceptorMandatory.class);
+        beforeBeanDiscoveryEvent.addAnnotatedType(timat, TransactionalInterceptorMandatory.class.getName());
 
-        AnnotatedType<TransactionalInterceptorNever> tinat = beanManager.createAnnotatedType( TransactionalInterceptorNever.class );
-        beforeBeanDiscoveryEvent.addAnnotatedType( tinat, TransactionalInterceptorNever.class.getName() );
+        AnnotatedType<TransactionalInterceptorNever> tinat = beanManager.createAnnotatedType(TransactionalInterceptorNever.class);
+        beforeBeanDiscoveryEvent.addAnnotatedType(tinat, TransactionalInterceptorNever.class.getName());
 
-        AnnotatedType<TransactionalInterceptorNotSupported> tinsat = beanManager.createAnnotatedType( TransactionalInterceptorNotSupported.class );
-        beforeBeanDiscoveryEvent.addAnnotatedType( tinsat, TransactionalInterceptorNotSupported.class.getName() );
+        AnnotatedType<TransactionalInterceptorNotSupported> tinsat = beanManager.createAnnotatedType(TransactionalInterceptorNotSupported.class);
+        beforeBeanDiscoveryEvent.addAnnotatedType(tinsat, TransactionalInterceptorNotSupported.class.getName());
 
-        AnnotatedType<TransactionalInterceptorRequired> tirat = beanManager.createAnnotatedType( TransactionalInterceptorRequired.class );
-        beforeBeanDiscoveryEvent.addAnnotatedType( tirat, TransactionalInterceptorRequired.class.getName() );
+        AnnotatedType<TransactionalInterceptorRequired> tirat = beanManager.createAnnotatedType(TransactionalInterceptorRequired.class);
+        beforeBeanDiscoveryEvent.addAnnotatedType(tirat, TransactionalInterceptorRequired.class.getName());
 
-        AnnotatedType<TransactionalInterceptorRequiresNew> tirnat = beanManager.createAnnotatedType( TransactionalInterceptorRequiresNew.class );
-        beforeBeanDiscoveryEvent.addAnnotatedType( tirnat, TransactionalInterceptorRequiresNew.class.getName() );
+        AnnotatedType<TransactionalInterceptorRequiresNew> tirnat = beanManager.createAnnotatedType(TransactionalInterceptorRequiresNew.class);
+        beforeBeanDiscoveryEvent.addAnnotatedType(tirnat, TransactionalInterceptorRequiresNew.class.getName());
 
-        AnnotatedType<TransactionalInterceptorSupports> tisat = beanManager.createAnnotatedType( TransactionalInterceptorSupports.class );
-        beforeBeanDiscoveryEvent.addAnnotatedType( tisat, TransactionalInterceptorSupports.class.getName() );
+        AnnotatedType<TransactionalInterceptorSupports> tisat = beanManager.createAnnotatedType(TransactionalInterceptorSupports.class);
+        beforeBeanDiscoveryEvent.addAnnotatedType(tisat, TransactionalInterceptorSupports.class.getName());
     }
 
- }
+}
