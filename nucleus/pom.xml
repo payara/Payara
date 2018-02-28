@@ -302,6 +302,7 @@
         <glassfishbuild.version>3.2.20.payara-p1</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
+        <jansi.version>1.17</jansi.version>
         <command-security-plugin.version>1.0.8</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
