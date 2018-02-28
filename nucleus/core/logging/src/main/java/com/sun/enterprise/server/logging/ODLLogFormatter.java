@@ -218,17 +218,16 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
             // Adding messageType
             Level logLevel = record.getLevel();
+            recordBuffer.append(FIELD_BEGIN_MARKER);
             if (color()) {
                 recordBuffer.append(getColor(logLevel));
-            }
-            recordBuffer.append(FIELD_BEGIN_MARKER);
-            String odlLevel = logLevel.getLocalizedName();
+            }            String odlLevel = logLevel.getLocalizedName();
             logEvent.setLevel(odlLevel);
             recordBuffer.append(odlLevel);
-            recordBuffer.append(FIELD_END_MARKER);
             if (color()) {
                 recordBuffer.append(getReset());
             }
+            recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding message ID

@@ -77,6 +77,13 @@ public class EventBus implements EventListener {
         messageReceivers = new HashMap<String, TopicListener>(2);
     }
     
+    /**
+     * Sends out a message to all listeners in the Hazelcast sluster that are
+     * listening to the topic
+     * @param topic
+     * @param message
+     * @return 
+     */
     public boolean publish(String topic, ClusterMessage message) {
         boolean result = false;
         if (hzCore.isEnabled()) {
@@ -86,6 +93,13 @@ public class EventBus implements EventListener {
         return result;
     }
     
+    /**
+     * Adds a message receiver to listen to message send on the Hazelcast EventBus
+     * @param topic The name of the topic to recive messages on
+     * @param mr A {@link MessageReciever} to listen for messages
+     * @return true if successfully registered, false otherwise (i.e. if Hazelcast
+     * is not enabled)
+     */
     public boolean addMessageReceiver(String topic, MessageReceiver mr) {
         boolean result = false;
         if (hzCore.isEnabled()) {
@@ -105,6 +119,11 @@ public class EventBus implements EventListener {
         return result;
     }
     
+    /**
+     * Stops a message receiver from listening to messages on the specified topic
+     * @param topic The name of the topic that messages have been received on
+     * @param mr The {@link MessageReciever} to stop listening for messages
+     */
     public void removeMessageReceiver(String topic, MessageReceiver mr) {
         TopicListener tl = messageReceivers.get(topic);
         if (tl != null) {
@@ -122,16 +141,8 @@ public class EventBus implements EventListener {
 
     @Override
     public void event(Event event) {
-        if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
-            if (hzCore.isEnabled()) {
-                logger.config("Payara Clustered Event Bus Enabled");
-                // add message receivers if any as this maybe a
-                for (String topic : messageReceivers.keySet()) {
-                    TopicListener tl = messageReceivers.get(topic);
-                    String regId = hzCore.getInstance().getTopic(topic).addMessageListener(tl);
-                    tl.setRegistrationID(regId);                   
-                }
-            }
+        if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE) && hzCore.isEnabled()) {
+            logger.config("Payara Clustered Event Bus Enabled");
         }
     }
     

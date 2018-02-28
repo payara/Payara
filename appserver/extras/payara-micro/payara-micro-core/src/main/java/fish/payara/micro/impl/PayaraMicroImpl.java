@@ -91,6 +91,8 @@ import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Formatter;
@@ -1622,11 +1624,21 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
 
             System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
-            try {
-                LogManager.getLogManager().readConfiguration();
-            } catch (SecurityException | IOException ex) {
+            try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())){
+                LogManager.getLogManager().readConfiguration(is);
+                
+                // go through all root handlers and set formatters based on properties
+                Logger rootLogger = LogManager.getLogManager().getLogger("");
+                for (Handler handler : rootLogger.getHandlers()) {
+                    String formatter = LogManager.getLogManager().getProperty(handler.getClass().getCanonicalName()+".formatter");
+                    if (formatter != null) {
+                        handler.setFormatter((Formatter) Class.forName(formatter).newInstance());
+                    }
+                }
+                
+            } catch (SecurityException | IOException | ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
-            }
+            } 
         } else {  // system property was not set on the command line using the command option or via -D
             // we are likely using our default properties file so see if we need to rewrite it
             if (logToFile) {
@@ -1657,8 +1669,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }
             }
             System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
-            try {
-                LogManager.getLogManager().readConfiguration();
+            try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())){
+                LogManager.getLogManager().readConfiguration(is);
 
                 // reset the formatters on the two handlers
                 //Logger rootLogger = Logger.getLogger("");

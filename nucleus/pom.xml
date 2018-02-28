@@ -71,12 +71,12 @@
     </issueManagement>
 
     <licenses>
-      <license>
-        <name>CDDL + GPLv2 with classpath exception</name>
-        <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
-        <distribution>repo</distribution>
-        <comments>A business-friendly OSS license</comments>
-      </license>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
     </licenses>
 
 
@@ -168,15 +168,15 @@
         -->
 
         <repository>
-           <id>payara-patched-externals</id>
-	       <name>Payara Patched Externals</name>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
             <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-           	<releases>
-           		<enabled>true</enabled>
-           	</releases>
-            	<snapshots>
-                	<enabled>false</enabled>
-            	</snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
 
     </repositories>
@@ -194,16 +194,16 @@
             </snapshots>
         </pluginRepository>
         <pluginRepository>
-           <id>payara-patched-externals</id>
-	       <name>Payara Patched Externals</name>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
             <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
             <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
-           	<releases>
-           		<enabled>true</enabled>
-           	</releases>
-            	<snapshots>
-                	<enabled>true</enabled>
-            	</snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
 
@@ -213,7 +213,7 @@
         <jdk.version>1.8.0</jdk.version>
         <javase.version>1.8</javase.version>
         <javadoc.skip>false</javadoc.skip>
-        <javadoc.version>2.10.3</javadoc.version>
+        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
         <deploy.skip>true</deploy.skip>
 
         <!-- Java EE -->
@@ -310,7 +310,6 @@
         <ant-launcher.version>1.10.1</ant-launcher.version>
 
         <!-- Debug / analysis -->
-
         <findbugs.skip>true</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
@@ -406,7 +405,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${javadoc.version}</version>
+                    <version>${maven.javadoc.plugin.version}</version>
                     <configuration>
                         <additionalparam>${javadoc.options}</additionalparam>
                     </configuration>
@@ -1087,7 +1086,7 @@ Parent is ${project.parent}</echo>
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
-             <dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
                 <version>${jackson.version}</version>

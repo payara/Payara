@@ -37,64 +37,105 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
 import java.io.*;
 import java.util.*;
-
-import javax.inject.Inject;
-
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandValidationException;
-
-
+import java.util.logging.*;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import com.sun.enterprise.admin.cli.*;
+import com.sun.enterprise.util.ObjectAnalyzer;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.util.HostAndPort;
+import javax.inject.Inject;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import com.sun.enterprise.admin.cli.CLICommand;
-import com.sun.enterprise.admin.cli.remote.*;
-
 /**
- *
- * @author Byron Nevins
+ * Restart a local server instance.
  */
 @Service(name = "restart-local-instance")
+@ExecuteOn(RuntimeType.DAS)
 @PerLookup
-public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
+public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
 
-    @Param(name = "debug", optional = true)
+    @Param(optional = true, shortName = "d", defaultValue = "false")
     private Boolean debug;
 
     @Inject
     private ServiceLocator habitat;
 
     @Override
+    protected int executeCommand() throws CommandException {
+
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer(toString());
+        }
+
+        File serverDir = getServerDirs().getServerDir();
+
+        if (serverDir == null || !serverDir.isDirectory()) {
+            return noSuchInstance();
+        }
+
+        String serverName = getServerDirs().getServerName();
+        HostAndPort addr = getAdminAddress(serverName);
+
+        if (!isRunning() && !isRunning(addr.getHost(), addr.getPort())) {
+            return instanceNotRunning();
+        }
+
+        if (sync.equals("none")) {
+            logger.info(Strings.get("Instance.nosync"));
+        } else if (!synchronizeInstance()) {
+            File domainXml
+                    = new File(new File(instanceDir, "config"), "domain.xml");
+            if (!domainXml.exists()) {
+                logger.info(Strings.get("Instance.nodomainxml"));
+                return ERROR;
+            }
+            logger.info(Strings.get("Instance.syncFailed"));
+        }
+
+        programOpts.setHostAndPort(addr);
+
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "Stopping server at {0}", addr.toString());
+        }
+
+        logger.finer("It's the correct Instance");
+        return doRemoteCommand();
+
+    }
+
     protected final int doRemoteCommand() throws CommandException {
         // see StopLocalInstance for comments.  These 2 lines can be refactored.
         setLocalPassword();
         programOpts.setInteractive(false);
 
-        if(!isRestartable())
+        if (!isRestartable()) {
             throw new CommandException(Strings.get("restart.notRestartable"));
+        }
 
         int oldServerPid = getServerPid(); // might be < 0
 
         // run the remote restart-domain command and throw away the output
         RemoteCLICommand cmd = new RemoteCLICommand("_restart-instance", programOpts, env);
 
-        if (debug != null)
+        if (debug != null) {
             cmd.executeAndReturnOutput("_restart-instance", "--debug", debug.toString());
-        else
+        } else {
             cmd.executeAndReturnOutput("_restart-instance");
+        }
 
         waitForRestart(oldServerPid);
         return 0;
     }
 
-    @Override
     protected int instanceNotRunning() throws CommandException {
         logger.warning(Strings.get("restart.instanceNotRunning"));
         CLICommand cmd = habitat.getService(CLICommand.class, "start-local-instance");
@@ -112,7 +153,7 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
          *
          * Only --debug, --nodedir, -node, and the operand apply here.
          */
-        List<String> opts = new ArrayList<String>();
+        List<String> opts = new ArrayList<>();
         opts.add("start-local-instance");
         if (debug != null) {
             opts.add("--debug");
@@ -126,9 +167,49 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
             opts.add("--node");
             opts.add(node);
         }
-        if (instanceName != null)
+        if (sync != null) {
+            opts.add("--sync");
+            opts.add(sync);
+        }
+        if (instanceName != null) {
             opts.add(instanceName);
+        }
 
         return cmd.execute(opts.toArray(new String[opts.size()]));
     }
+
+    @Override
+    protected boolean mkdirs(File f) {
+        // we definitely do NOT want dirs created for this instance if they don't exist!
+        return false;
+    }
+
+    @Override
+    protected void validate() throws CommandException {
+        super.validate();
+
+        File dir = getServerDirs().getServerDir();
+
+        if (!dir.isDirectory()) {
+            throw new CommandException(Strings.get("Instance.noSuchInstance"));
+        }
+
+    }
+
+    /**
+     * Print message and return exit code when we detect that there is no such
+     * instance
+     */
+    private int noSuchInstance() {
+        // by definition this is not an error
+        // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8387
+        logger.warning(Strings.get("Instance.noSuchInstance"));
+        return 0;
+    }
+
+    @Override
+    public String toString() {
+        return ObjectAnalyzer.toStringWithSuper(this);
+    }
+
 }
