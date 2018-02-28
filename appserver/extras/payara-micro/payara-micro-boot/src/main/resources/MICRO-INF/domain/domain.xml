@@ -107,6 +107,7 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
         	<log-notifier></log-notifier>
         	<eventbus-notifier></eventbus-notifier>
             </monitoring-service-configuration>
+            <microprofile-metrics-configuration></microprofile-metrics-configuration>
             <security-service activate-default-principal-to-role-mapping="true" jacc="simple">
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
                     <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
