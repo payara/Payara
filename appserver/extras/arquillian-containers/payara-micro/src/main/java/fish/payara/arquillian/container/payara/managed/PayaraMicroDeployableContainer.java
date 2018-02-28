@@ -195,16 +195,20 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
             // Add the extra cmd options to the Payara Micro instance
             if (configuration.getCmdOptions() != null) {
                 int index = 1;
-                for (String option : configuration.getCmdOptions().split(" ")) {
-                    cmd.add(index, option);
+                // Split on non-escaped spaces
+                for (String option : configuration.getCmdOptions().split("(?<!\\\\) ")) {
+                    // Unescape any path spaces before adding the string
+                    cmd.add(index, option.replace("\\ ", " "));
                     index++;
                 }
             }
 
             // Add the extra micro options to the Payara Micro instance
             if (configuration.getExtraMicroOptions() != null) {
-                for (String option : configuration.getExtraMicroOptions().split(" ")) {
-                    cmd.add(option);
+                // Split on non-escaped spaces
+                for (String option : configuration.getExtraMicroOptions().split("(?<!\\\\) ")) {
+                    // Unescape any path spaces before adding the string
+                    cmd.add(option.replace("\\ ", " "));
                 }
             }
 
