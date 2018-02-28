@@ -37,14 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.cdi.transaction;
 
-import junit.framework.TestCase;
-
-import javax.transaction.*;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+
+import javax.transaction.InvalidTransactionException;
+import javax.transaction.RollbackException;
+import javax.transaction.TransactionRequiredException;
+import javax.transaction.Transactional;
+import javax.transaction.TransactionalException;
+
+import junit.framework.TestCase;
 
 /**
  * User: paulparkinson
@@ -71,7 +76,7 @@ public class TransactionalAnnotationTest extends TestCase {
         transactionalInterceptorMANDATORY.setTestTransactionManager(transactionManager);
         javax.interceptor.InvocationContext ctx =
                 new InvocationContext(
-                        BeanMandatory.class.getMethod("foo", String.class), null
+                        BeanMandatory.class.getMethod("foo", String.class), null, BeanMandatory.class
                 );
         try {
             transactionalInterceptorMANDATORY.transactional(ctx);
@@ -103,7 +108,7 @@ public class TransactionalAnnotationTest extends TestCase {
         transactionalInterceptorNEVER.setTestTransactionManager(transactionManager);
         javax.interceptor.InvocationContext ctx =
                 new InvocationContext(
-                        BeanNever.class.getMethod("foo", String.class), null
+                        BeanNever.class.getMethod("foo", String.class), null, BeanNever.class
                 );
         transactionalInterceptorNEVER.transactional(ctx);
         transactionManager.begin();
@@ -127,7 +132,7 @@ public class TransactionalAnnotationTest extends TestCase {
         transactionalInterceptorNOT_SUPPORTED.setTestTransactionManager(transactionManager);
         javax.interceptor.InvocationContext ctx =
                 new InvocationContext(
-                        BeanNotSupported.class.getMethod("foo", String.class), null
+                        BeanNotSupported.class.getMethod("foo", String.class), null, BeanNotSupported.class
                 );
         transactionalInterceptorNOT_SUPPORTED.transactional(ctx);
     }
@@ -139,7 +144,7 @@ public class TransactionalAnnotationTest extends TestCase {
         transactionalInterceptorREQUIRED.setTestTransactionManager(transactionManager);
         javax.interceptor.InvocationContext ctx =
                 new InvocationContext(
-                        BeanRequired.class.getMethod("foo", String.class), null
+                        BeanRequired.class.getMethod("foo", String.class), null, BeanRequired.class
                 );
         transactionalInterceptorREQUIRED.transactional(ctx);
         transactionManager.begin();
@@ -155,7 +160,7 @@ public class TransactionalAnnotationTest extends TestCase {
         transactionalInterceptorREQUIRES_NEW.setTestTransactionManager(transactionManager);
         javax.interceptor.InvocationContext ctx =
                 new InvocationContext(
-                        BeanRequiresNew.class.getMethod("foo", String.class), null
+                        BeanRequiresNew.class.getMethod("foo", String.class), null, BeanRequiresNew.class
                 );
         transactionalInterceptorREQUIRES_NEW.transactional(ctx);
         transactionManager.begin();
@@ -171,7 +176,7 @@ public class TransactionalAnnotationTest extends TestCase {
         transactionalInterceptorSUPPORTS.setTestTransactionManager(transactionManager);
         javax.interceptor.InvocationContext ctx =
                 new InvocationContext(
-                        BeanSupports.class.getMethod("foo", String.class), null
+                        BeanSupports.class.getMethod("foo", String.class), null, BeanSupports.class
                 );
         transactionalInterceptorSUPPORTS.transactional(ctx);
         transactionManager.begin();
@@ -186,7 +191,7 @@ public class TransactionalAnnotationTest extends TestCase {
         javax.transaction.TransactionManager transactionManager = new TransactionManager();
         transactionalInterceptorREQUIRED.setTestTransactionManager(transactionManager);
         javax.interceptor.InvocationContext ctx = new InvocationContext(
-                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLException"), null) {
+                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLException"), null, BeanSpecExampleOfRollbackDontRollback.class) {
             @Override
             public Object getTarget() {
                 return new BeanSpecExampleOfRollbackDontRollback();
@@ -210,7 +215,7 @@ public class TransactionalAnnotationTest extends TestCase {
 
         // Now with a child of SQLException
         ctx = new InvocationContext(
-                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLException"), null) {
+                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLException"), null, BeanSpecExampleOfRollbackDontRollback.class) {
             @Override
             public Object getTarget() {
                 return new BeanSpecExampleOfRollbackDontRollback();
@@ -234,7 +239,7 @@ public class TransactionalAnnotationTest extends TestCase {
 
         // now with a child of SQLException but one that is specified as dontRollback
         ctx = new InvocationContext(
-                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLWarning"), null) {
+                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLWarning"), null, BeanSpecExampleOfRollbackDontRollback.class) {
             @Override
             public Object proceed() throws Exception {
                 throw new SQLWarning("test SQLWarning");
@@ -271,7 +276,7 @@ public class TransactionalAnnotationTest extends TestCase {
 //        SQLWarningExtensionExtension isAssignableFrom SQLWarningExtension
 
         ctx = new InvocationContext(
-                BeanSpecExampleOfRollbackDontRollbackExtension.class.getMethod("throwSQLWarning"), null) {
+                BeanSpecExampleOfRollbackDontRollbackExtension.class.getMethod("throwSQLWarning"), null, BeanSpecExampleOfRollbackDontRollbackExtension.class) {
             @Override
             public Object proceed() throws Exception {
                 throw new SQLWarningExtension();
@@ -296,7 +301,7 @@ public class TransactionalAnnotationTest extends TestCase {
 
         //same as above test but with extension just to show continued inheritance...
         ctx = new InvocationContext(
-                BeanSpecExampleOfRollbackDontRollbackExtension.class.getMethod("throwSQLWarning"), null) {
+                BeanSpecExampleOfRollbackDontRollbackExtension.class.getMethod("throwSQLWarning"), null, BeanSpecExampleOfRollbackDontRollbackExtension.class) {
             @Override
             public Object proceed() throws Exception {
                 throw new SQLWarningExtensionExtension();
