@@ -90,7 +90,7 @@ public class MetricsService implements EventListener {
     private ServerEnvironment serverEnv;
     
     @Inject
-    ServiceLocator habitat;
+    ServiceLocator serviceLocator;
     
     private MetricsServiceConfiguration metricsServiceConfiguration;
 
@@ -103,7 +103,7 @@ public class MetricsService implements EventListener {
     @PostConstruct
     public void init() {
         events.register(this);
-        metricsServiceConfiguration = habitat.getService(MetricsServiceConfiguration.class);
+        metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
         initMetadataConfig(JAXB.unmarshal(getConfigStream(), MBeanMetadataConfig.class));
     }
 

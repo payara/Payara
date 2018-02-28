@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -238,7 +238,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         span.addSpanTag("App Name", invocation.getAppName());
         span.addSpanTag("Component ID", invocation.getComponentId());
         span.addSpanTag("Module Name", invocation.getModuleName());
-        span.addSpanTag("Class Name", invocation.getInstance().getClass().getName());
+        Object instance = invocation.getInstance();
+        if (instance != null) {
+            span.addSpanTag("Class Name", instance.getClass().getName());
+        }
         span.addSpanTag("Thread Name", Thread.currentThread().getName());
         
         return span;

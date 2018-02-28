@@ -66,6 +66,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 import org.glassfish.internal.api.PostStartupRunLevel;
 
 /**
@@ -110,6 +112,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
 
     @Inject
     private Domain domain;
+    
+    @Inject
+    JavaEEContextUtil contextUtil;
 
     private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ResourceValidator.class);
 
@@ -138,7 +143,21 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             AppResources appResources = new AppResources();
             //Puts all resouces found in the application via annotation or xml into appResources
             parseResources(appResources);
-            validateResources(appResources);
+            
+            // Ensure we have a valid component invocation before triggering lookups
+            String componentId = null;
+            for (BundleDescriptor bundleDescriptor : application.getBundleDescriptors()) {
+                if (bundleDescriptor instanceof JndiNameEnvironment) {
+                    componentId = DOLUtils.getComponentEnvId((JndiNameEnvironment) bundleDescriptor);
+                    if (componentId != null) {
+                        break;
+                    }
+                }
+            }
+            contextUtil.setInstanceComponentId(componentId);
+            try (Context ctx = contextUtil.pushContext()) {
+                validateResources(appResources);
+            }
         }
     }
 
@@ -841,12 +860,28 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         if (isResourceInDomainXML(jndiName) || isDefaultResource(jndiName)) {
             return;
         }
+       
 
         // Managed Bean & EJB portable JNDI names
         if (jndiName.startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX) || jndiName.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)) {
+            // first look with the name
+            if (namespace.find(jndiName, env)) {
+                return;
+            }
+            
             String newName = convertModuleOrAppJNDIName(jndiName, resource.getEnv());
             if (namespace.find(newName, env)) {
                 return;
+            } else {
+                // try actual lookup
+                try {
+                    InitialContext ctx = new InitialContext();
+                    ctx.lookup(newName);
+                    return;
+                } catch(NamingException ne) {
+                    
+                }
+                
             }
         }
 

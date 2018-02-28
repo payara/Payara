@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
@@ -45,9 +46,14 @@ import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.*;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.glassfish.api.*;
@@ -70,51 +76,71 @@ import javax.inject.Named;
 @I18n("restart.instance.command")
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="_restart-instance", 
-        description="_restart-instance"),
-    @RestEndpoint(configBean=Server.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="restart-instance", 
-        description="restart-instance",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+    @RestEndpoint(configBean = Domain.class,
+            opType = RestEndpoint.OpType.POST,
+            path = "_restart-instance",
+            description = "_restart-instance"),
+    @RestEndpoint(configBean = Server.class,
+            opType = RestEndpoint.OpType.POST,
+            path = "restart-instance",
+            description = "restart-instance",
+            params = {
+                @RestParam(name = "id", value = "$parent")
+            })
 })
 public class RestartInstanceCommand implements AdminCommand {
-    
+
+    @Inject
+    private InstanceStateService stateSvc;
+
+    @Inject
+    private ServiceLocator habitat;
+
+    @Inject
+    private Nodes nodes;
+
+    @Inject
+    private ServerEnvironment env;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config dasConfig;
+
     @Param(optional = false, primary = true)
     private String instanceName;
+
     // no default value!  We use the Boolean as a tri-state.
     @Param(name = "debug", optional = true)
     private String debug;
+
+    @Param(name = "sync", optional = true, defaultValue = "normal", acceptableValues = "none, normal, full")
+    private String sync;
     
     @Param(name="delay", optional = true, defaultValue = "0")
     private int delay;
-    
-    @Inject
-    InstanceStateService stateSvc;
-    @Inject
-    private ServiceLocator habitat;
-    @Inject
-    private ServerEnvironment env;
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config dasConfig;
+
     private Logger logger;
+
     private RemoteInstanceCommandHelper helper;
+
     private ActionReport report;
+
     private final static long WAIT_TIME_MS = 600000; // 10 minutes
+
     private Server instance;
+
     private String host;
+
     private int port;
+
     private String oldPid;
-    private AdminCommandContext ctx;
+
+    private AdminCommandContext context;
     
     @Override
-    public void execute(AdminCommandContext context) {
+    public void execute(AdminCommandContext ctx) {
         try {
-            ctx = context;
+            context = ctx;
             helper = new RemoteInstanceCommandHelper(habitat);
             report = context.getActionReport();
             logger = context.getLogger();
@@ -130,7 +156,7 @@ public class RestartInstanceCommand implements AdminCommand {
             prepare();
             setOldPid();
             if (logger.isLoggable(Level.FINE))
-                logger.fine("Restart-instance old-pid = " + oldPid);
+                logger.log(Level.FINE, "Restart-instance old-pid = {0}", oldPid);
             callInstance();
             waitForRestart();
 
@@ -139,14 +165,78 @@ public class RestartInstanceCommand implements AdminCommand {
                 logger.info(msg);
                 report.setMessage(msg);
             }
-        }
-        catch (InstanceNotRunningException inre) {
+            synchronizeInstance();
+        } catch (InstanceNotRunningException inre) {
             start();
-        }
-        catch (CommandException ce) {
+        } catch (CommandException ce) {
             setError(Strings.get("restart.instance.racError", instanceName,
                     ce.getLocalizedMessage()));
         }
+    }
+
+    private void synchronizeInstance() {
+
+        NodeUtils nodeUtils = new NodeUtils(habitat, logger);
+        ArrayList<String> command = new ArrayList<>();
+        String humanCommand;
+
+        command.add("_synchronize-instance");
+        if (sync != null) {
+            command.add("--sync");
+            command.add(sync);
+        }
+        if (instanceName != null) {
+            command.add(instanceName);
+        }
+
+        // Convert the command into a string representing the command a human should run.
+        humanCommand = makeCommandHuman(command);
+
+        String noderef = instance.getNodeRef();
+        String msg;
+        String nodeHost;
+
+        Node node = nodes.getNode(noderef);
+        if (node != null) {
+            nodeHost = node.getNodeHost();
+        } else {
+            msg = Strings.get("missingNode", noderef);
+            logger.severe(msg);
+            report.setMessage(msg);
+            return;
+        }
+
+        // First error message displayed if we fail
+        String firstErrorMessage = Strings.get("restart.instance.syncFailed", instanceName, noderef, nodeHost);
+
+        StringBuilder output = new StringBuilder();
+
+        // There is a problem on Windows waiting for IO to complete on a
+        // child process which runs a long running grandchild. See IT 12777.
+        boolean waitForReaderThreads = true;
+        if (OS.isWindows()) {
+            waitForReaderThreads = false;
+        }
+
+        // Run the command on the node and handle errors.
+        nodeUtils.runAdminCommandOnNode(node, command, context, firstErrorMessage,
+                humanCommand, output, waitForReaderThreads);
+
+        if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
+            // If it was successful say so and display the command output
+            msg = Strings.get("restart.instance.success", instanceName);
+            report.setMessage(msg);
+        }
+
+    }
+
+    private String makeCommandHuman(List<String> command) {
+        StringBuilder fullCommand = new StringBuilder("lib/nadmin ");
+        for (String s : command) {
+            fullCommand.append(" ");
+            fullCommand.append(s);
+        }
+        return fullCommand.toString();
     }
 
     private void prepare() throws InstanceNotRunningException {
@@ -221,7 +311,7 @@ public class RestartInstanceCommand implements AdminCommand {
             // namely if the instance isn't running.
             throw new InstanceNotRunningException();
         }
-        
+
         String val = rac.findPropertyInReport("restartable");
         if (val != null && val.equals("false")) {
             return false;
@@ -307,8 +397,8 @@ public class RestartInstanceCommand implements AdminCommand {
         try {
             StartInstanceCommand sic =
                     new StartInstanceCommand(habitat, instanceName,
-                    Boolean.parseBoolean(debug), env);
-            sic.execute(ctx);
+                            Boolean.parseBoolean(debug), env);
+            sic.execute(context);
         }
         catch (Exception e) {
             // this is NOT normal!  start-instance communicates errors via the

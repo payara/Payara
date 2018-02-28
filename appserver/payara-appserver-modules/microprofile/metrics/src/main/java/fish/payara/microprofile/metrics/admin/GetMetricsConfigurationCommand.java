@@ -91,12 +91,12 @@ public class GetMetricsConfigurationCommand implements AdminCommand {
     private String target;
     
     @Override
-    public void execute(AdminCommandContext acc) {
+    public void execute(AdminCommandContext adminCommandContext) {
         Config targetConfig = targetUtil.getConfig(target);
         
         if (targetConfig == null) {
-            acc.getActionReport().setMessage("No such config name: " + targetUtil);
-            acc.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            adminCommandContext.getActionReport().setMessage("No such config name: " + targetUtil);
+            adminCommandContext.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
         
@@ -110,7 +110,7 @@ public class GetMetricsConfigurationCommand implements AdminCommand {
         };        
         columnFormatter.addRow(outputValues);
         
-        acc.getActionReport().appendMessage(columnFormatter.toString());
+        adminCommandContext.getActionReport().appendMessage(columnFormatter.toString());
         
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", metricsConfiguration.getEnabled());
@@ -118,6 +118,6 @@ public class GetMetricsConfigurationCommand implements AdminCommand {
         
         Properties extraProperties = new Properties();
         extraProperties.put("metricsConfiguration", extraPropertiesMap);
-        acc.getActionReport().setExtraProperties(extraProperties);
+        adminCommandContext.getActionReport().setExtraProperties(extraProperties);
     }
 }
