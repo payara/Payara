@@ -145,14 +145,6 @@ public class EventBus implements EventListener {
     public void event(Event event) {
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE) && hzCore.isEnabled()) {
             logger.config("Payara Clustered Event Bus Enabled");
-            // add message receivers if any as this maybe a
-            for (String topic : messageReceivers.keySet()) {
-                TopicListener tl = messageReceivers.get(topic);
-                if (tl != null) {
-                    String regId = hzCore.getInstance().getTopic(topic).addMessageListener(tl);
-                    tl.setRegistrationID(regId);
-                }
-            }
         }
     }
     
