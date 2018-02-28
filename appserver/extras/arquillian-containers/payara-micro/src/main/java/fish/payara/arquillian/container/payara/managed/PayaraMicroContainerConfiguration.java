@@ -56,6 +56,8 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
     private String microJar = getConfigurableVariable("payara.microJar", "MICRO_JAR", null);
     private PayaraVersion microVersion = null;
 
+    private int startupTimeoutInSeconds = Integer.parseInt(getConfigurableVariable("payara.startupTimeoutInSeconds", "MICRO_STARTUP_TIMEOUT_IN_SECONDS", "180"));
+
     private boolean clusterEnabled = Boolean.parseBoolean(getConfigurableVariable("payara.clusterEnabled", "MICRO_CLUSTER_ENABLED", "false"));
 
     private boolean randomHttpPort = Boolean.parseBoolean(getConfigurableVariable("payara.randomHttpPort", "MICRO_RANDOM_HTTP_PORT", "true"));
@@ -101,6 +103,17 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
         this.clusterEnabled = clusterEnabled;
     }
 
+    /**
+     * @param startupTimeoutInSeconds The maximum time allowed for Payara Micro to startup.
+     * After this time has been exceeded the start will be aborted. -1 means an infinite wait. 180 by default.
+     */
+    public void setStartupTimeoutInSeconds(int startupTimeoutInSeconds) {
+        this.startupTimeoutInSeconds = startupTimeoutInSeconds;
+    }
+
+    public int getStartupTimeoutInSeconds() {
+        return startupTimeoutInSeconds;
+    }
 
     /**
      * @param randomHttpPort Enable/disable using a random port between 8080 and 9080.
@@ -144,7 +157,8 @@ public class PayaraMicroContainerConfiguration implements ContainerConfiguration
     }
 
     /**
-     * @param debug Flag to start the server in debug mode
+     * @param debug Flag to start the server in debug mode. This will cause the <code>startupTimeoutInSeconds</code>
+     * to be set to -1 (infinite wait) and Micro to suspend on startup waiting for a debug connection to port 5006.
      */
     public void setDebug(boolean debug) {
         this.debug = debug;
