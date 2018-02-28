@@ -36,11 +36,14 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.v3.services.impl;
 
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.deployment.ApplicationContainer;
 
@@ -64,6 +67,8 @@ import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.kernel.KernelLoggerInfo;
+
+import fish.payara.kernel.services.impl.MicroNetworkListener;
 
 /**
  * This class is responsible for configuring Grizzly.
@@ -127,11 +132,18 @@ public class GrizzlyProxy implements NetworkProxy {
 
     protected GrizzlyListener createGrizzlyListener(
             final NetworkListener networkListener) {
+        ServerEnvironment env = grizzlyService.getHabitat().getService(ServerEnvironment.class);
+        if (env != null && env.isMicro()) {
+            return createMicroListener(networkListener);
+        }
         if (GrizzlyService.isLightWeightListener(networkListener)) {
             return createServiceInitializerListener(networkListener);
-        } else {
-            return createGlassfishListener(networkListener);
         }
+        return createGlassfishListener(networkListener);
+    }
+
+    protected GrizzlyListener createMicroListener(final NetworkListener networkListener) {
+        return new MicroNetworkListener(grizzlyService, networkListener, logger);
     }
 
     protected GrizzlyListener createGlassfishListener(
@@ -268,20 +280,16 @@ public class GrizzlyProxy implements NetworkProxy {
         try {
             grizzlyListener.start();
         } catch (BindException e) {
-            if (logger.isLoggable(Level.SEVERE)) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.grizzlyUnableToBind,
-                    new Object[]{Grizzly.getDotedVersion(),
-                    grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
-            }
+            logger.log(Level.SEVERE, KernelLoggerInfo.listenerUnableToBind,
+                new Object[]{Grizzly.getDotedVersion(),
+                grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
             throw e;
         }
 
-        if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,
-                    new Object[]{Grizzly.getDotedVersion(),
-                    System.currentTimeMillis() - t1,
-                    grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
-        }
+        logger.log(Level.INFO, KernelLoggerInfo.listenerStarted,
+                new Object[]{grizzlyListener.getName(),
+                System.currentTimeMillis() - t1,
+                grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
     }
     
     @Override

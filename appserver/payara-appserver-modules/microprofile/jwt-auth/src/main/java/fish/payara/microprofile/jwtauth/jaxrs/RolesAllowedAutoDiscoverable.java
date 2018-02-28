@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +39,31 @@
  */
 package fish.payara.microprofile.jwtauth.jaxrs;
 
+import static com.sun.enterprise.deployment.util.DOLUtils.getCurrentBundleForContext;
 import static javax.ws.rs.RuntimeType.SERVER;
+import static org.glassfish.internal.api.Globals.getDefaultHabitat;
 import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORITY;
 
 import javax.annotation.Priority;
 import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.core.FeatureContext;
 
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
+
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 
 /**
  * This Jersey specific service provider will install the JAX-RS dynamic
  * feature which on its turn will install filters for JAX-RS resources
  * that check roles or deny all access.
- * 
+ *
  * <p>
- * Note this extra service is needed, so the MP-JWT implementation code can be in 
+ * Note this extra service is needed, so the MP-JWT implementation code can be in
  * a server/container jar, which is typically not scanned for the <code>Provider</code>
  * annotation, which would normally cause the dynamic feature to be installed.
- * 
+ *
  * @author Arjan Tijms
  */
 @ConstrainedTo(SERVER)
@@ -66,7 +72,19 @@ public final class RolesAllowedAutoDiscoverable implements ForcedAutoDiscoverabl
 
     @Override
     public void configure(FeatureContext context) {
-        if (!context.getConfiguration().isRegistered(RolesAllowedDynamicFeature.class)) {
+
+        boolean shouldRegister = true;
+
+        BundleDescriptor descriptor =
+            getCurrentBundleForContext(
+                getDefaultHabitat().getService(Deployment.class)
+                                   .getCurrentDeploymentContext());
+
+        if (descriptor instanceof WebBundleDescriptor) {
+            shouldRegister = ((WebBundleDescriptor) descriptor).isJaxrsRolesAllowedEnabled();
+        }
+
+        if (shouldRegister && !context.getConfiguration().isRegistered(RolesAllowedDynamicFeature.class)) {
             context.register(RolesAllowedDynamicFeature.class);
         }
     }

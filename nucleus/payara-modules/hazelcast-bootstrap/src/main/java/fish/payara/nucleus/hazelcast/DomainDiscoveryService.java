@@ -137,8 +137,17 @@ public class DomainDiscoveryService implements DiscoveryService {
         } else if (env.isMicro()) {
             try {
                 logger.log(Level.FINE, "We are Payara Micro therefore adding DAS {0}", hzConfig.getDASPublicAddress());
-                nodes.add(new SimpleDiscoveryNode(new Address(InetAddress.getByName(hzConfig.getDASPublicAddress()), Integer.valueOf(hzConfig.getDasPort()))));
-            } catch (UnknownHostException ex) {
+                // check if user has added locahost as unlikely to work
+                String dasHost = hzConfig.getDASPublicAddress();
+                if (hzConfig.getDasPort().equals("4848")) {
+                    logger.log(Level.WARNING,"You have specified 4848 as the datagrid domain port however this is the default DAS admin port, the default domain datagrid port is 4900");
+                }
+                if (dasHost.isEmpty() || dasHost.equals("127.0.0.1") || dasHost.equals("localhost")) {
+                    addLocalNodes(nodes, Integer.valueOf(hzConfig.getDasPort()));
+                } else {
+                    nodes.add(new SimpleDiscoveryNode(new Address(InetAddress.getByName(hzConfig.getDASPublicAddress()), Integer.valueOf(hzConfig.getDasPort()))));
+                }
+            } catch (UnknownHostException | SocketException | NumberFormatException ex) {
                 Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {

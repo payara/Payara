@@ -68,7 +68,6 @@ import com.sun.logging.LogDomains;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.security.SecureRandom;
 import java.util.Collections;
-import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
@@ -94,6 +93,8 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.data.EngineRef;
+import org.glassfish.internal.data.ProgressTracker;
 
 /**
  * Ejb module deployer.
@@ -353,22 +354,30 @@ public class EjbDeployer
                             target = targets.get(0);
                         }
                     }
-                    EJBTimerService timerService = EJBTimerService.getEJBTimerService(target, false);
+                    EJBTimerService timerService = null;
+                    boolean tsInitialized = false;
+                    ProgressTracker tracker = dc.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
+                    if(tracker == null || !tracker.get("initialized", EngineRef.class).isEmpty()) {
+                        timerService = EJBTimerService.getEJBTimerService(target, false);
+                        tsInitialized = true;
+                    }
                     if (_logger.isLoggable(Level.FINE)) {
                         _logger.log( Level.FINE, "EjbDeployer APP ID of a Timeout App? " + uniqueAppId);
                         _logger.log( Level.FINE, "EjbDeployer TimerService: " + timerService);
                     }
 
-                    if(timerService == null) {
-                        _logger.log( Level.WARNING, "EJB Timer Service is not available. Timers for application with id " +
-                                uniqueAppId + " will not be deleted");
-                    } else {
-                        if (getKeepStateFromApplicationInfo(params.name())) {
-                            _logger.log(Level.INFO,
-                                     "Timers will not be destroyed since keepstate is true for application {0}",
-                                     params.name());
+                    if (tsInitialized) {
+                        if (timerService == null) {
+                            _logger.log(Level.WARNING, "EJB Timer Service is not available. Timers for application with id "
+                                    + uniqueAppId + " will not be deleted");
                         } else {
-                            timerService.destroyAllTimers(Long.parseLong(uniqueAppId));
+                            if (getKeepStateFromApplicationInfo(params.name())) {
+                                _logger.log(Level.INFO,
+                                        "Timers will not be destroyed since keepstate is true for application {0}",
+                                        params.name());
+                            } else {
+                                timerService.destroyAllTimers(Long.parseLong(uniqueAppId));
+                            }
                         }
                     }
                 }
