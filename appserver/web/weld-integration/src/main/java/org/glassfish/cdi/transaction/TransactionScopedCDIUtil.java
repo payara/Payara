@@ -37,16 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
+import static java.util.Arrays.asList;
 import static java.util.logging.Level.WARNING;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -69,6 +74,8 @@ import org.glassfish.logging.annotation.LoggerInfo;
 /**
  * This class contains utility methods used for TransactionScoped related CDI event processing.
  *
+ * TODO: Merge these and other CDU util classes
+ *
  * @author <a href="mailto:arjav.desai@oracle.com">Arjav Desai</a>
  */
 public class TransactionScopedCDIUtil {
@@ -85,6 +92,61 @@ public class TransactionScopedCDIUtil {
 
     public static void log(String message) {
         _logger.log(WARNING, message);
+    }
+
+    /* Copied from Security */
+    public static <A extends Annotation> Optional<A> getAnnotation(BeanManager beanManager, Class<?> annotatedClass, Class<A> annotationType) {
+
+        if (annotatedClass.isAnnotationPresent(annotationType)) {
+            return Optional.of(annotatedClass.getAnnotation(annotationType));
+        }
+
+        Queue<Annotation> annotations = new LinkedList<>(asList(annotatedClass.getAnnotations()));
+
+        while (!annotations.isEmpty()) {
+            Annotation annotation = annotations.remove();
+
+            if (annotation.annotationType().equals(annotationType)) {
+                return Optional.of(annotationType.cast(annotation));
+            }
+
+            if (beanManager.isStereotype(annotation.annotationType())) {
+                annotations.addAll(
+                    beanManager.getStereotypeDefinition(
+                        annotation.annotationType()
+                    )
+                );
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <A extends Annotation> Optional<A> getAnnotation(BeanManager beanManager, Method annotatedMethod, Class<A> annotationType) {
+
+        if (annotatedMethod.isAnnotationPresent(annotationType)) {
+            return Optional.of(annotatedMethod.getAnnotation(annotationType));
+        }
+
+        Queue<Annotation> annotations = new LinkedList<>(asList(annotatedMethod.getAnnotations()));
+
+        while (!annotations.isEmpty()) {
+            Annotation annotation = annotations.remove();
+
+            if (annotation.annotationType().equals(annotationType)) {
+                return Optional.of(annotationType.cast(annotation));
+            }
+
+            if (beanManager.isStereotype(annotation.annotationType())) {
+                annotations.addAll(
+                    beanManager.getStereotypeDefinition(
+                        annotation.annotationType()
+                    )
+                );
+            }
+        }
+
+        return Optional.empty();
     }
 
     /* Copied from JSF */

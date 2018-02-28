@@ -38,20 +38,26 @@
  * holder.
  */
 
-// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import static org.glassfish.cdi.transaction.TransactionScopedCDIUtil.getAnnotation;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -193,24 +199,10 @@ public class TransactionalInterceptorBase implements Serializable {
     }
 
     public Object proceed(InvocationContext ctx) throws Exception {
-        Transactional transactionalAnnotation = ctx.getMethod().getAnnotation(Transactional.class);
+        Transactional transactionalAnnotation = getTransactionalAnnotation(ctx);
 
-        Class<?>[] rollbackOn = null;
-        Class<?>[] dontRollbackOn = null;
-
-        if (transactionalAnnotation != null) {
-            // If at method level
-            rollbackOn = transactionalAnnotation.rollbackOn();
-            dontRollbackOn = transactionalAnnotation.dontRollbackOn();
-        } else {
-            // If not, at class level
-            Class<?> targetClass = ctx.getTarget().getClass();
-            transactionalAnnotation = targetClass.getAnnotation(Transactional.class);
-            if (transactionalAnnotation != null) {
-                rollbackOn = transactionalAnnotation.rollbackOn();
-                dontRollbackOn = transactionalAnnotation.dontRollbackOn();
-            }
-        }
+        Class<?>[] rollbackOn = transactionalAnnotation.rollbackOn();
+        Class<?>[] dontRollbackOn = transactionalAnnotation.dontRollbackOn();
 
         Object object;
 
@@ -287,6 +279,45 @@ public class TransactionalInterceptorBase implements Serializable {
 
         return object;
     }
+
+    private Transactional getTransactionalAnnotation(InvocationContext invocationContext) {
+
+        Optional<Transactional> optionalTransactional;
+
+        // Try the Weld bindings first. This gives us the *exact* binding which caused this interceptor being called
+        @SuppressWarnings("unchecked")
+        Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get("org.jboss.weld.interceptor.bindings");
+        if (bindings != null) {
+            optionalTransactional = bindings.stream()
+                    .filter(annotation -> annotation.annotationType().equals(Transactional.class))
+                    .findAny()
+                    .map(annotation -> Transactional.class.cast(annotation));
+
+            if (optionalTransactional.isPresent()) {
+                return optionalTransactional.get();
+            }
+        }
+
+        BeanManager beanManager = CDI.current().getBeanManager();
+
+        // Failing the Weld binding, check the method first
+        optionalTransactional = getAnnotation(beanManager, invocationContext.getMethod(), Transactional.class);
+        if (optionalTransactional.isPresent()) {
+            return optionalTransactional.get();
+        }
+
+        // If nothing found on the method, check the the bean class
+        optionalTransactional = getAnnotation(beanManager, invocationContext.getTarget().getClass(), Transactional.class);
+        if (optionalTransactional.isPresent()) {
+            return optionalTransactional.get();
+        }
+
+        // If still not found; throw. Since we're being called the annotation has to be there. Failing to
+        // find it signals a critical error.
+        throw new IllegalStateException("@Transactional not found on " + invocationContext.getTarget().getClass());
+    }
+
+
 
     /**
      * We want the exception in the array that is closest/lowest in hierarchy to the exception So if c
