@@ -51,6 +51,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.store.ClusteredStore;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -216,7 +217,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
     @PostConstruct
     void postConstruct() {
         events.register(this);
-        myListeners = new HashSet<ClusterListener>(2);
+        myListeners = ConcurrentHashMap.newKeySet(2);
     }
 
     @Override
