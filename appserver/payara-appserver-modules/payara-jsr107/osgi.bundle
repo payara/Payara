@@ -1,2 +1,4 @@
 -exportcontents: fish.payara.cdi.jsr107.implementation; \
                  fish.payara.cdi.jsr107; version=${project.osgi.version}
+
+DynamicImport-Package: fish.payara.appserver.context;

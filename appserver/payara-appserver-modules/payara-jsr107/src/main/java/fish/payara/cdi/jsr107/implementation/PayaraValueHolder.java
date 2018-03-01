@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2018 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,6 +17,7 @@
  */
 package fish.payara.cdi.jsr107.implementation;
 
+import com.google.common.base.Strings;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Externalizable;
@@ -24,10 +25,13 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
 
 /**
  * Packages up an object into a Serializable value
  * @author steve
+ * @param <T> value type
  */
 public class PayaraValueHolder<T> implements Externalizable {
    
@@ -40,22 +44,31 @@ public class PayaraValueHolder<T> implements Externalizable {
     }
     
     public PayaraValueHolder(T value) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos  = new ObjectOutputStream(baos);
-        oos.writeObject(value);
-        data = baos.toByteArray();
-        oos.close();
-        baos.close();
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            oos.writeObject(Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInstanceComponentId());
+            oos.writeObject(value);
+            data = baos.toByteArray();
+        }
     }
     
     @SuppressWarnings("unchecked")
     public T getValue() throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        PayaraTCCLObjectInputStream ois = new PayaraTCCLObjectInputStream(bais);
-        Object result = ois.readObject();
-        ois.close();
-        bais.close();
-        return (T)result;
+        String componentId = null;
+        try (PayaraTCCLObjectInputStream ois = new PayaraTCCLObjectInputStream(bais)) {
+            componentId = (String)ois.readObject();
+            Object result = ois.readObject();
+            return (T)result;
+        }
+        catch(ClassNotFoundException ex) {
+            String invocationComponentId = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInstanceComponentId();
+            if(!Strings.nullToEmpty(componentId).equals(invocationComponentId)) {
+                throw new ClassNotFoundException(String.format("Wrong application: expected %s bug got %s", componentId, invocationComponentId),
+                        new IllegalStateException("Wrong Application"));
+            } else {
+                throw ex;
+            }
+        }
     }
 
     @Override
@@ -70,7 +83,4 @@ public class PayaraValueHolder<T> implements Externalizable {
         data = new byte[length];
         in.readFully(data, 0, length);
     }
-    
-    
-    
 }
