@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.181-SNAPSHOT</version>
+        <version>5.181</version>
     </parent>
     <artifactId>payara-micro</artifactId>
     <name>Payara Micro Package</name>

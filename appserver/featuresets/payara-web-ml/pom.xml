@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>5.181-SNAPSHOT</version>
+        <version>5.181</version>
     </parent>
     <artifactId>payara-web-ml</artifactId>
     <name>Payara Web Multi-Language Featureset</name>
