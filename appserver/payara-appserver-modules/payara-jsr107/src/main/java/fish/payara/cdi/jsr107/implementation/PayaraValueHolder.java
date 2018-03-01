@@ -59,9 +59,9 @@ public class PayaraValueHolder<T> implements Externalizable {
             Object result = ois.readObject();
             return (T)result;
         }
-        catch(ClassNotFoundException ex) {
+        catch (ClassNotFoundException ex) {
             String invocationComponentId = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInstanceComponentId();
-            if(!Strings.nullToEmpty(componentId).equals(invocationComponentId)) {
+            if (!Strings.nullToEmpty(componentId).equals(invocationComponentId)) {
                 throw new ClassNotFoundException(String.format("Wrong application: expected %s bug got %s", componentId, invocationComponentId),
                         new IllegalStateException("Wrong Application"));
             } else {
