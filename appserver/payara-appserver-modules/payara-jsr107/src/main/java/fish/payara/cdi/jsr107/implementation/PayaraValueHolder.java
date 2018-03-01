@@ -53,9 +53,8 @@ public class PayaraValueHolder<T> implements Externalizable {
     
     @SuppressWarnings("unchecked")
     public T getValue() throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(data);
         String componentId = null;
-        try (PayaraTCCLObjectInputStream ois = new PayaraTCCLObjectInputStream(bais)) {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(data); PayaraTCCLObjectInputStream ois = new PayaraTCCLObjectInputStream(bais)) {
             componentId = (String)ois.readObject();
             Object result = ois.readObject();
             return (T)result;
