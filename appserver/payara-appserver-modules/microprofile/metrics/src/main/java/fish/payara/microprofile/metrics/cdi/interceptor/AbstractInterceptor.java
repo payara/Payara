@@ -87,7 +87,7 @@ import org.glassfish.internal.api.Globals;
         if(metricsService == null){
             metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         }
-        if (metricsService.isMetricEnabled()) {
+        if (metricsService.isMetricsEnabled()) {
             return applyInterceptor(context, element);
         } else {
             return context.proceed();

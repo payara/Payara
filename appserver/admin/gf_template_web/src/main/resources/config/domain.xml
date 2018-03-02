@@ -124,6 +124,7 @@
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
       <monitoring-service-configuration></monitoring-service-configuration>
+      <microprofile-metrics-configuration></microprofile-metrics-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -378,6 +379,7 @@
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
       <monitoring-service-configuration></monitoring-service-configuration>
+      <microprofile-metrics-configuration></microprofile-metrics-configuration>
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-XX:MaxPermSize=192m</jvm-options>

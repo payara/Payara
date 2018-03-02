@@ -37,24 +37,36 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
+package com.sun.common.util.logging;
 
-package fish.payara.microprofile.metrics;
+/**
+ *
+ * @author Susan Rai
+ */
+public final class Constants {
 
-import java.util.Arrays;
-import java.util.List;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+  
+    public static final String GF_FILE_HANDLER = "com.sun.enterprise.server.logging.GFFileHandler.";
+    public static final String PY_FILE_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.";
 
-public class Constants {
+    public final static String GF_HANDLER_LOG_TO_FILE = GF_FILE_HANDLER + "logtoFile";
+
+    public final static String PY_HANDLER_LOG_TO_FILE = PY_FILE_HANDLER + "logtoFile";
+    public final static String PY_HANDLER_ROTATION_ON_DATE_CHANGE = PY_FILE_HANDLER + "rotationOnDateChange";
+    public final static String PY_HANDLER_ROTATION_ON_TIME_LIMIT = PY_FILE_HANDLER + "rotationTimelimitInMinutes";
+    public final static String PY_HANDLER_ROTATION_ON_FILE_SIZE = PY_FILE_HANDLER + "rotationLimitInBytes";
+    public final static String PY_HANDLER_MAXIMUM_FILES = PY_FILE_HANDLER + "maxHistoryFiles";
+    public final static String PY_HANDLER_LOG_FILE = PY_FILE_HANDLER + "file";
+    public final static String PY_HANDLER_COMPRESS_ON_ROTATION = PY_FILE_HANDLER + "compressOnRotation";
+
+    public final static String GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE = "true";
     
-    public static final String ENDPOINT_PATTERN = "/metrics/*";
-    
-    public static final String EMPTY_STRING = "";
-    
-    // Registry Names
-    public static final List<String> REGISTRY_NAMES = Arrays.asList(
-            BASE.getName(), VENDOR.getName(), APPLICATION.getName()
-    );
+    public final static String PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE = "true";
+    public final static String PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE = "false";
+    public final static String PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE = "0";
+    public final static String PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE = "2000000";
+    public final static String PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE = "0";
+    public final static String PY_HANDLER_LOG_FILE_DEFAULT_VALUE = "${com.sun.aas.instanceRoot}/logs/notification.log";
+    public final static String PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE = "false";
 
 }
