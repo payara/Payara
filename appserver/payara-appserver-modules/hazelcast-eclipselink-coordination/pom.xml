@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>payara-appserver-modules</artifactId>
+        <version>4.1.2.182-SNAPSHOT</version>
+    </parent>
+    <groupId>fish.payara.persistence.coordination</groupId>
+    <artifactId>hazelcast-eclipselink-coordination</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>HZ Eclipselink Coordination</name>
+    <description>Hazelcast Based Eclipselink L2 Cache Coordination</description>
+    <developers>
+        <developer>
+            <id>smillidge</id>
+            <name>Steve Millidge</name>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>hazelcast-bootstrap</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.core</artifactId>
+            <version>${eclipselink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+</project>
