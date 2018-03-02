@@ -23,7 +23,8 @@ public class HazelcastPublishingTransportManager extends BroadcastTransportManag
 
     @Override
     public void createLocalConnection() {
-        this.connection = new HazelcastTopicRemoteConnection(this.getRemoteCommandManager(), HazelcastTopicStorage.getInstance());
+        RemoteCommandManager rcm = this.getRemoteCommandManager();
+        this.connection = new HazelcastTopicRemoteConnection(rcm, new HazelcastTopic(rcm.getChannel()));
     }
 
     @Override

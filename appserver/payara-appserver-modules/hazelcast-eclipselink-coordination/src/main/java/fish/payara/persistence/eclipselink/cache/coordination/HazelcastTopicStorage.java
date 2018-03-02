@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service(name = "hazelcast-topic-storage")
 @RunLevel(StartupRunLevel.VAL)
-public class HazelcastTopicStorage implements EventListener, HazelcastTopic {
+public class HazelcastTopicStorage implements EventListener {
 
     private static HazelcastTopicStorage storage;
 
@@ -46,19 +46,16 @@ public class HazelcastTopicStorage implements EventListener, HazelcastTopic {
         }
     }
 
-    @Override
     public String registerMessageListener(String topic, MessageListener<Command> listener) {
         return getTopic(topic).addMessageListener(listener);
     }
 
-    @Override
     public void removeMessageListener(String topic, String messageListenerId) {
         getTopic(topic).removeMessageListener(messageListenerId);
     }
 
-    @Override
-    public void publish(String name, Command command) {
-        getTopic(name).publish(command);
+    public void publish(String topic, Command command) {
+        getTopic(topic).publish(command);
     }
 
     private ITopic<Command> getTopic(String name) {

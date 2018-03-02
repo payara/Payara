@@ -28,20 +28,20 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
     public HazelcastTopicRemoteConnection(RemoteCommandManager rcm, HazelcastTopic topic) {
         super(rcm);
         this.topic = topic;
-        this.messageListenerId = this.topic.registerMessageListener(this.rcm.getChannel(), this);
+        this.messageListenerId = this.topic.registerMessageListener(this);
     }
 
     @Override
     protected Object executeCommandInternal(Object o) throws Exception {
         if(o != null && Command.class.isAssignableFrom(o.getClass())) {
-            this.topic.publish(this.rcm.getChannel(), (Command)o);
+            this.topic.publish((Command)o);
         }
         return null;
     }
 
     @Override
     protected void closeInternal() throws Exception {
-        this.topic.removeMessageListener(this.rcm.getChannel(), this.messageListenerId);
+        this.topic.removeMessageListener(this.messageListenerId);
     }
 
     @Override
