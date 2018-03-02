@@ -102,7 +102,7 @@ public class ConfigProducer {
             
             // use the config to get a converted version of the property
             Object value = config.getValue(property.name(), property.defaultValue(),clazzValue);
-            if (!value.toString().equals(ConfigProperty.UNCONFIGURED_VALUE)) {
+            if (value != null && !value.toString().equals(ConfigProperty.UNCONFIGURED_VALUE)) {
                 result = Optional.ofNullable(value);
             }
         }
