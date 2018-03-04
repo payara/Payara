@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.iiop.security;
 
@@ -95,7 +96,16 @@ public class SecServerRequestInterceptor
         }
     private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(SecServerRequestInterceptor.class);
-    private InheritableThreadLocal counterForCalls = new InheritableThreadLocal();
+
+    // the below cannot be InheritableThreadLocal because the counter inside
+    // would be reused by thre thread pool, thus it's a non-inheritable ThreadLocal
+    // See PAYARA-2561
+    private ThreadLocal<Counter> counterForCalls = new ThreadLocal<Counter>() {
+        @Override
+        protected Counter initialValue() {
+            return new Counter();
+        }
+    };
 
     /** 
      *  Hard code the value of 15 for SecurityAttributeService until
@@ -613,11 +623,7 @@ public class SecServerRequestInterceptor
         // semantics. e.g. if receive_req for some other PI throws an 
         // exception - the send_exception will be called that will muck
         // the stack up
-        Counter cntr = (Counter)counterForCalls.get();
-        if (cntr == null){
-            cntr = new Counter();
-            counterForCalls.set(cntr);
-        } 
+        Counter cntr = counterForCalls.get();
         if (cntr.count == 0) {
             //Not required
             //SecurityService secsvc  = Csiv2Manager.getSecurityService();
@@ -667,12 +673,10 @@ public class SecServerRequestInterceptor
 
     private void unsetSecurityContext() {
         try {
-            Counter cntr = (Counter) counterForCalls.get();
-            if (cntr == null) {      // sanity check
-                cntr = new Counter(1);
-            }
+            Counter cntr = counterForCalls.get();
             cntr.decrement();
-            if (cntr.count == 0) {
+            if (cntr.count <= 0) {
+                cntr.count = 0;
                 SecurityContextUtil.unsetSecurityContext(isLocal());
 
             }
