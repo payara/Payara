@@ -1,8 +1,5 @@
 package fish.payara.persistence.eclipselink.cache.coordination;
 
-import com.hazelcast.core.ITopic;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
-import org.eclipse.persistence.sessions.coordination.Command;
 import org.eclipse.persistence.sessions.coordination.RemoteCommandManager;
 import org.eclipse.persistence.sessions.coordination.broadcast.BroadcastTransportManager;
 
@@ -23,8 +20,7 @@ public class HazelcastPublishingTransportManager extends BroadcastTransportManag
 
     @Override
     public void createLocalConnection() {
-        RemoteCommandManager rcm = this.getRemoteCommandManager();
-        this.connection = new HazelcastTopicRemoteConnection(rcm, new HazelcastTopic(rcm.getChannel()));
+        this.connection = new HazelcastTopicRemoteConnection(this.getRemoteCommandManager());
     }
 
     @Override

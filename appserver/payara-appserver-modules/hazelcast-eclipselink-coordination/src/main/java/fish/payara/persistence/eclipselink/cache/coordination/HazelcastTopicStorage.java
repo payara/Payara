@@ -2,6 +2,7 @@ package fish.payara.persistence.eclipselink.cache.coordination;
 
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MessageListener;
+import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.eclipse.persistence.sessions.coordination.Command;
 import org.glassfish.api.StartupRunLevel;
@@ -11,6 +12,7 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import org.glassfish.api.event.EventListener;
 
@@ -35,13 +37,19 @@ public class HazelcastTopicStorage implements EventListener {
         events.register(this);
     }
 
+    @PreDestroy
+    public void preDestroy() {
+        storage = null;
+        events.unregister(this);
+    }
+
     public static HazelcastTopicStorage getInstance() {
         return storage;
     }
 
     @Override
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+        if (event.is(EventTypes.SERVER_SHUTDOWN) || event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_COMPLETE)) {
             topicCache.clear();
         }
     }
@@ -61,8 +69,12 @@ public class HazelcastTopicStorage implements EventListener {
     private ITopic<Command> getTopic(String name) {
         ITopic<Command> topic = topicCache.get(name);
         if(topic == null) {
-            topic = HazelcastCore.getCore().getInstance().getTopic(name);
-            topicCache.put(name, topic);
+            if (HazelcastCore.getCore().isEnabled()) {
+                topic = HazelcastCore.getCore().getInstance().getTopic(name);
+                topicCache.put(name, topic);
+            } else {
+                throw new IllegalStateException("Hazelcast integration not enabled.");
+            }
         }
         return topic;
     }

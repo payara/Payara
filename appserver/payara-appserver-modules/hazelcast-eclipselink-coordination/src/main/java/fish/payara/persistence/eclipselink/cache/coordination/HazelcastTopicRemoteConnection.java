@@ -1,7 +1,5 @@
 package fish.payara.persistence.eclipselink.cache.coordination;
 
-import com.hazelcast.core.ITopic;
-import com.hazelcast.core.Member;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 import org.eclipse.persistence.internal.sessions.coordination.broadcast.BroadcastRemoteConnection;
@@ -25,9 +23,9 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
      */
     private final String messageListenerId;
 
-    public HazelcastTopicRemoteConnection(RemoteCommandManager rcm, HazelcastTopic topic) {
+    public HazelcastTopicRemoteConnection(RemoteCommandManager rcm) {
         super(rcm);
-        this.topic = topic;
+        this.topic = new HazelcastTopic(rcm.getChannel());
         this.messageListenerId = this.topic.registerMessageListener(this);
     }
 
