@@ -363,6 +363,7 @@
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -379,6 +380,7 @@
                     <artifactId>microprofile-package</artifactId>
                     <version>${project.version}</version>
                     <type>zip</type>
+                    <optional>true</optional>
                 </dependency>
             </dependencies>
         </profile>
