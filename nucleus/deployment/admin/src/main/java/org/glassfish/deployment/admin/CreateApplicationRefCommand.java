@@ -62,6 +62,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.internal.deployment.Deployment;
@@ -137,7 +138,9 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
 
     @Inject
     Domain domain;
-
+    
+ 
+    
     @Inject
     ServerEnvironment env;
 
@@ -334,6 +337,28 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                         events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, deploymentContext), false);
                     }
 
+                    final List<String> targets
+                            = new ArrayList<String>(Arrays.asList(commandParams.target.split(",")));
+
+                    List<String> deploymentTarget = new ArrayList<>();
+                    
+                    // If targets contains Deployment Group, check if the application is already deployed to instances in it.
+                    for (String target : targets) {
+                        if (isDeploymentGroup(target)) {
+                            List<Server> instances = domain.getDeploymentGroupNamed(target).getInstances();
+                            for (Server instance : instances) {
+                                List<Application> applications = domain.getApplicationsInTarget(instance.getName());
+                                List<String> listOfApplications = new ArrayList<>();
+                                for (Application application : applications) {
+                                    listOfApplications.add(application.getName());
+                                }
+                                if (!listOfApplications.contains(appName)) {
+                                    deploymentTarget.add(instance.getName());
+                                }
+                            }
+                        }
+                    }                 
+                 
                     if (report.getActionExitCode().equals(
                         ActionReport.ExitCode.SUCCESS)) {
                         try {
@@ -347,21 +372,15 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                     if (!isVersionExpression && DeploymentUtils.isDASTarget(target)) {
                         return;
                     }
+                
+                    final ParameterMap paramMap
+                            = deployment.prepareInstanceDeployParamMap(deploymentContext);
 
-                    final ParameterMap paramMap =
-                            deployment.prepareInstanceDeployParamMap(deploymentContext);
-                    final List<String> targets =
-                            new ArrayList<String>(Arrays.asList(commandParams.target.split(",")));
-
-                    ClusterOperationUtil.replicateCommand(
-                        "_deploy",
-                        FailurePolicy.Error,
-                        FailurePolicy.Warn,
-                        FailurePolicy.Ignore,
-                        targets,
-                        context,
-                        paramMap,
-                        habitat);
+                    if (!deploymentTarget.isEmpty()) {
+                        replicateCommand(deploymentTarget, context, paramMap);
+                    } else {
+                        replicateCommand(targets, context, paramMap);
+                    }             
 
                 } catch(Exception e) {
                     logger.log(Level.SEVERE, "Error during creating application ref ", e);
@@ -377,6 +396,31 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
         }
     } 
 
+    private void replicateCommand(List<String> targets, AdminCommandContext context, ParameterMap paramMap) {
+        ClusterOperationUtil.replicateCommand(
+                "_deploy",
+                FailurePolicy.Error,
+                FailurePolicy.Warn,
+                FailurePolicy.Ignore,
+                targets,
+                context,
+                paramMap,
+                habitat);
+    }
+
+    private boolean isDeploymentGroup(String target) {
+        boolean isDeploymentGroup = false;
+        List<DeploymentGroup> listOfDeploymentGroups = domain.getDeploymentGroups().getDeploymentGroup();
+
+        for (DeploymentGroup deploymentGroup : listOfDeploymentGroups) {
+            if (deploymentGroup.getName().equals(target)) {
+                isDeploymentGroup = true;
+                break;
+            }
+        }
+        return isDeploymentGroup;
+    }
+    
     private void handleLifecycleModule(AdminCommandContext context, Transaction t) {
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
