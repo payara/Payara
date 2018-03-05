@@ -37,18 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.descriptor;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.util.ComponentPostVisitor;
-import com.sun.enterprise.deployment.util.ComponentVisitor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.web.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
@@ -61,7 +66,52 @@ import org.glassfish.web.deployment.util.WebBundleTracerVisitor;
 import org.glassfish.web.deployment.util.WebBundleValidator;
 import org.glassfish.web.deployment.util.WebBundleVisitor;
 
-import java.util.*;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.InjectionInfo;
+import com.sun.enterprise.deployment.InjectionTarget;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.LocaleEncodingMappingDescriptor;
+import com.sun.enterprise.deployment.LocaleEncodingMappingListDescriptor;
+import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.MetadataSource;
+import com.sun.enterprise.deployment.NamedReferencePair;
+import com.sun.enterprise.deployment.OrderedSet;
+import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
+import com.sun.enterprise.deployment.ResourceDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.deployment.SecurityRoleDescriptor;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.WebService;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.web.AppListenerDescriptor;
+import com.sun.enterprise.deployment.web.ContextParameter;
+import com.sun.enterprise.deployment.web.EnvironmentEntry;
+import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.deployment.web.MimeMapping;
+import com.sun.enterprise.deployment.web.ResourceReference;
+import com.sun.enterprise.deployment.web.SecurityConstraint;
+import com.sun.enterprise.deployment.web.SecurityRole;
+import com.sun.enterprise.deployment.web.SecurityRoleReference;
+import com.sun.enterprise.deployment.web.ServletFilter;
+import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import com.sun.enterprise.deployment.web.SessionConfig;
+import com.sun.enterprise.deployment.web.WebResourceCollection;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
  /**
  *
@@ -107,6 +157,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private Set<SecurityRoleDescriptor> securityRoles;
     private Set<SecurityConstraint> securityConstraints;
     private String contextRoot;
+    private String requestCharacterEncoding;
+    private String responseCharacterEncoding;
     private LoginConfiguration loginConfiguration;
     private Set<EnvironmentEntry> environmentEntries;
     private LocaleEncodingMappingListDescriptor localeEncodingMappingListDesc = null;
@@ -137,6 +189,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private Set<String> conflictedMimeMappingExtensions = null;
     private boolean servletInitializersEnabled = true;
+    private boolean jaxrsRolesAllowedEnabled = true;
 
     /**
      * Construct an empty web app [{0}].
@@ -147,7 +200,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public WebBundleDescriptor createWebBundleDescriptor() {
         return new WebBundleDescriptorImpl();
     }
-    
+
     protected boolean isExists() {
         return true;
     }
@@ -167,14 +220,22 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         if (getWelcomeFilesSet().isEmpty()) {
             getWelcomeFilesSet().addAll(webBundleDescriptor.getWelcomeFilesSet());
         }
+
+		if (requestCharacterEncoding == null) {
+			requestCharacterEncoding = webBundleDescriptor.getRequestCharacterEncoding();
+		}
+
+		if (responseCharacterEncoding == null) {
+			responseCharacterEncoding = webBundleDescriptor.getResponseCharacterEncoding();
+		}
+
         addCommonWebBundleDescriptor(webBundleDescriptor, true);
     }
 
     /**
      * This method combines all except welcome file set for two webBundleDescriptors.
      */
-    private void addCommonWebBundleDescriptor(WebBundleDescriptor wbd,
-            boolean defaultDescriptor) {
+	private void addCommonWebBundleDescriptor(WebBundleDescriptor wbd, boolean defaultDescriptor) {
         super.addBundleDescriptor(wbd);
 
         WebBundleDescriptorImpl webBundleDescriptor = (WebBundleDescriptorImpl) wbd;
@@ -311,7 +372,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return the set of named descriptors that I have.
-     * @return 
+     * @return
      */
     @Override
     public Collection getNamedDescriptors() {
@@ -320,7 +381,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return the state of NamedReferencePairs that I have.
-     * @return 
+     * @return
      */
     @Override
     public Vector<NamedReferencePair> getNamedReferencePairs() {
@@ -329,7 +390,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * return the name of my context root
-     * @return 
+     * @return
      */
     @Override
     public String getContextRoot() {
@@ -342,21 +403,53 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         return contextRoot;
     }
 
-    /**
-     * Set the name of my context root.
-     * @param contextRoot
-     */
-    @Override
+	/**
+	 * Set the name of my context root.
+	 */
+	@Override
     public void setContextRoot(String contextRoot) {
-        if (getModuleDescriptor() != null) {
-            getModuleDescriptor().setContextRoot(contextRoot);
-        }
-        this.contextRoot = contextRoot;
-    }
+		if (getModuleDescriptor() != null) {
+			getModuleDescriptor().setContextRoot(contextRoot);
+		}
+		this.contextRoot = contextRoot;
+	}
+
+	/**
+	 * return the request encoding
+	 */
+	@Override
+    public String getRequestCharacterEncoding() {
+		return requestCharacterEncoding;
+	}
+
+	/**
+	 * Set the request encoding
+	 */
+	@Override
+    public void setRequestCharacterEncoding(String requestCharacterEncoding) {
+		this.requestCharacterEncoding = requestCharacterEncoding;
+	}
+
+	/**
+	 * return the response encoding
+	 */
+	@Override
+    public String getResponseCharacterEncoding() {
+		return responseCharacterEncoding;
+	}
+
+	/**
+	 * Set the response encoding
+	 */
+	@Override
+    public void setResponseCharacterEncoding(String responseCharacterEncoding) {
+		this.responseCharacterEncoding = responseCharacterEncoding;
+	}
+
 
     /**
-     * Return the Set of Web COmponent Descriptors (JSP or JavaServlets) in me.
-     * @return 
+     * Return the Set of Web Component Descriptors (JSP or JavaServlets) in me.
+     * @return
      */
     @Override
     public Set<WebComponentDescriptor> getWebComponentDescriptors() {
@@ -430,7 +523,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 throw new IllegalArgumentException(localStrings.getLocalString(
                         "web.deployment.exceptionconflictwebcompwithoutimpl",
                         "Two or more web fragments define the same Servlet with conflicting implementation class names that are not overridden by the web.xml"));
-            } 
+            }
             if (resultDesc.getConflictedInitParameterNames().size() > 0) {
                 throw new IllegalArgumentException(localStrings.getLocalString(
                         "web.deployment.exceptionconflictwebcompinitparam",
@@ -481,7 +574,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * WEB SERVICES REF APIS
-     * @return 
+     * @return
      */
     @Override
     public boolean hasServiceReferenceDescriptors() {
@@ -516,7 +609,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Looks up an service reference with the given name.
      * Throws an IllegalArgumentException if it is not found.
      * @param name
-     * @return 
+     * @return
      */
     @Override
     public ServiceReferenceDescriptor getServiceReferenceByName(String name) {
@@ -548,7 +641,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 (ServiceReferenceDescriptor)oserviceRef;
             ServiceReferenceDescriptor sr = _getServiceReferenceByName(serviceRef.getName());
             if (sr != null) {
-                combineInjectionTargets(sr, (EnvironmentProperty)serviceRef);
+                combineInjectionTargets(sr, serviceRef);
             } else {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).isConflictServiceReference()) {
@@ -658,7 +751,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
 
     /**
-     * @return 
+     * @return
      * @returns an enumeration of my mime mappings.
      */
     @Override
@@ -669,7 +762,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * @param mimeMapping the given mime mapping to my list if the given MimeType is not added
      * return the result MimeType of the MimeMapping in the resulting set of MimeMapping
-     * @return 
+     * @return
      */
     @Override
     public String addMimeMapping(MimeMapping mimeMapping) {
@@ -692,7 +785,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * add the given mime mapping to my list.
      * @param mimeMapping
-     * @return 
+     * @return
      */
     public String addMimeMapping(MimeMappingDescriptor mimeMapping) {
         return addMimeMapping((MimeMapping) mimeMapping);
@@ -754,7 +847,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return an enumeration of the welcome files I have..
-     * @return 
+     * @return
      */
     @Override
     public Enumeration<String> getWelcomeFiles() {
@@ -805,7 +898,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Returns an enumeration of the error pages I have.
-     * @return 
+     * @return
      */
     public Enumeration<ErrorPageDescriptor> getErrorPageDescriptors() {
         return (new Vector<ErrorPageDescriptor>(getErrorPageDescriptorsSet())).elements();
@@ -836,7 +929,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * Search my error pages for one with thei given signifier or null if there isn't one.
      * @param signifier
-     * @return 
+     * @return
      */
     public ErrorPageDescriptor getErrorPageDescriptorBySignifier(String signifier) {
         for (ErrorPageDescriptor next : getErrorPageDescriptorsSet()) {
@@ -895,7 +988,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return true if this web app [{0}] can be distributed across different processes.
-     * @return 
+     * @return
      */
     @Override
     public boolean isDistributable() {
@@ -913,7 +1006,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Returns the enumeration of my references to Enterprise Beans.
-     * @return 
+     * @return
      */
     @Override
     public Enumeration<EjbReference> getEjbReferences() {
@@ -922,7 +1015,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Returns the Set of my references to Enterprise Beans.
-     * @return 
+     * @return
      */
     @Override
     public Set<EjbReference> getEjbReferenceDescriptors() {
@@ -991,7 +1084,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
 
     /**
-     * @return 
+     * @return
      * @returns my Set of references to resources.
      */
     @Override
@@ -1011,7 +1104,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Return the entity manager factory reference descriptor corresponding to
      * the given name.
      * @param name
-     * @return 
+     * @return
      */
     @Override
     public EntityManagerFactoryReferenceDescriptor getEntityManagerFactoryReferenceByName(String name) {
@@ -1076,7 +1169,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Return the entity manager factory reference descriptor corresponding to
      * the given name.
      * @param name
-     * @return 
+     * @return
      */
     @Override
     public EntityManagerReferenceDescriptor getEntityManagerReferenceByName(String name) {
@@ -1152,7 +1245,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return my set of environment properties.
-     * @return 
+     * @return
      */
     @Override
     public Set<EnvironmentEntry> getEnvironmentProperties() {
@@ -1218,7 +1311,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return an enumeration of references to resources that I have.
-     * @return 
+     * @return
      */
     @Override
     public Enumeration<ResourceReferenceDescriptor> getResourceReferences() {
@@ -1293,7 +1386,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Looks up an message destination reference with the given name.
      * Throws an IllegalArgumentException if it is not found.
      * @param name
-     * @return 
+     * @return
      */
     @Override
     public MessageDestinationReferenceDescriptor getMessageDestinationReferenceByName(String name) {
@@ -1328,7 +1421,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             MessageDestinationReferenceDescriptor mdr =
                 _getMessageDestinationReferenceByName(mdRef.getName());
             if (mdr != null) {
-                combineInjectionTargets(mdr, mdRef);           
+                combineInjectionTargets(mdr, mdRef);
             } else {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).isConflictMessageDestinationReference()) {
@@ -1448,7 +1541,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
         if (((WebBundleDescriptor) jndiNameEnv).hasWebServices()) {
             // Add @Resource WebServiceContext present in endpoint impl class to the list of
-            // injectable resources; We do this for servelt endpoint only because the actual 
+            // injectable resources; We do this for servelt endpoint only because the actual
             // endpoint impl class gets replaced by JAXWSServlet in web.xml and hence
             // will never be added as an injectable resource
             for (InjectionCapable next : getInjectableResources(this)) {
@@ -1480,7 +1573,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Returns an Enumeration of my SecurityRole objects.
-     * @return 
+     * @return
      */
     @Override
     public Enumeration<SecurityRoleDescriptor> getSecurityRoles() {
@@ -1516,7 +1609,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Return all the references by a given component (by name) to the given rolename.
      * @param compName
      * @param roleName
-     * @return 
+     * @return
      */
     @Override
     public SecurityRoleReference getSecurityRoleReferenceByName(String compName, String roleName) {
@@ -1548,7 +1641,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             Iterator<WebResourceCollection> iter = newSc.getWebResourceCollections().iterator();
             while (iter.hasNext()) {
                 WebResourceCollection wrc = iter.next();
-                Set<String> urlPatterns = wrc.getUrlPatterns();   
+                Set<String> urlPatterns = wrc.getUrlPatterns();
                 urlPatterns.removeAll(allUrlPatterns);
                 boolean isEmpty = (urlPatterns.isEmpty());
                 addSc = (addSc || (!isEmpty));
@@ -1573,7 +1666,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * My list of security constraints.
-     * @return 
+     * @return
      */
     @Override
     public Enumeration<SecurityConstraint> getSecurityConstraints() {
@@ -1677,7 +1770,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return my set of environment properties.
-     * @return 
+     * @return
      */
     @Override
     public Enumeration<EnvironmentEntry> getEnvironmentEntries() {
@@ -1707,7 +1800,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Returns the environment property object searching on the supplied key.
      * throws an illegal argument exception if no such environment property exists.
      * @param name
-     * @return 
+     * @return
      */
     @Override
     public EnvironmentProperty getEnvironmentPropertyByName(String name) {
@@ -1776,7 +1869,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return the information about how I should log in.
-     * @return 
+     * @return
      */
     @Override
     public LoginConfiguration getLoginConfiguration() {
@@ -1812,13 +1905,13 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * Search for a web component that I have by name.
      * @param name
-     * @return 
+     * @return
      */
     @Override
     public WebComponentDescriptor getWebComponentByName(String name) {
         for (WebComponentDescriptor next : getWebComponentDescriptors()) {
             if (next.getName().equals(name)) {
-                return (WebComponentDescriptor) next;
+                return next;
             }
         }
         return null;
@@ -1827,13 +1920,13 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * Search for a web component that I have by name.
      * @param name
-     * @return 
+     * @return
      */
     @Override
     public WebComponentDescriptor getWebComponentByCanonicalName(String name) {
         for (WebComponentDescriptor next : getWebComponentDescriptors()) {
             if (next.getCanonicalName().equals(name)) {
-                return (WebComponentDescriptor) next;
+                return next;
             }
         }
         return null;
@@ -1956,7 +2049,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return a Vector of servlet filters that I have.
-     * @return 
+     * @return
      */
     @Override
     public Vector<ServletFilterMapping> getServletFilterMappings() {
@@ -1968,7 +2061,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * Return a Vector of servlet filter mappings that I have.
-     * @return 
+     * @return
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -2162,7 +2255,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * remove a specific object from the given list (does not rely on 'equals')
      * @param list
      * @param ref
-     * @return 
+     * @return
      */
     @Override
     protected boolean removeVectorItem(Vector<? extends Object> list, Object ref) {
@@ -2223,7 +2316,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      */
     @Override
     public void visit(DescriptorVisitor aVisitor) {
-        if (aVisitor instanceof WebBundleVisitor || 
+        if (aVisitor instanceof WebBundleVisitor ||
             aVisitor instanceof ComponentPostVisitor) {
             visit((ComponentVisitor) aVisitor);
         } else {
@@ -2269,7 +2362,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * This method is used by WebComponentDescriptor only.
      * The returned map is supposed to be only modified by the corresponding url patterns set.
-     * @return 
+     * @return
      */
     @Override
     public Map<String, String> getUrlPatternToServletNameMap() {
@@ -2338,8 +2431,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     /**
-     * 
-     * @param toStringBuffer 
+     *
+     * @param toStringBuffer
      */
     @Override
     public void printCommon(StringBuffer toStringBuffer) {
@@ -2465,7 +2558,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * For example, a Deployer may set this property.
      * @param key
      * @param value
-     */ 
+     */
     @Override
     public void setExtensionProperty(String key, String value) {
         if (null == extensionProperty) {
@@ -2477,11 +2570,11 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /**
      * Determine if an extension property has been set.
      * @param key
-     * @return 
+     * @return
      */
     @Override
     public boolean hasExtensionProperty(String key) {
-        if (null == extensionProperty || 
+        if (null == extensionProperty ||
             extensionProperty.get(key) == null) {
             return false;
         }
@@ -2496,6 +2589,16 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public void setServletInitializersEnabled(boolean tf) {
         servletInitializersEnabled = tf;
+    }
+
+    @Override
+    public boolean isJaxrsRolesAllowedEnabled() {
+        return jaxrsRolesAllowedEnabled;
+    }
+
+    @Override
+    public void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled) {
+        this.jaxrsRolesAllowedEnabled = jaxrsRolesAllowedEnabled;
     }
 
     private static final class ServletFilterMappingInfo {
@@ -2565,5 +2668,5 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     /*******************************************************************************************
      * END
      * Deployment Consolidation to Suppport Multiple Deployment API Clients
-     *******************************************************************************************/ 
+     *******************************************************************************************/
 }

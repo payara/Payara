@@ -66,7 +66,7 @@ import org.glassfish.admin.rest.client.ClientWrapper;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import static org.testng.AssertJUnit.*;
@@ -148,7 +148,7 @@ public class RestTestBase {
         if (client == null) {
             client = new ClientWrapper(new HashMap<String, String>(), adminUser, adminPass);
             if (Boolean.parseBoolean(System.getProperty("DEBUG"))) {
-                client.register(new LoggingFilter());
+                client.register(LoggingFeature.class);
             }
         }
         return client;

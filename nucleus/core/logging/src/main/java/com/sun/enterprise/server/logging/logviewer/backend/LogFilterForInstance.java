@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.server.logging.logviewer.backend;
@@ -44,7 +46,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
@@ -57,7 +58,8 @@ import org.glassfish.cluster.ssh.util.DcomInfo;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.*;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -98,7 +100,7 @@ public class LogFilterForInstance {
             String loggingDir = getLoggingDirectoryForNode(instanceLogFileName, node, sNode, instanceName);
 
             try {
-                Vector instanceLogFileNames = sftpClient.ls(loggingDir);
+                List instanceLogFileNames = sftpClient.ls(loggingDir);
 
                 for (int i = 0; i < instanceLogFileNames.size(); i++) {
                     SFTPv3DirectoryEntry file = (SFTPv3DirectoryEntry) instanceLogFileNames.get(i);
@@ -210,14 +212,14 @@ public class LogFilterForInstance {
         if (node.getType().equals("SSH")) {
             sshL.init(node, logger);
 
-            Vector allInstanceLogFileName = getInstanceLogFileNames(habitat, targetServer, domain, logger, instanceName, instanceLogFileDirectory);
+            List<String> allInstanceLogFileName = getInstanceLogFileNames(habitat, targetServer, domain, logger, instanceName, instanceLogFileDirectory);
 
             boolean noFileFound = true;
             String sourceDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
             SFTPClient sftpClient = sshL.getSFTPClient();
 
             try {
-                Vector instanceLogFileNames = sftpClient.ls(sourceDir);
+                List instanceLogFileNames = sftpClient.ls(sourceDir);
 
                 for (int i = 0; i < instanceLogFileNames.size(); i++) {
                     SFTPv3DirectoryEntry file = (SFTPv3DirectoryEntry) instanceLogFileNames.get(i);
@@ -250,7 +252,7 @@ public class LogFilterForInstance {
             scpClient.get(remoteFileNames, tempDirectoryOnServer);
         } else if (node.getType().equals("DCOM")) {
 
-            Vector instanceLogFileNames = getInstanceLogFileNames(habitat, targetServer, domain, logger, instanceName, instanceLogFileDirectory);
+            List instanceLogFileNames = getInstanceLogFileNames(habitat, targetServer, domain, logger, instanceName, instanceLogFileDirectory);
 
             String sourceDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
 
@@ -274,14 +276,14 @@ public class LogFilterForInstance {
         }
     }
 
-    public Vector getInstanceLogFileNames(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
+    public List<String> getInstanceLogFileNames(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
                                           String instanceName, String instanceLogFileDetails) throws IOException {
 
         // helper method to get all log file names for given instance
         String sNode = targetServer.getNodeRef();
         Node node = domain.getNodes().getNode(sNode);
-        Vector instanceLogFileNames = null;
-        Vector instanceLogFileNamesAsString = new Vector();
+        List instanceLogFileNames = null;
+        List<String> instanceLogFileNamesAsString = new ArrayList();
 
         // this code is used when DAS and instances are running on the same machine
         if (node.isLocal()) {
@@ -293,8 +295,7 @@ public class LogFilterForInstance {
             boolean noFileFound = true;
 
             if (allLogFileNames != null) { // This check for,  if directory doesn't present or missing on machine. It happens due to bug 16451
-                for (int i = 0; i < allLogFileNames.length; i++) {
-                    File file = allLogFileNames[i];
+                for (File file: allLogFileNames) {
                     String fileName = file.getName();
                     // code to remove . and .. file which is return
                     if (file.isFile() && !fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
@@ -311,8 +312,7 @@ public class LogFilterForInstance {
                 logsDir = new File(loggingDir);
                 allLogFileNames = logsDir.listFiles();
 
-                for (int i = 0; i < allLogFileNames.length; i++) {
-                    File file = allLogFileNames[i];
+                for (File file: allLogFileNames) {
                     String fileName = file.getName();
                     // code to remove . and .. file which is return
                     if (file.isFile() && !fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")

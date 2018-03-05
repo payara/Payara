@@ -46,7 +46,6 @@ import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.beans.PropertyVetoException;
-import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -62,11 +61,6 @@ import static org.glassfish.config.support.Constants.NAME_REGEX;
  * able to perform authentication processing at the message layer defined by the
  * value of the auth-layer attribute.                                         
  */
-
-/* @XmlType(name = "", propOrder = {
-    "providerConfig"
-}) */
-
 @Configured
  @RestRedirects({
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-message-security-provider"),
@@ -84,7 +78,7 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(key=true)
+    @Attribute(key = true)
     @NotNull
     public String getAuthLayer();
 
@@ -162,6 +156,6 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
      * Objects of the following type(s) are allowed in the list
      * {@link ProviderConfig }
      */
-    @Element(required=true)
+    @Element(required = true)
     public List<ProviderConfig> getProviderConfig();
 }

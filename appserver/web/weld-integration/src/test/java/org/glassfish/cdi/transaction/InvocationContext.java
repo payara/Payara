@@ -37,12 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.cdi.transaction;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+
+import javax.transaction.Transactional;
 
 /**
  * User: paulparkinson
@@ -50,15 +54,22 @@ import java.util.Map;
  * Time: 1:12 PM
  */
 public class InvocationContext implements javax.interceptor.InvocationContext {
-    Method method;
-    Exception exceptionFromProceed;
-    TestInvocationContextTarget testInvocationContextTarget = new TestInvocationContextTarget();
 
-    public InvocationContext(Method method, Exception exceptionFromProceed) {
+    private Method method;
+    private Exception exceptionFromProceed;
+    private TestInvocationContextTarget testInvocationContextTarget = new TestInvocationContextTarget();
+    private Map<String, Object> contextData = new HashMap<>();
+
+    public InvocationContext(Method method, Exception exceptionFromProceed, Class<?> targetClass) {
         this.method = method;
         this.exceptionFromProceed = exceptionFromProceed;
+        contextData.put("org.jboss.weld.interceptor.bindings", Collections.singleton(
+                method.getAnnotation(Transactional.class) != null?
+                        method.getAnnotation(Transactional.class) :
+                        targetClass.getAnnotation(Transactional.class)));
     }
 
+    @Override
     public Object getTarget() {
         return testInvocationContextTarget;
     }
@@ -67,30 +78,37 @@ public class InvocationContext implements javax.interceptor.InvocationContext {
 
     }
 
+    @Override
     public Object getTimer() {
         return null;
     }
 
+    @Override
     public Method getMethod() {
         return method;
     }
 
+    @Override
     public Constructor getConstructor() {
         return null;
     }
 
+    @Override
     public Object[] getParameters() {
         return new Object[0];
     }
 
+    @Override
     public void setParameters(Object[] params) {
 
     }
 
+    @Override
     public Map<String, Object> getContextData() {
-        return null;
+        return contextData;
     }
 
+    @Override
     public Object proceed() throws Exception {
         if (exceptionFromProceed != null) throw exceptionFromProceed;
         return null;

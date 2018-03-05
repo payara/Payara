@@ -41,21 +41,23 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.181-SNAPSHOT</version>
     </parent>
+
     <groupId>org.glassfish.main.tests</groupId>
     <artifactId>tests</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Tests related modules</name>  
+    <name>GlassFish Tests related modules</name>
+
     <modules>
         <!-- module>quicklook</module -->
     </modules>
+
     <build>
         <plugins>
             <plugin>
@@ -73,17 +75,17 @@
                 </configuration>
             </plugin>
         </plugins>
-	<pluginManagement>
-	    <plugins>
-		<plugin>
-		    <groupId>org.codehaus.mojo</groupId>
-		    <artifactId>findbugs-maven-plugin</artifactId>
-		    <configuration>
-			<skip>true</skip>
-		    </configuration>
-		</plugin>
-	    </plugins>
-	</pluginManagement>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>

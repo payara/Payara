@@ -39,17 +39,20 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.StringReader;
+
 import javax.json.Json;
 import javax.json.JsonReader;
-import org.junit.After;
-import org.junit.AfterClass;
+
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 
 /**
  *
@@ -70,37 +73,36 @@ public class RequestTraceTest {
     @Test
     public void testAddEventWithoutStarting() {
         trace = new RequestTrace();
-        RequestEvent re = new RequestEvent("TestEvent");
+        RequestTraceSpan re = new RequestTraceSpan("TestEvent");
         trace.addEvent(re);
         assertFalse(trace.isStarted());
-        assertFalse(trace.getTrace().contains(this));
-        assertEquals(0,trace.getTrace().size());
+        assertFalse(trace.getTraceSpans().contains(this));
+        assertEquals(0,trace.getTraceSpans().size());
     }
     
     @Test
     public void testStarting() {
         assertFalse(trace.isStarted());
-        RequestEvent re = new RequestEvent(EventType.TRACE_START,"StartEvent");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START,"StartEvent");
         trace.addEvent(re);
         assertTrue(trace.isStarted());
-        assertEquals(1,trace.getTrace().size());
-        assertTrue(trace.getTrace().contains(re));
+        assertEquals(1,trace.getTraceSpans().size());
+        assertTrue(trace.getTraceSpans().contains(re));
     }
     
     @Test
     public void testEnding() throws InterruptedException {
         assertFalse(trace.isStarted());
-        RequestEvent re = new RequestEvent(EventType.TRACE_START,"StartEvent");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START,"StartEvent");
         trace.addEvent(re);
         assertEquals(0, trace.getElapsedTime());
-        Thread.currentThread().sleep(100);
-        re = new RequestEvent(EventType.TRACE_END,"EndTrace");
-        trace.addEvent(re);
+        Thread.sleep(10);
+        trace.endTrace();
         // add one after trace end
-        re = new RequestEvent("TestEvent");
+        re = new RequestTraceSpan("TestEvent");
         trace.addEvent(re);
         assertTrue(trace.getElapsedTime() > 0);
-        assertEquals("Trace should not add events after end", 2, trace.getTrace().size());
+        assertEquals("Trace should not add events after end.", 1, trace.getTraceSpans().size());
     }
 
     /**
@@ -113,73 +115,57 @@ public class RequestTraceTest {
     }
     
     @Test
-    public void testElapsedTime() throws InterruptedException {
-        trace = new RequestTrace();
-        trace.addEvent(new RequestEvent(EventType.TRACE_START,"Start"));
-        Thread.currentThread().sleep(1000);
-        trace.addEvent(new RequestEvent(EventType.TRACE_END,"Finish"));
-        assertTrue((900 < trace.getElapsedTime() && trace.getElapsedTime() < 1500));
-    }
-    
-    @Test
     public void testFullStream() throws InterruptedException {
-        RequestEvent re = new RequestEvent(EventType.TRACE_START,"Start");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START,"Start");
         trace.addEvent(re);
         for (int i = 0; i < 10000; i++) {
-            re = new RequestEvent("Event"+i);
+            re = new RequestTraceSpan("Event"+i);
             trace.addEvent(re);
         }
-        Thread.currentThread().sleep(1000);
-        re = new RequestEvent(EventType.TRACE_END,"TraceEnd");
-        trace.addEvent(re);
+        Thread.sleep(10);
+        trace.endTrace();
         assertTrue(trace.isStarted());
-        assertEquals(10002, trace.getTrace().size());
+        assertEquals(10001, trace.getTraceSpans().size());
         assertTrue(trace.getElapsedTime() > 0);
     }
     
     @Test
     public void testConversationIDPropagation() {
-        RequestEvent start = new RequestEvent(EventType.TRACE_START,"Start");
+        RequestTraceSpan start = new RequestTraceSpan(EventType.TRACE_START,"Start");
         trace.addEvent(start);
-        RequestEvent re = new RequestEvent("Event");
+        RequestTraceSpan re = new RequestTraceSpan("Event");
         trace.addEvent(re);
-        assertEquals(start.getConversationId(), re.getConversationId());
-        re = new RequestEvent(EventType.TRACE_END,"End");
-        trace.addEvent(re);
-        assertEquals(start.getConversationId(), re.getConversationId());        
+        assertEquals(start.getTraceId(), re.getTraceId());
+        trace.endTrace();
+        assertEquals(start.getTraceId(), re.getTraceId());        
     }
 
     @Test
     public void testJSONParse() {
-        RequestEvent re = new RequestEvent(EventType.TRACE_START,"Start");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START,"Start");
         trace.addEvent(re);
-        for (int i = 0; i < 10000; i++) {
-            re = new RequestEvent("Event"+i);
+        for (int i = 0; i < 1000; i++) {
+            re = new RequestTraceSpan("Event"+i);
             trace.addEvent(re);
         }
-        re = new RequestEvent(EventType.TRACE_END,"TraceEnd");
-        trace.addEvent(re);
+        trace.endTrace();
         String jsonString = trace.toString();
         JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
         jsonReader.readObject();
-        
     }
     
     @Test
     public void testMultipleStartEvents() {
-        RequestEvent re = new RequestEvent(EventType.TRACE_START,"Start");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START,"Start");
         trace.addEvent(re);
-        for (int i = 0; i < 100; i++) {
-            re = new RequestEvent("Event"+i);
-            trace.addEvent(re);
-        }
-        re = new RequestEvent(EventType.TRACE_END,"TraceEnd");
+        re = new RequestTraceSpan("Event1");
         trace.addEvent(re);
-        assertEquals(102,trace.getTrace().size());
-        re = new RequestEvent(EventType.TRACE_START,"Start2");
+        trace.endTrace();
+        assertEquals(2,trace.getTraceSpans().size());
+        re = new RequestTraceSpan(EventType.TRACE_START,"Start2");
         trace.addEvent(re);
-        assertEquals(1,trace.getTrace().size());
-        assertEquals("Start2", trace.getTrace().getFirst().getEventName());
+        assertEquals(1,trace.getTraceSpans().size());
+        assertEquals("Start2", trace.getTraceSpans().getFirst().getEventName());
     }
     
 }

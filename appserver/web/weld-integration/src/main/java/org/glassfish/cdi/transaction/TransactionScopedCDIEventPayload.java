@@ -39,12 +39,14 @@
 
  */
 package org.glassfish.cdi.transaction;
+
 /**
- * Payload for CDI events: @Initialized(TransactionScoped.class) fired, when the context is initialized for
- * the first time and @Destroyed(TransactionScoped.class) fired, when the context is destroyed at
- * the end.
+ * Payload for CDI events: @Initialized(TransactionScoped.class) fired, when the context is
+ * initialized for the first time and @Destroyed(TransactionScoped.class) fired, when the context is
+ * destroyed at the end.
+ *
  * @author <a href="mailto:arjav.desai@oracle.com">Arjav Desai</a>
-*/
+ */
 
 public class TransactionScopedCDIEventPayload {
 

@@ -40,10 +40,13 @@
 package fish.payara.monitoring.rest.app.processor;
 
 import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  *
@@ -53,22 +56,21 @@ import org.codehaus.jettison.json.JSONObject;
 public class TabularTypeProcessor implements TypeProcessor<TabularType> {
 
     @Override
-    public Object processObject(Object object) throws JSONException {
+    public JsonValue processObject(Object object) throws JsonException {
         TabularDataSupport tabularObject = (TabularDataSupport) object;
         return processObject(tabularObject);
     }
    
-    private JSONObject processObject(TabularDataSupport tabularObject) throws JSONException {
-        JSONObject jsonObject = new JSONObject();
+    private JsonObject processObject(TabularDataSupport tabularObject) throws JsonException {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
         for (Map.Entry<Object,Object> entry : tabularObject.entrySet()) {
             TypeProcessor<?> valueProcessor = ProcessorFactory.getTypeProcessor(entry.getValue());
-            JSONObject pair = (JSONObject) valueProcessor.processObject(entry.getValue());
+            JsonObject pair = (JsonObject) valueProcessor.processObject(entry.getValue());
 
-            jsonObject.put(pair.get("key").toString()
-                    , pair.get("value"));
+            objectBuilder.add(pair.get("key").toString(), pair.get("value"));
         }
 
-        return jsonObject;
+        return objectBuilder.build();
     }
 }

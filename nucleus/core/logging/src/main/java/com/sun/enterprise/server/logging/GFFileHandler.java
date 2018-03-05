@@ -42,6 +42,9 @@
 package com.sun.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
+
+import static java.security.AccessController.doPrivileged;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,6 +52,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -146,18 +151,18 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private String gffileHandlerFormatter = "";
     private String currentgffileHandlerFormatter = "";
 
-    // Initially the LogRotation will be off until the domain.xml value is read.
+    /** Initially the LogRotation will be off until the domain.xml value is read. */
     private int limitForFileRotation = 0;
 
     private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(5000);
 
-    // Rotation can be done in 3 ways
-    // 1. Based on the Size: Rotate when some Threshold number of bytes are 
-    //    written to server.log
-    // 2. Based on the Time: Rotate ever 'n' minutes, mostly 24 hrs
-    // 3. Rotate now
-    // For mechanisms 2 and 3 we will use this flag. The rotate() will always
-    // be fired from the publish( ) method for consistency
+    /**Rotation can be done in 3 ways: <ol>
+     * <li> Based on the Size: Rotate when some Threshold number of bytes are 
+     *    written to server.log </li>
+     * <li> Based on the Time: Rotate ever 'n' minutes, mostly 24 hrs </li>
+     * <li> Rotate now </li></ol>
+     * For mechanisms 2 and 3 we will use this flag. The rotate() will always
+     * be fired from the publish( ) method for consistency */
     private AtomicBoolean rotationRequested = new AtomicBoolean(false);
     
     protected Object rotationLock = new Object();
@@ -194,7 +199,8 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private final LogManager manager = LogManager.getLogManager();
     private final String cname = getClass().getName();
     private static final String GF_FILE_HANDER = "com.sun.enterprise.server.logging.GFFileHandler";
-    
+
+    @Override
     public void postConstruct() {
 
         String filename = evaluateFileName();
@@ -310,8 +316,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
                 rotationTimeLimitValue = nextsystime - systime;
 
-                Task rotationTask = new Task() {
-                    public Object run() {
+            Task rotationTask = new Task() {
+                @Override
+                public Object run() {
                         rotate();
                         return null;
                     }
@@ -587,6 +594,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     
     void initializePump() {
         pump = new Thread() {
+            @Override
             public void run() {
                 while (!done.isSignalled()) {
                     try {
@@ -603,6 +611,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         pump.start();        
     }
 
+    @Override
     public void preDestroy() {
         // stop the Queue consummer thread.
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
@@ -662,6 +671,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
      * A simple getter to access the current log file written by
      * this FileHandler.
      */
+    @Override
     public File getCurrentLogFile() {
         return absoluteFile;
     }
@@ -688,11 +698,11 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         formatterClass.setLogEventBroadcaster(this);
     }
 
-    // NOTE: This private class is copied from java.util.logging.FileHandler
-    // A metered stream is a subclass of OutputStream that
-    //   (a) forwards all its output to a target stream
-    //   (b) keeps track of how many bytes have been written
-
+    /** NOTE: This private class is copied from java.util.logging.FileHandler
+     * A metered stream is a subclass of OutputStream that
+     *   (a) forwards all its output to a target stream
+     *   (b) keeps track of how many bytes have been written
+     */ 
     private static final class MeteredStream extends OutputStream {
 
         private volatile boolean isOpen = false;
@@ -706,25 +716,30 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             isOpen = true;
         }
 
+        @Override
         public void write(int b) throws IOException {
             out.write(b);
             written++;
         }
 
+        @Override
         public void write(byte buff[]) throws IOException {
             out.write(buff);
             written += buff.length;
         }
 
+        @Override
         public void write(byte buff[], int off, int len) throws IOException {
             out.write(buff, off, len);
             written += len;
         }
 
+        @Override
         public void flush() throws IOException {
             out.flush();
         }
 
+        @Override
         public void close() throws IOException {
             if (isOpen) {
                 isOpen = false;
@@ -811,7 +826,8 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
      */
     public void rotate() {
         final GFFileHandler thisInstance = this;
-        java.security.AccessController.doPrivileged(new java.security.PrivilegedAction() {
+        		doPrivileged(new PrivilegedAction<Object>() {
+                    @Override
                     public Object run() {
                         synchronized (thisInstance.rotationLock) {
                             if (thisInstance.meter != null
@@ -945,6 +961,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     /**
      * Publishes the logrecord storing it in our queue
      */
+    @Override
     public void publish(LogRecord record) {
 
         // the queue has shutdown, we are not processing any more records
@@ -1011,6 +1028,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     }
     
     
+    @Override
     public void informLogEventListeners(LogEvent logEvent) {
         for (LogEventListener listener : logEventListeners) {
             listener.messageLogged(logEvent);

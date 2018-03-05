@@ -239,20 +239,33 @@ class Assembler {
         if (file == null || jos == null) {
             return;
         }
-        JarFile jarFile = new JarFile(file);
-        Enumeration<JarEntry> entries = jarFile.entries();
-        while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            if (!entry.isDirectory() && !exclude(entry)) {
-                InputStream in = jarFile.getInputStream(entry);
-                try {
-                    jos.putNextEntry(new ZipEntry(entry.getName()));
-                } catch (ZipException ex) {
-                    continue;
+        JarFile jarFile = null;
+        try {
+            jarFile = new JarFile(file);
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                if (!entry.isDirectory() && !exclude(entry)) {
+                    try (InputStream in = jarFile.getInputStream(entry)) {
+                        try {
+                            jos.putNextEntry(new ZipEntry(entry.getName()));
+                        } catch (ZipException ex) {
+                            continue;
+                        }
+                        transferContents(in, jos);
+                        jos.closeEntry();
+                    }
                 }
-                transferContents(in, jos);
-                jos.closeEntry();
             }
+        } finally {
+            if (jarFile != null) {
+                try {
+                    jarFile.close();
+                } catch (IOException ioe) {
+                    //ignore
+                }
+            }
+
         }
     }
 

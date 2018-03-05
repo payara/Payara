@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
-import java.io.*;
-import java.util.*;
-import java.security.*;
+import static java.lang.System.arraycopy;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.Base64;
 
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.universal.GFBase64Decoder;
-import com.sun.enterprise.universal.GFBase64Encoder;
 
 /**
  * Util class for salted SHA processing.
@@ -58,8 +59,8 @@ import com.sun.enterprise.universal.GFBase64Encoder;
  * SHA( password , salt) without Base64 encoding.
  *
  */
-public class SSHA
-{
+public class SSHA {
+    
     private static final String SSHA_TAG = "{SSHA}";
     private static final String SSHA_256_TAG = "{SSHA256}";
     private static final String algoSHA = "SHA";
@@ -154,18 +155,11 @@ public class SSHA
      * @return String Encoded string, as described in class documentation.
      *
      */
-    public static String encode(byte[] salt, byte[] hash, String algo)
-    {       
+    public static String encode(byte[] salt, byte[] hash, String algo) {       
         boolean isSHA = false;
 
         if (algoSHA.equals(algo)) {
             isSHA = true;
-        }
-
-        if (!isSHA) {
-            assert (hash.length == 32);
-        } else {
-            assert (hash.length == 20);
         }
 
         int resultLength = 32;
@@ -174,14 +168,13 @@ public class SSHA
         }
 
         byte[] res = new byte[resultLength+salt.length];
-        System.arraycopy(hash, 0, res, 0, resultLength);
-        System.arraycopy(salt, 0, res, resultLength, salt.length);
+        arraycopy(hash, 0, res, 0, resultLength);
+        arraycopy(salt, 0, res, resultLength, salt.length);
 
-        GFBase64Encoder encoder = new GFBase64Encoder();
-        String encoded = encoder.encode(res);
+        String encoded = new String(Base64.getMimeEncoder().encode(res), UTF_8);
 
         String out = SSHA_256_TAG + encoded;
-        if(isSHA) {
+        if (isSHA) {
             out = SSHA_TAG + encoded;
         }
        
@@ -295,20 +288,12 @@ public class SSHA
     {
          boolean isSHA = false;
 
-        if(algoSHA.equals(algo)) {
+        if (algoSHA.equals(algo)) {
             isSHA = true;
         }
 
-        if(isSHA) {
-            assert (hashResult.length==20);
-        }
-        else {
-            assert (hashResult.length == 32);
-        }
-
         if (!encoded.startsWith(SSHA_TAG) && !encoded.startsWith(SSHA_256_TAG)) {
-            String msg = sm.getString("ssha.badformat", encoded);
-            throw new IllegalArgumentException(msg);
+            throw new IllegalArgumentException(sm.getString("ssha.badformat", encoded));
         }
 
         String ssha = encoded.substring(SSHA_256_TAG.length());
@@ -316,25 +301,17 @@ public class SSHA
             ssha = encoded.substring(SSHA_TAG.length());
         }
                
-        GFBase64Decoder decoder = new GFBase64Decoder();
-        byte[] result = null;
-      
-        try {
-            result = decoder.decodeBuffer(ssha);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
+        byte[] result = Base64.getMimeDecoder().decode(ssha);
 
         int resultLength = 32;
-        if(isSHA) {
+        if (isSHA) {
             resultLength = 20;
         }
-        assert (result.length > resultLength);
         
         byte[] salt = new byte[result.length - resultLength];
 
-        System.arraycopy(result, 0, hashResult, 0, resultLength);
-        System.arraycopy(result, resultLength, salt, 0, result.length-resultLength);
+        arraycopy(result, 0, hashResult, 0, resultLength);
+        arraycopy(result, resultLength, salt, 0, result.length-resultLength);
 
         return salt;
     }

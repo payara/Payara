@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -40,7 +41,9 @@ package fish.payara.nucleus.eventbus;
 
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -67,13 +70,13 @@ public class EventBus implements EventListener {
     @Inject
     private Events events;
     
-    private HashMap<String,TopicListener> messageReceivers;
+    private Map<String, TopicListener> messageReceivers;
     
     
     @PostConstruct
     public void postConstruct() {
         events.register(this);
-        messageReceivers = new HashMap<String, TopicListener>(2);
+        messageReceivers = new ConcurrentHashMap<>(2);
     }
     
     /**

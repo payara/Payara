@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-ejb</artifactId>
     <name>Glassfish EJB Package</name>
@@ -157,6 +157,11 @@
         <dependency>
             <groupId>fish.payara.admingui</groupId>
             <artifactId>console-corba-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.ejb.timer</groupId>
+            <artifactId>hazelcast-ejb-timer</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

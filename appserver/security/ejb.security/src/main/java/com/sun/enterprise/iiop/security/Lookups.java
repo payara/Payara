@@ -40,9 +40,9 @@
 
 package com.sun.enterprise.iiop.security;
 
+import fish.payara.nucleus.cluster.PayaraCluster;
 import java.lang.ref.WeakReference;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -63,9 +63,9 @@ public class Lookups {
 
     @Inject
     private Provider<SecurityContextUtil> securityContextUtilProvider;
-
+    
     @Inject
-    private Provider<GMSAdapterService> gmsAdapterServiceProvider;
+    private Provider<PayaraCluster> payaraCluster;
 
     /**
      * Static singleton {@link Habitat} instance.
@@ -164,7 +164,7 @@ public class Lookups {
      *
      * @return the {@link GMSAdapterService}; null if not available
      */
-    static GMSAdapterService getGMSAdapterService() {
-        return checkSingleton() ? singleton.gmsAdapterServiceProvider.get() : null;
+    static PayaraCluster getCluster() {
+        return checkSingleton() ? singleton.payaraCluster.get() : null;
     }
 }

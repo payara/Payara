@@ -37,21 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.*;
-import com.sun.enterprise.deployment.util.*;
-import com.sun.enterprise.deployment.web.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
-import java.util.*;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.EjbReferenceContainer;
+import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
+import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
+import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
+import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.web.AppListenerDescriptor;
+import com.sun.enterprise.deployment.web.ContextParameter;
+import com.sun.enterprise.deployment.web.EnvironmentEntry;
+import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.deployment.web.MimeMapping;
+import com.sun.enterprise.deployment.web.SecurityConstraint;
+import com.sun.enterprise.deployment.web.SecurityRole;
+import com.sun.enterprise.deployment.web.SecurityRoleReference;
+import com.sun.enterprise.deployment.web.ServletFilter;
+import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import com.sun.enterprise.deployment.web.SessionConfig;
 
 /**
  * I am an object that represents all the deployment information about
@@ -107,6 +127,14 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract String getContextRoot();
 
     public abstract void setContextRoot(String contextRoot);
+
+	public abstract String getRequestCharacterEncoding();
+
+	public abstract void setRequestCharacterEncoding(String requestCharacterEncoding);
+
+	public abstract String getResponseCharacterEncoding();
+
+	public abstract void setResponseCharacterEncoding(String responseCharacterEncoding);
 
     public abstract Set<WebComponentDescriptor> getWebComponentDescriptors();
 
@@ -467,6 +495,9 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract boolean getServletInitializersEnabled();
     public abstract void setServletInitializersEnabled(boolean tf);
 
+    public abstract boolean isJaxrsRolesAllowedEnabled();
+    public abstract void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled);
+
     public boolean isConflictLoginConfig() {
         return conflictLoginConfig;
     }
@@ -529,4 +560,4 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract Set<String> getConflictedMimeMappingExtensions();
 }
-    
+

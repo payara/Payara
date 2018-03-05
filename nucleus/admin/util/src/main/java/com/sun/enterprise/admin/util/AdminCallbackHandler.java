@@ -37,24 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.admin.util;
 
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.universal.GFBase64Decoder;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.security.Principal;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.security.auth.callback.*;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.TextInputCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
 import org.glassfish.common.util.admin.AdminAuthenticator.AuthenticatorType;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.LocalPassword;
+
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
 
 /**
  * Handles callbacks for admin authentication other than user-provided
@@ -74,17 +85,16 @@ public class AdminCallbackHandler implements CallbackHandler {
     public static final String COOKIE_REST_TOKEN = "gfresttoken";
     public static final String HEADER_X_AUTH_TOKEN = "X-Auth-Token";
     
-    
     private static final Level PROGRESS_LEVEL = Level.FINE;
     
     private static final Logger logger = GenericAdminAuthenticator.ADMSEC_LOGGER;
     
+    private static final Base64.Decoder decoder = Base64.getMimeDecoder();
+    private static final String BASIC = "Basic ";
+    
     private final Request request;
     
-    private Map<String,String> headers = null;
-    
-    private static final GFBase64Decoder decoder = new GFBase64Decoder();
-    private static final String BASIC = "Basic ";
+    private Map<String,String> headers;
 
     private final Principal clientPrincipal;
     private final String originHost;
@@ -159,22 +169,22 @@ public class AdminCallbackHandler implements CallbackHandler {
             return new PasswordAuthentication(defaultAdminUsername, new char[0]);
         }
         
-        String enc = authHeader.substring(BASIC.length());
-        String dec = new String(decoder.decodeBuffer(enc));
+        String dec = new String(decoder.decode(authHeader.substring(BASIC.length())), UTF_8);
         int i = dec.indexOf(':');
         if (i < 0) {
             logger.log(PROGRESS_LEVEL, "Authorization header contained no : to separate the username from the password; proceeding with an empty username and empty password");
             return new PasswordAuthentication("", new char[0]);
         }
+        
         final char[] password = dec.substring(i + 1).toCharArray();
         String username = dec.substring(0, i);
         if (username.isEmpty() && ! localPassword.isLocalPassword(new String(password))) {
             logger.log(PROGRESS_LEVEL, "Authorization header contained no username and the password is not the local password, so continue with the default username {0}", defaultAdminUsername);
             username  = defaultAdminUsername;
         }
+        
         logger.log(PROGRESS_LEVEL, "basicAuth processing returning PasswordAuthentication with username {0}", username);
         return new PasswordAuthentication(username, password);    
-        
     }
     
     private String specialAdminIndicator() {

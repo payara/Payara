@@ -61,8 +61,6 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
             <encoding>iso-8859-1</encoding>
-            <source>1.5</source>
-            <target>1.5</target>   
           </configuration>
         </plugin>
       </plugins>

@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- logViewer/logViewerRaw.jsf -->
@@ -102,7 +104,7 @@ function logViewerRaw(url) {
     var timeout = 1000;
     
     var success = function(xhr, targetId, requestedUrl) {
-        if (xhr.status == 200 && xhr.getResponseHeader('Content-Type') == "text/plain") {
+        if (xhr.status === 200 && xhr.getResponseHeader('Content-Type').indexOf("text/plain") !== -1) {
             if (xhr.responseText ) {
                 var records = document.createTextNode(xhr.responseText);
                 var documentX = window.pageXOffset || document.body.scrollLeft /* IE */;

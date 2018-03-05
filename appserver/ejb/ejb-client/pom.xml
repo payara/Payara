@@ -40,13 +40,14 @@
     holder.
 
 -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -93,140 +94,5 @@
             <groupId>javax.ejb</groupId>
             <artifactId>javax.ejb-api</artifactId>
         </dependency>
-        <!-- these 2 dependencies are for compilation only  -->
-<!--
-        <dependency>
-            <groupId>javax.xml.soap</groupId>
-            <artifactId>javax.xml.soap-api</artifactId>
-            <optional>true</optional>
-        </dependency>        
-        <dependency>
-            <groupId>org.glassfish.metro</groupId>
-            <artifactId>webservices-api-osgi</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.security</groupId>
-            <artifactId>security-ee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.core</groupId>
-            <artifactId>kernel</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
-            <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
-            <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>dol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>stats77</artifactId>
-            <version>${project.version}</version>
-       </dependency>
-       <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>deployment-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-       <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>deployment-javaee-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>glassfish-naming</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.persistence</groupId>
-            <artifactId>persistence-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.connectors</groupId>
-            <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
-            <artifactId>transaction-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
-            <artifactId>ejb-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.ejb</groupId>
-            <artifactId>gf-ejb-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>asm-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.pfl</groupId>
-            <artifactId>pfl-dynamic</artifactId>
-	    <optional>true</optional> 
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.orb</groupId>
-            <artifactId>orb-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.ha</groupId>
-            <artifactId>ha-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
-            <artifactId>gms-bootstrap</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.annotations</groupId>
-            <artifactId>logging-annotation-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
--->
     </dependencies>
 </project>

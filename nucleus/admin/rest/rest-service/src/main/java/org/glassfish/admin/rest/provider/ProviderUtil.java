@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.provider;
@@ -55,10 +57,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.json.JsonArray;
+import javax.json.JsonException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
@@ -417,7 +419,7 @@ public class ProviderUtil {
         return result;
     }
 
-    static protected JSONArray getJsonForMethodMetaData(OptionsResult metaData) throws JSONException {
+    static protected JsonArray getJsonForMethodMetaData(OptionsResult metaData) throws JsonException {
         OptionsResultJsonProvider provider = new OptionsResultJsonProvider();
         return provider.getRespresenationForMethodMetaData(metaData);
     }

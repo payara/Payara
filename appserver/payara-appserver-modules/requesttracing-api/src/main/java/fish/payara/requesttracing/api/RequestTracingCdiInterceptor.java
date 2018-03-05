@@ -41,7 +41,7 @@ package fish.payara.requesttracing.api;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.api.Traced;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
 import org.glassfish.internal.api.Globals;
 
 import javax.annotation.Priority;
@@ -61,18 +61,18 @@ public class RequestTracingCdiInterceptor implements Serializable {
     @AroundInvoke
     public Object traceCdiCall(InvocationContext ctx) throws Exception {
         RequestTracingService requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        
+        Object proceed = null;
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = new RequestEvent("InterceptedCdiRequest-ENTER");
-            requestEvent.addProperty("TargetClass", ctx.getTarget().getClass().getName());
-            requestEvent.addProperty("MethodName", ctx.getMethod().getName());
-            requestTracing.traceRequestEvent(requestEvent);
-        }
-        Object proceed = ctx.proceed();
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = new RequestEvent("InterceptedCdiRequest-EXIT");
-            requestEvent.addProperty("TargetClass", ctx.getTarget().getClass().getName());
-            requestEvent.addProperty("MethodName", ctx.getMethod().getName());
-            requestTracing.traceRequestEvent(requestEvent);
+            RequestTraceSpan span = new RequestTraceSpan("executeCdiMethod");
+            span.addSpanTag("TargetClass", ctx.getTarget().getClass().getName());
+            span.addSpanTag("MethodName", ctx.getMethod().getName());
+            
+            proceed = ctx.proceed();
+            
+            requestTracing.traceSpan(span);
+        } else {
+            proceed = ctx.proceed();
         }
         return proceed;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,14 +65,6 @@ import org.glassfish.quality.ToDo;
  * top-level attributes are defined as well
  * 
  */
-/* @XmlType(name = "", propOrder = {
-    "authRealm",
-    "jaccProvider",
-    "auditModule",
-    "messageSecurityConfig",
-    "property"
-}) */
-
 @Configured
 public interface SecurityService extends ConfigBeanProxy, PropertyBag {
 
@@ -163,7 +155,7 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="false",dataType=Boolean.class)
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
     public String getAuditEnabled();
 
     /**
@@ -219,15 +211,19 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
      *
      * Causes the appserver to apply a default principal to role mapping, to any
      * application that does not have an application specific mapping defined.
+     * 
+     * <p>
      * Every role is mapped to a same-named (as the role) instance of a
      * java.security.Principal implementation class (see mapped-principal-class)
-     * This behavior is similar to that of Tomcat servlet container.
-     * It is off by default.
+     * This behavior is similar to that of the Tomcat servlet container.
+     * 
+     * <p>
+     * It is on by default.
      * 
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="false",dataType=Boolean.class)
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
     public String getActivateDefaultPrincipalToRoleMapping();
 
     /**
@@ -285,7 +281,7 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
      * Objects of the following type(s) are allowed in the list
      * {@link AuthRealm }
      */
-    @Element(required=true)
+    @Element(required = true)
     public List<AuthRealm> getAuthRealm();
 
     /**

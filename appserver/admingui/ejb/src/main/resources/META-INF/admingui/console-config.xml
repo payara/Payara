@@ -66,5 +66,12 @@
                 parentId=""
                 content="ejbTimerButtons.jsf"
         />
-
+     <!-- add the DG timer links -->
+        <integration-point
+                id="ejbTimersDG"
+                type="org.glassfish.admingui:ejbTimerButtonsDG"
+                priority="200"
+                parentId=""
+                content="ejbTimerButtonsDG.jsf"
+        />
 </console-config>

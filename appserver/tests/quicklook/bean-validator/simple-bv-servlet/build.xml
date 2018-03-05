@@ -83,8 +83,8 @@
     <mkdir dir="${class.output}"/>
     <mkdir dir="${dist.dir}"/>
     <javac   debug="true"
-    source="1.5"
-    target="1.5"
+    source="1.8"
+    target="1.8"
     classpathref="class.path"
     srcdir="src/java"
     failonerror="false"

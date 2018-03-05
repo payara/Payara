@@ -444,13 +444,15 @@ public final class ExtensionValidator {
      */
     private static void addSystemResource(File jarFile) throws IOException {
 
-        Manifest manifest = getManifest(new FileInputStream(jarFile));
-        if (manifest != null)  {
-            ManifestResource mre
-                = new ManifestResource(jarFile.getAbsolutePath(),
-                                       manifest,
-                                       ManifestResource.SYSTEM);
-            containerManifestResources.add(mre);
+        try (FileInputStream fio = new FileInputStream(jarFile)) {
+            Manifest manifest = getManifest(fio);
+            if (manifest != null) {
+                ManifestResource mre
+                  = new ManifestResource(jarFile.getAbsolutePath(),
+                  manifest,
+                  ManifestResource.SYSTEM);
+                containerManifestResources.add(mre);
+            }
         }
     }
 

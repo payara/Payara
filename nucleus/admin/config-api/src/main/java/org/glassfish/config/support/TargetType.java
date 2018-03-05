@@ -61,5 +61,5 @@ public @interface TargetType {
      * @return the list of valid command target by type
      */
     CommandTarget[] value() default {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
-                                        CommandTarget.CONFIG};    
+                                        CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP};    
 }

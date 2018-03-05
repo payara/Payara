@@ -37,142 +37,142 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.diagnostics.context.impl;
 
+import static org.glassfish.contextpropagation.PropagationMode.JMS_QUEUE;
+import static org.glassfish.contextpropagation.PropagationMode.LOCAL;
+import static org.glassfish.contextpropagation.PropagationMode.MIME_HEADER;
+import static org.glassfish.contextpropagation.PropagationMode.ONEWAY;
+import static org.glassfish.contextpropagation.PropagationMode.RMI;
+import static org.glassfish.contextpropagation.PropagationMode.SOAP;
+import static org.glassfish.contextpropagation.PropagationMode.THREAD;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
+import java.util.EnumSet;
+
+import org.glassfish.contextpropagation.Location;
+import org.glassfish.contextpropagation.View;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.Mocked;
 import mockit.Verifications;
-import mockit.Expectations;
-import mockit.NonStrictExpectations;
 import mockit.integration.junit4.JMockit;
-
-import org.glassfish.contextpropagation.Location;
-import org.glassfish.contextpropagation.PropagationMode;
-import org.glassfish.contextpropagation.View;
-
-import org.junit.Test;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
-
-import java.util.EnumSet;
 
 @RunWith(JMockit.class)
 public class ContextImplUnitTest {
 
- /**
-  * Test that the Location field of ContextImpl uses the Location
-  * object used at construction and that the Location returned from the
-  * ContextImpl does not then change over the lifetime of the ContextImpl.
-  */
-  @Test
-  public void testConstructorsLocation(
-    @Mocked final Location mockedLocation,
-    @Mocked final View mockedView)
-  {
+    /**
+     * Test that the Location field of ContextImpl uses the Location object used at construction and that the Location
+     * returned from the ContextImpl does not then change over the lifetime of the ContextImpl.
+     */
+    @Test
+    public void testConstructorsLocation(@Mocked final Location mockedLocation, @Mocked final View mockedView) {
 
-    final String mockedLocationIdReturnValue = "mockedLocationIdReturnValue";
-    final String mockedOriginReturnValue = "mockedOriginReturnValue";
+        final String mockedLocationIdReturnValue = "mockedLocationIdReturnValue";
+        final String mockedOriginReturnValue = "mockedOriginReturnValue";
 
-    new MockUp<Location>()
-    {
-      @Mock
-      public String getLocationId() { return mockedLocationIdReturnValue; }
+        new MockUp<Location>() {
+            @Mock
+            public String getLocationId() {
+                return mockedLocationIdReturnValue;
+            }
 
-      @Mock
-      public String getOrigin() { return mockedOriginReturnValue; }
-    };
+            @Mock
+            public String getOrigin() {
+                return mockedOriginReturnValue;
+            }
+        };
 
-    ContextImpl contextImpl = new ContextImpl(mockedView, mockedLocation);
+        ContextImpl contextImpl = new ContextImpl(mockedView, mockedLocation);
+        
+        assertSame(
+                "Location from contextImpl.getLocation() should be the instance passed in on construction.", 
+                mockedLocation, contextImpl.getLocation());
 
-    Location location1 = contextImpl.getLocation();
-    Assert.assertSame("Location from contextImpl.getLocation() should be the instance passed in on construction.", mockedLocation, location1);
+        // On the face of is these next two assertions seem perfectly reasonable
+        // but in reality they prove nothing regarding the behaviour of the
+        // org.glassfish.diagnostics.context.impl code, but rather
+        // verify that the mocking framework is doing it's job: the getLocationId
+        // and getOrigin methods are overridden by the mock framework to
+        // return the values above, they are not returning state from the
+        // mockedLocation object itself.
+        /*
+         * Assert.
+         * assertEquals("LocationId from contextImpl.getLocation() should be the locationId value from the location used when constructing the ContextImpl."
+         * , location1.getLocationId(), mockedLocationIdReturnValue); Assert.
+         * assertEquals("Origin from contextImpl.getOrigin() should be the origin value from the location used when constructing the ContextImpl."
+         * , location1.getOrigin(), mockedOriginReturnValue);
+         */
 
-    // On the face of is these next two assertions seem perfectly reasonable
-    // but in reality they prove nothing regarding the behaviour of the
-    // org.glassfish.diagnostics.context.impl code, but rather
-    // verify that the  mocking framework is doing it's job: the getLocationId
-    // and getOrigin methods are overridden by the mock framework to
-    // return the values above, they are not returning state from the
-    // mockedLocation object itself.
-    /*
-       Assert.assertEquals("LocationId from contextImpl.getLocation() should be the locationId value from the location used when constructing the ContextImpl.", location1.getLocationId(), mockedLocationIdReturnValue);
-       Assert.assertEquals("Origin from contextImpl.getOrigin() should be the origin value from the location used when constructing the ContextImpl.", location1.getOrigin(), mockedOriginReturnValue);
-    */
+        assertSame(
+                "Location from contextImpl.getLocation() should still be the instance passed in on construction.", 
+                mockedLocation, contextImpl.getLocation());
+    }
 
-    Location location2 = contextImpl.getLocation();
-    Assert.assertSame("Location from contextImpl.getLocation() should still be the instance passed in on construction.", mockedLocation, location2);
-  }
+    /**
+     * Test that the put operations on an instance of ContextImpl delegate as expected to the View object used in
+     * construction.
+     */
+    @Test
+    public void testDelegationOfPut(@Mocked final Location mockedLocation, @Mocked final View mockedView) {
 
- /**
-  * Test that the put operations on an instance of ContextImpl delegate
-  * as expected to the View object used in construction.
-  */
-  @Test
-  public void testDelegationOfPut(
-    @Mocked final Location mockedLocation,
-    @Mocked final View mockedView){
+        ContextImpl contextImpl = new ContextImpl(mockedView, mockedLocation);
+        
+        contextImpl.put("KeyForString-Value1-true", "Value1", true);
+        contextImpl.put("KeyForString-Value2-false", "Value2", false);
 
-    ContextImpl contextImpl = new ContextImpl(mockedView, mockedLocation);
+        contextImpl.put("KeyForNumber-5-true", 5l, true);
+        contextImpl.put("KeyForNumber-7-false", 7l, false);
 
-    contextImpl.put("KeyForString-Value1-true", "Value1", true);
-    contextImpl.put("KeyForString-Value2-false", "Value2", false);
+        new Verifications() {
+            {
+                mockedView.put("KeyForString-Value1-true", "Value1", EnumSet.of(THREAD, RMI,
+                        JMS_QUEUE, SOAP, MIME_HEADER, ONEWAY));
 
-    contextImpl.put("KeyForNumber-5-true", 5, true);
-    contextImpl.put("KeyForNumber-7-false", 7, false);
+                mockedView.put("KeyForString-Value2-false", "Value2", EnumSet.of(LOCAL));
 
-    new Verifications(){{
-      mockedView.put("KeyForString-Value1-true", "Value1", EnumSet.of(
-                                                  PropagationMode.THREAD,
-                                                  PropagationMode.RMI,
-                                                  PropagationMode.JMS_QUEUE,
-                                                  PropagationMode.SOAP,
-                                                  PropagationMode.MIME_HEADER,
-                                                  PropagationMode.ONEWAY));
-      mockedView.put("KeyForString-Value2-false", "Value2", EnumSet.of(
-                                                  PropagationMode.LOCAL));
+                mockedView.put("KeyForNumber-5-true", 5l, EnumSet.of(THREAD, RMI, JMS_QUEUE,
+                        SOAP, MIME_HEADER, ONEWAY));
+                mockedView.put("KeyForNumber-7-false", 7l, EnumSet.of(LOCAL));
+            }
+        };
 
-      mockedView.put("KeyForNumber-5-true", 5, EnumSet.of(
-                                                  PropagationMode.THREAD,
-                                                  PropagationMode.RMI,
-                                                  PropagationMode.JMS_QUEUE,
-                                                  PropagationMode.SOAP,
-                                                  PropagationMode.MIME_HEADER,
-                                                  PropagationMode.ONEWAY));
-      mockedView.put("KeyForNumber-7-false", 7, EnumSet.of(
-                                                  PropagationMode.LOCAL));
-    }};
+    }
 
-  }
+    /**
+     * Test that the get operation on an instance of ContextImpl delegates as expected to the View object used in
+     * construction.
+     */
+    @Test
+    public void testDelegationOfGet(@Mocked final Location mockedLocation, @Mocked final View mockedView) {
 
- /**
-  * Test that the get operation on an instance of ContextImpl delegates
-  * as expected to the View object used in construction.
-  */
-  @Test
-  public void testDelegationOfGet(
-    @Mocked final Location mockedLocation,
-    @Mocked final View mockedView){
+        final String key = "testDelegationOfGet-Key1";
+        final String expectedValueOfKey1 = "testDelegationOfGet-Value1";
+        ContextImpl contextImpl = new ContextImpl(mockedView, mockedLocation);
+        
+        new Expectations() {
 
-    final String key = "testDelegationOfGet-Key1";
-    final String expectedValueOfKey1 = "testDelegationOfGet-Value1";
-    ContextImpl contextImpl = new ContextImpl(mockedView, mockedLocation);
+            // We expect get to be called on the view, and we'll
+            // instruct the mocking framework to return expectedValueOfKey1
+            // so that we can also verify that contextImpl returns it.
+            View expectationsRefViewVariable = mockedView;
+            {
+                expectationsRefViewVariable.get(key);
+                returns(expectedValueOfKey1, null);
+            }
+        };
 
-    new Expectations(){
+        String value = contextImpl.get(key);
 
-      // We expect get to be called on the view, and we'll
-      // instruct the mocking framework to return expectedValueOfKey1
-      // so that we can also verify that contextImpl returns it.
-      View expectationsRefViewVariable = mockedView;
-      {
-        expectationsRefViewVariable.get(key); returns(expectedValueOfKey1);
-      }
-    };
-
-    String value = contextImpl.get(key);
-
-    Assert.assertEquals("Value returned from contextImpl.get(\""+key+"\") is not the value expected.", expectedValueOfKey1, value);
-  }
+        assertEquals(
+                "Value returned from contextImpl.get(\"" + key + "\") is not the value expected.", 
+                expectedValueOfKey1, value);
+    }
 
 }

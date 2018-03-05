@@ -67,16 +67,13 @@ import fish.payara.microprofile.metrics.cdi.producer.MetricRegistryProducer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedParameter;
-import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
@@ -128,7 +125,7 @@ public class MetricCDIExtension implements Extension {
     }
 
     private <T> void metricsAnnotations(@Observes @WithAnnotations({Counted.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> pat) {
-        pat.setAnnotatedType(new AnnotatedTypeDecorator<>(pat.getAnnotatedType(), METRICS_ANNOTATION_BINDING));
+        pat.configureAnnotatedType().add(METRICS_ANNOTATION_BINDING);
     }
 
     private <T extends Metric> void filterMetricsProducer(@Observes ProcessProducer<?, T> pp) {
@@ -178,12 +175,11 @@ public class MetricCDIExtension implements Extension {
     }
 
     private <T extends Annotation> void addInterceptorBinding(Class<T> annotation, BeanManager manager, BeforeBeanDiscovery bbd) {
-        AnnotatedType<T> annotated = manager.createAnnotatedType(annotation);
-        Set<AnnotatedMethod<? super T>> methods = new HashSet<>();
-        for (AnnotatedMethod<? super T> method : annotated.getMethods()) {
-            methods.add(new AnnotatedMethodDecorator<>(method, NON_BINDING));
-        }
-        bbd.addInterceptorBinding(new AnnotatedTypeDecorator<>(annotated, INTERCEPTOR_BINDING, methods));
+        bbd.addInterceptorBinding(manager.createAnnotatedType(annotation));
+        bbd.configureInterceptorBinding(annotation)
+                .add(INTERCEPTOR_BINDING)
+                .filterMethods(method -> !method.isAnnotationPresent(Nonbinding.class))
+                .forEach(method -> method.add(NON_BINDING));
     }
 
     private <T extends Object> void addAnnotatedType(Class<T> type, BeanManager manager, BeforeBeanDiscovery bbd) {

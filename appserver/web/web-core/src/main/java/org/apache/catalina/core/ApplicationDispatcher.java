@@ -67,6 +67,7 @@ import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.InstanceSupport;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletMapping;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -211,13 +212,14 @@ public final class ApplicationDispatcher
      *  else <code>null</code>
      */
     public ApplicationDispatcher
-        (Wrapper wrapper, String requestURI, String servletPath,
+        (Wrapper wrapper, HttpServletMapping mappingForDispatch, String requestURI, String servletPath,
          String pathInfo, String queryString, String name) {
 
         super();
 
         // Save all of our configuration parameters
         this.wrapper = wrapper;
+        this.mappingForDispatch = mappingForDispatch;
         this.context = (Context) wrapper.getParent();
         this.requestURI = requestURI;
         this.servletPath = servletPath;
@@ -283,7 +285,8 @@ public final class ApplicationDispatcher
      * The Wrapper associated with the resource that will be forwarded to
      * or included.
      */
-    private Wrapper wrapper = null;
+    private Wrapper wrapper;
+    private HttpServletMapping mappingForDispatch;
 
     private RequestTracingService requestTracing;
 
@@ -1072,7 +1075,7 @@ public final class ApplicationDispatcher
             crossContextFlag = Boolean.valueOf(crossContext);
             //END OF 6364900
             wrapper = new ApplicationHttpRequest
-                (hcurrent, context, crossContext, state.dispatcherType);
+                (hcurrent, context, crossContext, mappingForDispatch, state.dispatcherType);
         } else {
             wrapper = new ApplicationRequest(current);
         }

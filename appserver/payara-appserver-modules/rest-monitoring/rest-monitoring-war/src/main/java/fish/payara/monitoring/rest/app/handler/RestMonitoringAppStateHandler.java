@@ -43,8 +43,10 @@ import fish.payara.monitoring.rest.app.RestMonitoringAppResponseToken;
 import fish.payara.monitoring.rest.app.RestMonitoringAppState;
 import fish.payara.monitoring.rest.app.MBeanServerDelegate;
 import javax.inject.Singleton;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 /**
  *
@@ -58,30 +60,30 @@ public class RestMonitoringAppStateHandler extends VersionHandler {
     }
 
     @Override
-    JSONObject getRequestObject() {
-        JSONObject requestObject = new JSONObject();
+    JsonObject getRequestObject() {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         try {
-            requestObject.put(RestMonitoringAppResponseToken.getRequestTypeKey(), 
+            objectBuilder.add(RestMonitoringAppResponseToken.getRequestTypeKey(), 
                     RestMonitoringAppResponseToken.getVersionRequestToken());
-            return requestObject;
-        } catch (JSONException ex) {
-            return requestObject;
+            return objectBuilder.build();
+        } catch (JsonException ex) {
+            return objectBuilder.build();
         }
     }
 
     @Override
-    JSONObject getValueObject() {
-        JSONObject valueObject = new JSONObject();
+    JsonObject getValueObject() {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         try {
-            valueObject.put(RestMonitoringAppState.getAgentNameKey(),
+            objectBuilder.add(RestMonitoringAppState.getAgentNameKey(),
                     RestMonitoringAppState.getAgentName());
-            valueObject.put(RestMonitoringAppState.getAgentVersionKey(), 
+            objectBuilder.add(RestMonitoringAppState.getAgentVersionKey(), 
                     RestMonitoringAppState.getAgentVersion());
-            valueObject.put(RestMonitoringAppState.getAgentTypeKey(), 
+            objectBuilder.add(RestMonitoringAppState.getAgentTypeKey(), 
                     RestMonitoringAppState.getAgentType());
-            return valueObject;
-        } catch (JSONException ex) {
-            return valueObject;
+            return objectBuilder.build();
+        } catch (JsonException ex) {
+            return objectBuilder.build();
         }
     }
     

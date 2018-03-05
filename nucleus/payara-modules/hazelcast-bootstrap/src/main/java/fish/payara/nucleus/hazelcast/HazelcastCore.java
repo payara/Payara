@@ -45,16 +45,22 @@ import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
+import com.hazelcast.config.MemberAddressProviderConfig;
 import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.config.PartitionGroupConfig;
 import com.hazelcast.config.ScheduledExecutorConfig;
 import com.hazelcast.config.SerializationConfig;
+import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -73,6 +79,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.ServerEnvironment.Status;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -80,8 +87,12 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * The core class for using Hazelcast in Payara
@@ -90,7 +101,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "hazelcast-core")
 @RunLevel(StartupRunLevel.VAL)
-public class HazelcastCore implements EventListener {
+public class HazelcastCore implements EventListener, ConfigListener {
 
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
     public final static String INSTANCE_GROUP_ATTRIBUTE = "GLASSFISH_INSTANCE_GROUP";
@@ -116,14 +127,28 @@ public class HazelcastCore implements EventListener {
     ServerEnvironment env;
 
     @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HazelcastRuntimeConfiguration configuration;
+    
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    HazelcastConfigSpecificConfiguration nodeConfig;
 
     @Inject
     private ClassLoaderHierarchy clh;
 
     @Inject @Optional
     private JavaEEContextUtil ctxUtil;
+    
+    // Provides ability to register a configuration listener
+    @Inject
+    Transactions transactions;
+
+    private static final ThreadLocal<Boolean> thrLocalDisabled = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
 
     /**
      * Returns the version of the object that has been instantiated.
@@ -133,11 +158,30 @@ public class HazelcastCore implements EventListener {
         return theCore;
     }
 
+    public static void setThreadLocalDisabled(boolean tf) {
+        thrLocalDisabled.set(tf);
+    }
+
     @PostConstruct
     public void postConstruct() {
         theCore = this;
         events.register(this);
-        enabled = Boolean.valueOf(configuration.getEnabled());
+        enabled = Boolean.valueOf(nodeConfig.getEnabled());
+        transactions.addListenerForType(HazelcastConfigSpecificConfiguration.class, this);
+        transactions.addListenerForType(HazelcastRuntimeConfiguration.class, this);
+        
+        if (env.isMicro()) {
+            memberName = nodeConfig.getMemberName();
+            memberGroup = nodeConfig.getMemberGroup();
+        } else {
+            memberName = context.getInstanceName();
+            Cluster cluster = context.getConfigBean().getCluster();
+            if (cluster == null) {
+                memberGroup = context.getConfigBean().getConfigRef();
+            } else {
+                memberGroup = cluster.getName();
+            }
+        }
     }
     
     /**
@@ -148,9 +192,6 @@ public class HazelcastCore implements EventListener {
      * @since 4.1.1.171
      */
     public String getMemberName() {
-        if (enabled && !booted) {
-            bootstrapHazelcast();
-        }
         return memberName;
     }
     
@@ -160,9 +201,6 @@ public class HazelcastCore implements EventListener {
      * @since 4.1.1.171
      */
     public String getMemberGroup() {
-        if (enabled && !booted) {
-            bootstrapHazelcast();
-        }
         return memberGroup;
     }
     
@@ -219,15 +257,25 @@ public class HazelcastCore implements EventListener {
      * @return Whether Hazelcast is currently enabled
      */
     public boolean isEnabled() {
-        return enabled;
+        return enabled && !thrLocalDisabled.get();
     }
 
     @Override
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+        if (event.is(Deployment.ALL_APPLICATIONS_STOPPED)) {
             shutdownHazelcast();
-        } else if (event.is(EventTypes.SERVER_STARTUP)) {
-            bootstrapHazelcast();
+        } else if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
+            ClassLoader oldCL = Utility.getClassLoader();
+            try {
+                Utility.setContextClassLoader(clh.getCommonClassLoader());
+                bootstrapHazelcast();
+            } finally {
+                Utility.setContextClassLoader(oldCL);
+            }
+        }
+        else if(event.is(EventTypes.SERVER_STARTUP) && isEnabled() && booted) {
+            // send this event only after all Startup services have been initialized
+            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
         }
     }
 
@@ -249,6 +297,7 @@ public class HazelcastCore implements EventListener {
         } else if (this.enabled && enabled) {
             // we need to reboot
             shutdownHazelcast();
+            this.enabled = true;
             booted =false;
             bootstrapHazelcast();
         }
@@ -300,15 +349,13 @@ public class HazelcastCore implements EventListener {
                     setPayaraSerializerConfig(serializationConfig);
                     config.setSerializationConfig(serializationConfig);
                 }
-                MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
-                config.getNetworkConfig().setPortAutoIncrement(true);
-                mcConfig.setEnabled(true);                // check Payara micro overrides
-
-                mcConfig.setMulticastGroup(configuration.getMulticastGroup());
-                mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
-                config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
+                
+                buildNetworkConfiguration(config);
+               
                 config.setLicenseKey(configuration.getLicenseKey());
-                config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
+                config.setLiteMember(Boolean.parseBoolean(nodeConfig.getLite()));
+                
+                
                 // set group config
                 GroupConfig gc = config.getGroupConfig();
                 gc.setName(configuration.getClusterGroupName());
@@ -324,13 +371,13 @@ public class HazelcastCore implements EventListener {
                 // build the executor config
                 ExecutorConfig executorConfig = config.getExecutorConfig(CLUSTER_EXECUTOR_SERVICE_NAME);
                 executorConfig.setStatisticsEnabled(true);
-                executorConfig.setPoolSize(Integer.valueOf(configuration.getExecutorPoolSize()));
-                executorConfig.setQueueCapacity(Integer.valueOf(configuration.getExecutorQueueCapacity()));
+                executorConfig.setPoolSize(Integer.valueOf(nodeConfig.getExecutorPoolSize()));
+                executorConfig.setQueueCapacity(Integer.valueOf(nodeConfig.getExecutorQueueCapacity()));
                 
                 ScheduledExecutorConfig scheduledExecutorConfig = config.getScheduledExecutorConfig(SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME);
                 scheduledExecutorConfig.setDurability(1);
-                scheduledExecutorConfig.setCapacity(Integer.valueOf(configuration.getScheduledExecutorQueueCapacity()));
-                scheduledExecutorConfig.setPoolSize(Integer.valueOf(configuration.getScheduledExecutorPoolSize()));
+                scheduledExecutorConfig.setCapacity(Integer.valueOf(nodeConfig.getScheduledExecutorQueueCapacity()));
+                scheduledExecutorConfig.setPoolSize(Integer.valueOf(nodeConfig.getScheduledExecutorPoolSize()));
                             
                 config.setProperty("hazelcast.jmx", "true");
             }
@@ -351,8 +398,54 @@ public class HazelcastCore implements EventListener {
                 .setOverrideJavaSerialization(true));
     }
 
+    private void buildNetworkConfiguration(Config config) throws NumberFormatException {
+        NetworkConfig nConfig = config.getNetworkConfig();
+        
+
+        MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
+        memberAddressProviderConfig.setEnabled(enabled);
+        memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
+
+        
+        if (!configuration.getInterface().isEmpty()) {
+            // add an interfaces configuration
+           String[] interfaceNames = configuration.getInterface().split(",");
+            for (String interfaceName : interfaceNames) {
+                nConfig.getInterfaces().addInterface(interfaceName);
+            }
+            nConfig.getInterfaces().setEnabled(true);
+        }
+        
+        String discoveryMode = configuration.getDiscoveryMode();
+        if (discoveryMode.startsWith("tcpip")) {
+            TcpIpConfig tConfig = config.getNetworkConfig().getJoin().getTcpIpConfig();
+            tConfig.setEnabled(true);
+            tConfig.addMember(configuration.getTcpipMembers());
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+        } else if (discoveryMode.startsWith("multicast")) {
+            // build networking
+            MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
+            config.getNetworkConfig().setPortAutoIncrement(true);
+            mcConfig.setEnabled(true);                       
+            mcConfig.setMulticastGroup(configuration.getMulticastGroup());
+            mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));      
+        } else {   
+            //build the domain discovery config
+            config.setProperty("hazelcast.discovery.enabled", "true");
+            config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);            
+        }
+        int port = Integer.valueOf(configuration.getStartPort());
+        if (env.isDas() && !env.isMicro()) {
+            port = Integer.valueOf(configuration.getDasPort());
+        }
+        config.getNetworkConfig().setPort(port);
+    }
+
     private void shutdownHazelcast() {
         if (theInstance != null) {
+            enabled = false;
+            events.send(new Event(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED, true));
             unbindFromJNDI();
             hazelcastCachingProvider.getCacheManager().close();
             hazelcastCachingProvider.close();
@@ -367,12 +460,10 @@ public class HazelcastCore implements EventListener {
      * Starts Hazelcast if not already enabled
      */
     private synchronized void bootstrapHazelcast() {
-        if (!booted && enabled) {
+        if (!booted && enabled && !thrLocalDisabled.get()) {
             Config config = buildConfiguration();
             theInstance = Hazelcast.newHazelcastInstance(config);
             if (env.isMicro()) {
-                memberName = configuration.getMemberName();
-                memberGroup = configuration.getMemberGroup();
                 if (Boolean.valueOf(configuration.getGenerateNames()) || memberName == null) {
                     NameGenerator gen = new NameGenerator();
                     memberName = gen.generateName();
@@ -398,20 +489,16 @@ public class HazelcastCore implements EventListener {
                                 HazelcastCore.INSTANCE_ATTRIBUTE, memberName);
                     }
                 }
-            } else {
-                if (memberName == null) {
-                    memberName = context.getInstanceName();
-                }
-                if (memberGroup == null) {
-                    memberGroup = context.getConfigBean().getConfigRef();
-                }
-            }
-
+            } 
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
             theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
             hazelcastCachingProvider = new CachingProviderProxy(HazelcastServerCachingProvider.createCachingProvider(theInstance), context);
-            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
             bindToJNDI();
+            if(env.getStatus() == Status.started) {
+                // only issue this event if the server is already running,
+                // otherwise the SERVER_STARTUP event will issue this event as well
+                events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            }
             booted = true;
         }
     }
@@ -420,12 +507,12 @@ public class HazelcastCore implements EventListener {
         try {
             InitialContext ctx;
             ctx = new InitialContext();
-            ctx.bind(configuration.getJNDIName(), theInstance);
-            ctx.bind(configuration.getCachingProviderJNDIName(), hazelcastCachingProvider);
-            ctx.bind(configuration.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at {0}", configuration.getJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at {0}", configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at {0}", configuration.getCacheManagerJNDIName());
+            ctx.bind(nodeConfig.getJNDIName(), theInstance);
+            ctx.bind(nodeConfig.getCachingProviderJNDIName(), hazelcastCachingProvider);
+            ctx.bind(nodeConfig.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at {0}", nodeConfig.getJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at {0}", nodeConfig.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at {0}", nodeConfig.getCacheManagerJNDIName());
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -435,12 +522,12 @@ public class HazelcastCore implements EventListener {
         try {
             InitialContext ctx;
             ctx = new InitialContext();
-            ctx.unbind(configuration.getJNDIName());
-            ctx.unbind(configuration.getCacheManagerJNDIName());
-            ctx.unbind(configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Unbound from JNDI at {0}", configuration.getJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Unbound from JNDI at {0}", configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Cache Manager Unbound from JNDI at {0}", configuration.getCacheManagerJNDIName());
+            ctx.unbind(nodeConfig.getJNDIName());
+            ctx.unbind(nodeConfig.getCacheManagerJNDIName());
+            ctx.unbind(nodeConfig.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Unbound from JNDI at {0}", nodeConfig.getJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Unbound from JNDI at {0}", nodeConfig.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Cache Manager Unbound from JNDI at {0}", nodeConfig.getCacheManagerJNDIName());
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -452,5 +539,10 @@ public class HazelcastCore implements EventListener {
      */
     public int getPort() {
         return theInstance.getCluster().getLocalMember().getSocketAddress().getPort();
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] pces) {
+        return null;
     }
 }

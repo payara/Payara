@@ -52,7 +52,7 @@
     <parent>
       <groupId>fish.payara</groupId>
       <artifactId>payara-parent</artifactId>
-      <version>4.1.2.182-SNAPSHOT</version>
+      <version>5.181-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
     </parent>
     
@@ -67,7 +67,8 @@
 
     <modules>
         <module>ant</module>
-        <module>javadb</module>    
+        <module>javadb</module>
+        <module>h2db</module>    
 	    <module>jmsra</module>
         <module>jaxr_ra</module>
         <module>jcip</module>
