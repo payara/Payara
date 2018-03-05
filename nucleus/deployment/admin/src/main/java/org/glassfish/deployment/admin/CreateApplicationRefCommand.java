@@ -138,9 +138,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
 
     @Inject
     Domain domain;
-    
- 
-    
+
     @Inject
     ServerEnvironment env;
 
