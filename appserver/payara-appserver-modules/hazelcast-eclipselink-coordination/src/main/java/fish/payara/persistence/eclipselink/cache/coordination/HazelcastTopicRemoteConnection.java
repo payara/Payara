@@ -32,7 +32,15 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
     @Override
     protected Object executeCommandInternal(Object o) throws Exception {
         if(o != null && Command.class.isAssignableFrom(o.getClass())) {
-            this.topic.publish((Command)o);
+            Object[] debugInfo = null;
+            if (this.rcm.shouldLogDebugMessage()) {
+                debugInfo = this.logDebugBeforePublish(null);
+            }
+            Command command = (Command) o;
+            this.topic.publish(command);
+            if (debugInfo != null) {
+                this.logDebugAfterPublish(debugInfo, "");
+            }
         }
         return null;
     }
@@ -40,6 +48,7 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
     @Override
     protected void closeInternal() throws Exception {
         this.topic.removeMessageListener(this.messageListenerId);
+        this.topic.destroy();
     }
 
     @Override

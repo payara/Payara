@@ -16,6 +16,8 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import org.glassfish.api.event.EventListener;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,7 +52,14 @@ public class HazelcastTopicStorage implements EventListener {
     @Override
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_SHUTDOWN) || event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_COMPLETE)) {
+            destroyTopics(topicCache.values());
             topicCache.clear();
+        }
+    }
+
+    private void destroyTopics(Collection<ITopic<Command>> topics) {
+        for (ITopic<Command> topic : topics) {
+            topic.destroy();
         }
     }
 
@@ -64,6 +73,13 @@ public class HazelcastTopicStorage implements EventListener {
 
     public void publish(String topic, Command command) {
         getTopic(topic).publish(command);
+    }
+
+    public void destroyTopic(String name) {
+        ITopic<Command> topic = topicCache.remove(name);
+        if (topic != null) {
+            destroyTopics(Collections.singleton(topic));
+        }
     }
 
     private ITopic<Command> getTopic(String name) {

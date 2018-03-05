@@ -43,6 +43,13 @@ public class HazelcastTopic {
         getStorage().publish(name, command);
     }
 
+    /**
+     * Destroys the referenced topic.
+     */
+    public void destroy() {
+        getStorage().destroyTopic(name);
+    }
+
     private HazelcastTopicStorage getStorage() {
         return HazelcastTopicStorage.getInstance();
     }
