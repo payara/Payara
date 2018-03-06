@@ -36,15 +36,17 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.json.JsonException;
+import javax.json.JsonObject;
 import javax.ws.rs.GET;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.metadata.Default;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestMethodMetadata;
@@ -86,7 +88,7 @@ public class ModelExtensionTest {
         Assert.assertTrue(ModelExt2.class.isAssignableFrom(model.getClass()));
     }
 
-    public void testModelInheritance() throws JSONException {
+    public void testModelInheritance() throws JsonException {
         Model1 m1 = CompositeUtil.instance().getModel(Model1.class);
         Model2 m2 = CompositeUtil.instance().getModel(Model2.class);
 
@@ -95,21 +97,21 @@ public class ModelExtensionTest {
 
         RestResourceMetadata rrmd = new RestResourceMetadata(new TestResource());
         final List<RestMethodMetadata> getMethods = rrmd.getResourceMethods().get("GET");
-        JSONObject name = getJsonObject(getMethods.get(0).toJson(), "response.properties.name");
+        JsonObject name = getJsonObject(getMethods.get(0).toJson(), "response.properties.name");
 
         Assert.assertNotNull(name, "'name' should not be null. Inherited methods are not showing up in generated class");
         Assert.assertNotNull(name.get("default"), "The field 'name' should have a default value.");
     }
 
     // Works with no dot?
-    private JSONObject getJsonObject(JSONObject current, String dottedName) {
+    private JsonObject getJsonObject(JsonObject current, String dottedName) {
         Assert.assertNotNull(dottedName);
         String[] parts = dottedName.split("\\.");
 
         for (String part : parts) {
             try {
-                current = (JSONObject)current.get(part);
-            } catch (JSONException e) {
+                current = (JsonObject)current.get(part);
+            } catch (JsonException e) {
                 current = null;
                 break;
             }

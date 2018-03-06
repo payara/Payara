@@ -40,13 +40,14 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017] [Payara Foundation] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.glassfish.main.transaction</groupId>
         <artifactId>transaction</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -178,11 +179,6 @@
             <artifactId>connectors-runtime</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
-            <artifactId>gms-bootstrap</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

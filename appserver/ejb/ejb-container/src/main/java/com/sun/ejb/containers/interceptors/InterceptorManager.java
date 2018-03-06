@@ -240,7 +240,7 @@ public class InterceptorManager {
         }
 
 
-        List<InterceptorDescriptor> list = (ejbDesc != null) ?
+        List<? extends InterceptorDescriptor> list = (ejbDesc != null) ?
                 ejbDesc.getAroundInvokeInterceptors(mDesc) :
                 interceptorInfo.getAroundInvokeInterceptors(beanMethod);
 

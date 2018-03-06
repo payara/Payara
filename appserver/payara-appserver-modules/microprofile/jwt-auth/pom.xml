@@ -45,7 +45,7 @@ holder.
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.microprofile.jwt-auth</groupId>
@@ -89,7 +89,7 @@ holder.
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
+            <version>8.0</version>
         </dependency>
 
         <dependency>
@@ -101,6 +101,18 @@ holder.
           <groupId>org.glassfish.soteria</groupId>
           <artifactId>javax.security.enterprise</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -111,6 +123,18 @@ holder.
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
             <version>${nimbus-jose-jwt.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.minidev</groupId>
+                    <artifactId>accessors-smart</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>accessors-smart</artifactId>
+            <version>${accessors-smart.version}</version>
+        </dependency>
+
     </dependencies>
 </project>

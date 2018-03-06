@@ -36,8 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
-
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 package org.glassfish.cdi.transaction;
 
 import javax.enterprise.context.Destroyed;
@@ -52,11 +52,18 @@ import javax.transaction.TransactionScoped;
 
 public class TransactionScopedCDIEventHelperImpl implements TransactionScopedCDIEventHelper {
 
-    @Inject @Initialized(TransactionScoped.class) Event<TransactionScopedCDIEventPayload> trxScopeInitializedEvent;
-    @Inject @Destroyed(TransactionScoped.class) Event<TransactionScopedCDIEventPayload> trxScopeDestroyedEvent;
+    @Inject
+    @Initialized(TransactionScoped.class)
+    Event<TransactionScopedCDIEventPayload> trxScopeInitializedEvent;
+
+    @Inject
+    @Destroyed(TransactionScoped.class)
+    Event<TransactionScopedCDIEventPayload> trxScopeDestroyedEvent;
 
     @Override
-    public void fireInitializedEvent(TransactionScopedCDIEventPayload payload) { trxScopeInitializedEvent.fire(payload); }
+    public void fireInitializedEvent(TransactionScopedCDIEventPayload payload) {
+        trxScopeInitializedEvent.fire(payload);
+    }
 
     @Override
     public void fireDestroyedEvent(TransactionScopedCDIEventPayload payload) {

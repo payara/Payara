@@ -98,7 +98,7 @@ public class PrometheusWriter implements MetricsWriter {
             }
             if(builder.length() == 0){
                 throw new NoSuchMetricException(metricName);
-            } 
+            }
         } else {
             writeMetrics(builder, registryName, metricName);
         }

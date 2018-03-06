@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld.ejb;
 
 import java.lang.reflect.Method;
@@ -47,7 +47,7 @@ import java.util.Set;
 
 import javax.interceptor.InvocationContext;
 
-import org.jboss.weld.ejb.SessionBeanInterceptor;
+import org.jboss.weld.module.ejb.SessionBeanInterceptor;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -59,15 +59,14 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 
 /**
  */
-public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescriptor<T>
-{
+public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescriptor<T> {
 
     private EjbDescriptor ejbDesc;
 
     public EjbDescriptorImpl(EjbDescriptor ejbDescriptor) {
         ejbDesc = ejbDescriptor;
 
-        if ( ejbDesc.getType().equals(EjbSessionDescriptor.TYPE) || ejbDesc.getType().equals(EjbMessageBeanDescriptor.TYPE ) ) {
+		if (ejbDesc.getType().equals(EjbSessionDescriptor.TYPE) || ejbDesc.getType().equals(EjbMessageBeanDescriptor.TYPE)) {
             // Before handling application-level interceptors that are defined using 299 metadata,
             // add the CDI impl-specific system-level interceptor that needs to be registered for ALL
             // EJB components.  At runtime, this sets up the appropriate request context for invocations that
@@ -340,34 +339,14 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
             EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDesc;
             Set<String> remoteNames = sessionDesc.getRemoteBusinessClassNames();
 
-            // Add superinterfaces that are also marked as Local
-            //JJS: 4/2/13 Removing superinterfaces to track down cdi tck failures.
-            // http://java.net/jira/browse/GLASSFISH-19970
-//            Set<String> extraNames = new HashSet<String>();
-//            for(String local : remoteNames) {
-//                try {
-//                    Class<?> remoteClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
-//                    addIfRemote(remoteClass.getInterfaces(), extraNames);
-//                } catch(ClassNotFoundException e) {
-//                    throw new IllegalStateException(e);
-//                }
-//            }
-//
-//            remoteNames.addAll(extraNames);
-
-            // Include the no-interface Local view
-            if( sessionDesc.isLocalBean() ) {
-                remoteNames.add(sessionDesc.getEjbClassName());
-            }
-
-
-            for(String remote : remoteNames) {
+			for (String remote : remoteNames) {
                 try {
 
                     Class<?> remoteClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(remote);
+                    
                     @SuppressWarnings({ "rawtypes", "unchecked" })
-                    BusinessInterfaceDescriptor<?> busIntfDesc =
-                            new BusinessInterfaceDescriptorImpl(remoteClass);
+					BusinessInterfaceDescriptor<?> busIntfDesc = new BusinessInterfaceDescriptorImpl(remoteClass);
+                    
                     remoteBusIntfs.add(busIntfDesc);
 
                 } catch(ClassNotFoundException e) {

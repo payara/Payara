@@ -120,6 +120,20 @@ public class CreateHttpListener implements AdminCommand {
     Boolean secure; //FIXME
     @Param(name = "listener_id", primary = true)
     String listenerId;
+    
+    @Param(name = "http2Enabled", alias = "http2enabled", optional = true, defaultValue = "true")
+    Boolean http2Enabled;
+    @Param(name = "http2DisableCipherCheck", alias = "http2disableCipherCheck", optional = true)
+    Boolean http2DisableCipherCheck;
+    @Param(name = "http2MaxConcurrentStreams", alias = "http2maxConcurrentStreams", optional = true)
+    Integer http2MaxConcurrentStreams;
+    @Param(name = "http2InitialWindowSizeInBytes", alias = "http2initialWindowSizeInBytes", optional = true)
+    Integer http2InitialWindowSizeInBytes;
+    @Param(name = "http2MaxFramePayloadSizeInBytes", alias = "http2maxFramePayloadSizeInBytes", optional = true)
+    Integer http2MaxFramePayloadSizeInBytes;
+    @Param(name = "http2MaxHeaderListSizeInBytes", alias = "http2maxHeaderListSizeInBytes", optional = true)
+    Integer http2MaxHeaderListSizeInBytes;
+    
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -358,6 +372,12 @@ public class CreateHttpListener implements AdminCommand {
         command.xFrameOptions = xFrameOptions; 
         command.serverName = serverName;
         command.target = target;
+        command.http2Enabled = http2Enabled;
+        command.http2DisableCipherCheck = http2DisableCipherCheck;
+        command.http2MaxConcurrentStreams = http2MaxConcurrentStreams;
+        command.http2InitialWindowSizeInBytes = http2InitialWindowSizeInBytes;
+        command.http2MaxFramePayloadSizeInBytes = http2MaxFramePayloadSizeInBytes;
+        command.http2MaxHeaderListSizeInBytes = http2MaxHeaderListSizeInBytes;
         command.execute(context);
         checkProgress(context);
         return true;

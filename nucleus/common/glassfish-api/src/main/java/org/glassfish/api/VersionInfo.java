@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 package org.glassfish.api;
 
@@ -51,26 +51,26 @@ import org.jvnet.hk2.annotations.Contract;
 public interface VersionInfo {
 
     /**
-     * Returns Abbreviated Product Name
-     * @return 
+     * Returns the Abbreviated Product Name
+     * @return The product name
      */
     public String getAbbreviatedProductName();
-    
+
     /**
-     * Returns version prefix
-     * @return 
+     * Returns this version's prefix, e.g. "Alpha".
+     * @return The product version prefix
      */
     public String getVersionPrefix();
-    
+
     /**
-     * Returns Major version
-     * @return 
+     * Returns the major version of Payara, e.g. for Payara 5 return 5.
+     * @return The major version of Payara.
      */
     public String getMajorVersion();
-    
+
     /**
-     * Returns Minor version
-     * @return 
+     * Returns the minor version of Payara, e.g. for Payara 5.1 return 1.
+     * @return The minor version of Payara.
      */
     public String getMinorVersion();
 

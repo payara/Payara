@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -115,6 +115,9 @@ public class RestartInstanceCommand implements AdminCommand {
 
     @Param(name = "sync", optional = true, defaultValue = "normal", acceptableValues = "none, normal, full")
     private String sync;
+    
+    @Param(name="delay", optional = true, defaultValue = "0")
+    private int delay;
 
     private Logger logger;
 
@@ -133,7 +136,7 @@ public class RestartInstanceCommand implements AdminCommand {
     private String oldPid;
 
     private AdminCommandContext context;
-
+    
     @Override
     public void execute(AdminCommandContext ctx) {
         try {
@@ -325,13 +328,16 @@ public class RestartInstanceCommand implements AdminCommand {
         while (System.currentTimeMillis() < deadline) {
             try {
                 String newpid = getPid();
-
                 // when the next statement is true -- the server has restarted.
                 if (StringUtils.ok(newpid) && !newpid.equals(oldPid)) {
                     if (logger.isLoggable(Level.FINE))
                         logger.fine("Restarted instance pid = " + newpid);
+                    try {
+                        Thread.currentThread().sleep(delay);
+                    } catch(InterruptedException ie) {}
                     return;
                 }
+                Thread.currentThread().sleep(100);// don't busy wait
             }
             catch (Exception e) {
                 // ignore.  This is normal!

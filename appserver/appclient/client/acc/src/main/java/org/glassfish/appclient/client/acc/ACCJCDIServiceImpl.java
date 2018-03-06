@@ -1,19 +1,19 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://oss.oracle.com/licenses/CDDL+GPL-1.1
+ * or LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.client.acc;
 
@@ -47,6 +47,7 @@ import com.sun.enterprise.container.common.spi.JavaEEInterceptorBuilder;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
@@ -60,6 +61,7 @@ import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
+import java.util.*;
 
 /**
  * @author <a href="mailto:phil.zampino@oracle.com">Phil Zampino</a>
@@ -72,41 +74,33 @@ public class ACCJCDIServiceImpl implements JCDIService {
     @Inject
     private InjectionManager injectionMgr;
 
-
-
     @Override
     public boolean isCurrentModuleJCDIEnabled() {
         return hasBeansXML(Thread.currentThread().getContextClassLoader());
     }
-
 
     @Override
     public boolean isJCDIEnabled(BundleDescriptor bundle) {
         return hasBeansXML(bundle.getClassLoader());
     }
 
-
     @Override
     public boolean isCDIScoped(Class<?> clazz) {
         throw new UnsupportedOperationException("Application Client Container");
     }
-
 
     @Override
     public void setELResolver(ServletContext servletContext) throws NamingException {
         throw new UnsupportedOperationException("Application Client Container");
     }
 
-
     @Override
-    public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle) {
+    public<T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle) {
         return createManagedObject(managedClass, bundle, true);
     }
 
-
     private <T> T createEEManagedObject(ManagedBeanDescriptor desc) throws Exception {
-        JavaEEInterceptorBuilder interceptorBuilder =
-                                        (JavaEEInterceptorBuilder) desc.getInterceptorBuilder();
+        JavaEEInterceptorBuilder interceptorBuilder = (JavaEEInterceptorBuilder) desc.getInterceptorBuilder();
 
         InterceptorInvoker interceptorInvoker = interceptorBuilder.createInvoker(null);
 
@@ -120,6 +114,7 @@ public class ACCJCDIServiceImpl implements JCDIService {
         interceptorInvoker.invokeAroundConstruct();
 
         // This is the managed bean class instance
+        @SuppressWarnings("unchecked")
         T managedBean = (T) interceptorInvoker.getTargetInstance();
 
         injectionMgr.injectInstance(managedBean, desc);
@@ -133,13 +128,12 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
 
     @Override
-    @SuppressWarnings("unchecked")
-    public JCDIInjectionContext createManagedObject(Class            managedClass,
+    public<T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass,
                                                     BundleDescriptor bundle,
-                                                    boolean          invokePostConstruct) {
-        JCDIInjectionContext context = null;
+                                                    boolean invokePostConstruct) {
+        JCDIInjectionContext<T> context = null;
 
-        Object managedObject = null;
+        T managedObject = null;
 
         try {
             managedObject =
@@ -152,10 +146,10 @@ public class ACCJCDIServiceImpl implements JCDIService {
         if (wc != null) {
             BeanManager beanManager = wc.getBeanManager();
 
-            AnnotatedType annotatedType = beanManager.createAnnotatedType(managedClass);
-            InjectionTarget target = beanManager.createInjectionTarget(annotatedType);
+            AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(managedClass);
+            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
 
-            CreationalContext cc = beanManager.createCreationalContext(null);
+            CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
             target.inject(managedObject, cc);
 
@@ -163,7 +157,7 @@ public class ACCJCDIServiceImpl implements JCDIService {
                 target.postConstruct(managedObject);
             }
 
-            context = new JCDIInjectionContextImpl(target, cc, managedObject);
+            context = new JCDIInjectionContextImpl<>(target, cc, managedObject);
         }
 
         return context;
@@ -171,39 +165,40 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void injectManagedObject(Object managedObject, BundleDescriptor bundle) {
+    public<T> void injectManagedObject(T managedObject, BundleDescriptor bundle) {
         WeldContainer wc = getWeldContainer();
 
         if (wc != null) {
             BeanManager beanManager = wc.getBeanManager();
 
-            AnnotatedType annotatedType = beanManager.createAnnotatedType(managedObject.getClass());
-            InjectionTarget target = beanManager.createInjectionTarget(annotatedType);
+            @SuppressWarnings("unchecked")
+            AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) managedObject.getClass());
+            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
 
-            CreationalContext cc = beanManager.createCreationalContext(null);
+            CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
             target.inject(managedObject, cc);
         }
     }
 
-
     @Override
-    public <T> T createInterceptorInstance(Class<T> interceptorClass, EjbDescriptor ejbDesc) {
-        
+    public <T> T createInterceptorInstance( Class<T> interceptorClass,
+                                     EjbDescriptor ejbDesc,
+                                     JCDIService.JCDIInjectionContext<T> ejbContext,
+                                     Set<EjbInterceptor> ejbInterceptors ) {
         T interceptorInstance = null;
 
         WeldContainer wc = getWeldContainer();
         if (wc != null) {
             BeanManager beanManager = wc.getBeanManager();
 
-            AnnotatedType annotatedType = beanManager.createAnnotatedType(interceptorClass);
-            InjectionTarget target =
+            AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(interceptorClass);
+            InjectionTarget<T> target =
                 ((WeldManager) beanManager).getInjectionTargetFactory(annotatedType).createInterceptorInjectionTarget();
 
-            CreationalContext cc = beanManager.createCreationalContext(null);
+            CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
-            interceptorInstance = (T) target.produce(cc);
+            interceptorInstance = target.produce(cc);
             target.inject(interceptorInstance, cc);
         }
 
@@ -212,19 +207,24 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
 
     @Override
-    public JCDIInjectionContext createJCDIInjectionContext(EjbDescriptor ejbDesc) {
-        return createJCDIInjectionContext(ejbDesc, null);
+    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, Map<Class<?>, Object> ejbInfo) {
+        return createJCDIInjectionContext(ejbDesc, null, null);
     }
 
 
     @Override
-    public JCDIInjectionContext createJCDIInjectionContext(EjbDescriptor ejbDesc, Object instance) {
+    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance, Map<Class<?>, Object> ejbInfo) {
         throw new UnsupportedOperationException("Application Client Container");
     }
 
+    @Override
+    public<T> JCDIInjectionContext<T> createEmptyJCDIInjectionContext() {
+        return new JCDIInjectionContextImpl<>();
+    }
+
 
     @Override
-    public void injectEJBInstance(JCDIInjectionContext injectionCtx) {
+    public<T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx) {
         throw new UnsupportedOperationException("Application Client Container");
     }
 
@@ -246,23 +246,32 @@ public class ACCJCDIServiceImpl implements JCDIService {
     }
 
 
-    private static class JCDIInjectionContextImpl implements JCDIInjectionContext {
+    private static class JCDIInjectionContextImpl<T> implements JCDIInjectionContext<T> {
 
-        InjectionTarget it;
-        CreationalContext cc;
-        Object instance;
+        InjectionTarget<T> it;
+        CreationalContext<T> cc;
+        T instance;
 
-        JCDIInjectionContextImpl(InjectionTarget it, CreationalContext cc, Object i) {
+        JCDIInjectionContextImpl() {
+        }
+
+        JCDIInjectionContextImpl(InjectionTarget<T> it, CreationalContext<T> cc, T i) {
             this.it = it;
             this.cc = cc;
             this.instance = i;
         }
 
-        public Object getInstance() {
+        @Override
+        public T getInstance() {
             return instance;
         }
 
-        @SuppressWarnings("unchecked")
+        @Override
+        public void setInstance(T instance) {
+            this.instance = instance;
+        }
+
+        @Override
         public void cleanup(boolean callPreDestroy) {
 
             if( callPreDestroy ) {
@@ -272,7 +281,41 @@ public class ACCJCDIServiceImpl implements JCDIService {
             it.dispose(instance);
             cc.release();
         }
+        
+        @Override
+        public InjectionTarget<T> getInjectionTarget() {
+            return it;
+        }
+
+        @Override
+        public void setInjectionTarget(InjectionTarget<T> injectionTarget) {
+            this.it = injectionTarget;
+        }
+
+        @Override
+        public CreationalContext<T> getCreationalContext() {
+            return cc;
+        }
+
+        @Override
+        public void setCreationalContext(CreationalContext<T> creationalContext) {
+            this.cc = creationalContext;
+        }
+
+        @Override
+        public void addDependentContext( JCDIInjectionContext<T> dependentContext ) {
+            // nothing for now
+        }
+
+        @Override
+        public Collection<JCDIInjectionContext<T>> getDependentContexts() {
+            return new ArrayList<>();
+        }
+
+        @Override
+        public T createEjbAfterAroundConstruct() {
+            // nothing for now
+            return null;
+        }
     }
-
-
 }

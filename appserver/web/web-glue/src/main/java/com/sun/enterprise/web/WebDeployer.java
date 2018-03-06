@@ -217,6 +217,8 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                     wbd.getApplication().getName(), 
                     dc.getCommandParameters(
                         DeployCommandParameters.class).libraries)); 
+            classpath.append(File.pathSeparatorChar);
+            classpath.append(super.getModuleClassPath(dc));
             JSPCompiler.compile(inDir, outDir, wbd, classpath.toString(), sc);
         } catch (DeploymentException de) {
             String msg = rb.getString(LogFacade.JSPC_FAILED);

@@ -1,0 +1,210 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.dg.GeneralTitle}">
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setSessionAttribute(key="dgTabs" value="general");
+        getRequestValue(key="dgName" value="#{pageSession.dgName}");
+        urlencode(value="#{pageSession.dgName}" encoding="UTF-8" result="#{pageSession.encodedDGName}");
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/cluster/dg/dgGeneral.jsf?dgName=#{pageSession.encodedDGName}");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/cluster/dg/dgs.jsf");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/deployment-groups");
+        setPageSessionAttribute(key="childType" value="deployment-group");
+        setPageSessionAttribute(key="resourceUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedClusterName}");
+        setPageSessionAttribute(key="rest-api" value="true");
+
+        gf.getEntityAttrs(endpoint="#{pageSession.resourceUrl}.json", valueMap="#{pageSession.valueMap}");
+        gf.getChildrenNamesList(endpoint="#{pageSession.resourceUrl}/dg-server-ref" id="ref" result="#{pageSession.instanceList}" );
+        gf.listInstances(optionKeys={"id"} optionValues={"$pageSession{dgName}"}, statusMap="#{requestScope.statusMap}");
+        gf.getClusterStatusSummary(statusMap ="#{requestScope.statusMap}" ,
+            numRunning="#{pageSession.numRunning}"  numNotRunning="#{pageSession.numNotRunning}" numRequireRestart="#{pageSession.numRequireRestart}"
+            disableStart="#{pageSession.disableStart}"  disableStop="#{pageSession.disableStop}" disableEjb="#{pageSession.disableEjb}");
+        gf.isDGName(dgName="#{pageSession.dgName}" );
+        setPageSessionAttribute(key="convertToFalseList" value={ "gmsEnabled"} );
+        //set the following for including buttons.inc
+        setPageSessionAttribute(key="edit" value="#{true}" );
+        setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+        setPageSessionAttribute(key="showCancelButton" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertyTable" value="#{false}" );
+    />
+    </event>
+            <sun:form id="propertyForm">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$attribute{sheetId});
+                />
+
+#include "/cluster/dg/dgTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+
+    <!-- Page Title -->
+    <sun:title id="propertyContentPage" title="$resource{i18ncs.dg.GeneralTitle}" helpText="$resource{i18ncs.dg.GeneralTitleHelp}">
+        <!facet pageButtonsTop>
+            <sun:panelGroup id="topButtons">
+                <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                    <!command
+                        gf.isDGName(dgName="#{pageSession.clusterName}" );
+                        gf.updateEntity(endpoint="#{pageSession.resourceUrl}" attrs="#{pageSession.valueMap}"  convertToFalse="#{pageSession.convertToFalseList}");
+                        prepareSuccessfulMsg();
+                        gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                    />
+                </sun:button>
+                <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
+                    <!command
+                        gf.redirect(page="#{pageSession.parentPage}");
+                    />
+                </sun:button>
+            </sun:panelGroup>
+        </facet>
+    </sun:title>
+
+    <sun:button id="startButton" text="$resource{i18ncs.button.startDG}" disabled="#{disableStart}" primary="#{false}"
+        onClick="if ( getConfirm(this,'$resource{i18ncs.msg.JS.confirmStartDGs}') )
+                { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
+        <!command
+            println("Starting Deployment Group...");
+            println("#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.encodedDGName}/start-deployment-group");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.encodedDGName}/start-deployment-group" method="POST");
+            gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+        />
+    </sun:button>
+
+    <sun:button id="stopButton" text="$resource{i18ncs.button.stopDG}" disabled="#{disableStop}" primary="#{false}"
+        onClick="if ( getConfirm(this,'$resource{i18ncs.msg.JS.confirmStopDGs}') )
+                { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
+        <!command
+            println("Stopping Deployment Group...");
+            println("#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.encodedDGName}/stop-deployment-group");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.encodedDGName}/stop-deployment-group" method="POST");
+            gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+        />
+    </sun:button>
+
+    <sun:button id="restartButton" text="$resource{i18ncs.button.restartDG}" disabled="#{disableStop}" primary="#{false}"
+        onClick="if ( getConfirm(this,'$resource{i18ncs.msg.JS.confirmRestartDGs}') )
+                { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
+        <!command
+            println("Restarting Deployment Group...");
+            println("#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.encodedDGName}/restart-deployment-group");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.encodedDGName}/restart-deployment-group" method="POST");
+            gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+        />
+    </sun:button>
+
+    <event>
+        <!afterCreate
+            getUIComponent(clientId="#{sheetId}"  component=>$attribute{component})
+            includeIntegrations(type="org.glassfish.admingui:ejbTimerButtonsDG" root="#{component}");
+        />
+    </event>
+
+
+    <sun:button id="rotateLog" text="$resource{i18n.button.rotateLog}" primary="#{false}"
+        onClick="if ( getConfirm(this, '$resource{i18nc.msg.JS.confirmRotateLog}') )
+        { return submitAndDisable(this, '$resource{i18n.button.Processing}', target='_top');}
+            else {return false;} " >
+            <!command
+                createMap(result="#{requestScope.map}");
+                mapPut(map="#{requestScope.map}", key="target", value="#{pageSession.encodedDGName}");
+                gf.restRequest(
+                    endpoint="#{sessionScope.REST_URL}/rotate-log"
+                    attrs="#{requestScope.map}"
+                    method="POST"
+                    result="#{pageSession.props}");
+            gf.redirect("#{pageSession.selfPage}");/>
+    </sun:button>
+
+    <sun:propertySheet id="propertySheet">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$attribute{sheetId});
+                />
+
+        <!-- Text Field section -->
+        <sun:propertySheetSection id="propertSectionTextField">
+            <sun:property id="dgNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.dg.dgName}" >
+                <sun:staticText id="dgName"text="#{pageSession.dgName}" />
+            </sun:property>
+            <sun:property id="dgInstances"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusters.instanceCol}" >
+                    <event>
+            <!beforeEncode
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.dgName}/dg-server-ref",
+                    id="Ref" result="#{requestScope.listOfInstances}");
+            />
+        </event>
+        "<table border="0" cellpadding="10">
+        <foreach key="instance" list="#{requestScope.listOfInstances}">
+            <event>
+            <!beforeEncode
+                setAttribute(key="tmp" value="#{instance}");
+                gf.listInstances(optionKeys={"id"} optionValues={"$attribute{tmp}"}, statusMap="#{requestScope.statusMap}");
+                setAttribute(key="status" value="#{requestScope.statusMap['$attribute{tmp}']}");
+                setAttribute(key="statusString" value="$resource{i18nc.status.image.$attribute{status}}  &nbsp;  $resource{i18nc.status.$attribute{status}}");
+            />
+            </event>
+            "<tr>
+            "<td>
+            <sun:hyperlink id="iLink" url="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?instanceName=#{instance}" text="#{instance}" />
+            "&nbsp;</td> <td>
+             <staticText id="colStopped" value="#{requestScope.statusString}" />
+            "</td>
+            "</tr>
+        </foreach>
+        "</table>
+            </sun:property>
+        </sun:propertySheetSection>
+
+    </sun:propertySheet>
+
+	<sun:hidden id="helpKey" value="$resource{help_cluster.clusterGeneral}" />
+</sun:form>
+</define>
+</composition>

@@ -43,15 +43,15 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.181-SNAPSHOT</version>
     </parent>
+
     <artifactId>dol</artifactId>
     <packaging>glassfish-jar</packaging>
-    
     <name>Deployment Object Library</name>
 
    <build>
@@ -79,6 +79,7 @@
                 </executions>
             </plugin>
         </plugins>
+
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -119,7 +120,7 @@
             </roles>
         </developer>
         <developer>
-            <id>swchan2</id>
+            <id>shingwaichan</id>
             <name>Shing Wai Chan</name>
             <url>http://blogs.sun.com/swchan</url>
             <organization>Oracle, Inc.</organization>
@@ -141,6 +142,10 @@
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
+        </dependency>
+	    <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.transaction</groupId>

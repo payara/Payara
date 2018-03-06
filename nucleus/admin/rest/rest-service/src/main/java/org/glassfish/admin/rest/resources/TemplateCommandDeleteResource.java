@@ -38,11 +38,12 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.admin.rest.resources;
 
 import java.util.List;
+import javax.json.JsonException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -52,7 +53,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.results.ActionReportResult;
 
@@ -172,7 +172,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
 
     @GET
     @Produces(Constants.MEDIA_TYPE_JSON)
-    public String get() throws JSONException {
+    public String get() throws JsonException {
         return options();
     }
 

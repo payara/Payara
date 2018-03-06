@@ -42,16 +42,17 @@
 -->
 <!--"Portions Copyright [2017] [Payara Foundation and/or its affiliates]" -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
+    
     <groupId>org.glassfish.tests.embedded.basic</groupId>
     <artifactId>servlet_runs_admin_cmds</artifactId>
     <version>4.1-SNAPSHOT</version>
+    
     <name>Servlet Running Admin Commands using org.glassfish.embeddable.CommandRunner</name>
     <packaging>war</packaging>
+    
     <build>
-	<finalName>servlet_runs_admin_cmds</finalName>
+        <finalName>servlet_runs_admin_cmds</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -81,7 +82,8 @@
             </plugin>
         </plugins>
     </build>
-	<profiles>
+    
+    <profiles>
         <profile>
             <id>run-with-3.1.1</id>
             <activation>
@@ -96,6 +98,7 @@
                 </dependency>
             </dependencies>
         </profile>
+        
         <profile>
             <id>run-with-shell-jar</id>
             <activation>
@@ -115,8 +118,9 @@
                 </dependency>
             </dependencies>
         </profile>
-    </profiles>	
-	<dependencies>
+    </profiles>
+    
+    <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -131,9 +135,9 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
+            <version>4.0.0</version>
             <scope>provided</scope>
         </dependency>
-    </dependencies>    
+    </dependencies>
 
 </project>

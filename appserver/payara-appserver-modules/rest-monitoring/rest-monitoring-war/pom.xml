@@ -2,7 +2,7 @@
 <!--
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.appserver.monitoring.rest</groupId>
         <artifactId>rest-monitoring-parent</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
     
     <artifactId>rest-monitoring-war</artifactId>
@@ -58,13 +58,13 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.codehaus.jettison</groupId>
-            <artifactId>jettison</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -100,6 +100,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.6</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>

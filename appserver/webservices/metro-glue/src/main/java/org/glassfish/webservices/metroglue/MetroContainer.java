@@ -36,6 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
+ *
  */
 package org.glassfish.webservices.metroglue;
 
@@ -61,6 +64,7 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import com.sun.xml.ws.api.ha.HighAvailabilityProvider;
 import com.sun.xml.ws.tx.dev.WSATRuntimeConfig;
 import com.sun.xml.wss.impl.config.SecurityConfigProvider;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -69,7 +73,6 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -116,7 +119,7 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
     @Inject
     JavaEETransactionManager txManager;    
     @Inject
-    GMSAdapterService gmsAdapterService;
+    HazelcastCore hazelcastCore;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME) @Optional
     private AvailabilityService availabilityService;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -128,8 +131,8 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
         logger.info(LogUtils.ENDPOINT_EVENT_LISTENER_REGISTERED);
 
         if (isCluster() && isHaEnabled()) {
-            final String clusterName = gmsAdapterService.getGMSAdapter().getClusterName();
-            final String instanceName = gmsAdapterService.getGMSAdapter().getModule().getInstanceName();
+            final String clusterName = hazelcastCore.getMemberGroup();
+            final String instanceName = hazelcastCore.getMemberName();
 
             HighAvailabilityProvider.INSTANCE.initHaEnvironment(clusterName, instanceName);
             logger.info(LogUtils.METRO_HA_ENVIRONEMT_INITIALIZED);
@@ -257,7 +260,7 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
     }
 
     private boolean isCluster() {
-        return !env.isDas() && !env.isEmbedded() && gmsAdapterService.isGmsEnabled();
+        return !env.isDas() && !env.isEmbedded() && hazelcastCore.isEnabled();
     }
 
     private boolean isHaEnabled() {
@@ -265,16 +268,6 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
         if (availabilityService != null) {
             haEnabled = Boolean.valueOf(availabilityService.getAvailabilityEnabled());
         }
-
-//        if (haEnabled) {
-//            DeploymentContext dc = getDynamicDeploymentContext();
-//            if (dc != null) {
-//                DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
-//                if (params != null) {
-//                    haEnabled = params.availabilityenabled;
-//                }
-//            }
-//        }
 
         return haEnabled;
     }

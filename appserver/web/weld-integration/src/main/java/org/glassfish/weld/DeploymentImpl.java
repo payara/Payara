@@ -109,6 +109,7 @@ public class DeploymentImpl implements CDI11Deployment {
     private boolean earContextAppLibBdasProcessed = false;
 
     private String appName;
+    private String contextId;
 
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
@@ -142,7 +143,8 @@ public class DeploymentImpl implements CDI11Deployment {
             this.appName = "CDIApp";
         }
 
-        createModuleBda(archive, ejbs, context, moduleName);
+        this.contextId = moduleName != null? moduleName : archive.getName();
+        createModuleBda(archive, ejbs, context, contextId);
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
@@ -771,5 +773,9 @@ public class DeploymentImpl implements CDI11Deployment {
 
     public String getAppName() {
         return appName;
+    }
+
+    public String getContextId() {
+        return contextId;
     }
 }

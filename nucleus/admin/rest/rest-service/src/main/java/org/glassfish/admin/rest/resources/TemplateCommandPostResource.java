@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.admin.rest.resources;
 
@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.json.JsonException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -57,7 +58,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.results.ActionReportResult;
@@ -180,7 +180,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
     public String get() {
         try {
             return options();
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
         }
     }

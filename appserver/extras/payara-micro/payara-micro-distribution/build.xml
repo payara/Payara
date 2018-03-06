@@ -101,12 +101,8 @@
 	<delete file="${runtimedir}/javahelp.jar"/>
 	<delete file="${runtimedir}/upgrade-tool.jar"/>
 	<delete file="${runtimedir}/web-gui-plugin-common.jar"/>
-	<delete file="${runtimedir}/ha-shoal-cache-store.jar"/>
-	<delete file="${runtimedir}/ha-shoal-cache-bootstrap.jar"/>
 	<delete file="${runtimedir}/ha-file-store.jar"/>
 	<delete file="${runtimedir}/payara-console-extras.jar"/>
-	<delete file="${runtimedir}/shoal-cache.jar"/>
-	<delete file="${runtimedir}/shoal-gms-api.jar"/>
 	<delete file="${runtimedir}/load-balancer-admin.jar"/>
 	<delete file="${runtimedir}/gf-load-balancer-connector.jar"/>
 	<delete file="${runtimedir}/backup.jar"/>
@@ -117,11 +113,10 @@
 	  <fileset dir="${runtimedir}" includes="console-**-plugin.jar"/>
 	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
 	  <fileset dir="${runtimedir}" includes="**/appserver-domain*.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/payara-domain*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/production-domain*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/nucleus-domain.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/weld-se-core.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/weld-se-shaded.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/derbyLocale*.jar"/>
 	</delete>
 	<delete file="${runtimedir}/autostart/osgi-cdi.jar" failonerror="false"/>
      </target>
@@ -192,7 +187,7 @@
     <target name="addKeystores">
         <unzip dest="${tempdir}">
             <fileset dir="${runtimedir}/${install.dir.name}/glassfish/common/templates/gf">
-                <include name="payara-domain.jar"/>      
+                <include name="production-domain.jar"/>
             </fileset>
         </unzip>
         <copy todir="${domaindir}">

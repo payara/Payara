@@ -145,6 +145,8 @@ public interface WebTagNames extends TagNames {
     public static final String LOCALE = "locale";
     public static final String ENCODING = "encoding";
     public static final String DEFAULT_CONTEXT_PATH = "default-context-path";
+    public static final String REQUEST_CHARACTER_ENCODING = "request-character-encoding";
+    public static final String RESPONSE_CHARACTER_ENCODING = "response-character-encoding";
 
     //ordering
     public static final String ABSOLUTE_ORDERING = "absolute-ordering";

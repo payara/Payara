@@ -73,6 +73,7 @@ modify org.glassfish.nucleus.admin.NucleusStartStopTest static initializer
 of COPY_LIB map constant.)
 
 -->
+<!-- Portions Copyright [2017] Payara Foundation and/or affiliates -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -167,6 +168,11 @@ of COPY_LIB map constant.)
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-api</artifactId>
             <scope>test</scope>
@@ -177,6 +183,11 @@ of COPY_LIB map constant.)
             <version>${project.version}</version>
             <scope>test</scope>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>1.1</version>
         </dependency>
     </dependencies>
 </project>

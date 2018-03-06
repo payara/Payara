@@ -164,7 +164,6 @@
       </security-service>
       <monitoring-service />
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="" classpath-suffix="">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-client</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-XX:+LogVMOutput</jvm-options>
@@ -290,7 +289,6 @@
       </security-service>
       <monitoring-service />
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="" classpath-suffix="">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-server</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-XX:+LogVMOutput</jvm-options>
@@ -422,7 +420,6 @@
       </security-service>
       <monitoring-service />
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="" classpath-suffix="">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-server</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-XX:+LogVMOutput</jvm-options>
@@ -554,7 +551,6 @@
       </security-service>
       <monitoring-service />
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="" classpath-suffix="">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-server</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-XX:+LogVMOutput</jvm-options>
@@ -686,7 +682,6 @@
       </security-service>
       <monitoring-service />
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="" classpath-suffix="">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-server</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-XX:+LogVMOutput</jvm-options>
@@ -818,7 +813,6 @@
       </security-service>
       <monitoring-service />
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="" classpath-suffix="">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-server</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-XX:+LogVMOutput</jvm-options>
@@ -950,7 +944,6 @@
       </security-service>
       <monitoring-service />
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="" classpath-suffix="">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-server</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-XX:+LogVMOutput</jvm-options>

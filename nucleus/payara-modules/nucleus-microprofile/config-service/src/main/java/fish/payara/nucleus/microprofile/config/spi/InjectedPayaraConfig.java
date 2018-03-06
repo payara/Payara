@@ -71,8 +71,7 @@ public class InjectedPayaraConfig implements Config, Serializable {
 
     @Override
     public Iterable<String> getPropertyNames() {
-        ensureDelegate();
-        return delegate.getPropertyNames();
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

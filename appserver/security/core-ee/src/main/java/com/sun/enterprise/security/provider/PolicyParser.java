@@ -1238,11 +1238,12 @@ public class PolicyParser {
 	}
     }
 
-    public static void main(String arg[]) throws Exception {
-	PolicyParser pp = new PolicyParser(true);
-	pp.read(new FileReader(arg[0]));
-	FileWriter fr = new FileWriter(arg[1]);
-	pp.write(fr);
-        fr.close();
+  public static void main(String arg[]) throws Exception {
+    try (FileReader fileReader = new FileReader(arg[0]);
+         FileWriter fr = new FileWriter(arg[1])) {
+      PolicyParser pp = new PolicyParser(true);
+      pp.read(fileReader);
+      pp.write(fr);
     }
+  }
 }

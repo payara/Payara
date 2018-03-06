@@ -44,14 +44,17 @@ import fish.payara.monitoring.rest.app.MBeanServerDelegate;
 import fish.payara.monitoring.rest.app.processor.ProcessorFactory;
 import fish.payara.monitoring.rest.app.processor.TypeProcessor;
 import javax.inject.Singleton;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ReflectionException;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  *
@@ -78,23 +81,23 @@ public class MBeanAttributeReadHandler extends ReadHandler {
     }
 
     @Override
-    public JSONObject getRequestObject() {
-        JSONObject requestObject = new JSONObject();
+    public JsonObject getRequestObject() {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         try {
-            requestObject.put(RestMonitoringAppResponseToken.getMbeanNameKey(), 
+            objectBuilder.add(RestMonitoringAppResponseToken.getMbeanNameKey(), 
                     mbeanname);
-            requestObject.put(RestMonitoringAppResponseToken.getAttributeNameKey(), 
+            objectBuilder.add(RestMonitoringAppResponseToken.getAttributeNameKey(), 
                     attributename);
-            requestObject.put(RestMonitoringAppResponseToken.getRequestTypeKey(), 
+            objectBuilder.add(RestMonitoringAppResponseToken.getRequestTypeKey(), 
                     requesttype);
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             super.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
         }
-        return requestObject;
+        return objectBuilder.build();
     }
 
     @Override
-    public Object getValueObject() throws JSONException {
+    public JsonValue getValueObject() throws JsonException {
         try {
             Object attribute = delegate
                     .getMBeanAttribute(mbeanname, attributename);

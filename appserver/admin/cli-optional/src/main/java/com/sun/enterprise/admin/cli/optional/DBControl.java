@@ -82,9 +82,10 @@ public abstract class DBControl {
                 }
 
                 // Redirect stdout and stderr to a file
-                PrintStream printStream = new PrintStream(new FileOutputStream(dbLog, true), true);
-                System.setOut(printStream);
-                System.setErr(printStream);
+                try (PrintStream printStream = new PrintStream(new FileOutputStream(dbLog, true), true)) {
+                    System.setOut(printStream);
+                    System.setErr(printStream);
+                }
             } catch (Throwable t) {
                 t.printStackTrace();
                 // Exit with an error code of 2

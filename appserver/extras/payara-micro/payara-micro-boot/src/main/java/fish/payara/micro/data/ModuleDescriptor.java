@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,11 @@
 package fish.payara.micro.data;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Describes an application module
+ * 
  * @author Steve Millidge
  */
 public interface ModuleDescriptor extends Serializable {
@@ -51,18 +53,27 @@ public interface ModuleDescriptor extends Serializable {
      * Returns the context root of the application if any
      * @return 
      */
-    public String getContextRoot();
+    String getContextRoot();
 
     /**
      * Returns the name of the module
      * @return 
      */
-    public String getName();
+    String getName();
 
     /**
      * Returns the type of the module e.g. war
      * @return 
      */
-    public String getType();
+    String getType();
+    
+    /**
+     * Returns the Servlet mappings present in this module if any, or the empty list if none
+     * <p>
+     * The key in each entry is the mapping, e.g. <code>*.jsp</code>, the value is the Servlet name, e.g. <code>JspServlet</code>
+     * </p>
+     * @return
+     */
+    Map<String, String> getServletMappings();
     
 }

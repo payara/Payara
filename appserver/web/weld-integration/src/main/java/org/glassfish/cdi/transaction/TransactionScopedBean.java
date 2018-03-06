@@ -37,23 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 package org.glassfish.cdi.transaction;
+
+import static org.glassfish.cdi.transaction.TransactionScopedCDIUtil.log;
+import static org.glassfish.cdi.transaction.TransactionScopedContextImpl.TRANSACTION_SYNCHRONIZATION_REGISTRY_JNDI_NAME;
+
+import java.util.Set;
 
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
-import java.util.Set;
 
 /**
- * A wrapper for contextual instances of {@link javax.transaction.TransactionScoped} beans.
- * We need this wrapper so that the contextual instance can be destroyed when the transaction completes.
+ * A wrapper for contextual instances of {@link javax.transaction.TransactionScoped} beans. We need
+ * this wrapper so that the contextual instance can be destroyed when the transaction completes.
  *
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
@@ -63,7 +64,8 @@ public class TransactionScopedBean<T> implements Synchronization {
     private CreationalContext<T> creationalContext;
     private TransactionScopedContextImpl transactionScopedContext;
 
-    public TransactionScopedBean(Contextual<T> contextual, CreationalContext<T> creationalContext, TransactionScopedContextImpl transactionScopedContext) {
+    public TransactionScopedBean(Contextual<T> contextual, CreationalContext<T> creationalContext,
+            TransactionScopedContextImpl transactionScopedContext) {
         this.contextual = contextual;
         this.creationalContext = creationalContext;
         this.transactionScopedContext = transactionScopedContext;
@@ -86,27 +88,32 @@ public class TransactionScopedBean<T> implements Synchronization {
     public void afterCompletion(int i) {
         try {
             TransactionSynchronizationRegistry transactionSynchronizationRegistry = getTransactionSynchronizationRegistry();
-            //We can't do "getResource" on TransactionSynchronizationRegistry at this stage in completion
+            // We can't do "getResource" on TransactionSynchronizationRegistry at this stage in completion
             if (transactionSynchronizationRegistry != null) {
                 if (transactionScopedContext != null) {
-                    //Get list of TransactionScopedBeans for this Transaction
-                    Set<TransactionScopedBean> transactionScopedBeanSet = transactionScopedContext.beansPerTransaction.get(transactionSynchronizationRegistry);
+                    // Get list of TransactionScopedBeans for this Transaction
+                    Set<TransactionScopedBean> transactionScopedBeanSet =
+                            transactionScopedContext.beansPerTransaction
+                                                    .get(transactionSynchronizationRegistry);
+
                     if (transactionScopedBeanSet != null) {
-                        //Remove the current TransactionScopedBean from list as we are destroying it now
+                        // Remove the current TransactionScopedBean from list as we are destroying it now
                         if (transactionScopedBeanSet.contains(this)) {
                             transactionScopedBeanSet.remove(this);
                         }
-                        //If current TransactionScopedBean is last in list, fire destroyed event and remove transaction entry from main Map
+                        // If current TransactionScopedBean is last in list, fire destroyed event and remove transaction
+                        // entry from main Map
                         if (transactionScopedBeanSet.size() == 0) {
                             TransactionScopedCDIUtil.fireEvent(TransactionScopedCDIUtil.DESTORYED_EVENT);
                             transactionScopedContext.beansPerTransaction.remove(transactionSynchronizationRegistry);
                         }
-                        //Not updating entry in main Map with leftover TransactionScopedBeans as it should happen by reference
+                        // Not updating entry in main Map with leftover TransactionScopedBeans as it should happen by
+                        // reference
                     }
                 }
             }
         } catch (NamingException ne) {
-            TransactionScopedCDIUtil.log("Can't get instance of TransactionSynchronizationRegistry to process TransactionScoped Destroyed CDI Event!");
+            log("Can't get instance of TransactionSynchronizationRegistry to process TransactionScoped Destroyed CDI Event!");
             ne.printStackTrace();
         } finally {
             contextual.destroy(contextualInstance, creationalContext);
@@ -117,12 +124,13 @@ public class TransactionScopedBean<T> implements Synchronization {
         TransactionSynchronizationRegistry transactionSynchronizationRegistry;
         try {
             InitialContext initialContext = new InitialContext();
-            transactionSynchronizationRegistry =
-                    (TransactionSynchronizationRegistry) initialContext.lookup(TransactionScopedContextImpl.TRANSACTION_SYNCHRONIZATION_REGISTRY_JNDI_NAME);
+            transactionSynchronizationRegistry = (TransactionSynchronizationRegistry)
+                    initialContext.lookup(TRANSACTION_SYNCHRONIZATION_REGISTRY_JNDI_NAME);
         } catch (NamingException ne) {
             throw ne;
         }
-        //Not checking for transaction status, it would be 6, as its in afterCompletion
+
+        // Not checking for transaction status, it would be 6, as its in afterCompletion
         return transactionSynchronizationRegistry;
     }
 }

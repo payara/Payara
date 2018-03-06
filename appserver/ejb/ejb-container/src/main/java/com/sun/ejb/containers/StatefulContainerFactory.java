@@ -64,7 +64,7 @@ import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
-import com.sun.logging.LogDomains;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -73,8 +73,6 @@ import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbContainerAvailability;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.gms.bootstrap.GMSAdapter;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
@@ -197,7 +195,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
     EjbContainer ejbContainerConfig;
 
     @Inject @Optional
-    GMSAdapterService gmsAdapterService;
+    HazelcastCore hazelcast;
     
     private LruSessionCache sessionCache;
 
@@ -343,11 +341,10 @@ public class StatefulContainerFactory extends BaseContainerFactory
         vendorMap.put("value.class.is.thread.safe", true);
         vendorMap.put("key.transformer", keyGen);
 
-        if (gmsAdapterService != null) {
-            GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();
-            if (gmsAdapter != null) {
-                conf.setClusterName(gmsAdapter.getClusterName());
-                conf.setInstanceName(gmsAdapter.getModule().getInstanceName());
+        if (hazelcast != null) {
+            if (hazelcast.isEnabled()) {
+                conf.setClusterName(hazelcast.getMemberGroup());
+                conf.setInstanceName(hazelcast.getMemberName());
             }
         }
         

@@ -43,8 +43,9 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
+    
     <artifactId>microprofile-package</artifactId>
     <name>Microprofile Package</name>
     <packaging>distribution-fragment</packaging>
@@ -79,6 +80,7 @@
             </plugin>
         </plugins>
     </build>
+    
     <profiles>
         <profile>
             <id>ips</id>
@@ -138,19 +140,20 @@
             <groupId>fish.payara.microprofile.config</groupId>
             <artifactId>microprofile-config</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>       
         
         <!-- Fault Tolerance -->
-        <dependency>
-            <groupId>fish.payara.microprofile.fault-tolerance</groupId>
-            <artifactId>microprofile-fault-tolerance</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
             <artifactId>microprofile-fault-tolerance-api</artifactId>
             <version>${microprofile-fault-tolerance.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.fault-tolerance</groupId>
+            <artifactId>microprofile-fault-tolerance</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+      
         <!-- Metrics -->
         <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
@@ -162,17 +165,19 @@
             <artifactId>microprofile-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
         <!-- JWT -->
         <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
-            <version>1.0</version>
+            <version>${microprofile-jwt-auth.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.microprofile.jwt-auth</groupId>
             <artifactId>microprofile-jwt-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
@@ -191,6 +196,7 @@
             <version>${project.version}</version>
         </dependency>
             
+        <!-- Nimbus -->
         <dependency>
             <groupId>org.glassfish.main.external</groupId>
             <artifactId>jcip-annotations-repackaged</artifactId>
@@ -199,6 +205,26 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-tree</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-util</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-xml</artifactId>
             <version>${asm.version}</version>
         </dependency>
         <dependency>

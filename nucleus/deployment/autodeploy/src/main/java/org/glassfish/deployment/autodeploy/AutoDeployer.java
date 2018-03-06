@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * AutoDeployer.java
@@ -58,7 +59,6 @@ import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -381,7 +381,7 @@ public class AutoDeployer {
      *@param verify whether to verify the app during deployment
      */
     public void setVerify(boolean verify) {
-        this.verify =  Boolean.valueOf(verify);
+        this.verify =  verify;
     }
     
     /**
@@ -389,7 +389,7 @@ public class AutoDeployer {
      *@param jspPreCompilation precompilation setting
      */
     public void setJspPreCompilation(boolean jspPreCompilation) {
-        this.jspPreCompilation = Boolean.valueOf(jspPreCompilation);
+        this.jspPreCompilation = jspPreCompilation;
     }
     
     /**
@@ -477,7 +477,7 @@ public class AutoDeployer {
          *updated.
          */
         if(files != null && files.length > 0) {
-            deplLogger.fine("Deployable files: " + Arrays.toString(files));
+            deplLogger.log(Level.FINE, "Deployable files: {0}", Arrays.toString(files));
             for (int i=0; ((i < files.length) && !cancelDeployment);i++) {
                 boolean okToRecordResult = true;
                 try {
@@ -486,7 +486,7 @@ public class AutoDeployer {
                     //ignore and move to next file
                 } finally {
                     if(renameOnSuccess && okToRecordResult) {
-                        deplLogger.fine("Reporting deployed entity " + files[i].getAbsolutePath());
+                        deplLogger.log(Level.FINE, "Reporting deployed entity {0}", files[i].getAbsolutePath());
                         directoryScanner.deployedEntity(autoDeployDir, files[i]);
                     }
                 }
@@ -499,6 +499,7 @@ public class AutoDeployer {
     /**
      * do undeployment for all deleted applications in autoDeployDir dir.
      * @param autoDeployDir the directory to scan for deleted files
+     * @param includeSubdir
      * @throws org.glassfish.deployment.autodeploy.AutoDeploymentException 
      */
     public void undeployAll(File autoDeployDir, boolean includeSubdir) throws AutoDeploymentException {
@@ -519,8 +520,7 @@ public class AutoDeployer {
             for (int i=0; i< apps.length && !cancelDeployment;i++) {
                 try {
                     
-                    this.undeploy(apps[i], autoDeployDir, 
-                        getNameFromFilePath(autoDeployDir, apps[i]));
+                    this.undeploy(apps[i], autoDeployDir, getNameFromFilePath(autoDeployDir, apps[i]));
                     
                     
                 } catch (AutoDeploymentException ae) {
@@ -550,7 +550,7 @@ public class AutoDeployer {
     }
 
     /**
-     * set cancel flag, which  will ensure that only if there is any current deployment is in process,</br>
+     * Set cancel flag, which  will ensure that only if there is any current deployment is in process,
      * it will be completed but the deployer will not do any more deployment.
      * @param value the cancel setting
      */

@@ -76,13 +76,11 @@ public abstract class JsonWriter implements MetricsWriter {
 
     @Override
     public void write(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException {
-        if (APPLICATION.getName().equals(registryName)) {
+        if(APPLICATION.getName().equals(registryName)){
             JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
             for (String appRegistryName : service.getApplicationRegistryNames()) {
                 try {
-                getJsonData(appRegistryName, metricName).build()
-                        .entrySet()
-                        .forEach(entry -> payloadBuilder.add(entry.getKey(), entry.getValue()));
+                    payloadBuilder.addAll(getJsonData(appRegistryName, metricName));
                 } catch (NoSuchMetricException e) {
                     //ignore
                 }
@@ -103,9 +101,7 @@ public abstract class JsonWriter implements MetricsWriter {
         if (APPLICATION.getName().equals(registryName)) {
             JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
             for (String appRegistryName : service.getApplicationRegistryNames()) {
-                getJsonData(appRegistryName).build()
-                        .entrySet()
-                        .forEach(entry -> payloadBuilder.add(entry.getKey(), entry.getValue()));
+                payloadBuilder.addAll(getJsonData(appRegistryName));
             }
             serialize(payloadBuilder.build());
         } else {
@@ -122,9 +118,7 @@ public abstract class JsonWriter implements MetricsWriter {
                 JsonObjectBuilder value = getJsonData(registryName);
                 if (!BASE.getName().equals(registryName)
                         && !VENDOR.getName().equals(registryName)) {
-                    value.build()
-                            .entrySet()
-                            .forEach(entry -> applicationBuilder.add(entry.getKey(), entry.getValue()));
+                    applicationBuilder.addAll(value);
                 } else {
                     payloadBuilder.add(registryName, value.build());
                 }

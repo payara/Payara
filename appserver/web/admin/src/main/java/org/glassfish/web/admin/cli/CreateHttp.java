@@ -119,6 +119,21 @@ public class CreateHttp implements AdminCommand {
     Boolean serverHeader = false;
     @Param(name = "xframe", optional = true, defaultValue = "true", alias="xframeOptions")
     Boolean xFrameOptions = false;
+    
+    @Param(name = "http2Enabled", alias = "http2enabled", optional = true, defaultValue = "true")
+    Boolean http2Enabled;
+    @Param(name = "http2DisableCipherCheck", alias = "http2disableCipherCheck", optional = true)
+    Boolean http2DisableCipherCheck;
+    @Param(name = "http2MaxConcurrentStreams", alias = "http2maxConcurrentStreams", optional = true)
+    Integer http2MaxConcurrentStreams;
+    @Param(name = "http2InitialWindowSizeInBytes", alias = "http2initialWindowSizeInBytes", optional = true)
+    Integer http2InitialWindowSizeInBytes;
+    @Param(name = "http2MaxFramePayloadSizeInBytes", alias = "http2maxFramePayloadSizeInBytes", optional = true)
+    Integer http2MaxFramePayloadSizeInBytes;
+    @Param(name = "http2MaxHeaderListSizeInBytes", alias = "http2maxHeaderListSizeInBytes", optional = true)
+    Integer http2MaxHeaderListSizeInBytes;
+    
+    
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -179,6 +194,24 @@ public class CreateHttp implements AdminCommand {
                     http.setServerHeader(serverHeader == null ? null : serverHeader.toString());
                     http.setXframeOptions(xFrameOptions == null ? null : xFrameOptions.toString());
                     http.setServerName(serverName);
+                    
+                    // HTTP2 options
+                    http.setHttp2Enabled(http2Enabled);
+                    if (http2DisableCipherCheck != null) {
+                        http.setHttp2DisableCipherCheck(http2DisableCipherCheck);
+                    }
+                    if (http2InitialWindowSizeInBytes != null) {
+                        http.setHttp2InitialWindowSizeInBytes(http2InitialWindowSizeInBytes);
+                    }
+                    if (http2MaxConcurrentStreams != null) {
+                        http.setHttp2MaxConcurrentStreams(http2MaxConcurrentStreams);
+                    }
+                    if (http2MaxFramePayloadSizeInBytes != null) {
+                        http.setHttp2MaxFramePayloadSizeInBytes(http2MaxFramePayloadSizeInBytes);
+                    }
+                    if (http2MaxHeaderListSizeInBytes != null) {
+                        http.setHttp2MaxHeaderListSizeInBytes(http2MaxHeaderListSizeInBytes);
+                    }
                     param.setHttp(http);
                     return http;
                 }

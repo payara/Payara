@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,12 +57,14 @@ public enum RUNTIME_OPTION {
     clustername(true),
     clusterpassword(true),
     hostaware(false),
+    nohostaware(false),
     startport(true, new PortValidator()),
     addlibs(true, new SeparatedFilesValidator(true, true, false, true, true)),
     addjars(true, new SeparatedFilesValidator(true, true, false, true, true)),
     rootdir(true, new DirectoryValidator(true, true, true)),
     deploymentdir(true, new DirectoryValidator(true, true, false)),
     secretsdir(true,new DirectoryValidator(true, true, false)),
+    showservletmappings(false),
     domainconfig(true, new FileValidator(true, true, true)),
     minhttpthreads(true, new IntegerValidator(1, Integer.MAX_VALUE)),
     maxhttpthreads(true, new IntegerValidator(2, Integer.MAX_VALUE)),
@@ -87,11 +89,17 @@ public enum RUNTIME_OPTION {
     enablerequesttracing(false),
     requesttracingthresholdunit(true),
     requesttracingthresholdvalue(true),
+    enablerequesttracingadaptivesampling(false),
+    requesttracingadaptivesamplingtargetcount(true),
+    requesttracingadaptivesamplingtimevalue(true),
+    requesttracingadaptivesamplingtimeunit(true),
     prebootcommandfile(true, new FileValidator(true, true, false)),
     postbootcommandfile(true, new FileValidator(true, true, false)),
     postdeploycommandfile(true, new FileValidator(true,true,false)),
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
+    clustermode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
+    interfaces(true),
     help(false);
 
     private RUNTIME_OPTION(boolean hasValue) {
@@ -111,6 +119,8 @@ public enum RUNTIME_OPTION {
         return value;
     }
     private final Validator validator;
+    
+    // Indicates the runtime option requires a value
     private final boolean value;
 
 }

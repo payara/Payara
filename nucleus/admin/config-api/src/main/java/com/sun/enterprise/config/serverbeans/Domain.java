@@ -38,11 +38,15 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.config.serverbeans;
 
-import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.StringUtils;
+import fish.payara.enterprise.config.serverbeans.DGServerRef;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
@@ -54,7 +58,6 @@ import org.jvnet.hk2.config.ConfigExtensionMethod;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
@@ -261,6 +264,26 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
      *              {@link Clusters }
      */
     void setClusters(Clusters value) throws PropertyVetoException;
+    
+        /**
+     * Gets the value of the clusters property.
+     *
+     * @return possible object is
+     *         {@link Clusters }
+     */
+    @Element
+    @NotNull
+    DeploymentGroups getDeploymentGroups();
+
+    /**
+     * Sets the value of the clusters property.
+     *
+     * @param value allowed object is
+     *              {@link Clusters }
+     */
+    void setDeploymentGroups(DeploymentGroups value) throws PropertyVetoException;
+    
+    
 
     /**
      * Gets the value of the nodes property.
@@ -480,6 +503,12 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     @DuckTyped
     <P extends ConfigBeanProxy> boolean checkIfExtensionExists(Class<P> configBeanType);
 
+    @DuckTyped
+    public DeploymentGroup getDeploymentGroupNamed(String target);
+    
+    @DuckTyped 
+    public List<DeploymentGroup> getDeploymentGroupsForInstance(String namedInstance);
+
     class Duck {
         private final static Logger logger=ConfigApiLoggerInfo.getLogger();
         public static String getName(Domain domain) {
@@ -638,6 +667,33 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             return null;
         }
 
+
+        public static DeploymentGroup getDeploymentGroupNamed(Domain d, String name) {
+            if (d.getDeploymentGroups()== null || name == null)
+                throw new IllegalArgumentException ("no <deploymentgroup> element");
+            List<DeploymentGroup> dgs = d.getDeploymentGroups().getDeploymentGroup();
+            for (DeploymentGroup dg : dgs) {
+                if (name.equals(dg.getName().trim())) {
+                    return dg;
+                }
+            }
+            return null;
+        }
+        
+        public static List<DeploymentGroup> getDeploymentGroupsForInstance(Domain d, String instanceName) {
+            List<DeploymentGroup> result = new LinkedList<>();
+            List<DeploymentGroup> dgs = d.getDeploymentGroups().getDeploymentGroup();
+            if (dgs != null) {
+                for (DeploymentGroup dg : dgs) {
+                    DGServerRef ref = dg.getDGServerRefByRef(instanceName);
+                    if (ref != null) {
+                        result.add(dg);
+                    }
+                }
+            }
+            return result;
+        }
+        
          public static Cluster getClusterNamed(Domain d, String name) {
             if (d.getClusters() == null || name == null) {
                 return null;
@@ -699,6 +755,16 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                         }
                     }
                 }
+                
+                // check the deployment group
+                DeploymentGroup dg = getDeploymentGroupNamed(d, target2);
+                if (dg != null) {
+                    for (Server svr : dg.getInstances()) {
+                        if (svr.getName().equals(currentInstance)) {
+                            return true;
+                        }
+                    }
+                }
             }
             return false;
         }
@@ -714,6 +780,11 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 Cluster cluster = getClusterNamed(me, target);
                 if (cluster != null) {
                     servers.addAll(cluster.getInstances());
+                } else {
+                    DeploymentGroup dg = getDeploymentGroupNamed(me, target);
+                    if (dg != null) {
+                        servers.addAll(dg.getInstances());
+                    }
                 }
             }
             return servers;
@@ -752,6 +823,16 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                                 allAppRefs.addAll(svr.getApplicationRef());
                             }
                         }
+                    } else {
+                        DeploymentGroup dg = getDeploymentGroupNamed(me, target);
+                        if (dg != null) {
+                            allAppRefs.addAll(dg.getApplicationRef());
+                            if (includeInstances) {
+                                for (Server svr: dg.getInstances()) {
+                                    allAppRefs.addAll(svr.getApplicationRef());
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -784,6 +865,17 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                     return false;
                 }
             }
+            
+            List<DeploymentGroup> dgs = getDeploymentGroupsForInstance(me, target);
+            if (dgs != null) {
+                for (DeploymentGroup dg : dgs) {
+                    ApplicationRef ref = dg.getApplicationRef(appName);
+                    if (ref == null || !Boolean.valueOf(ref.getEnabled())) {
+                        return false;
+                    }
+                }
+            }
+            
 
             for (ApplicationRef ref :
                 getApplicationRefsInTarget(me, target, true)) {
@@ -835,6 +927,12 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             if (d.getClusters() != null) {
                 for (Cluster cluster : d.getClusters().getCluster()) {
                     targets.add(cluster.getName());
+                }
+            }
+            
+            if (d.getDeploymentGroups() != null) {
+                for (DeploymentGroup dg : d.getDeploymentGroups().getDeploymentGroup()) {
+                    targets.add(dg.getName());
                 }
             }
             return targets;
@@ -910,7 +1008,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
 
             if(c != null)
                 return c;
-
+            
             return getServerNamed(d, name);
         }
 

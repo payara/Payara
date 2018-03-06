@@ -66,16 +66,19 @@ utilities are in the NucleusTestUtils class.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
+    
     <groupId>org.glassfish.main.tests</groupId>
     <artifactId>nucleus-quicklook</artifactId>
     <name>Nucleus Quicklook Tests</name>
-    <version>4.1-SNAPSHOT</version>
+    <version>5.181-SNAPSHOT</version>
     <description>This pom describes how to run QuickLook tests on the Nucleus distribution</description>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

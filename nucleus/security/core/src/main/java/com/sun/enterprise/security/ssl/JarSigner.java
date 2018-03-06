@@ -37,27 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ssl;
 
-import com.sun.enterprise.server.pluggable.SecuritySupport;
-import com.sun.enterprise.universal.GFBase64Encoder;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyMap;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
@@ -68,6 +70,9 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import com.sun.enterprise.server.pluggable.SecuritySupport;
+
 import sun.security.pkcs.ContentInfo;
 import sun.security.pkcs.PKCS7;
 import sun.security.pkcs.SignerInfo;
@@ -80,15 +85,16 @@ import sun.security.x509.X500Name;
  * @author Sudarsan Sridhar
  */
 public class JarSigner {
-
-    private static final GFBase64Encoder b64encoder = new GFBase64Encoder();
+    
+    private static final Base64.Encoder b64encoder = Base64.getMimeEncoder();
+    private static final SecuritySupport securitySupport = SecuritySupport.getDefaultInstance();
+    
     private final MessageDigest md;
     private final String digestAlgorithm;
     private final String keyAlgorithm;
-    private static final SecuritySupport secSupp = SecuritySupport.getDefaultInstance();
+    
 
-    public JarSigner(String digestAlgorithm, String keyAlgorithm)
-            throws NoSuchAlgorithmException {
+    public JarSigner(String digestAlgorithm, String keyAlgorithm) throws NoSuchAlgorithmException {
         this.digestAlgorithm = digestAlgorithm;
         this.keyAlgorithm = keyAlgorithm;
         this.md = MessageDigest.getInstance(digestAlgorithm);
@@ -117,7 +123,7 @@ public class JarSigner {
      * @return 
      */
     private String hash(final byte[] data) {
-        return b64encoder.encodeBuffer(md.digest(data)).trim();
+        return new String(b64encoder.encode(md.digest(data)), UTF_8).trim();
     }
 
     /**
@@ -127,10 +133,7 @@ public class JarSigner {
      * @param output output jar file
      * @param alias signing alias in the keystore
      */
-    public void signJar(File input, File output, String alias)
-            throws IOException, KeyStoreException, NoSuchAlgorithmException,
-            InvalidKeyException, UnrecoverableKeyException, SignatureException {
-        
+    public void signJar(File input, File output, String alias) throws IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException, SignatureException {
         signJar(input, output, alias, null);
     }
     
@@ -142,15 +145,9 @@ public class JarSigner {
      * @param alias signing alias in the keystore
      * @param additionalAttrs additional attributes to add to the manifest's main attrs (null if none)
      */
-    public void signJar(File input, File output, String alias, final Attributes additionalAttrs) 
-            throws IOException, KeyStoreException, NoSuchAlgorithmException,
-            InvalidKeyException, UnrecoverableKeyException, SignatureException {
-        final ZipOutputStream zout = new ZipOutputStream(
-            new FileOutputStream(output));
-        try {
-            signJar(input, zout, alias, additionalAttrs, Collections.EMPTY_MAP);
-        } finally {
-            zout.close();
+    public void signJar(File input, File output, String alias, Attributes additionalAttrs) throws IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException, SignatureException {
+        try (ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(output))) {
+            signJar(input, zout, alias, additionalAttrs, emptyMap());
         }
     }
     
@@ -229,9 +226,9 @@ public class JarSigner {
             }
             X509Certificate[] certChain = null;
             PrivateKey privKey = null;
-            KeyStore[] ks = secSupp.getKeyStores();
+            KeyStore[] ks = securitySupport.getKeyStores();
             for (int i = 0; i < ks.length; i++) {
-                privKey = secSupp.getPrivateKeyForAlias(alias, i);
+                privKey = securitySupport.getPrivateKeyForAlias(alias, i);
                 if (privKey != null) {
                     Certificate[] cs = ks[i].getCertificateChain(alias);
                     certChain = new X509Certificate[cs.length];

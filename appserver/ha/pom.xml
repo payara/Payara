@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.main.ha</groupId>
@@ -69,9 +69,6 @@
     
     <modules>
         <module>ha-file-store</module>
-        <module>ha-shoal-cache-bootstrap</module>
-        <module>ha-shoal-store</module>
         <module>ha-hazelcast-store</module>
-        <!--<module>ha-apt</module>-->
     </modules>
 </project>

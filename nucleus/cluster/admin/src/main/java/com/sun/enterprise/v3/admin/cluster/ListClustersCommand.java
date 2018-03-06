@@ -36,6 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+
+
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
  */
 
 package com.sun.enterprise.v3.admin.cluster;
@@ -56,7 +60,6 @@ import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.List;
@@ -158,7 +161,7 @@ public final class ListClustersCommand implements AdminCommand {
                             habitat, server,
                             new RemoteInstanceCommandHelper(habitat).getAdminPort(server),
                             server.getAdminHost(),
-                            clusterName, logger, timeoutInMsec, tReport, stateService);
+                            clusterName, "",logger, timeoutInMsec, tReport, stateService);
                     infos.add(ii);
                 }
             }

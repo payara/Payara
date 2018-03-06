@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -44,6 +45,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -72,7 +74,7 @@ import java.util.Properties;
 @PerLookup
 @I18n("create.jms.resource")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN})
+@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.POST, 
@@ -298,8 +300,14 @@ public class CreateJMSResource implements AdminCommand {
 
              else {
                   Server server = domain.getServerNamed(target);
-                  if (server != null)
+                  if (server != null) {
                       resourceRefs = server.getResourceRef();
+                  } else {
+                      DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+                      if (dg != null) {
+                          resourceRefs = dg.getResourceRef();
+                      }
+                  }
 
              }
              if (resourceRefs != null && resourceRefs.size() != 0){

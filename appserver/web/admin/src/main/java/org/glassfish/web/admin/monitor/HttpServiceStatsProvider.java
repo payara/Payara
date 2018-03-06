@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.admin.monitor;
 
@@ -440,7 +440,7 @@ public class HttpServiceStatsProvider implements PostConstruct {
                 countOpenConnections.increment();
             }
             NetworkListener networkListener = networkConfig.getNetworkListener(listenerName);
-            if (networkListener != null) {
+            if (networkListener != null && networkListener.findProtocol().getHttp() != null) {
                 maxOpenConnections.setCount(
                         Integer.parseInt(networkListener.findProtocol().getHttp().getMaxConnections()));
             }

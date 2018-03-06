@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package fish.payara.nucleus.util;
 
 import java.io.IOException;
@@ -60,6 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * Clean up to stop a stale file handles remaining open
+ *
  * @author steve
  * @since 4.1.154
  */
@@ -69,7 +69,7 @@ public class CleanupPostBoot implements EventListener {
 
     @Inject
     Events events;
-    
+
     private static Logger logger = Logger.getLogger(CleanupPostBoot.class.getName());
 
     @PostConstruct
@@ -81,7 +81,7 @@ public class CleanupPostBoot implements EventListener {
     public void event(Event event) {
 
         if (event.is(EventTypes.SERVER_READY)) {
-            logger.info("Cleaning JarFileFactory Cache to prevent jar FD leaks");
+            logger.config("Cleaning JarFileFactory Cache to prevent jar FD leaks");
         try {
             // Ensure JarFile is closed
             Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());

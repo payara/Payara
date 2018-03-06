@@ -59,6 +59,8 @@
 package org.apache.catalina.connector;
 
 
+import static org.apache.catalina.util.RequestUtil.createSessionVersionString;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -70,6 +72,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
@@ -1223,20 +1226,26 @@ public class Response
     public String encodeRedirectURL(String url) {
         if (isEncodeable(toAbsolute(url))) {
             String sessionVersion = null;
-            Map<String, String> sessionVersions = 
-                request.getSessionVersionsRequestAttribute();
+            Map<String, String> sessionVersions = request.getSessionVersionsRequestAttribute();
             if (sessionVersions != null) {
-                sessionVersion = RequestUtil.createSessionVersionString(
-                    sessionVersions);
+                sessionVersion = createSessionVersionString(sessionVersions);
             }
-            return toEncoded(url,
-                              request.getSessionInternal().getIdInternal(),
-                              sessionVersion);
-        } else {
-            return url;
+            
+            return toEncoded(url, request.getSessionInternal().getIdInternal(), sessionVersion);
         }
+            
+        return url;
     }
-
+    
+    @Override
+    public Supplier<Map<String, String>> getTrailerFields() {
+        return coyoteResponse.getTrailers();
+    }
+    
+    @Override
+    public void setTrailerFields(Supplier<Map<String, String>> supplier) {
+        coyoteResponse.setTrailers(supplier);
+    }
 
     /**
      * Encode the session identifier associated with this response

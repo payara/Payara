@@ -43,13 +43,15 @@
 <!--"Portions Copyright [2017] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.glassfish.main.grizzly</groupId>
         <artifactId>nucleus-grizzly</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>nucleus-grizzly-all</artifactId>
     <packaging>jar</packaging>
     <name>Nucleus Grizzly jars Combining</name>
@@ -86,37 +88,26 @@
                         </goals>
                     </execution>
                 </executions>
-
             </plugin>
 
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-
-                <configuration>
-                    <instructions>
-                        <Export-Package>
-                            org.glassfish.grizzly.config.*;version=${project.version},
-                            org.glassfish.grizzly.*;version=${grizzly.version},
-                            maskedclasses.*;version=${grizzly.version}
-                        </Export-Package>
-                        <Import-Package>*</Import-Package>
-                        <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
-                        <DynamicImport-Package>*</DynamicImport-Package>
-                    </instructions>
-                    
-                    <supportedProjectTypes>
-                        <supportedProjectType>jar</supportedProjectType>
-                    </supportedProjectTypes>
-                    
-                    <unpackBundle>true</unpackBundle>
-                </configuration>
                 <executions>
                     <execution>
                         <id>bundle</id>
                         <goals>
                             <goal>bundle</goal>
                         </goals>
+                        <configuration>
+                            <instructions>
+                                <Import-Package>*</Import-Package>
+                                <DynamicImport-Package>*</DynamicImport-Package>
+                                <Export-Package>org.glassfish.grizzly.*</Export-Package>
+                                <Private-Package>org.glassfish.grizzly.*</Private-Package>
+                                <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
+                            </instructions>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -135,6 +126,14 @@
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http-server</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>

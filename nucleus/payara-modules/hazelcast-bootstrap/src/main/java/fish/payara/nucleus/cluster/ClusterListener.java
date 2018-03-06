@@ -23,7 +23,7 @@ package fish.payara.nucleus.cluster;
  */
 public interface ClusterListener {
     
-    public void memberAdded(String guid);
-    public void memberRemoved(String guid);
+    public void memberAdded(MemberEvent event);
+    public void memberRemoved(MemberEvent event);
     
 }

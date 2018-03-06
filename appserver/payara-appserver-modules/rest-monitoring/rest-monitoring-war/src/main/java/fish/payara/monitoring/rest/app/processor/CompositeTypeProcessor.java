@@ -39,10 +39,12 @@
  */
 package fish.payara.monitoring.rest.app.processor;
 
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  *
@@ -52,22 +54,22 @@ import org.codehaus.jettison.json.JSONObject;
 public class CompositeTypeProcessor implements TypeProcessor<CompositeType> {
 
     @Override
-    public JSONObject processObject(Object object) throws JSONException {
+    public JsonObject processObject(Object object) throws JsonException {
         CompositeDataSupport compositeObject = (CompositeDataSupport) object;
         return processObject(compositeObject);
     }
 
-    private JSONObject processObject(CompositeDataSupport compositeObject) throws JSONException {
-        JSONObject jsonObject = new JSONObject(); 
+    private JsonObject processObject(CompositeDataSupport compositeObject) throws JsonException {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
         for (String entry : compositeObject.getCompositeType().keySet()) {
             Object entryObject = compositeObject.get(entry);
             TypeProcessor<?> processor = ProcessorFactory.getTypeProcessor(entryObject);
 
-            jsonObject.put(entry, processor.processObject(entryObject));
+            objectBuilder.add(entry, processor.processObject(entryObject));
         }
 
-        return jsonObject;
+        return objectBuilder.build();
     }
     
 }

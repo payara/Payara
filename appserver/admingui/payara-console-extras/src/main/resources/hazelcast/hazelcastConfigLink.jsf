@@ -20,7 +20,7 @@
 <sun:property>
     <sun:hyperlink 
         toolTip="$resource{i18nhc.tree.hazelcast}"
-        url="/payaraExtras/hazelcast/hazelcast.jsf?config=#{configName}"
+        url="/payaraExtras/hazelcast/hazelcastLocal.jsf?configName=#{configName}"
         >
         <sun:image url="/resource/images/hazelcast.png" />
         <sun:staticText text="$resource{i18nhc.tree.hazelcast}" />

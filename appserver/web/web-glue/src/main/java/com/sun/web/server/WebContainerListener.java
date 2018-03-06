@@ -62,12 +62,12 @@ import java.util.logging.Logger;
 //END OF IASRI 4660742
 
 /**
- * This class implements the Tomcat ContainerListener interface and
- * handles Context and Session related events.
+ * This class implements the Tomcat ContainerListener interface and handles Context and 
+ * Session related events.
+ * 
  * @author Tony Ng
  */
-public final class WebContainerListener 
-    implements ContainerListener {
+public final class WebContainerListener implements ContainerListener {
 
     private static final Logger _logger = LogFacade.getLogger();
 
@@ -78,6 +78,7 @@ public final class WebContainerListener
 
     static {
         // preInvoke events
+        beforeEvents.add(ContainerEvent.BEFORE_CONTEXT_INITIALIZER_ON_STARTUP);
         beforeEvents.add(ContainerEvent.BEFORE_CONTEXT_INITIALIZED);
         beforeEvents.add(ContainerEvent.BEFORE_CONTEXT_DESTROYED);
         beforeEvents.add(ContainerEvent.BEFORE_CONTEXT_ATTRIBUTE_ADDED);
@@ -106,6 +107,7 @@ public final class WebContainerListener
         beforeEvents.add(ContainerEvent.BEFORE_LOGOUT);
 
         // postInvoke events
+        afterEvents.add(ContainerEvent.AFTER_CONTEXT_INITIALIZER_ON_STARTUP);
         afterEvents.add(ContainerEvent.AFTER_CONTEXT_INITIALIZED);
         afterEvents.add(ContainerEvent.AFTER_CONTEXT_DESTROYED);
         afterEvents.add(ContainerEvent.AFTER_CONTEXT_ATTRIBUTE_ADDED);
@@ -139,9 +141,8 @@ public final class WebContainerListener
     private InjectionManager injectionMgr;
     private NamedNamingObjectProxy validationNamingProxy;
 
-    public WebContainerListener(InvocationManager invocationMgr,
-                                InjectionManager injectionMgr,
-                                NamedNamingObjectProxy validationNamingProxy) {
+    public WebContainerListener(InvocationManager invocationMgr, InjectionManager injectionMgr,
+            NamedNamingObjectProxy validationNamingProxy) {
         this.invocationMgr = invocationMgr;
         this.injectionMgr = injectionMgr;
         this.validationNamingProxy = validationNamingProxy;

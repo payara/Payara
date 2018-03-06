@@ -41,7 +41,13 @@ package fish.payara.monitoring.rest.app.handler;
 
 import fish.payara.monitoring.rest.app.RestMonitoringAppResponseToken;
 import fish.payara.monitoring.rest.app.MBeanServerDelegate;
+import java.math.BigDecimal;
 import javax.inject.Singleton;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.MBeanAttributeInfo;
@@ -49,11 +55,9 @@ import javax.management.MBeanInfo;
 import javax.management.MalformedObjectNameException;
 import javax.management.ReflectionException;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
- *
+ * @since 4.1.2.173
  * @author Fraser Savage
  */
 public class MBeanReadHandler extends ReadHandler {
@@ -74,21 +78,21 @@ public class MBeanReadHandler extends ReadHandler {
     }
 
     @Override
-    public JSONObject getRequestObject() {
-        JSONObject requestObject = new JSONObject();
+    public JsonObject getRequestObject() {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         try {
-            requestObject.put(RestMonitoringAppResponseToken.getMbeanNameKey(), 
-                    mbeanname);
-            requestObject.put(RestMonitoringAppResponseToken.getRequestTypeKey(), 
+            
+            objectBuilder.add(RestMonitoringAppResponseToken.getMbeanNameKey(), mbeanname);
+            objectBuilder.add(RestMonitoringAppResponseToken.getRequestTypeKey(), 
                     requesttype);
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             super.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
         }
-        return requestObject;
+        return objectBuilder.build();
     }
 
     @Override
-    public Object getValueObject() throws JSONException {
+    public JsonValue getValueObject() throws JsonException {
         try {
             MBeanInfo mbeanInfo = delegate.getMBean(mbeanname);
             return buildAttributes(mbeanInfo);
@@ -98,8 +102,8 @@ public class MBeanReadHandler extends ReadHandler {
         }
     }
 
-    private JSONObject buildAttributes(MBeanInfo mbean) throws JSONException {
-        JSONObject attributesObject = new JSONObject();
+    private JsonObject buildAttributes(MBeanInfo mbean) throws JsonException {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         MBeanAttributeInfo[] attributes = mbean.getAttributes();
 
         for (MBeanAttributeInfo attribute : attributes) {
@@ -107,10 +111,10 @@ public class MBeanReadHandler extends ReadHandler {
             MBeanAttributeReadHandler attributeHandler = 
                     new MBeanAttributeReadHandler(delegate, mbeanname, 
                             attributeName);
-            attributesObject.put(attributeName, 
+            objectBuilder.add(attributeName, 
                     attributeHandler.getValueObject());
         }
 
-        return attributesObject;
+        return objectBuilder.build();
     }
 }

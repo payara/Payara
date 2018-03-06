@@ -69,7 +69,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 */
 	private String URL = null;
 	private String userName = null;
-	private String password = null;
+	private char[] password = null;
 	private String driverName = null;
 	private ConnectionFactory connectionFactory = null;
 	private Object dataSource = null;
@@ -132,7 +132,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	public PersistenceManagerFactoryImpl(
 			String URL,
 			String userName,
-			String password,
+			char[] password,
 			String driverName)
 	{
             EJBHelper.setPersistenceManagerFactoryDefaults(this);
@@ -170,7 +170,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Sets database user password
 	 * @param password      database user password
 	 */
-	public void setConnectionPassword (String password) {
+	public void setConnectionPassword (char[] password) {
 		assertNotConfigured();
 		this.password = password;
 	}
@@ -818,7 +818,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
    * @param       passwd      datasource user password
    * @return      the persistence manager
    */
-  public PersistenceManager getPersistenceManager (String username, String passwd){
+  public PersistenceManager getPersistenceManager (String username, char[] passwd){
 	    synchronized (this) {
 
 		if (pmFactory == null) {

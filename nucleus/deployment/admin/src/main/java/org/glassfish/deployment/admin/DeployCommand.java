@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.deployment.admin;
 
 import java.net.URI;
@@ -46,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
@@ -105,10 +107,13 @@ import org.glassfish.deployment.versioning.VersioningService;
 @I18n("deploy.command")
 @PerLookup
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.POST, path = "deploy"),
     @RestEndpoint(configBean = Cluster.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
+        @RestParam(name = "target", value = "$parent")
+    }),
+    @RestEndpoint(configBean = DeploymentGroup.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
         @RestParam(name = "target", value = "$parent")
     }),
     @RestEndpoint(configBean = Server.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
@@ -504,8 +509,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.DEPLOY);
             }
-            ApplicationInfo appInfo;
-            appInfo = deployment.deploy(deploymentContext);
+            Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
+            if(!loadOnly) {
+                deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
+            }
+            ApplicationInfo appInfo = deplResult.appInfo;
 
             /*
              * Various deployers might have added to the downloadable or
@@ -564,8 +572,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
         } catch (Throwable e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(e.getMessage());
-            report.setFailureCause(e);
+            if(e.getMessage() != null) {
+                report.setMessage(e.getMessage());
+                report.setFailureCause(e);
+            }
+            else {
+                report.setFailureCause(null);
+            }
         } finally {
             events.unregister(this);
             try {
@@ -625,7 +638,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                 }
             }
-            if (deploymentContext != null) {
+            if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
             }
         }

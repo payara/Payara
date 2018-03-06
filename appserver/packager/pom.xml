@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -96,7 +96,6 @@
         <module>glassfish-nucleus</module>
         <module>glassfish-corba-base</module>
         <module>glassfish-common</module>
-        <module>shoal</module>
         <module>glassfish-cluster</module>
         <module>glassfish-javahelp</module>
         <module>glassfish-registration</module>
@@ -120,6 +119,7 @@
         <module>metro</module>
         <module>glassfish-appclient</module>
         <module>javadb</module>
+        <module>h2db</module>
         <module>jersey</module>
         <module>glassfish-jcdi</module>
         <module>mq</module>
@@ -179,7 +179,8 @@
         <module>payara-api</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
-        <module>rest-monitoring</module>
+	<module>rest-monitoring</module>
+	<module>payara-executor-service</module>
         <module>cdi-auth-roles</module>
     </modules>
 

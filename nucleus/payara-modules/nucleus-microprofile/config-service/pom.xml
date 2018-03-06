@@ -38,18 +38,21 @@ and therefore, elected the GPL Version 2 license, then the option applies
 only if the new code is made subject to such option by the copyright
 holder.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>fish.payara.nucleus.microprofile</groupId>
         <artifactId>nucleus-microprofile</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
+    
     <groupId>fish.payara.nucleus.microprofile.config</groupId>
     <artifactId>microprofile-config-service</artifactId>
     <name>Microprofile Config Service</name>
+    
     <description>Implementation of Microprofile Configuration Service</description>
     <packaging>glassfish-jar</packaging>
+    
     <build>
         <plugins>
             <plugin>
@@ -98,12 +101,11 @@ holder.
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.resources</groupId>
-            <artifactId>resources-connector</artifactId> 
+            <artifactId>resources-connector</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
 <!--        <dependency>
             <groupId>org.glassfish.main.resources</groupId>

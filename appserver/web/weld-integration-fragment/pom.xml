@@ -40,21 +40,24 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-	<groupId>org.glassfish.main.web</groupId>
-    	<artifactId>web</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <groupId>org.glassfish.main.web</groupId>
+    	  <artifactId>web</artifactId>
+        <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
     <artifactId>weld-integration-fragment</artifactId>
-    <packaging>jar</packaging>
+    <packaging>glassfish-jar</packaging>
     <name>Weld Integration Fragment</name>
+
     <description>This fragment bundle extends the weld osgi bundle to export additional packages from the weld-osgi-bundle as they are used in Weld generated proxies</description>
-    
+
     <developers>
         <developer>
             <id>sivakumart</id>
@@ -65,7 +68,7 @@
             </roles>
         </developer>
     </developers>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -95,9 +98,8 @@
                                 org.jboss.weld.proxy.util,
                                 org.jboss.weld.bean.proxy.util,
                                 org.jboss.weld.context.http,
-                                org.jboss.weld.context.bound,
-                                org.jboss.weld.context.cache,
-                                org.jboss.weld.bean.attributes,
+                                org.jboss.weld.contexts.bound,
+                                org.jboss.weld.contexts.cache,
                                 org.jboss.weld.bean.builtin.ee,
                                 javassist.util.proxy,
                                 org.jboss.weld.interceptor.proxy,
@@ -105,19 +107,19 @@
                                 org.jboss.weld.util.bean,
                                 org.jboss.weld.serialization,
                                 org.jboss.weld.injection.attributes,
-                                org.jboss.weld.injection.producer,
-                                org.jboss.weld.resources,
                                 org.jboss.weld.util.collections,
-                                org.jboss.weld.util.reflection,
-                                org.jboss.weld.annotated.enhanced,
                                 org.jboss.weld.annotated.slim,
                                 org.jboss.weld.annotated.slim.backed,
                                 org.jboss.weld.security,
-                                org.jboss.weld.events
+                                org.jboss.weld.annotated.enhanced,
+                                org.jboss.weld.resources,
+                                org.jboss.weld.bean.attributes,
+                                org.jboss.weld.contexts,
+                                org.jboss.weld.util.reflection
                             </Export-Package>
                             <Import-Package>org.glassfish.weld,
                                 javax.ejb</Import-Package>
-                            <Bundle-Description>${project.description}</Bundle-Description> 
+                            <Bundle-Description>${project.description}</Bundle-Description>
                         </manifestEntries>
                     </archive>
                 </configuration>

@@ -50,7 +50,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -98,7 +98,6 @@
         <module>nucleus</module>
         <module>nucleus-corba-base</module>
         <module>nucleus-common</module>
-        <module>nucleus-shoal</module>
         <module>nucleus-cluster</module>
         <module>nucleus-management</module>
         <module>nucleus-osgi</module>
@@ -114,6 +113,7 @@
         <module>asadmin-recorder-package</module>
         <module>notification-package</module>
         <module>payara-api-package</module>
+	<module>payara-executor-service-package</module>
     </modules>
 
     <build>

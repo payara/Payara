@@ -38,7 +38,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -46,7 +47,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>4.1.2.182-SNAPSHOT</version>
+        <version>5.181-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.main.cluster</groupId>
@@ -92,10 +93,7 @@
         <module>common</module>
         <module>admin</module>
         <module>cli</module>
-        <module>gms-bootstrap</module>
-        <module>gms-adapter</module>
         <module>ssh</module>
-        <module>gms-bootstrap-l10n</module>
         <module>cli-l10n</module>
         <module>ssh-l10n</module>
         <module>common-l10n</module>
