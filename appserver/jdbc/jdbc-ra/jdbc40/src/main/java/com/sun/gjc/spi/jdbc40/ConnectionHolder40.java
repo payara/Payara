@@ -493,10 +493,12 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @throws java.sql.SQLException If no object found that implements the interface
      * @since 1.6
      */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         checkValidity();
         T result = null;
         if (iface.isInstance(this)) { //if iface is "java.sql.Connection"
+            
             result = iface.cast(this);
         } else if (iface.isInstance(con)) {
             //if iface is not "java.sql.Connection" & implemented by native Connection

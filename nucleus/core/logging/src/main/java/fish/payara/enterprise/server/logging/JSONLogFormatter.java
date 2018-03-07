@@ -40,7 +40,6 @@
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
-import com.sun.enterprise.server.logging.AnsiColorFormatter;
 import com.sun.enterprise.server.logging.ExcludeFieldsSupport;
 import com.sun.enterprise.server.logging.FormatterDelegate;
 import com.sun.enterprise.server.logging.LogEvent;

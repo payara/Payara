@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -102,7 +102,9 @@ public class ConfigProducer {
             
             // use the config to get a converted version of the property
             Object value = config.getValue(property.name(), property.defaultValue(),clazzValue);
-            result = Optional.ofNullable(value);
+            if (value != null && !value.toString().equals(ConfigProperty.UNCONFIGURED_VALUE)) {
+                result = Optional.ofNullable(value);
+            }
         }
         return result;
     }

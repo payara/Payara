@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,9 @@ package fish.payara.micro;
 
 import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.PayaraMicroLauncher;
-import fish.payara.micro.boot.loader.OpenURLClassLoader;
+import fish.payara.micro.boot.loader.ExplodedURLClassloader;
 import java.io.File;
-import java.net.URL;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,6 +58,28 @@ public class PayaraMicro {
     private ClassLoader nestedLoader;
     
     private static PayaraMicro instance;
+    private static boolean explodedJars;
+    private static File explodedDir;
+    
+    /**
+     * Tells the runtime to unpack the jars before booting
+     * This must be called before getInstance
+     * If you require JSP compilation you MUST call this method
+     */
+    public static void unpackJars() {
+        explodedJars = true;
+    }
+    
+    /**
+     * Sets the directory where unpacked jars should live
+     * And tells the runtime to unpack the jars
+     * This must be called before getInstance
+     * @param file 
+     */
+    public static void setUpackedJarDir(File file) {
+        explodedDir = file;
+        explodedJars = true;
+    }
 
     /**
      * Obtains the static singleton instance of the Payara Micro Server. If it
@@ -366,8 +388,21 @@ public class PayaraMicro {
     
     private PayaraMicro() {
         try {
-            wrappee = PayaraMicroLauncher.getBootClass();
-            nestedLoader = wrappee.getClass().getClassLoader();
+            if (explodedJars) {
+                if (explodedDir != null) {
+                    nestedLoader = new ExplodedURLClassloader(explodedDir);
+                } else {
+                    nestedLoader = new ExplodedURLClassloader();
+                }
+                setThreadBootstrapLoader();
+                Class<?> mainClass = Thread.currentThread().getContextClassLoader()
+                        .loadClass("fish.payara.micro.impl.PayaraMicroImpl");
+                Method instanceMethod = mainClass.getDeclaredMethod("getInstance");
+                wrappee = (PayaraMicroBoot) instanceMethod.invoke(null); 
+            } else {
+                wrappee = PayaraMicroLauncher.getBootClass();
+                nestedLoader = wrappee.getClass().getClassLoader();
+            }
         } catch (Exception ex) {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, "Unable to create implementation class", ex);
         }

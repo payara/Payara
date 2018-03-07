@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
 /**
  * This annotation can be added to @Singleton EJB beans
  * and @ApplicationScoped CDI beans to specify that they are
- * custer-wide singletons, not just a singleton per server instance
+ * cluster-wide singletons, not just a singleton per server instance
  *
  * @author lprimak
  */
@@ -66,7 +66,7 @@ public @interface Clustered {
 
     /**
      * specifies the type of distributed locking to be performed
-     * For EJB beans, the only INHERIT or NONE are valid,
+     * For EJB beans, only INHERIT and LOCK_NONE are valid
      * for CDI beans, INHERIT is equivalent to NONE,
      * and the other valid value for CDI beans is LOCK
      */

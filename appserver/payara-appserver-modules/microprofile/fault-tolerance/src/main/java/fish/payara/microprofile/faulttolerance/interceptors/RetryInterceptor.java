@@ -272,8 +272,9 @@ public class RetryInterceptor {
                         }
                     }
                 } else if (maxRetries != -1 && maxDuration > 0) {
-                    logger.log(Level.INFO, "Retrying as long as maxDuration isn't breached, and no more than {0} times",
-                            maxRetries);
+                    logger.log(Level.INFO, 
+                            "Retrying as long as maxDuration ({0}ms) isn''t breached, and no more than {1} times", 
+                            new Object[]{Duration.of(maxDuration, durationUnit).toMillis(), maxRetries});
                     while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
                         try {
                             proceededInvocationContext = invocationContext.proceed();

@@ -158,6 +158,8 @@ If you find a bug within Payara, please post it as a github issue. Github is our
 
 We continually check the github posted issues for bugs, feature requests, and assorted issues. If you have posted an issue, chances are it has been read by a member of staff. Requests for further information and labels are often posted in order to make it easier for the dev team to see issues. However if your issue has not received a comment or label, don't take this as it having not been read or acted upon!
 
+If you do post an issue and we request further information from you please respond quickly. We review all issues periodically and if an issue has been waiting for a response since last review we will add the "requestor unresponsive" label. If on the second periodic review there has still been no response to our request we will add a second "requestor unresponsive" label. Finally if on the third review there is still no response we will close the issue. This ensures our GitHub issues stay up to date and relevant and don't get full of old issues. If you still have the same problem you can still comment on the closed issue and we will still see it and if necessary reopen the issue to pick up where we left off. 
+
 ## Questions, advice and guidance
 
 If you have a question on how to use Payara or you need advice and guidance please don't create a GitHub issue. Please post a message on our Google Group which is monitored both by the community and by Payara Engineers. 

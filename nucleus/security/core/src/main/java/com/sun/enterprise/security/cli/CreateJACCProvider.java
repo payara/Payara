@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.security.cli;
@@ -69,6 +71,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
 
 /**
  * Create Jacc Provider Command
@@ -156,6 +159,7 @@ public class CreateJACCProvider implements AdminCommand, AdminCommandSecurity.Pr
                     newJacc.setName(jaccProviderName);
                     newJacc.setPolicyConfigurationFactoryProvider(polConfFactoryClass);
                     newJacc.setPolicyProvider(polProviderClass);
+                    configureProperties(newJacc);
                     param.getJaccProvider().add(newJacc);
                     return newJacc;
                 }
@@ -170,5 +174,17 @@ public class CreateJACCProvider implements AdminCommand, AdminCommandSecurity.Pr
             return;
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+
+    private void configureProperties(JaccProvider newJacc) throws PropertyVetoException, TransactionFailure {
+        if (properties != null) {
+            for (Object key : properties.keySet()) {
+                Object value = properties.get(key);
+                Property property = newJacc.createChild(Property.class);
+                property.setName(key.toString());
+                property.setValue(value.toString());
+                newJacc.getProperty().add(property);
+            }
+        }
     }
 }

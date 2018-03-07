@@ -48,10 +48,6 @@ import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 
 public class Constants {
     
-    public static final String METRIC_ENABLED_PROPERTY = "MP_Metrics_Enabled";
-    
-    public static final String INSECURE_METRIC_PROPERTY = "MP_Insecure_Metrics";
-    
     public static final String ENDPOINT_PATTERN = "/metrics/*";
     
     public static final String EMPTY_STRING = "";
