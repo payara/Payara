@@ -139,8 +139,7 @@ public abstract class DatabaseCommand extends CLICommand {
     }
     
     /**
-     * Check if database port is valid. DB does not check this so need to add
-     * code to check the port number.
+     * Check if database type is valid.
      */
     private void checkIfDBTypeIsValid(final String dbType)
             throws CommandValidationException {
