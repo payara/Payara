@@ -226,24 +226,25 @@ public class DeploymentHandler {
     public static void redeploy(HandlerContext handlerCtx) {
         try {
             String filePath = (String) handlerCtx.getInputValue("filePath");
-            Map<String,String> deployMap = (Map) handlerCtx.getInputValue("deployMap");
-            Map<String,String> valueMap = (Map) handlerCtx.getInputValue("valueMap");
+            Map<String, String> deployMap = (Map) handlerCtx.getInputValue("deployMap");
+            Map<String, String> valueMap = (Map) handlerCtx.getInputValue("valueMap");
             List<String> convertToFalsList = (List<String>) handlerCtx.getInputValue("convertToFalse");
-            if (convertToFalsList != null)
-            for (String one : convertToFalsList) {
-                if (deployMap.get(one) == null) {
-                    deployMap.put(one, "false");
+            if (convertToFalsList != null) {
+                for (String one : convertToFalsList) {
+                    if (deployMap.get(one) == null) {
+                        deployMap.put(one, "false");
+                    }
                 }
             }
             String appName = deployMap.get("appName");
             Map payload = new HashMap();
 
-             //If we are redeploying a web app, we want to preserve context root.
-             String ctxRoot = valueMap.get("contextroot");
+            //If we are redeploying a web app, we want to preserve context root.
+            String ctxRoot = valueMap.get("contextroot");
              if (ctxRoot != null){
-                 payload.put("contextroot", ctxRoot);
-             }
-             String keepState = deployMap.get("keepState");
+                payload.put("contextroot", ctxRoot);
+            }
+            String keepState = deployMap.get("keepState");
              if (keepState != null){
                 payload.put("keepstate",keepState);
              }
