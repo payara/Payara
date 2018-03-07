@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.cli.optional;
 
 import com.sun.enterprise.admin.cli.CLIProcessExecutor;
@@ -248,6 +250,8 @@ public final class StartDatabaseCommand extends DatabaseCommand {
             } else {
                 throw new CommandException(strings.get("UnableToStartDatabase", dbLog));
             }
+        } catch (CommandException ce) {
+            throw ce;
         } catch (Exception e) {
             throw new CommandException(strings.get("CommandUnSuccessful", name), e);
         }

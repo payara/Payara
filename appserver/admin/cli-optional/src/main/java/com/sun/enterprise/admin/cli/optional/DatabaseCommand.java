@@ -37,9 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.cli.optional;
 
 import com.sun.enterprise.admin.cli.*;
+import static com.sun.enterprise.admin.cli.optional.DBType.DERBY;
+import static com.sun.enterprise.admin.cli.optional.DBType.H2;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import java.io.File;
@@ -59,9 +63,8 @@ import org.glassfish.api.admin.*;
  */
 public abstract class DatabaseCommand extends CLICommand {
 
-    protected static final String DB_TYPE_DEFAULT = "derby";
+    protected static final String DB_TYPE_DEFAULT = "h2";
     protected static final String DB_HOST_DEFAULT = "0.0.0.0";
-    protected static final String DB_PORT_DEFAULT = "1527";
     protected final static String DB_USER = "dbuser";
     //protected final static String DB_PASSWORD   = "dbpassword";
     protected final static String DB_PASSWORDFILE = "dbpasswordfile";
@@ -72,7 +75,7 @@ public abstract class DatabaseCommand extends CLICommand {
     @Param(name = "dbhost", optional = true, defaultValue = DB_HOST_DEFAULT)
     protected String dbHost;
 
-    @Param(name = "dbport", optional = true, defaultValue = DB_PORT_DEFAULT)
+    @Param(name = "dbport", optional = true)
     protected String dbPort;
 
     protected File dbLocation;
@@ -93,12 +96,18 @@ public abstract class DatabaseCommand extends CLICommand {
         sInstallRoot = new File(getSystemProperty(INSTALL_ROOT_PROPERTY));
         if (dbType == null) {
             dbType = DB_TYPE_DEFAULT;
+        } else {
+            checkIfDBTypeIsValid(dbType);
         }
         if (dbHost == null) {
             dbHost = DB_HOST_DEFAULT;
         }
         if (dbPort == null) {
-            dbPort = DB_PORT_DEFAULT;
+            if(dbType.equals(H2.getValue())){
+                dbPort = H2.getPort();
+            } else if(dbType.equals(DERBY.getValue())){
+                dbPort = DERBY.getPort();
+            }
         } else {
             checkIfPortIsValid(dbPort);
         }
@@ -126,6 +135,20 @@ public abstract class DatabaseCommand extends CLICommand {
         } catch (NumberFormatException e) {
             throw new CommandValidationException(
                     strings.get("InvalidPortNumber", port));
+        }
+    }
+    
+    /**
+     * Check if database port is valid. DB does not check this so need to add
+     * code to check the port number.
+     */
+    private void checkIfDBTypeIsValid(final String dbType)
+            throws CommandValidationException {
+        try {
+            DBType.valueOf(dbType.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new CommandValidationException(
+                    strings.get("InvalidDBType", dbType));
         }
     }
 
