@@ -242,6 +242,8 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     @Override
     public void execute(AdminCommandContext context) {
         
+        
+
         // for each matched version  
         for (String appName : matchedVersions) {
             if (target == null) {
@@ -315,7 +317,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             File sourceFile = new File(source.getURI());
             if (!source.exists()) {
                 logger.log(Level.WARNING, "Cannot find application bits at " +
-                        sourceFile.getPath() + ". Please restart server to ensure server is in a consistent state before redeploy the application.");
+                    sourceFile.getPath() + ". Please restart server to ensure server is in a consistent state before redeploy the application.");
                 // remove the application from the domain.xml so at least 
                 // server is in a consistent state after restart
                 try {
@@ -356,7 +358,8 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 appProps.putAll(properties);
             }
 
-            deploymentContext.setModulePropsMap(application.getModulePropertiesMap());
+            deploymentContext.setModulePropsMap(
+                application.getModulePropertiesMap());
             
             events.send(new Event<DeploymentContext>(Deployment.UNDEPLOYMENT_VALIDATION, deploymentContext), false);
 
@@ -379,13 +382,13 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                     inv.parameters(parameters).execute();
 
                     if (subReport.getActionExitCode().equals(
-                            ActionReport.ExitCode.FAILURE)) {
-                        // if disable application failed
-                        // we should just return
+                    ActionReport.ExitCode.FAILURE)) {
+                    // if disable application failed
+                    // we should just return
                         report.setMessage(localStrings.getLocalString("disable.command.failed","{0} disabled failed", appName));
-                        return;
+                    return;
                     }
-                    
+
                     if (DeploymentUtils.isDomainTarget(target)) { 
                         List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
                         // replicate command to all referenced targets
@@ -398,13 +401,13 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                     report.failure(logger, e.getMessage());
                     return;
                 }
-            }
-            
+            }   
+
             /*
-            * Extract the generated artifacts from the application's properties
-            * and record them in the DC.  This will be useful, for example,
-            * during Deployer.clean.
-            */
+             * Extract the generated artifacts from the application's properties
+             * and record them in the DC.  This will be useful, for example,
+             * during Deployer.clean.
+             */
             final Artifacts generatedArtifacts = DeploymentUtils.generatedArtifacts(application);
             generatedArtifacts.record(deploymentContext);
             
@@ -413,9 +416,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             }
 
             // check if it's directory deployment
-            boolean isDirectoryDeployed =
-                    Boolean.valueOf(application.getDirectoryDeployed());
-            
+            boolean isDirectoryDeployed = 
+                Boolean.valueOf(application.getDirectoryDeployed());
+
             // we should try to unregister the application for both success
             // and warning case
             if (!report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
@@ -460,10 +463,10 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 //if directory deployment then do not remove the directory
                 if ( (! keepreposdir) && !isDirectoryDeployed && source.exists()) {
                     /*
-                    * Delete the repository directory as an archive so
-                    * any special handling (such as stale file handling)
-                    * known to the archive can run.
-                    */
+                     * Delete the repository directory as an archive so
+                     * any special handling (such as stale file handling)
+                     * known to the archive can run.
+                     */
                     source.delete();
                 }
 

@@ -1479,23 +1479,22 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public void unregisterAppFromDomainXML(final String appName, 
         final String tgt, final boolean appRefOnly) 
-            throws TransactionFailure {
+        throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
-            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
-                if (t != null) {
+                if (t!=null) {
                     List<String> targets = new ArrayList<String>();
                     if (!DeploymentUtils.isDomainTarget(tgt)) {
-                        targets.add(tgt);
+                        targets.add(tgt);    
                     } else {
                         targets = domain.getAllReferencedTargetsForApplication(appName);
                     }
-
+              
                     Domain dmn;
                     if (param instanceof Domain) {
-                        dmn = (Domain) param;
+                        dmn = (Domain)param;
                     } else {
                         return Boolean.FALSE;
                     }
@@ -1506,9 +1505,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                             // remove the application-ref from standalone 
                             // server instance
                             ConfigBeanProxy servr_w = t.enroll(servr);
-                            for (ApplicationRef appRef : servr.getApplicationRef()) {
+                            for (ApplicationRef appRef : 
+                                servr.getApplicationRef()) {
                                 if (appRef.getRef().equals(appName)) {
-                                    ((Server) servr_w).getApplicationRef().remove(appRef);
+                                    ((Server)servr_w).getApplicationRef().remove(
+                                        appRef);
                                     break;
                                 }
                             }
@@ -1518,49 +1519,56 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         if (cluster != null) {
                             // remove the application-ref from cluster
                             ConfigBeanProxy cluster_w = t.enroll(cluster);
-                            for (ApplicationRef appRef : cluster.getApplicationRef()) {
+                            for (ApplicationRef appRef : 
+                                cluster.getApplicationRef()) {
                                 if (appRef.getRef().equals(appName)) {
-                                    ((Cluster) cluster_w).getApplicationRef().remove(appRef);
-                                    break;
+                                    ((Cluster)cluster_w).getApplicationRef().remove(
+                                            appRef);
+                                        break;
                                 }
                             }
 
                             // remove the application-ref from cluster instances
-                            for (Server svr : cluster.getInstances()) {
+                            for (Server svr : cluster.getInstances() ) {
                                 ConfigBeanProxy svr_w = t.enroll(svr);
-                                for (ApplicationRef appRef : svr.getApplicationRef()) {
+                                for (ApplicationRef appRef : 
+                                    svr.getApplicationRef()) {
                                     if (appRef.getRef().equals(appName)) {
-                                        ((Server) svr_w).getApplicationRef().remove(appRef);
+                                        ((Server)svr_w).getApplicationRef(
+                                           ).remove(appRef);
                                         break;
                                     }
                                 }
                             }
                         }
-
+                        
                         DeploymentGroup dg = dmn.getDeploymentGroupNamed(target);
                         if (dg != null) {
                             // remove the application-ref from cluster
                             ConfigBeanProxy dg_w = t.enroll(dg);
-                            for (ApplicationRef appRef : dg.getApplicationRef()) {
+                            for (ApplicationRef appRef : 
+                                dg.getApplicationRef()) {
                                 if (appRef.getRef().equals(appName)) {
-                                    ((DeploymentGroup) dg_w).getApplicationRef().remove(appRef);
-                                    break;
+                                    ((DeploymentGroup)dg_w).getApplicationRef().remove(
+                                            appRef);
+                                        break;
                                 }
                             }
                             // remove the application-ref from deployment group instances
                             // only if the server is not also a target (i.e. domain undeploy)
-                            for (Server svr : dg.getInstances()) {
+                            for (Server svr : dg.getInstances() ) {
                                 if (!targets.contains(svr.getName())) {
                                     ConfigBeanProxy svr_w = t.enroll(svr);
-                                    for (ApplicationRef appRef
-                                            : svr.getApplicationRef()) {
+                                    for (ApplicationRef appRef : 
+                                        svr.getApplicationRef()) {
                                         if (appRef.getRef().equals(appName)) {
-                                            ((Server) svr_w).getApplicationRef().remove(appRef);
+                                            ((Server)svr_w).getApplicationRef(
+                                               ).remove(appRef);
                                             break;
                                         }
                                     }
                                 }
-                            }
+                            }                            
                         }
                     }
 
@@ -1570,7 +1578,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         ConfigBeanProxy apps_w = t.enroll(apps);
                         for (ApplicationName module : apps.getModules()) {
                             if (module.getName().equals(appName)) {
-                                ((Applications) apps_w).getModules().remove(module);
+                                ((Applications)apps_w).getModules().remove(module);
                                 break;
                             }
                         }
@@ -1586,7 +1594,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void updateAppEnabledAttributeInDomainXML(final String appName,
         final String target, final boolean enabled) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
-            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
@@ -1703,7 +1710,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
            // for other cases, we try to derive it from domain.xml
            List<String> targets = 
                domain.getAllReferencedTargetsForApplication(appName); 
-           if (targets.isEmpty()) {
+           if (targets.size() == 0) {
                throw new IllegalArgumentException("Application not registered");
            }
            if (targets.size() > 1) {
@@ -2322,11 +2329,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     private String getApplicationType(ApplicationInfo appInfo) {
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         if (appInfo.getSniffers().size() > 0) {
             for (Sniffer sniffer : appInfo.getSniffers()) {
                 if (sniffer.isUserVisible()) {
-                    sb.append(sniffer.getModuleType()).append(", ");
+                    sb.append(sniffer.getModuleType() + ", ");
                 }
             }
         }

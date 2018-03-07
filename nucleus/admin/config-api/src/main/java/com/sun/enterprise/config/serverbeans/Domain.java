@@ -932,7 +932,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             
             if (d.getDeploymentGroups() != null) {
                 for (DeploymentGroup dg : d.getDeploymentGroups().getDeploymentGroup()) {
-                    
                     targets.add(dg.getName());
                 }
             }
