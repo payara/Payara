@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -275,7 +276,9 @@ public class DeleteSystemProperty implements AdminCommand,
         for (String ename : dom.getElementNames()) {
             List<Dom> nodes = null;
             try {
-                nodes = dom.nodeElements(ename);
+                synchronized (dom) {
+                    nodes = dom.nodeElements(ename);
+                }
             } catch(Exception e) {
                 //ignore, in some situations, HK2 might throw ClassCastException here
             }

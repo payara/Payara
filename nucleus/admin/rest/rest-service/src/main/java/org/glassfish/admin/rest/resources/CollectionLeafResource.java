@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -107,7 +107,9 @@ public abstract class CollectionLeafResource extends AbstractResource {
         this.parent = parent;
         this.tagName = tagName;
         if (parent!=null){
-            entity = parent.leafElements(tagName);
+            synchronized (parent) {
+                entity = parent.leafElements(tagName);
+            }
 
             if (parent.getImplementationClass().equals(JavaConfig.class)) {
                 target = parent.parent().attribute("name");
