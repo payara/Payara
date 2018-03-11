@@ -163,10 +163,10 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      * Store all the resources before starting the validation.
      */
     private void parseResources(Application application, AppResources appResources) {
-        parseResources(application, appResources);
+        parseResourcesBd(application, appResources);
         for (BundleDescriptor bd : application.getBundleDescriptors()) {
             if (bd instanceof WebBundleDescriptor || bd instanceof ApplicationClientDescriptor) {
-                parseResources(bd, appResources);
+                parseResourcesBd(bd, appResources);
             }
             if (bd instanceof EjbBundleDescriptor) {
                 // Resources from Java files in the ejb.jar which are neither an EJB nor a managed bean are stored here.
@@ -356,7 +356,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         }
     }
 
-    private void parseResources(BundleDescriptor bd, AppResources appResources) {
+    private void parseResourcesBd(BundleDescriptor bd, AppResources appResources) {
         if (!(bd instanceof JndiNameEnvironment)) {
             return;
         }
