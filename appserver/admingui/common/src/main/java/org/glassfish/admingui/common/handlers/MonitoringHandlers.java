@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package org.glassfish.admingui.common.handlers;
 
 import java.io.UnsupportedEncodingException;
@@ -65,10 +67,95 @@ import org.glassfish.admingui.common.util.RestResponse;
 import org.glassfish.admingui.common.util.RestUtil;
 
 /**
- *
+ * Handlers for processing monitoring in the admin console
  * @author Ana
  */
 public class MonitoringHandlers {
+  
+    final private static List<String> levels = new ArrayList();
+    static {
+        levels.add("OFF");
+        levels.add("LOW");
+        levels.add("HIGH");
+    }
+    //monitoring modulemonitoring.module names
+    public static final String JVM = GuiUtil.getCommonMessage("monitoring.module.Jvm");
+
+    public static final String WEB_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.Web");
+
+    public static final String HTTP_SERVICE = GuiUtil.getCommonMessage("monitoring.module.Http");
+
+    public static final String THREAD_POOL = GuiUtil.getCommonMessage("monitoring.module.ThreadPool");
+
+    public static final String JDBC_CONNECTION_POOL = GuiUtil.getCommonMessage("monitoring.module.Jdbc");
+
+    public static final String CONNECTOR_CONNECTION_POOL = GuiUtil.getCommonMessage("monitoring.module.Connector");
+
+    public static final String EJB_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.Ejb");
+
+    public static final String TRANSACTION_SERVICE = GuiUtil.getCommonMessage("monitoring.module.TransactionService");
+
+    public static final String ORB = GuiUtil.getCommonMessage("monitoring.module.Orb");
+
+    public static final String CONNECTOR_SERVICE = GuiUtil.getCommonMessage("monitoring.module.ConnectorService");
+
+    public static final String JMS_SERVICE = GuiUtil.getCommonMessage("monitoring.module.JmsService");
+
+    public static final String WEB_SERVICES_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.WebServices");
+
+    public static final String JPA = GuiUtil.getCommonMessage("monitoring.module.Jpa");
+
+    public static final String SECURITY = GuiUtil.getCommonMessage("monitoring.module.Security");
+
+    public static final String JERSEY = GuiUtil.getCommonMessage("monitoring.module.Jersey");
+
+    public static final String DEPLOYMENT = GuiUtil.getCommonMessage("monitoring.module.Deployment");
+
+    final private static List monDisplayList = new ArrayList();
+
+    static {
+        monDisplayList.add(JVM);
+        monDisplayList.add(WEB_CONTAINER);
+        monDisplayList.add(HTTP_SERVICE);
+        monDisplayList.add(THREAD_POOL);
+        monDisplayList.add(JDBC_CONNECTION_POOL);
+        monDisplayList.add(CONNECTOR_CONNECTION_POOL);
+        monDisplayList.add(EJB_CONTAINER);
+        monDisplayList.add(TRANSACTION_SERVICE);
+        monDisplayList.add(ORB);
+        monDisplayList.add(CONNECTOR_SERVICE);
+        monDisplayList.add(JMS_SERVICE);
+        monDisplayList.add(WEB_SERVICES_CONTAINER);
+        monDisplayList.add(JPA);
+        monDisplayList.add(SECURITY);
+        monDisplayList.add(JERSEY);
+        monDisplayList.add(DEPLOYMENT);
+    }
+    final private static List monNamesList = new ArrayList();
+
+    static {
+        monNamesList.add("jvm");
+        monNamesList.add("webContainer");
+        monNamesList.add("httpService");
+        monNamesList.add("threadPool");
+        monNamesList.add("jdbcConnectionPool");
+        monNamesList.add("connectorConnectionPool");
+        monNamesList.add("ejbContainer");
+        monNamesList.add("transactionService");
+        monNamesList.add("orb");
+        monNamesList.add("connectorService");
+        monNamesList.add("jmsService");
+        monNamesList.add("webServicesContainer");
+        monNamesList.add("jpa");
+        monNamesList.add("security");
+        monNamesList.add("jersey");
+        monNamesList.add("deployment");
+    }
+    final private static List containerDispList = new ArrayList();
+
+    final private static List containerNameList = new ArrayList();
+    
+    
     @Handler(id = "gf.getMonitorLevels",
     input = {
         @HandlerInput(name = "endpoint", type = String.class, required = true)},
@@ -114,7 +201,7 @@ public class MonitoringHandlers {
         handlerCtx.setOutputValue("monitorCompList", result);
     }
 
-    /*
+    /**
      * This handler returns a list of statistical data for an endpoint.
      * Useful for populating table
      */
@@ -186,26 +273,33 @@ public class MonitoringHandlers {
                             if (startTime != -1) {
                                 start = df.format(new Date(startTime));
                             }
+                            if ("List".equals(unit)){
+                                ArrayList<Map> items = (ArrayList) monAttrs.get("items");
+                                val = processListItems(items);
+                            }
+                            
                             if (monAttrs.containsKey("count")) {
                                 val = monAttrs.get("count") + " " + unit;
                             } else if (monAttrs.containsKey("current")) {
                                 if (unit != null) {
-                                    if (unit.equals("String")) {
-                                        if (mname.equals("LiveThreads")) {
+                                    switch (unit) {
+                                        case "String":
+                                            if (mname.equals("LiveThreads")) {
+                                                String str = (String) monAttrs.get("current");
+                                                val = formatStringForDisplay(str);
+                                            } else {
+                                                val = (String) monAttrs.get("current");
+                                            }   break;
+                                        case "List":
                                             String str = (String) monAttrs.get("current");
-                                            val = formatStringForDisplay(str);
-                                        } else {
-                                            val = (String) monAttrs.get("current");
-                                        }
-                                    } else if (unit.equals("List")) {
-                                        String str = (String) monAttrs.get("current");
-                                        String formatStr = formatActiveIdsForDisplay(str);
-                                        if (!formatStr.isEmpty() && !formatStr.equals("")) {
-                                            val = formatStr;
-                                        }
-                                    } else {
-                                        Long currentVal = ((BigDecimal) monAttrs.get("current")).longValue();
-                                        val = currentVal + unit;
+                                            String formatStr = formatActiveIdsForDisplay(str);
+                                            if (!formatStr.isEmpty() && !formatStr.equals("")) {
+                                                val = formatStr;
+                                            }   break;
+                                        default:
+                                            Long currentVal = ((BigDecimal) monAttrs.get("current")).longValue();
+                                            val = currentVal + " " + unit;
+                                            break;
                                     }
                                 }
                             } else if (monAttrs.containsKey("applicationtype")) {
@@ -769,88 +863,30 @@ public class MonitoringHandlers {
         }
         return monitorInfoMap;
     }
-    final private static List<String> levels = new ArrayList();
 
-    static {
-        levels.add("OFF");
-        levels.add("LOW");
-        levels.add("HIGH");
+    /**
+     * Generates a table from a {@link List} that contains items with a name and count.
+     * @param items A {@link List} that is the representation of the values held in a {@link org.glassfish.external.statistics.ListStatistic}
+     * @return A {@link String} holding the HTML for a table containing the relevant data
+     * @see org.glassfish.external.statistics.ListStatistic#getCurrentStats()
+     */
+    private static String processListItems(List<Map> items) {
+        if (items == null){
+            return "";
+        }
+        StringBuilder result = new StringBuilder("<table>");
+        for (Map item: items){
+            result.append("<tr><td>");
+            result.append(item.get("name"));
+            result.append("</td><td>");
+            result.append(item.get("count"));
+            result.append(" ");
+            result.append(item.get("unit"));
+            result.append("</td></tr>");
+        }
+        
+        result.append("</table>");
+        return result.toString();
     }
-    //monitoring modulemonitoring.module names
-    public static final String JVM = GuiUtil.getCommonMessage("monitoring.module.Jvm");
-
-    public static final String WEB_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.Web");
-
-    public static final String HTTP_SERVICE = GuiUtil.getCommonMessage("monitoring.module.Http");
-
-    public static final String THREAD_POOL = GuiUtil.getCommonMessage("monitoring.module.ThreadPool");
-
-    public static final String JDBC_CONNECTION_POOL = GuiUtil.getCommonMessage("monitoring.module.Jdbc");
-
-    public static final String CONNECTOR_CONNECTION_POOL = GuiUtil.getCommonMessage("monitoring.module.Connector");
-
-    public static final String EJB_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.Ejb");
-
-    public static final String TRANSACTION_SERVICE = GuiUtil.getCommonMessage("monitoring.module.TransactionService");
-
-    public static final String ORB = GuiUtil.getCommonMessage("monitoring.module.Orb");
-
-    public static final String CONNECTOR_SERVICE = GuiUtil.getCommonMessage("monitoring.module.ConnectorService");
-
-    public static final String JMS_SERVICE = GuiUtil.getCommonMessage("monitoring.module.JmsService");
-
-    public static final String WEB_SERVICES_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.WebServices");
-
-    public static final String JPA = GuiUtil.getCommonMessage("monitoring.module.Jpa");
-
-    public static final String SECURITY = GuiUtil.getCommonMessage("monitoring.module.Security");
-
-    public static final String JERSEY = GuiUtil.getCommonMessage("monitoring.module.Jersey");
-
-    public static final String DEPLOYMENT = GuiUtil.getCommonMessage("monitoring.module.Deployment");
-
-    final private static List monDisplayList = new ArrayList();
-
-    static {
-        monDisplayList.add(JVM);
-        monDisplayList.add(WEB_CONTAINER);
-        monDisplayList.add(HTTP_SERVICE);
-        monDisplayList.add(THREAD_POOL);
-        monDisplayList.add(JDBC_CONNECTION_POOL);
-        monDisplayList.add(CONNECTOR_CONNECTION_POOL);
-        monDisplayList.add(EJB_CONTAINER);
-        monDisplayList.add(TRANSACTION_SERVICE);
-        monDisplayList.add(ORB);
-        monDisplayList.add(CONNECTOR_SERVICE);
-        monDisplayList.add(JMS_SERVICE);
-        monDisplayList.add(WEB_SERVICES_CONTAINER);
-        monDisplayList.add(JPA);
-        monDisplayList.add(SECURITY);
-        monDisplayList.add(JERSEY);
-        monDisplayList.add(DEPLOYMENT);
-    }
-    final private static List monNamesList = new ArrayList();
-
-    static {
-        monNamesList.add("jvm");
-        monNamesList.add("webContainer");
-        monNamesList.add("httpService");
-        monNamesList.add("threadPool");
-        monNamesList.add("jdbcConnectionPool");
-        monNamesList.add("connectorConnectionPool");
-        monNamesList.add("ejbContainer");
-        monNamesList.add("transactionService");
-        monNamesList.add("orb");
-        monNamesList.add("connectorService");
-        monNamesList.add("jmsService");
-        monNamesList.add("webServicesContainer");
-        monNamesList.add("jpa");
-        monNamesList.add("security");
-        monNamesList.add("jersey");
-        monNamesList.add("deployment");
-    }
-    final private static List containerDispList = new ArrayList();
-
-    final private static List containerNameList = new ArrayList();
 
 }
