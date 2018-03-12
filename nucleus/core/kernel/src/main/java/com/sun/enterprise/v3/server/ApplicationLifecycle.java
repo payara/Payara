@@ -37,8 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates.]
+  
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -1239,14 +1240,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     }
                     Server servr = domain.getServerNamed(target); 
                     if (servr != null) {
-                        // adding the application-ref element to the standalone
-                        // server instance
-                        ConfigBeanProxy servr_w = t.enroll(servr);
-                        // adding the application-ref element to the standalone
-                        // server instance
-                        ApplicationRef appRef = servr_w.createChild(ApplicationRef.class);
-                        setAppRefAttributes(appRef, deployParams);
-                        ((Server)servr_w).getApplicationRef().add(appRef);
+                        ApplicationRef instanceApplicationRef = domain.getApplicationRefInTarget(deployParams.name, servr.getName());
+                        if (instanceApplicationRef == null) {
+                            // adding the application-ref element to the standalone
+                            // server instance
+                            ConfigBeanProxy servr_w = t.enroll(servr);
+                            // adding the application-ref element to the standalone
+                            // server instance
+                            ApplicationRef appRef = servr_w.createChild(ApplicationRef.class);
+                            setAppRefAttributes(appRef, deployParams);
+                            ((Server) servr_w).getApplicationRef().add(appRef);
+                        }
                     }
 
                     Cluster cluster = domain.getClusterNamed(target); 
@@ -1273,10 +1277,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         setAppRefAttributes(appRef, deployParams);
                         ((DeploymentGroup)dg_w).getApplicationRef().add(appRef);
                         for (Server svr : dg.getInstances() ) {
-                            ConfigBeanProxy svr_w = t.enroll(svr);
-                            ApplicationRef appRef2 = svr_w.createChild(ApplicationRef.class);
-                            setAppRefAttributes(appRef2, deployParams);
-                            ((Server)svr_w).getApplicationRef().add(appRef2);
+                            ApplicationRef instanceApplicationRef = domain.getApplicationRefInTarget(deployParams.name, svr.getName());
+                            if (instanceApplicationRef == null) {
+                                ConfigBeanProxy svr_w = t.enroll(svr);
+                                ApplicationRef appRef2 = svr_w.createChild(ApplicationRef.class);
+                                setAppRefAttributes(appRef2, deployParams);
+                                ((Server) svr_w).getApplicationRef().add(appRef2);
+                            }
                         }                        
                     }
                 }
