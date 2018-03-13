@@ -40,46 +40,71 @@
 
 package com.sun.jaspic.config.helper;
 
-import com.sun.jaspic.config.delegate.MessagePolicyDelegate;
+import static java.util.logging.Level.FINE;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.MessageInfo;
 
+import com.sun.jaspic.config.delegate.MessagePolicyDelegate;
+
 /**
+ * Base class for the {@link ClientAuthConfigImpl} and {@link ServerAuthConfigImpl}.
  *
  * @author Ron Monzillo
  */
-public abstract class AuthConfigHelper {
+public abstract class BaseAuthConfigImpl {
 
     String loggerName;
     EpochCarrier providerEpoch;
     long epoch;
-    MessagePolicyDelegate mpDelegate;
+    MessagePolicyDelegate policyDelegate;
     String layer;
     String appContext;
-    CallbackHandler cbh;
+    CallbackHandler callbackHandler;
+
     private ReentrantReadWriteLock instanceReadWriteLock = new ReentrantReadWriteLock();
     private Lock instanceReadLock = instanceReadWriteLock.readLock();
     private Lock instanceWriteLock = instanceReadWriteLock.writeLock();
 
-    public AuthConfigHelper(String loggerName, EpochCarrier providerEpoch,
-            MessagePolicyDelegate mpDelegate, String layer, String appContext,
-            CallbackHandler cbh) throws AuthException {
-
+    public BaseAuthConfigImpl(String loggerName, EpochCarrier providerEpoch, MessagePolicyDelegate mpDelegate, String layer,
+            String appContext, CallbackHandler cbh) throws AuthException {
         this.loggerName = loggerName;
         this.providerEpoch = providerEpoch;
-        this.mpDelegate = mpDelegate;
+        this.policyDelegate = mpDelegate;
         this.layer = layer;
         this.appContext = appContext;
-        this.cbh = cbh;
+        this.callbackHandler = cbh;
+
         initialize();
+    }
+    
+    public String getMessageLayer() {
+        return layer;
+    }
+
+    public String getAppContext() {
+        return appContext;
+    }
+
+    public String getAuthContextID(MessageInfo messageInfo) {
+        return policyDelegate.getAuthContextID(messageInfo);
+    }
+
+    public void refresh() {
+        try {
+            initialize();
+        } catch (AuthException ae) {
+            throw new RuntimeException(ae);
+        }
     }
 
     private void initialize() throws AuthException {
@@ -100,45 +125,50 @@ public abstract class AuthConfigHelper {
         } finally {
             instanceReadLock.unlock();
         }
+
         if (hasChanged) {
             refresh();
         }
     }
 
-    private Integer getHashCode(Map properties) {
+    private Integer getHashCode(Map<String, ?> properties) {
         if (properties == null) {
-            return  Integer.valueOf("0");
+            return Integer.valueOf("0");
         }
+        
         return Integer.valueOf(properties.hashCode());
     }
 
-    private <M> M getContextFromMap(HashMap<String, HashMap<Integer, M>> contextMap,
-            String authContextID, Map properties) {
-        M rvalue = null;
-        HashMap<Integer, M> internalMap = contextMap.get(authContextID);
+    private <M> M getContextFromMap(Map<String, Map<Integer, M>> contextMap, String authContextID, Map<String, ?> properties) {
+        M context = null;
+        
+        Map<Integer, M> internalMap = contextMap.get(authContextID);
         if (internalMap != null) {
-            rvalue = internalMap.get(getHashCode(properties));
+            context = internalMap.get(getHashCode(properties));
         }
-        if (rvalue != null) {
-            if (isLoggable(Level.FINE)) {
-                logIfLevel(Level.FINE, null, "AuthContextID found in Map: ", authContextID);
+        
+        if (context != null) {
+            if (isLoggable(FINE)) {
+                logIfLevel(FINE, null, "AuthContextID found in Map: ", authContextID);
             }
         }
-        return rvalue;
+        
+        return context;
     }
 
-    protected final <M> M getContext(
-            HashMap<String, HashMap<Integer, M>> contextMap, String authContextID,
-            Subject subject, Map properties) throws AuthException {
+    @SuppressWarnings("unchecked")
+    protected final <M> M getContext(Map<String, Map<Integer, M>> contextMap, String authContextID, Subject subject, Map<String, ?> properties)
+            throws AuthException {
 
-        M rvalue = null;
+        M context = null;
 
         doRefreshIfNeeded();
+        
         instanceReadLock.lock();
         try {
-            rvalue = getContextFromMap(contextMap, authContextID, properties);
-            if (rvalue != null) {
-                return rvalue;
+            context = getContextFromMap(contextMap, authContextID, properties);
+            if (context != null) {
+                return context;
             }
         } finally {
             instanceReadLock.unlock();
@@ -146,39 +176,42 @@ public abstract class AuthConfigHelper {
 
         instanceWriteLock.lock();
         try {
-            rvalue = getContextFromMap(contextMap, authContextID, properties);
-            if (rvalue == null) {
+            context = getContextFromMap(contextMap, authContextID, properties);
+            if (context == null) {
 
-                rvalue = (M) createAuthContext(authContextID, properties);
+                context = (M) createAuthContext(authContextID, properties);
 
-                HashMap<Integer, M> internalMap = contextMap.get(authContextID);
+                Map<Integer, M> internalMap = contextMap.get(authContextID);
                 if (internalMap == null) {
                     internalMap = new HashMap<Integer, M>();
                     contextMap.put(authContextID, internalMap);
                 }
 
-                internalMap.put(getHashCode(properties), rvalue);
+                internalMap.put(getHashCode(properties), context);
             }
-            return rvalue;
+            return context;
         } finally {
             instanceWriteLock.unlock();
         }
     }
 
     protected boolean isLoggable(Level level) {
-        Logger logger = Logger.getLogger(loggerName);
-        return logger.isLoggable(level);
+        return Logger.getLogger(loggerName).isLoggable(level);
     }
 
     protected void logIfLevel(Level level, Throwable t, String... msgParts) {
         Logger logger = Logger.getLogger(loggerName);
+        
         if (logger.isLoggable(level)) {
-          StringBuffer msgB = new StringBuffer("");
+            StringBuffer messageBuffer = new StringBuffer("");
+            
             for (String m : msgParts) {
-                msgB.append(m);
+                messageBuffer.append(m);
             }
-            String msg = msgB.toString();
-            if ( !msg.isEmpty() && t != null) {
+            
+            String msg = messageBuffer.toString();
+            
+            if (!msg.isEmpty() && t != null) {
                 logger.log(level, msg, t);
             } else if (!msg.isEmpty()) {
                 logger.log(level, msg);
@@ -186,46 +219,26 @@ public abstract class AuthConfigHelper {
         }
     }
 
-    protected void checkMessageTypes(Class[] supportedMessageTypes) throws AuthException {
-        Class[] requiredMessageTypes = mpDelegate.getMessageTypes();
-        for (Class requiredType : requiredMessageTypes) {
+    protected void checkMessageTypes(Class<?>[] supportedMessageTypes) throws AuthException {
+        Class<?>[] requiredMessageTypes = policyDelegate.getMessageTypes();
+        for (Class<?> requiredType : requiredMessageTypes) {
             boolean supported = false;
-            for (Class supportedType : supportedMessageTypes) {
+            for (Class<?> supportedType : supportedMessageTypes) {
                 if (requiredType.isAssignableFrom(supportedType)) {
                     supported = true;
                 }
             }
+            
             if (!supported) {
                 throw new AuthException("module does not support message type: " + requiredType.getName());
             }
         }
     }
-
+    
     /**
-     *  Only called from initialize (while lock is held).
+     * Only called from initialize (while lock is held).
      */
     protected abstract void initializeContextMap();
 
-    protected abstract <M> M createAuthContext(final String authContextID,
-            final Map properties) throws AuthException;
-
-    public String getAppContext() {
-        return appContext;
-    }
-
-    public String getAuthContextID(MessageInfo messageInfo) {
-        return mpDelegate.getAuthContextID(messageInfo);
-    }
-
-    public String getMessageLayer() {
-        return layer;
-    }
-
-    public void refresh() {
-        try {
-            initialize();
-        } catch (AuthException ae) {
-            throw new RuntimeException(ae);
-        }
-    }
+    protected abstract <M> M createAuthContext(String authContextID, Map<String, ?> properties) throws AuthException;
 }

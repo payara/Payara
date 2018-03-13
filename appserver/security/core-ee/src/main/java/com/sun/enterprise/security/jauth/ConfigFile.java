@@ -78,22 +78,21 @@ class ConfigFile extends AuthConfig {
     static final String CLIENT = "client";
     static final String SERVER = "server";
 
-    private static final String DEFAULT_HANDLER_CLASS =
-        "com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler";
+    private static final String DEFAULT_HANDLER_CLASS = "com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler";
 
-    private static final String DEFAULT_PARSER_CLASS =
-	"com.sun.enterprise.security.jmac.config.ConfigDomainParser";
+    private static final String DEFAULT_PARSER_CLASS = "com.sun.enterprise.security.jmac.config.ConfigDomainParser";
 
     private static final Logger logger = LogDomains.getLogger(ConfigFile.class, LogDomains.SECURITY_LOGGER);
+
     ConfigFile() throws IOException {
-	String propertyValue = System.getProperty("config.parser");
-	if (propertyValue == null) {
-	    parserClassName = DEFAULT_PARSER_CLASS;
-	} else {
-	    parserClassName = propertyValue;
-	}
-	this.epoch = 1;
-	parser = ConfigFile.loadParser(parserClassName);
+        String propertyValue = System.getProperty("config.parser");
+        if (propertyValue == null) {
+            parserClassName = DEFAULT_PARSER_CLASS;
+        } else {
+            parserClassName = propertyValue;
+        }
+        this.epoch = 1;
+        parser = ConfigFile.loadParser(parserClassName);
         parser.initialize(null);
     }
 
@@ -102,35 +101,27 @@ class ConfigFile extends AuthConfig {
      *
      * @return an instance of ConfigClient.
      */
-    public ClientAuthContext getClientAuthContext(String intercept,
-						String id,
-						AuthPolicy requestPolicy,
-						AuthPolicy responsePolicy,
-						CallbackHandler handler)
-		throws AuthException {
+    public ClientAuthContext getClientAuthContext(String intercept, String id, AuthPolicy requestPolicy, AuthPolicy responsePolicy,
+            CallbackHandler handler) throws AuthException {
 
-	ConfigFile.Entry[] entries = getEntries(intercept,
-						id,
-						requestPolicy,
-						responsePolicy,
-						CLIENT);
-	if (entries == null || entries.length == 0) {
-	    return null;
-	}
-
-	// instantiate and initialize modules up front as well
-
-	if (handler == null) {
-	    handler = ConfigFile.loadDefaultCallbackHandler();
-	} else if (handler instanceof DependentCallbackHandler) { 
-	    handler = new DelegatingHandler(handler);
+        ConfigFile.Entry[] entries = getEntries(intercept, id, requestPolicy, responsePolicy, CLIENT);
+        if (entries == null || entries.length == 0) {
+            return null;
         }
 
-	for (int i = 0; i < entries.length; i++) {
-	    entries[i].module = ConfigFile.createModule(entries[i], handler);
-	}
+        // instantiate and initialize modules up front as well
 
-	return new ConfigClient(entries);
+        if (handler == null) {
+            handler = ConfigFile.loadDefaultCallbackHandler();
+        } else if (handler instanceof DependentCallbackHandler) {
+            handler = new DelegatingHandler(handler);
+        }
+
+        for (int i = 0; i < entries.length; i++) {
+            entries[i].module = ConfigFile.createModule(entries[i], handler);
+        }
+
+        return new ConfigClient(entries);
     }
 
     /**
@@ -138,189 +129,152 @@ class ConfigFile extends AuthConfig {
      *
      * @return an instance of ConfigServer.
      */
-    public ServerAuthContext getServerAuthContext(String intercept,
-						String id,
-						AuthPolicy requestPolicy,
-						AuthPolicy responsePolicy,
-						CallbackHandler handler)
-		throws AuthException {
+    public ServerAuthContext getServerAuthContext(String intercept, String id, AuthPolicy requestPolicy, AuthPolicy responsePolicy,
+            CallbackHandler handler) throws AuthException {
 
-	ConfigFile.Entry[] entries = getEntries(intercept,
-						id,
-						requestPolicy,
-						responsePolicy,
-						SERVER);
-	if (entries == null || entries.length == 0) {
-	    return null;
-	}
-
-	// instantiate and initialize modules up front as well
-
-	if (handler == null) {
-	    handler = ConfigFile.loadDefaultCallbackHandler();
-	} else if (handler instanceof DependentCallbackHandler) { 
-	    handler = new DelegatingHandler(handler);
+        ConfigFile.Entry[] entries = getEntries(intercept, id, requestPolicy, responsePolicy, SERVER);
+        if (entries == null || entries.length == 0) {
+            return null;
         }
 
-	for (int i = 0; i < entries.length; i++) {
-	    entries[i].module = ConfigFile.createModule(entries[i], handler);
-	}
+        // instantiate and initialize modules up front as well
 
-	return new ConfigServer(entries);
+        if (handler == null) {
+            handler = ConfigFile.loadDefaultCallbackHandler();
+        } else if (handler instanceof DependentCallbackHandler) {
+            handler = new DelegatingHandler(handler);
+        }
+
+        for (int i = 0; i < entries.length; i++) {
+            entries[i].module = ConfigFile.createModule(entries[i], handler);
+        }
+
+        return new ConfigServer(entries);
     }
 
     public void refresh() throws AuthException {
-	synchronized (this) {
-	    ConfigParser nextParser;
-	    int next = this.epoch + 1;
-	    try {
-		nextParser = ConfigFile.loadParser(parserClassName);
-	    } catch (IOException ioe) {
-		throw new AuthException(ioe.toString());
-	    }
-	    this.epoch = (next == 0 ? 1 : next);
-	    parser = nextParser;
-	}
+        synchronized (this) {
+            ConfigParser nextParser;
+            int next = this.epoch + 1;
+            try {
+                nextParser = ConfigFile.loadParser(parserClassName);
+            } catch (IOException ioe) {
+                throw new AuthException(ioe.toString());
+            }
+            this.epoch = (next == 0 ? 1 : next);
+            parser = nextParser;
+        }
     }
 
-    private ConfigFile.Entry[] getEntries(String intercept,
-				String id,
-				AuthPolicy requestPolicy,
-				AuthPolicy responsePolicy,
-				String type) {
+    private ConfigFile.Entry[] getEntries(String intercept, String id, AuthPolicy requestPolicy, AuthPolicy responsePolicy, String type) {
 
-	// get the parsed module config and DD information
+        // get the parsed module config and DD information
 
-	Map configMap;
+        Map configMap;
 
-	synchronized (parser) {
-	    configMap = parser.getConfigMap();
-	}
+        synchronized (parser) {
+            configMap = parser.getConfigMap();
+        }
 
-	if (configMap == null) {
-	    return null;
-	}
-	
-	// get the module config info for this intercept
+        if (configMap == null) {
+            return null;
+        }
 
-	GFServerConfigProvider.InterceptEntry intEntry = (GFServerConfigProvider.InterceptEntry)configMap.get(intercept);
-	if (intEntry == null || intEntry.getIdMap() == null) {
-	    if (logger != null && logger.isLoggable(Level.FINE)) {
- 		logger.fine("module config has no IDs configured for [" +
-				intercept +
-				"]");
-	    }
-	    return null;
-	}
+        // get the module config info for this intercept
 
-	// look up the DD's provider ID in the module config
+        GFServerConfigProvider.InterceptEntry intEntry = (GFServerConfigProvider.InterceptEntry) configMap.get(intercept);
+        if (intEntry == null || intEntry.getIdMap() == null) {
+            if (logger != null && logger.isLoggable(Level.FINE)) {
+                logger.fine("module config has no IDs configured for [" + intercept + "]");
+            }
+            return null;
+        }
 
-	GFServerConfigProvider.IDEntry idEntry = null;
-	if (id == null || (idEntry = (GFServerConfigProvider.IDEntry)intEntry.getIdMap().get(id)) == null) {
+        // look up the DD's provider ID in the module config
 
-	    // either the DD did not specify a provider ID,
-	    // or the DD-specified provider ID was not found
-	    // in the module config.
-	    //
-	    // in either case, look for a default ID in the module config
+        GFServerConfigProvider.IDEntry idEntry = null;
+        if (id == null || (idEntry = (GFServerConfigProvider.IDEntry) intEntry.getIdMap().get(id)) == null) {
 
-	    if (logger != null && logger.isLoggable(Level.FINE)) {
- 		logger.fine("DD did not specify ID, " +
-				"or DD-specified ID for [" +
-				intercept +
-				"] not found in config -- " +
-				"attempting to look for default ID");
-	    }
+            // either the DD did not specify a provider ID,
+            // or the DD-specified provider ID was not found
+            // in the module config.
+            //
+            // in either case, look for a default ID in the module config
 
-	    String defaultID;
-	    if (CLIENT.equals(type)) {
-		defaultID = intEntry.getDefaultClientID();
-	    } else {
-		defaultID = intEntry.getDefaultServerID();
-	    }
+            if (logger != null && logger.isLoggable(Level.FINE)) {
+                logger.fine("DD did not specify ID, " + "or DD-specified ID for [" + intercept + "] not found in config -- "
+                        + "attempting to look for default ID");
+            }
 
-	    idEntry = (GFServerConfigProvider.IDEntry)intEntry.getIdMap().get(defaultID);
-	    if (idEntry == null) {
+            String defaultID;
+            if (CLIENT.equals(type)) {
+                defaultID = intEntry.getDefaultClientID();
+            } else {
+                defaultID = intEntry.getDefaultServerID();
+            }
 
-		// did not find a default provider ID
+            idEntry = (GFServerConfigProvider.IDEntry) intEntry.getIdMap().get(defaultID);
+            if (idEntry == null) {
 
-		if (logger != null && logger.isLoggable(Level.FINE)) {
-                    logger.fine("no default config ID for [" +
-					intercept +
-					"]");
-		}
-		return null;
-	    }
-	}
+                // did not find a default provider ID
 
-	// we found the DD provider ID in the module config
-	// or we found a default module config
+                if (logger != null && logger.isLoggable(Level.FINE)) {
+                    logger.fine("no default config ID for [" + intercept + "]");
+                }
+                return null;
+            }
+        }
 
-	// check provider-type
-	if (idEntry.getType().indexOf(type) < 0) {
-	    if (logger != null && logger.isLoggable(Level.FINE)) {
- 		logger.fine("request type [" +
-				type +
-				"] does not match config type [" +
-				idEntry.getType() +
-				"]");
-	    }
-	    return null;
-	}
+        // we found the DD provider ID in the module config
+        // or we found a default module config
 
-	// check whether a policy is set
+        // check provider-type
+        if (idEntry.getType().indexOf(type) < 0) {
+            if (logger != null && logger.isLoggable(Level.FINE)) {
+                logger.fine("request type [" + type + "] does not match config type [" + idEntry.getType() + "]");
+            }
+            return null;
+        }
+
+        // check whether a policy is set
         AuthPolicy reqP, respP;
-        if(requestPolicy != null || responsePolicy != null) {
+        if (requestPolicy != null || responsePolicy != null) {
             reqP = requestPolicy;
             respP = responsePolicy;
-        } else if(idEntry.getRequestPolicy() != null || idEntry.getResponsePolicy() != null) {
-            //default
+        } else if (idEntry.getRequestPolicy() != null || idEntry.getResponsePolicy() != null) {
+            // default
             reqP = new AuthPolicy(idEntry.getRequestPolicy());
             respP = new AuthPolicy(idEntry.getResponsePolicy());
         } else {
             // optimization: if policy was not set, return null
-	    if (logger != null && logger.isLoggable(Level.FINE)) {
- 		logger.fine("no policy applies");
-	    }
-	    return null;
-	}
+            if (logger != null && logger.isLoggable(Level.FINE)) {
+                logger.fine("no policy applies");
+            }
+            return null;
+        }
 
-	// return the configured modules with the correct policies
+        // return the configured modules with the correct policies
 
-//	ConfigFile.Entry[] entries = new Entry[idEntry.modules.size()];
+        // ConfigFile.Entry[] entries = new Entry[idEntry.modules.size()];
         ConfigFile.Entry[] entries = new Entry[1];
-	for (int i = 0; i < entries.length; i++) {
-// Login Bridge profile?
-//	    AppConfigurationEntry aEntry =
-//				(AppConfigurationEntry)idEntry.modules.get(i);
-	    entries[i] = new ConfigFile.Entry(reqP,
-					respP,
-					idEntry.getModuleClassName(),
-					AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
-					idEntry.getOptions());
-	}
-	    
-	if (logger != null && logger.isLoggable(Level.FINE)) {
- 		logger.fine("getEntries found " +
-			entries.length +
-			" entries for: " +
-			intercept +
-			" -- "
-			+ id);
+        for (int i = 0; i < entries.length; i++) {
+            // Login Bridge profile?
+            entries[i] = new ConfigFile.Entry(reqP, respP, idEntry.getModuleClassName(),
+                    AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, idEntry.getOptions());
+        }
 
+        if (logger != null && logger.isLoggable(Level.FINE)) {
+            logger.fine("getEntries found " + entries.length + " entries for: " + intercept + " -- " + id);
 
             for (int i = 0; i < entries.length; i++) {
-                    logger.fine("Entry " + (i+1) + ":" +
-                        "\n    module class: " + entries[i].getLoginModuleName() +
-                        "\n    flag: " + entries[i].getControlFlag() +
-                        "\n    options: " + entries[i].getOptions() +
-                        "\n    request policy: " + entries[i].requestPolicy +
-                        "\n    response policy: " + entries[i].responsePolicy);
+                logger.fine("Entry " + (i + 1) + ":" + "\n    module class: " + entries[i].getLoginModuleName() + "\n    flag: "
+                        + entries[i].getControlFlag() + "\n    options: " + entries[i].getOptions() + "\n    request policy: "
+                        + entries[i].requestPolicy + "\n    response policy: " + entries[i].responsePolicy);
             }
 
-	}
+        }
 
-	return entries;
+        return entries;
     }
 
     /**
@@ -328,47 +282,40 @@ class ConfigFile extends AuthConfig {
      *
      * XXX custom file that can be used in place of [domain|sun-acc].xml
      */
-    private static ConfigParser loadParser(String className)
-		throws IOException {
-	try {
+    private static ConfigParser loadParser(String className) throws IOException {
+        try {
 
-	    final String finalClassName = className;
-	    final ClassLoader finalLoader = AuthConfig.getClassLoader();
+            final String finalClassName = className;
+            final ClassLoader finalLoader = AuthConfig.getClassLoader();
 
-	    return (ConfigParser)java.security.AccessController.doPrivileged
-		(new java.security.PrivilegedExceptionAction() {
-		public Object run() throws Exception {
-		    Class c = Class.forName(finalClassName,true,finalLoader);
-		    return c.newInstance();
-		}
-	    });
-	} catch (java.security.PrivilegedActionException pae) {
+            return (ConfigParser) java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
+                public Object run() throws Exception {
+                    Class c = Class.forName(finalClassName, true, finalLoader);
+                    return c.newInstance();
+                }
+            });
+        } catch (java.security.PrivilegedActionException pae) {
             IOException iex = new IOException(pae.getException().toString());
             iex.initCause(pae.getException());
             throw iex;
-	}
+        }
     }
 
     /**
      * get the default callback handler
      */
-    private static CallbackHandler loadDefaultCallbackHandler()
-		throws AuthException {
+    private static CallbackHandler loadDefaultCallbackHandler() throws AuthException {
 
         // get the default handler class
         try {
 
             final ClassLoader finalLoader = AuthConfig.getClassLoader();
 
-            return (CallbackHandler)
-                java.security.AccessController.doPrivileged
-                (new java.security.PrivilegedExceptionAction() {
+            return (CallbackHandler) java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
                 public Object run() throws Exception {
- 
-		    String className = DEFAULT_HANDLER_CLASS;
-		    Class c = Class.forName(className,
-					    true,
-					    finalLoader);
+
+                    String className = DEFAULT_HANDLER_CLASS;
+                    Class c = Class.forName(className, true, finalLoader);
                     return c.newInstance();
                 }
             });
@@ -382,250 +329,199 @@ class ConfigFile extends AuthConfig {
     /**
      * Instantiate+initialize module class
      */
-    private static Object createModule(ConfigFile.Entry entry,
-					CallbackHandler handler)
-		throws AuthException {
-	try {
+    private static Object createModule(ConfigFile.Entry entry, CallbackHandler handler) throws AuthException {
+        try {
 
-	    // instantiate module using no-arg constructor
+            // instantiate module using no-arg constructor
 
-	    Object newModule = entry.newInstance();
+            Object newModule = entry.newInstance();
 
-	    // initialize module
+            // initialize module
 
-	    Object[] initArgs = { entry.getRequestPolicy(),
-				entry.getResponsePolicy(),
-				handler,
-				entry.getOptions() };
+            Object[] initArgs = { entry.getRequestPolicy(), entry.getResponsePolicy(), handler, entry.getOptions() };
 
             try {
-                Method initMethod = newModule.getClass().getMethod(AuthContext.INIT,
-                        AuthPolicy.class, AuthPolicy.class, CallbackHandler.class,
-                        Map.class);
+                Method initMethod = newModule.getClass().getMethod(AuthContext.INIT, AuthPolicy.class, AuthPolicy.class,
+                        CallbackHandler.class, Map.class);
                 initMethod.invoke(newModule, initArgs);
-		// return the new module
-		return newModule;
-            } catch(Exception ex) {
-                throw new SecurityException("could not invoke " +
-                        AuthContext.INIT +
-                        " method in module: " + 
-                        newModule.getClass().getName() + " " + ex, ex);
+                // return the new module
+                return newModule;
+            } catch (Exception ex) {
+                throw new SecurityException(
+                        "could not invoke " + AuthContext.INIT + " method in module: " + newModule.getClass().getName() + " " + ex, ex);
             }
 
-	} catch (Exception e) {
-	    if (e instanceof AuthException) {
-		throw (AuthException)e;
-	    }
-	    AuthException ae = new AuthException();
-	    ae.initCause(e);
-	    throw ae;
-	}
+        } catch (Exception e) {
+            if (e instanceof AuthException) {
+                throw (AuthException) e;
+            }
+            AuthException ae = new AuthException();
+            ae.initCause(e);
+            throw ae;
+        }
     }
 
     /**
-     * Class representing a single AuthModule entry configured
-     * for an ID, interception point, and stack.
+     * Class representing a single AuthModule entry configured for an ID, interception point, and stack.
      *
-     * <p> An instance of this class contains the same
-     * information as its superclass, AppConfigurationEntry.
-     * It additionally stores the request and response policy assigned
-     * to this module.
+     * <p>
+     * An instance of this class contains the same information as its superclass, AppConfigurationEntry. It additionally
+     * stores the request and response policy assigned to this module.
      *
-     * <p> This class also provides a way for a caller to obtain
-     * an instance of the module listed in the entry by invoking
-     * the <code>newInstance</code> method.
+     * <p>
+     * This class also provides a way for a caller to obtain an instance of the module listed in the entry by invoking the
+     * <code>newInstance</code> method.
      */
     static class Entry extends javax.security.auth.login.AppConfigurationEntry {
 
-	// for loading modules
-	private static final Class[] PARAMS = { };
-	private static final Object[] ARGS = { };
+        // for loading modules
+        private static final Class[] PARAMS = {};
+        private static final Object[] ARGS = {};
 
-	private AuthPolicy requestPolicy;
-	private AuthPolicy responsePolicy;
-	Object module = null;	// convenience location to store instance -
-			// package private for AuthContext
+        private AuthPolicy requestPolicy;
+        private AuthPolicy responsePolicy;
+        Object module = null; // convenience location to store instance -
+        // package private for AuthContext
 
-	/**
-	 * Construct a ConfigFile entry.
-	 *
-	 * <p> An entry encapsulates a single module and its related
-	 * information.
-	 *
-	 * @param requestPolicy the request policy assigned to the module
-	 *		listed in this entry, which may be null.
-	 *
-	 * @param responsePolicy the response policy assigned to the module
-	 *		listed in this entry, which may be null.
-	 *
-	 * @param moduleClass the fully qualified class name of the module.
-	 *
-	 * @param flag the module control flag.  This value must either
-	 *		be REQUIRED, REQUISITE, SUFFICIENT, or OPTIONAL.
-	 *
-	 * @param options the options configured for this module.
-	 */
-	Entry(AuthPolicy requestPolicy,
-			AuthPolicy responsePolicy,
-			String moduleClass,
-			AppConfigurationEntry.LoginModuleControlFlag flag,
-			Map options) {
-	    super(moduleClass, flag, options);
-	    this.requestPolicy = requestPolicy;
-	    this.responsePolicy = responsePolicy;
-	}
+        /**
+         * Construct a ConfigFile entry.
+         *
+         * <p>
+         * An entry encapsulates a single module and its related information.
+         *
+         * @param requestPolicy
+         *            the request policy assigned to the module listed in this entry, which may be null.
+         *
+         * @param responsePolicy
+         *            the response policy assigned to the module listed in this entry, which may be null.
+         *
+         * @param moduleClass
+         *            the fully qualified class name of the module.
+         *
+         * @param flag
+         *            the module control flag. This value must either be REQUIRED, REQUISITE, SUFFICIENT, or OPTIONAL.
+         *
+         * @param options
+         *            the options configured for this module.
+         */
+        Entry(AuthPolicy requestPolicy, AuthPolicy responsePolicy, String moduleClass, AppConfigurationEntry.LoginModuleControlFlag flag,
+                Map options) {
+            super(moduleClass, flag, options);
+            this.requestPolicy = requestPolicy;
+            this.responsePolicy = responsePolicy;
+        }
 
-	/**
-	 * Return the request policy assigned to this module.
-	 *
-	 * @return the policy, which may be null.
-	 */
-	AuthPolicy getRequestPolicy() {
-	    return requestPolicy;
-	}
+        /**
+         * Return the request policy assigned to this module.
+         *
+         * @return the policy, which may be null.
+         */
+        AuthPolicy getRequestPolicy() {
+            return requestPolicy;
+        }
 
-	/**
-	 * Return the response policy assigned to this module.
-	 *
-	 * @return the policy, which may be null.
-	 */
-	AuthPolicy getResponsePolicy() {
-	    return responsePolicy;
-	}
+        /**
+         * Return the response policy assigned to this module.
+         *
+         * @return the policy, which may be null.
+         */
+        AuthPolicy getResponsePolicy() {
+            return responsePolicy;
+        }
 
-	/**
-	 * Return a new instance of the module contained in this entry.
-	 *
-	 * <p> The default implementation of this method attempts
-	 * to invoke the default no-args constructor of the module class.
-	 * This method may be overridden if a different constructor
-	 * should be invoked.
-	 *
-	 * @return a new instance of the module contained in this entry.
-	 *
-	 * @exception AuthException if the instantiation failed.
-	 */
-	Object newInstance() throws AuthException {
-	    try {
-		final ClassLoader finalLoader= AuthConfig.getClassLoader();
-		String clazz = getLoginModuleName();
-		Class c = Class.forName(clazz,
-					true,
-					finalLoader);
-		java.lang.reflect.Constructor constructor =
-					c.getConstructor(PARAMS);
-		return constructor.newInstance(ARGS);
-	    } catch (Exception e) {
-		AuthException ae = new AuthException();
-		ae.initCause(e);
-		throw ae;
-	    }
-	}
+        /**
+         * Return a new instance of the module contained in this entry.
+         *
+         * <p>
+         * The default implementation of this method attempts to invoke the default no-args constructor of the module class.
+         * This method may be overridden if a different constructor should be invoked.
+         *
+         * @return a new instance of the module contained in this entry.
+         *
+         * @exception AuthException
+         *                if the instantiation failed.
+         */
+        Object newInstance() throws AuthException {
+            try {
+                final ClassLoader finalLoader = AuthConfig.getClassLoader();
+                String clazz = getLoginModuleName();
+                Class c = Class.forName(clazz, true, finalLoader);
+                java.lang.reflect.Constructor constructor = c.getConstructor(PARAMS);
+                return constructor.newInstance(ARGS);
+            } catch (Exception e) {
+                AuthException ae = new AuthException();
+                ae.initCause(e);
+                throw ae;
+            }
+        }
     }
 
     /**
      * parsed Intercept entry
      */
-   /* static class InterceptEntry {
-
-	String defaultClientID;
-	String defaultServerID;
-	HashMap idMap;
-
-	InterceptEntry(String defaultClientID,
-		String defaultServerID,
-		HashMap idMap) {
-	    this.defaultClientID = defaultClientID;
-	    this.defaultServerID = defaultServerID;
-	    this.idMap = idMap;
-	}
-    }*/
+    /*
+     * static class InterceptEntry {
+     * 
+     * String defaultClientID; String defaultServerID; HashMap idMap;
+     * 
+     * InterceptEntry(String defaultClientID, String defaultServerID, HashMap idMap) { this.defaultClientID =
+     * defaultClientID; this.defaultServerID = defaultServerID; this.idMap = idMap; } }
+     */
 
     /**
      * parsed ID entry
      */
-    /*static class IDEntry {
-
-	private String type;  // provider type (client, server, client-server)
-	private AuthPolicy requestPolicy;
-	private AuthPolicy responsePolicy;
-	private ArrayList modules;
-
-	IDEntry(String type,
-		AuthPolicy requestPolicy,
-		AuthPolicy responsePolicy,
-		ArrayList modules) {
-
-	    this.type = type;
-	    this.modules = modules;
-	    this.requestPolicy = requestPolicy;
-	    this.responsePolicy = responsePolicy;
-	}
-
-	// XXX delete this later
-	IDEntry(String type,
-		String requestPolicy,
-		String responsePolicy,
-		ArrayList modules) {
-
-	    this.type = type;
-
-	    if (requestPolicy != null) {
-		this.requestPolicy =
-			new AuthPolicy(AuthPolicy.SOURCE_AUTH_SENDER,
-					true,	// recipient-auth
-					true);	// beforeContent
-	    }
-	    if (responsePolicy != null) {
-		this.responsePolicy =
-			new AuthPolicy(AuthPolicy.SOURCE_AUTH_CONTENT,
-					true,	// recipient-auth
-					false);	// beforeContent
-	    }
-
-	    this.modules = modules;
-	}
-    } */
+    /*
+     * static class IDEntry {
+     * 
+     * private String type; // provider type (client, server, client-server) private AuthPolicy requestPolicy; private
+     * AuthPolicy responsePolicy; private ArrayList modules;
+     * 
+     * IDEntry(String type, AuthPolicy requestPolicy, AuthPolicy responsePolicy, ArrayList modules) {
+     * 
+     * this.type = type; this.modules = modules; this.requestPolicy = requestPolicy; this.responsePolicy = responsePolicy; }
+     * 
+     * // XXX delete this later IDEntry(String type, String requestPolicy, String responsePolicy, ArrayList modules) {
+     * 
+     * this.type = type;
+     * 
+     * if (requestPolicy != null) { this.requestPolicy = new AuthPolicy(AuthPolicy.SOURCE_AUTH_SENDER, true, //
+     * recipient-auth true); // beforeContent } if (responsePolicy != null) { this.responsePolicy = new
+     * AuthPolicy(AuthPolicy.SOURCE_AUTH_CONTENT, true, // recipient-auth false); // beforeContent }
+     * 
+     * this.modules = modules; } }
+     */
 
     /**
      * Default implementation of ClientAuthContext.
      */
     private static class ConfigClient implements ClientAuthContext {
 
-	// class that does all the work
-	private AuthContext context;
+        // class that does all the work
+        private AuthContext context;
 
+        ConfigClient(Entry[] entries) throws AuthException {
+            context = new AuthContext(entries, logger);
+        }
 
-	ConfigClient(Entry[] entries) throws AuthException {
-	    context = new AuthContext(entries, logger);
-	}
+        public void secureRequest(AuthParam param, Subject subject, Map sharedState) throws AuthException {
 
-	public void secureRequest(AuthParam param,
-				Subject subject,
-				Map sharedState)
-		throws AuthException {
+            // invoke modules
+            Object[] args = { param, subject, sharedState };
+            context.invoke(AuthContext.SECURE_REQUEST, args);
+        }
 
-	    // invoke modules
-	    Object[] args = { param, subject, sharedState };
-	    context.invoke(AuthContext.SECURE_REQUEST, args);
-	}
+        public void validateResponse(AuthParam param, Subject subject, Map sharedState) throws AuthException {
+            // invoke modules
+            Object[] args = { param, subject, sharedState };
+            context.invoke(AuthContext.VALIDATE_RESPONSE, args);
+        }
 
-	public void validateResponse(AuthParam param,
-				Subject subject,
-				Map sharedState)
-		throws AuthException {
-	    // invoke modules
-	    Object[] args = { param, subject, sharedState };
-	    context.invoke(AuthContext.VALIDATE_RESPONSE, args);
-	}
-
-	public void disposeSubject(Subject subject,
-				Map sharedState)
-		throws AuthException {
-	    // invoke modules
-	    Object[] args = { subject, sharedState };
-	    context.invoke(AuthContext.DISPOSE_SUBJECT, args);
-	}
+        public void disposeSubject(Subject subject, Map sharedState) throws AuthException {
+            // invoke modules
+            Object[] args = { subject, sharedState };
+            context.invoke(AuthContext.DISPOSE_SUBJECT, args);
+        }
     }
 
     /**
@@ -633,109 +529,97 @@ class ConfigFile extends AuthConfig {
      */
     private static class ConfigServer implements ServerAuthContext {
 
-	// class that does all the work
-	private AuthContext context;
+        // class that does all the work
+        private AuthContext context;
 
+        ConfigServer(Entry[] entries) throws AuthException {
 
-	ConfigServer(Entry[] entries) throws AuthException {
+            context = new AuthContext(entries, logger);
+        }
 
-	    context = new AuthContext(entries, logger);
-	}
+        public void validateRequest(AuthParam param, Subject subject, Map sharedState) throws AuthException {
+            // invoke modules
+            Object[] args = { param, subject, sharedState };
+            context.invoke(AuthContext.VALIDATE_REQUEST, args);
+        }
 
-	public void validateRequest(AuthParam param,
-				Subject subject,
-				Map sharedState)
-		throws AuthException {
-	    // invoke modules
-	    Object[] args = { param, subject, sharedState };
-	    context.invoke(AuthContext.VALIDATE_REQUEST, args);
-	}
+        public void secureResponse(AuthParam param, Subject subject, Map sharedState) throws AuthException {
+            // invoke modules
+            Object[] args = { param, subject, sharedState };
+            context.invoke(AuthContext.SECURE_RESPONSE, args);
+        }
 
-	public void secureResponse(AuthParam param,
-				Subject subject,
-				Map sharedState)
-		throws AuthException {
-	    // invoke modules
-	    Object[] args = { param, subject, sharedState };
-	    context.invoke(AuthContext.SECURE_RESPONSE, args);
-	}
+        public void disposeSubject(Subject subject, Map sharedState) throws AuthException {
+            // invoke modules
+            Object[] args = { subject, sharedState };
+            context.invoke(AuthContext.DISPOSE_SUBJECT, args);
+        }
 
-	public void disposeSubject(Subject subject,
-				Map sharedState)
-		throws AuthException {
-	    // invoke modules
-	    Object[] args = { subject, sharedState };
-	    context.invoke(AuthContext.DISPOSE_SUBJECT, args);
-	}
+        public boolean managesSessions(Map sharedState) throws AuthException {
 
-	public boolean managesSessions(Map sharedState)
-		throws AuthException {
-		    
-	    // invoke modules
-	    Object[] args = { sharedState };
-	    Object[] rValues = null;
+            // invoke modules
+            Object[] args = { sharedState };
+            Object[] rValues = null;
 
-	    try {
-		rValues = context.invoke(AuthContext.MANAGES_SESSIONS, args);
-	    } catch (AuthException ae) {
-		// this new method may not be implemeneted
-		// by old modules
-		if (!(ae.getCause() instanceof NoSuchMethodException)) {
-		    throw ae;
-		}
-	    }
+            try {
+                rValues = context.invoke(AuthContext.MANAGES_SESSIONS, args);
+            } catch (AuthException ae) {
+                // this new method may not be implemeneted
+                // by old modules
+                if (!(ae.getCause() instanceof NoSuchMethodException)) {
+                    throw ae;
+                }
+            }
 
-	    boolean rvalue = false;
+            boolean rvalue = false;
 
-	    for (int i=0; rValues != null && i<rValues.length; i++) {
-		if (rValues[i] != null) {
-		    boolean thisValue = ((Boolean) rValues[i]).booleanValue();
-		    rvalue = rvalue | thisValue;
-		}
-	    }
+            for (int i = 0; rValues != null && i < rValues.length; i++) {
+                if (rValues[i] != null) {
+                    boolean thisValue = ((Boolean) rValues[i]).booleanValue();
+                    rvalue = rvalue | thisValue;
+                }
+            }
 
-	    return rvalue;
-	}
+            return rvalue;
+        }
     }
 
     private static class DelegatingHandler implements CallbackHandler {
 
-	CallbackHandler handler;
+        CallbackHandler handler;
 
-	CallbackHandler defaultHandler;
+        CallbackHandler defaultHandler;
 
-	private DelegatingHandler(CallbackHandler cbh) {
-	    handler = cbh;
-	    try {
-		defaultHandler = ConfigFile.loadDefaultCallbackHandler();
-	    } catch (Exception e) {
-		defaultHandler = null;
-	    }
-	}
+        private DelegatingHandler(CallbackHandler cbh) {
+            handler = cbh;
+            try {
+                defaultHandler = ConfigFile.loadDefaultCallbackHandler();
+            } catch (Exception e) {
+                defaultHandler = null;
+            }
+        }
 
-	public void handle (Callback[] callbacks) 
-	throws IOException, UnsupportedCallbackException {
-	    if (defaultHandler == null) {
-		handler.handle(callbacks);
-	    }
-	    else {
-		Callback[] oneCallback = new Callback[1];
-		for (int i=0; i<callbacks.length; i++) {
-		    
-		    boolean tryDefault = false;
-		    
-		    oneCallback[0] = callbacks[i];
-		    try {
-			handler.handle(oneCallback);
-		    } catch (UnsupportedCallbackException uce) {
-			tryDefault = true;
-		    }
-		    if (tryDefault) {
-			defaultHandler.handle(oneCallback);
-		    }
-		}
-	    }
-	}
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            if (defaultHandler == null) {
+                handler.handle(callbacks);
+            } else {
+                Callback[] oneCallback = new Callback[1];
+                for (int i = 0; i < callbacks.length; i++) {
+
+                    boolean tryDefault = false;
+
+                    oneCallback[0] = callbacks[i];
+                    try {
+                        handler.handle(oneCallback);
+                    } catch (UnsupportedCallbackException uce) {
+                        tryDefault = true;
+                    }
+                    if (tryDefault) {
+                        defaultHandler.handle(oneCallback);
+                    }
+                }
+            }
+        }
     }
 
 }

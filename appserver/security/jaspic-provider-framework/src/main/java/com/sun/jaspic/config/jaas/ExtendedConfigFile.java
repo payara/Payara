@@ -38,11 +38,11 @@
  * holder.
  */
 
-
 package com.sun.jaspic.config.jaas;
 
-import com.sun.jaspic.config.helper.JASPICLogManager;
-import com.sun.security.auth.login.ConfigFile;
+import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
+import static com.sun.jaspic.config.helper.JASPICLogManager.RES_BUNDLE;
+
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.security.AccessController;
@@ -52,7 +52,10 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.security.auth.login.AppConfigurationEntry;
+
+import com.sun.security.auth.login.ConfigFile;
 
 /**
  *
@@ -60,9 +63,8 @@ import javax.security.auth.login.AppConfigurationEntry;
  */
 public class ExtendedConfigFile extends ConfigFile {
 
-    private static final Logger logger =
-            Logger.getLogger(JASPICLogManager.JASPIC_LOGGER, JASPICLogManager.RES_BUNDLE);
-    //may be more than one delegate for a given jaas config file
+    private static final Logger logger = Logger.getLogger(JASPIC_LOGGER, RES_BUNDLE);
+    // may be more than one delegate for a given jaas config file
 
     public ExtendedConfigFile() {
     }
@@ -76,13 +78,13 @@ public class ExtendedConfigFile extends ConfigFile {
     }
 
     /**
-     * The ExtendedConfigFile subclass was created because the
-     * Configuration interface does not provide a way to do what this
-     * method does; i.e. get all the app names from the config.
-     * @param authModuleClass an Array of Class objects or null. When this
-     * parameter is not null, the appnames are filtered by removing all names
-     * that are not associated via an AppConfigurationEntry with at least
-     * one LoginModule that implements an authModuleClass.
+     * The ExtendedConfigFile subclass was created because the Configuration interface does not provide a way to do what
+     * this method does; i.e. get all the app names from the config.
+     * 
+     * @param authModuleClass
+     *            an Array of Class objects or null. When this parameter is not null, the appnames are filtered by removing
+     *            all names that are not associated via an AppConfigurationEntry with at least one LoginModule that
+     *            implements an authModuleClass.
      * @return String[] containing all the AppNames appearing in the config file.
      * @throws SecurityException
      */
@@ -90,18 +92,17 @@ public class ExtendedConfigFile extends ConfigFile {
 
         final Set<String> nameSet;
         try {
-            nameSet = (Set<String>) AccessController.doPrivileged(
-                    new PrivilegedExceptionAction() {
+            nameSet = (Set<String>) AccessController.doPrivileged(new PrivilegedExceptionAction() {
 
-                        @Override
-                        public Object run() throws Exception {
-                            HashMap map;
-                            Field field = ConfigFile.class.getDeclaredField("configuration");
-                            field.setAccessible(true);
-                            map = (HashMap) field.get(ExtendedConfigFile.this);
-                            return (Set<String>) map.keySet();
-                        }
-                    });
+                @Override
+                public Object run() throws Exception {
+                    HashMap map;
+                    Field field = ConfigFile.class.getDeclaredField("configuration");
+                    field.setAccessible(true);
+                    map = (HashMap) field.get(ExtendedConfigFile.this);
+                    return map.keySet();
+                }
+            });
 
         } catch (PrivilegedActionException pae) {
             throw new SecurityException(pae.getCause());
@@ -114,14 +115,12 @@ public class ExtendedConfigFile extends ConfigFile {
 
                     @Override
                     public Object run() throws Exception {
-                        ClassLoader loader =
-                                Thread.currentThread().getContextClassLoader();
+                        ClassLoader loader = Thread.currentThread().getContextClassLoader();
                         String[] names = nameSet.toArray(new String[nameSet.size()]);
                         for (String id : names) {
                             boolean hasAuthModule = false;
                             AppConfigurationEntry[] entry = getAppConfigurationEntry(id);
-                            for (int i = 0; i
-                                    < entry.length && !hasAuthModule; i++) {
+                            for (int i = 0; i < entry.length && !hasAuthModule; i++) {
                                 String clazz = entry[i].getLoginModuleName();
                                 try {
                                     Class c = Class.forName(clazz, true, loader);
@@ -132,8 +131,7 @@ public class ExtendedConfigFile extends ConfigFile {
                                         }
                                     }
                                 } catch (Throwable t) {
-                                    String msg = "skipping unloadable class: "
-                                            + clazz + " of entry: " + id;
+                                    String msg = "skipping unloadable class: " + clazz + " of entry: " + id;
                                     logger.log(Level.WARNING, msg);
                                 }
                             }

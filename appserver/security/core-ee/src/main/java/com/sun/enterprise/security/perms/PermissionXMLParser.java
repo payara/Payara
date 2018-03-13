@@ -39,14 +39,12 @@
  */
 package com.sun.enterprise.security.perms;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Permission;
 import java.security.PermissionCollection;
@@ -70,17 +68,17 @@ import com.sun.enterprise.security.integration.PermissionCreator;
  */
 public class PermissionXMLParser {
 
-    protected static final String PERMISSIONS_XML = "META-INF/permissions.xml"; 
-    protected static final String RESTRICTED_PERMISSIONS_XML = "META-INF/restricted-permissions.xml"; 
+    protected static final String PERMISSIONS_XML = "META-INF/permissions.xml";
+    protected static final String RESTRICTED_PERMISSIONS_XML = "META-INF/restricted-permissions.xml";
 
     protected XMLStreamReader parser = null;
-    
+
     PermissionCollection pc = new Permissions();
 
     private PermissionCollection permissionCollectionToBeRestricted = null;
-    
+
     private static XMLInputFactory xmlInputFactory;
-    
+
     static {
         xmlInputFactory = XMLInputFactory.newInstance();
         xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
@@ -89,63 +87,55 @@ public class PermissionXMLParser {
         // set an zero-byte XMLResolver as IBM JDK does not take SUPPORT_DTD=false
         // unless there is a jvm option com.ibm.xml.xlxp.support.dtd.compat.mode=false
         xmlInputFactory.setXMLResolver(new XMLResolver() {
-                @Override
-                public Object resolveEntity(String publicID,
-                        String systemID, String baseURI, String namespace)
-                        throws XMLStreamException {
+            @Override
+            public Object resolveEntity(String publicID, String systemID, String baseURI, String namespace) throws XMLStreamException {
 
-                    return new ByteArrayInputStream(new byte[0]);
-                }
-            });
+                return new ByteArrayInputStream(new byte[0]);
+            }
+        });
     }
 
-    
-    //@LogMessageInfo(message = "This is an unexpected end of document", level = "WARNING")
-    //public static final String UNEXPECTED_END_IN_XMLDOCUMENT = "NCLS-DEPLOYMENT-00048";
+    // @LogMessageInfo(message = "This is an unexpected end of document", level = "WARNING")
+    // public static final String UNEXPECTED_END_IN_XMLDOCUMENT = "NCLS-DEPLOYMENT-00048";
 
-    
-    public PermissionXMLParser(File permissionsXmlFile, 
-            PermissionCollection permissionCollectionToBeRestricted)
+    public PermissionXMLParser(File permissionsXmlFile, PermissionCollection permissionCollectionToBeRestricted)
             throws XMLStreamException, FileNotFoundException {
-        
+
         FileInputStream fi = null;
         try {
             this.permissionCollectionToBeRestricted = permissionCollectionToBeRestricted;
-            fi = new FileInputStream(permissionsXmlFile); 
+            fi = new FileInputStream(permissionsXmlFile);
             init(fi);
         } finally {
             if (fi != null)
                 try {
                     fi.close();
                 } catch (IOException e) {
-                }            
+                }
         }
-        
+
     }
 
-    
-    public PermissionXMLParser(InputStream input,
-            PermissionCollection permissionCollectionToBeRestricted)
+    public PermissionXMLParser(InputStream input, PermissionCollection permissionCollectionToBeRestricted)
             throws XMLStreamException, FileNotFoundException {
 
         this.permissionCollectionToBeRestricted = permissionCollectionToBeRestricted;
         init(input);
 
     }
-    
+
     protected static XMLInputFactory getXMLInputFactory() {
         return xmlInputFactory;
     }
 
-    
     /**
-     * This method will parse the input stream and set the XMLStreamReader
-     * object for latter use.
+     * This method will parse the input stream and set the XMLStreamReader object for latter use.
      *
-     * @param input InputStream
+     * @param input
+     *            InputStream
      * @exception XMLStreamException;
      */
-    //@Override
+    // @Override
     protected void read(InputStream input) throws XMLStreamException {
         parser = getXMLInputFactory().createXMLStreamReader(input);
 
@@ -168,21 +158,20 @@ public class PermissionXMLParser {
                     actions = parser.getElementText();
                 } else if ("permissions".equals(name)) {
                     // continue trough subtree
-                }  else {
+                } else {
                     skipSubTree(name);
                 }
-            }
-            else if (event == END_ELEMENT) {
+            } else if (event == END_ELEMENT) {
                 String name = parser.getLocalName();
                 if ("permission".equals(name)) {
-                    if(classname != null && !classname.isEmpty()) {
+                    if (classname != null && !classname.isEmpty()) {
                         addPermission(classname, target, actions);
                     }
                 }
             }
         }
     }
-    
+
     protected void init(InputStream input) throws XMLStreamException {
 
         try {
@@ -204,11 +193,11 @@ public class PermissionXMLParser {
             if (event == START_ELEMENT) {
                 String localName = parser.getLocalName();
                 if (!name.equals(localName)) {
-                    //String msg = rb.getString(UNEXPECTED_ELEMENT_IN_XML);
-                    //msg = MessageFormat.format(msg, new Object[] { name,
-                    //        localName });
-                    //throw new XMLStreamException(msg);
-                    throw new  XMLStreamException("Unexpected element with name " + name);
+                    // String msg = rb.getString(UNEXPECTED_ELEMENT_IN_XML);
+                    // msg = MessageFormat.format(msg, new Object[] { name,
+                    // localName });
+                    // throw new XMLStreamException(msg);
+                    throw new XMLStreamException("Unexpected element with name " + name);
                 }
                 return;
             }
@@ -220,24 +209,22 @@ public class PermissionXMLParser {
             int event = parser.next();
             if (event == END_DOCUMENT) {
                 throw new XMLStreamException(
-                        //rb.getString(UNEXPECTED_END_IN_XMLDOCUMENT));
+                        // rb.getString(UNEXPECTED_END_IN_XMLDOCUMENT));
                         "Unexpected element with name " + name);
-            } else if (event == END_ELEMENT
-                    && name.equals(parser.getLocalName())) {
+            } else if (event == END_ELEMENT && name.equals(parser.getLocalName())) {
                 return;
             }
         }
     }
-    
-    private void addPermission(String classname, String target, String actions)  {
+
+    private void addPermission(String classname, String target, String actions) {
         try {
             Permission pm = PermissionCreator.getInstance(classname, target, actions);
 
             if (pm != null) {
                 if (permissionCollectionToBeRestricted != null && permissionCollectionToBeRestricted.implies(pm)) {
                     throw new SecurityException("Restricted Permission Declared - fail deployment!");
-                }
-                else {
+                } else {
                     pc.add(pm);
                 }
             }
@@ -253,9 +240,7 @@ public class PermissionXMLParser {
             throw new SecurityException(e);
         }
     }
-    
-    
-    
+
     protected PermissionCollection getPermissions() {
         return pc;
     }

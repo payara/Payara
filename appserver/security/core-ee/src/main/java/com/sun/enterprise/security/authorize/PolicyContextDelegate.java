@@ -47,14 +47,9 @@ import java.lang.reflect.Method;
 
 @Contract
 public interface PolicyContextDelegate {
-
     Object getEnterpriseBean(ComponentInvocation inv);
-
-    public Object getEJbArguments(ComponentInvocation inv);
-
-    public Object getSOAPMessage(ComponentInvocation inv);
-
-    public void setSOAPMessage(Object message, ComponentInvocation inv);
-
-    public boolean authorize(ComponentInvocation inv, Method m) throws Exception;
+    Object getEJbArguments(ComponentInvocation inv);
+    Object getSOAPMessage(ComponentInvocation inv);
+    void setSOAPMessage(Object message, ComponentInvocation inv);
+    boolean authorize(ComponentInvocation inv, Method m) throws Exception;
 }

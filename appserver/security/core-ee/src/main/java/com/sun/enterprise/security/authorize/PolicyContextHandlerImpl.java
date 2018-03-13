@@ -44,16 +44,15 @@ import java.security.SecurityPermission;
 import javax.security.jacc.PolicyContextHandler;
 
 /**
- * This class is created by the container and handed over to the 
- * JACC provider. This lets the jacc provider to use the information
- * in making authorization decisions, if it wishes to do so.
+ * This class is created by the container and handed over to the JACC provider. This lets the jacc provider to use the
+ * information in making authorization decisions, if it wishes to do so.
+ * 
  * @author Harpreet Singh
  * @author Shing Wai Chan
  */
 public class PolicyContextHandlerImpl implements PolicyContextHandler {
 
-    public static final String HTTP_SERVLET_REQUEST =
-        "javax.servlet.http.HttpServletRequest";
+    public static final String HTTP_SERVLET_REQUEST = "javax.servlet.http.HttpServletRequest";
     public static final String SOAP_MESSAGE = "javax.xml.soap.SOAPMessage";
     public static final String ENTERPRISE_BEAN = "javax.ejb.EnterpriseBean";
     public static final String EJB_ARGUMENTS = "javax.ejb.arguments";
@@ -79,39 +78,32 @@ public class PolicyContextHandlerImpl implements PolicyContextHandler {
         if (sm != null) {
             sm.checkPermission(new SecurityPermission("setPolicy"));
         }
-    
+
         return _getInstance();
     }
 
     public boolean supports(String key) {
-	String[] s = getKeys();
-	for (int i = 0; i<s.length; i++) {
-	    if (s[i].equalsIgnoreCase(key)) {
-		return true;
+        String[] s = getKeys();
+        for (int i = 0; i < s.length; i++) {
+            if (s[i].equalsIgnoreCase(key)) {
+                return true;
             }
-	}
+        }
         return false;
     }
-    
-    public String[] getKeys(){
-	String[] s = {
-	    HTTP_SERVLET_REQUEST,
-	    SOAP_MESSAGE,
-	    ENTERPRISE_BEAN,
-	    SUBJECT,
-	    EJB_ARGUMENTS,
-            REUSE
-	};
-	return s;
+
+    public String[] getKeys() {
+        String[] s = { HTTP_SERVLET_REQUEST, SOAP_MESSAGE, ENTERPRISE_BEAN, SUBJECT, EJB_ARGUMENTS, REUSE };
+        return s;
     }
-    
+
     public Object getContext(String key, Object data) {
         // ignore data Object
         return getHandlerData().get(key);
     }
 
     public HandlerData getHandlerData() {
-        HandlerData handlerData = (HandlerData)thisHandlerData.get();
+        HandlerData handlerData = (HandlerData) thisHandlerData.get();
         if (handlerData == null) {
             handlerData = HandlerData.getInstance();
             thisHandlerData.set(handlerData);
@@ -120,10 +112,10 @@ public class PolicyContextHandlerImpl implements PolicyContextHandler {
     }
 
     public void reset() {
-         HandlerData handlerData = (HandlerData)thisHandlerData.get();
-         if (handlerData != null) {
+        HandlerData handlerData = (HandlerData) thisHandlerData.get();
+        if (handlerData != null) {
             handlerData.reset();
-         }
-         thisHandlerData.set(null);
+        }
+        thisHandlerData.set(null);
     }
 }
