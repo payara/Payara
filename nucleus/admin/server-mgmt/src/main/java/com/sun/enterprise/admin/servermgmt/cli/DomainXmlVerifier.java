@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -113,7 +114,10 @@ public class DomainXmlVerifier {
             Set<String> leafeltnames = d.model.getLeafElementNames();
             for (String elt : eltnames) {
                 if (leafeltnames.contains(elt)) continue;
-                List<Dom> eltlist = d.nodeElements(elt);
+                List<Dom> eltlist;
+                synchronized (d) {
+                    eltlist = d.nodeElements(elt);
+                }
                 checkDuplicate(eltlist);
                 for (Dom subelt : eltlist) {
                     checkUnique(subelt);

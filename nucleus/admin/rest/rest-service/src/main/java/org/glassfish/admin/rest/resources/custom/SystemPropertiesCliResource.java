@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources.custom;
 
@@ -165,7 +165,10 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     }
 
     protected void getSystemProperties(Map<String, Map<String, String>> properties, Dom dom, boolean getDefaults) {
-        List<Dom> sysprops = dom.nodeElements("system-property");
+        List<Dom> sysprops;
+        synchronized (dom) {
+            sysprops = dom.nodeElements("system-property");
+        }
         if ((sysprops != null) && (!sysprops.isEmpty())) {
             for (Dom sysprop : sysprops) {
                 String name = sysprop.attribute("name");
@@ -204,7 +207,14 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     }
 
     protected Dom getCluster(Dom domain, String clusterName) {
-        List<Dom> configs = domain.nodeElements("clusters").get(0).nodeElements("cluster");
+        List<Dom> configs;
+        Dom clusterElements;
+        synchronized (domain) {
+            clusterElements = domain.nodeElements("clusters").get(0);
+        }
+        synchronized (clusterElements) {
+            configs = clusterElements.nodeElements("cluster");
+        }
         for(Dom config : configs) {
             if (config.attribute("name").equals(clusterName)) {
                 return config;
@@ -214,7 +224,14 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     }
 
     protected Dom getConfig(Dom domain, String configName) {
-        List<Dom> configs = domain.nodeElements("configs").get(0).nodeElements("config");
+        Dom rootConfig;
+        List<Dom> configs;
+        synchronized (domain) {
+            rootConfig = domain.nodeElements("configs").get(0);
+        }
+        synchronized (rootConfig) {
+            configs = rootConfig.nodeElements("config");
+        }
         for(Dom config : configs) {
             if (config.attribute("name").equals(configName)) {
                 return config;
@@ -281,9 +298,13 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
     //returns null if successful or the Response which contains the error msg.
     protected Response deleteRemovedProperties(Map<String,String> newProps) {
-        List<String> existingList = new ArrayList();
+        List<String> existingList = new ArrayList<>();
         Dom parent = getEntity();
-        for (Dom existingProp : parent.nodeElements(TAG_SYSTEM_PROPERTY)) {
+        List<Dom> existingProps;
+        synchronized (parent) {
+            existingProps = parent.nodeElements(TAG_SYSTEM_PROPERTY);
+        }
+        for (Dom existingProp : existingProps) {
             existingList.add(existingProp.attribute("name"));
         }
         //no existing properites,return null
