@@ -142,17 +142,17 @@ public class RolesCDIInterceptor {
     }
 
     private RolesPermitted getRolesPermitted(InvocationContext invocationContext) {
-
-        Optional<RolesPermitted> optionalRolesPermitted;
+        Optional<RolesPermitted> optionalRolesPermitted = Optional.empty();
 
         // Try the Weld bindings first. This gives us the *exact* binding which caused this interceptor being called
         @SuppressWarnings("unchecked")
         Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get("org.jboss.weld.interceptor.bindings");
         if (bindings != null) {
-            optionalRolesPermitted = bindings.stream()
-                    .filter(annotation -> annotation.annotationType().equals(RolesPermitted.class))
-                    .findAny()
-                    .map(annotation -> RolesPermitted.class.cast(annotation));
+            for (Annotation annotation : bindings) {
+                if (annotation.annotationType().equals(RolesPermitted.class)) {
+                    optionalRolesPermitted = Optional.of(RolesPermitted.class.cast(annotation));
+                }
+            }
 
             if (optionalRolesPermitted.isPresent()) {
                 return optionalRolesPermitted.get();
