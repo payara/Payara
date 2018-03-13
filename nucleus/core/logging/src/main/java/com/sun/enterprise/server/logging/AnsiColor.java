@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,54 +39,47 @@
  */
 package com.sun.enterprise.server.logging;
 
-import org.fusesource.jansi.Ansi;
-
 /**
- * @since 4.1.1.173
+ *
  * @author steve
  */
 public enum AnsiColor {
     
-    BLACK(Ansi.ansi().fgBlack()),
-    RED(Ansi.ansi().fgRed()),
-    YELLOW(Ansi.ansi().fgYellow()),
-    BLUE(Ansi.ansi().fgBlue()),
-    PURPLE(Ansi.ansi().fgMagenta()),
-    CYAN(Ansi.ansi().fgCyan()),
-    WHITE(Ansi.ansi().fg(Ansi.Color.WHITE)),
-    GREEN(Ansi.ansi().fgGreen()),
-    INTENSE_BLACK(Ansi.ansi().fgBrightBlack()),
-    INTENSE_RED(Ansi.ansi().fgBrightRed()),
-    INTENSE_YELLOW(Ansi.ansi().fgBrightYellow()),
-    INTENSE_BLUE(Ansi.ansi().fgBrightBlue()),
-    INTENSE_PURPLE(Ansi.ansi().fgBrightMagenta()),
-    INTENSE_CYAN(Ansi.ansi().fgBrightCyan()),
-    INTENSE_WHITE(Ansi.ansi().fgBright(Ansi.Color.WHITE)),
-    INTENSE_GREEN(Ansi.ansi().fgBrightGreen()),
-    BOLD_INTENSE_BLACK(Ansi.ansi().bold().fgBrightBlack()),
-    BOLD_INTENSE_RED(Ansi.ansi().bold().fgBrightRed()),
-    BOLD_INTENSE_YELLOW(Ansi.ansi().bold().fgBrightYellow()),
-    BOLD_INTENSE_BLUE(Ansi.ansi().bold().fgBrightBlue()),
-    BOLD_INTENSE_PURPLE(Ansi.ansi().bold().fgBrightMagenta()),
-    BOLD_INTENSE_CYAN(Ansi.ansi().bold().fgBrightCyan()),
-    BOLD_INTENSE_WHITE(Ansi.ansi().bold().fgBright(Ansi.Color.WHITE)),
-    BOLD_INTENSE_GREEN(Ansi.ansi().bold().fgBrightGreen()), 
-    RESET(Ansi.ansi().reset()),
-    NOTHING(Ansi.ansi());
+    BLACK("\u001B[0;30m"),
+    RED("\u001B[0;31m"),
+    YELLOW("\u001B[0;33m"),
+    BLUE("\u001B[0;34m"),
+    PURPLE("\u001B[0;35m"),
+    CYAN("\u001B[0;36m"),
+    WHITE("\u001B[0;37m"),
+    GREEN("\u001B[0;32m"),
+    INTENSE_BLACK("\u001B[0;90m"),
+    INTENSE_RED("\u001B[0;91m"),
+    INTENSE_YELLOW("\u001B[0;93m"),
+    INTENSE_BLUE("\u001B[0;94m"),
+    INTENSE_PURPLE("\u001B[0;95m"),
+    INTENSE_CYAN("\u001B[0;96m"),
+    INTENSE_WHITE("\u001B[0;97m"),
+    INTENSE_GREEN("\u001B[0;92m"),
+    BOLD_INTENSE_BLACK("\u001B[1;90m"),
+    BOLD_INTENSE_RED("\u001B[1;91m"),
+    BOLD_INTENSE_YELLOW("\u001B[1;93m"),
+    BOLD_INTENSE_BLUE("\u001B[1;94m"),
+    BOLD_INTENSE_PURPLE("\u001B[1;95m"),
+    BOLD_INTENSE_CYAN("\u001B[1;96m"),
+    BOLD_INTENSE_WHITE("\u001B[1;97m"),
+    BOLD_INTENSE_GREEN("\u001B[1;92m"), 
+    RESET("\u001b[0m"), 
+    NOTHING("");
     
-    AnsiColor(Ansi colour) {
-        colourAnsi = colour;
+    AnsiColor(String color) {
+        colorString = color;
     }
     
-    @Override
     public String toString() {
-        return colourAnsi.toString();
+        return colorString;
     }
     
-    public Ansi getANsi(){
-        return colourAnsi;
-    }
-    
-    private final Ansi colourAnsi;
+    private final String colorString;
     
 }
