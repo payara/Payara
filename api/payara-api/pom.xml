@@ -47,11 +47,14 @@
         <version>5.182-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <groupId>fish.payara.api</groupId>
     <artifactId>payara-api</artifactId>
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
+
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
 
     <developers>
         <developer>
@@ -138,7 +141,10 @@
                                     fish.payara.cluster,
                                     fish.payara.micro.cdi,
                                     fish.payara.nucleus.requesttracing.api,
-                                    fish.payara.notification.eventbus
+                                    fish.payara.notification,
+                                    fish.payara.notification.eventbus,
+                                    fish.payara.notification.healthcheck,
+                                    fish.payara.notification.requesttracing
                                 </Export-Package>
                             </instructions>
                         </configuration>

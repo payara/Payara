@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,48 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck;
+package fish.payara.notification;
 
 /**
- * A class for the result of an individual health check
  * @author mertcaliskan
- * @since 4.1.1.161
  */
-public class HealthCheckResultEntry {
-
-    private HealthCheckResultStatus status;
-    private String message;
-    private Exception exception;
-
-    public HealthCheckResultEntry(HealthCheckResultStatus status, String msg) {
-        this.status = status;
-        this.message = msg;
-    }
-
-    public HealthCheckResultEntry(HealthCheckResultStatus status, String msg, Exception ex) {
-        this.status = status;
-        this.message = msg;
-        this.exception = ex;
-    }
-
-    /**
-     * Gets the severity level of the result of the health check
-     * @return 
-     */
-    public HealthCheckResultStatus getStatus() {
-        return status;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[status=" + status);
-        sb.append(", message='" + message + '\'');
-        if (exception != null) {
-            sb.append(", exception=" + exception);
-        }
-        sb.append("']'");
-
-        return sb.toString();
-    }
+public abstract class NotificationData {
 }

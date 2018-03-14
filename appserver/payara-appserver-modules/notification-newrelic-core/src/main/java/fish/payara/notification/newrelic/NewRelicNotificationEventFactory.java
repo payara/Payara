@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,6 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
-import java.text.MessageFormat;
-import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
@@ -61,22 +59,8 @@ public class NewRelicNotificationEventFactory extends NotificationEventFactory<N
         registerEventFactory(NotifierType.NEWRELIC, this);
     }
 
-    public NewRelicNotificationEvent buildNotificationEvent(String subject, String message) {
-        NewRelicNotificationEvent event = initializeEvent(new NewRelicNotificationEvent());
-        event.setSubject(subject);
-        event.setMessage(message);
-
-        return event;
-    }
-
     @Override
-    public NewRelicNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
-        NewRelicNotificationEvent event = initializeEvent(new NewRelicNotificationEvent());
-        event.setSubject(subject);
-        if (parameters != null && parameters.length > 0) {
-            message = MessageFormat.format(message, parameters);
-        }
-        event.setMessage(message);
-        return event;
+    protected NewRelicNotificationEvent createEventInstance() {
+        return new NewRelicNotificationEvent();
     }
 }

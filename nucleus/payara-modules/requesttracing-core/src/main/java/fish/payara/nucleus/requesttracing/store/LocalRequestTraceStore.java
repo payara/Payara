@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,15 @@
 package fish.payara.nucleus.requesttracing.store;
 
 import fish.payara.nucleus.notification.domain.BoundedTreeSet;
-import fish.payara.nucleus.requesttracing.RequestTrace;
-import fish.payara.nucleus.requesttracing.events.RequestTracingEvents;
+import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.store.strategy.TraceStorageStrategy;
 import java.util.Collection;
 import java.util.stream.Collectors;
-import org.glassfish.api.event.EventListener;
+
 import org.glassfish.api.event.Events;
 
 /**
- * A store of {@link fish.payara.nucleus.requesttracing.RequestTrace} objects.
+ * A store of {@link RequestTrace} objects.
  * Stores the list locally.
  */
 public class LocalRequestTraceStore implements RequestTraceStoreInterface {

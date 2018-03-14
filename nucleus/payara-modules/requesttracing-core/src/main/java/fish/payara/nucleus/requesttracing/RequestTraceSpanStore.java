@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,9 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTrace;
+import fish.payara.notification.requesttracing.EventType;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;

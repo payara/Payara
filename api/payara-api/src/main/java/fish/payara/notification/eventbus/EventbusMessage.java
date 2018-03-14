@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,14 +39,13 @@
  */
 package fish.payara.notification.eventbus;
 
+import fish.payara.notification.Notification;
+
 /**
  * @author mertcaliskan
  */
-public interface EventbusMessage {
+public interface EventbusMessage extends Notification {
     String getHost();
     String getServerName();
-    String getDomain();
     String getInstance();
-    String getSubject();
-    String getMessage();
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,19 +39,23 @@
  */
 package fish.payara.notification.eventbus.core;
 
+import fish.payara.notification.healthcheck.HealthCheckNotificationData;
+import fish.payara.notification.healthcheck.HealthCheckResultEntry;
+import fish.payara.notification.requesttracing.RequestTrace;
+import fish.payara.notification.requesttracing.RequestTracingNotificationData;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
-import java.text.MessageFormat;
-import java.util.logging.Level;
 import javax.inject.Inject;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.ServiceLocator;
+import java.util.List;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
@@ -75,25 +79,33 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
     }
 
     @Override
-    public EventbusNotificationEvent buildNotificationEvent(String subject, String message) {
-        EventbusNotificationEvent event = initializeEvent(new EventbusNotificationEvent());
+    protected EventbusNotificationEvent createEventInstance() {
+        return new EventbusNotificationEvent();
+    }
+
+    @Override
+    public EventbusNotificationEvent buildNotificationEvent(String subject, RequestTrace requestTrace) {
+        EventbusNotificationEvent event = initializeEvent(createEventInstance());
         event.setSubject(subject);
-        event.setMessage(message);
-        event.setInstanceName(hazelcast.getUUID());;
+        event.setMessage(requestTrace.toString());
+
+        event.setNotificationData(new RequestTracingNotificationData(requestTrace));
+        event.setInstanceName(hazelcast.getUUID());
 
         return event;
     }
 
     @Override
-    public EventbusNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
-        EventbusNotificationEvent event = initializeEvent(new EventbusNotificationEvent());
-        event.setSubject(subject);
-        if (parameters != null && parameters.length > 0) {
-            message = MessageFormat.format(message, parameters);
+    public EventbusNotificationEvent buildNotificationEvent(String name, List<HealthCheckResultEntry> entries, Level level) {
+        EventbusNotificationEvent notificationEvent = initializeEvent(createEventInstance());
+        notificationEvent.setSubject(getSubject(level));
+        String messageFormatted = getMessageFormatted(new Object[]{name, getCumulativeMessages(entries)});
+        if (messageFormatted != null) {
+            notificationEvent.setMessage(messageFormatted);
         }
-        event.setMessage(message);
-        event.setInstanceName(hazelcast.getUUID());
-        return event;
+        notificationEvent.setNotificationData(new HealthCheckNotificationData(entries));
+        notificationEvent.setInstanceName(hazelcast.getUUID());
+
+        return notificationEvent;
     }
-    
 }

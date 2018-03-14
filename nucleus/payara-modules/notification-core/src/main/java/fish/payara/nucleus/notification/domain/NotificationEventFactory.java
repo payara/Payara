@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,17 +40,19 @@
 package fish.payara.nucleus.notification.domain;
 
 import com.sun.enterprise.config.serverbeans.Server;
+import fish.payara.notification.healthcheck.HealthCheckResultEntry;
+import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.log.LogNotificationEvent;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.inject.Inject;
-import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -86,11 +88,62 @@ public abstract class NotificationEventFactory<E extends NotificationEvent> {
         return e;
     }
 
-    public abstract E buildNotificationEvent(String subject, String message);
+    protected abstract E createEventInstance();
 
-    public abstract E buildNotificationEvent(Level level, String subject, String message, Object[] parameters);
+    public E buildNotificationEvent(String subject, String message) {
+        E event = initializeEvent(createEventInstance());
+        event.setSubject(subject);
+        event.setMessage(message);
+
+        return event;
+    }
+
+    public E buildNotificationEvent(String subject, RequestTrace requestTrace) {
+        E event = initializeEvent(createEventInstance());
+        event.setSubject(subject);
+        event.setMessage(requestTrace.toString());
+
+        return event;
+    }
+
+    public E buildNotificationEvent(String name, List<HealthCheckResultEntry> entries, Level level) {
+        E event = initializeEvent(createEventInstance());
+        event.setSubject(getSubject(level));
+        String messageFormatted = getMessageFormatted(new Object[]{name, getCumulativeMessages(entries)});
+        if (messageFormatted != null) {
+            event.setMessage(messageFormatted);
+        }
+
+        return event;
+    }
+
+    public E buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        E event = initializeEvent(createEventInstance());
+        event.setSubject(subject);
+        if (parameters != null && parameters.length > 0) {
+            message = MessageFormat.format(message, parameters);
+        }
+        event.setMessage(message);
+        return event;
+    }
 
     public NotificationEventFactoryStore getStore() {
         return store;
+    }
+
+    protected String getSubject(Level level) {
+        return "Health Check notification with severity level: " + level.getName();
+    }
+
+    protected String getMessageFormatted(Object[] parameters) {
+        String formattedMessage = null;
+        if (parameters != null && parameters.length > 0) {
+            formattedMessage = MessageFormat.format("{0}:{1}", parameters);
+        }
+        return formattedMessage;
+    }
+
+    protected String getCumulativeMessages(List<HealthCheckResultEntry> entries) {
+        return "Health Check Result:" + entries.toString();
     }
 }
