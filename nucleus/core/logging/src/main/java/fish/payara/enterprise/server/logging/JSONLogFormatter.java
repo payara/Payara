@@ -102,8 +102,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             LOG_SOURCE_IN_KEY_VALUE = true;
         }
 
-        String recordCount = System.getProperty(
-                "com.sun.aas.logging.keyvalue.recordnumber");
+        String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
         if ((recordCount != null) 
                 && (recordCount.equals("true"))) {
             RECORD_NUMBER_IN_KEY_VALUE = true;
@@ -114,25 +113,25 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private String recordDateFormat;
 
     // Event separator
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = System.lineSeparator();
 
     // String values for field keys
-    private static final String TIMESTAMP_KEY = "_Timestamp";
-    private static final String LOG_LEVEL_KEY = "_Level";
-    private static final String PRODUCT_ID_KEY = "_Version";
-    private static final String LOGGER_NAME_KEY = "_LoggerName";
+    private static final String TIMESTAMP_KEY = "Timestamp";
+    private static final String LOG_LEVEL_KEY = "Level";
+    private static final String PRODUCT_ID_KEY = "Version";
+    private static final String LOGGER_NAME_KEY = "LoggerName";
     // String values for exception keys
-    private static final String EXCEPTION_KEY = "_Exception";
-    private static final String STACK_TRACE_KEY = "_StackTrace";
+    private static final String EXCEPTION_KEY = "Exception";
+    private static final String STACK_TRACE_KEY = "StackTrace";
     // String values for thread excludable keys
-    private static final String THREAD_ID_KEY = "_ThreadID";
-    private static final String THREAD_NAME_KEY = "_ThreadName";
-    private static final String USER_ID_KEY = "_UserId";
-    private static final String ECID_KEY = "_ECId";
-    private static final String LEVEL_VALUE_KEY = "_LevelValue";
-    private static final String TIME_MILLIS_KEY = "_TimeMillis";
-    private static final String MESSAGE_ID_KEY = "_MessageID";
-    private static final String LOG_MESSAGE_KEY = "_LogMessage";
+    private static final String THREAD_ID_KEY = "ThreadID";
+    private static final String THREAD_NAME_KEY = "ThreadName";
+    private static final String USER_ID_KEY = "UserId";
+    private static final String ECID_KEY = "ECId";
+    private static final String LEVEL_VALUE_KEY = "LevelValue";
+    private static final String TIME_MILLIS_KEY = "TimeMillis";
+    private static final String MESSAGE_ID_KEY = "MessageID";
+    private static final String LOG_MESSAGE_KEY = "LogMessage";
 
     private static final String RFC3339_DATE_FORMAT = 
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
