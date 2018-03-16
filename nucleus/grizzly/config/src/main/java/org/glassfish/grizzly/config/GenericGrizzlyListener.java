@@ -61,6 +61,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.grizzly.Connection;
 
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.IOStrategy;
@@ -111,6 +112,9 @@ import org.glassfish.grizzly.portunif.PUFilter;
 import org.glassfish.grizzly.portunif.PUProtocol;
 import org.glassfish.grizzly.portunif.ProtocolFinder;
 import org.glassfish.grizzly.portunif.finders.SSLProtocolFinder;
+import org.glassfish.grizzly.sni.SNIConfig;
+import org.glassfish.grizzly.sni.SNIFilter;
+import org.glassfish.grizzly.sni.SNIServerConfigResolver;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.grizzly.ssl.SSLBaseFilter;
 import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
@@ -540,14 +544,32 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                        final Ssl ssl,
                                        final FilterChainBuilder filterChainBuilder) {
         final SSLEngineConfigurator serverConfig = new SSLConfigurator(habitat, ssl);
-//        final SSLEngineConfigurator clientConfig = new SSLConfigurator(habitat, ssl);
-//        clientConfig.setClientMode(true);
-        final SSLBaseFilter sslFilter = new SSLBaseFilter(serverConfig,
-         //                                             clientConfig,
-                                                      isRenegotiateOnClientAuthWant(ssl));
-        sslFilter.setHandshakeTimeout(
-                Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);
-
+        
+        Filter sslFilter = null; 
+        if (Boolean.valueOf(ssl.getSniEnabled())) {
+            SNIFilter sniFilter = new SNIFilter(serverConfig, null, isRenegotiateOnClientAuthWant(ssl));
+            sniFilter.setHandshakeTimeout(Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);
+            sniFilter.setServerSSLConfigResolver(new SNIServerConfigResolver() {
+                @Override
+                public SNIConfig resolve(Connection cnctn, String hostname) {
+                   if (hostname == null) {
+                        return SNIConfig.newServerConfig(serverConfig);
+                   } else {
+                       SSLConfigurator newConfigurator = new SSLConfigurator(habitat, ssl);
+                       newConfigurator.setSNICertAlias(hostname);
+                       return SNIConfig.newServerConfig(newConfigurator);                       
+                   }
+                }
+            });
+            sslFilter = sniFilter;
+        } else {
+            sslFilter = new SSLBaseFilter(serverConfig,
+            //                                             clientConfig,
+                                          isRenegotiateOnClientAuthWant(ssl));
+            ((SSLBaseFilter)sslFilter).setHandshakeTimeout(
+                Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);            
+        }
+        
         filterChainBuilder.add(sslFilter);
         return sslFilter;
     }
