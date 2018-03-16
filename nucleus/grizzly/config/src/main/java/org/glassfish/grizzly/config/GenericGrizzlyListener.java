@@ -752,9 +752,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final boolean secure) {
         isHttp2Enabled = false;
         if (!skipHttp2 && httpElement != null && httpElement.isHttp2Enabled()) {
-            Http2AddOn http2Addon;
             try {
-                http2Addon = new Http2AddOn(Http2Configuration.builder()
+                Http2AddOn http2Addon = new Http2AddOn(Http2Configuration.builder()
                         .disableCipherCheck(httpElement.isHttp2DisableCipherCheck())
                         .executorService(transport.getWorkerThreadPool())
                         .initialWindowSize(httpElement.getHttp2InitialWindowSizeInBytes())
