@@ -101,7 +101,8 @@ public enum RUNTIME_OPTION {
     clustermode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
     interfaces(true),
     sslcert(true),
-    help(false);
+    help(false),
+    enablesni(false);
 
     private RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());
