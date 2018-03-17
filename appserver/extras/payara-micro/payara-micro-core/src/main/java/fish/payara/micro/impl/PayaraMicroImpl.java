@@ -171,6 +171,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private RuntimeDirectory runtimeDir = null;
     private String secretsDir;
     private String sslCert;
+    private boolean sniEnabled = false;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -457,6 +458,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.sslPort = sslPort;
+        return this;
+    }
+    
+    @Override
+    public PayaraMicroImpl setSniEnabled(boolean value) {
+        sniEnabled = value;
         return this;
     }
 
@@ -1327,6 +1334,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case secretsdir:
                         secretsDir = value;
                         break;
+                    case enablesni:
+                        sniEnabled = true;
+                        break;
                     default:
                         break;
                 }
@@ -1760,6 +1770,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (sslCert != null) {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.cert-nickname=" + sslCert));            
         }
+        if (sniEnabled) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.sni-enabled=true"));
+        }
     }
 
     private void configurePhoneHome() {
@@ -2007,6 +2020,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         httpPort = getIntegerProperty("payaramicro.port", Integer.MIN_VALUE);
         sslPort = getIntegerProperty("payaramicro.sslPort", Integer.MIN_VALUE);
         sslCert = getProperty("payaramicro.sslCert");
+        sniEnabled = getBooleanProperty("payaramicro.sniEnabled");
         hzMulticastGroup = getProperty("payaramicro.mcAddress");
         hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
         hostAware = getBooleanProperty("payaramicro.hostAware");
@@ -2167,6 +2181,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
         props.setProperty("payaramicro.hostAware", Boolean.toString(hostAware));
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
+        props.setProperty("payaramicro.sniEnabled", Boolean.toString(sniEnabled));
 
         if (userLogFile != null) {
             props.setProperty("payaramicro.userLogFile", userLogFile);
@@ -2442,7 +2457,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     @Override
-    public void addLibrary(File lib) {
+    public PayaraMicroImpl addLibrary(File lib) {
         OpenURLClassLoader loader = (OpenURLClassLoader) this.getClass().getClassLoader();
         if (lib.exists() && lib.canRead() && lib.getName().endsWith(".jar")) {
             try {
@@ -2454,6 +2469,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } else {
             LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());
         }
+        return this;
     }
 
     private void configureSecrets() {
