@@ -84,7 +84,7 @@ public class PayaraServerProperties extends PayaraConfigSource implements Config
         }
         listener = serverCtx.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener-2");
         if (listener == null) {
-            listener = serverCtx.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");            
+            listener = serverCtx.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("https-listener");            
         }
         if (listener != null) {
             properties.put("payara.instance.https.port", listener.getPort());
