@@ -91,8 +91,6 @@ import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Formatter;
@@ -178,6 +176,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String clustermode;
     private String interfaces;
     private String secretsDir;
+    private String sslCert;
     private boolean showServletMappings;
 
     /**
@@ -432,16 +431,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     /**
-     * The configured port for HTTPS requests
-     *
-     * @return The HTTPS port
-     */
-    @Override
-    public int getSslPort() {
-        return sslPort;
-    }
-
-    /**
      * The UberJar to create
      *
      * @return
@@ -449,6 +438,16 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public File getUberJar() {
         return uberJar;
+    }
+    
+    /**
+     * The configured port for HTTPS requests
+     *
+     * @return The HTTPS port
+     */
+    @Override
+    public int getSslPort() {
+        return sslPort;
     }
 
     /**
@@ -468,6 +467,22 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         return this;
     }
 
+    /**
+     * Set the certificate alias in the keystore to use for the server cert
+     * @param alias name of the certificate in the keystore
+     * @return 
+     */
+    @Override
+    public PayaraMicroImpl setSslCert(String alias) {
+        sslCert = alias;
+        return this;
+    }
+    
+    @Override
+    public String getSslCert() {
+        return sslCert;
+    }
+    
     /**
      * Gets the logical name for this PayaraMicro Server within the server
      * cluster
@@ -1112,6 +1127,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         sslPort = Integer.parseInt(value);
                         break;
                     }
+                    case sslcert: {
+                        sslCert = value;
+                        break;
+                    }
                     case version: {
                         printVersion();
                         System.exit(1);
@@ -1422,7 +1441,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     /**
-     * Process the user system properties in precendence
+     * Process the user system properties in precedence
      * 1st loads the properties from the uber jar location
      * then loads each command line system properties file which will override
      * uber jar properties
@@ -1827,6 +1846,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 throw new GlassFishException("Could not bind SSL port");
             }
         }
+        
+        if (sslCert != null) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.cert-nickname=" + sslCert));            
+        }
     }
 
     private void configurePhoneHome() {
@@ -2101,6 +2124,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         enableHealthCheck = getBooleanProperty("payaramicro.enableHealthCheck");
         httpPort = getIntegerProperty("payaramicro.port", Integer.MIN_VALUE);
         sslPort = getIntegerProperty("payaramicro.sslPort", Integer.MIN_VALUE);
+        sslCert = getProperty("payaramicro.sslCert");
         hzMulticastGroup = getProperty("payaramicro.mcAddress");
         hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
         hostAware = getBooleanProperty("payaramicro.hostAware","true");
@@ -2257,6 +2281,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (secretsDir != null) {
             props.setProperty("payaramicro.secretsDir", secretsDir);
+        }
+        
+        if (sslCert != null) {
+            props.setProperty("payaramicro.sslCert", sslCert);
         }
 
         props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
