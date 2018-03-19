@@ -73,21 +73,12 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-
 /**
- * Created by IntelliJ IDEA.
- * User: naman mehta
- * Date: Oct 21, 2010
- * Time: 11:48:20 AM
- * To change this template use File | Settings | File Templates.
- */
-
-/*
 * Set Log Attributes Command
 *
 * Updates one or more loggers' attributes
-*
-*
+* @author naman mehta
+* @since 3.1
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
@@ -103,7 +94,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 })
 public class SetLogAttributes implements AdminCommand {
 
-    private static final String LINE_SEP = System.getProperty("line.separator");
+    private static final String LINE_SEP = System.lineSeparator();
     private static final String ROTATION_LIMIT_IN_BYTES = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
     private static final String ROTATION_TIMELIMIT_IN_MINUTES = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
     private static final String PAYARA_NOTIFICATOIN_ROTATION_LIMIT_IN_BYTES = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes";
@@ -172,14 +163,16 @@ public class SetLogAttributes implements AdminCommand {
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange",
         PAYARA_NOTIFICATOIN_ROTATION_LIMIT_IN_BYTES,
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation"};
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation",
+        "fish.payara.deprecated.jsonlogformatter.underscoreprefix"};
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-        StringBuffer sbfSuccessMsg = new StringBuffer(LINE_SEP);
+        StringBuilder sbfSuccessMsg = new StringBuilder(LINE_SEP);
         boolean success = false;
         boolean invalidAttribute = false;
 
