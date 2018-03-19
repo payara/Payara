@@ -47,7 +47,7 @@
     <parent>
         <artifactId>nucleus-security</artifactId>
         <groupId>org.glassfish.main.security</groupId>
-        <version>5.181</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
     <artifactId>ssl-impl</artifactId>
     <packaging>glassfish-jar</packaging>
