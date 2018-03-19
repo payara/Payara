@@ -47,7 +47,7 @@
  *
  * Created on May 23, 2002, 1:56 PM
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.provider;
 
 //import sun.security.provider.PolicyFile;
@@ -148,12 +148,11 @@ public class BasePolicyWrapper extends java.security.Policy {
      * Evaluates the global policy and returns a PermissionCollection object specifying the set of permissions allowed for
      * code from the specified code source.
      *
-     * @param codesource
-     *            the CodeSource associated with the caller. This encapsulates the original location of the code (where the
-     *            code came from) and the public key(s) of its signer.
+     * @param codesource the CodeSource associated with the caller. This encapsulates the original location of the code
+     * (where the code came from) and the public key(s) of its signer.
      *
      * @return the set of permissions allowed for code from <i>codesource</i> according to the policy.The returned set of
-     *         permissions must be a new mutable instance and it must support heterogeneous Permission types.
+     * permissions must be a new mutable instance and it must support heterogeneous Permission types.
      *
      */
     @Override
@@ -176,11 +175,10 @@ public class BasePolicyWrapper extends java.security.Policy {
      * Evaluates the global policy and returns a PermissionCollection object specifying the set of permissions allowed given
      * the characteristics of the protection domain.
      *
-     * @param domain
-     *            the ProtectionDomain associated with the caller.
+     * @param domain the ProtectionDomain associated with the caller.
      *
      * @return the set of permissions allowed for the <i>domain</i> according to the policy.The returned set of permissions
-     *         must be a new mutable instance and it must support heterogeneous Permission types.
+     * must be a new mutable instance and it must support heterogeneous Permission types.
      *
      * @see java.security.ProtectionDomain
      * @see java.security.SecureClassLoader
@@ -205,10 +203,8 @@ public class BasePolicyWrapper extends java.security.Policy {
      * Evaluates the global policy for the permissions granted to the ProtectionDomain and tests whether the permission is
      * granted.
      *
-     * @param domain
-     *            the ProtectionDomain to test
-     * @param permission
-     *            the Permission object to be tested for implication.
+     * @param domain the ProtectionDomain to test
+     * @param permission the Permission object to be tested for implication.
      *
      * @return true if "permission" is a proper subset of a permission granted to this ProtectionDomain.
      *

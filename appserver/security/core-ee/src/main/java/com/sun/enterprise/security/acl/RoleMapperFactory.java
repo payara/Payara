@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.acl;
 
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
@@ -66,8 +66,7 @@ public class RoleMapperFactory implements SecurityRoleMapperFactory {
     /**
      * Returns a RoleMapper corresponding to the AppName.
      * 
-     * @param The
-     *            Application Name of this RoleMapper.
+     * @param The Application Name of this RoleMapper.
      *
      */
     @Override
@@ -88,22 +87,18 @@ public class RoleMapperFactory implements SecurityRoleMapperFactory {
     /**
      * remove the RoleMapping associated with this application
      * 
-     * @param the
-     *            application name for this RoleMapper
+     * @param the application name for this RoleMapper
      * 
-     *            public void removeRoleMapper(String appName) { RoleMapper.removeRoleMapper(appName); }
+     * public void removeRoleMapper(String appName) { RoleMapper.removeRoleMapper(appName); }
      */
 
     /**
      * Sets a new RoleMapper for a particular Application
      * 
-     * @param the
-     *            application name
-     * @param the
-     *            new role mapper
+     * @param the application name
+     * @param the new role mapper
      * 
-     *            public void setRoleMapper(String appName, SecurityRoleMapper rmap) { RoleMapper.setRoleMapper(appName,
-     *            rmap); }
+     * public void setRoleMapper(String appName, SecurityRoleMapper rmap) { RoleMapper.setRoleMapper(appName, rmap); }
      */
 
     @Override
@@ -124,8 +119,7 @@ public class RoleMapperFactory implements SecurityRoleMapperFactory {
     /**
      * Returns a RoleMapper corresponding to the AppName.
      * 
-     * @param appName
-     *            Application Name of this RoleMapper.
+     * @param appName Application Name of this RoleMapper.
      * @return SecurityRoleMapper for the application
      */
     public RoleMapper getRoleMapper(String appName, SecurityRoleMapperFactory fact) {
@@ -140,10 +134,8 @@ public class RoleMapperFactory implements SecurityRoleMapperFactory {
     /**
      * Set a RoleMapper for the application
      * 
-     * @param appName
-     *            Application or module name
-     * @param rmap
-     *            <I>SecurityRoleMapper</I> for the application or the module
+     * @param appName Application or module name
+     * @param rmap <I>SecurityRoleMapper</I> for the application or the module
      */
     @Override
     public void setRoleMapper(String appName, SecurityRoleMapper rmap) {
@@ -151,8 +143,7 @@ public class RoleMapperFactory implements SecurityRoleMapperFactory {
     }
 
     /**
-     * @param appName
-     *            Application/module name.
+     * @param appName Application/module name.
      */
     @Override
     public void removeRoleMapper(String appName) {

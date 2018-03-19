@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
@@ -93,7 +93,7 @@ public final class RegStoreFileParser {
     public RegStoreFileParser(String pathParent, String pathChild, List<EntryInfo> defaultEntries) {
         configurationFile = new File(pathParent, pathChild);
         this.defaultEntries = defaultEntries == null ? new ArrayList<EntryInfo>() : defaultEntries;
-        
+
         try {
             loadEntries();
         } catch (IOException ioe) {
@@ -152,7 +152,7 @@ public final class RegStoreFileParser {
         if (properties != null && properties.isEmpty()) {
             properties = null;
         }
-        
+
         EntryInfo newEntry = new EntryInfo(className, properties, registrationContext);
         EntryInfo entry = getMatchingRegistrationEntry(newEntry);
 
@@ -169,7 +169,7 @@ public final class RegStoreFileParser {
 
         // No matching context in existing entry, so add to existing entry
         entry.getRegistrationContexts().add(new RegistrationContextImpl(registrationContext));
-        
+
         return true;
     }
 
@@ -205,7 +205,7 @@ public final class RegStoreFileParser {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
+
         return retValue;
     }
 
@@ -219,7 +219,7 @@ public final class RegStoreFileParser {
                 return info;
             }
         }
-        
+
         return null;
     }
 
@@ -230,9 +230,9 @@ public final class RegStoreFileParser {
         if (configurationFile.exists() && !configurationFile.canWrite() && logger.isLoggable(WARNING)) {
             logger.log(WARNING, "jmac.factory_cannot_write_file", configurationFile.getPath());
         }
-        
+
         clearExistingFile();
-        
+
         PrintWriter out = new PrintWriter(configurationFile);
         int indent = 0;
         for (EntryInfo info : entries) {
@@ -246,21 +246,26 @@ public final class RegStoreFileParser {
     }
 
     /**
-     * Writes constructor entry output of the form: <pre> con-entry { className key:value key:value } </pre> The first
-     * appearance of a colon ":" separates the key and value of the property (so a value may contain a colon as part of the
-     * string). For instance: "mydir:c:foo" would have key "mydir" and value "c:foo".
+     * Writes constructor entry output of the form:
+     * 
+     * <pre>
+     *  con-entry { className key:value key:value }
+     * </pre>
+     * 
+     * The first appearance of a colon ":" separates the key and value of the property (so a value may contain a colon as
+     * part of the string). For instance: "mydir:c:foo" would have key "mydir" and value "c:foo".
      */
     private void writeConEntry(EntryInfo info, PrintWriter out, int i) {
         out.println(INDENT[i++] + CON_ENTRY + " {");
         out.println(INDENT[i] + info.getClassName());
-        
+
         Map<String, String> properties = info.getProperties();
         if (properties != null) {
             for (Map.Entry<String, String> val : properties.entrySet()) {
                 out.println(INDENT[i] + val.getKey() + SEP + val.getValue());
             }
         }
-        
+
         out.println(INDENT[--i] + "}");
     }
 
@@ -273,40 +278,40 @@ public final class RegStoreFileParser {
         if (info.getClassName() != null) {
             writeConEntry(info, out, i);
         }
-        
+
         for (RegistrationContext registrationContext : info.getRegistrationContexts()) {
             out.println(INDENT[i++] + REG_CTX + " {");
             if (registrationContext.getMessageLayer() != null) {
                 out.println(INDENT[i] + LAYER + SEP + registrationContext.getMessageLayer());
             }
-            
+
             if (registrationContext.getAppContext() != null) {
                 out.println(INDENT[i] + APP_CTX + SEP + registrationContext.getAppContext());
             }
-            
+
             if (registrationContext.getDescription() != null) {
                 out.println(INDENT[i] + DESCRIPTION + SEP + registrationContext.getDescription());
             }
-            
+
             out.println(INDENT[--i] + "}");
         }
-        
+
         out.println(INDENT[--i] + "}");
     }
 
     private void clearExistingFile() throws IOException {
         boolean newCreation = !configurationFile.exists();
-        
+
         if (!newCreation) {
             if (!configurationFile.delete()) {
                 throw new IOException();
             }
         }
-        
+
         if (newCreation) {
             logger.log(INFO, "jmac.factory_creating_conf_file", configurationFile.getPath());
         }
-        
+
         if (!configurationFile.createNewFile()) {
             throw new IOException();
         }
@@ -334,9 +339,10 @@ public final class RegStoreFileParser {
                 }
             } else {
                 if (logger.isLoggable(FINER)) {
-                    logger.log(FINER, "jmac.factory_file_not_found", configurationFile.getParent() + File.pathSeparator + configurationFile.getPath());
+                    logger.log(FINER, "jmac.factory_file_not_found",
+                            configurationFile.getParent() + File.pathSeparator + configurationFile.getPath());
                 }
-                
+
                 for (EntryInfo entry : defaultEntries) {
                     entries.add(new EntryInfo(entry));
                 }
@@ -350,7 +356,7 @@ public final class RegStoreFileParser {
         if (className != null) {
             className = className.trim();
         }
-        
+
         return new EntryInfo(className, readProperties(reader));
     }
 
@@ -367,7 +373,7 @@ public final class RegStoreFileParser {
         if ("}".equals(line)) {
             return null;
         }
-        
+
         Map<String, String> properties = new HashMap<String, String>();
         while (!"}".equals(line)) {
             properties.put(line.substring(0, line.indexOf(SEP)), line.substring(line.indexOf(SEP) + 1, line.length()));
@@ -376,7 +382,7 @@ public final class RegStoreFileParser {
                 line = line.trim();
             }
         }
-        
+
         return properties;
     }
 
@@ -413,7 +419,7 @@ public final class RegStoreFileParser {
         if (line != null) {
             line = line.trim();
         }
-        
+
         while (!"}".equals(line)) {
             String value = line.substring(line.indexOf(SEP) + 1, line.length());
             if (line.startsWith(LAYER)) {
@@ -423,16 +429,16 @@ public final class RegStoreFileParser {
             } else if (line.startsWith(DESCRIPTION)) {
                 description = value;
             }
-            
+
             line = reader.readLine();
             if (line != null) {
                 line = line.trim();
             }
         }
-        
+
         return new RegistrationContextImpl(layer, appCtx, description, true);
     }
-    
+
     private void logWarningUpdated(Exception exception) {
         if (logger.isLoggable(WARNING)) {
             logger.log(WARNING, "jmac.factory_could_not_persist", exception.toString());

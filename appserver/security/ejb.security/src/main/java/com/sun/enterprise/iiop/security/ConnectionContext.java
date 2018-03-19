@@ -48,9 +48,9 @@ import com.sun.corba.ee.spi.ior.IOR;
 import com.sun.corba.ee.spi.transport.SocketInfo;
 
 public final class ConnectionContext implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     private CompoundSecMech mechanism;
     private boolean sslClientAuth;
     private boolean ssl;
@@ -150,6 +150,7 @@ public final class ConnectionContext implements Serializable {
         socket = s;
     }
 
+    @Override
     public String toString() {
         String s = "sslClientAuth=" + sslClientAuth;
         s = s + " SSL=" + ssl;

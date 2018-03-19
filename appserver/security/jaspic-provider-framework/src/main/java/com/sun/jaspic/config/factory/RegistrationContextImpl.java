@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
@@ -48,7 +48,7 @@ import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
  * This class will *not* be used outside of its package.
  */
 final class RegistrationContextImpl implements RegistrationContext {
-    
+
     private final String messageLayer;
     private final String appContext;
     private final String description;
@@ -94,13 +94,12 @@ final class RegistrationContextImpl implements RegistrationContext {
         if (o == null || !(o instanceof RegistrationContext)) {
             return false;
         }
-        
+
         RegistrationContext target = (RegistrationContext) o;
-        
-        return (
-            EntryInfo.matchStrings(messageLayer, target.getMessageLayer()) && 
-            EntryInfo.matchStrings(appContext, target.getAppContext()) && 
-            isPersistent() == target.isPersistent());
+
+        return (EntryInfo.matchStrings(messageLayer, target.getMessageLayer()) &&
+                EntryInfo.matchStrings(appContext, target.getAppContext()) &&
+                isPersistent() == target.isPersistent());
     }
 
     @Override
@@ -109,7 +108,7 @@ final class RegistrationContextImpl implements RegistrationContext {
         hash = 17 * hash + (this.messageLayer != null ? this.messageLayer.hashCode() : 0);
         hash = 17 * hash + (this.appContext != null ? this.appContext.hashCode() : 0);
         hash = 17 * hash + (this.isPersistent ? 1 : 0);
-        
+
         return hash;
     }
 }

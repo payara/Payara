@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.perms;
 
 import java.net.URL;
@@ -172,8 +172,7 @@ public class SMGlobalPolicyUtil {
     /**
      * Get the default granted permissions of a specified component type
      * 
-     * @param type
-     *            Java EE component type
+     * @param type Java EE component type
      * @return the permission set granted to the specified component
      */
     public static PermissionCollection getEECompGrantededPerms(CommponentType type) {
@@ -184,8 +183,7 @@ public class SMGlobalPolicyUtil {
     /**
      * Get the default granted permissions of a specified component type
      * 
-     * @param type
-     *            Java EE component type such as ejb, war, rar, car, ear
+     * @param type Java EE component type such as ejb, war, rar, car, ear
      * @return
      */
     public static PermissionCollection getEECompGrantededPerms(String type) {
@@ -196,8 +194,7 @@ public class SMGlobalPolicyUtil {
     /**
      * Get the restricted permission set of a specified component type on the server
      * 
-     * @param type
-     *            Java EE component type
+     * @param type Java EE component type
      * @return the restricted permission set of the specified component type on the server
      */
     public static PermissionCollection getCompRestrictedPerms(CommponentType type) {
@@ -359,8 +356,7 @@ public class SMGlobalPolicyUtil {
      * @param declaredPC
      * @param restrictedPC
      * @return true for passed
-     * @throws SecurityException
-     *             is thrown if violation detected
+     * @throws SecurityException is thrown if violation detected
      */
     public static void checkRestriction(PermissionCollection declaredPC, PermissionCollection restrictedPC) throws SecurityException {
 

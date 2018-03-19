@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.authorize;
 
 import java.security.SecurityPermission;
@@ -82,6 +82,7 @@ public class PolicyContextHandlerImpl implements PolicyContextHandler {
         return _getInstance();
     }
 
+    @Override
     public boolean supports(String key) {
         String[] s = getKeys();
         for (int i = 0; i < s.length; i++) {
@@ -92,11 +93,13 @@ public class PolicyContextHandlerImpl implements PolicyContextHandler {
         return false;
     }
 
+    @Override
     public String[] getKeys() {
         String[] s = { HTTP_SERVLET_REQUEST, SOAP_MESSAGE, ENTERPRISE_BEAN, SUBJECT, EJB_ARGUMENTS, REUSE };
         return s;
     }
 
+    @Override
     public Object getContext(String key, Object data) {
         // ignore data Object
         return getHandlerData().get(key);

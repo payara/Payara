@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import java.security.*;
@@ -94,21 +94,15 @@ public class WebProgrammaticLoginImpl implements WebProgrammaticLogin {
      * <P>
      * Note also that this login does not hook up into SSO.
      *
-     * @param user
-     *            User name to login.
-     * @param password
-     *            User password.
-     * @param request
-     *            HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
-     * @param response
-     *            HTTP response object provided by called application. It should be an instance of HttpServletResponse. This
-     *            is not used currently.
-     * @param realm
-     *            the realm name to be authenticated to. If the realm is null, authentication takes place in default realm
+     * @param user User name to login.
+     * @param password User password.
+     * @param request HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
+     * @param response HTTP response object provided by called application. It should be an instance of HttpServletResponse.
+     * This is not used currently.
+     * @param realm the realm name to be authenticated to. If the realm is null, authentication takes place in default realm
      * @returns A Boolean object; true if login succeeded, false otherwise.
      * @see com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin
-     * @throws Exception
-     *             on login failure.
+     * @throws Exception on login failure.
      *
      */
     @Override
@@ -185,15 +179,12 @@ public class WebProgrammaticLoginImpl implements WebProgrammaticLogin {
     /**
      * Logout and remove principal in request and session.
      *
-     * @param request
-     *            HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
-     * @param response
-     *            HTTP response object provided by called application. It should be an instance of HttpServletResponse. This
-     *            is not used currently.
+     * @param request HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
+     * @param response HTTP response object provided by called application. It should be an instance of HttpServletResponse.
+     * This is not used currently.
      * @returns A Boolean object; true if login succeeded, false otherwise.
      * @see com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin
-     * @throws Exception
-     *             any exception encountered during logout operation
+     * @throws Exception any exception encountered during logout operation
      */
     @Override
     public Boolean logout(HttpServletRequest request, HttpServletResponse response) throws Exception {

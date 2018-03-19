@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
@@ -59,10 +59,8 @@ import org.jvnet.hk2.annotations.Contract;
 public interface WebServicesDelegate {
     /**
      * 
-     * @param svcRef
-     *            The ServiceReferenceDescriptor
-     * @param properties
-     *            The Properties Map passed to WebServices Code Via PipeCreator
+     * @param svcRef The ServiceReferenceDescriptor
+     * @param properties The Properties Map passed to WebServices Code Via PipeCreator
      * @return The MessageSecurityBindingDescriptor
      */
     public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties);
@@ -80,15 +78,13 @@ public interface WebServicesDelegate {
     public String getDefaultWebServicesProvider();
 
     /**
-     * @param messageInfo
-     *            The MessageInfo
+     * @param messageInfo The MessageInfo
      * @return the AuthContextID computed from the argument MessageInfo
      */
     public String getAuthContextID(MessageInfo messageInfo);
 
     /**
-     * @param messageInfo
-     *            TheMessageInfo
+     * @param messageInfo TheMessageInfo
      * @return a new instance of SOAPAuthParam
      */
     public AuthParam newSOAPAuthParam(MessageInfo messageInfo);
@@ -96,8 +92,7 @@ public interface WebServicesDelegate {
     /**
      * return the SOAP Message from the invocation, to be used by JACC PolicyContextHandler
      * 
-     * @param inv
-     *            the invocation
+     * @param inv the invocation
      * @return the SOAP Message
      */
     public Object getSOAPMessage(ComponentInvocation inv);

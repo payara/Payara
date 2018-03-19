@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.helper;
 
 import static java.util.logging.Level.FINE;
@@ -70,14 +70,14 @@ public class ClientAuthConfigImpl extends BaseAuthConfigImpl implements ClientAu
 
     private final static AuthStatus[] validateResponseSuccessValues = { SUCCESS };
     private final static AuthStatus[] secureResponseSuccessValues = { SEND_SUCCESS };
-    
+
     private Map<String, Map<Integer, ClientAuthContext>> contextMap;
     private BaseAuthContextImpl authContextHelper;
 
     protected ClientAuthConfigImpl(String loggerName, EpochCarrier providerEpoch, BaseAuthContextImpl acHelper,
             MessagePolicyDelegate mpDelegate, String layer, String appContext, CallbackHandler cbh) throws AuthException {
         super(loggerName, providerEpoch, mpDelegate, layer, appContext, cbh);
-        
+
         this.authContextHelper = acHelper;
     }
 
@@ -123,43 +123,44 @@ public class ClientAuthConfigImpl extends BaseAuthConfigImpl implements ClientAu
                             logIfLevel(FINE, null, "ClientAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                                     "initializing module");
                         }
-                        
+
                         noModules = false;
                         checkMessageTypes(clientModules[i].getSupportedMessageTypes());
-                        
-                        clientModules[i].initialize(requestPolicy, responsePolicy, callbackHandler, authContextHelper.getInitProperties(i, properties));
+
+                        clientModules[i].initialize(requestPolicy, responsePolicy, callbackHandler,
+                                authContextHelper.getInitProperties(i, properties));
                     }
                 }
-                
+
                 if (noModules) {
                     logIfLevel(WARNING, null, "CLientAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                             "contains no Auth Modules");
                 }
-                
+
                 return clientModules;
             }
 
             @Override
             public AuthStatus validateResponse(MessageInfo arg0, Subject arg1, Subject arg2) throws AuthException {
                 AuthStatus[] status = new AuthStatus[module.length];
-                
+
                 for (int i = 0; i < module.length; i++) {
                     if (module[i] == null) {
                         continue;
                     }
-                    
+
                     if (isLoggable(FINE)) {
                         logIfLevel(FINE, null, "ClientAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                                 "calling vaidateResponse on module");
                     }
-                    
+
                     status[i] = module[i].validateResponse(arg0, arg1, arg2);
-                    
+
                     if (authContextHelper.exitContext(validateResponseSuccessValues, i, status[i])) {
                         return authContextHelper.getReturnStatus(validateResponseSuccessValues, SEND_FAILURE, status, i);
                     }
                 }
-                
+
                 return authContextHelper.getReturnStatus(validateResponseSuccessValues, SEND_FAILURE, status, status.length - 1);
             }
 
@@ -170,14 +171,14 @@ public class ClientAuthConfigImpl extends BaseAuthConfigImpl implements ClientAu
                     if (module[i] == null) {
                         continue;
                     }
-                    
+
                     if (isLoggable(FINE)) {
                         logIfLevel(FINE, null, "ClientAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                                 "calling secureResponse on module");
                     }
-                    
+
                     status[i] = module[i].secureRequest(arg0, arg1);
-                    
+
                     if (authContextHelper.exitContext(secureResponseSuccessValues, i, status[i])) {
                         return authContextHelper.getReturnStatus(secureResponseSuccessValues, AuthStatus.SEND_FAILURE, status, i);
                     }
@@ -191,23 +192,24 @@ public class ClientAuthConfigImpl extends BaseAuthConfigImpl implements ClientAu
                     if (module[i] == null) {
                         continue;
                     }
-                    
+
                     if (isLoggable(FINE)) {
                         logIfLevel(FINE, null, "ClientAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                                 "calling cleanSubject on module");
                     }
-                    
+
                     module[i].cleanSubject(arg0, arg1);
                 }
             }
         };
-        
+
         return (M) context;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public ClientAuthContext getAuthContext(String authContextID, Subject subject, @SuppressWarnings("rawtypes") Map properties) throws AuthException {
+    public ClientAuthContext getAuthContext(String authContextID, Subject subject, @SuppressWarnings("rawtypes") Map properties)
+            throws AuthException {
         return super.getContext(contextMap, authContextID, subject, properties);
     }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web.integration;
 
 import java.util.HashMap;
@@ -131,7 +131,7 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
         if (register) {
             manager = getManager(ctxId, null, false);
         }
-        
+
         if (manager == null || !register) {
             try {
                 probeProvider.securityManagerCreationStartedEvent(wbd.getModuleID());
@@ -148,7 +148,7 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
                 throw new RuntimeException(e);
             }
         }
-        
+
         return manager;
     }
 }

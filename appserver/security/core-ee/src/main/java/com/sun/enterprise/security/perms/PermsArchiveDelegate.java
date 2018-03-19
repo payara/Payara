@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.perms;
 
 import java.io.File;
@@ -57,13 +57,10 @@ public class PermsArchiveDelegate {
     /**
      * Get the application or module packaged permissions
      * 
-     * @param type
-     *            the type of the module, this is used to check the configured restriction for the type
-     * @param context
-     *            the deployment context
+     * @param type the type of the module, this is used to check the configured restriction for the type
+     * @param context the deployment context
      * @return the module or app declared permissions
-     * @throws SecurityException
-     *             if permissions.xml has syntax failure, or failed for restriction check
+     * @throws SecurityException if permissions.xml has syntax failure, or failed for restriction check
      */
     public static PermissionCollection getDeclaredPermissions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext context)
             throws SecurityException {
@@ -94,10 +91,8 @@ public class PermsArchiveDelegate {
     /**
      * Get the EE permissions for the spcified module type
      * 
-     * @param type
-     *            module type
-     * @param dc
-     *            the deployment context
+     * @param type module type
+     * @param dc the deployment context
      * @return the ee permissions
      */
     public static PermissionCollection processEEPermissions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc) {
@@ -112,12 +107,9 @@ public class PermsArchiveDelegate {
     /**
      * Get the declared permissions and EE permissions, then add them to the classloader
      * 
-     * @param type
-     *            module type
-     * @param context
-     *            deployment context
-     * @param classloader
-     *            throws AccessControlException if caller has no privilege
+     * @param type module type
+     * @param context deployment context
+     * @param classloader throws AccessControlException if caller has no privilege
      */
     public static void processModuleDeclaredAndEEPemirssions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext context,
             ClassLoader classloader) throws SecurityException {

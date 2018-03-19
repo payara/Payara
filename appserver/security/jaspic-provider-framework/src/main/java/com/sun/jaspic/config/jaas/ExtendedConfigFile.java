@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.jaas;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
@@ -81,10 +81,9 @@ public class ExtendedConfigFile extends ConfigFile {
      * The ExtendedConfigFile subclass was created because the Configuration interface does not provide a way to do what
      * this method does; i.e. get all the app names from the config.
      * 
-     * @param authModuleClass
-     *            an Array of Class objects or null. When this parameter is not null, the appnames are filtered by removing
-     *            all names that are not associated via an AppConfigurationEntry with at least one LoginModule that
-     *            implements an authModuleClass.
+     * @param authModuleClass an Array of Class objects or null. When this parameter is not null, the appnames are filtered
+     * by removing all names that are not associated via an AppConfigurationEntry with at least one LoginModule that
+     * implements an authModuleClass.
      * @return String[] containing all the AppNames appearing in the config file.
      * @throws SecurityException
      */

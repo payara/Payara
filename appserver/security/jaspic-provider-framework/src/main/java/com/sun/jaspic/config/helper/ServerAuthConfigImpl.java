@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.helper;
 
 import com.sun.jaspic.config.delegate.MessagePolicyDelegate;
@@ -70,15 +70,15 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
 
     private final static AuthStatus[] validateRequestSuccessValues = { SUCCESS, SEND_SUCCESS };
     private final static AuthStatus[] secureResponseSuccessValues = { SEND_SUCCESS };
-    
+
     private Map<String, Map<Integer, ServerAuthContext>> contextMap;
     private BaseAuthContextImpl authContextHelperHelper;
 
     protected ServerAuthConfigImpl(String loggerName, EpochCarrier providerEpoch, BaseAuthContextImpl authContextHelper,
             MessagePolicyDelegate policyDelegate, String layer, String appContext, CallbackHandler cbh) throws AuthException {
-        
+
         super(loggerName, providerEpoch, policyDelegate, layer, appContext, cbh);
-        
+
         this.authContextHelperHelper = authContextHelper;
         this.policyDelegate = policyDelegate;
     }
@@ -104,7 +104,7 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
 
             ServerAuthModule[] init() throws AuthException {
                 ServerAuthModule[] serverAuthModules;
-                
+
                 try {
                     serverAuthModules = authContextHelperHelper.getModules(new ServerAuthModule[0], authContextID);
                 } catch (AuthException ae) {
@@ -125,66 +125,66 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
                         }
                         noModules = false;
                         checkMessageTypes(serverAuthModules[i].getSupportedMessageTypes());
-                        
+
                         serverAuthModules[i].initialize(
-                                requestPolicy, responsePolicy, 
+                                requestPolicy, responsePolicy,
                                 callbackHandler, authContextHelperHelper.getInitProperties(i, properties));
                     }
                 }
-                
+
                 if (noModules) {
                     logIfLevel(WARNING, null, "ServerAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                             "contains no Auth Modules");
                 }
-                
+
                 return serverAuthModules;
             }
 
             @Override
             public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
                 AuthStatus[] status = new AuthStatus[module.length];
-                
+
                 for (int i = 0; i < module.length; i++) {
                     if (module[i] == null) {
                         continue;
                     }
-                    
+
                     if (isLoggable(FINE)) {
                         logIfLevel(FINE, null, "ServerAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                                 "calling vaidateRequest on module");
                     }
-                    
+
                     status[i] = module[i].validateRequest(messageInfo, clientSubject, serviceSubject);
-                    
+
                     if (authContextHelperHelper.exitContext(validateRequestSuccessValues, i, status[i])) {
                         return authContextHelperHelper.getReturnStatus(validateRequestSuccessValues, SEND_FAILURE, status, i);
                     }
                 }
-                
+
                 return authContextHelperHelper.getReturnStatus(validateRequestSuccessValues, SEND_FAILURE, status, status.length - 1);
             }
 
             @Override
             public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
                 AuthStatus[] status = new AuthStatus[module.length];
-                
+
                 for (int i = 0; i < module.length; i++) {
                     if (module[i] == null) {
                         continue;
                     }
-                    
+
                     if (isLoggable(FINE)) {
                         logIfLevel(FINE, null, "ServerAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                                 "calling secureResponse on module");
                     }
-                    
+
                     status[i] = module[i].secureResponse(messageInfo, serviceSubject);
-                    
+
                     if (authContextHelperHelper.exitContext(secureResponseSuccessValues, i, status[i])) {
                         return authContextHelperHelper.getReturnStatus(secureResponseSuccessValues, SEND_FAILURE, status, i);
                     }
                 }
-                
+
                 return authContextHelperHelper.getReturnStatus(secureResponseSuccessValues, SEND_FAILURE, status, status.length - 1);
             }
 
@@ -194,12 +194,12 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
                     if (module[i] == null) {
                         continue;
                     }
-                    
+
                     if (isLoggable(Level.FINE)) {
                         logIfLevel(Level.FINE, null, "ServerAuthContext: ", authContextID, "of AppContext: ", getAppContext(),
                                 "calling cleanSubject on module");
                     }
-                    
+
                     module[i].cleanSubject(arg0, arg1);
                 }
             }
@@ -208,7 +208,8 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
 
     @Override
     @SuppressWarnings("unchecked")
-    public ServerAuthContext getAuthContext(String authContextID, Subject subject, @SuppressWarnings("rawtypes") Map properties) throws AuthException {
+    public ServerAuthContext getAuthContext(String authContextID, Subject subject, @SuppressWarnings("rawtypes") Map properties)
+            throws AuthException {
         return super.getContext(contextMap, authContextID, subject, properties);
     }
 
@@ -216,6 +217,5 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
     public boolean isProtected() {
         return !authContextHelperHelper.returnsNullContexts() || policyDelegate.isProtected();
     }
-    
-    
+
 }

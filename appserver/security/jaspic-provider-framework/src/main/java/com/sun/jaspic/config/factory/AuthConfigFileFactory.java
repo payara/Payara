@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 /**
@@ -53,16 +53,15 @@ public class AuthConfigFileFactory extends BaseAuthConfigFactory {
      * To specialize the defaultEntries passed to the {@link RegStoreFileParser} constructor, create another subclass of
      * BaseAuthconfigFactory, that is basically a copy of this class, with a change to the third argument of the call to new
      * ResSToreFileParser. To ensure runtime use of the the associated regStore, make sure that the new subclass also
-     * contains an implementation of the getRegStore method. 
+     * contains an implementation of the getRegStore method.
      * 
      * <p>
-     * As done within this class, use the locks defined in
-     * BaseAuthConfigFactory to serialize access to the regStore (both within the class constructor, and within getRegStore)
+     * As done within this class, use the locks defined in BaseAuthConfigFactory to serialize access to the regStore (both
+     * within the class constructor, and within getRegStore)
      * </p>
      *
      * <p>
-     * All EentyInfo OBJECTS PASSED as default Entries MUST HAVE BEEN CONSTRUCTED USING THE FOLLOWING CONSTRUCTOR:
-     * <code>
+     * All EentyInfo OBJECTS PASSED as default Entries MUST HAVE BEEN CONSTRUCTED USING THE FOLLOWING CONSTRUCTOR: <code>
      * EntryInfo(String className, Map<String, String> properties);
      * </code>
      * </p>
@@ -72,9 +71,9 @@ public class AuthConfigFileFactory extends BaseAuthConfigFactory {
         if (doReadLocked(() -> regStore != null)) {
             return;
         }
-        
+
         String userDir = System.getProperty("user.dir");
-        
+
         doWriteLocked(() -> {
             if (regStore == null) {
                 regStore = new RegStoreFileParser(userDir, CONF_FILE_NAME, null);

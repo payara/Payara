@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import java.util.ArrayList;
@@ -55,35 +55,31 @@ import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
  * @author Bobby Bissett
  */
 public final class EntryInfo {
-    
+
     private final String className;
     private final Map<String, String> properties;
-   
+
     private List<RegistrationContext> registrationContexts;
-    
+
     /*
-     * This will create a constructor entry. The className must not be null.
-     * 
-     * ONLY CONSTRUCTOR that should be used used to construct defaultEntries (passed RegStoreFileParser construction). DO
-     * NOT USE OTHER CONSTRUCTORS to define defaultEntries because they can create persisted registration entries which are
-     * not appropriate as defaultEntries.
+     * This will create a constructor entry. The className must not be null. ONLY CONSTRUCTOR that should be used used to
+     * construct defaultEntries (passed RegStoreFileParser construction). DO NOT USE OTHER CONSTRUCTORS to define
+     * defaultEntries because they can create persisted registration entries which are not appropriate as defaultEntries.
      */
     public EntryInfo(String className) {
         this(className, null);
     }
 
     /*
-     * This will create a constructor entry. The className must not be null.
-     * 
-     * ONLY OTHER CONSTRUCTOR that should be used used to construct defaultEntries (passed RegStoreFileParser construction). DO
-     * NOT USE OTHER CONSTRUCTORS to define defaultEntries because they can create persisted registration entries which are
-     * not appropriate as defaultEntries.
+     * This will create a constructor entry. The className must not be null. ONLY OTHER CONSTRUCTOR that should be used used
+     * to construct defaultEntries (passed RegStoreFileParser construction). DO NOT USE OTHER CONSTRUCTORS to define
+     * defaultEntries because they can create persisted registration entries which are not appropriate as defaultEntries.
      */
     public EntryInfo(String className, Map<String, String> properties) {
         if (className == null) {
             throw new IllegalArgumentException("Class name for registration entry cannot be null");
         }
-        
+
         this.className = className;
         this.properties = properties;
     }
@@ -109,15 +105,15 @@ public final class EntryInfo {
     EntryInfo(String className, Map<String, String> properties, RegistrationContext registrationContext) {
         this.className = className;
         this.properties = properties;
-        
+
         if (registrationContext != null) {
-            
+
             RegistrationContext ctxImpl = new RegistrationContextImpl(
-                    registrationContext.getMessageLayer(), 
-                    registrationContext.getAppContext(), 
+                    registrationContext.getMessageLayer(),
+                    registrationContext.getAppContext(),
                     registrationContext.getDescription(),
                     registrationContext.isPersistent());
-            
+
             List<RegistrationContext> newList = new ArrayList<RegistrationContext>(1);
             newList.add(ctxImpl);
             this.registrationContexts = newList;
@@ -127,10 +123,10 @@ public final class EntryInfo {
     EntryInfo(EntryInfo parent) {
         this.className = parent.className;
         this.properties = parent.properties;
-        
+
         if (parent.registrationContexts != null) {
             this.registrationContexts = new ArrayList<RegistrationContext>(1);
-            
+
             for (RegistrationContext registrationContext : parent.registrationContexts) {
                 this.registrationContexts.add(registrationContext);
             }
@@ -155,18 +151,16 @@ public final class EntryInfo {
 
     /*
      * Compares an entry info to this one. They are considered to match if: - they are both constructor or are both
-     * registration entries - the classnames are equal or are both null - the property maps are equal or are both null
-     *
-     * If the entry is a registration entry, registration contexts are not considered for our purposes. For instance, we may
+     * registration entries - the classnames are equal or are both null - the property maps are equal or are both null If
+     * the entry is a registration entry, registration contexts are not considered for our purposes. For instance, we may
      * want to get a certain registration entry in order to add a registration context to it.
-     *
      * @see com.sun.enterprise.security.jmac.config.RegStoreFileParser
      */
     boolean matchConstructors(EntryInfo target) {
         if (target == null) {
             return false;
         }
-        
+
         return (!(isConstructorEntry() ^ target.isConstructorEntry()) && matchStrings(className, target.getClassName())
                 && matchMaps(properties, target.getProperties()));
     }
@@ -178,11 +172,11 @@ public final class EntryInfo {
         if (s1 == null && s2 == null) {
             return true;
         }
-        
+
         if (s1 == null || s2 == null) {
             return false;
         }
-        
+
         return s1.equals(s2);
     }
 
@@ -193,11 +187,11 @@ public final class EntryInfo {
         if (map1 == null && map2 == null) {
             return true;
         }
-        
+
         if (map1 == null || map2 == null) {
             return false;
         }
-        
+
         return map1.equals(map2);
     }
 

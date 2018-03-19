@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.provider;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -118,26 +118,22 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
      * necessary for this method to be thread safe.
      * <P>
      * 
-     * @param contextID
-     *            A String identifying the policy context whose PolicyConfiguration interface is to be returned. The value
-     *            passed to this parameter must not be null.
-     *            <P>
-     * @param remove
-     *            A boolean value that establishes whether or not the policy statements of an existing policy context are to
-     *            be removed before its PolicyConfiguration object is returned. If the value passed to this parameter is
-     *            true, the policy statements of an existing policy context will be removed. If the value is false, they
-     *            will not be removed.
+     * @param contextID A String identifying the policy context whose PolicyConfiguration interface is to be returned. The
+     * value passed to this parameter must not be null.
+     * <P>
+     * @param remove A boolean value that establishes whether or not the policy statements of an existing policy context are
+     * to be removed before its PolicyConfiguration object is returned. If the value passed to this parameter is true, the
+     * policy statements of an existing policy context will be removed. If the value is false, they will not be removed.
      *
      * @return an Object that implements the PolicyConfiguration Interface matched to the Policy provider and corresponding
-     *         to the identified policy context.
+     * to the identified policy context.
      *
-     * @throws java.lang.SecurityException
-     *             when called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException when called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the
-     *             getPolicyConfiguration method signature. The exception thrown by the implementation class will be
-     *             encapsulated (during construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the getPolicyConfiguration method signature. The exception thrown by the implementation class will
+     * be encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public PolicyConfiguration getPolicyConfiguration(String contextId, boolean remove) throws PolicyContextException {
@@ -173,19 +169,17 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
      * associated with the factory.
      * <P>
      * 
-     * @param contextID
-     *            A string identifying a policy context
+     * @param contextID A string identifying a policy context
      *
      * @return true if the identified policy context exists within the provider and its state is "inService", false
-     *         otherwise.
+     * otherwise.
      *
-     * @throws java.lang.SecurityException
-     *             when called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException when called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the inService method
-     *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
-     *             the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the inService method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public boolean inService(String contextID) throws PolicyContextException {

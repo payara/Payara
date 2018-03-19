@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.helper;
 
 import com.sun.jaspic.config.delegate.MessagePolicyDelegate;
@@ -67,7 +67,7 @@ public abstract class BaseAuthConfigProvider implements AuthConfigProvider {
     public static final String AUTH_MODULE_KEY = "auth.module.type";
     public static final String SERVER_AUTH_MODULE = "server.auth.module";
     public static final String CLIENT_AUTH_MODULE = "client.auth.module";
-    
+
     private ReentrantReadWriteLock instanceReadWriteLock = new ReentrantReadWriteLock();
     private Lock writeLock = instanceReadWriteLock.writeLock();
     private HashSet<String> selfRegistered = new HashSet<>();
@@ -76,48 +76,48 @@ public abstract class BaseAuthConfigProvider implements AuthConfigProvider {
     @Override
     public ClientAuthConfig getClientAuthConfig(String layer, String appContext, CallbackHandler callbackHandler) throws AuthException {
         return new ClientAuthConfigImpl(
-                    getLoggerName(), 
-                    epochCarrier, 
-                    getAuthContextHelper(appContext, true),
-                    getMessagePolicyDelegate(appContext), 
-                    layer, 
-                    appContext, 
-                    getClientCallbackHandler(callbackHandler));
+                getLoggerName(),
+                epochCarrier,
+                getAuthContextHelper(appContext, true),
+                getMessagePolicyDelegate(appContext),
+                layer,
+                appContext,
+                getClientCallbackHandler(callbackHandler));
     }
 
     @Override
     public ServerAuthConfig getServerAuthConfig(String layer, String appContext, CallbackHandler callbackHandler) throws AuthException {
         return new ServerAuthConfigImpl(
-                    getLoggerName(), 
-                    epochCarrier, 
-                    getAuthContextHelper(appContext, true),
-                    getMessagePolicyDelegate(appContext), 
-                    layer, 
-                    appContext, 
-                    getServerCallbackHandler(callbackHandler));
+                getLoggerName(),
+                epochCarrier,
+                getAuthContextHelper(appContext, true),
+                getMessagePolicyDelegate(appContext),
+                layer,
+                appContext,
+                getServerCallbackHandler(callbackHandler));
     }
 
     public boolean contextsAreEqual(RegistrationContext context1, RegistrationContext context2) {
         if (context1 == null || context2 == null) {
             return false;
-        } 
-        
+        }
+
         if (context1.isPersistent() != context2.isPersistent()) {
             return false;
-        } 
-        
+        }
+
         if (!context1.getAppContext().equals(context2.getAppContext())) {
             return false;
         }
-        
+
         if (!context1.getMessageLayer().equals(context2.getMessageLayer())) {
             return false;
-        } 
-        
+        }
+
         if (!context1.getDescription().equals(context2.getDescription())) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -130,13 +130,13 @@ public abstract class BaseAuthConfigProvider implements AuthConfigProvider {
     public String getLoggerName() {
         return getProperty(LOGGER_NAME_KEY, BaseAuthConfigProvider.class.getName());
     }
-    
+
     protected final String getProperty(String key, String defaultValue) {
         Map<String, ?> properties = getProperties();
         if (properties != null && properties.containsKey(key)) {
             return (String) properties.get(key);
         }
-        
+
         return defaultValue;
     }
 
@@ -146,18 +146,18 @@ public abstract class BaseAuthConfigProvider implements AuthConfigProvider {
 
     protected Class<?>[] getModuleTypes() {
         Class<?>[] moduleTypes = new Class[] { ServerAuthModule.class, ClientAuthModule.class };
-        
+
         Map<String, ?> properties = getProperties();
         if (properties.containsKey(AUTH_MODULE_KEY)) {
             String keyValue = (String) properties.get(AUTH_MODULE_KEY);
-            
+
             if (SERVER_AUTH_MODULE.equals(keyValue)) {
                 moduleTypes = new Class[] { ServerAuthModule.class };
             } else if (CLIENT_AUTH_MODULE.equals(keyValue)) {
                 moduleTypes = new Class[] { ClientAuthModule.class };
             }
         }
-        
+
         return moduleTypes;
     }
 
@@ -168,10 +168,10 @@ public abstract class BaseAuthConfigProvider implements AuthConfigProvider {
                 RegistrationContext[] contexts = getSelfRegistrationContexts();
                 if (!selfRegistered.isEmpty()) {
                     HashSet<String> toBeUnregistered = new HashSet<String>();
-                    
+
                     // Get the current self-registrations
                     String[] registrationIDs = getFactory().getRegistrationIDs(this);
-                    
+
                     for (String registrationId : registrationIDs) {
                         if (selfRegistered.contains(registrationId)) {
                             RegistrationContext context = getFactory().getRegistrationContext(registrationId);
@@ -180,7 +180,7 @@ public abstract class BaseAuthConfigProvider implements AuthConfigProvider {
                             }
                         }
                     }
-                    
+
                     // Remove self-registrations that already exist and should continue
                     for (String registrationId : toBeUnregistered) {
                         RegistrationContext context = getFactory().getRegistrationContext(registrationId);
@@ -191,18 +191,19 @@ public abstract class BaseAuthConfigProvider implements AuthConfigProvider {
                             }
                         }
                     }
-                    
+
                     // Unregister those that should not continue to exist
                     for (String registrationId : toBeUnregistered) {
                         selfRegistered.remove(registrationId);
                         getFactory().removeRegistration(registrationId);
                     }
                 }
-                
+
                 // Add new self-segistrations
                 for (RegistrationContext context : contexts) {
                     if (context != null) {
-                        String id = getFactory().registerConfigProvider(this, context.getMessageLayer(), context.getAppContext(), context.getDescription());
+                        String id = getFactory().registerConfigProvider(this, context.getMessageLayer(), context.getAppContext(),
+                                context.getDescription());
                         selfRegistered.add(id);
                     }
                 }
@@ -216,21 +217,20 @@ public abstract class BaseAuthConfigProvider implements AuthConfigProvider {
     protected CallbackHandler getClientCallbackHandler(CallbackHandler callbackHandler) throws AuthException {
         if (callbackHandler == null) {
             throw (AuthException) new AuthException("AuthConfigProvider does not support null Client Callbackhandler")
-                                        .initCause(new UnsupportedOperationException());
+                    .initCause(new UnsupportedOperationException());
         }
-        
+
         return callbackHandler;
     }
 
     protected CallbackHandler getServerCallbackHandler(CallbackHandler callbackHandler) throws AuthException {
         if (callbackHandler == null) {
             throw (AuthException) new AuthException("AuthConfigProvider does not support null Server Callbackhandler")
-                                        .initCause(new UnsupportedOperationException());
+                    .initCause(new UnsupportedOperationException());
         }
-        
+
         return callbackHandler;
     }
-    
 
     public abstract Map<String, ?> getProperties();
 

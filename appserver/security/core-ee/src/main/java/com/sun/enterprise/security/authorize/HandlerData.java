@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.authorize;
 
 import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.EJB_ARGUMENTS;
@@ -88,11 +88,11 @@ public class HandlerData {
         if (HTTP_SERVLET_REQUEST.equalsIgnoreCase(key)) {
             return httpServletRequest;
         }
-        
+
         if (SUBJECT.equalsIgnoreCase(key)) {
             return SecurityContext.getCurrent().getSubject();
         }
-        
+
         if (REUSE.equalsIgnoreCase(key)) {
             PermissionCacheFactory.resetCaches();
             return Integer.valueOf(0);
@@ -105,15 +105,15 @@ public class HandlerData {
         if (SOAP_MESSAGE.equalsIgnoreCase(key)) {
             return ejbDelegate != null ? ejbDelegate.getSOAPMessage(invocation) : null;
         }
-        
+
         if (ENTERPRISE_BEAN.equalsIgnoreCase(key)) {
             return ejbDelegate != null ? ejbDelegate.getEnterpriseBean(invocation) : null;
         }
-        
+
         if (EJB_ARGUMENTS.equalsIgnoreCase(key)) {
             return ejbDelegate != null ? ejbDelegate.getEJbArguments(invocation) : null;
         }
-        
+
         return null;
     }
 

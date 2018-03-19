@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.perms;
 
 import java.io.ByteArrayInputStream;
@@ -131,8 +132,7 @@ public class PermissionXMLParser {
     /**
      * This method will parse the input stream and set the XMLStreamReader object for latter use.
      *
-     * @param input
-     *            InputStream
+     * @param input InputStream
      * @exception XMLStreamException;
      */
     // @Override

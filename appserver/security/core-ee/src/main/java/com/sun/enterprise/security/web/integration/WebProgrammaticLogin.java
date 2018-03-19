@@ -37,12 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web.integration;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,21 +66,15 @@ public interface WebProgrammaticLogin {
      * <P>
      * Note also that this login does not hook up into SSO.
      *
-     * @param user
-     *            User name to login.
-     * @param password
-     *            User password.
-     * @param request
-     *            HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
-     * @param response
-     *            HTTP response object provided by called application. It should be an instance of HttpServletResponse. This
-     *            is not used currently.
-     * @param realm
-     *            the realm name to be authenticated to. If the realm is null, authentication takes place in default realm
+     * @param user User name to login.
+     * @param password User password.
+     * @param request HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
+     * @param response HTTP response object provided by called application. It should be an instance of HttpServletResponse.
+     * This is not used currently.
+     * @param realm the realm name to be authenticated to. If the realm is null, authentication takes place in default realm
      * @returns A Boolean object; true if login succeeded, false otherwise.
      * @see com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin
-     * @throws Exception
-     *             on login failure.
+     * @throws Exception on login failure.
      *
      */
     Boolean login(String user, char[] password, String realm, HttpServletRequest request, HttpServletResponse response);
@@ -93,15 +82,12 @@ public interface WebProgrammaticLogin {
     /**
      * Logout and remove principal in request and session.
      *
-     * @param request
-     *            HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
-     * @param response
-     *            HTTP response object provided by called application. It should be an instance of HttpServletResponse. This
-     *            is not used currently.
+     * @param request HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
+     * @param response HTTP response object provided by called application. It should be an instance of HttpServletResponse.
+     * This is not used currently.
      * @returns A Boolean object; true if login succeeded, false otherwise.
      * @see com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin
-     * @throws Exception
-     *             any exception encountered during logout operation
+     * @throws Exception any exception encountered during logout operation
      */
     Boolean logout(HttpServletRequest request, HttpServletResponse response) throws Exception;
 

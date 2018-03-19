@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.web.integration;
 
@@ -89,7 +89,7 @@ import org.glassfish.api.web.Constants;
  * @author Jean-Francois Arcand
  * @author Harpreet Singh.
  * @todo introduce a new class called AbstractSecurityManager. Move functionality from this class and EJBSecurityManager
- *       class and extend this class from AbstractSecurityManager
+ * class and extend this class from AbstractSecurityManager
  */
 public class WebSecurityManager {
     private static final Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
@@ -318,11 +318,8 @@ public class WebSecurityManager {
 
     /*
      * Invoke the <code>Policy</code> to determine if the <code>Permission</code> object has security permission.
-     * 
      * @param perm an instance of <code>Permission</code>.
-     * 
      * @param principalSet a set containing the principals to check for authorization
-     * 
      * @return true if granted, false if denied.
      */
     protected boolean checkPermission(Permission perm, Set principalSet) {
@@ -470,13 +467,9 @@ public class WebSecurityManager {
     /*
      * Return <code>true</code> if the specified servletName has the specified security role, within the context of the
      * WebRoleRefPermission; otherwise return <code>false</code>.
-     *
      * @param principal servletName the resource's name.
-     * 
      * @param principal Principal for whom the role is to be checked
-     * 
      * @param role Security role to be checked
-     * 
      * @return true is the resource is granted, false if denied
      */
     public boolean hasRoleRefPermission(String servletName, String role, Principal p) {
@@ -496,14 +489,14 @@ public class WebSecurityManager {
      * the context path, and any colons occurring in the uri must be escaped.
      *
      * @return 1 if access is permitted (as is or without SSL). -1 if the the access will be permitted after a redirect to
-     *         SSL. return 0 if access will be denied independent of whether a redirect to SSL is done.
+     * SSL. return 0 if access will be denied independent of whether a redirect to SSL is done.
      *
-     *         Note: this method is not intended to be called if the request is secure. it checks whether the resource can
-     *         be accessed over the current connection type (which is presumed to be insecure), and if an insecure
-     *         connection type is not permitted it checks if the resource can be accessed via a confidential transport.
+     * Note: this method is not intended to be called if the request is secure. it checks whether the resource can be
+     * accessed over the current connection type (which is presumed to be insecure), and if an insecure connection type is
+     * not permitted it checks if the resource can be accessed via a confidential transport.
      *
-     *         If the request is secure, the second check is skipped, and the proper result is returned (but that is not the
-     *         intended use model).
+     * If the request is secure, the second check is skipped, and the proper result is returned (but that is not the
+     * intended use model).
      */
 
     public int hasUserDataPermission(HttpServletRequest httpsr, String uri, String httpMethod) {
@@ -623,8 +616,7 @@ public class WebSecurityManager {
     /**
      * This is an private method for transforming principal into a SecurityContext
      * 
-     * @param principal
-     *            expected to be a WebPrincipal
+     * @param principal expected to be a WebPrincipal
      * @return SecurityContext
      */
     private SecurityContext getSecurityContext(Principal principal) {
@@ -680,8 +672,7 @@ public class WebSecurityManager {
      * Virtual servers are maintained in the reference contained in Server element. First, we need to find the server and
      * then get the virtual server from the correct reference
      *
-     * @param appName
-     *            Name of the app to get vs
+     * @param appName Name of the app to get vs
      *
      * @return virtual servers as a string (separated by space or comma)
      */

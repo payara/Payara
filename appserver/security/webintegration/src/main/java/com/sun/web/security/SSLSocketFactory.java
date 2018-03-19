@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import java.io.*;
@@ -61,7 +61,6 @@ import javax.net.ssl.X509KeyManager;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.SharedSecureRandom;
 import org.glassfish.security.common.SharedSecureRandomImpl;
 
 /**
@@ -119,8 +118,7 @@ public class SSLSocketFactory implements org.apache.catalina.net.ServerSocketFac
     /**
      * Create the socket at the specified port.
      * 
-     * @param port
-     *            the port number.
+     * @param port the port number.
      * @return the SSL server socket.
      */
     @Override
@@ -133,8 +131,7 @@ public class SSLSocketFactory implements org.apache.catalina.net.ServerSocketFac
     /**
      * Specify whether the server will require client authentication.
      * 
-     * @param socket
-     *            the SSL server socket.
+     * @param socket the SSL server socket.
      */
     private void init(SSLServerSocket socket) {
         // Some initialization goes here.....
@@ -145,8 +142,7 @@ public class SSLSocketFactory implements org.apache.catalina.net.ServerSocketFac
     /**
      * Create the socket at the specified port.
      * 
-     * @param port
-     *            the port number.
+     * @param port the port number.
      * @return the SSL server socket.
      */
     @Override
@@ -159,8 +155,7 @@ public class SSLSocketFactory implements org.apache.catalina.net.ServerSocketFac
     /**
      * Create the socket at the specified port.
      * 
-     * @param port
-     *            the port number.
+     * @param port the port number.
      * @return the SSL server socket.
      */
     @Override

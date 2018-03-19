@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.helper;
 
 import static java.util.logging.Level.FINE;
@@ -86,7 +86,7 @@ public abstract class BaseAuthConfigImpl {
 
         initialize();
     }
-    
+
     public String getMessageLayer() {
         return layer;
     }
@@ -135,35 +135,36 @@ public abstract class BaseAuthConfigImpl {
         if (properties == null) {
             return Integer.valueOf("0");
         }
-        
+
         return Integer.valueOf(properties.hashCode());
     }
 
     private <M> M getContextFromMap(Map<String, Map<Integer, M>> contextMap, String authContextID, Map<String, ?> properties) {
         M context = null;
-        
+
         Map<Integer, M> internalMap = contextMap.get(authContextID);
         if (internalMap != null) {
             context = internalMap.get(getHashCode(properties));
         }
-        
+
         if (context != null) {
             if (isLoggable(FINE)) {
                 logIfLevel(FINE, null, "AuthContextID found in Map: ", authContextID);
             }
         }
-        
+
         return context;
     }
 
     @SuppressWarnings("unchecked")
-    protected final <M> M getContext(Map<String, Map<Integer, M>> contextMap, String authContextID, Subject subject, Map<String, ?> properties)
+    protected final <M> M getContext(Map<String, Map<Integer, M>> contextMap, String authContextID, Subject subject,
+            Map<String, ?> properties)
             throws AuthException {
 
         M context = null;
 
         doRefreshIfNeeded();
-        
+
         instanceReadLock.lock();
         try {
             context = getContextFromMap(contextMap, authContextID, properties);
@@ -201,16 +202,16 @@ public abstract class BaseAuthConfigImpl {
 
     protected void logIfLevel(Level level, Throwable t, String... msgParts) {
         Logger logger = Logger.getLogger(loggerName);
-        
+
         if (logger.isLoggable(level)) {
             StringBuffer messageBuffer = new StringBuffer("");
-            
+
             for (String m : msgParts) {
                 messageBuffer.append(m);
             }
-            
+
             String msg = messageBuffer.toString();
-            
+
             if (!msg.isEmpty() && t != null) {
                 logger.log(level, msg, t);
             } else if (!msg.isEmpty()) {
@@ -228,13 +229,13 @@ public abstract class BaseAuthConfigImpl {
                     supported = true;
                 }
             }
-            
+
             if (!supported) {
                 throw new AuthException("module does not support message type: " + requiredType.getName());
             }
         }
     }
-    
+
     /**
      * Only called from initialize (while lock is held).
      */

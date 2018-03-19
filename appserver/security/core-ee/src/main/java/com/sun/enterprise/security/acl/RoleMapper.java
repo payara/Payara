@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.acl;
 
@@ -180,8 +180,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     }
 
     /**
-     * @param name
-     *            The application/module name
+     * @param name The application/module name
      */
     @Override
     public void setName(String name) {
@@ -189,10 +188,8 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     }
 
     /**
-     * @param principal
-     *            A principal that corresponds to the role
-     * @param role
-     *            A role corresponding to this principal
+     * @param principal A principal that corresponds to the role
+     * @param role A role corresponding to this principal
      */
     private void addRoleToPrincipal(final Principal principal, String role) {
         assert roleToSubject != null;
@@ -212,10 +209,8 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     /**
      * Remove the given role-principal mapping
      * 
-     * @param role,
-     *            Role object
-     * @param principal,
-     *            the principal
+     * @param role, Role object
+     * @param principal, the principal
      */
     @Override
     public void unassignPrincipalFromRole(Role role, Principal principal) {
@@ -302,12 +297,9 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
      * The first time this is called, a new Mapping object is created to store the role mapping information. When called
      * again from a different module, the old mapping information is checked and stored and a new Mapping object is created.
      *
-     * @param p
-     *            The principal that needs to be assigned to the role.
-     * @param r
-     *            The Role the principal is being assigned to.
-     * @param rdd
-     *            The descriptor of the module containing the role mapping
+     * @param p The principal that needs to be assigned to the role.
+     * @param r The Role the principal is being assigned to.
+     * @param rdd The descriptor of the module containing the role mapping
      */
     @Override
     public void assignRole(Principal p, Role r, RootDeploymentDescriptor rdd) {
@@ -342,8 +334,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     /**
      * Returns an enumeration of Groups assigned to the given role
      * 
-     * @param The
-     *            Role to which the groups are assigned to.
+     * @param The Role to which the groups are assigned to.
      */
     @Override
     public Enumeration<Group> getGroupsAssignedTo(Role r) {
@@ -358,8 +349,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     /**
      * Returns an enumeration of Principals assigned to the given role
      * 
-     * @param The
-     *            Role to which the principals are assigned to.
+     * @param The Role to which the principals are assigned to.
      */
     @Override
     public Enumeration<Principal> getUsersAssignedTo(Role r) {
@@ -436,7 +426,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
 
     /**
      * @returns the class name used for default Principal to role mapping return null if default P2R mapping is not
-     *          supported.
+     * supported.
      */
     private String getDefaultP2RMappingClassName() {
         String className = null;
@@ -487,17 +477,12 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     }
 
     /*
-     * For each role in the current mapping:
-     *
-     * First check that the role does not already exist in the top-level mapping. If it does, then the top-level role
-     * mapping overrides the current one and we do not need to check if they conflict. Just continue with the next role.
-     *
-     * If the current mapping is from the top-level file, then check to see if the role has already been mapped. If so, do
-     * not need to check for conflicts. Simply override and assign the role.
-     * 
-     * If the above cases do not apply, check for conflicts with roles already set. If there is a conflict, it is between
-     * two submodules, so the role should be unmapped in the existing role mappings.
-     *
+     * For each role in the current mapping: First check that the role does not already exist in the top-level mapping. If
+     * it does, then the top-level role mapping overrides the current one and we do not need to check if they conflict. Just
+     * continue with the next role. If the current mapping is from the top-level file, then check to see if the role has
+     * already been mapped. If so, do not need to check for conflicts. Simply override and assign the role. If the above
+     * cases do not apply, check for conflicts with roles already set. If there is a conflict, it is between two submodules,
+     * so the role should be unmapped in the existing role mappings.
      */
     private void checkAndAddMappings() {
         if (currentMapping == null) {

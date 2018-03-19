@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
@@ -106,20 +106,17 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * registered provider.
      * </ul>
      *
-     * @param layer
-     *            a String identifying the message layer for which the registered AuthConfigProvider is to be returned. This
-     *            argument may be null.
+     * @param layer a String identifying the message layer for which the registered AuthConfigProvider is to be returned.
+     * This argument may be null.
      *
-     * @param appContext
-     *            a String that identifies the application messaging context for which the registered AuthConfigProvider is
-     *            to be returned. This argument may be null.
+     * @param appContext a String that identifies the application messaging context for which the registered
+     * AuthConfigProvider is to be returned. This argument may be null.
      *
-     * @param listener
-     *            the RegistrationListener whose <code>notify</code> method is to be invoked if the corresponding
-     *            registration is unregistered or replaced. The value of this argument may be null.
+     * @param listener the RegistrationListener whose <code>notify</code> method is to be invoked if the corresponding
+     * registration is unregistered or replaced. The value of this argument may be null.
      *
      * @return the implementation of the AuthConfigProvider interface registered at the factory for the layer and appContext
-     *         or null if no AuthConfigProvider is selected.
+     * or null if no AuthConfigProvider is selected.
      * 
      */
     @Override
@@ -150,39 +147,33 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * Programmatic registrations performed via this method must update (according to the replacement rules described
      * above), the persistent declarative representation of provider registrations employed by the factory constructor.
      *
-     * @param className
-     *            the fully qualified name of an AuthConfigProvider implementation class. This argument must not be null.
+     * @param className the fully qualified name of an AuthConfigProvider implementation class. This argument must not be
+     * null.
      *
-     * @param properties
-     *            a Map object containing the initialization properties to be passed to the provider constructor. This
-     *            argument may be null. When this argument is not null, all the values and keys occuring in the Map must be
-     *            of type String.
+     * @param properties a Map object containing the initialization properties to be passed to the provider constructor.
+     * This argument may be null. When this argument is not null, all the values and keys occuring in the Map must be of
+     * type String.
      *
-     * @param layer
-     *            a String identifying the message layer for which the provider will be registered at the factory. A null
-     *            value may be passed as an argument for this parameter, in which case, the provider is registered at all
-     *            layers.
+     * @param layer a String identifying the message layer for which the provider will be registered at the factory. A null
+     * value may be passed as an argument for this parameter, in which case, the provider is registered at all layers.
      *
-     * @param appContext
-     *            a String value that may be used by a runtime to request a configuration object from this provider. A null
-     *            value may be passed as an argument for this parameter, in which case, the provider is registered for all
-     *            configuration ids (at the indicated layers).
+     * @param appContext a String value that may be used by a runtime to request a configuration object from this provider.
+     * A null value may be passed as an argument for this parameter, in which case, the provider is registered for all
+     * configuration ids (at the indicated layers).
      *
-     * @param description
-     *            a text String describing the provider. this value may be null.
+     * @param description a text String describing the provider. this value may be null.
      *
      * @return a String identifier assigned by the factory to the provider registration, and that may be used to remove the
-     *         registration from the provider.
+     * registration from the provider.
      *
-     * @exception SecurityException
-     *                if the caller does not have permission to register a provider at the factory.
+     * @exception SecurityException if the caller does not have permission to register a provider at the factory.
      *
-     * @exception AuthException
-     *                if the provider construction or registration fails.
+     * @exception AuthException if the provider construction or registration fails.
      */
     @Override
     @SuppressWarnings("unchecked")
-    public String registerConfigProvider(String className, @SuppressWarnings("rawtypes") Map properties, String layer, String appContext, String description) {
+    public String registerConfigProvider(String className, @SuppressWarnings("rawtypes") Map properties, String layer, String appContext,
+            String description) {
         tryCheckPermission(providerRegistrationSecurityPermission);
 
         return _register(_constructProvider(className, properties, null), properties, layer, appContext, description, true);
@@ -199,14 +190,12 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * Remove the identified provider registration from the factory and invoke any listeners associated with the removed
      * registration.
      *
-     * @param registrationID
-     *            a String that identifies a provider registration at the factory
+     * @param registrationID a String that identifies a provider registration at the factory
      *
      * @return true if there was a registration with the specified identifier and it was removed. Return false if the
-     *         registraionID was invalid.
+     * registraionID was invalid.
      *
-     * @exception SecurityException
-     *                if the caller does not have permission to unregister the provider at the factory.
+     * @exception SecurityException if the caller does not have permission to unregister the provider at the factory.
      *
      */
     @Override
@@ -220,21 +209,17 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * Disassociate the listener from all the provider registrations whose layer and appContext values are matched by the
      * corresponding arguments to this method.
      *
-     * @param listener
-     *            the RegistrationListener to be detached.
+     * @param listener the RegistrationListener to be detached.
      *
-     * @param layer
-     *            a String identifying the message layer or null.
+     * @param layer a String identifying the message layer or null.
      *
-     * @param appContext
-     *            a String value identifying the application context or null.
+     * @param appContext a String value identifying the application context or null.
      *
      * @return an array of String values where each value identifies a provider registration from which the listener was
-     *         removed. This method never returns null; it returns an empty array if the listener was not removed from any
-     *         registrations.
+     * removed. This method never returns null; it returns an empty array if the listener was not removed from any
+     * registrations.
      *
-     * @exception SecurityException
-     *                if the caller does not have permission to detach the listener from the factory.
+     * @exception SecurityException if the caller does not have permission to detach the listener from the factory.
      *
      */
     @Override
@@ -261,14 +246,12 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     /**
      * Get the registration identifiers for all registrations of the provider instance at the factory.
      *
-     * @param provider
-     *            the AuthConfigurationProvider whose registration identifiers are to be returned. This argument may be
-     *            null, in which case, it indicates that the the id's of all active registration within the factory are
-     *            returned.
+     * @param provider the AuthConfigurationProvider whose registration identifiers are to be returned. This argument may be
+     * null, in which case, it indicates that the the id's of all active registration within the factory are returned.
      *
      * @return an array of String values where each value identifies a provider registration at the factory. This method
-     *         never returns null; it returns an empty array when their are no registrations at the factory for the
-     *         identified provider.
+     * never returns null; it returns an empty array when their are no registrations at the factory for the identified
+     * provider.
      */
     @Override
     public String[] getRegistrationIDs(AuthConfigProvider provider) {
@@ -296,12 +279,11 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     /**
      * Get the the registration context for the identified registration.
      *
-     * @param registrationID
-     *            a String that identifies a provider registration at the factory
+     * @param registrationID a String that identifies a provider registration at the factory
      *
      * @return a RegistrationContext or null. When a Non-null value is returned, it is a copy of the registration context
-     *         corresponding to the registration. Null is returned when the registration identifier does not correspond to
-     *         an active registration
+     * corresponding to the registration. Null is returned when the registration identifier does not correspond to an active
+     * registration
      */
     @Override
     public RegistrationContext getRegistrationContext(String registrationID) {
@@ -315,11 +297,9 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * A factory should only replace an existing registration when a change of provider implementation class or
      * initialization properties has occurred.
      *
-     * @exception AuthException
-     *                if an error occurred during the reinitialization.
+     * @exception AuthException if an error occurred during the reinitialization.
      *
-     * @exception SecurityException
-     *                if the caller does not have permission to refresh the factory.
+     * @exception SecurityException if the caller does not have permission to refresh the factory.
      */
     @Override
     public void refresh() {
@@ -338,13 +318,13 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     private AuthConfigProvider getConfigProviderUnderLock(String layer, String appContext, RegistrationListener listener) {
         AuthConfigProvider provider = null;
         String registrationID = getRegistrationID(layer, appContext);
-        
+
         boolean providerFound = false;
         if (idToProviderMap.containsKey(registrationID)) {
             provider = idToProviderMap.get(registrationID);
             providerFound = true;
         }
-        
+
         if (!providerFound) {
             String matchedID = getRegistrationID(null, appContext);
             if (idToProviderMap.containsKey(matchedID)) {
@@ -352,7 +332,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
                 providerFound = true;
             }
         }
-        
+
         if (!providerFound) {
             String matchedID = getRegistrationID(layer, null);
             if (idToProviderMap.containsKey(matchedID)) {
@@ -360,19 +340,18 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
                 providerFound = true;
             }
         }
-        
+
         if (!providerFound) {
             String matchedID = getRegistrationID(null, null);
             if (idToProviderMap.containsKey(matchedID)) {
                 provider = idToProviderMap.get(matchedID);
             }
         }
-        
+
         if (listener != null) {
-            List<RegistrationListener> listeners = 
-                    idToRegistrationListenersMap.computeIfAbsent(
-                            registrationID, e -> new ArrayList<RegistrationListener>());
-            
+            List<RegistrationListener> listeners = idToRegistrationListenersMap.computeIfAbsent(
+                    registrationID, e -> new ArrayList<RegistrationListener>());
+
             if (!listeners.contains(listener)) {
                 listeners.add(listener);
             }
@@ -383,15 +362,15 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
     private static String getRegistrationID(String layer, String appContext) {
 
-        // (layer, appContext)  ->    __3<nn>_<layer><appContext>
-        // (layer, null)        ->    __2<layer>
-        // (null, appContext)   ->    __1<appContext>
-        // (null, null)         ->    __0
+        // (layer, appContext) -> __3<nn>_<layer><appContext>
+        // (layer, null) -> __2<layer>
+        // (null, appContext) -> __1<appContext>
+        // (null, null) -> __0
 
         if (layer != null) {
             return appContext != null ? "__3" + layer.length() + "_" + layer + appContext : "__2" + layer;
-        } 
-            
+        }
+
         return appContext != null ? "__1" + appContext : "__0";
     }
 
@@ -404,7 +383,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     private static String[] decomposeRegistrationId(String registrationId) {
         String layer = null;
         String appContext = null;
-        
+
         if (registrationId.equals("__0")) {
             // null, null
         } else if (registrationId.startsWith("__1")) {
@@ -435,37 +414,39 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
     private static AuthConfigProvider _constructProvider(String className, Map<String, String> properties, AuthConfigFactory factory) {
         AuthConfigProvider provider = null;
-        
+
         if (className != null) {
             try {
                 provider = (AuthConfigProvider) Class.forName(className, true, Thread.currentThread().getContextClassLoader())
-                                                     .getConstructor(Map.class, AuthConfigFactory.class)
-                                                     .newInstance(new Object[] { properties, factory });
+                        .getConstructor(Map.class, AuthConfigFactory.class)
+                        .newInstance(new Object[] { properties, factory });
             } catch (Throwable t) {
                 Throwable cause = t.getCause();
                 logger.log(WARNING, "jmac.factory_unable_to_load_provider",
                         new Object[] { className, t.toString(), cause == null ? "cannot determine" : cause.toString() });
             }
         }
-        
+
         return provider;
     }
 
     // XXX need to update persistent state and notify effected listeners
-    private String _register(AuthConfigProvider provider, Map<String, String> properties, String layer, String appContext, String description, boolean persistent) {
+    private String _register(AuthConfigProvider provider, Map<String, String> properties, String layer, String appContext,
+            String description, boolean persistent) {
         String registrationId = getRegistrationID(layer, appContext);
         RegistrationContext registrationContext = new RegistrationContextImpl(layer, appContext, description, persistent);
-        
-        Map<String, List<RegistrationListener>> listenerMap =
-                doWriteLocked(() -> register(provider, properties, persistent, registrationId, registrationContext));
+
+        Map<String, List<RegistrationListener>> listenerMap = doWriteLocked(
+                () -> register(provider, properties, persistent, registrationId, registrationContext));
 
         // Outside write lock to prevent dead lock
         notifyListeners(listenerMap);
 
         return registrationId;
     }
-    
-    private Map<String, List<RegistrationListener>> register(AuthConfigProvider provider, Map<String, String> properties, boolean persistent, String registrationId, RegistrationContext registrationContext) {
+
+    private Map<String, List<RegistrationListener>> register(AuthConfigProvider provider, Map<String, String> properties,
+            boolean persistent, String registrationId, RegistrationContext registrationContext) {
         RegistrationContext previousRegistrationContext = idToRegistrationContextMap.get(registrationId);
         AuthConfigProvider previousProvider = idToProviderMap.get(registrationId);
 
@@ -501,26 +482,26 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     private boolean _unRegister(String registrationId) {
         boolean hasProvider = false;
         Map<String, List<RegistrationListener>> listenerMap;
-        
+
         writeLock.lock();
         try {
             RegistrationContext registrationContext = idToRegistrationContextMap.remove(registrationId);
             hasProvider = idToProviderMap.containsKey(registrationId);
             AuthConfigProvider provider = idToProviderMap.remove(registrationId);
-           
+
             List<String> registrationIds = providerToIdsMap.get(provider);
             if (registrationIds != null) {
                 registrationIds.remove(registrationId);
             }
-            
+
             if (registrationIds == null || registrationIds.isEmpty()) {
                 providerToIdsMap.remove(provider);
             }
-            
+
             if (!hasProvider) {
                 return false;
             }
-            
+
             listenerMap = getEffectedListeners(registrationId);
             if (registrationContext != null && registrationContext.isPersistent()) {
                 _deleteStoredRegistration(registrationContext);
@@ -531,20 +512,20 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
         // Outside write lock to prevent dead lock
         notifyListeners(listenerMap);
-        
+
         return hasProvider;
     }
-    
+
     private Map<String, List<RegistrationListener>> loadFactory() {
         Map<String, List<RegistrationListener>> oldId2RegisListenersMap = idToRegistrationListenersMap;
-        
+
         _loadFactory();
-        
+
         return oldId2RegisListenersMap;
     }
 
     // ### The following methods implement the factory's persistence layer
-    
+
     protected void _loadFactory() {
         try {
             initializeMaps();
@@ -561,7 +542,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
                         if (first) {
                             configProvider = _constructProvider(info.getClassName(), info.getProperties(), null);
                         }
-                        
+
                         _loadRegistration(configProvider, context.getMessageLayer(), context.getAppContext(), context.getDescription());
                     }
                 }
@@ -587,9 +568,9 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
         RegistrationContext registrationContext = new RegistrationContextImpl(layer, appContext, description, true);
         String registrationId = getRegistrationID(layer, appContext);
-        
+
         AuthConfigProvider previousProvider = idToProviderMap.get(registrationId);
-        
+
         boolean wasRegistered = idToProviderMap.containsKey(registrationId);
         if (wasRegistered) {
             List<String> previousRegistrationIds = providerToIdsMap.get(previousProvider);
@@ -615,16 +596,17 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         return registrationId;
     }
 
-    private void _storeRegistration(RegistrationContext registrationContext, AuthConfigProvider configProvider, Map<String, String> properties) {
+    private void _storeRegistration(RegistrationContext registrationContext, AuthConfigProvider configProvider,
+            Map<String, String> properties) {
         String className = null;
         if (configProvider != null) {
             className = configProvider.getClass().getName();
         }
-        
+
         if (propertiesContainAnyNonStringValues(properties)) {
             throw new IllegalArgumentException("AuthConfigProvider cannot be registered - properties must all be of type String.");
         }
-        
+
         if (registrationContext.isPersistent()) {
             getRegStore().store(className, registrationContext, properties);
         }
@@ -638,7 +620,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -660,7 +642,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         } else if (refID[1] != null && !refID[1].equals(targetID[1])) {
             rvalue = false;
         }
-        
+
         return rvalue;
     }
 

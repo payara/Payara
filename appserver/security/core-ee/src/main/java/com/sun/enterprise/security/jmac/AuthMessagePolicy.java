@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac;
 
 import static com.sun.enterprise.deployment.runtime.common.ProtectionDescriptor.AUTH_RECIPIENT;
@@ -127,7 +127,7 @@ public class AuthMessagePolicy {
         boolean sourceContent = CONTENT.equals(authSource);
         boolean recipientAuth = authRecipient != null;
         boolean mandatory = (sourceSender || sourceContent) || recipientAuth;
-        
+
         return getMessagePolicy(authSource, authRecipient, mandatory);
     }
 
@@ -138,10 +138,10 @@ public class AuthMessagePolicy {
         boolean beforeContent = BEFORE_CONTENT.equals(authRecipient);
 
         List<TargetPolicy> targetPolicies = new ArrayList<TargetPolicy>();
-        
+
         if (recipientAuth && beforeContent) {
             targetPolicies.add(new TargetPolicy(null, () -> AUTHENTICATE_RECIPIENT));
-            
+
             if (sourceSender) {
                 targetPolicies.add(new TargetPolicy(null, () -> AUTHENTICATE_SENDER));
             } else if (sourceContent) {
@@ -166,10 +166,10 @@ public class AuthMessagePolicy {
         if (protectionDescriptor == null) {
             return null;
         }
-        
+
         String source = protectionDescriptor.getAttributeValue(AUTH_SOURCE);
         String recipient = protectionDescriptor.getAttributeValue(AUTH_RECIPIENT);
-        
+
         return getMessagePolicy(source, recipient);
     }
 
@@ -294,6 +294,7 @@ public class AuthMessagePolicy {
         // get the default handler class
         try {
             CallbackHandler rvalue = (CallbackHandler) AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
+                @Override
                 public Object run() throws Exception {
                     ClassLoader loader = Thread.currentThread().getContextClassLoader();
                     if (handlerClassName == null) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.provider;
 
 import javax.security.jacc.*;
@@ -138,12 +138,9 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     }
 
     /**
-     * @param applicationPolicyDirectory,
-     *            need to have absolute path
-     * @param open,
-     *            then mark state as open
-     * @param remove,
-     *            then remove any existing policy statements
+     * @param applicationPolicyDirectory, need to have absolute path
+     * @param open, then mark state as open
+     * @param remove, then remove any existing policy statements
      */
     protected PolicyConfigurationImpl(File applicationPolicyDirectory, boolean open, boolean remove, PolicyConfigurationFactoryImpl fact) {
 
@@ -170,13 +167,12 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * 
      * @return this object's policy context identifier.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the getContextID
-     *             method signature. The exception thrown by the implementation class will be encapsulated (during
-     *             construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the getContextID method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public String getContextID() throws PolicyContextException {
@@ -192,24 +188,20 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * "mapped to the role".
      * <P>
      * 
-     * @param roleName
-     *            the name of the Role to which the permissions are to be added.
-     *            <P>
-     * @param permissions
-     *            the collection of permissions to be added to the role. The collection may be either a homogenous or
-     *            heterogenous collection.
+     * @param roleName the name of the Role to which the permissions are to be added.
+     * <P>
+     * @param permissions the collection of permissions to be added to the role. The collection may be either a homogenous
+     * or heterogenous collection.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the addToRole method
-     *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
-     *             the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the addToRole method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void addToRole(String roleName, PermissionCollection permissions) throws PolicyContextException {
@@ -232,23 +224,19 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * "mapped to the role".
      * <P>
      * 
-     * @param roleName
-     *            the name of the Role to which the permission is to be added.
-     *            <P>
-     * @param permission
-     *            the permission to be added to the role.
+     * @param roleName the name of the Role to which the permission is to be added.
+     * <P>
+     * @param permission the permission to be added to the role.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the addToRole method
-     *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
-     *             the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the addToRole method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void addToRole(String roleName, Permission permission) throws PolicyContextException {
@@ -266,21 +254,18 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * Used to add unchecked policy statements to this PolicyConfiguration.
      * <P>
      * 
-     * @param permissions
-     *            the collection of permissions to be added as unchecked policy statements. The collection may be either a
-     *            homogenous or heterogenous collection.
+     * @param permissions the collection of permissions to be added as unchecked policy statements. The collection may be
+     * either a homogenous or heterogenous collection.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the
-     *             addToUncheckedPolicy method signature. The exception thrown by the implementation class will be
-     *             encapsulated (during construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the addToUncheckedPolicy method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void addToUncheckedPolicy(PermissionCollection permissions) throws PolicyContextException {
@@ -300,20 +285,17 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * Used to add a single unchecked policy statement to this PolicyConfiguration.
      * <P>
      * 
-     * @param permission
-     *            the permission to be added to the unchecked policy statements.
+     * @param permission the permission to be added to the unchecked policy statements.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the
-     *             addToUncheckedPolicy method signature. The exception thrown by the implementation class will be
-     *             encapsulated (during construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the addToUncheckedPolicy method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void addToUncheckedPolicy(Permission permission) throws PolicyContextException {
@@ -331,21 +313,18 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * Used to add excluded policy statements to this PolicyConfiguration.
      * <P>
      * 
-     * @param permissions
-     *            the collection of permissions to be added to the excluded policy statements. The collection may be either
-     *            a homogenous or heterogenous collection.
+     * @param permissions the collection of permissions to be added to the excluded policy statements. The collection may be
+     * either a homogenous or heterogenous collection.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the
-     *             addToExcludedPolicy method signature. The exception thrown by the implementation class will be
-     *             encapsulated (during construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the addToExcludedPolicy method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void addToExcludedPolicy(PermissionCollection permissions) throws PolicyContextException {
@@ -365,20 +344,17 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * Used to add a single excluded policy statement to this PolicyConfiguration.
      * <P>
      * 
-     * @param permission
-     *            the permission to be added to the excluded policy statements.
+     * @param permission the permission to be added to the excluded policy statements.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission. fa
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission. fa
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the
-     *             addToExcludedPolicy method signature. The exception thrown by the implementation class will be
-     *             encapsulated (during construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the addToExcludedPolicy method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void addToExcludedPolicy(Permission permission) throws PolicyContextException {
@@ -396,22 +372,19 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * Used to remove a role and all its permissions from this PolicyConfiguration.
      * <P>
      * 
-     * @param roleName
-     *            the name of the role to remove from this PolicyConfiguration. If the value of the roleName parameter is
-     *            "*" and no role with name "*" exists in this PolicyConfiguration, then all roles must be removed from this
-     *            PolicyConfiguration.
+     * @param roleName the name of the role to remove from this PolicyConfiguration. If the value of the roleName parameter
+     * is "*" and no role with name "*" exists in this PolicyConfiguration, then all roles must be removed from this
+     * PolicyConfiguration.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the removeRole method
-     *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
-     *             the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the removeRole method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void removeRole(String roleName) throws PolicyContextException {
@@ -441,17 +414,15 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     /**
      * Used to remove any unchecked policy statements from this PolicyConfiguration.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the
-     *             removeUncheckedPolicy method signature. The exception thrown by the implementation class will be
-     *             encapsulated (during construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the removeUncheckedPolicy method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void removeUncheckedPolicy() throws PolicyContextException {
@@ -469,17 +440,15 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     /**
      * Used to remove any excluded policy statements from this PolicyConfiguration.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the
-     *             removeExcludedPolicy method signature. The exception thrown by the implementation class will be
-     *             encapsulated (during construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the removeExcludedPolicy method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void removeExcludedPolicy() throws PolicyContextException {
@@ -504,17 +473,15 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * When the state of a policy context is "inService", calling any method other than commit, delete, getContextID, or
      * inService on its PolicyConfiguration Object will cause an UnsupportedOperationException to be thrown.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" when
-     *             this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" when this method is called.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the commit method
-     *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
-     *             the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the commit method signature. The exception thrown by the implementation class will be encapsulated
+     * (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void commit() throws PolicyContextException {
@@ -561,28 +528,24 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * PolicyConfiguration are unaffected by the configuration being linked to another.
      * <P>
      * 
-     * @param link
-     *            a reference to a different PolicyConfiguration than this PolicyConfiguration.
-     *            <P>
-     *            The relationship formed by this method is symetric, transitive and idempotent. If the argument
-     *            PolicyConfiguration does not have a different Policy context identifier than this PolicyConfiguration no
-     *            relationship is formed, and an exception, as described below, is thrown.
+     * @param link a reference to a different PolicyConfiguration than this PolicyConfiguration.
+     * <P>
+     * The relationship formed by this method is symetric, transitive and idempotent. If the argument PolicyConfiguration
+     * does not have a different Policy context identifier than this PolicyConfiguration no relationship is formed, and an
+     * exception, as described below, is thrown.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws java.lang.UnsupportedOperationException
-     *             if the state of the policy context whose interface is this PolicyConfiguration Object is "deleted" or
-     *             "inService" when this method is called.
+     * @throws java.lang.UnsupportedOperationException if the state of the policy context whose interface is this
+     * PolicyConfiguration Object is "deleted" or "inService" when this method is called.
      *
-     * @throws java.lang.IllegalArgumentException
-     *             if called with an argument PolicyConfiguration whose Policy context is equivalent to that of this
-     *             PolicyConfiguration.
+     * @throws java.lang.IllegalArgumentException if called with an argument PolicyConfiguration whose Policy context is
+     * equivalent to that of this PolicyConfiguration.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the linkConfiguration
-     *             method signature. The exception thrown by the implementation class will be encapsulated (during
-     *             construction) in the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the linkConfiguration method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void linkConfiguration(PolicyConfiguration link) throws PolicyContextException {
@@ -611,13 +574,12 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * This operation has no affect on any linked PolicyConfigurations other than removing any links involving the deleted
      * PolicyConfiguration.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the delete method
-     *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
-     *             the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the delete method signature. The exception thrown by the implementation class will be encapsulated
+     * (during construction) in the thrown PolicyContextException.
      */
     @Override
     public void delete() throws PolicyContextException {
@@ -637,13 +599,12 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      *
      * @return true if the state of the associated policy context is "inService"; false otherwise.
      *
-     * @throws java.lang.SecurityException
-     *             if called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
+     * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
+     * SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException
-     *             if the implementation throws a checked exception that has not been accounted for by the inService method
-     *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
-     *             the thrown PolicyContextException.
+     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * accounted for by the inService method signature. The exception thrown by the implementation class will be
+     * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
     public boolean inService() throws PolicyContextException {
@@ -767,8 +728,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * case file was not deleted on transition out of inservice state. Called when context is not inService to determine if
      * it was needs to be transitioned because of file distribution.
      * 
-     * @param granted
-     *            selects granted or excluded policy file
+     * @param granted selects granted or excluded policy file
      * @return true if new file has arrived.
      */
     private boolean fileArrived(boolean granted) {
@@ -995,8 +955,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * checks if PolicyContex is in agrument state. Detects implicpit state changes resulting from distribution of policy
      * files by synchronization system.
      * 
-     * @param stateValue
-     *            state the context is tested for
+     * @param stateValue state the context is tested for
      * @return true if in state.
      */
     private boolean stateIs(int stateValue) {

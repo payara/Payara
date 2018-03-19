@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.provider;
 
 import java.io.*;
@@ -144,14 +144,11 @@ public class PolicyParser {
      * Reads a policy configuration into the Policy object using a Reader object.
      * <p>
      *
-     * @param policy
-     *            the policy Reader object.
+     * @param policy the policy Reader object.
      *
-     * @exception ParsingException
-     *                if the policy configuration contains a syntax error.
+     * @exception ParsingException if the policy configuration contains a syntax error.
      *
-     * @exception IOException
-     *                if an error occurs while reading the policy configuration.
+     * @exception IOException if an error occurs while reading the policy configuration.
      */
 
     public void read(Reader policy) throws ParsingException, IOException {
@@ -778,7 +775,7 @@ public class PolicyParser {
      *
      * @author Roland Schemers
      *
-     *         version 1.19, 05/21/98
+     * version 1.19, 05/21/98
      */
 
     public static class GrantEntry implements Cloneable {
@@ -898,13 +895,11 @@ public class PolicyParser {
          *
          * <p>
          *
-         * @param principalClass
-         *            the <code>Principal</code> class.
-         *            <p>
+         * @param principalClass the <code>Principal</code> class.
+         * <p>
          *
-         * @param principalName
-         *            the <code>Principal</code> name.
-         *            <p>
+         * @param principalName the <code>Principal</code> name.
+         * <p>
          */
         public PrincipalEntry(String principalClass, String principalName) {
             if (principalClass == null || principalName == null)
@@ -960,8 +955,7 @@ public class PolicyParser {
          *
          * <p>
          *
-         * @param obj
-         *            the object to test for equality with this object.
+         * @param obj the object to test for equality with this object.
          *
          * @return true if the objects are equal, false otherwise.
          */
@@ -1018,7 +1012,7 @@ public class PolicyParser {
      *
      * @author Roland Schemers
      *
-     *         version 1.19, 05/21/98
+     * version 1.19, 05/21/98
      */
 
     public static class PermissionEntry {
@@ -1135,8 +1129,7 @@ public class PolicyParser {
          * Constructs a ParsingException with the specified detail message. A detail message is a String that describes this
          * particular exception, which may, for example, specify which algorithm is not available.
          *
-         * @param msg
-         *            the detail message.
+         * @param msg the detail message.
          */
         public ParsingException(String msg) {
             super(msg);

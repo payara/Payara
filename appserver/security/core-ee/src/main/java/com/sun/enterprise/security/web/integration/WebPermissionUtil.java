@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web.integration;
 
 import java.util.*;
@@ -1079,10 +1079,8 @@ class MapValue {
             for (MethodValue v : values) {
                 /*
                  * NOTE WELL: prior version of this method could not be called during constraint parsing because it finalized the
-                 * connectSet when its value was 0 (indicating any connection, until some specific bit is set)
-                 *
-                 * if (v.connectSet == 0) { v.connectSet = MethodValue.connectTypeNone; }
-                 * 
+                 * connectSet when its value was 0 (indicating any connection, until some specific bit is set) if (v.connectSet == 0) {
+                 * v.connectSet = MethodValue.connectTypeNone; }
                  */
 
                 if (v.isConnectAllowed(cType)) {
