@@ -215,6 +215,7 @@
         <javase.version>1.8</javase.version>
         <javadoc.skip>false</javadoc.skip>
         <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+        <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
         <deploy.skip>true</deploy.skip>
 
         <!-- Java EE -->
@@ -365,7 +366,7 @@
                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.6.1</version>
+                    <version>${maven.compiler.plugin.version}</version>
                     <configuration>
                         <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                         <source>${javase.version}</source>
