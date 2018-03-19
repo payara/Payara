@@ -94,7 +94,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private static boolean RECORD_NUMBER_IN_KEY_VALUE = false;
 
     private FormatterDelegate _delegate = null;
-
+    
     // Static Initialiser Block
     static {
         String logSource = System.getProperty(
@@ -118,22 +118,22 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private static final String LINE_SEPARATOR = System.lineSeparator();
 
     // String values for field keys
-    private static final String TIMESTAMP_KEY = "Timestamp";
-    private static final String LOG_LEVEL_KEY = "Level";
-    private static final String PRODUCT_ID_KEY = "Version";
-    private static final String LOGGER_NAME_KEY = "LoggerName";
+    private String TIMESTAMP_KEY = "Timestamp";
+    private String LOG_LEVEL_KEY = "Level";
+    private String PRODUCT_ID_KEY = "Version";
+    private String LOGGER_NAME_KEY = "LoggerName";
     // String values for exception keys
-    private static final String EXCEPTION_KEY = "Exception";
-    private static final String STACK_TRACE_KEY = "StackTrace";
+    private String EXCEPTION_KEY = "Exception";
+    private String STACK_TRACE_KEY = "StackTrace";
     // String values for thread excludable keys
-    private static final String THREAD_ID_KEY = "ThreadID";
-    private static final String THREAD_NAME_KEY = "ThreadName";
-    private static final String USER_ID_KEY = "UserId";
-    private static final String ECID_KEY = "ECId";
-    private static final String LEVEL_VALUE_KEY = "LevelValue";
-    private static final String TIME_MILLIS_KEY = "TimeMillis";
-    private static final String MESSAGE_ID_KEY = "MessageID";
-    private static final String LOG_MESSAGE_KEY = "LogMessage";
+    private String THREAD_ID_KEY = "ThreadID";
+    private String THREAD_NAME_KEY = "ThreadName";
+    private String USER_ID_KEY = "UserId";
+    private String ECID_KEY = "ECId";
+    private String LEVEL_VALUE_KEY = "LevelValue";
+    private String TIME_MILLIS_KEY = "TimeMillis";
+    private String MESSAGE_ID_KEY = "MessageID";
+    private String LOG_MESSAGE_KEY = "LogMessage";
 
     private static final String RFC3339_DATE_FORMAT = 
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
@@ -141,11 +141,37 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
     private LogEventBroadcaster logEventBroadcasterDelegate;
     private String productId = "";
+    
+    /**
+     * For backwards compatibility with log format for pre-182
+     * @deprecated
+     */
+    @Deprecated
+    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
     public JSONLogFormatter() {
         super();
         loggerResourceBundleTable = new HashMap();
         logManager = LogManager.getLogManager();
+        
+        String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
+        if ((underscorePrefix)!= null && Boolean.valueOf(underscorePrefix)) {
+            TIMESTAMP_KEY = "_" + TIMESTAMP_KEY;
+            LOG_LEVEL_KEY = "_" + LOG_LEVEL_KEY;
+            PRODUCT_ID_KEY = "_" + PRODUCT_ID_KEY;
+            LOGGER_NAME_KEY = "_" + LOGGER_NAME_KEY;
+            EXCEPTION_KEY = "_" + EXCEPTION_KEY;
+            STACK_TRACE_KEY = "_" + STACK_TRACE_KEY;
+            // String values for thread excludable keys
+            THREAD_ID_KEY = "_" + THREAD_ID_KEY;
+            THREAD_NAME_KEY = "_" + THREAD_NAME_KEY;
+            USER_ID_KEY = "_" + USER_ID_KEY;
+            ECID_KEY = "_" + ECID_KEY;
+            LEVEL_VALUE_KEY = "_" + LEVEL_VALUE_KEY;
+            TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
+            MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
+            LOG_MESSAGE_KEY = "_" + LOG_MESSAGE_KEY;
+        }
     }
 
     public JSONLogFormatter(FormatterDelegate delegate) {
