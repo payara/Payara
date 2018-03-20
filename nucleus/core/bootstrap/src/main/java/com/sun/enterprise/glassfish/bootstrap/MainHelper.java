@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.glassfish.bootstrap;
 
 import com.sun.enterprise.module.bootstrap.ArgumentManager;
@@ -73,10 +73,19 @@ public class MainHelper {
         //JDK9 the major verion would be the real major version e.g in case
         // of JDK9 major version is 9.So in that case checking the major version only
         if (major < 9) {
-          if (minor < 8) {
-            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{8, minor});
-            System.exit(1);
-          }
+            if (minor < 8) {
+                logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{8, minor});
+                System.exit(1);
+            }
+        }
+
+        if (major == 1) {
+            int security = getSecurityJdkVersion();
+            if (minor == 8 && security < 162) {
+                String jdkVersion = System.getProperty("java.version");
+                logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_MINIMUM_JDKVERSION_REQUIRED, new Object[]{"1.8.0_162", jdkVersion});
+                System.exit(1);
+            }
         }
     }
 
@@ -105,6 +114,15 @@ public class MainHelper {
         catch (Exception e) {
             return 1;
         }
+    }
+
+    private static int getSecurityJdkVersion() {
+        String jv = System.getProperty("java.version");
+        String[] split = jv.split("\\.");
+        if (split.length > 0) {
+            return Integer.parseInt(split[2].replace("0_", ""));
+        }
+        return 1;
     }
 
     static String whichPlatform() {
