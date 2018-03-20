@@ -120,7 +120,8 @@ public class MainHelper {
         String jv = System.getProperty("java.version");
         String[] split = jv.split("\\.");
         if (split.length > 0) {
-            return Integer.parseInt(split[2].replace("0_", ""));
+            String replaceNonNumericCharacters = split[2].replaceAll("[^\\d.]", "");
+            return Integer.parseInt(replaceNonNumericCharacters);
         }
         return 1;
     }
