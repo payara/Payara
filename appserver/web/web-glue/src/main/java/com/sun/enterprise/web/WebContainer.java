@@ -1766,7 +1766,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 if (ctx != null) {
                     ctx.setAvailable(false);
                 }
-                results.add(new Result<>(t));
+                results.add(new Result<WebModule>(t));
             } finally {
                 if (moreThanOneVS) {
                     wmInfo.setAppClassLoader(appClassLoader);
