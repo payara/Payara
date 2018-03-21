@@ -176,11 +176,17 @@ public class PropertiesBagResource extends AbstractResource {
 
             for (Map<String, String> property : properties) {
                 Property existingProp = existing.get(property.get("name"));
-                String unescapredpropname = ((Object)property.get("name")).toString();
-                String escapedName = getEscapedPropertyName(unescapredpropname);
+
+                String unescapedName = ((Object)property.get("name")).toString();
+                String escapedName = getEscapedPropertyName(unescapedName);
+
                 String value = ((Object)property.get("value")).toString();
-                String description = ((Object)property.get("description")).toString();
-                final String unescapedValue = value.replaceAll("\\\\", "");
+                String unescapedValue = value.replaceAll("\\\\", "");
+                
+                String description = null;
+                if (property.get(description) != null) {
+                    description = Object.class.cast(property.get("description")).toString();
+                }
 
                 // the prop name can not contain .
                 // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
