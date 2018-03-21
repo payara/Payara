@@ -39,16 +39,19 @@
  */
 package fish.payara.notification.healthcheck;
 
+import java.io.Serializable;
+
 /**
  * A class for the result of an individual health check
  * @author mertcaliskan
  * @since 4.1.1.161
  */
-public class HealthCheckResultEntry {
-
+public class HealthCheckResultEntry implements Serializable {
     private HealthCheckResultStatus status;
     private String message;
     private Exception exception;
+
+    private static final long serialVersionUID = 1L;
 
     public HealthCheckResultEntry(HealthCheckResultStatus status, String msg) {
         this.status = status;

@@ -39,8 +39,11 @@
  */
 package fish.payara.notification;
 
+import java.io.Serializable;
+
 /**
  * @author mertcaliskan
  */
-public abstract class NotificationData {
+public abstract class NotificationData implements Serializable {
+    private static final long serialVersionUID = 1L;
 }

@@ -193,35 +193,32 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         }
     }
 
-    void onOutboundEvent(@Observes @Outbound Serializable event, EventMetadata meta) {
+    void onOutboundEvent(@Observes @Outbound Serializable event, EventMetadata meta) throws IOException {
         PayaraClusteredCDIEvent clusteredEvent;
-        
+
         // read the metadata on the Outbound Annotation to set data into the event
-        try {
-            boolean loopBack = false;
-            String eventName = "";
-            String[] instanceName = new String[0];
-            for (Annotation annotation : meta.getQualifiers()) {
-                if (annotation instanceof Outbound) {
-                    Outbound outboundattn = (Outbound)annotation;
-                    eventName = outboundattn.eventName();
-                    loopBack = outboundattn.loopBack();
-                    instanceName = outboundattn.instanceName();
-                }
+        boolean loopBack = false;
+        String eventName = "";
+        String[] instanceName = new String[0];
+        for (Annotation annotation : meta.getQualifiers()) {
+            if (annotation instanceof Outbound) {
+                Outbound outboundattn = (Outbound) annotation;
+                eventName = outboundattn.eventName();
+                loopBack = outboundattn.loopBack();
+                instanceName = outboundattn.instanceName();
             }
-            clusteredEvent = new PayaraClusteredCDIEventImpl(runtime.getLocalDescriptor(), event);
-            clusteredEvent.setLoopBack(loopBack);
-            clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
-            clusteredEvent.setProperty(INSTANCE_PROPERTY, serializeArray(instanceName));
-            
-            Set<Annotation> qualifiers = meta.getQualifiers();
-            if (qualifiers != null && !qualifiers.isEmpty()) {
-                clusteredEvent.addQualifiers(qualifiers);
-            }
-            
-            runtime.publishCDIEvent(clusteredEvent);
-        } catch (IOException ex) {
         }
+        clusteredEvent = new PayaraClusteredCDIEventImpl(runtime.getLocalDescriptor(), event);
+        clusteredEvent.setLoopBack(loopBack);
+        clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
+        clusteredEvent.setProperty(INSTANCE_PROPERTY, serializeArray(instanceName));
+
+        Set<Annotation> qualifiers = meta.getQualifiers();
+        if (qualifiers != null && !qualifiers.isEmpty()) {
+            clusteredEvent.addQualifiers(qualifiers);
+        }
+
+        runtime.publishCDIEvent(clusteredEvent);
     }
 
     private static final String ITEM_SEPARATOR = ",,,";  // 3 commas in case an instance name contains a comma
