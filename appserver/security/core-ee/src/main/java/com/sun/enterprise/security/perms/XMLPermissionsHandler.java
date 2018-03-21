@@ -46,19 +46,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.PermissionCollection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
 import javax.xml.stream.XMLStreamException;
 
 import org.xml.sax.SAXParseException;
 
-
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.deployment.io.PermissionsDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.PermissionItemDescriptor;
 import com.sun.enterprise.deployment.PermissionsDescriptor;
 import com.sun.logging.LogDomains;
 
@@ -67,44 +63,38 @@ import org.glassfish.internal.api.Globals;
 
 /**
  * 
- * Utility class to get declared permissions  
+ * Utility class to get declared permissions
  *
  */
 
 public class XMLPermissionsHandler {
-    
-    
+
     private static ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
     private DasConfig dasConfig;
-    
+
     private PermissionCollection declaredPermXml = null;
-    private PermissionCollection restrictedPC = null;  //per app based restriction, not used for now
-    
+    private PermissionCollection restrictedPC = null; // per app based restriction, not used for now
+
     private SMGlobalPolicyUtil.CommponentType compType;
-    
+
     private static final Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
 
-    public XMLPermissionsHandler(File base,  
-            SMGlobalPolicyUtil.CommponentType type)
-            throws XMLStreamException, FileNotFoundException {
+    public XMLPermissionsHandler(File base, SMGlobalPolicyUtil.CommponentType type) throws XMLStreamException, FileNotFoundException {
         this.compType = type;
-        
+
         configureAppDeclaredPermissions(base);
         checkServerRestrictedPermissions();
     }
 
-    public XMLPermissionsHandler(InputStream restrictPermInput,
-            InputStream allowedPermInput, 
-            SMGlobalPolicyUtil.CommponentType type)
+    public XMLPermissionsHandler(InputStream restrictPermInput, InputStream allowedPermInput, SMGlobalPolicyUtil.CommponentType type)
             throws XMLStreamException, FileNotFoundException {
 
         this.compType = type;
-        
+
         configureAppDeclaredPermissions(allowedPermInput);
         checkServerRestrictedPermissions();
     }
 
-    
     public PermissionCollection getAppDeclaredPermissions() {
         return declaredPermXml;
     }
@@ -113,19 +103,16 @@ public class XMLPermissionsHandler {
         return restrictedPC;
     }
 
+    private void configureAppDeclaredPermissions(File base) throws XMLStreamException, FileNotFoundException {
 
-    private void configureAppDeclaredPermissions(File base)
-            throws XMLStreamException, FileNotFoundException {
-
-        File permissionsXml = new File(base.getAbsolutePath(),
-                PermissionXMLParser.PERMISSIONS_XML);
+        File permissionsXml = new File(base.getAbsolutePath(), PermissionXMLParser.PERMISSIONS_XML);
 
         if (permissionsXml.exists()) {
             FileInputStream fi = null;
             try {
-                //this one uses the Node approach
+                // this one uses the Node approach
                 PermissionsDeploymentDescriptorFile pddf = new PermissionsDeploymentDescriptorFile();
-                
+
                 if (serviceLocator != null) {
                     dasConfig = serviceLocator.getService(DasConfig.class);
                     if (dasConfig != null) {
@@ -133,16 +120,16 @@ public class XMLPermissionsHandler {
                         if (xmlValidationLevel.equals("none"))
                             pddf.setXMLValidation(false);
                         else
-                            pddf.setXMLValidation(true);                    
+                            pddf.setXMLValidation(true);
                         pddf.setXMLValidationLevel(xmlValidationLevel);
                     }
                 }
-                    
+
                 fi = new FileInputStream(permissionsXml);
-                PermissionsDescriptor pd = (PermissionsDescriptor)pddf.read(fi);
-                
+                PermissionsDescriptor pd = (PermissionsDescriptor) pddf.read(fi);
+
                 declaredPermXml = pd.getDeclaredPermissions();
-                
+
             } catch (SAXParseException e) {
                 throw new SecurityException(e);
             } catch (IOException e) {
@@ -152,44 +139,39 @@ public class XMLPermissionsHandler {
                     try {
                         fi.close();
                     } catch (IOException e) {
-                    }            
+                    }
                 }
             }
 
-            if (logger.isLoggable(Level.FINE)){
+            if (logger.isLoggable(Level.FINE)) {
                 logger.fine("App declared permission = " + declaredPermXml);
             }
-        }        
+        }
     }
 
-    
-    
-    private void configureAppDeclaredPermissions(InputStream permInput)
-            throws XMLStreamException, FileNotFoundException {
+    private void configureAppDeclaredPermissions(InputStream permInput) throws XMLStreamException, FileNotFoundException {
 
         if (permInput != null) {
-            //this one has no shchema check (for client)
-            PermissionXMLParser parser = new PermissionXMLParser(
-                    permInput, restrictedPC);
+            // this one has no shchema check (for client)
+            PermissionXMLParser parser = new PermissionXMLParser(permInput, restrictedPC);
             this.declaredPermXml = parser.getPermissions();
-            if (logger.isLoggable(Level.FINE)){
+            if (logger.isLoggable(Level.FINE)) {
                 logger.fine("App declared permission = " + declaredPermXml);
             }
 
         }
     }
 
-    //check the app declared permissions against server restricted policy
-    private void checkServerRestrictedPermissions()  {
-     
+    // check the app declared permissions against server restricted policy
+    private void checkServerRestrictedPermissions() {
+
         if (this.declaredPermXml == null)
             return;
-        
-        if (compType == null)  //don't know the type, no check
+
+        if (compType == null) // don't know the type, no check
             return;
-        
-        SMGlobalPolicyUtil.checkRestrictionOfComponentType(declaredPermXml, this.compType);            
+
+        SMGlobalPolicyUtil.checkRestrictionOfComponentType(declaredPermXml, this.compType);
     }
 
-    
 }

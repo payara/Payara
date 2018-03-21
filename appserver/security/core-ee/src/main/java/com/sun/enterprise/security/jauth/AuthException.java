@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth;
 
 /**
@@ -50,24 +50,22 @@ public class AuthException extends javax.security.auth.message.AuthException {
     private static final long serialVersionUID = -1156951780670243758L;
 
     /**
-     * Constructs a AuthException with no detail message. A detail
-     * message is a String that describes this particular exception.
+     * Constructs a AuthException with no detail message. A detail message is a String that describes this particular
+     * exception.
      */
     public AuthException() {
-	super();
+        super();
     }
 
     /**
-     * Constructs a AuthException with the specified detail message.
-     * A detail message is a String that describes this particular
-     * exception.
+     * Constructs a AuthException with the specified detail message. A detail message is a String that describes this
+     * particular exception.
      *
      * <p>
      *
      * @param msg the detail message.
      */
     public AuthException(String msg) {
-	super(msg);
+        super(msg);
     }
 }
-

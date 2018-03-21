@@ -53,5 +53,6 @@ public interface AlternateSecurityInterceptorFactory {
     String SEC_INTEROP_INTFACTORY_PROP = "com.sun.enterprise.iiop.security.interceptorFactory";
 
     ClientRequestInterceptor getClientRequestInterceptor(Codec codec);
+
     ServerRequestInterceptor getServerRequestInterceptor(Codec codec);
 }

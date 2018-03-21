@@ -45,11 +45,12 @@ import java.security.PrivilegedAction;
 import java.util.Hashtable;
 
 /**
- * This class that implements ConnectionExecutionContext that gets stored in Thread Local Storage. If the current thread
- * creates child threads, the context info that is stored in the current thread is automatically propagated to the child
- * threads.
+ * This class that implements ConnectionExecutionContext that gets stored in Thread Local Storage.
+ * If the current thread creates child threads, the context info that is stored in the current
+ * thread is automatically propagated to the child threads.
  * 
- * Two class methods serve as a convenient way to set/get the Context information within the current thread.
+ * Two class methods serve as a convenient way to set/get the Context information within the current
+ * thread.
  *
  * @see java.lang.ThreadLocal
  * @see java.lang.InheritableThreadLocal
@@ -58,7 +59,7 @@ import java.util.Hashtable;
 public class ConnectionExecutionContext {
 
     public static final String IIOP_CLIENT_PER_THREAD_FLAG = "com.sun.appserv.iiopclient.perthreadauth";
-    
+
     private static final boolean isPerThreadAuth = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
         @Override
         public Boolean run() {
@@ -67,9 +68,8 @@ public class ConnectionExecutionContext {
 
     });
 
-    private static final ThreadLocal<Hashtable<String, Object>> currentContext = isPerThreadAuth ? 
-            new ThreadLocal<>() : 
-            new InheritableThreadLocal<>();
+    private static final ThreadLocal<Hashtable<String, Object>> currentContext = isPerThreadAuth ? new ThreadLocal<>()
+            : new InheritableThreadLocal<>();
 
     // XXX: Workaround for non-null connection object ri for local invocation.
     private static final ThreadLocal<Long> ClientThreadID = new ThreadLocal<Long>();
@@ -87,11 +87,11 @@ public class ConnectionExecutionContext {
     }
 
     /**
-     * This method can be used to add a new hashtable for storing the Thread specific context information. This method is
-     * useful to add a deserialized Context information that arrived over the wire.
+     * This method can be used to add a new hashtable for storing the Thread specific context
+     * information. This method is useful to add a deserialized Context information that arrived over
+     * the wire.
      * 
-     * @param A
-     *            hashtable that stores the current thread's context information.
+     * @param A hashtable that stores the current thread's context information.
      */
     public static void setContext(Hashtable<String, Object> ctxTable) {
         if (ctxTable != null) {
@@ -110,7 +110,7 @@ public class ConnectionExecutionContext {
         if (currentContext.get() == null) {
             setContext(null); // Create a new one...
         }
-        
+
         return currentContext.get();
     }
 }

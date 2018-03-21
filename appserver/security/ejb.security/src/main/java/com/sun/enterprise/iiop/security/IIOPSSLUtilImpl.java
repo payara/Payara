@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -56,11 +56,12 @@ import javax.net.ssl.X509KeyManager;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
 import org.glassfish.internal.api.SharedSecureRandom;
-
+import org.glassfish.security.common.SharedSecureRandomImpl;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import org.omg.IOP.TaggedComponent;
 import org.omg.PortableInterceptor.IORInfo;
+
 /**
  *
  * @author Kumar
@@ -72,26 +73,29 @@ public class IIOPSSLUtilImpl implements IIOPSSLUtil {
     private SSLUtils sslUtils;
 
     private GlassFishORBHelper orbHelper;
-    
-    private static final Logger _logger ;
-    static{
-	_logger = LogDomains.getLogger(IIOPSSLUtilImpl.class,LogDomains.SECURITY_LOGGER);
+
+    private static final Logger _logger;
+    static {
+        _logger = LogDomains.getLogger(IIOPSSLUtilImpl.class, LogDomains.SECURITY_LOGGER);
     }
-    private Object  appClientSSL;
-    
+    private Object appClientSSL;
+
+    @Override
     public Object getAppClientSSL() {
         return this.appClientSSL;
     }
+
+    @Override
     public void setAppClientSSL(Object ssl) {
         this.appClientSSL = ssl;
     }
-    
+
+    @Override
     public KeyManager[] getKeyManagers(String alias) {
         KeyManager[] mgrs = null;
         try {
             if (alias != null && !sslUtils.isTokenKeyAlias(alias)) {
-                throw new IllegalStateException(getFormatMessage(
-                        "iiop.cannot_find_keyalias", new Object[]{alias}));
+                throw new IllegalStateException(getFormatMessage("iiop.cannot_find_keyalias", new Object[] { alias }));
             }
 
             mgrs = sslUtils.getKeyManagers();
@@ -108,70 +112,70 @@ public class IIOPSSLUtilImpl implements IIOPSSLUtil {
                 mgrs = newMgrs;
             }
         } catch (Exception e) {
-            //TODO: log here
+            // TODO: log here
             throw new RuntimeException(e);
         }
         return mgrs;
     }
+
+    @Override
     public TrustManager[] getTrustManagers() {
         try {
-        return sslUtils.getTrustManagers();
+            return sslUtils.getTrustManagers();
         } catch (Exception e) {
-            //TODO: log here
+            // TODO: log here
             throw new RuntimeException(e);
         }
     }
-    
-     /**
+
+    /**
      * This API get the format string from resource bundle of _logger.
+     * 
      * @param key the key of the message
      * @param params the parameter array of Object
      * @return the format String for _logger
      */
     private String getFormatMessage(String key, Object[] params) {
-        return MessageFormat.format(
-            _logger.getResourceBundle().getString(key), params);
+        return MessageFormat.format(_logger.getResourceBundle().getString(key), params);
     }
 
-    public SecureRandom getInitializedSecureRandom() {
-        return SharedSecureRandom.get();
-    }
-    
     @Override
-     public Object getSSLPortsAsSocketInfo(Object ior) {         
-          SecurityMechanismSelector selector = Lookups.getSecurityMechanismSelector();
-          return selector.getSSLSocketInfo(ior);
-     }
-     
+    public SecureRandom getInitializedSecureRandom() {
+        return SharedSecureRandomImpl.get();
+    }
+
+    @Override
+    public Object getSSLPortsAsSocketInfo(Object ior) {
+        SecurityMechanismSelector selector = Lookups.getSecurityMechanismSelector();
+        return selector.getSSLSocketInfo(ior);
+    }
+
+    @Override
     public TaggedComponent createSSLTaggedComponent(IORInfo iorInfo, Object sInfos) {
-        List<com.sun.corba.ee.spi.folb.SocketInfo> socketInfos =
-             (List<com.sun.corba.ee.spi.folb.SocketInfo>)sInfos;
+        List<com.sun.corba.ee.spi.folb.SocketInfo> socketInfos = (List<com.sun.corba.ee.spi.folb.SocketInfo>) sInfos;
         orbHelper = Lookups.getGlassFishORBHelper();
         TaggedComponent result = null;
         org.omg.CORBA.ORB orb = orbHelper.getORB();
         int sslMutualAuthPort = -1;
         try {
-	    if (iorInfo instanceof com.sun.corba.ee.spi.legacy.interceptor.IORInfoExt) {
-            sslMutualAuthPort = 
-	       ((com.sun.corba.ee.spi.legacy.interceptor.IORInfoExt)iorInfo).
-                getServerPort("SSL_MUTUALAUTH");
-	    }
+            if (iorInfo instanceof com.sun.corba.ee.spi.legacy.interceptor.IORInfoExt) {
+                sslMutualAuthPort = ((com.sun.corba.ee.spi.legacy.interceptor.IORInfoExt) iorInfo)
+                        .getServerPort("SSL_MUTUALAUTH");
+            }
         } catch (com.sun.corba.ee.spi.legacy.interceptor.UnknownType ute) {
-            _logger.log(Level.FINE,".isnert: UnknownType exception", ute);
+            _logger.log(Level.FINE, ".isnert: UnknownType exception", ute);
         }
 
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, ".insert: sslMutualAuthPort: "
-            + sslMutualAuthPort);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, ".insert: sslMutualAuthPort: " + sslMutualAuthPort);
         }
 
-        CSIV2TaggedComponentInfo ctc = new CSIV2TaggedComponentInfo( orb,
-        sslMutualAuthPort);
-        EjbDescriptor desc = ctc.getEjbDescriptor(iorInfo) ;
+        CSIV2TaggedComponentInfo ctc = new CSIV2TaggedComponentInfo(orb, sslMutualAuthPort);
+        EjbDescriptor desc = ctc.getEjbDescriptor(iorInfo);
         if (desc != null) {
-            result = ctc.createSecurityTaggedComponent(socketInfos,desc);
+            result = ctc.createSecurityTaggedComponent(socketInfos, desc);
         }
         return result;
-     }
+    }
 
 }

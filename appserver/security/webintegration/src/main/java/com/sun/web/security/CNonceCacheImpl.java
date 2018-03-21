@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import org.glassfish.security.common.NonceInfo;
@@ -50,8 +50,6 @@ import org.apache.catalina.util.StringManager;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
-
-
 /**
  *
  * @author vbkumarjayanti
@@ -60,34 +58,36 @@ import org.glassfish.hk2.api.PerLookup;
 @PerLookup
 public final class CNonceCacheImpl extends LinkedHashMap<String, NonceInfo> implements CNonceCache {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     private static final long LOG_SUPPRESS_TIME = 5 * 60 * 1000;
 
     private long lastLog = 0;
 
     private static final Logger log = Logger.getLogger(
-        CNonceCacheImpl.class.getName());
+            CNonceCacheImpl.class.getName());
 
-    private String  eldestCNonce = null;
-    private String  storeName = null;
+    private String eldestCNonce = null;
+    private String storeName = null;
     /**
      * The string manager for this package.
      */
-    static final StringManager sm =
-            StringManager.getManager("org.apache.catalina.util");
+    static final StringManager sm = StringManager.getManager("org.apache.catalina.util");
 
     public CNonceCacheImpl() {
 
     }
 
     /**
-     * Maximum number of client nonces to keep in the cache. If not specified,
-     * the default value of 1000 is used.
+     * Maximum number of client nonces to keep in the cache. If not specified, the default value of 1000 is used.
      */
     long cnonceCacheSize = 1000;
 
     /**
-     * How long server nonces are valid for in milliseconds. Defaults to 5
-     * minutes.
+     * How long server nonces are valid for in milliseconds. Defaults to 5 minutes.
      */
     long nonceValidity = 5 * 60 * 1000;
 
@@ -99,8 +99,7 @@ public final class CNonceCacheImpl extends LinkedHashMap<String, NonceInfo> impl
         eldestCNonce = eldest.getKey();
         if (size() > getCnonceCacheSize()) {
             if (lastLog < currentTime
-                    && currentTime - eldest.getValue().getTimestamp()
-                    < getNonceValidity()) {
+                    && currentTime - eldest.getValue().getTimestamp() < getNonceValidity()) {
                 // Replay attack is possible
                 log.warning(sm.getString(
                         "digestAuthenticator.cacheRemove"));
@@ -110,7 +109,6 @@ public final class CNonceCacheImpl extends LinkedHashMap<String, NonceInfo> impl
         }
         return false;
     }
-
 
     /**
      * @return the cnonceCacheSize

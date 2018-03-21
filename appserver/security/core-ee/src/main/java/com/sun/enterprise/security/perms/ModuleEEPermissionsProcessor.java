@@ -45,45 +45,41 @@ import java.net.MalformedURLException;
 
 import org.glassfish.api.deployment.DeploymentContext;
 
-
 public class ModuleEEPermissionsProcessor extends PermissionsProcessor {
 
     private PermissionCollection eePc;
-    
-    public ModuleEEPermissionsProcessor(SMGlobalPolicyUtil.CommponentType type, 
-            DeploymentContext dc)  throws SecurityException {
+
+    public ModuleEEPermissionsProcessor(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc) throws SecurityException {
         super(type, dc);
-        
+
         try {
             convertEEPermissionPaths();
         } catch (MalformedURLException e) {
             throw new SecurityException(e);
         }
     }
-    
-    
+
     /**
      * get the EE permissions which have the file path adjusted for the right module
-     * @return  adjusted EE permissions
+     * 
+     * @return adjusted EE permissions
      */
     public PermissionCollection getAdjustedEEPermission() {
         return eePc;
     }
 
-    //conver the path for permissions
-    private void convertEEPermissionPaths() throws MalformedURLException {        
-        //get server suppled default policy
-        PermissionCollection defWarPc = 
-            SMGlobalPolicyUtil.getEECompGrantededPerms(type);
+    // conver the path for permissions
+    private void convertEEPermissionPaths() throws MalformedURLException {
+        // get server suppled default policy
+        PermissionCollection defWarPc = SMGlobalPolicyUtil.getEECompGrantededPerms(type);
 
-        //revise the filepermission's path
-        eePc = processPermisssonsForPath(defWarPc, context); 
-        
-        if (logger.isLoggable(Level.FINE)){
+        // revise the filepermission's path
+        eePc = processPermisssonsForPath(defWarPc, context);
+
+        if (logger.isLoggable(Level.FINE)) {
             logger.fine("Revised permissions = " + eePc);
         }
 
     }
 
-    
 }

@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee;
 
 import com.sun.enterprise.security.ContainerSecurityLifecycle;
@@ -66,9 +65,9 @@ public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, Post
     @Override
     public void onInitialization() {
         java.lang.SecurityManager secMgr = System.getSecurityManager();
-        //TODO: need someway to not override the SecMgr if the EmbeddedServer was
-        //run with a different non-default SM.
-        //right now there seems no way to find out if the SM is the VM's default SM.
+        // TODO: need someway to not override the SecMgr if the EmbeddedServer was
+        // run with a different non-default SM.
+        // right now there seems no way to find out if the SM is the VM's default SM.
         if (secMgr != null
                 && !(J2EESecurityManager.class.equals(secMgr.getClass()))) {
             J2EESecurityManager mgr = new J2EESecurityManager();
@@ -81,18 +80,16 @@ public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, Post
         initializeJMAC();
     }
 
-    private void initializeJMAC()  {
+    private void initializeJMAC() {
 
-	// define default factory if it is not already defined
-	// factory will be constructed on first getFactory call.
+        // define default factory if it is not already defined
+        // factory will be constructed on first getFactory call.
 
-	String defaultFactory = Security.getProperty
-	    (AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY);
-	if (defaultFactory == null) {
-	    Security.setProperty
-		(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY,
-		 GFAuthConfigFactory.class.getName());
- 	}
+        String defaultFactory = Security.getProperty(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY);
+        if (defaultFactory == null) {
+            Security.setProperty(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY,
+                    GFAuthConfigFactory.class.getName());
+        }
     }
 
     @Override
