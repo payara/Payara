@@ -177,10 +177,10 @@ public class PropertiesBagResource extends AbstractResource {
             for (Map<String, String> property : properties) {
                 Property existingProp = existing.get(property.get("name"));
 
-                String unescapedName = ((Object)property.get("name")).toString();
+                String unescapedName = Object.class.cast(property.get("name")).toString();
                 String escapedName = getEscapedPropertyName(unescapedName);
 
-                String value = ((Object)property.get("value")).toString();
+                String value = Object.class.cast(property.get("value")).toString();
                 String unescapedValue = value.replaceAll("\\\\", "");
                 
                 String description = null;
