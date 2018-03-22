@@ -210,6 +210,10 @@ public class PayaraMicro {
     public int getSslPort() {
         return wrappee.getSslPort();
     }
+    
+    public String getSslCert() {
+        return wrappee.getSslCert();
+    }
 
     public File getUberJar() {
         return wrappee.getUberJar();
@@ -360,6 +364,11 @@ public class PayaraMicro {
 
     public PayaraMicro setSslPort(int sslPort) {
         wrappee.setSslPort(sslPort);
+        return this;
+    }
+    
+    public PayaraMicro setSslCert(String alias) {
+        wrappee.setSslCert(alias);
         return this;
     }
 

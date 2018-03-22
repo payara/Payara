@@ -248,6 +248,7 @@ public class SecuritySupportImpl extends SecuritySupport {
             keyStorePasswords.add(Arrays.copyOf(keyStorePass, keyStorePass.length));
             tokenNames.add(tokenName);
         } catch (Exception ex) {
+            _logger.severe("Failed to load key stores " + ex.getMessage());
             throw new IllegalStateException(ex);
         }
     }

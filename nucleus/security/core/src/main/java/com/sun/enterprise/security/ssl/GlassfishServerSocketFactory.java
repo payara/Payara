@@ -71,6 +71,20 @@ public class GlassfishServerSocketFactory extends JSSE14SocketFactory {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Keystore type= {0}", keystoreType);
         }
+        
+        // validate that the alias is in one of the keystores otherwise emit warning
+        boolean aliasFound = false;
+        for (KeyStore keyStore : sslUtils.getKeyStores()) {
+            if (keyStore.isKeyEntry(keyAlias)) {
+                aliasFound = true;
+                break;
+            }
+        }
+        
+        if (!aliasFound) {
+            logger.log(Level.WARNING, "Unable to find key pair alias {0} in any of the configured key stores, therefore the server may not be able to present a valid SSL Certificate", keyAlias);
+        }
+        
         KeyManager[] kMgrs = sslUtils.getKeyManagers(algorithm);
         if (keyAlias != null && keyAlias.length() > 0 && kMgrs != null) {
             for (int i = 0; i < kMgrs.length; i++) {
