@@ -38,17 +38,22 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- uploadCommonFields.jsf -->
 
-<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
+<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" helpText="$resource{i18n.deploy.ApplicationNameHelp}" visible="#{true}">
     <sun:textField id="appName" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.ApplicationName']}" text="#{pageSession.ear['name']}" styleClass="required" required="#{true}"
         onChange="javascript: admingui.deploy.setAppName('#{appNameId}', this.value, window, '#{sessionScope.appTypeString}')">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{appNameId});
         />
     </sun:textField>
+</sun:property>
+        
+<sun:property id="forceName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.forceApplicationName}" helpText="$resource{i18n.deploy.forceApplicationNameHelp}">
+    <sun:checkbox id="forceName"  label=" " selected="#{pageSession.ear['forceName']}" selectedValue="true" />
 </sun:property>
 
 <sun:property id="vsProp"  rendered="#{pageSession.onlyDASExist}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.virtualServerLabel}" helpText="$resource{i18n.deploy.vsHelp}">
