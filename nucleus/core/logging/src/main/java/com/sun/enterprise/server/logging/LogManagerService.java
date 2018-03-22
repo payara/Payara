@@ -185,6 +185,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles";
     private static final String PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation";
     
+    /**
+     * @deprecated for backwards compatibility pre-5.182
+     */
     @Deprecated
     private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
     
