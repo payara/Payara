@@ -79,7 +79,6 @@ class JvmOptions {
             while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
                 String matchValue = m2.group(2).trim();
                 String newValue = System.getenv(matchValue);
-                System.out.println("Newvalue for " + i + " is " + newValue);
                 if (newValue != null) {
                     s = newValue;
                     m2.reset(s);
